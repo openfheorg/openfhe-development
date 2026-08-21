@@ -611,7 +611,12 @@ private:
 
 }  // namespace bigintfxd
 
-        #include "math/hal/bigintfxd/transformfxd-impl.h"
+// Compiled once in be2-math-impl.cpp; these declarations suppress implicit instantiation in every
+// other TU so all users link the library's copy (same pattern as transformnat.h).
+extern template class bigintfxd::NumberTheoreticTransformFxd<bigintfxd::BigVector>;
+extern template class bigintfxd::ChineseRemainderTransformFTTFxd<bigintfxd::BigVector>;
+extern template class bigintfxd::BluesteinFFTFxd<bigintfxd::BigVector>;
+extern template class bigintfxd::ChineseRemainderTransformArbFxd<bigintfxd::BigVector>;
 
     #endif
 

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -41,20 +41,17 @@
 #include "math/hal/integer.h"
 #include "math/nbtheory.h"
 
-#include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-#include "utils/openfhebase64.h"
 #include "utils/serializable.h"
 
 #include <cstdint>
-#include <functional>
 #include <limits>
 #include <ostream>
 #include <string>
 #include <type_traits>
-#include <vector>
 #include <utility>
+#include <vector>
 
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
@@ -66,7 +63,6 @@
 // #define in a simple expression causes the compiler to
 // optimize away the test
 #define NATIVEINT_DO_CHECKS false
-#define NATIVEINT_BARRET_MOD
 
 namespace intnat {
 
@@ -78,9 +74,8 @@ using NativeInteger = NativeIntegerT<BasicInteger>;
 template <typename IntType>
 class NativeVectorT;
 
-// constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed  constant of Log base 2 of 10.
-// constexpr uint32_t BARRETT_LEVELS = 8;  //!< @brief The number of levels (precomputed
-//!< values) used in the Barrett reductions.
+template <typename VecType>
+class NumberTheoreticTransformNat;
 
 /**
  * @brief Struct to determine other datatyps based on utype.
@@ -128,13 +123,11 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
 private:
     NativeInt m_value{0};
 
-    // variable to store the maximum value of the integral data type.
-    static constexpr NativeInt m_uintMax{std::numeric_limits<NativeInt>::max()};
-    // variable to store the bit width of the integral data type.
-    //    static constexpr uint32_t m_uintBitLength{sizeof(NativeInt) * 8};
+    // bit width of the integral data type
     static constexpr uint32_t m_uintBitLength{std::numeric_limits<NativeInt>::digits};
 
     friend class NativeVectorT<NativeIntegerT<NativeInt>>;
+    friend class NumberTheoreticTransformNat<NativeVectorT<NativeIntegerT<NativeInt>>>;
 
 public:
     using Integer         = NativeInt;
@@ -169,7 +162,6 @@ public:
     explicit NativeIntegerT(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
     }
-    // explicit NativeIntegerT(const char strval) : m_value{NativeInt(strval - '0')} {}
 
     template <typename T,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
@@ -339,8 +331,8 @@ public:
     /**
    * SubCheck is the subtraction operation with bounds checking.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     NativeIntegerT SubCheck(const NativeIntegerT& b) const {
         return {m_value <= b.m_value ? 0 : m_value - b.m_value};
@@ -349,8 +341,8 @@ public:
     /**
    * SubFast is the subtraction operation without bounds checking.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     // no saturated subtraction? functionality differs from BigInteger Backends
     NativeIntegerT SubFast(const NativeIntegerT& b) const {
@@ -371,8 +363,8 @@ public:
    * SubEqCheck is the subtraction in place operation with bounds checking.
    * In-place variant.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     NativeIntegerT& SubEqCheck(const NativeIntegerT& b) {
         if (m_value < b.m_value)
@@ -384,15 +376,13 @@ public:
    * SubEqFast is the subtraction in place operation without bounds checking.
    * In-place variant.
    *
-   * @param b is the value to add to this.
-   * @return result of the addition operation.
+   * @param b is the value to subtract from this.
+   * @return result of the subtraction operation.
    */
     NativeIntegerT& SubEqFast(const NativeIntegerT& b) {
         return *this = m_value - b.m_value;
     }
 
-    // overloaded binary operators based on integer arithmetic and comparison
-    // functions.
     NativeIntegerT operator-() const {
         return NativeIntegerT().Sub(*this);
     }
@@ -546,38 +536,6 @@ public:
     }
 
     /**
-   * Computes the quotient of x*p/q, where x,p,q are all NativeInt numbers, x
-   * is the current value; uses DNativeInt arithmetic
-   *
-   * @param p is the multiplicand
-   * @param q is the divisor
-   * @return the quotient
-   */
-    //    template <typename T = NativeInt>
-    //    NativeIntegerT MultiplyAndDivideQuotient(const NativeIntegerT& p, const NativeIntegerT& q) const {
-    //        DNativeInt xD{m_value};
-    //        DNativeInt pD{p.m_value};
-    //        DNativeInt qD{q.m_value};
-    //        return static_cast<NativeIntegerT>(xD * pD / qD);
-    //    }
-
-    /**
-   * Computes the remainder of x*p/q, where x,p,q are all NativeInt numbers, x
-   * is the current value; uses DNativeInt arithmetic. In-place variant.
-   *
-   * @param p is the multiplicand
-   * @param q is the divisor
-   * @return the remainder
-   */
-    //    template <typename T = NativeInt>
-    //    NativeIntegerT MultiplyAndDivideRemainder(const NativeIntegerT& p, const NativeIntegerT& q) const {
-    //        DNativeInt xD{m_value};
-    //        DNativeInt pD{p.m_value};
-    //        DNativeInt qD{q.m_value};
-    //        return static_cast<NativeIntegerT>(xD * pD % qD);
-    //    }
-
-    /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
@@ -638,20 +596,14 @@ public:
    *
    * @return the precomputed parameter mu.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ComputeMu(typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
+    NativeIntegerT ComputeMu() const {
         if (m_value == 0)
             OPENFHE_THROW("NativeIntegerT ComputeMu: Divide by zero");
-        auto&& tmp{DNativeInt{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
-        return {tmp / DNativeInt(m_value)};
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ComputeMu(typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
-        if (m_value == 0)
-            OPENFHE_THROW("NativeIntegerT ComputeMu: Divide by zero");
-        auto&& tmp{bigintbackend::BigInteger{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
-        return {(tmp / bigintbackend::BigInteger(m_value)).template ConvertToInt<NativeInt>()};
+        constexpr int64_t W{NativeIntegerT::MaxBits()};
+        int64_t shift{2 * static_cast<int64_t>(lbcrypto::GetMSB(m_value)) + 3};
+        if (shift >= W)
+            return {DivD(NativeInt(1) << (shift - W), 0, m_value)};
+        return {(NativeInt(1) << shift) / m_value};
     }
 
     /**
@@ -663,7 +615,6 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
-    // TODO: pass modulus.GetMSB() with mu for faster vector ops?
     NativeIntegerT Mod(const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
         typeD tmp;
         NativeIntegerT ans{*this};
@@ -764,38 +715,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ModAdd(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                          typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
-        auto& mv{modulus.m_value};
-#ifdef NATIVEINT_BARRET_MOD
-        auto av{*this};
-        auto bv{b};
-        if (av.m_value >= mv)
-            av.ModEq(modulus, mu);
-        if (bv.m_value >= mv)
-            bv.ModEq(modulus, mu);
-        av.m_value += bv.m_value;
-        if (av.m_value >= mv)
-            av.m_value -= mv;
-        return av;
-#else
-        auto bv{b.m_value};
-        auto av{m_value};
-        if (bv >= mv)
-            bv = bv % mv;
-        if (av >= mv)
-            av = av % mv;
-        av = av + bv;
-        if (av >= mv)
-            return {av - mv};
-        return {av};
-#endif
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModAdd(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                          typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
+    NativeIntegerT ModAdd(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
         auto av{*this};
         auto bv{b};
         auto& mv{modulus.m_value};
@@ -817,38 +737,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT& ModAddEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                             typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-        auto& mv{modulus.m_value};
-#ifdef NATIVEINT_BARRET_MOD
-        auto av{*this};
-        auto bv{b};
-        if (av.m_value >= mv)
-            av.ModEq(modulus, mu);
-        if (bv.m_value >= mv)
-            bv.ModEq(modulus, mu);
-        m_value = av.m_value + bv.m_value;
-        if (m_value >= mv)
-            m_value -= mv;
-        return *this;
-#else
-        auto bv{b.m_value};
-        auto av{m_value};
-        if (bv >= mv)
-            bv = bv % mv;
-        if (av >= mv)
-            av = av % mv;
-        av = av + bv;
-        if (av >= mv)
-            return *this = av - mv;
-        return *this = av;
-#endif
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT& ModAddEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                             typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
+    NativeIntegerT& ModAddEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
         auto av{*this};
         auto bv{b};
         auto& mv{modulus.m_value};
@@ -934,36 +823,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ModSub(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                          typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
-        auto& mv{modulus.m_value};
-#ifdef NATIVEINT_BARRET_MOD
-        auto av{*this};
-        auto bv{b};
-        if (av.m_value >= mv)
-            av.ModEq(modulus, mu);
-        if (bv.m_value >= mv)
-            bv.ModEq(modulus, mu);
-        if (av.m_value < bv.m_value)
-            return {av.m_value + mv - bv.m_value};
-        return {av.m_value - bv.m_value};
-#else
-        auto av{m_value};
-        auto bv{b.m_value};
-        if (av >= mv)
-            av = av % mv;
-        if (bv >= mv)
-            bv = bv % mv;
-        if (av < bv)
-            return {av + mv - bv};
-        return {av - bv};
-#endif
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModSub(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                          typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
+    NativeIntegerT ModSub(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
         auto av{*this};
         auto bv{b};
         auto& mv{modulus.m_value};
@@ -976,36 +836,15 @@ public:
         return {av.m_value - bv.m_value};
     }
 
-    template <typename T = NativeInt>
-    NativeIntegerT& ModSubEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                             typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-        auto& mv{modulus.m_value};
-#ifdef NATIVEINT_BARRET_MOD
-        auto av{*this};
-        auto bv{b};
-        if (av.m_value >= mv)
-            av.ModEq(modulus, mu);
-        if (bv.m_value >= mv)
-            bv.ModEq(modulus, mu);
-        if (av.m_value < bv.m_value)
-            return *this = av.m_value + mv - bv.m_value;
-        return *this = av.m_value - bv.m_value;
-#else
-        auto bv{b.m_value};
-        auto av{m_value};
-        if (bv >= mv)
-            bv = bv % mv;
-        if (av >= mv)
-            av = av % mv;
-        if (av < bv)
-            return *this = av + mv - bv;
-        return *this = av - bv;
-#endif
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT& ModSubEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                             typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
+    /**
+   * Barrett modulus subtraction operation. In-place variant.
+   *
+   * @param &b is the scalar to subtract.
+   * @param &modulus is the modulus to perform operations with.
+   * @param &mu is the Barrett value.
+   * @return is the result of the modulus subtraction operation.
+   */
+    NativeIntegerT& ModSubEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
         auto av{*this};
         auto bv{b};
         auto& mv{modulus.m_value};
@@ -1025,44 +864,27 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                          typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
-        auto av{m_value};
-        auto bv{b.m_value};
-        auto& mv{modulus.m_value};
-        if (av >= mv)
-            av = av % mv;
-        if (bv >= mv)
-            bv = bv % mv;
-        DNativeInt rv{static_cast<DNativeInt>(av) * bv};
-        DNativeInt dmv{mv};
-        if (rv >= dmv)
-            rv %= dmv;
-        return {rv};
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                          typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
-        typeD tmp;
-        auto av{*this};
-        auto& mv{modulus.m_value};
-        auto mu{modulus.ComputeMu().m_value};
-        int64_t n{modulus.GetMSB() - 2};
-        if (av.m_value >= mv)
-            ModMu(tmp, av, mv, mu, n);
-        auto bv{b};
-        if (bv.m_value >= mv)
-            ModMu(tmp, bv, mv, mu, n);
-        MultD(av.m_value, bv.m_value, tmp);
-        typeD r{tmp};
-        MultD(RShiftD(tmp, n), mu, tmp);
-        MultD(RShiftD(tmp, n + 7), mv, tmp);
-        SubtractD(r, tmp);
-        if (r.lo >= mv)
-            r.lo -= mv;
-        return {r.lo};
+    NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
+        if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
+            if (modulus.GetMSB() <= MAX_MODULUS_SIZE)
+                return ModMul(b, modulus, modulus.ComputeMu());
+            auto& mv{modulus.m_value};
+            return {ModMulD(m_value % mv, b.m_value % mv, mv)};
+        }
+        else {
+            auto av{m_value};
+            auto bv{b.m_value};
+            auto& mv{modulus.m_value};
+            if (av >= mv)
+                av = av % mv;
+            if (bv >= mv)
+                bv = bv % mv;
+            DNativeInt rv{static_cast<DNativeInt>(av) * bv};
+            DNativeInt dmv{mv};
+            if (rv >= dmv)
+                rv %= dmv;
+            return {rv};
+        }
     }
 
     /**
@@ -1072,45 +894,28 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                             typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-        auto av{m_value};
-        auto bv{b.m_value};
-        auto& mv{modulus.m_value};
-        if (av >= mv)
-            av = av % mv;
-        if (bv >= mv)
-            bv = bv % mv;
-        DNativeInt rv{static_cast<DNativeInt>(av) * bv};
-        DNativeInt dmv{mv};
-        if (rv >= dmv)
-            rv %= dmv;
-        return *this = static_cast<NativeInt>(rv);
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                             typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
-        auto av{*this};
-        auto& mv{modulus.m_value};
-        typeD tmp;
-        auto mu{modulus.ComputeMu().m_value};
-        int64_t n{modulus.GetMSB() - 2};
-        if (av.m_value >= mv)
-            ModMu(tmp, av, mv, mu, n);
-        auto bv{b};
-        if (bv.m_value >= mv)
-            ModMu(tmp, bv, mv, mu, n);
-        MultD(av.m_value, bv.m_value, tmp);
-        typeD r = tmp;
-        MultD(RShiftD(tmp, n), mu, tmp);
-        MultD(RShiftD(tmp, n + 7), mv, tmp);
-        SubtractD(r, tmp);
-        m_value = r.lo;
-        if (r.lo >= mv)
-            m_value -= mv;
-        return *this;
+    NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
+        if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
+            if (modulus.GetMSB() <= MAX_MODULUS_SIZE)
+                return ModMulEq(b, modulus, modulus.ComputeMu());
+            auto& mv{modulus.m_value};
+            m_value = ModMulD(m_value % mv, b.m_value % mv, mv);
+            return *this;
+        }
+        else {
+            auto av{m_value};
+            auto bv{b.m_value};
+            auto& mv{modulus.m_value};
+            if (av >= mv)
+                av = av % mv;
+            if (bv >= mv)
+                bv = bv % mv;
+            DNativeInt rv{static_cast<DNativeInt>(av) * bv};
+            DNativeInt dmv{mv};
+            if (rv >= dmv)
+                rv %= dmv;
+            return *this = static_cast<NativeInt>(rv);
+        }
     }
 
     /**
@@ -1121,10 +926,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                          typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
-#ifdef NATIVEINT_BARRET_MOD
+    NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
         auto av{*this};
         auto& mv{modulus.m_value};
         typeD tmp;
@@ -1135,49 +937,12 @@ public:
         if (bv.m_value >= mv)
             ModMu(tmp, bv, mv, mu.m_value, n);
         MultD(av.m_value, bv.m_value, tmp);
-        auto rv = GetD(tmp);
+        NativeInt r{tmp.lo};
         MultD(RShiftD(tmp, n), mu.m_value, tmp);
-        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
-        NativeIntegerT r(rv);
-        if (r.m_value >= mv)
-            r.m_value -= mv;
-        return r;
-#else
-        auto& mv{modulus.m_value};
-        auto bv{b.m_value};
-        auto av{m_value};
-        if (bv >= mv)
-            bv = bv % mv;
-        if (av >= mv)
-            av = av % mv;
-        DNativeInt rv{static_cast<DNativeInt>(av) * bv};
-        DNativeInt dmv{mv};
-        if (rv >= dmv)
-            return {rv % dmv};
-        return {rv};
-#endif
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                          typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
-        auto av{*this};
-        auto& mv{modulus.m_value};
-        typeD tmp;
-        int64_t n{modulus.GetMSB() - 2};
-        if (av.m_value >= mv)
-            ModMu(tmp, av, mv, mu.m_value, n);
-        auto bv{b};
-        if (bv.m_value >= mv)
-            ModMu(tmp, bv, mv, mu.m_value, n);
-        MultD(av.m_value, bv.m_value, tmp);
-        typeD r = tmp;
-        MultD(RShiftD(tmp, n), mu.m_value, tmp);
-        MultD(RShiftD(tmp, n + 7), mv, tmp);
-        SubtractD(r, tmp);
-        if (r.lo >= mv)
-            r.lo -= mv;
-        return {r.lo};
+        r -= RShiftD(tmp, n + 7) * mv;
+        if (r >= mv)
+            r -= mv;
+        return {r};
     }
 
     /**
@@ -1188,47 +953,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                             typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-#ifdef NATIVEINT_BARRET_MOD
-        auto av{*this};
-        auto bv{b};
-        auto& mv{modulus.m_value};
-        typeD tmp;
-        auto& muv{mu.m_value};
-        int64_t n{modulus.GetMSB() - 2};
-        if (av.m_value >= mv)
-            ModMu(tmp, av, mv, muv, n);
-        if (bv.m_value >= mv)
-            ModMu(tmp, bv, mv, muv, n);
-        MultD(av.m_value, bv.m_value, tmp);
-        auto rv = GetD(tmp);
-        MultD(RShiftD(tmp, n), muv, tmp);
-        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
-        m_value = static_cast<NativeInt>(rv);
-        if (m_value >= mv)
-            m_value -= mv;
-        return *this;
-#else
-        auto& mv{modulus.m_value};
-        auto bv{b.m_value};
-        auto av{m_value};
-        if (bv >= mv)
-            bv = bv % mv;
-        if (av >= mv)
-            av = av % mv;
-        DNativeInt rv{static_cast<DNativeInt>(av) * bv};
-        DNativeInt dmv{mv};
-        if (rv >= dmv)
-            return *this = static_cast<NativeInt>(rv % dmv);
-        return *this = static_cast<NativeInt>(rv);
-#endif
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                             typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
+    NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
         int64_t n{modulus.GetMSB() - 2};
         auto av{*this};
         auto bv{b};
@@ -1239,12 +964,11 @@ public:
         if (bv.m_value >= mv)
             ModMu(tmp, bv, mv, mu.m_value, n);
         MultD(av.m_value, bv.m_value, tmp);
-        typeD r = tmp;
+        NativeInt r{tmp.lo};
         MultD(RShiftD(tmp, n), mu.m_value, tmp);
-        MultD(RShiftD(tmp, n + 7), mv, tmp);
-        SubtractD(r, tmp);
-        m_value = r.lo;
-        if (r.lo >= mv)
+        r -= RShiftD(tmp, n + 7) * mv;
+        m_value = r;
+        if (r >= mv)
             m_value -= mv;
         return *this;
     }
@@ -1256,30 +980,19 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                              typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
-        DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
-        DNativeInt dmv{modulus.m_value};
-        if (rv >= dmv)
-            rv %= dmv;
-        return {rv};
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                              typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
-        int64_t n = modulus.GetMSB() - 2;
-        auto& mv{modulus.m_value};
-        typeD prod;
-        MultD(m_value, b.m_value, prod);
-        typeD r = prod;
-        MultD(RShiftD(prod, n), modulus.ComputeMu().m_value, prod);
-        MultD(RShiftD(prod, n + 7), mv, prod);
-        SubtractD(r, prod);
-        if (r.lo >= mv)
-            r.lo -= mv;
-        return {r.lo};
+    NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
+        if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
+            if (modulus.GetMSB() <= MAX_MODULUS_SIZE)
+                return ModMulFast(b, modulus, modulus.ComputeMu());
+            return {ModMulD(m_value, b.m_value, modulus.m_value)};
+        }
+        else {
+            DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
+            DNativeInt dmv{modulus.m_value};
+            if (rv >= dmv)
+                rv %= dmv;
+            return {rv};
+        }
     }
 
     /**
@@ -1290,32 +1003,20 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    // TODO: find what in Matrix<DCRTPoly> is calling ModMulFastEq incorrectly
-    template <typename T = NativeInt>
-    NativeIntegerT ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                                typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-        DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
-        DNativeInt dmv{modulus.m_value};
-        if (rv >= dmv)
-            rv %= dmv;
-        return *this = static_cast<NativeInt>(rv);
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                                typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
-        int64_t n = modulus.GetMSB() - 2;
-        auto& mv{modulus.m_value};
-        typeD prod;
-        MultD(m_value, b.m_value, prod);
-        typeD r = prod;
-        MultD(RShiftD(prod, n), modulus.ComputeMu().m_value, prod);
-        MultD(RShiftD(prod, n + 7), mv, prod);
-        SubtractD(r, prod);
-        m_value = r.lo;
-        if (r.lo >= mv)
-            m_value -= mv;
-        return *this;
+    NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
+        if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
+            if (modulus.GetMSB() <= MAX_MODULUS_SIZE)
+                return ModMulFastEq(b, modulus, modulus.ComputeMu());
+            m_value = ModMulD(m_value, b.m_value, modulus.m_value);
+            return *this;
+        }
+        else {
+            DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
+            DNativeInt dmv{modulus.m_value};
+            if (rv >= dmv)
+                rv %= dmv;
+            return *this = static_cast<NativeInt>(rv);
+        }
     }
 
     /**
@@ -1343,36 +1044,17 @@ public:
     upper bound of dividend assuming that none of the dividends will be larger
     than 2^(2*n + 3). The value of \mu is computed by NativeVector::ComputeMu.
     */
-    template <typename T = NativeInt>
-    NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                              typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
-        int64_t n = modulus.GetMSB() - 2;
-        auto& mv{modulus.m_value};
-        typeD tmp;
-        MultD(m_value, b.m_value, tmp);
-        auto rv = GetD(tmp);
-        MultD(RShiftD(tmp, n), mu.m_value, tmp);
-        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
-        NativeIntegerT r(rv);
-        if (r.m_value >= mv)
-            r.m_value -= mv;
-        return r;
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                              typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
+    NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
         int64_t n = modulus.GetMSB() - 2;
         auto& mv{modulus.m_value};
         typeD prod;
         MultD(m_value, b.m_value, prod);
-        typeD r = prod;
+        NativeInt r{prod.lo};
         MultD(RShiftD(prod, n), mu.m_value, prod);
-        MultD(RShiftD(prod, n + 7), mv, prod);
-        SubtractD(r, prod);
-        if (r.lo >= mv)
-            r.lo -= mv;
-        return {r.lo};
+        r -= RShiftD(prod, n + 7) * mv;
+        if (r >= mv)
+            r -= mv;
+        return {r};
     }
 
     /**
@@ -1384,35 +1066,16 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                                 typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-        typeD tmp;
-        MultD(m_value, b.m_value, tmp);
-        auto rv{GetD(tmp)};
+    NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
         int64_t n{modulus.GetMSB() - 2};
-        MultD(RShiftD(tmp, n), mu.m_value, tmp);
         auto& mv{modulus.m_value};
-        rv -= DNativeInt(mv) * (GetD(tmp) >> (n + 7));
-        m_value = NativeInt(rv);
-        if (m_value >= mv)
-            m_value -= mv;
-        return *this;
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu,
-                                 typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
-        int64_t n{modulus.GetMSB() - 2};
         typeD prod;
         MultD(m_value, b.m_value, prod);
-        typeD r{prod};
-        auto& mv{modulus.m_value};
+        NativeInt r{prod.lo};
         MultD(RShiftD(prod, n), mu.m_value, prod);
-        MultD(RShiftD(prod, n + 7), mv, prod);
-        SubtractD(r, prod);
-        m_value = r.lo;
-        if (r.lo >= mv)
+        r -= RShiftD(prod, n + 7) * mv;
+        m_value = r;
+        if (r >= mv)
             m_value -= mv;
         return *this;
     }
@@ -1432,24 +1095,10 @@ public:
    * @param modulus is the modulus to perform operations with.
    * @return the precomputed factor.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT PrepModMulConst(
-        const NativeIntegerT& modulus,
-        typename std::enable_if<!std::is_same<T, DNativeInt>::value, bool>::type = true) const {
+    NativeIntegerT PrepModMulConst(const NativeIntegerT& modulus) const {
         if (modulus.m_value == 0)
             OPENFHE_THROW("Divide by zero");
-        auto&& w{DNativeInt(m_value) << NativeIntegerT::MaxBits()};
-        return {w / DNativeInt(modulus.m_value)};
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT PrepModMulConst(
-        const NativeIntegerT& modulus,
-        typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type = true) const {
-        if (modulus.m_value == 0)
-            OPENFHE_THROW("Divide by zero");
-        auto&& w{bigintbackend::BigInteger(m_value) << NativeIntegerT::MaxBits()};
-        return {(w / bigintbackend::BigInteger(modulus.m_value)).template ConvertToInt<NativeInt>()};
+        return {DivD(m_value, 0, modulus.m_value)};
     }
 
     /**
@@ -1491,44 +1140,32 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
-    template <typename T = NativeInt>
-    NativeIntegerT ModExp(const NativeIntegerT& b, const NativeIntegerT& mod,
-                          typename std::enable_if<!std::is_same<T, DNativeInt>::value, bool>::type = true) const {
-        DNativeInt t{m_value};
-        DNativeInt p{b.m_value};
-        DNativeInt m{mod.m_value};
-        DNativeInt r{1};
-        if (p & 0x1) {
-            r = r * t;
-            if (r >= m)
-                r = r % m;
-        }
-        while (p >>= 1) {
-            t = t * t;
-            if (t >= m)
-                t = t % m;
-            if (p & 0x1) {
-                r = r * t;
-                if (r >= m)
-                    r = r % m;
-            }
-        }
-        return {r};
-    }
-
-    template <typename T = NativeInt>
-    NativeIntegerT ModExp(const NativeIntegerT& b, const NativeIntegerT& mod,
-                          typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type = true) const {
-        NativeIntegerT t{m_value % mod.m_value};
-        NativeIntegerT p{b.m_value};
-        NativeIntegerT mu{mod.ComputeMu()};
-        NativeIntegerT r{1};
-        if (p.m_value & 0x1)
-            r.ModMulFastEq(t, mod, mu);
-        while (p.m_value >>= 1) {
-            t.ModMulFastEq(t, mod, mu);
+    NativeIntegerT ModExp(const NativeIntegerT& b, const NativeIntegerT& mod) const {
+        if (mod.GetMSB() <= MAX_MODULUS_SIZE) {
+            NativeIntegerT t{m_value % mod.m_value};
+            NativeIntegerT p{b.m_value};
+            NativeIntegerT mu{mod.ComputeMu()};
+            NativeIntegerT r{1};
             if (p.m_value & 0x1)
                 r.ModMulFastEq(t, mod, mu);
+            while (p.m_value >>= 1) {
+                t.ModMulFastEq(t, mod, mu);
+                if (p.m_value & 0x1)
+                    r.ModMulFastEq(t, mod, mu);
+            }
+            return {r};
+        }
+        // above the Barrett domain (Miller-Rabin on FirstPrime/NextPrime candidates)
+        auto& mv{mod.m_value};
+        NativeInt t{m_value % mv};
+        NativeInt p{b.m_value};
+        NativeInt r{1};
+        if (p & 0x1)
+            r = ModMulD(r, t, mv);
+        while (p >>= 1) {
+            t = ModMulD(t, t, mv);
+            if (p & 0x1)
+                r = ModMulD(r, t, mv);
         }
         return {r};
     }
@@ -1647,7 +1284,6 @@ public:
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
     constexpr T ConvertToInt() const noexcept {
-        // static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
         return static_cast<T>(m_value);
     }
 
@@ -1695,8 +1331,7 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
-
-    // TODO: only base 2?
+    // the base argument is ignored: returns the bit count, which is the length only for base 2
     uint32_t GetLengthForBase(uint32_t base) const {
         return NativeIntegerT::GetMSB();
     }
@@ -1791,7 +1426,7 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-        // get an array with 2 unint64_t values for m_value
+        // get an array with 2 uint64_t values for m_value
         uint64_t vec[2];
         ar(::cereal::binary_data(vec, sizeof(vec)));  // 2*8 - size in bytes
         m_value = vec[1];                             // most significant word
@@ -1807,7 +1442,7 @@ public:
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
         }
-        // get an array with 2 unint64_t values for m_value
+        // get an array with 2 uint64_t values for m_value
         uint64_t vec[2];
         ar(::cereal::make_nvp("i", vec));
         m_value = vec[1];  // most significant word
@@ -1817,7 +1452,7 @@ public:
 #endif
 
     template <class Archive, typename T = void>
-    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same<NativeInt, uint32_t>::value, T> save(
+    typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> save(
         Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
@@ -1827,7 +1462,7 @@ public:
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
-        // save 2 unint64_t values instead of uint128_t
+        // save 2 uint64_t values instead of uint128_t
         constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
@@ -1839,7 +1474,7 @@ public:
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
                               void>
     save(Archive& ar, std::uint32_t const version) const {
-        // save 2 unint64_t values instead of uint128_t
+        // save 2 uint64_t values instead of uint128_t
         constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
@@ -1865,18 +1500,6 @@ public:
     }
 
 private:
-    // Computes res -= a;
-    static void SubtractD(typeD& res, const typeD& a) {
-        if (res.lo < a.lo) {
-            res.lo += m_uintMax + 1 - a.lo;
-            res.hi--;
-        }
-        else {
-            res.lo -= a.lo;
-        }
-        res.hi -= a.hi;
-    }
-
     /**
    * Right shifts a typeD integer by a specific number of bits
    * and stores the result as a single-word integer.
@@ -1886,7 +1509,39 @@ private:
    * @return the result of right-shifting
    */
     static NativeInt RShiftD(const typeD& x, int64_t shift) {
-        return (x.lo >> shift) | (x.hi << (NativeIntegerT::MaxBits() - shift));
+        // shift may reach MSB+5 (see ModMu/ModMulFast), which exceeds the word size for
+        // moduli above MaxBits()-6 bits; both single-word shifts below are UB there
+        constexpr int64_t W{NativeIntegerT::MaxBits()};
+        if (shift >= W)
+            return x.hi >> (shift - W);
+        if (shift == 0)
+            return x.lo;
+        return (x.lo >> shift) | (x.hi << (W - shift));
+    }
+
+    // Quotient of a two-word dividend by a one-word divisor. The caller guarantees
+    // hi < divisor, so the quotient fits one word (holds for the mu and Shoup
+    // precomputations under MAX_MODULUS_SIZE). Without a double-width type this is a
+    // W-round restoring division: the remainder stays < divisor before each shift, so
+    // the shifted remainder fits W+1 bits and its top bit is the captured carry.
+    static NativeInt DivD(NativeInt hi, NativeInt lo, NativeInt divisor) {
+        if constexpr (!std::is_same_v<NativeInt, DNativeInt>) {
+            return static_cast<NativeInt>(((static_cast<DNativeInt>(hi) << MaxBits()) | lo) / divisor);
+        }
+        else {
+            constexpr int64_t W{NativeIntegerT::MaxBits()};
+            NativeInt q{0};
+            NativeInt r{hi};
+            for (int64_t i = W - 1; i >= 0; --i) {
+                NativeInt carry{r >> (W - 1)};
+                r = (r << 1) | ((lo >> i) & 1);
+                if (carry || r >= divisor) {
+                    r -= divisor;
+                    q |= NativeInt(1) << i;
+                }
+            }
+            return q;
+        }
     }
 
     /**
@@ -1997,17 +1652,6 @@ private:
         return x.hi;
     }
 
-    /**
-   * Converts a double-word integer from typeD representation
-   * to DNativeInt.
-   *
-   * @param &x double-word input
-   * @return the result as DNativeInt
-   */
-    static DNativeInt GetD(const typeD& x) {
-        return (DNativeInt(x.hi) << NativeIntegerT::MaxBits()) | x.lo;
-    }
-
     static std::string toString(uint32_t value) noexcept {
         return std::to_string(value);
     }
@@ -2017,7 +1661,6 @@ private:
     }
 
 #if defined(HAVE_INT128)
-    // TODO
     static std::string toString(uint128_t value) noexcept {
         constexpr size_t maxChars = 15;
         constexpr uint128_t divisor{0x38d7ea4c68000};  // 10**15
@@ -2037,23 +1680,20 @@ private:
     }
 #endif
 
-    template <typename T = NativeInt>
-    static void ModMu(typeD& prod, NativeIntegerT& a, const T& mv, const T& mu, int64_t n,
-                      typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) {
-        prod = {0, a.m_value};
-        MultD(RShiftD(prod, n), mu, prod);
-        a.m_value -= static_cast<NativeInt>((GetD(prod) >> (n + 7)) * mv);
-        if (a.m_value >= mv)
-            a.m_value -= mv;
+    // Exact modular multiplication by division, valid for ANY modulus width (the
+    // generalized-Barrett kernels require msb(modulus) <= MAX_MODULUS_SIZE, but
+    // FirstPrime/NextPrime run Miller-Rabin on candidates one bit above the cap).
+    // DivD's contract holds for any a, b < mv: hi(a*b) < mv^2 / 2^W < mv.
+    static NativeInt ModMulD(NativeInt a, NativeInt b, NativeInt mv) {
+        typeD x;
+        MultD(a, b, x);
+        return x.lo - DivD(x.hi, x.lo, mv) * mv;
     }
 
-    template <typename T = NativeInt>
-    static void ModMu(typeD& prod, NativeIntegerT& a, const T& mv, const T& mu, int64_t n,
-                      typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) {
+    static void ModMu(typeD& prod, NativeIntegerT& a, const NativeInt& mv, const NativeInt& mu, int64_t n) {
         prod = {0, a.m_value};
         MultD(RShiftD(prod, n), mu, prod);
-        MultD(RShiftD(prod, n + 7), mv, prod);
-        a.m_value -= prod.lo;
+        a.m_value -= RShiftD(prod, n + 7) * mv;
         if (a.m_value >= mv)
             a.m_value -= mv;
     }
@@ -2063,7 +1703,6 @@ private:
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "[";
-    //    for (const auto& i : v)
     for (auto&& i : v)
         os << " " << i;
     os << " ]";

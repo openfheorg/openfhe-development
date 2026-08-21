@@ -207,17 +207,16 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         DCRTPoly s = privateKey->GetPrivateElement().Clone();
 
         s.SetFormat(Format::COEFFICIENT);
-        DCRTPoly sExt(paramsQP, Format::COEFFICIENT, true);
+        DCRTPoly sExt(paramsQP, Format::COEFFICIENT, false);
 
         for (uint32_t i = 0; i < sizeQ; i++) {
             sExt.SetElementAtIndex(i, s.GetElementAtIndex(i));
         }
 
         for (uint32_t j = sizeQ; j < sizeQP; j++) {
-            NativeInteger pj    = paramsQP->GetParams()[j]->GetModulus();
-            NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
-            auto sNew0          = s.GetElementAtIndex(0);
-            sNew0.SwitchModulus(pj, rooti, 0, 0);
+            const auto& pj = paramsQP->GetParams()[j];
+            NativePoly sNew0(pj, Format::COEFFICIENT);
+            sNew0.SetValues(NativeVector(s.GetElementAtIndex(0).GetValues(), pj->GetModulus()), Format::COEFFICIENT);
             sExt.SetElementAtIndex(j, std::move(sNew0));
         }
         sExt.SetFormat(Format::EVALUATION);
@@ -261,28 +260,47 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
         precon[i] = qInv[i].PrepModMulConst(q[i]);
     }
 
-    NativeInteger::DNativeInt Q =
-        NativeInteger::DNativeInt(q[0].ConvertToInt()) * NativeInteger::DNativeInt(q[1].ConvertToInt());
-    NativeInteger::DNativeInt Qhalf   = Q / 2;
-    NativeInteger::DNativeInt Q1quart = Q / 4;
-    NativeInteger::DNativeInt Q3quart = 3 * Q / 4;
+    const BigInteger Qbig{BigInteger(q[0].ConvertToInt()) * BigInteger(q[1].ConvertToInt())};
+    const BigInteger Qhalfbig{Qbig / BigInteger(2)};
     std::vector<NativeInteger> qHalf(NUM_TOWERS);
-    for (size_t i = 0; i < NUM_TOWERS; i++) {
-        qHalf[i] = Qhalf % q[i].ConvertToInt();
-    }
+    for (size_t i = 0; i < NUM_TOWERS; i++)
+        qHalf[i] = Qhalfbig.Mod(BigInteger(q[i].ConvertToInt())).ConvertToInt();
 
-    // to do the comparison |coefficient[k]| > q/4,
-    // we compute CRT composition (interpolation) using
-    // 128-bit integers
-    for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
-        NativeInteger::DNativeInt x128 =
-            (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt() * q[1].ConvertToInt();
-        x128 += (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt() * q[0].ConvertToInt();
-        if (x128 > Q)
-            x128 %= Q;
-        if ((x128 > Q1quart) && (x128 <= Q3quart)) {
-            poly[0][k].ModAddFastEq(qHalf[0], q[0]);
-            poly[1][k].ModAddFastEq(qHalf[1], q[1]);
+    if constexpr (sizeof(NativeInteger::DNativeInt) > sizeof(BasicInteger)) {
+        const auto Q = static_cast<NativeInteger::DNativeInt>(q[0].ConvertToInt()) *
+                       static_cast<NativeInteger::DNativeInt>(q[1].ConvertToInt());
+        const auto Q1quart = Q / 4;
+        const auto Q3quart = 3 * Q / 4;
+        for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
+            NativeInteger::DNativeInt x128 =
+                static_cast<NativeInteger::DNativeInt>(
+                    (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt()) *
+                q[1].ConvertToInt();
+            x128 += static_cast<NativeInteger::DNativeInt>(
+                        (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt()) *
+                    q[0].ConvertToInt();
+            if (x128 > Q)
+                x128 %= Q;
+            if ((x128 > Q1quart) && (x128 <= Q3quart)) {
+                poly[0][k].ModAddFastEq(qHalf[0], q[0]);
+                poly[1][k].ModAddFastEq(qHalf[1], q[1]);
+            }
+        }
+    }
+    else {
+        const BigInteger Q1quart{Qbig / BigInteger(4)};
+        const BigInteger Q3quart{(BigInteger(3) * Qbig) / BigInteger(4)};
+        const BigInteger q0big{q[0].ConvertToInt()};
+        const BigInteger q1big{q[1].ConvertToInt()};
+        for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
+            BigInteger x{BigInteger((poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt()) * q1big};
+            x += BigInteger((poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt()) * q0big;
+            if (x > Qbig)
+                x = x.Mod(Qbig);
+            if ((x > Q1quart) && (x <= Q3quart)) {
+                poly[0][k].ModAddFastEq(qHalf[0], q[0]);
+                poly[1][k].ModAddFastEq(qHalf[1], q[1]);
+            }
         }
     }
 
@@ -300,9 +318,9 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     }
 
     const auto paramsQ = dcrtpoly.GetParams();
-    uint32_t sizeQP       = paramsQP->GetParams().size();
-    uint32_t sizeQ        = paramsQ->GetParams().size();
-    uint32_t sizeP        = sizeQP - sizeQ;
+    uint32_t sizeQP    = paramsQP->GetParams().size();
+    uint32_t sizeQ     = paramsQ->GetParams().size();
+    uint32_t sizeP     = sizeQP - sizeQ;
 
     // Loads all moduli and roots of unity
     std::vector<NativeInteger> moduliQ(sizeQ);
@@ -324,31 +342,32 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     std::vector<NativeInteger> QHatInvModq(sizeQ);
     std::vector<NativeInteger> QHatInvModqPrecon(sizeQ);
     std::vector<std::vector<NativeInteger>> QHatModp(sizeP);
+    for (auto& v : QHatModp)
+        v.reserve(sizeQ);
 
-    NativeInteger::DNativeInt modulusQ = dcrtpoly.GetModulus().ConvertToInt<NativeInteger::DNativeInt>();
+    const BigInteger modulusQ{dcrtpoly.GetModulus()};
 
     for (uint32_t i = 0; i < sizeQ; i++) {
-        NativeInteger::DNativeInt qi(moduliQ[i].ConvertToInt());
-        NativeInteger QHati  = modulusQ / qi;
-        QHatInvModq[i]       = QHati.ModInverse(moduliQ[i]).Mod(moduliQ[i]);
+        const BigInteger QHati{modulusQ / BigInteger(moduliQ[i])};
+        const NativeInteger QHatiModqi{QHati.Mod(BigInteger(moduliQ[i])).ConvertToInt()};
+        QHatInvModq[i]       = QHatiModqi.ModInverse(moduliQ[i]).Mod(moduliQ[i]);
         QHatInvModqPrecon[i] = QHatInvModq[i].PrepModMulConst(moduliQ[i]);
-        for (uint32_t j = 0; j < sizeP; j++) {
-            const NativeInteger& pj = moduliP[j];
-            QHatModp[j].push_back(QHati.Mod(pj));
-        }
+        for (uint32_t j = 0; j < sizeP; j++)
+            QHatModp[j].push_back(NativeInteger(QHati.Mod(BigInteger(moduliP[j])).ConvertToInt()));
     }
 
     std::vector<std::vector<NativeInteger>> alphaQModp(sizeQ + 1);
+    for (auto& v : alphaQModp)
+        v.reserve(sizeP);
     for (uint32_t j = 0; j < sizeP; j++) {
-        NativeInteger::DNativeInt pj(moduliP[j].ConvertToInt());
-        NativeInteger QModpj = modulusQ % pj;
+        const NativeInteger QModpj{modulusQ.Mod(BigInteger(moduliP[j])).ConvertToInt()};
         for (uint32_t i = 0; i < sizeQ + 1; i++) {
             alphaQModp[i].push_back(QModpj.ModMul(NativeInteger(i), moduliP[j]));
         }
     }
 
-    const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
-    const BigInteger TwoPower64("18446744073709551616");                            // 2^64
+    const BigInteger BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+    const BigInteger TwoPower64(BigInteger(1).LShiftEq(64));
 
     // Precomputations for Barrett modulo reduction
     std::vector<NativeInteger::DNativeInt> modpBarrettMu(sizeP);
@@ -442,6 +461,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     uint32_t sizeQ                  = pk[0].GetParams()->GetParams().size();
 
     std::vector<DCRTPoly> cv;
+    cv.reserve(2);
     if (sizeQl != sizeQ) {
         // Clone public keys because we need to drop towers.
         DCRTPoly b = pk[0].Clone();

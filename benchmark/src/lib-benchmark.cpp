@@ -104,8 +104,25 @@ using namespace lbcrypto;
  */
 
 [[maybe_unused]] static void RingArgs(benchmark::internal::Benchmark* b) {
-    for (uint32_t r : {1024, 4096, 8192})
+    for (uint32_t r : {1024, 4096, 8192, 16384, 32768})
         b->ArgName("ringdm")->Arg(r);
+}
+
+static double benchRandReal() {
+    static std::mt19937_64 rng(20260818);
+    static std::uniform_real_distribution<double> dist(-1.0, 1.0);
+    return dist(rng);
+}
+
+static constexpr uint32_t NTT_POOL = 8;
+
+static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& modulusQ) {
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    std::vector<NativeVector> pool;
+    pool.reserve(NTT_POOL);
+    for (uint32_t k = 0; k < NTT_POOL; ++k)
+        pool.push_back(dug.GenerateVector(n, modulusQ));
+    return pool;
 }
 
 [[maybe_unused]] static void NativeNTT(benchmark::State& state) {
@@ -115,15 +132,15 @@ using namespace lbcrypto;
     NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
+    auto pool = MakeNTTPool(n, modulusQ);
     NativeVector X(n);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
+    uint32_t i = 0;
     for (auto _ : state)
-        crtFTT.ForwardTransformToBitReverse(x, rootOfUnity, m, &X);
+        crtFTT.ForwardTransformToBitReverse(pool[i = (i + 1) & (NTT_POOL - 1)], rootOfUnity, m, &X);
 
     state.SetComplexityN(state.range(0));
 }
@@ -135,15 +152,15 @@ using namespace lbcrypto;
     NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
+    auto pool = MakeNTTPool(n, modulusQ);
     NativeVector X(n);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
+    uint32_t i = 0;
     for (auto _ : state)
-        crtFTT.InverseTransformFromBitReverse(x, rootOfUnity, m, &X);
+        crtFTT.InverseTransformFromBitReverse(pool[i = (i + 1) & (NTT_POOL - 1)], rootOfUnity, m, &X);
 
     state.SetComplexityN(state.range(0));
 }
@@ -155,14 +172,14 @@ using namespace lbcrypto;
     NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
+    auto pool = MakeNTTPool(n, modulusQ);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
+    uint32_t i = 0;
     for (auto _ : state)
-        crtFTT.ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
+        crtFTT.ForwardTransformToBitReverseInPlace(rootOfUnity, m, &pool[i = (i + 1) & (NTT_POOL - 1)]);
 
     state.SetComplexityN(state.range(0));
 }
@@ -174,14 +191,14 @@ using namespace lbcrypto;
     NativeInteger modulusQ(LastPrime<NativeInteger>(MAX_MODULUS_SIZE, m));
     NativeInteger rootOfUnity = RootOfUnity(m, modulusQ);
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeVector x = dug.GenerateVector(n, modulusQ);
+    auto pool = MakeNTTPool(n, modulusQ);
 
     ChineseRemainderTransformFTT<NativeVector> crtFTT;
     crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
+    uint32_t i = 0;
     for (auto _ : state)
-        crtFTT.InverseTransformFromBitReverseInPlace(rootOfUnity, m, &x);
+        crtFTT.InverseTransformFromBitReverseInPlace(rootOfUnity, m, &pool[i = (i + 1) & (NTT_POOL - 1)]);
 
     state.SetComplexityN(state.range(0));
 }
@@ -206,12 +223,14 @@ using namespace lbcrypto;
     KeyPair<DCRTPoly> keyPair;
     keyPair = cc->KeyGen();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
 
-// TODO: revisit this?
 [[maybe_unused]] void BFVrns_EvalAtIndexKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext();
 
@@ -223,7 +242,10 @@ using namespace lbcrypto;
         indexList[i] = 1;
     }
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        state.ResumeTiming();
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
@@ -405,7 +427,10 @@ using namespace lbcrypto;
     KeyPair<DCRTPoly> keyPair;
     keyPair = cc->KeyGen();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
@@ -421,7 +446,10 @@ using namespace lbcrypto;
         indexList[i] = 1;
     }
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        state.ResumeTiming();
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
@@ -434,7 +462,7 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts[i] = 1.001 * i;
+        vectorOfInts[i] = benchRandReal();
     }
 
     auto plaintext = cc->MakeCKKSPackedPlaintext(vectorOfInts);
@@ -452,7 +480,7 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
 
     auto plaintext1  = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
@@ -474,9 +502,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -497,9 +528,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -520,9 +554,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -546,9 +583,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -572,9 +612,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -598,9 +641,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -628,9 +674,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -654,7 +703,7 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts[i] = 1.001 * i;
+        vectorOfInts[i] = benchRandReal();
     }
 
     auto plaintext          = cc->MakeCKKSPackedPlaintext(vectorOfInts);
@@ -686,9 +735,12 @@ using namespace lbcrypto;
     uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vectorOfInts1(slots);
     for (uint32_t i = 0; i < slots; i++) {
-        vectorOfInts1[i] = 1.001 * i;
+        vectorOfInts1[i] = benchRandReal();
     }
-    std::vector<std::complex<double>> vectorOfInts2(vectorOfInts1);
+    std::vector<std::complex<double>> vectorOfInts2(slots);
+    for (uint32_t i = 0; i < slots; i++) {
+        vectorOfInts2[i] = benchRandReal();
+    }
 
     auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts2);
@@ -741,7 +793,10 @@ using namespace lbcrypto;
     KeyPair<DCRTPoly> keyPair;
     keyPair = cc->KeyGen();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 }
@@ -757,7 +812,10 @@ using namespace lbcrypto;
         indexList[i] = 1;
     }
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        state.ResumeTiming();
         cc->EvalAtIndexKeyGen(keyPair.secretKey, indexList);
     }
 }
@@ -1013,6 +1071,89 @@ using namespace lbcrypto;
 }
 
 // BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 1<<16)->Complexity(benchmark::oAuto);
+
+// ---------------------------------------------------------------------------------------
+
+[[maybe_unused]] void CKKSrns_ApproxSwitchCRTBasis(benchmark::State& state) {
+    CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
+    KeyPair<DCRTPoly> keyPair  = cc->KeyGen();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+    uint32_t slots          = cc->GetEncodingParams()->GetBatchSize();
+    std::vector<std::complex<double>> vals(slots);
+
+    constexpr uint32_t KS_POOL = 4;
+    std::vector<DCRTPoly> parts;
+    parts.reserve(KS_POOL);
+    uint32_t sizeQl = 0, sizePartQl = 0;
+    for (uint32_t k = 0; k < KS_POOL; ++k) {
+        for (uint32_t i = 0; i < slots; i++)
+            vals[i] = benchRandReal();
+        auto c = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(vals))->GetElements()[0];
+        sizeQl = c.GetNumOfElements();
+        DCRTPoly partsCt(cryptoParams->GetParamsPartQ(0), Format::EVALUATION, false);
+        sizePartQl = partsCt.GetNumOfElements();
+        if (sizePartQl > sizeQl) {
+            state.SkipWithError("digit part larger than the ciphertext at this depth");
+            return;
+        }
+        for (uint32_t i = 0; i < sizePartQl; ++i)
+            partsCt.SetElementAtIndex(i, c.GetElementAtIndex(i));
+        partsCt.SetFormat(Format::COEFFICIENT);
+        parts.push_back(std::move(partsCt));
+    }
+
+    uint32_t i = 0;
+    while (state.KeepRunning()) {
+        i        = (i + 1) & (KS_POOL - 1);
+        auto out = parts[i].ApproxSwitchCRTBasis(
+            cryptoParams->GetParamsPartQ(0), cryptoParams->GetParamsComplPartQ(sizeQl - 1, 0),
+            cryptoParams->GetPartQlHatInvModq(0, sizePartQl - 1),
+            cryptoParams->GetPartQlHatInvModqPrecon(0, sizePartQl - 1), cryptoParams->GetPartQlHatModp(sizeQl - 1, 0),
+            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, 0));
+        auto sink = out.GetElementAtIndex(0)[0];
+        benchmark::DoNotOptimize(sink);
+    }
+}
+
+[[maybe_unused]] void CKKSrns_ApproxModDown(benchmark::State& state) {
+    CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
+    KeyPair<DCRTPoly> keyPair  = cc->KeyGen();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+    uint32_t slots          = cc->GetEncodingParams()->GetBatchSize();
+    std::vector<std::complex<double>> vals(slots);
+    for (uint32_t k = 0; k < slots; k++)
+        vals[k] = benchRandReal();
+
+    auto c               = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(vals))->GetElements()[0];
+    const auto paramsQl  = c.GetParams();
+    const auto paramsQlP = c.GetExtendedCRTBasis(cryptoParams->GetParamsP());
+
+    constexpr uint32_t KS_POOL = 4;
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    std::vector<DCRTPoly> ext;
+    ext.reserve(KS_POOL);
+    for (uint32_t k = 0; k < KS_POOL; ++k)
+        ext.emplace_back(dug, paramsQlP, Format::COEFFICIENT);
+
+    const NativeInteger t(0);
+    uint32_t i = 0;
+    while (state.KeepRunning()) {
+        i         = (i + 1) & (KS_POOL - 1);
+        auto out  = ext[i].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                         cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                         cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                         cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                         cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+        auto sink = out.GetElementAtIndex(0)[0];
+        benchmark::DoNotOptimize(sink);
+    }
+}
+
+BENCHMARK(CKKSrns_ApproxSwitchCRTBasis)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
+BENCHMARK(CKKSrns_ApproxModDown)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);
+
 BENCHMARK(NativeNTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);          // ->Complexity(benchmark::oAuto);
 BENCHMARK(NativeINTT)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);         // ->Complexity(benchmark::oAuto);
 BENCHMARK(NativeNTTInPlace)->Unit(benchmark::kMicrosecond)->Apply(RingArgs);   // ->Complexity(benchmark::oAuto);

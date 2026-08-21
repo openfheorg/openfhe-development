@@ -12,6 +12,7 @@
 #cmakedefine WITH_TCM
 #cmakedefine WITH_OPENMP
 #cmakedefine WITH_NATIVEOPT
+#cmakedefine WITH_NUMA_INTERLEAVE
 
 #cmakedefine CKKS_M_FACTOR @CKKS_M_FACTOR@
 #cmakedefine PARTIAL_SUM_RADIX @PARTIAL_SUM_RADIX@

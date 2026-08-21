@@ -201,15 +201,6 @@ public:
    * @return the format, either COEFFICIENT or EVALUATION
    */
     Format GetFormat() const override = 0;
-    //    return this->GetDerived().GetFormat();
-
-    /**
-   * @brief returns the parameters of the element.
-   * @return the element parameter set.
-   */
-    const std::shared_ptr<Params>& GetParams() const {
-        return this->GetDerived().GetParams();
-    }
 
     /**
    * @brief returns the element's cyclotomic order
@@ -239,9 +230,7 @@ public:
    * @brief returns the element's root of unity.
    * @return the element's root of unity.
    */
-    // TODO: this doesn't look right
-    const BigIntType GetRootOfUnity() const {
-        //        return BigIntType(0);
+    const BigIntType& GetRootOfUnity() const {
         return this->GetDerived().GetParams()->GetRootOfUnity();
     }
 
@@ -519,7 +508,6 @@ public:
    * @return is the result of the addition.
    */
     DerivedType Plus(const DerivedType& rhs) const override = 0;
-    //    return this->GetDerived().Plus(rhs);
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -528,7 +516,6 @@ public:
    * @return is the result of the multiplication.
    */
     DerivedType Times(const DerivedType& rhs) const override = 0;
-    //    return this->GetDerived().Times(rhs);
 
     /**
    * @brief Performs a subtraction operation and returns the result.

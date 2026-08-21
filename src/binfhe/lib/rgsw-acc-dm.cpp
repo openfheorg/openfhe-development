@@ -100,7 +100,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
         result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
-        tmp = result[i][0];
+        tmp          = result[i][0];
         tmp.SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (!isReducedMM)
@@ -136,10 +136,10 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
     acc->GetElements()[0]                          = (dct[0] * ev[0][0]);
     for (uint32_t l = 1; l < digitsG2; ++l)
-        acc->GetElements()[0] += (dct[l] * ev[l][0]);
+        acc->GetElements()[0].MultAccEqNoCheck(dct[l], ev[l][0]);
     acc->GetElements()[1] = (dct[0] *= ev[0][1]);
     for (uint32_t l = 1; l < digitsG2; ++l)
-        acc->GetElements()[1] += (dct[l] *= ev[l][1]);
+        acc->GetElements()[1].MultAccEqNoCheck(dct[l], ev[l][1]);
 }
 
 };  // namespace lbcrypto

@@ -99,9 +99,14 @@ int64_t DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<d
 
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
+    return GenerateInt(PseudoRandomNumberGenerator::GetPRNG());
+}
+
+template <typename VecType>
+int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt(PRNG& g) const {
     // we need to use the binary uniform generator rather than regular continuous
     // distribution; see DG14 for details
-    double seed = std::uniform_real_distribution<double>(0.0, 1.0)(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
+    double seed = std::uniform_real_distribution<double>(0.0, 1.0)(g) - 0.5;
     double tmp  = std::abs(seed) - m_a / 2;
     return (tmp <= 0.0) ? 0 : FindInVector(m_vals, tmp) * (seed > 0.0 ? 1 : -1);
 }
@@ -109,8 +114,9 @@ int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
 template <typename VecType>
 std::vector<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(uint32_t size) const {
     std::vector<int64_t> ans(size);
+    auto& g = PseudoRandomNumberGenerator::GetPRNG();
     for (uint32_t i = 0; i < size; ++i)
-        ans[i] = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
+        ans[i] = m_peikert ? GenerateInt(g) : GenerateIntegerKarney(0, m_std, g);
     return ans;
 }
 
@@ -125,8 +131,9 @@ template <typename VecType>
 VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(uint32_t size,
                                                                const typename VecType::Integer& modulus) const {
     VecType ans(size, modulus);
+    auto& g = PseudoRandomNumberGenerator::GetPRNG();
     for (uint32_t i = 0; i < size; ++i) {
-        auto val = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
+        auto val = m_peikert ? GenerateInt(g) : GenerateIntegerKarney(0, m_std, g);
         ans[i]   = (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
     }
     return ans;
@@ -183,10 +190,13 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev) {
+    return GenerateIntegerKarney(mean, stddev, PseudoRandomNumberGenerator::GetPRNG());
+}
+
+template <typename VecType>
+int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev, PRNG& g) {
     std::uniform_int_distribution<int64_t> uniform_sign(0, 1);
     std::uniform_int_distribution<int64_t> uniform_j(0, std::ceil(stddev) - 1);
-
-    PRNG& g = PseudoRandomNumberGenerator::GetPRNG();
 
     while (true) {
         // STEP D1

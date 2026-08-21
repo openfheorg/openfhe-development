@@ -52,7 +52,7 @@ If an alternative parallelization mechanism is used, e.g., pthreads, C++11 threa
 OpenFHE allocates and frees many large polynomial buffers (~0.5–30 MB each) throughout normal operation. Under the default allocator policy, freed buffers of this size are returned to the OS as soon as they are released, resulting in many page faults when new buffers are requested in subsequent operations.
 When operations run back to back, this allocate / return / re-fault churn adds substantial page-fault and kernel overhead, resulting in reduced performance.
 
-To combat this, OpenFHE modifies the default policy at library load to keep large allocations on the heap and never return them to the OS. Freed buffers stay resident and are reused by subsequent allocation requests instead of being re-acquired from the OS (similar behaviour to a memory pool), which minimizes page faults and the associated performance penalty. This is applied automatically and requires no user action.
+To avoid this, OpenFHE modifies the default policy at library load to keep large allocations on the heap and never return them to the OS. Freed buffers stay resident and are reused by subsequent allocation requests instead of being re-acquired from the OS (similar behaviour to a memory pool), which minimizes page faults and the associated performance penalty. This is applied automatically and requires no user action.
 
 The trade-off is that a process's resident set size (RSS) reflects its **peak** transient allocation rather than its steady-state working set — e.g., a process that runs `EvalBootstrap` and then idles keeps that peak footprint rather than releasing it.
 
@@ -64,6 +64,21 @@ lbcrypto::AllocTrim();   // return free heap memory to the OS
 ```
 
 Call `AllocTrim()` at a quiescent point after large, transient-footprint work has completed and its buffers have been freed (e.g., after a loop over `EvalBootstrap`, or once a batch of operations finishes) and before the process idles; calling it mid-computation is wasteful, since the heap will simply re-grow on the next allocation. OpenFHE invokes `AllocTrim()` automatically on context teardown (`ReleaseAllContexts()`, `ClearStaticMapsAndVectors()`) but deliberately **not** after individual operations, since only the application knows when it has reached a genuinely low-footprint point.
+
+# NUMA Memory Placement
+
+On a multi-socket machine the Linux default is *first-touch*: a page is placed on the memory of whichever node first writes to it. OpenFHE allocates its long-lived, read-mostly structures — evaluation and rotation keys, and the bootstrapping precomputation tables — once during setup, usually from a single thread. Under first-touch those pages all land on one node, and for the rest of the run every worker thread on the other node reads them across the interconnect.
+
+To avoid this, OpenFHE sets an interleaved memory policy at library load, spreading pages across the nodes the process is allowed to use. On a dual-socket Xeon, CKKS bootstrapping (ring dimension 2^16, 36 threads) runs about 13% faster with interleaving than with the default policy.
+
+The policy is deliberately conservative:
+
+- it does nothing unless the process may use more than one NUMA node, so single-socket machines are unaffected.
+- it does nothing in single-threaded use — builds with `WITH_OPENMP=OFF`, or runs with `OMP_NUM_THREADS=1`, keep the default first-touch placement.
+- it never overrides a policy that has already been set, so `numactl --membind=...`, `--interleave=...`, and container or cpuset policies supersede.
+- it applies process-wide (like the allocator tuning above), which is worth knowing when embedding OpenFHE in a larger application.
+
+Set the environment variable `OPENFHE_NUMA_INTERLEAVE=0` to disable it at runtime, or build with `-DWITH_NUMA_INTERLEAVE=OFF` to compile it out. Non-Linux platforms are unaffected.
 
 # Accelerating OpenFHE using Specialized Hardware Backends #
 

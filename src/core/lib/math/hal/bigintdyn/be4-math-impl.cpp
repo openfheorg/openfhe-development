@@ -43,6 +43,12 @@
     #include "math/matrix-impl.h"
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
+    #include "math/hal/bigintdyn/transformdyn-impl.h"
+
+template class bigintdyn::NumberTheoreticTransformDyn<bigintdyn::BigVector>;
+template class bigintdyn::ChineseRemainderTransformFTTDyn<bigintdyn::BigVector>;
+template class bigintdyn::BluesteinFFTDyn<bigintdyn::BigVector>;
+template class bigintdyn::ChineseRemainderTransformArbDyn<bigintdyn::BigVector>;
 
 namespace lbcrypto {
 

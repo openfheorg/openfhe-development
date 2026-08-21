@@ -75,7 +75,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 
     NativeInteger MNative(M);
 
-    auto logGen = params->GetLogGen();
+    const auto& logGen = params->GetLogGen();
     std::unordered_map<int32_t, std::vector<int32_t>> permuteMap;
 
     for (size_t i = 0; i < n; i++) {  // put ail a_i in the permuteMap
@@ -83,12 +83,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
         int32_t aIOdd = NativeInteger(0).ModSubFast(a[i], MNative).ConvertToInt<uint32_t>() | 0x1;
         int32_t index = logGen[aIOdd];
 
-        if (permuteMap.find(index) == permuteMap.end()) {
-            std::vector<int32_t> indexVec;
-            permuteMap[index] = indexVec;
-        }
-        auto& indexVec = permuteMap[index];
-        indexVec.push_back(i);
+        permuteMap[index].push_back(i);
     }
 
     NativeInteger gen(5);
@@ -98,12 +93,13 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 
     // for a_j = -5^i
     for (uint32_t i = Nh - 1; i > 0; i--) {
-        if (permuteMap.find(-i) != permuteMap.end()) {
+        auto it = permuteMap.find(-i);
+        if (it != permuteMap.end()) {
             if (nSkips != 0) {  // Rotation by 5^nSkips
                 Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
                 nSkips = 0;
             }
-            auto& indexVec = permuteMap[-i];
+            auto& indexVec = it->second;
             for (size_t j = 0; j < indexVec.size(); j++) {
                 AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
             }
@@ -117,8 +113,9 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     }
 
     // for -1
-    if (permuteMap.find(M) != permuteMap.end()) {
-        auto& indexVec = permuteMap[M];
+    auto itM = permuteMap.find(M);
+    if (itM != permuteMap.end()) {
+        auto& indexVec = itM->second;
         for (size_t j = 0; j < indexVec.size(); j++) {
             AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
         }
@@ -127,13 +124,14 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     Automorphism(params, NativeInteger(M - genInt), (*ek)[0][1][0], acc);
     // for a_j = 5^i
     for (size_t i = Nh - 1; i > 0; i--) {
-        if (permuteMap.find(i) != permuteMap.end()) {
+        auto it = permuteMap.find(i);
+        if (it != permuteMap.end()) {
             if (nSkips != 0) {  // Rotation by 5^nSkips
                 Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
                 nSkips = 0;
             }
 
-            auto& indexVec = permuteMap[i];
+            auto& indexVec = it->second;
             for (size_t j = 0; j < indexVec.size(); j++) {
                 AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
             }
@@ -147,8 +145,9 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     }
 
     // for 0
-    if (permuteMap.find(0) != permuteMap.end()) {
-        auto& indexVec = permuteMap[0];
+    auto it0 = permuteMap.find(0);
+    if (it0 != permuteMap.end()) {
+        auto& indexVec = it0->second;
         for (size_t j = 0; j < indexVec.size(); j++) {
             AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
         }
@@ -182,7 +181,7 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<Ri
     NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
         result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
-        tmp = result[i][0];
+        tmp          = result[i][0];
         tmp.SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (!isReducedMM)  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
@@ -239,10 +238,10 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
     const auto& ev        = ek->GetElements();
     acc->GetElements()[0] = (dct[0] * ev[0][0]);
     for (uint32_t d = 1; d < digitsG2; ++d)
-        acc->GetElements()[0] += (dct[d] * ev[d][0]);
+        acc->GetElements()[0].MultAccEqNoCheck(dct[d], ev[d][0]);
     acc->GetElements()[1] = (dct[0] *= ev[0][1]);
     for (uint32_t d = 1; d < digitsG2; ++d)
-        acc->GetElements()[1] += (dct[d] *= ev[d][1]);
+        acc->GetElements()[1].MultAccEqNoCheck(dct[d], ev[d][1]);
 }
 
 // Automorphism
@@ -273,9 +272,9 @@ void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCrypto
     // acc = dct * input (matrix product);
     const auto& ev = ak->GetElements();
     for (uint32_t d = 0; d < digitsG; ++d)
-        acc->GetElements()[0] += (dcta[d] * ev[d][0]);
+        acc->GetElements()[0].MultAccEqNoCheck(dcta[d], ev[d][0]);
     for (uint32_t d = 0; d < digitsG; ++d)
-        acc->GetElements()[1] += (dcta[d] *= ev[d][1]);
+        acc->GetElements()[1].MultAccEqNoCheck(dcta[d], ev[d][1]);
 }
 
 };  // namespace lbcrypto

@@ -87,23 +87,19 @@ constexpr CKKSDataType ckksDataType                        = REAL;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
-constexpr SCHEME scheme                = BFVRNS_SCHEME;
-constexpr PlaintextModulus ptModulus   = 0;
-constexpr uint32_t digitSize           = 0;
-constexpr float standardDeviation      = 3.19f;
-constexpr SecretKeyDist secretKeyDist  = UNIFORM_TERNARY;
-constexpr uint32_t maxRelinSkDeg       = 2;
-constexpr KeySwitchTechnique ksTech    = BV;
-constexpr ScalingTechnique scalTech    = NORESCALE;
-constexpr uint32_t firstModSize        = 0;
-constexpr uint32_t batchSize           = 0;
-constexpr uint32_t numLargeDigits      = 0;
-constexpr uint32_t multiplicativeDepth = 1;
-#if defined(HAVE_INT128) || NATIVEINT != 64
-constexpr uint32_t scalingModSize = 60;
-#else
-constexpr uint32_t scalingModSize = 57;
-#endif
+constexpr SCHEME scheme                                    = BFVRNS_SCHEME;
+constexpr PlaintextModulus ptModulus                       = 0;
+constexpr uint32_t digitSize                               = 0;
+constexpr float standardDeviation                          = 3.19f;
+constexpr SecretKeyDist secretKeyDist                      = UNIFORM_TERNARY;
+constexpr uint32_t maxRelinSkDeg                           = 2;
+constexpr KeySwitchTechnique ksTech                        = BV;
+constexpr ScalingTechnique scalTech                        = NORESCALE;
+constexpr uint32_t firstModSize                            = 0;
+constexpr uint32_t batchSize                               = 0;
+constexpr uint32_t numLargeDigits                          = 0;
+constexpr uint32_t multiplicativeDepth                     = 1;
+constexpr uint32_t scalingModSize                          = 60;
 constexpr SecurityLevel securityLevel                      = HEStd_128_classic;
 constexpr uint32_t ringDim                                 = 0;
 constexpr uint32_t evalAddCount                            = 0;

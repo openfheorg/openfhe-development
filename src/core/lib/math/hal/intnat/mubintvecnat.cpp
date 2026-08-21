@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -82,6 +82,45 @@ static inline T centeredCorrectionLane(T v, T halfQ, T diff) {
 }
 
 template <class IntegerType>
+void NativeVectorT<IntegerType>::GeneralShrinkLoop(IntegerType* dst, const IntegerType* src, size_t size, BasicInt ov,
+                                                   BasicInt nv) {
+    using DInt = typename IntegerType::DNativeInt;
+    const BasicInt halfQ{ov >> 1};
+    const BasicInt diffR{static_cast<BasicInt>((ov - nv) % nv)};
+    if constexpr (sizeof(DInt) > sizeof(BasicInt)) {
+        // e >= 1 is what bounds the quotient estimate to a single correction below
+        const int64_t e{static_cast<int64_t>(lbcrypto::GetMSB(nv)) - 2};
+        if (e >= 1) {
+            // mu = floor(2^(W+e) / nv) fits a word because nv >= 2^(e+1), which is also
+            // DivD's hi < divisor precondition; the estimate never exceeds the true
+            // quotient and falls short of it by at most one
+            const BasicInt mu{IntegerType::DivD(BasicInt(1) << e, 0, nv)};
+            for (size_t i = 0; i < size; ++i) {
+                const BasicInt v{src[i].m_value};
+                BasicInt av{v};
+                // kept as a branch, not folded into the reduction: callers are uniform in
+                // which way it goes (a near-equal shrink skips every element, a deep one
+                // reduces every element), so it predicts and the near-equal case pays nothing
+                if (av >= nv) {
+                    av -= static_cast<BasicInt>(IntegerType::MultDHi(v, mu) >> e) * nv;
+                    if (av >= nv)
+                        av -= nv;
+                }
+                dst[i].m_value = modSubLane(av, centeredCorrectionLane(v, halfQ, diffR), nv);
+            }
+            return;
+        }
+    }
+    for (size_t i = 0; i < size; ++i) {
+        const BasicInt v{src[i].m_value};
+        BasicInt av{v};
+        if (av >= nv)
+            av %= nv;
+        dst[i].m_value = modSubLane(av, centeredCorrectionLane(v, halfQ, diffR), nv);
+    }
+}
+
+template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<std::string> rhs) noexcept
     : m_modulus{modulus}, m_data(length) {
@@ -146,8 +185,35 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
  *    i > om/2 i' = i-delta
  */
 template <class IntegerType>
+NativeVectorT<IntegerType>::NativeVectorT(const NativeVectorT& v, const IntegerType& modulus) noexcept
+    : m_data(v.m_data.size()) {
+    // same three branches as SwitchModulus below, reading from v instead of in place
+    this->SetModulus(modulus);
+    const auto ov{v.m_modulus.m_value};
+    const auto nv{modulus.m_value};
+    const auto halfQ{ov >> 1};
+    const size_t size{m_data.size()};
+    if (nv > ov) {
+        const auto diff{nv - ov};
+        for (size_t i = 0; i < size; ++i) {
+            const auto x{v.m_data[i].m_value};
+            m_data[i].m_value = x + centeredCorrectionLane(x, halfQ, diff);
+        }
+    }
+    else if (nv > halfQ) {
+        const auto diff{ov - nv};
+        for (size_t i = 0; i < size; ++i) {
+            const auto x{v.m_data[i].m_value};
+            m_data[i].m_value = x - centeredCorrectionLane(x, halfQ, diff);
+        }
+    }
+    else {
+        GeneralShrinkLoop(m_data.data(), v.m_data.data(), size, ov, nv);
+    }
+}
+
+template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
-    // TODO: #ifdef NATIVEINT_BARRET_MOD
     const auto ov{m_modulus.m_value};
     const auto nv{modulus.m_value};
     const auto halfQ{ov >> 1};
@@ -165,17 +231,7 @@ void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
             m_data[i].m_value -= centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
     }
     else {
-        // general shrink: values need full reduction; the subtrahend only takes the
-        // values {diff, 0}, so reduce it once instead of per element inside ModSubEq
-        const auto diffR{(ov - nv) % nv};
-        for (size_t i = 0; i < size; ++i) {
-            const auto v{m_data[i].m_value};
-            auto av{v};
-            if (av >= nv)
-                av %= nv;
-            const auto bv{(v > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
-            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
-        }
+        GeneralShrinkLoop(m_data.data(), m_data.data(), size, ov, nv);
     }
     this->SetModulus(modulus);
 }
@@ -220,24 +276,55 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModEq(const IntegerType&
         for (size_t i = 0; i < size; ++i)
             m_data[i].m_value += centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
     }
+    else if (nv > halfQ) {
+        // new modulus within 2x of the old one: every value is below ov by the class
+        // invariant, so a single conditional subtract fully reduces it
+        const auto diff{ov - nv};
+        for (size_t i = 0; i < size; ++i)
+            m_data[i].m_value -= centeredCorrectionLane(m_data[i].m_value, halfQ, diff);
+    }
     else {
-        const auto diffR{(ov - nv) % nv};
-        for (size_t i = 0; i < size; ++i) {
-            const auto v{m_data[i].m_value};
-            auto av{v};
-            if (av >= nv)
-                av %= nv;
-            const auto bv{(v > halfQ) ? diffR : static_cast<decltype(diffR)>(0)};
-            m_data[i].m_value = (av < bv) ? av + nv - bv : av - bv;
+        GeneralShrinkLoop(m_data.data(), m_data.data(), size, ov, nv);
+    }
+    return *this;
+}
+
+template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModReduceEq() {
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(BasicInt)) {
+        const int64_t e{static_cast<int64_t>(lbcrypto::GetMSB(mv)) - 2};
+        if (e >= 1) {
+            const BasicInt mu{IntegerType::DivD(BasicInt(1) << e, 0, mv)};
+            for (size_t i = 0; i < size; ++i) {
+                const BasicInt v{m_data[i].m_value};
+                if (v < mv)
+                    continue;
+                BasicInt av{v - static_cast<BasicInt>(IntegerType::MultDHi(v, mu) >> e) * mv};
+                m_data[i].m_value = (av >= mv) ? av - mv : av;
+            }
+            return *this;
         }
+    }
+    for (size_t i = 0; i < size; ++i) {
+        if (m_data[i].m_value >= mv)
+            m_data[i].m_value %= mv;
     }
     return *this;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const IntegerType& b) const {
-    auto ans(*this);
-    ans.ModAddEq(b);
+    auto mv{m_modulus.m_value};
+    auto bv{b};
+    if (bv.m_value >= mv)
+        bv.ModEq(m_modulus);
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modAddLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
 }
 
@@ -268,9 +355,22 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddAtIndexEq(size_t i
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVectorT& b) const {
+    if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
+        OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
+#if defined(__clang__)
+    // clang fuses the copy into the op loop; the single-pass form pays the result's
+    // zero-init as a separate pass and loses 4-6% (gcc does not fuse and wins single-pass)
     auto ans(*this);
     ans.ModAddEq(b);
     return ans;
+#else
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modAddLane(m_data[i].m_value, b.m_data[i].m_value, mv);
+    return ans;
+#endif
 }
 
 template <class IntegerType>
@@ -286,8 +386,14 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const NativeVec
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const IntegerType& b) const {
-    auto ans(*this);
-    ans.ModSubEq(b);
+    auto mv{m_modulus.m_value};
+    auto bv{b};
+    if (bv.m_value >= mv)
+        bv.ModEq(m_modulus);
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modSubLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
 }
 
@@ -305,9 +411,20 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const IntegerTy
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVectorT& b) const {
+    if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
+        OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
+#if defined(__clang__)
     auto ans(*this);
     ans.ModSubEq(b);
     return ans;
+#else
+    const auto mv{m_modulus.m_value};
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = modSubLane(m_data[i].m_value, b.m_data[i].m_value, mv);
+    return ans;
+#endif
 }
 
 template <class IntegerType>
@@ -325,13 +442,21 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType& b) const {
     auto mv{m_modulus};
     auto bv{b};
-    auto ans(*this);
     if (bv.m_value >= mv.m_value)
         bv.ModEq(mv);
     auto bconst{bv.PrepModMulConst(mv)};
+#if defined(__clang__)
+    auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].ModMulFastConstEq(bv, mv, bconst);
+        ans.m_data[i].ModMulFastConstEq(bv, mv, bconst);
     return ans;
+#else
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i] = m_data[i].ModMulFastConst(bv, mv, bconst);
+    return ans;
+#endif
 }
 
 template <class IntegerType>
@@ -350,17 +475,9 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto ans(*this);
-    uint32_t size(m_data.size());
-    auto mv{m_modulus};
-#ifdef NATIVEINT_BARRET_MOD
-    auto mu{m_modulus.ComputeMu()};
-    for (uint32_t i = 0; i < size; ++i)
-        ans[i].ModMulFastEq(b[i], mv, mu);
-#else
-    for (uint32_t i = 0; i < size; ++i)
-        ans[i].ModMulFastEq(b[i], mv);
-#endif
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    BarrettModMulLoop(ans.m_data.data(), m_data.data(), b.m_data.data(), size, m_modulus);
     return ans;
 }
 
@@ -368,25 +485,17 @@ template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const NativeVectorT& b) {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto mv{m_modulus};
-    size_t size{m_data.size()};
-#ifdef NATIVEINT_BARRET_MOD
-    auto mu{m_modulus.ComputeMu()};
-    for (size_t i = 0; i < size; ++i)
-        m_data[i].ModMulFastEq(b[i], mv, mu);
-#else
-    for (size_t i = 0; i < size; ++i)
-        m_data[i].ModMulFastEq(b[i], mv);
-#endif
+    BarrettModMulLoop(m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
     return *this;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModByTwo() const {
-    auto ans(*this);
     auto halfQ{m_modulus.m_value >> 1};
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = 0x1 & (ans[i].m_value ^ (ans[i].m_value > halfQ));
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = 0x1 & (m_data[i].m_value ^ (m_data[i].m_value > halfQ));
     return ans;
 }
 
@@ -421,9 +530,10 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
-    auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = ans[i].m_value * b[i].m_value;
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = m_data[i].m_value * b.m_data[i].m_value;
     return ans;
 }
 
@@ -559,11 +669,127 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(ui
     uint32_t shift{(index - 1) * digitLen};
     if (shift >= IntegerType::MaxBits())
         return NativeVectorT(m_data.size(), m_modulus);
-    auto ans(*this);
     const auto mask = static_cast<BasicInt>((uint64_t{1} << digitLen) - 1);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i].m_value = (ans[i].m_value >> shift) & mask;
+    const size_t size{m_data.size()};
+    NativeVectorT ans(size, m_modulus);
+    for (size_t i = 0; i < size; ++i)
+        ans.m_data[i].m_value = (m_data[i].m_value >> shift) & mask;
     return ans;
+}
+
+template <class IntegerType>
+void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size,
+                                                   const IntegerType& modulus) {
+    using NInt = decltype(modulus.m_value);
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+        const NInt mv{modulus.m_value};
+        const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+        const NInt mu{modulus.ComputeMu().m_value};
+        for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+            DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+            NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+            NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+            typename IntegerType::typeD prod;
+            IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+            NInt r{prod.lo};
+            IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+            r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+            if (r >= mv)
+                r -= mv;
+            a[i].m_value = r;
+        }
+    }
+    else {
+        const auto mu{modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            a[i].ModMulFastEq(b[i], modulus, mu);
+    }
+}
+
+template <class IntegerType>
+void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b,
+                                                   size_t size, const IntegerType& modulus) {
+    using NInt = decltype(modulus.m_value);
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+        const NInt mv{modulus.m_value};
+        const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+        const NInt mu{modulus.ComputeMu().m_value};
+        for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+            DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+            NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+            NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+            typename IntegerType::typeD prod;
+            IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+            NInt r{prod.lo};
+            IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+            r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+            if (r >= mv)
+                r -= mv;
+            dst[i].m_value = r;
+        }
+    }
+    else {
+        const auto mu{modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            dst[i] = a[i].ModMulFast(b[i], modulus, mu);
+    }
+}
+
+template <class IntegerType>
+void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b,
+                                                    size_t size, const IntegerType& modulus) {
+    using NInt = decltype(modulus.m_value);
+    using DInt = typename IntegerType::DNativeInt;
+    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+        const NInt mv{modulus.m_value};
+        const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+        const NInt mu{modulus.ComputeMu().m_value};
+        for (size_t i = 0; i < size; ++i) {
+#if defined(__clang__) && defined(__AVX2__)
+            DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
+            NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
+            NInt r{static_cast<NInt>(prod) - qhat * mv};
+#else
+            typename IntegerType::typeD prod;
+            IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+            NInt r{prod.lo};
+            IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
+            r -= IntegerType::RShiftD(prod, n + 7) * mv;
+#endif
+            if (r >= mv)
+                r -= mv;
+            NInt t{acc[i].m_value + r};
+            if (t >= mv)
+                t -= mv;
+            acc[i].m_value = t;
+        }
+    }
+    else {
+        const auto mu{modulus.ComputeMu()};
+        for (size_t i = 0; i < size; ++i)
+            acc[i].ModAddFastEq(a[i].ModMulFast(b[i], modulus, mu), modulus);
+    }
+}
+
+template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulNoCheckEq(const NativeVectorT& b) {
+    BarrettModMulLoop(m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
+    return *this;
+}
+
+template <class IntegerType>
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const NativeVectorT& a,
+                                                                         const NativeVectorT& b) {
+    BarrettMultAccLoop(m_data.data(), a.m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
+    return *this;
 }
 
 template class NativeVectorT<NativeInteger>;

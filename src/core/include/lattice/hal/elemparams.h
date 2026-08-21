@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -61,10 +61,21 @@ public:
     constexpr ElemParams() = default;
     virtual ~ElemParams()  = default;
 
+    ElemParams(uint32_t order, const IntegerType& ctModulus)
+        : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
+          m_cyclotomicOrder(order),
+          m_ciphertextModulus(ctModulus) {}
+
+    ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity)
+        : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
+          m_cyclotomicOrder(order),
+          m_ciphertextModulus(ctModulus),
+          m_rootOfUnity(rUnity) {}
+
     /**
-   * @brief Simple constructor method that takes as input root of unity, big
-   * root of unity, cyclotomic order and the ciphertext modulus and big
-   * ciphertext Modulus.  This is used for bit-packing operations.
+   * @brief Constructor taking the cyclotomic order, the ciphertext modulus and
+   * root of unity, and the big ciphertext modulus and big root of unity used
+   * for bit-packing operations.
    * @param order the cyclotomic order wrapped by the parameter set.
    * @param ctModulus the ciphertext modulus wrapped by the parameter set.
    * @param rUnity the root of unity.
@@ -72,76 +83,19 @@ public:
    * operations.
    * @param bigRUnity the big root of unity used for bit packing operations.
    */
-
-    // TODO: uint32_t version of GetTotient
-
-    ElemParams(uint32_t order, const IntegerType& ctModulus)
-        : m_ringDimension(GetTotient(order)), m_cyclotomicOrder(order), m_ciphertextModulus(ctModulus) {}
-
-    ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity)
-        : m_ringDimension(GetTotient(order)),
-          m_cyclotomicOrder(order),
-          m_ciphertextModulus(ctModulus),
-          m_rootOfUnity(rUnity) {}
-
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity, const IntegerType& bigCtModulus,
                const IntegerType& bigRUnity)
-        : m_ringDimension(GetTotient(order)),
+        : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus),
           m_rootOfUnity(rUnity),
           m_bigCiphertextModulus(bigCtModulus),
           m_bigRootOfUnity(bigRUnity) {}
 
-    /**
-   * @brief Copy constructor using assignment to copy wrapped elements.
-   * @param rhs the input ElemParams copied.
-   * @return the resulting parameter set with parameters copied.
-   */
-    ElemParams(const ElemParams& rhs)
-        : m_ringDimension(rhs.m_ringDimension),
-          m_cyclotomicOrder(rhs.m_cyclotomicOrder),
-          m_ciphertextModulus(rhs.m_ciphertextModulus),
-          m_rootOfUnity(rhs.m_rootOfUnity),
-          m_bigCiphertextModulus(rhs.m_bigCiphertextModulus),
-          m_bigRootOfUnity(rhs.m_bigRootOfUnity) {}
-
-    /**
-   * @brief Copy constructor using move semnantics to copy wrapped elements.
-   * @param rhs the input ElemParams copied.
-   * @return the resulting copy of the parameter set.
-   */
-    ElemParams(ElemParams&& rhs) noexcept
-        : m_ringDimension(rhs.m_ringDimension),
-          m_cyclotomicOrder(rhs.m_cyclotomicOrder),
-          m_ciphertextModulus(std::move(rhs.m_ciphertextModulus)),
-          m_rootOfUnity(std::move(rhs.m_rootOfUnity)),
-          m_bigCiphertextModulus(std::move(rhs.m_bigCiphertextModulus)),
-          m_bigRootOfUnity(std::move(rhs.m_bigRootOfUnity)) {}
-
-    /**
-   * @brief Assignment operator using assignment operations of wrapped elements.
-   * @param rhs the ElemParams instance to copy.
-   */
-    ElemParams& operator=(const ElemParams& rhs) {
-        m_ringDimension        = rhs.m_ringDimension;
-        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
-        m_ciphertextModulus    = rhs.m_ciphertextModulus;
-        m_rootOfUnity          = rhs.m_rootOfUnity;
-        m_bigCiphertextModulus = rhs.m_bigCiphertextModulus;
-        m_bigRootOfUnity       = rhs.m_bigRootOfUnity;
-        return *this;
-    }
-
-    ElemParams& operator=(ElemParams&& rhs) noexcept {
-        m_ringDimension        = rhs.m_ringDimension;
-        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
-        m_ciphertextModulus    = std::move(rhs.m_ciphertextModulus);
-        m_rootOfUnity          = std::move(rhs.m_rootOfUnity);
-        m_bigCiphertextModulus = std::move(rhs.m_bigCiphertextModulus);
-        m_bigRootOfUnity       = std::move(rhs.m_bigRootOfUnity);
-        return *this;
-    }
+    ElemParams(const ElemParams& rhs)                = default;
+    ElemParams(ElemParams&& rhs) noexcept            = default;
+    ElemParams& operator=(const ElemParams& rhs)     = default;
+    ElemParams& operator=(ElemParams&& rhs) noexcept = default;
 
     /**
    * @brief Simple getter method for cyclotomic order.

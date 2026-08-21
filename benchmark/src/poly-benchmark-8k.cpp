@@ -40,14 +40,6 @@
 constexpr uint32_t RING_DIM_LOG = 13;
 constexpr uint32_t DCRTBITS     = MAX_MODULUS_SIZE;
 
-class Setup {
-public:
-    Setup() {
-        std::cerr << "Generating polynomials for the benchmark..." << std::endl;
-        GeneratePolys((1 << (RING_DIM_LOG + 1)), DCRTBITS, NativepolysEval, NativepolysCoef);
-        GenerateDCRTPolys((1 << (RING_DIM_LOG + 1)), DCRTBITS, DCRTpolysEval, DCRTpolysCoef);
-        std::cerr << "Polynomials for the benchmark are generated" << std::endl;
-    }
-} TestParameters;
+static PolyBenchParams TestParameters((1 << (RING_DIM_LOG + 1)), DCRTBITS);
 
 BENCHMARK_MAIN();

@@ -36,14 +36,30 @@
 #define _USE_MATH_DEFINES
 
 #include "benchmark/benchmark.h"
+#include "math/discretegaussiangenerator.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/hal/basicint.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
+#include "math/ternaryuniformgenerator.h"
 
 #include <iostream>
+#include <vector>
 
 using namespace lbcrypto;
+
+constexpr size_t VEC_POOL    = 8;
+constexpr size_t VEC_POOL_M1 = VEC_POOL - 1;
+
+template <typename V>
+static std::vector<V> MakeVecPool(uint32_t n, const typename V::Integer& q) {
+    DiscreteUniformGeneratorImpl<V> dug;
+    std::vector<V> pool;
+    pool.reserve(VEC_POOL);
+    for (size_t k = 0; k < VEC_POOL; ++k)
+        pool.push_back(dug.GenerateVector(n, q));
+    return pool;
+}
 
 template <typename V>
 static void add_BigVec(const V& a, const V& b) {
@@ -54,10 +70,12 @@ template <typename V>
 static void BM_BigVec_Add(benchmark::State& state) {
     auto p = state.range(0);
     auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
-    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
-    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    auto a = MakeVecPool<V>(p, q);
+    auto b = MakeVecPool<V>(p, q);
+    size_t i{VEC_POOL_M1};
     while (state.KeepRunning()) {
-        add_BigVec<V>(a, b);
+        i = (i + 1) & VEC_POOL_M1;
+        add_BigVec<V>(a[i], b[i]);
     }
 }
 
@@ -70,10 +88,12 @@ template <typename V>
 static void BM_BigVec_Addeq(benchmark::State& state) {
     auto p = state.range(0);
     auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
-    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
-    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    auto a = MakeVecPool<V>(p, q);
+    auto b = MakeVecPool<V>(p, q);
+    size_t i{VEC_POOL_M1};
+    V acc{a[0]};
     while (state.KeepRunning()) {
-        addeq_BigVec<V>(a, b);
+        addeq_BigVec<V>(acc, b[i = (i + 1) & VEC_POOL_M1]);
     }
 }
 
@@ -86,10 +106,12 @@ template <typename V>
 static void BM_BigVec_Mult(benchmark::State& state) {
     auto p = state.range(0);
     auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
-    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
-    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    auto a = MakeVecPool<V>(p, q);
+    auto b = MakeVecPool<V>(p, q);
+    size_t i{VEC_POOL_M1};
     while (state.KeepRunning()) {
-        mult_BigVec<V>(a, b);
+        i = (i + 1) & VEC_POOL_M1;
+        mult_BigVec<V>(a[i], b[i]);
     }
 }
 
@@ -102,10 +124,45 @@ template <typename V>
 static void BM_BigVec_Multeq(benchmark::State& state) {
     auto p = state.range(0);
     auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
-    V a    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
-    V b    = DiscreteUniformGeneratorImpl<V>().GenerateVector(p, q);
+    auto a = MakeVecPool<V>(p, q);
+    auto b = MakeVecPool<V>(p, q);
+    size_t i{VEC_POOL_M1};
+    V acc{a[0]};
     while (state.KeepRunning()) {
-        multeq_BigVec<V>(a, b);
+        multeq_BigVec<V>(acc, b[i = (i + 1) & VEC_POOL_M1]);
+    }
+}
+
+template <typename V>
+static void BM_Sample_Uniform(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    DiscreteUniformGeneratorImpl<V> dug;
+    while (state.KeepRunning()) {
+        V v = dug.GenerateVector(p, q);
+        benchmark::DoNotOptimize(v[0]);
+    }
+}
+
+template <typename V>
+static void BM_Sample_Ternary(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    TernaryUniformGeneratorImpl<V> tug;
+    while (state.KeepRunning()) {
+        V v = tug.GenerateVector(p, q);
+        benchmark::DoNotOptimize(v[0]);
+    }
+}
+
+template <typename V>
+static void BM_Sample_Gaussian(benchmark::State& state) {
+    auto p = state.range(0);
+    auto q = LastPrime<typename V::Integer>(MAX_MODULUS_SIZE, p);
+    DiscreteGaussianGeneratorImpl<V> dgg(3.19);
+    while (state.KeepRunning()) {
+        V v = dgg.GenerateVector(p, q);
+        benchmark::DoNotOptimize(v[0]);
     }
 }
 
@@ -122,6 +179,9 @@ DO_VECTOR_BENCHMARK(BM_BigVec_Add, NativeVector)
 DO_VECTOR_BENCHMARK(BM_BigVec_Addeq, NativeVector)
 DO_VECTOR_BENCHMARK(BM_BigVec_Mult, NativeVector)
 DO_VECTOR_BENCHMARK(BM_BigVec_Multeq, NativeVector)
+DO_VECTOR_BENCHMARK(BM_Sample_Uniform, NativeVector)
+DO_VECTOR_BENCHMARK(BM_Sample_Ternary, NativeVector)
+DO_VECTOR_BENCHMARK(BM_Sample_Gaussian, NativeVector)
 
 #ifdef WITH_BE2
 DO_VECTOR_BENCHMARK(BM_BigVec_Add, M2Vector)

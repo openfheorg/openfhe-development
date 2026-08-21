@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -126,7 +126,6 @@ public:
    * (arbitrary cyclotomics).
    * @param rootsOfUnityBig the list of the roots of unity of the component
    * polynomials for big moduli (arbitrary cyclotomics).
-   * @return
    */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
                  const std::vector<NativeInteger>& rootsOfUnity)
@@ -187,7 +186,6 @@ public:
    * @param corder the primary cyclotomic order.  This is not checked
    * against the component moduli.
    * @param params the componet parameters.
-   * @return
    */
     ILDCRTParams(uint32_t corder, const std::vector<std::shared_ptr<ILNativeParams>>& params)
         : ElemParams<IntType>(corder, 0), m_params(params) {

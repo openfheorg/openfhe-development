@@ -212,6 +212,7 @@ void ModSwitch(ConstCiphertext<DCRTPoly> ctxt, Ciphertext<DCRTPoly>& ctxtKS, Nat
         OPENFHE_THROW("ModSwitch is implemented only for ciphertext with one tower.");
 
     std::vector<DCRTPoly> resultElements;
+    resultElements.reserve(ctxt->GetElements().size());
     const auto& paramsQlP = ctxtKS->GetElements()[0].GetParams();
     for (const auto& elem : ctxt->GetElements()) {
         auto& ref = resultElements.emplace_back(paramsQlP, Format::COEFFICIENT, true);
@@ -1253,7 +1254,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
 
     // Compute indices for rotations for sparse packing
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots) - 1);
+        indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots));
         for (uint32_t i = 1; i < ringDim / 2; i <<= 1) {
             indexRotationS2C.emplace_back(static_cast<int32_t>(i));
             if (i <= slots)

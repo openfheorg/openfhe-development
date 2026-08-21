@@ -461,7 +461,7 @@ protected:
 
             for (uint32_t i = 0; i < cPoly.GetRingDimension(); i++) {
                 if ((cPoly[i] > Q1quart) && (cPoly[i] <= Q3quart))
-                    cPoly[i].ModAdd(Qhalf, Q);
+                    cPoly[i].ModAddEq(Qhalf, Q);
             }
 
             EXPECT_TRUE(cPoly == cPolyRNSInterpolated)

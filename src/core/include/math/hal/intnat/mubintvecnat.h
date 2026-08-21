@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -40,7 +40,6 @@
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
 
-#include "utils/blockAllocator/xvector.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
@@ -52,19 +51,12 @@
 #include <utility>
 #include <vector>
 
-// the following should be set to 1 in order to have native vector use block
-// allocations then determine if you want dynamic or static allocations by
-// settingdefining STAIC_POOLS on line 24 of
-// xallocator.cpp
-#define BLOCK_VECTOR_ALLOCATION 0  // set to 1 to use block allocations
-
 /**
  * @namespace intnat
  * The namespace of intnat
  */
 namespace intnat {
 
-// Forward declare class and give it an alias for the expected type
 template <typename IntType>
 class NativeVectorT;
 using NativeVector = NativeVectorT<NativeInteger>;
@@ -72,64 +64,13 @@ using NativeVector = NativeVectorT<NativeInteger>;
 /**
  * @brief The class for representing vectors of native integers.
  */
-
-#if 0  // allocator that reports bytes used.
-template <class Tp>
-struct NAlloc {
-    typedef Tp value_type;
-    NAlloc() = default;
-    template <class T> NAlloc(const NAlloc<T>&) {}
-    Tp* allocate(std::size_t n) {
-        n *= sizeof(Tp);
-        return static_cast<Tp*>(::operator new(n));
-    }
-    void deallocate(Tp* p, std::size_t n) {
-        std::cout << "deallocating " << n*sizeof*p << " bytes\n";
-        ::operator delete(p);
-    }
-};
-template <class T, class U>
-bool operator==(const NAlloc<T>&, const NAlloc<U>&) { return true; }
-template <class T, class U>
-bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
-#endif
-
-#if 0  // allocator that reports bytes used.
-template <class Tp>
-struct NAlloc {
-    typedef Tp value_type;
-    NAlloc() = default;
-    template <class T> NAlloc(const NAlloc<T>&) {}
-    Tp* allocate(std::size_t n) {
-        n *= sizeof(Tp);
-        std::cout << "allocating   " << n << " bytes\n";
-        return static_cast<Tp*>(::operator new(n));
-    }
-    void deallocate(Tp* p, std::size_t n) {
-        std::cout << "deallocating " << n*sizeof*p << " bytes\n";
-        ::operator delete(p);
-    }
-};
-template <class T, class U>
-bool operator==(const NAlloc<T>&, const NAlloc<U>&) { return true; }
-template <class T, class U>
-bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
-#endif
-
 template <class IntegerType>
 class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
                             public lbcrypto::Serializable {
 private:
-    // m_modulus stores the internal modulus of the vector.
     IntegerType m_modulus{0};
-
-#if BLOCK_VECTOR_ALLOCATION != 1
     std::vector<IntegerType> m_data{};
-#else
-    xvector<IntegerType> m_data{};
-#endif
 
-    // function to check if the index is a valid index.
     bool IndexCheck(size_t length) const {
         return length < m_data.size();
     }
@@ -158,20 +99,11 @@ public:
    * entries.
    * @param modulus is the modulus of the ring.
    */
-    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length) {
-        // TODO: better performance if this check is done at poly level
-        //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
-        //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
-        //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
-    }
+    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept
+        : m_modulus{modulus}, m_data(length) {}
 
     constexpr NativeVectorT(uint32_t length, const IntegerType& modulus, const IntegerType& val) noexcept
-        : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {
-        // TODO: better performance if this check is done at poly level
-        //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
-        //            OPENFHE_THROW(std::to_string(modulus.GetMSB()) +
-        //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
-    }
+        : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {}
 
     /**
    * Basic constructor for copying a vector
@@ -179,6 +111,16 @@ public:
    * @param bigVector is the native vector to be copied.
    */
     constexpr NativeVectorT(const NativeVectorT& v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}
+
+    /**
+   * Constructor from a vector under a different modulus: the values of v switched to the
+   * new modulus, equivalent to a copy followed by SwitchModulus(modulus) but fused into
+   * one pass over the data.
+   *
+   * @param v is the source vector.
+   * @param modulus is the modulus to switch the copied values to.
+   */
+    NativeVectorT(const NativeVectorT& v, const IntegerType& modulus) noexcept;
 
     /**
    * Basic move constructor for moving a vector
@@ -324,8 +266,6 @@ public:
    */
     void SwitchModulus(const IntegerType& value);
     void LazySwitchModulus(const IntegerType& value);
-
-    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
 
     /**
    * Gets the vector modulus.
@@ -489,19 +429,38 @@ public:
    * @return is the result of the modulus multiplication operation.
    */
     NativeVectorT& ModMulEq(const NativeVectorT& b);
-    NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b) {
-        size_t size{m_data.size()};
-        auto mv{m_modulus};
-#ifdef NATIVEINT_BARRET_MOD
-        auto mu{m_modulus.ComputeMu()};
-        for (size_t i = 0; i < size; ++i)
-            m_data[i].ModMulFastEq(b[i], mv, mu);
-#else
-        for (size_t i = 0; i < size; ++i)
-            m_data[i].ModMulFastEq(b[i], mv);
-#endif
-        return *this;
-    }
+    NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b);
+
+    /**
+   * Fused multiply-accumulate: *this += V * I (mod the vector modulus), without
+   * size/modulus validation. Operand contract: the values of *this must be reduced;
+   * the values of V need NOT be reduced (the Shoup multiplication is exact for any
+   * unreduced multiplicand, which ApproxSwitchCRTBasis relies on for its cross-basis
+   * accumulation); I is reduced internally. Alternative backends implementing this
+   * interface must honor the unreduced-V tolerance (see issue #1107).
+   *
+   * @param &V is the vector to multiply and accumulate.
+   * @param &I is the scalar multiplier.
+   */
+    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
+
+    /**
+   * Fused multiply-accumulate: *this += a * b (mod the vector modulus), without
+   * size/modulus validation. Operand contract: STRICTER than the scalar overload —
+   * *this, a, and b must ALL hold reduced values (Barrett kernel, no unreduced-operand
+   * tolerance). Saves the full-vector temporary of *this += a * b.
+   *
+   * @param &a is the vector of first operands.
+   * @param &b is the vector of second operands.
+   */
+    NativeVectorT& MultAccEqNoCheck(const NativeVectorT& a, const NativeVectorT& b);
+
+    /**
+   * Reduces every element modulo the vector's own modulus.
+   *
+   * @return is the reduced vector.
+   */
+    NativeVectorT& ModReduceEq();
 
     /**
    * Vector multiplication without applying the modulus operation.
@@ -667,8 +626,8 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
+                                                                                  std::uint32_t const version) const {
         ::cereal::size_type size = m_data.size();
         ar(size);
         if (size > 0) {
@@ -678,15 +637,15 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
+                                                                                 std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
     }
 
     template <class Archive>
-    typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
+                                                                                  std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -706,8 +665,8 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
+                                                                                 std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -723,6 +682,60 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
+
+private:
+    /**
+   * Generalized-Barrett multiply loop with the reduction constants hoisted out of the
+   * loop. Uses the same shift structure and validity domain (operands < modulus) as
+   * NativeIntegerT::ModMulFast(b, modulus, mu); falls back to the per-element path when
+   * no double-width integer type is available.
+   *
+   * @param dst is the destination array (may alias a for the in-place callers).
+   * @param a is the array of first operands.
+   * @param b is the array of second operands.
+   * @param size is the number of elements.
+   * @param &modulus is the modulus to perform operations with.
+   */
+    static void BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
+
+    static void BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
+                                  const IntegerType& modulus);
+
+    /**
+   * General-shrink loop shared by SwitchModulus, ModEq and the copy-with-switch ctor:
+   * reduces every element modulo nv and applies the centered correction, whose subtrahend
+   * only takes the values {diffR, 0}.
+   *
+   * The reduction uses a reciprocal computed once for the whole loop instead of a divide
+   * per element. Note this is NOT the ComputeMu/ModMu Barrett used elsewhere: that one is
+   * scaled to the modulus (valid only for inputs below 2^(2*MSB(nv)+3)), whereas this one
+   * is scaled to the word width, so it is valid for any input the vector can hold. That
+   * matters because callers do not agree on a bound: the arbitrary-cyclotomic transform
+   * reduces values that are residues of a much larger modulus.
+   *
+   * @param dst is the destination array (may alias src for the in-place callers).
+   * @param src is the source array.
+   * @param size is the number of elements.
+   * @param ov is the old modulus, only used for the centered correction.
+   * @param nv is the modulus to reduce by.
+   */
+    static void GeneralShrinkLoop(IntegerType* dst, const IntegerType* src, size_t size, BasicInt ov, BasicInt nv);
+
+    /**
+   * Fused multiply-accumulate loop: acc += a * b (mod modulus), with the same Barrett
+   * kernel and dispatch as BarrettModMulLoop and the modular addition fused into the
+   * same pass. Validity domain: ALL of acc, a, and b must hold reduced values — unlike
+   * the scalar MultAccEqNoCheck, the Barrett kernel has no tolerance for unreduced
+   * multiplicands.
+   *
+   * @param acc is the accumulator array.
+   * @param a is the array of first operands.
+   * @param b is the array of second operands.
+   * @param size is the number of elements.
+   * @param &modulus is the modulus to perform operations with.
+   */
+    static void BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size,
+                                   const IntegerType& modulus);
 };
 
 }  // namespace intnat

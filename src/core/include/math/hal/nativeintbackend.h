@@ -37,6 +37,11 @@
 #include "math/hal/intnat/mubintvecnat.h"
 #include "math/hal/intnat/transformnat.h"
 
+template <typename VecType>
+using NatChineseRemainderTransformFTT = intnat::ChineseRemainderTransformFTTNat<VecType>;
+template <typename VecType>
+using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<VecType>;
+
 namespace lbcrypto {
 
 using NativeInteger = intnat::NativeInteger;

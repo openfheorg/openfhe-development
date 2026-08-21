@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -65,15 +65,8 @@ public:
     ~ILParamsImpl() override = default;
 
     /**
-   * @brief Constructor for the case of partially pre-computed parameters.
-   *
-   * @param &order the order of the ciphertext.
-   * @param &modulus the ciphertext modulus.
-   * @param &rootOfUnity the root of unity used in the ciphertext.
-   * @param bigModulus the big ciphertext modulus.
-   * @param bigRootOfUnity the big ciphertext modulus used for bit packing
-   * operations.
-   * @return
+   * @brief Constructors computing the missing parameters: the modulus (last
+   * prime of the given bit width for the order) and/or the root of unity.
    */
     explicit ILParamsImpl(uint32_t order, uint32_t bits = MAX_MODULUS_SIZE)
         : ILParamsImpl<IntType>(order, LastPrime<IntType>(bits, order)) {}
@@ -119,11 +112,8 @@ public:
     }
 
     /**
-   * @brief Equality operator compares ElemParams (which will be dynamic casted)
-   *
-   * @param &rhs is the specified Poly to be compared with this Poly.
-   * @return True if this Poly represents the same values as the specified
-   * DCRTPoly, False otherwise
+   * @brief Equality operator: true only when rhs is also an ILParamsImpl and
+   * all wrapped parameters are equal.
    */
     bool operator==(const ElemParams<IntType>& rhs) const override {
         // ATTENTION: dynamic_cast was replaced with typeid() to fix failures in unittests linked with clang++-18 and running on MacOS

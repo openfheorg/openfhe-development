@@ -28,10 +28,19 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "config_core.h"
 #include "utils/memory.h"
 
 #if defined(__GLIBC__)
     #include <malloc.h>
+#endif
+
+#if defined(WITH_NUMA_INTERLEAVE) && defined(__linux__) && defined(PARALLEL)
+    #include <cstdlib>
+    #include <cstring>
+    #include <omp.h>
+    #include <sys/syscall.h>
+    #include <unistd.h>
 #endif
 
 namespace lbcrypto {
@@ -51,6 +60,59 @@ namespace {
     mallopt(M_MMAP_MAX, 0);
     mallopt(M_TRIM_THRESHOLD, -1);
     return true;
+}();
+}  // namespace
+#endif
+
+#if defined(WITH_NUMA_INTERLEAVE) && defined(__linux__) && defined(PARALLEL)
+// Interleave this process's pages across the NUMA nodes it is allowed to use. The polynomial
+// buffers are written by whichever thread first touches them and then read by every thread in
+// the next parallel region, so under the default first-touch policy a buffer allocated on one
+// socket is read remotely by half the team. Interleaving spreads the pages instead, which
+// trades a little locality for a lot less cross-socket traffic on the wide loops.
+//
+// Deliberately conservative: it does nothing unless this build is threaded and the process
+// can actually use more than one thread and more than one node, and it never overrides a
+// policy the operator already set (so `numactl --membind=...` and container/cpuset policies win).
+//
+// NOTE: set_mempolicy() is process-wide, so this also applies to allocations made by the host
+// application, not just to OpenFHE's.
+namespace {
+using MemPolicyWord = unsigned long;  // NOLINT(runtime/int) -- kernel nodemask word
+
+constexpr int OPENFHE_MPOL_DEFAULT        = 0;
+constexpr int OPENFHE_MPOL_INTERLEAVE     = 3;
+constexpr int OPENFHE_MPOL_F_MEMS_ALLOWED = 4;
+constexpr MemPolicyWord OPENFHE_MAXNODE   = 1024;
+
+[[maybe_unused]] const bool ofheNumaInterleaved = []() noexcept {
+    const char* opt = std::getenv("OPENFHE_NUMA_INTERLEAVE");
+    if (opt != nullptr && std::strcmp(opt, "0") == 0)
+        return false;
+
+    // single-threaded runs are strictly better off with first-touch locality
+    if (omp_get_max_threads() < 2)
+        return false;
+
+    // respect an explicitly configured policy
+    int mode = 0;
+    if (syscall(SYS_get_mempolicy, &mode, nullptr, 0UL, nullptr, 0) != 0)
+        return false;  // no NUMA support in this kernel
+    if (mode != OPENFHE_MPOL_DEFAULT)
+        return false;
+
+    MemPolicyWord mask[OPENFHE_MAXNODE / (8 * sizeof(MemPolicyWord))] = {0};
+    if (syscall(SYS_get_mempolicy, nullptr, mask, OPENFHE_MAXNODE, nullptr, OPENFHE_MPOL_F_MEMS_ALLOWED) != 0)
+        return false;
+
+    uint32_t nodes = 0;
+    for (MemPolicyWord word : mask)
+        for (; word != 0; word &= word - 1)
+            ++nodes;
+    if (nodes < 2)
+        return false;  // single node: interleaving is a no-op at best
+
+    return syscall(SYS_set_mempolicy, OPENFHE_MPOL_INTERLEAVE, mask, OPENFHE_MAXNODE) == 0;
 }();
 }  // namespace
 #endif

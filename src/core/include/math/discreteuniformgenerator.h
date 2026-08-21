@@ -77,6 +77,8 @@ public:
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus);
 
 private:
+    typename VecType::Integer GenerateIntegerWith(PRNG& prng, std::uniform_int_distribution<uint32_t>& dist) const;
+
     typename VecType::Integer m_modulus{};
     uint32_t m_chunksPerValue{};
     uint32_t m_shiftChunk{};

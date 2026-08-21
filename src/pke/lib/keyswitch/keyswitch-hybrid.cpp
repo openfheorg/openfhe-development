@@ -58,7 +58,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 
     // skNew is currently in basis Q. This extends it to basis QP.
 
-    DCRTPoly sNewExt(paramsQP, Format::EVALUATION, true);
+    DCRTPoly sNewExt(paramsQP, Format::EVALUATION, false);
     const auto& sNew = newKey->GetPrivateElement();
 
     auto sNew0 = sNew.GetElementAtIndex(0);
@@ -75,8 +75,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
             sNewExt.SetElementAtIndex(i, std::move(tmp));
         }
         else {
-            auto tmp = sNew0;
-            tmp.SwitchModulus(pparamsQP[i]->GetModulus(), pparamsQP[i]->GetRootOfUnity(), 0, 0);
+            NativePoly tmp(pparamsQP[i], Format::COEFFICIENT);
+            tmp.SetValues(NativeVector(sNew0.GetValues(), pparamsQP[i]->GetModulus()), Format::COEFFICIENT);
             tmp.SetFormat(Format::EVALUATION);
             sNewExt.SetElementAtIndex(i, std::move(tmp));
         }
@@ -100,7 +100,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
         auto a = (ekPrev == nullptr) ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
                                        ekPrev->GetAVector()[part];                                      // threshold HE
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
-        DCRTPoly b(paramsQP, Format::EVALUATION, true);
+        DCRTPoly b(paramsQP, Format::EVALUATION, false);
 
         const uint32_t startPartIdx = numPerPartQ * part;
         const uint32_t endPartIdx   = (sizeQ > (startPartIdx + numPerPartQ)) ? (startPartIdx + numPerPartQ) : sizeQ;
@@ -159,8 +159,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
                                                                   DCRTPoly(tug, paramsQP, Format::EVALUATION);
         DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
-        DCRTPoly a(paramsQP, Format::EVALUATION, true);
-        DCRTPoly b(paramsQP, Format::EVALUATION, true);
+        DCRTPoly a(paramsQP, Format::EVALUATION, false);
+        DCRTPoly b(paramsQP, Format::EVALUATION, false);
 
         // starting and ending position of current part
         const uint32_t startPartIdx = numPerPartQ * part;
@@ -253,6 +253,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
     std::vector<DCRTPoly> elements;
+    elements.reserve(2);
     elements.emplace_back(cv[0].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
                                               cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
                                               cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
@@ -327,10 +328,10 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
                 roots[i]  = paramsPartQ->GetParams()[i]->GetRootOfUnity();
             }
             auto&& params = std::make_shared<ParmType>(paramsPartQ->GetCyclotomicOrder(), moduli, roots);
-            partsCt       = DCRTPoly(params, Format::EVALUATION, true);
+            partsCt       = DCRTPoly(params, Format::EVALUATION, false);
         }
         else {
-            partsCt = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, true);
+            partsCt = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, false);
         }
 
         const uint32_t sizePartQl   = partsCt.GetNumOfElements();
@@ -347,7 +348,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
                                                          cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
         partsCtCompl.SetFormat(Format::EVALUATION);
 
-        (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+        (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
 
         const uint32_t endPartIdx = startPartIdx + sizePartQl;
         for (uint32_t i = 0; i < startPartIdx; ++i)
@@ -396,18 +397,19 @@ std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::share
     const auto& bv = evalKey->GetBVector();
 
     std::vector<DCRTPoly> result;
+    result.reserve(2);
     result.emplace_back(paramsQlP, Format::EVALUATION, true);
     result.emplace_back(paramsQlP, Format::EVALUATION, true);
 
-    for (uint32_t j = 0; j < limit; ++j) {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
-        for (uint32_t i = 0; i < sizeQlP; ++i) {
-            const auto idx  = (i >= sizeQl) ? i + delta : i;
+    for (uint32_t i = 0; i < sizeQlP; ++i) {
+        const auto idx = (i >= sizeQl) ? i + delta : i;
+        auto& r0       = result[0].GetAllElements()[i];
+        auto& r1       = result[1].GetAllElements()[i];
+        for (uint32_t j = 0; j < limit; ++j) {
             const auto& cji = (*digits)[j].GetElementAtIndex(i);
-            const auto& bji = bv[j].GetElementAtIndex(idx);
-            const auto& aji = av[j].GetElementAtIndex(idx);
-            result[0].SetElementAtIndex(i, result[0].GetElementAtIndex(i) + cji * bji);
-            result[1].SetElementAtIndex(i, result[1].GetElementAtIndex(i) + cji * aji);
+            r0.MultAccEqNoCheck(cji, bv[j].GetElementAtIndex(idx));
+            r1.MultAccEqNoCheck(cji, av[j].GetElementAtIndex(idx));
         }
     }
 

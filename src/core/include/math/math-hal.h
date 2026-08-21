@@ -55,13 +55,6 @@ using BigVector  = bigintbackend::BigVector;
 }  // namespace lbcrypto
 
 //==============================================================================================
-// TODO: total hack ... move this!!!!!
-template <typename VecType>
-using NatChineseRemainderTransformFTT = intnat::ChineseRemainderTransformFTTNat<VecType>;
-template <typename VecType>
-using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<VecType>;
-
-//==============================================================================================
 
 // TODO it might be possible to remove the template argument in the concrete class for each backend - needs further investigation
 

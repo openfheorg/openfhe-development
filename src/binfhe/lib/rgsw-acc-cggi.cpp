@@ -34,7 +34,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace lbcrypto {
 
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
@@ -85,7 +84,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     NativePoly tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
         result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
-        tmp = result[i][0];
+        tmp          = result[i][0];
         tmp.SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (m)
@@ -134,21 +133,21 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     const std::vector<std::vector<NativePoly>>& ev1(ek1->GetElements());
     NativePoly tmp(dct[0] * ev1[0][0]);
     for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp += (dct[i] * ev1[i][0]);
+        tmp.MultAccEqNoCheck(dct[i], ev1[i][0]);
     acc->GetElements()[0] += (tmp *= monomial);
     tmp = (dct[0] * ev1[0][1]);
     for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp += (dct[i] * ev1[i][1]);
+        tmp.MultAccEqNoCheck(dct[i], ev1[i][1]);
     acc->GetElements()[1] += (tmp *= monomial);
 
     const std::vector<std::vector<NativePoly>>& ev2(ek2->GetElements());
     tmp = (dct[0] * ev2[0][0]);
     for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp += (dct[i] * ev2[i][0]);
+        tmp.MultAccEqNoCheck(dct[i], ev2[i][0]);
     acc->GetElements()[0] += (tmp *= monomialNeg);
     tmp = (dct[0] * ev2[0][1]);
     for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp += (dct[i] *= ev2[i][1]);
+        tmp.MultAccEqNoCheck(dct[i], ev2[i][1]);
     acc->GetElements()[1] += (tmp *= monomialNeg);
 }
 
