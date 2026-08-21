@@ -42,6 +42,7 @@
 #include "math/distributiongenerator.h"
 
 #include "utils/debug.h"
+#include "utils/utilities.h"
 
 #include <cmath>
 #include <vector>
@@ -146,7 +147,7 @@ std::vector<int> GetCyclotomicPolynomialRecursive(uint32_t m) {
         std::vector<int> runningDividend(dividend);
         for (uint32_t i = 0; i < runs; ++i) {
             // get the highest degree coeff
-            int divConst     = runningDividend[dividendLength - 1];
+            int divConst        = runningDividend[dividendLength - 1];
             uint32_t divisorPtr = divisorLength - 1;
             for (uint32_t j = 0; j < dividendLength - i - 1; ++j) {
                 auto& rdtmp1 = runningDividend[dividendLength - 1 - j];
@@ -244,7 +245,7 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     if (i == 0) {
         return 1;
     }
-    else if (i == (static_cast<int32_t>(m) - 1)) { // could be true if (i > 0)
+    else if (i == (static_cast<int32_t>(m) - 1)) {  // could be true if (i > 0)
         return static_cast<uint32_t>(i);
     }
     if (!IsPowerOfTwo(m))
@@ -256,7 +257,7 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     uint64_t g          = g0;
     uint32_t i_unsigned = static_cast<uint32_t>(std::abs(i));
     for (size_t j = 1; j < i_unsigned; j++) {
-        g = (g * g0) & (m - 1); // Modulus operation [ (g*g0)%m ] using bitwise AND
+        g = (g * g0) & (m - 1);  // Modulus operation [ (g*g0)%m ] using bitwise AND
     }
     return static_cast<uint32_t>(g);
 }
@@ -267,9 +268,9 @@ void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {
     uint32_t logn = std::round(std::log2(n));
     for (uint32_t j = 0; j < n; j++) {
         uint32_t jTmp    = ((j << 1) + 1);
-        uint32_t idx        = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
-        uint32_t jrev       = ReverseBits(j, logn);
-        uint32_t idxrev     = ReverseBits(idx, logn);
+        uint32_t idx     = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
+        uint32_t jrev    = ReverseBits(j, logn);
+        uint32_t idxrev  = ReverseBits(idx, logn);
         (*precomp)[jrev] = idxrev;
     }
 }
