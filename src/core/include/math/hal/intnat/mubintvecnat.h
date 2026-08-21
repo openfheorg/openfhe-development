@@ -654,12 +654,7 @@ public:
         ar(size);
         m_data.resize(size);
         if (size > 0) {
-            auto* data = reinterpret_cast<IntegerType*>(malloc(size * sizeof(IntegerType)));
-            ar(::cereal::binary_data(data, size * sizeof(IntegerType)));
-            for (::cereal::size_type i = 0; i < size; i++) {
-                m_data[i] = data[i];
-            }
-            free(data);
+            ar(::cereal::binary_data(m_data.data(), size * sizeof(IntegerType)));
         }
         ar(m_modulus);
     }

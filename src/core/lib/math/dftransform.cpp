@@ -67,6 +67,36 @@ DiscreteFourierTransform::PrecomputedValues::PrecomputedValues(uint32_t m, uint3
     }
 
     m_ksiPows[m_M] = m_ksiPows[0];
+
+    m_fwdTw.resize(m_Nh > 0 ? m_Nh - 1 : 0);
+    m_invTw.resize(m_fwdTw.size());
+    for (uint32_t lenh = 1; lenh <= m_Nh / 2; lenh <<= 1) {
+        uint32_t lenq = lenh << 3;
+        uint32_t gap  = m_M / lenq;
+        auto* fwd     = &m_fwdTw[lenh - 1];
+        auto* inv     = &m_invTw[lenh - 1];
+        for (uint32_t j = 0; j < lenh; ++j) {
+            uint32_t rg = m_rotGroup[j] % lenq;
+            fwd[j]      = m_ksiPows[rg * gap];
+            inv[j]      = m_ksiPows[(lenq - rg) * gap];
+        }
+    }
+}
+
+std::shared_mutex& DiscreteFourierTransform::PrecompMutex() {
+    static std::shared_mutex mtx;
+    return mtx;
+}
+
+const DiscreteFourierTransform::PrecomputedValues& DiscreteFourierTransform::GetPrecomp(uint32_t cyclOrder) {
+    std::shared_lock<std::shared_mutex> lock(PrecompMutex());
+    const auto it = precomputedValues.find(cyclOrder);
+    if (it == precomputedValues.end()) {
+        std::string errMsg("DiscreteFourierTransform::Initialize() must be called for cyclOrder = ");
+        errMsg += std::to_string(cyclOrder);
+        OPENFHE_THROW(errMsg);
+    }
+    return it->second;
 }
 
 void DiscreteFourierTransform::Reset() {
@@ -77,11 +107,9 @@ void DiscreteFourierTransform::Reset() {
 }
 
 void DiscreteFourierTransform::Initialize(uint32_t m, uint32_t nh) {
-#pragma omp critical
     // add a PrecomputedValues object to the map of precomputedValues only if it doesn't already exist for the given cyclotomic order
-    if (precomputedValues.find(m) == precomputedValues.end()) {
-        precomputedValues.insert({m, PrecomputedValues(m, nh)});
-    }
+    std::unique_lock<std::shared_mutex> lock(PrecompMutex());
+    precomputedValues.try_emplace(m, m, nh);
 }
 
 void DiscreteFourierTransform::PreComputeTable(uint32_t s) {
@@ -207,61 +235,55 @@ std::vector<std::complex<double>> DiscreteFourierTransform::InverseTransform(std
 }
 
 void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& vals, uint32_t cyclOrder) {
-    // check if the precomputed table exists for the given cyclotomic order
-    const auto it = precomputedValues.find(cyclOrder);
-    if (it == precomputedValues.end()) {
-        std::string errMsg("DiscreteFourierTransform::Initialize() must be called for cyclOrder = ");
-        errMsg += std::to_string(cyclOrder);
-        OPENFHE_THROW(errMsg);
-    }
+    const PrecomputedValues& pv = GetPrecomp(cyclOrder);
 
-    const uint32_t valsSize = vals.size();
-    for (size_t len = valsSize; len >= 1; len >>= 1) {
+    const size_t valsSize = vals.size();
+    for (size_t len = valsSize; len >= 2; len >>= 1) {
+        const size_t lenh = len >> 1;
+        const auto* tw    = &pv.m_invTw[lenh - 1];
         for (size_t i = 0; i < valsSize; i += len) {
-            size_t lenh = len >> 1;
-            size_t lenq = len << 2;
-            size_t gap  = it->second.m_M / lenq;
+            auto* lo = &vals[i];
+            auto* hi = lo + lenh;
             for (size_t j = 0; j < lenh; ++j) {
-                size_t idx             = (lenq - (it->second.m_rotGroup[j] % lenq)) * gap;
-                std::complex<double> u = vals[i + j] + vals[i + j + lenh];
-                std::complex<double> v = vals[i + j] - vals[i + j + lenh];
-                v *= it->second.m_ksiPows[idx];
-                vals[i + j]        = u;
-                vals[i + j + lenh] = v;
+                const double ur = lo[j].real() + hi[j].real();
+                const double ui = lo[j].imag() + hi[j].imag();
+                const double vr = lo[j].real() - hi[j].real();
+                const double vi = lo[j].imag() - hi[j].imag();
+                const double wr = tw[j].real();
+                const double wi = tw[j].imag();
+                lo[j]           = {ur, ui};
+                hi[j]           = {vr * wr - vi * wi, vr * wi + vi * wr};
             }
         }
     }
     BitReverse(vals);
 
+    const double inv = 1.0 / static_cast<double>(valsSize);
     for (size_t i = 0; i < valsSize; ++i) {
-        vals[i] /= valsSize;
+        vals[i] *= inv;
     }
 }
 
 void DiscreteFourierTransform::FFTSpecial(std::vector<std::complex<double>>& vals, uint32_t cyclOrder) {
-    // check if the precomputed table exists for the given cyclotomic order
-    const auto it = precomputedValues.find(cyclOrder);
-    if (it == precomputedValues.end()) {
-        std::string errMsg("DiscreteFourierTransform::Initialize() must be called for cyclOrder = ");
-        errMsg += std::to_string(cyclOrder);
-        OPENFHE_THROW(errMsg);
-    }
-    const PrecomputedValues& prepValues = it->second;
+    const PrecomputedValues& pv = GetPrecomp(cyclOrder);
 
     BitReverse(vals);
-    uint32_t size = vals.size();
-    for (size_t len = 2; len <= size; len <<= 1) {
-        size_t lenh = len >> 1;
-        size_t lenq = len << 2;
-        size_t gap  = prepValues.m_M / lenq;
-        for (size_t i = 0; i < size; i += len) {
+    const size_t valsSize = vals.size();
+    for (size_t len = 2; len <= valsSize; len <<= 1) {
+        const size_t lenh = len >> 1;
+        const auto* tw    = &pv.m_fwdTw[lenh - 1];
+        for (size_t i = 0; i < valsSize; i += len) {
+            auto* lo = &vals[i];
+            auto* hi = lo + lenh;
             for (size_t j = 0; j < lenh; ++j) {
-                int64_t idx            = ((prepValues.m_rotGroup[j] % lenq)) * gap;
-                std::complex<double> u = vals[i + j];
-                std::complex<double> v = vals[i + j + lenh];
-                v *= prepValues.m_ksiPows[idx];
-                vals[i + j]        = u + v;
-                vals[i + j + lenh] = u - v;
+                const double wr = tw[j].real();
+                const double wi = tw[j].imag();
+                const double vr = hi[j].real() * wr - hi[j].imag() * wi;
+                const double vi = hi[j].real() * wi + hi[j].imag() * wr;
+                const double ur = lo[j].real();
+                const double ui = lo[j].imag();
+                lo[j]           = {ur + vr, ui + vi};
+                hi[j]           = {ur - vr, ui - vi};
             }
         }
     }
