@@ -93,6 +93,24 @@ option(WITH_COVTEST "Turn on to enable coverage testing (can be used with g++ on
 option(WITH_NOISE_DEBUG "Use only when running lattice estimator; not for production"  OFF )
 option(WITH_REDUCED_NOISE "Enable reduced noise within HKS and BFV HPSPOVERQ modes"    OFF )
 option(USE_MACPORTS "Use MacPorts installed packages"                                  OFF )
+option(OPENFHE_DEFAULT_LOG_SINK "Compile the built-in diagnostic sink (std::cerr/std::cout); turn OFF to supply your own" ON )
+
+# Diagnostic log sink: when ON (default), compile openfhe_log_default.cpp so
+# OpenFHEErrStream()/OpenFHEOutStream() target std::cerr/std::cout, preserving
+# the historical behavior. When OFF, that translation unit is empty and the
+# embedding application must define those accessors itself, letting an embedder
+# keep std::cerr/std::cout out of the compiled OpenFHE archive (e.g. an R package
+# subject to CRAN's no-output-from-compiled-code rule).
+#
+# OFF is intended for static builds (BUILD_STATIC), where the accessors are
+# resolved when the embedding application links. Combining OFF with a shared
+# build leaves those symbols undefined in the library itself: valid on ELF
+# platforms, which resolve them at load time, but rejected at link time by
+# platforms that require every symbol to resolve when the library is created
+# (macOS, Windows).
+if(OPENFHE_DEFAULT_LOG_SINK)
+    add_definitions(-DOPENFHE_DEFAULT_LOG_SINK)
+endif()
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
 if(NOT NATIVE_SIZE)

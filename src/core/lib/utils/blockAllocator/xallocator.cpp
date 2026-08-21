@@ -43,6 +43,7 @@
 #include "utils/blockAllocator/blockAllocator.h"
 #include "utils/blockAllocator/xallocator.h"
 #include "utils/exception.h"
+#include "utils/openfhe_log.h"
 
 static std::mutex xalloc_mutex;
 static bool _xallocInitialized = false;
@@ -372,30 +373,30 @@ void xalloc_stats() {
     lock_get();
     std::unique_lock<std::mutex> lock(xalloc_mutex);
     {
-        std::cout << "\n***********************";
+        OPENFHE_LOG_OUT << "\n***********************";
         if (!_allocators.empty()) {
             auto mode = _allocators.begin()->second->GetMode();
             if (mode == Allocator::HEAP_BLOCKS)
-                std::cout << " HEAP_BLOCKS\n";
+                OPENFHE_LOG_OUT << " HEAP_BLOCKS\n";
             if (mode == Allocator::HEAP_POOL)
-                std::cout << " HEAP_POOL\n";
+                OPENFHE_LOG_OUT << " HEAP_POOL\n";
             if (mode == Allocator::STATIC_POOL)
-                std::cout << " STATIC_POOL\n";
+                OPENFHE_LOG_OUT << " STATIC_POOL\n";
         }
 
         for (auto& [k, a] : _allocators) {
             if (a->GetBlockCount() == 0)
                 continue;
             if (a->GetName())
-                std::cout << a->GetName();
-            std::cout << " Block Size: " << a->GetBlockSize();
-            std::cout << " Block Count: " << a->GetBlockCount();
-            std::cout << " Block Allocs: " << a->GetAllocations();
-            std::cout << " Block Deallocs: " << a->GetDeallocations();
-            std::cout << " Blocks In Use: " << a->GetBlocksInUse();
-            std::cout << std::endl;
+                OPENFHE_LOG_OUT << a->GetName();
+            OPENFHE_LOG_OUT << " Block Size: " << a->GetBlockSize();
+            OPENFHE_LOG_OUT << " Block Count: " << a->GetBlockCount();
+            OPENFHE_LOG_OUT << " Block Allocs: " << a->GetAllocations();
+            OPENFHE_LOG_OUT << " Block Deallocs: " << a->GetDeallocations();
+            OPENFHE_LOG_OUT << " Blocks In Use: " << a->GetBlocksInUse();
+            OPENFHE_LOG_OUT << std::endl;
         }
-        std::cout << "***********************\n";
+        OPENFHE_LOG_OUT << "***********************\n";
     }
     lock_release();
 }
