@@ -194,21 +194,17 @@ bool CKKSPackedEncoding::Encode() {
     }
     DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
 #else  // NATIVEINT == 64
-    int32_t logc = std::numeric_limits<int32_t>::min();
+    double maxAbs = 0.;
     for (uint32_t i = 0; i < slots; ++i) {
         inverse[i] *= scalingFactor;
-        if (inverse[i].real() != 0.) {
-            auto logci = static_cast<int32_t>(std::ceil(std::log2(std::abs(inverse[i].real()))));
-            if (logc < logci)
-                logc = logci;
-        }
-        if (inverse[i].imag() != 0.) {
-            auto logci = static_cast<int32_t>(std::ceil(std::log2(std::abs(inverse[i].imag()))));
-            if (logc < logci)
-                logc = logci;
-        }
+        const double re = std::abs(inverse[i].real());
+        const double im = std::abs(inverse[i].imag());
+        if (maxAbs < re)
+            maxAbs = re;
+        if (maxAbs < im)
+            maxAbs = im;
     }
-    logc = (logc == std::numeric_limits<int32_t>::min()) ? 0 : logc;
+    int32_t logc = (maxAbs == 0.) ? 0 : static_cast<int32_t>(std::ceil(std::log2(maxAbs)));
     if (logc < 0)
         OPENFHE_THROW("Scaling factor too small");
 
@@ -527,6 +523,31 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
     uint32_t ringDim   = GetElementRingDimension();
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    // word-scaled-reciprocal reduction (one multiply per element instead of a divide);
+    // unlike ComputeMu/ModMu Barrett it is valid for the full 64-bit input range.
+    // The biased values are nonnegative, so the int64 -> uint64 conversion is value-preserving.
+    const uint64_t q{modulus.ConvertToInt<uint64_t>()};
+    const int64_t e{static_cast<int64_t>(lbcrypto::GetMSB(q)) - 2};
+    if (e >= 1) {
+        const uint64_t half{static_cast<uint64_t>(bigBound) >> 1};
+        const uint64_t diffR{(static_cast<uint64_t>(bigBound) - q) % q};
+        const uint64_t mu{static_cast<uint64_t>((static_cast<unsigned __int128>(1) << (64 + e)) / q)};
+        for (uint32_t i = 0; i < dslots; ++i) {
+            const uint64_t v{static_cast<uint64_t>(vec[i])};
+            uint64_t av{v};
+            if (av >= q) {
+                av -= static_cast<uint64_t>((static_cast<unsigned __int128>(v) * mu) >> 64 >> e) * q;
+                if (av >= q)
+                    av -= q;
+            }
+            uint64_t t{av - (diffR & (0 - static_cast<uint64_t>(v > half)))};
+            t += q & (0 - (t >> 63));
+            (*nativeVec)[gap * i] = t;
+        }
+        return;
+    }
+#endif
     for (uint32_t i = 0; i < vec.size(); i++) {
         NativeInteger n(vec[i]);
         if (n > bigValueHf) {

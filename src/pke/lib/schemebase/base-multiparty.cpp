@@ -42,6 +42,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -70,12 +71,18 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     NativeInteger ns = cryptoParams->GetNoiseScale();
 
     // b = ns * e - a * s
-    Element b(std::move((e *= ns) -= (a * s)));
+    if (ns != 1)
+        e *= ns;
+    Element b(std::move(e -= a * s));
 
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements({std::move(b), std::move(a)});
+    std::vector<Element> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
     return keyPair;
 }
 
@@ -115,7 +122,9 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
 
     // b = ns * e - a * s
     // When PRE is not used, a joint key is computed
-    Element b(std::move((e *= ns) -= (a * s)));
+    if (ns != 1)
+        e *= ns;
+    Element b(std::move(e -= a * s));
     if (!fresh)
         b += pk[0];
 
@@ -127,7 +136,11 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements({std::move(b), std::move(a)});
+    std::vector<Element> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
     return keyPair;
 }
 
@@ -150,26 +163,35 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
 
     const auto cc = privateKey->GetCryptoContext();
 
+    // deduplicated work list; the base keys are looked up (and missing ones reported) before
+    // the parallel loop because an exception may not cross an OpenMP region boundary
+    const std::set<uint32_t> indexSet(indexList.begin(), indexList.end());
+    const std::vector<uint32_t> indices(indexSet.begin(), indexSet.end());
+    const uint32_t sz = indices.size();
+    std::vector<EvalKey<Element>> baseKeys(sz);
+    for (uint32_t i = 0; i < sz; ++i) {
+        auto evalKeyIterator = evalKeyMap->find(indices[i]);
+        if (evalKeyIterator == evalKeyMap->end()) {
+            OPENFHE_THROW("EvalKey for index [" + std::to_string(indices[i]) + "] is not found.");
+        }
+        baseKeys[i] = evalKeyIterator->second;
+    }
+
+    // pre-created map slots so the parallel loop assigns without a critical section
     auto result = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
+    for (auto indx : indices)
+        (*result)[indx];
 
-    // #pragma omp parallel for if (indexList.size() >= 4)
-    for (uint32_t i = 0; i < indexList.size(); i++) {
-        PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
-
-        uint32_t index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
+    for (uint32_t i = 0; i < sz; ++i) {
+        uint32_t index = NativeInteger(indices[i]).ModInverse(2 * N).ConvertToInt();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
-        Element sPermuted = s.AutomorphismTransform(index, vec);
-        privateKeyPermuted->SetPrivateElement(std::move(sPermuted));
+        auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
+        privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
 
-        // verify if the key indexList[i] exists in the evalKeyMap
-        auto evalKeyIterator = evalKeyMap->find(indexList[i]);
-        if (evalKeyIterator == evalKeyMap->end()) {
-            OPENFHE_THROW("EvalKey for index [" + std::to_string(indexList[i]) + "] is not found.");
-        }
-
-        (*result)[indexList[i]] = MultiKeySwitchGen(privateKey, privateKeyPermuted, evalKeyIterator->second);
+        (*result)[indices[i]] = MultiKeySwitchGen(privateKey, privateKeyPermuted, baseKeys[i]);
     }
     return result;
 }
@@ -205,17 +227,14 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(ConstCipherte
     const auto ns                                 = cryptoParams->GetNoiseScale();
 
     const std::vector<Element>& cv = ciphertext->GetElements();
-
-    const Element& s = privateKey->GetPrivateElement();
+    const Element& s               = privateKey->GetPrivateElement();
 
     DggType dgg(NoiseFlooding::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
-
-    Element b = cv[0] + s * cv[1] + ns * e;
-    //  b.SwitchFormat();
-
+    if (ns != 1)
+        e *= typename Element::Integer(ns);
     auto result = ciphertext->CloneEmpty();
-    result->SetElement(std::move(b));
+    result->SetElement(cv[0] + s * cv[1] + e);
     return result;
 }
 
@@ -233,28 +252,20 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(ConstCipherte
 
     DggType dgg(NoiseFlooding::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
-
-    // e is added to do noise flooding
-    Element b = s * cv[1] + es * e;
-
+    if (es != 1)
+        e *= typename Element::Integer(es);
     auto result = ciphertext->CloneEmpty();
-    result->SetElement(std::move(b));
+    result->SetElement(s * cv[1] + e);
     return result;
 }
 
 template <class Element>
 DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                                NativePoly* plaintext) const {
-    const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(ciphertextVec[0]->GetCryptoParameters());
-
-    const std::vector<Element>& cv0 = ciphertextVec[0]->GetElements();
-
-    Element b = cv0[0];
-    for (size_t i = 1; i < ciphertextVec.size(); i++) {
-        const std::vector<Element>& cvi = ciphertextVec[i]->GetElements();
-        b += cvi[0];
-    }
+    Element b = (ciphertextVec.size() > 1) ? ciphertextVec[0]->GetElements()[0] + ciphertextVec[1]->GetElements()[0] :
+                                             ciphertextVec[0]->GetElements()[0];
+    for (size_t i = 2; i < ciphertextVec.size(); i++)
+        b += ciphertextVec[i]->GetElements()[0];
     b.SetFormat(Format::COEFFICIENT);
 
     *plaintext = b.ToNativePoly();
@@ -270,7 +281,11 @@ PublicKey<Element> MultipartyBase<Element>::MultiAddPubKeys(PublicKey<Element> p
     const Element& b1 = publicKey1->GetPublicElements()[0];
     const Element& b2 = publicKey2->GetPublicElements()[0];
     const Element& a  = publicKey1->GetPublicElements()[1];
-    publicKeySum->SetPublicElements(std::vector<Element>{(b1 + b2), a});
+    std::vector<Element> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(b1 + b2);
+    pkElems.push_back(a);
+    publicKeySum->SetPublicElements(std::move(pkElems));
 
     return publicKeySum;
 }
@@ -348,8 +363,14 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> p
     b.reserve(a0.size());
 
     for (uint32_t i = 0; i < a0.size(); i++) {
-        a.push_back(a0[i] * s + ns * Element(dgg, elementParams, Format::EVALUATION));
-        b.push_back(b0[i] * s + ns * Element(dgg, elementParams, Format::EVALUATION));
+        Element ea(dgg, elementParams, Format::EVALUATION);
+        if (ns != 1)
+            ea *= typename Element::Integer(ns);
+        a.push_back(std::move(ea += a0[i] * s));
+        Element eb(dgg, elementParams, Format::EVALUATION);
+        if (ns != 1)
+            eb *= typename Element::Integer(ns);
+        b.push_back(std::move(eb += b0[i] * s));
     }
 
     evalKeyResult->SetAVector(std::move(a));
@@ -376,15 +397,7 @@ template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::MultiAddEvalSumKeys(
     const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
     const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const {
-    auto EvalKeyMapSum = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-
-    for (auto it = evalKeyMap1->begin(); it != evalKeyMap1->end(); ++it) {
-        auto it2 = evalKeyMap2->find(it->first);
-        if (it2 != evalKeyMap2->end())
-            (*EvalKeyMapSum)[it->first] = MultiAddEvalKeys(it->second, it2->second);
-    }
-
-    return EvalKeyMapSum;
+    return MultiAddEvalAutomorphismKeys(evalKeyMap1, evalKeyMap2);
 }
 
 }  // namespace lbcrypto

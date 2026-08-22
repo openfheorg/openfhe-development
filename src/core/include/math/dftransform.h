@@ -38,6 +38,7 @@
 
 #include <complex>
 #include <cstdint>
+#include <shared_mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -121,11 +122,20 @@ private:
         std::vector<uint32_t> m_rotGroup;
         // ksi powers
         std::vector<std::complex<double>> m_ksiPows;
+        // per-stage butterfly twiddles for FFTSpecial/FFTSpecialInv, stored contiguously:
+        // the stage with half-length lenh (a power of two <= Nh/2) occupies [lenh - 1, 2*lenh - 1)
+        std::vector<std::complex<double>> m_fwdTw;
+        std::vector<std::complex<double>> m_invTw;
 
         PrecomputedValues(uint32_t m, uint32_t nh);
     };
     // precomputedValues: key - cyclotomic order, data - values precomputed for the given cyclotomic order
     static std::unordered_map<uint32_t, PrecomputedValues> precomputedValues;
+
+    // guards precomputedValues; map nodes are reference-stable, so readers may use the
+    // returned reference after the shared lock is released
+    static std::shared_mutex& PrecompMutex();
+    static const PrecomputedValues& GetPrecomp(uint32_t cyclOrder);
 
     static void BitReverse(std::vector<std::complex<double>>& vals);
 };

@@ -196,6 +196,20 @@ public:
     }
 
     /**
+   * Sets the data element by std::move.
+   *
+   * @param &&element is a polynomial ring element.
+   */
+    void SetElement(Element&& element) {
+        if (m_elements.size() == 0)
+            m_elements.push_back(std::move(element));
+        else if (m_elements.size() == 1)
+            m_elements[0] = std::move(element);
+        else
+            OPENFHE_THROW("Can be called on a Ciphertext with a single element ONLY");
+    }
+
+    /**
    * Sets the data elements.
    *
    * @param &element is a polynomial ring element.

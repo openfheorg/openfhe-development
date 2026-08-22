@@ -87,7 +87,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
                                      cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
                                      Format::EVALUATION);
 
-        noise = e;
+        noise = std::move(e);
     }
     else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
              cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
@@ -101,11 +101,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
         noise = std::move(e);
     }
 
-    // e is added to do noise flooding
-    DCRTPoly b = cv[0] + s * cv[1] + ns * noise;
+    // noise is added to do noise flooding
+    if (ns != 1)
+        noise *= DCRTPoly::Integer(ns);
 
     auto result = ciphertext->CloneEmpty();
-    result->SetElement(std::move(b));
+    result->SetElement(cv[0] + s * cv[1] + noise);
     return result;
 }
 
@@ -148,7 +149,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
                                      cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
                                      Format::EVALUATION);
 
-        noise = e;
+        noise = std::move(e);
     }
     else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
              cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
@@ -163,10 +164,11 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
     }
 
     // noise is added to do noise flooding
-    DCRTPoly b = s * cv[1] + ns * noise;
+    if (ns != 1)
+        noise *= DCRTPoly::Integer(ns);
 
     auto result = ciphertext->CloneEmpty();
-    result->SetElement(std::move(b));
+    result->SetElement(s * cv[1] + noise);
     return result;
 }
 
