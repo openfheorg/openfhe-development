@@ -2983,6 +2983,31 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
     NativeInteger diff = bigBound - modulus;
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    // word-scaled-reciprocal reduction (one multiply per element instead of a divide);
+    // unlike ComputeMu/ModMu Barrett it is valid for the full 64-bit input range.
+    // The biased values are nonnegative, so the int64 -> uint64 conversion is value-preserving.
+    const uint64_t q{modulus.ConvertToInt<uint64_t>()};
+    const int64_t e{static_cast<int64_t>(GetMSB(q)) - 2};
+    if (e >= 1) {
+        const uint64_t half{static_cast<uint64_t>(bigBound) >> 1};
+        const uint64_t diffR{(static_cast<uint64_t>(bigBound) - q) % q};
+        const uint64_t mu{static_cast<uint64_t>((static_cast<unsigned __int128>(1) << (64 + e)) / q)};
+        for (uint32_t i = 0; i < dslots; ++i) {
+            const uint64_t v{static_cast<uint64_t>(vec[i])};
+            uint64_t av{v};
+            if (av >= q) {
+                av -= static_cast<uint64_t>((static_cast<unsigned __int128>(v) * mu) >> 64 >> e) * q;
+                if (av >= q)
+                    av -= q;
+            }
+            uint64_t t{av - (diffR & (0 - static_cast<uint64_t>(v > half)))};
+            t += q & (0 - (t >> 63));
+            (*nativeVec)[gap * i] = t;
+        }
+        return;
+    }
+#endif
     for (uint32_t i = 0; i < dslots; ++i) {
         NativeInteger n(vec[i]);
         if (n > bigValueHf) {
