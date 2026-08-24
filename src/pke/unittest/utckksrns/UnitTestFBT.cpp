@@ -70,6 +70,8 @@ enum TEST_CASE_TYPE : int {
     FBT_CONSECLEV,
     FBT_MVB,
     FBT_NOISE,
+    FBT_MVB_REUSE,
+    FBT_INVALID,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -89,6 +91,12 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FBT_NOISE:
             typeName = "FBT_NOISE";
+            break;
+        case FBT_MVB_REUSE:
+            typeName = "FBT_MVB_REUSE";
+            break;
+        case FBT_INVALID:
+            typeName = "FBT_INVALID";
             break;
         default:
             typeName = "UNKNOWN";
@@ -185,8 +193,9 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 
 // clang-format off
 static std::vector<TEST_CASE_FBT> testCases = {
-// Functional Bootstrapping does not support NATIVE_SIZE == 128
-// For higher precision, consider using composite scaling instead
+// Functional Bootstrapping does not support NATIVE_SIZE == 128. Composite scaling, which serves that
+// purpose elsewhere in CKKS, is not supported here either (EvalFBTSetup rejects it), so the supported
+// rescaling modes are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT on the 64-bit build.
 #if NATIVEINT != 128
 #ifndef BENCH
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
@@ -262,6 +271,18 @@ static std::vector<TEST_CASE_FBT> testCases = {
     // and the test checks that the FLEXIBLE* technique yields smaller noise in the output RLWE ciphertext.
     {     FBT_NOISE, "501",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
     {     FBT_NOISE, "502",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    // Multi-limb initial scaling: the RLWE ciphertext is imported with one level available before
+    // bootstrapping, so initialScaling in EvalFBT covers two RNS limbs (q0*q1) and must be
+    // corrected before the modulus raise.
+    {    FBT_ARBLUT, "601",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "602",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "603",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    {    FBT_ARBLUT, "604",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    // Repeated LUT evaluation on the same precomputed powers (checks the precomputation is not
+    // corrupted in place) and rejection of invalid arguments.
+    { FBT_MVB_REUSE, "701",      Q60,      2,       4, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "702",      Q60,      2,       4, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {   FBT_INVALID, "801",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
 #else
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
     {    FBT_ARBLUT, "01",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
@@ -413,9 +434,6 @@ protected:
             auto start = std::chrono::high_resolution_clock::now();
 #endif
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
-            // for FLEXIBLEAUTOEXT, the cryptocontext has an extra modulus, so the RLWE ciphertext is
-            // imported one level deeper to keep a single tower
-            const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
@@ -502,7 +520,7 @@ protected:
 #endif
 
             auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
-                                                        depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -515,7 +533,7 @@ protected:
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
             auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                           depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
@@ -572,9 +590,6 @@ protected:
             auto start = std::chrono::high_resolution_clock::now();
 #endif
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
-            // for FLEXIBLEAUTOEXT, the cryptocontext has an extra modulus, so the RLWE ciphertext is
-            // imported one level deeper to keep a single tower
-            const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
@@ -677,7 +692,7 @@ protected:
 #endif
 
             auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
-                                                        depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -724,7 +739,7 @@ protected:
 
                 auto ctxt =
                     SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                       depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                       depth - (t.levelsAvailableBeforeBootstrap > 0));
 
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -816,9 +831,6 @@ protected:
 #endif
             bool flagBR = (t.lvlb[0] != 1 || t.lvlb[1] != 1);
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
-            // for FLEXIBLEAUTOEXT, the cryptocontext has an extra modulus, so the RLWE ciphertext is
-            // imported one level deeper to keep a single tower
-            const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
 
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
@@ -908,6 +920,9 @@ protected:
 
             auto mask_real = Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, t.numSlots);
 
+            // The mask level is counted on the full modulus chain, which has an extra modulus for FLEXIBLEAUTOEXT
+            const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
+
             // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
             Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
                 Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
@@ -915,7 +930,7 @@ protected:
                 numSlotsCKKS);
 
             auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
-                                                        depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             // Set bitReverse true to be able to perform correct rotations in CKKS
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep, flagBR);
@@ -929,7 +944,7 @@ protected:
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
             auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                           depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             // Apply LUT and remain in slots encodings.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -952,7 +967,7 @@ protected:
 
             // Apply a subsequent LUT
             ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, polys1, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                      depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                      depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             if (binaryLUT)
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
@@ -1034,9 +1049,6 @@ protected:
             auto start = std::chrono::high_resolution_clock::now();
 #endif
             bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
-            // for FLEXIBLEAUTOEXT, the cryptocontext has an extra modulus, so the RLWE ciphertext is
-            // imported one level deeper to keep a single tower
-            const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
@@ -1132,7 +1144,7 @@ protected:
 #endif
 
             auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
-                                                        depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -1145,7 +1157,7 @@ protected:
             SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
             auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                           depth + extOff - (t.levelsAvailableBeforeBootstrap > 0));
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             std::vector<Ciphertext<DCRTPoly>> complexExp;
             Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;
@@ -1239,9 +1251,8 @@ protected:
     void UnitTest_Noise(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
             auto runOnce = [&t](ScalingTechnique scalTech, int64_t& maxErr) -> double {
-                bool flagSP           = (t.numSlots <= t.ringDim / 2);  // sparse packing
-                const uint32_t extOff = (scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
-                auto numSlotsCKKS     = flagSP ? t.numSlots : t.numSlots / 2;
+                bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
+                auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
                 auto a = t.PInput.ConvertToInt<int64_t>();
                 auto b = t.POutput.ConvertToInt<int64_t>();
@@ -1306,14 +1317,14 @@ protected:
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
 
-                auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth + extOff);
+                auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
 
                 auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
                 SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
                 auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                               depth + extOff);
+                                                               depth);
 
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
                 if (binaryLUT)
@@ -1366,6 +1377,174 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+    // Evaluates the same binary LUT twice on the same precomputed powers and checks that both results
+    // are correct, so the second evaluation detects any in-place corruption of the shared precomputation.
+    // The LUT values f(0) = 2, f(1) = 1 give the coefficients {1, 1}, for which the evaluation performs
+    // an in-place multiplication and addition (coefficients {c, -1}, as in UnitTest_MVB, take a
+    // different, non-mutating path).
+    void UnitTest_MVBReuse(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
+        try {
+            bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
+            auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
+
+            auto f = [](int64_t x) -> int64_t {
+                return 2 - (x % 2);
+            };
+            std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
+
+            std::vector<int64_t> x = {1, 0, 1, 1, 0, 1, 0, 0};
+            if (x.size() < t.numSlots)
+                x = Fill<int64_t>(x, t.numSlots);
+
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+            CCParams<CryptoContextCKKSRNS> parameters;
+            parameters.SetSecretKeyDist(t.skd);
+            parameters.SetSecurityLevel(HEStd_NotSet);
+            parameters.SetScalingModSize(dcrtBits);
+            parameters.SetScalingTechnique(t.scalTech);
+            parameters.SetFirstModSize(dcrtBits);
+            parameters.SetNumLargeDigits(t.dnum);
+            parameters.SetBatchSize(numSlotsCKKS);
+            parameters.SetRingDim(t.ringDim);
+            uint32_t depth = t.levelsAvailableAfterBootstrap +
+                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+            parameters.SetMultiplicativeDepth(depth);
+
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+            cc->Enable(ADVANCEDSHE);
+            cc->Enable(FHE);
+
+            auto keyPair = cc->KeyGen();
+
+            cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
+                             t.levelsAvailableAfterBootstrap, 0, t.order);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto ep      = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
+            auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
+            SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
+            auto ctxt =
+                SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+
+            auto powers = cc->EvalMVBPrecompute(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+
+            auto exact(x);
+            std::transform(x.begin(), x.end(), exact.begin(), f);
+
+            for (uint32_t run = 1; run <= 2; ++run) {
+                auto ctxtAfterFBT = cc->EvalMVB(powers, coeffint, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
+                auto polys        = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
+                auto computed     = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
+                                                                  numSlotsCKKS, t.numSlots);
+
+                std::vector<int64_t> err(exact.size());
+                std::transform(exact.begin(), exact.end(), computed.begin(), err.begin(), std::minus<int64_t>());
+                std::transform(err.begin(), err.end(), err.begin(),
+                               [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                auto max_error_it = std::max_element(err.begin(), err.end());
+                checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001,
+                              failmsg + " LUT evaluation " + std::to_string(run) + " on the reused precomputation fails");
+            }
+
+            cc->ClearStaticMapsAndVectors();
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // Checks that invalid usage is rejected with an exception instead of silently corrupting results:
+    // 1) an oversized levelToReduce in EvalHomDecoding under FLEXIBLE*, and 2) a FLEXIBLEAUTOEXT input
+    // that still includes the extra modulus. EvalFBTSetup also rejects the scaling techniques it does
+    // not support, which is left to be covered when composite scaling is supported.
+    void UnitTest_InvalidArgs(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
+        try {
+            bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
+            auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
+
+            auto a = t.PInput.ConvertToInt<int64_t>();
+            auto b = t.POutput.ConvertToInt<int64_t>();
+            auto f = [a, b](int64_t x) -> int64_t {
+                return (x % a - a / 2) % b;
+            };
+            std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
+
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+            uint32_t depth          = t.levelsAvailableAfterBootstrap +
+                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+
+            auto makeParams = [&](ScalingTechnique st) {
+                CCParams<CryptoContextCKKSRNS> parameters;
+                parameters.SetSecretKeyDist(t.skd);
+                parameters.SetSecurityLevel(HEStd_NotSet);
+                parameters.SetScalingModSize(dcrtBits);
+                parameters.SetScalingTechnique(st);
+                parameters.SetFirstModSize(dcrtBits);
+                parameters.SetNumLargeDigits(t.dnum);
+                parameters.SetBatchSize(numSlotsCKKS);
+                parameters.SetRingDim(t.ringDim);
+                parameters.SetMultiplicativeDepth(depth);
+                return parameters;
+            };
+            auto enableAll = [](CryptoContext<DCRTPoly>& cc) {
+                cc->Enable(PKE);
+                cc->Enable(KEYSWITCH);
+                cc->Enable(LEVELEDSHE);
+                cc->Enable(ADVANCEDSHE);
+                cc->Enable(FHE);
+            };
+
+            {
+                // an oversized levelToReduce under FLEXIBLE* is rejected instead of silently zeroing the result
+                auto parameters = makeParams(FLEXIBLEAUTO);
+                auto cc         = GenCryptoContext(parameters);
+                enableAll(cc);
+                auto keyPair = cc->KeyGen();
+                cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                std::vector<double> y(numSlotsCKKS, 0.5);
+                auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
+                EXPECT_THROW(cc->EvalHomDecoding(ctxt, 1, depth), OpenFHEException)
+                    << failmsg << " oversized levelToReduce not rejected";
+                cc->ClearStaticMapsAndVectors();
+            }
+
+            {
+                // a FLEXIBLEAUTOEXT input that includes the extra modulus is rejected
+                auto parameters = makeParams(FLEXIBLEAUTOEXT);
+                auto cc         = GenCryptoContext(parameters);
+                enableAll(cc);
+                auto keyPair = cc->KeyGen();
+                cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
+                cc->EvalMultKeyGen(keyPair.secretKey);
+                std::vector<double> y(numSlotsCKKS, 0.5);
+                // a level-0 ciphertext still includes the FLEXIBLEAUTOEXT extra modulus
+                auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
+                EXPECT_THROW(cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, t.Bigq, t.scaleTHI, 0, t.order),
+                             OpenFHEException)
+                    << failmsg << " FLEXIBLEAUTOEXT level-0 input not rejected";
+                cc->ClearStaticMapsAndVectors();
+            }
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 
 // ===========================================================================================================
@@ -1388,6 +1567,12 @@ TEST_P(UTCKKSRNS_FBT, CKKSRNS) {
             break;
         case FBT_NOISE:
             UnitTest_Noise(test, test.buildTestName());
+            break;
+        case FBT_MVB_REUSE:
+            UnitTest_MVBReuse(test, test.buildTestName());
+            break;
+        case FBT_INVALID:
+            UnitTest_InvalidArgs(test, test.buildTestName());
             break;
         default:
             break;

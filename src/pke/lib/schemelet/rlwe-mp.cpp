@@ -31,6 +31,7 @@
 
 #include "schemebase/rlwe-cryptoparameters.h"
 #include "schemelet/rlwe-mp.h"
+#include "schemerns/rns-cryptoparameters.h"
 #include "cryptocontext.h"
 
 #include <stdint.h>
@@ -122,6 +123,10 @@ std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> SchemeletRLWEMP::GetElementPara
     const PrivateKey<DCRTPoly>& privateKey, uint32_t level) {
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
+
+    const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
+    if (cryptoParamsRNS != nullptr && cryptoParamsRNS->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+        ++level;
 
     auto ep = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(*(cryptoParams->GetElementParams()));
     for (uint32_t i = 0; i < level; ++i)
@@ -261,6 +266,10 @@ Ciphertext<DCRTPoly> SchemeletRLWEMP::ConvertRLWEToCKKS(const CryptoContextImpl<
                                                         const std::vector<Poly>& coeffs,
                                                         const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq,
                                                         uint32_t slots, uint32_t level) {
+    const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(cc.GetCryptoParameters());
+    if (cryptoParamsRNS != nullptr && cryptoParamsRNS->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+        ++level;
+
     std::vector<std::complex<double>> y(1);
     auto ptxt = cc.MakeCKKSPackedPlaintext(y, 1, level);
     ptxt->SetLength(slots);

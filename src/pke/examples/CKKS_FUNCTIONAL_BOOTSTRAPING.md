@@ -122,4 +122,6 @@ failure) and SPARSE_ENCAPSULATED (negligible probability of failure).
 The FLEXIBLEAUTO and FLEXIBLEAUTOEXT modes track the exact level-specific scaling factors, which removes the
 scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters (equivalently,
 correctness can be achieved with a smaller CKKS scaling factor).
+Composite scaling (COMPOSITESCALINGAUTO and COMPOSITESCALINGMANUAL) is not supported yet, and neither is NORESCALE;
+`EvalFBTSetup` rejects them.
 - MULTIPARTY is not supported.
