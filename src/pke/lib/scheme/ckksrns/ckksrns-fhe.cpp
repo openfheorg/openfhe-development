@@ -3457,6 +3457,8 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
 
     auto skd = cryptoParams->GetSecretKeyDist();
     double k = (skd == SPARSE_TERNARY || skd == SPARSE_ENCAPSULATED) ? 1.0 : K_UNIFORM;
+    // number of double-angle iterations for the approximate modular reduction
+    uint32_t numIter = (skd == UNIFORM_TERNARY) ? R_UNIFORM_FBT : R_SPARSE_FBT;
 
     // For FLEXIBLE* the initial-scaling correction is folded in here so no extra level is consumed.
     cc->EvalMultInPlace(raised, ((isFlexible) ? correction : 1.0) / (k * N));
@@ -3513,45 +3515,43 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double : coeff_cos_25_double;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
+                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
+                                                             coeff_cos_25_double;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_cos, coeffLowerBound, coeffUpperBound);
 
-            // Double angle-iterations to get cos(pi*x)
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->EvalAddInPlaceNoCheck(ctxtEnc[0], ctxtEnc[0]);
-            cc->EvalSubInPlace(ctxtEnc[0], 1.0);
-            cc->ModReduceInPlace(ctxtEnc[0]);  // cos(pi x)
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
-
-            cc->EvalSquareInPlace(ctxtEnc[1]);
-            cc->EvalAddInPlaceNoCheck(ctxtEnc[1], ctxtEnc[1]);
-            cc->EvalSubInPlace(ctxtEnc[1], 1.0);
-            cc->ModReduceInPlace(ctxtEnc[1]);  // cos(pi x)
-            cc->EvalSquareInPlace(ctxtEnc[1]);
-            cc->ModReduceInPlace(ctxtEnc[1]);  // cos^2(pi x)
+            for (auto& ctxt : ctxtEnc) {
+                // Double angle-iterations to get cos(pi*x)
+                for (uint32_t i = 1; i < numIter; ++i) {
+                    cc->EvalSquareInPlace(ctxt);
+                    cc->EvalAddInPlaceNoCheck(ctxt, ctxt);
+                    cc->EvalSubInPlace(ctxt, 1.0);
+                    cc->ModReduceInPlace(ctxt);
+                }
+                // cos(pi x) after the loop above; square once more to get cos^2(pi x)
+                cc->EvalSquareInPlace(ctxt);
+                cc->ModReduceInPlace(ctxt);  // cos^2(pi x)
+            }
         }
         else {
-            auto& coeff_exp = (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
+                              (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
                               (digitBitSize > 10)          ? coeff_exp_25_double_66 :
                                                              coeff_exp_25_double_58;
 
-            // Obtain exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
+            // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_exp, coeffLowerBound, coeffUpperBound);
 
-            // Double angle-iterations to get exp(2*Pi*i*x)
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->ModReduceInPlace(ctxtEnc[0]);
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->ModReduceInPlace(ctxtEnc[0]);
-
-            cc->EvalSquareInPlace(ctxtEnc[1]);
-            cc->ModReduceInPlace(ctxtEnc[1]);
-            cc->EvalSquareInPlace(ctxtEnc[1]);
-            cc->ModReduceInPlace(ctxtEnc[1]);
+            for (auto& ctxt : ctxtEnc) {
+                // Double angle-iterations to get exp(2*Pi*i*x)
+                for (uint32_t i = 0; i < numIter; ++i) {
+                    cc->EvalSquareInPlace(ctxt);
+                    cc->ModReduceInPlace(ctxt);
+                }
+            }
         }
 
         auto ctxtPowersRe = algo->EvalPowers(ctxtEnc[0], coefficients);
@@ -3603,31 +3603,37 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double : coeff_cos_25_double;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
+                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
+                                                             coeff_cos_25_double;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
 
             // Double angle-iterations to get cos(pi*x)
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->EvalAddInPlaceNoCheck(ctxtEnc[0], ctxtEnc[0]);
-            cc->EvalSubInPlace(ctxtEnc[0], 1.0);
-            cc->ModReduceInPlace(ctxtEnc[0]);  // cos(pi x)
+            for (uint32_t i = 1; i < numIter; ++i) {
+                cc->EvalSquareInPlace(ctxtEnc[0]);
+                cc->EvalAddInPlaceNoCheck(ctxtEnc[0], ctxtEnc[0]);
+                cc->EvalSubInPlace(ctxtEnc[0], 1.0);
+                cc->ModReduceInPlace(ctxtEnc[0]);
+            }
+            // cos(pi x) after the loop above; square once more to get cos^2(pi x)
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
         }
         else {
-            auto& coeff_exp = (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
+                              (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
                               (digitBitSize > 10)          ? coeff_exp_25_double_66 :
                                                              coeff_exp_25_double_58;
 
-            // Obtain exp(Pi/2*i*x) approximation via Chebyshev Basis Polynomial Interpolation
+            // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
 
             // Double angle-iterations to get exp(2*Pi*i*x)
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->ModReduceInPlace(ctxtEnc[0]);
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->ModReduceInPlace(ctxtEnc[0]);
+            for (uint32_t i = 0; i < numIter; ++i) {
+                cc->EvalSquareInPlace(ctxtEnc[0]);
+                cc->ModReduceInPlace(ctxtEnc[0]);
+            }
         }
 
         // No need to scale the message back up after Chebyshev interpolation
@@ -3877,8 +3883,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>
 template <typename VectorDataType>
 uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                     size_t order, SecretKeyDist skd) {
-    auto& coeff_cos = (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double : coeff_cos_25_double;
-    auto& coeff_exp = (skd == SPARSE_ENCAPSULATED)   ? coeff_exp_16_double_46 :
+    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
+                      (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
+                                                     coeff_cos_25_double;
+    auto& coeff_exp = (skd == UNIFORM_TERNARY)       ? coeff_exp_512_double_92 :
+                      (skd == SPARSE_ENCAPSULATED)   ? coeff_exp_16_double_46 :
                       (PInput.ConvertToInt() > 1024) ? coeff_exp_25_double_66 :
                                                        coeff_exp_25_double_58;
     uint32_t depth  = 0;
@@ -3903,7 +3912,8 @@ uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficie
             depth += GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
             break;
     }
-    depth += 2;  // the number of double-angle iterations is fixed to 2
+    // the number of double-angle iterations: 2 for the sparse distributions and 6 for UNIFORM_TERNARY
+    depth += (skd == UNIFORM_TERNARY) ? R_UNIFORM_FBT : R_SPARSE_FBT;
     return depth;
 }
 
