@@ -32,6 +32,8 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - Current implementation supports Meta-BTS (or multiple-iteration) CKKS bootstrapping.
 
+- Both slot-encoding modes of CKKS bootstrapping are supported: the default ModRaise-first mode and the SlotsToCoeffs-first mode (`BTSlotsEncoding = true` in `EvalBootstrapSetup`), with a precision comparable to FLEXIBLEAUTO in both modes.
+
 ## Current Constraints
 
 - This current CKKS composite scaling implementation does not yet support scheme switching or interactive bootstrapping.

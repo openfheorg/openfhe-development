@@ -826,10 +826,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                       std::to_string(m_correctionFactor) + "].");
     }
 #endif
-    uint32_t correction = m_correctionFactor - deg;
+    // For composite scaling, deg may exceed the correction factor (the check above is skipped, since with
+    // larger composite degrees the first modulus is typically much larger than the scaling factor); in that
+    // case no correction is applied instead of letting the unsigned subtraction wrap around.
+    uint32_t correction = (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
     double post         = std::pow(2, static_cast<double>(deg));
 
-    // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
     // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
     // restored by the integer "scalar" after the sine. For composite scaling the entire overflow
     // normalization (the exact 2^-deg = 1/post AND the residual c1) is carried by the CoeffsToSlots/
@@ -1089,7 +1091,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         uint32_t numIter = (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ? R_UNIFORM : R_SPARSE;
         ApplyDoubleAngleIterations(ctxtEnc, numIter);
 
-        // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
         // scale the message back up after Chebyshev interpolation; for composite scaling this restores
         // the exact power-of-two 2^deg via an integer multiply (the residual ~1 coefficient lives in the
         // StC matrix, see EvalBootstrapSetup)
@@ -1241,10 +1242,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
                       std::to_string(m_correctionFactor) + "].");
     }
 #endif
-    uint32_t correction = m_correctionFactor - deg;
+    // For composite scaling, deg may exceed the correction factor (the check above is skipped, since with
+    // larger composite degrees the first modulus is typically much larger than the scaling factor); in that
+    // case no correction is applied instead of letting the unsigned subtraction wrap around.
+    uint32_t correction = (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
     double post         = std::pow(2, static_cast<double>(deg));
 
-    // TODO: YSP Can be extended to FLEXIBLE* scaling techniques as well as the closeness of 2^p to moduli is no longer needed
     // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
     // restored by the integer "scalar" after the sine. For composite scaling the entire overflow
     // normalization (the exact 2^-deg = 1/post AND the residual c1) is carried by the CoeffsToSlots/
@@ -1298,8 +1301,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     // Only work with the minimum number of required levels.
     auto ctxtDepleted = ciphertext->Clone();
 
-    // AA: Revisit to clean up and fix for compositeScaling
-    auto expectedLevel = L0 - (p.m_paramsDec.lvlb + 2 + (st == FLEXIBLEAUTOEXT));
+    // The SlotsToCoeffs matrix is encoded for an input with compositeDegree * (lvlb + 2) towers
+    // remaining (lDec in EvalBootstrapSetup), so each level below costs compositeDegree towers.
+    // FLEXIBLEAUTOEXT (one extra tower) and composite scaling are mutually exclusive.
+    auto expectedLevel = L0 - compositeDegree * (p.m_paramsDec.lvlb + 2) - (st == FLEXIBLEAUTOEXT);
 
     if (ctxtDepleted->GetLevel() + compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1) > expectedLevel) {
         OPENFHE_THROW("Not enough levels to perform Bootstrapping.");
@@ -1315,17 +1320,23 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     }
     else {
         if (ctxtLevel < expectedLevel) {
-            double scf2  = ctxtDepleted->GetScalingFactor();
-            double scf1  = cryptoParams->GetScalingFactorRealBig(ctxtDepleted->GetLevel() - compositeDegree +
-                                                                 ctxtDepleted->GetNoiseScaleDeg() - 1);
-            double scf   = cryptoParams->GetScalingFactorReal(expectedLevel);
-            ctxtDepleted = cc->EvalMult(ctxtDepleted, scf1 / scf2 / scf);
-            if (ctxtDepleted->GetLevel() + compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1) < expectedLevel) {
-                cc->GetScheme()->LevelReduceInternalInPlace(
-                    ctxtDepleted, expectedLevel - ctxtLevel - compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1));
+            // Bring the (noise degree 1) ciphertext down to expectedLevel with the exact scaling factor of
+            // that level, using the same maneuver as AdjustLevelsAndDepthInPlace: multiply by a constant
+            // (encoded at the scaling factor of the current level) so that one rescaling by the moduli of
+            // the target level lands exactly on GetScalingFactorReal(expectedLevel). Mixing up the current
+            // and target levels here is harmless for FLEXIBLEAUTO (its per-level scaling factors agree to
+            // ~2^-30) but costs ~15 bits for composite scaling, whose per-level products of small primes
+            // deviate from each other much more.
+            double scf2      = ctxtDepleted->GetScalingFactor();
+            double scf1      = cryptoParams->GetScalingFactorRealBig(expectedLevel - compositeDegree);
+            double scf       = cryptoParams->GetScalingFactorReal(ctxtLevel);
+            double targetScf = cryptoParams->GetScalingFactorReal(expectedLevel);
+            ctxtDepleted     = cc->EvalMult(ctxtDepleted, scf1 / scf2 / scf);
+            if (ctxtLevel + compositeDegree < expectedLevel) {
+                cc->GetScheme()->LevelReduceInternalInPlace(ctxtDepleted, expectedLevel - ctxtLevel - compositeDegree);
             }
-            algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1));
-            ctxtDepleted->SetScalingFactor(scf);
+            algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree);
+            ctxtDepleted->SetScalingFactor(targetScf);
         }
         else {
             algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1));

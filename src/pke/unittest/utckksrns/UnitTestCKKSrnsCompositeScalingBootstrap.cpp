@@ -375,12 +375,14 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_Iterative(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
+    void UnitTest_Bootstrap_Iterative(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,
                                       const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+            // For small ring dimensions like the ones tested, the correction factor for StC-first should be small, e.g., 10.
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, (StCFlag) ? 10 : 0, true,
+                                   StCFlag);
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
@@ -394,7 +396,8 @@ protected:
             size_t encodedLength = input.size();
 
             Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
-                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots);
             auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
 
@@ -417,7 +420,8 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult = resultTwoIterations->GetCKKSPackedValue();
             checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed");
+                          failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
             double precisionMultipleIterations =
                 CalculateApproximationError(actualResult, plaintext->GetCKKSPackedValue());
 
@@ -443,7 +447,7 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_NumTowers(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
+    void UnitTest_Bootstrap_NumTowers(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,
                                       const std::string& failmsg = std::string()) {
         // This test checks to make sure that we return the original ciphertext if we
         // start with more towers than the number of towers we would end up with by
@@ -451,7 +455,7 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, StCFlag);
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
@@ -476,7 +480,9 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
             result->SetLength(encodedLength);
             auto actualResult = result->GetCKKSPackedValue();
-            checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps, failmsg + " Bootstrapping failed");
+            checkEquality(
+                actualResult, plaintext->GetCKKSPackedValue(), eps,
+                failmsg + " Bootstrapping failed for " + ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             auto ciphertextTwoIterations             = cc->EvalBootstrap(ciphertext);
             auto bootstrappingNumTowersTwoIterations = ciphertextTwoIterations->GetElements()[0].GetNumOfElements();
@@ -488,7 +494,8 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult2 = result2->GetCKKSPackedValue();
             checkEquality(actualResult2, plaintext->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping with two iterations failed");
+                          failmsg + " Bootstrapping with two iterations failed for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -500,7 +507,7 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_Serialize(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
+    void UnitTest_Bootstrap_Serialize(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,
                                       const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
@@ -509,8 +516,8 @@ protected:
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 
             CryptoContext<Element> ccInit(UnitTestGenerateContext(testData.params));
-            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, false);
-            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots / 2, 0, false);
+            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, false, StCFlag);
+            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots / 2, 0, false, StCFlag);
 
             auto keyPairInit = ccInit->KeyGen();
             ccInit->EvalMultKeyGen(keyPairInit.secretKey);
@@ -559,7 +566,8 @@ protected:
             auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
-                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots);
             auto ciphertext1      = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext1After = cc->EvalBootstrap(ciphertext1);
 
@@ -568,14 +576,16 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             //====================================================================================================
             auto input2(Fill<std::complex<double>>({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
             size_t encodedLength2 = input2.size();
 
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(
-                input2, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots / 2);
+                input2, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots / 2);
             auto ciphertext2      = cc->Encrypt(keyPair.publicKey, plaintext2);
             auto ciphertext2After = cc->EvalBootstrap(ciphertext2);
 
@@ -631,14 +641,12 @@ protected:
             CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(evalMultKey_stream, SerType::BINARY);
 
             std::stringstream bootstrapKey_stream1;
-            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY,
-                                                                   ccInit, keyPairInit.secretKey->GetKeyTag(),
-                                                                   testData.slots);
+            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY, ccInit,
+                                                                   keyPairInit.secretKey->GetKeyTag(), testData.slots);
 
             std::stringstream bootstrapKey_stream2;
-            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream2, SerType::BINARY,
-                                                                   ccInit, keyPairInit.secretKey->GetKeyTag(),
-                                                                   testData.slots / 2);
+            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(
+                bootstrapKey_stream2, SerType::BINARY, ccInit, keyPairInit.secretKey->GetKeyTag(), testData.slots / 2);
             //==============================================================
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -724,20 +732,22 @@ TEST_P(UTCKKSRNSCS_BOOT, CKKSRNS) {
         case BOOTSTRAP_EDGE:
         case BOOTSTRAP_SPARSE:
             UnitTest_Bootstrap(test, false, test.buildTestName());
-            // TODO: enable following test once STC Composite Scaling operational
-            // UnitTest_Bootstrap(test, true, test.buildTestName());
+            UnitTest_Bootstrap(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_KEY_SWITCH:
             UnitTest_Bootstrap_KeySwitching(test, test.buildTestName());
             break;
         case BOOTSTRAP_ITERATIVE:
-            UnitTest_Bootstrap_Iterative(test, test.buildTestName());
+            UnitTest_Bootstrap_Iterative(test, false, test.buildTestName());
+            UnitTest_Bootstrap_Iterative(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_NUM_TOWERS:
-            UnitTest_Bootstrap_NumTowers(test, test.buildTestName());
+            UnitTest_Bootstrap_NumTowers(test, false, test.buildTestName());
+            UnitTest_Bootstrap_NumTowers(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_SERIALIZE:
-            UnitTest_Bootstrap_Serialize(test, test.buildTestName());
+            UnitTest_Bootstrap_Serialize(test, false, test.buildTestName());
+            UnitTest_Bootstrap_Serialize(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_KEY_SERIALIZE:
             UnitTest_Bootstrap_SerializeBootstrapKey(test, test.buildTestName());
