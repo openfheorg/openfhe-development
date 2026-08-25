@@ -3012,15 +3012,19 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>
 // CKKS Functional Bootstrapping implements the tower-drop and rescaling conventions only for the
 // techniques below. Composite scaling is not supported yet: it needs a level-specific scaling-factor
 // chain whose rescalings are multiples of the composite degree, which the tower drops here do not follow.
-static void ValidateFBTScalingTechnique(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+// The whole 128-bit build is rejected as well, for every scaling technique: functional bootstrapping has
+// no counterpart to the correction-factor scaling path that standard CKKS bootstrapping implements for
+// 128 bits, and enabling the unit tests on a 128-bit build shows every case, the FIXED* modes included,
+// producing silently wrong results. Supporting it is future work.
+static void ValidateFBTScalingTechnique([[maybe_unused]] const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+#if NATIVEINT == 128
+    OPENFHE_THROW("CKKS Functional Bootstrapping is not supported for the 128-bit build (NATIVE_SIZE == 128).");
+#else
     auto st = cryptoParams->GetScalingTechnique();
     if (st != FIXEDMANUAL && st != FIXEDAUTO && st != FLEXIBLEAUTO && st != FLEXIBLEAUTOEXT)
         OPENFHE_THROW(
             "CKKS Functional Bootstrapping is supported for the FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and "
             "FLEXIBLEAUTOEXT methods only.");
-#if NATIVEINT == 128
-    if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW("128-bit CKKS Functional Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 }
 
@@ -3096,13 +3100,18 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     }
 
     auto& params = pubKey->GetPublicElements()[0].GetParams()->GetParams();
-    uint32_t cnt = 0;
 
-    const uint32_t lvlsAfterBootSaved = lvlsAfterBoot;
+    // The output of functional bootstrapping keeps 1 + lvlsAfterBoot towers, so the modulus chain has to
+    // be long enough to provide them. Without this check the loop below reads past the end of the params
+    // vector and the level arithmetic further down wraps around.
+    if (lvlsAfterBoot >= params.size())
+        OPENFHE_THROW("lvlsAfterBoot (" + std::to_string(lvlsAfterBoot) +
+                      ") is too large: it must be less than the number of moduli (" + std::to_string(params.size()) +
+                      ").");
 
     BigInteger QPrime = params[0]->GetModulus();
-    while (lvlsAfterBoot-- > 0)
-        QPrime *= params[++cnt]->GetModulus();
+    for (uint32_t i = 1; i <= lvlsAfterBoot; ++i)
+        QPrime *= params[i]->GetModulus();
 
     BigInteger q    = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt();
     auto qDouble    = q.ConvertToLongDouble();
@@ -3131,12 +3140,25 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
         double pow2p         = std::pow(2.0, static_cast<double>(cryptoParams->GetPlaintextModulus()));
         uint32_t raisedLevel = (st == FLEXIBLEAUTOEXT) ? 1 : 0;
         // the output of functional bootstrapping has 1 + lvlsAfterBoot towers remaining
-        uint32_t finalLevel = L0 - 1 - lvlsAfterBootSaved;
+        uint32_t finalLevel = L0 - 1 - lvlsAfterBoot;
         scaleEnc *= cryptoParams->GetScalingFactorReal(raisedLevel) / pow2p;
         scaleDec *= pow2p / cryptoParams->GetScalingFactorReal(finalLevel);
     }
 
     L0 -= (st == FLEXIBLEAUTOEXT);
+
+    // The encoding and decoding matrices are precomputed at the levels below, which have to exist on the
+    // chain. Checking here reports the parameter that is actually wrong, instead of letting the unsigned
+    // subtractions wrap and failing later inside the plaintext encoding with an unrelated message.
+    if (levelBudget[0] >= L0)
+        OPENFHE_THROW("The encoding level budget (" + std::to_string(levelBudget[0]) +
+                      ") is too large for the available number of levels (" + std::to_string(L0) + ").");
+    if (depthBT > L0)
+        OPENFHE_THROW("The functional bootstrapping depth (" + std::to_string(depthBT) +
+                      ") exceeds the available number of levels (" + std::to_string(L0) +
+                      "). Increase the multiplicative depth, or reduce the level budget or "
+                      "depthLeveledComputation.");
+
     uint32_t lEnc = L0 - levelBudget[0] - 1;
     uint32_t lDec = L0 - depthBT;
 

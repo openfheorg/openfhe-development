@@ -193,8 +193,10 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 
 // clang-format off
 static std::vector<TEST_CASE_FBT> testCases = {
-// Functional Bootstrapping does not support NATIVE_SIZE == 128. Composite scaling, which serves that
-// purpose elsewhere in CKKS, is not supported here either (EvalFBTSetup rejects it), so the supported
+// Functional Bootstrapping does not support NATIVE_SIZE == 128: every case below fails there, for the
+// FIXED* modes as well, because the 128-bit scaling path that standard CKKS bootstrapping implements
+// (the correction factor) has no counterpart here. Composite scaling, which serves that purpose
+// elsewhere in CKKS, is not supported here either (EvalFBTSetup rejects it), so the supported
 // rescaling modes are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT on the 64-bit build.
 #if NATIVEINT != 128
 #ifndef BENCH
@@ -1463,9 +1465,10 @@ protected:
     }
 
     // Checks that invalid usage is rejected with an exception instead of silently corrupting results:
-    // 1) an oversized levelToReduce in EvalHomDecoding under FLEXIBLE*, and 2) a FLEXIBLEAUTOEXT input
-    // that still includes the extra modulus. EvalFBTSetup also rejects the scaling techniques it does
-    // not support, which is left to be covered when composite scaling is supported.
+    // 1) more levels requested after bootstrapping than the modulus chain has, 2) an oversized
+    // levelToReduce in EvalHomDecoding under FLEXIBLE*, and 3) a FLEXIBLEAUTOEXT input that still
+    // includes the extra modulus. EvalFBTSetup also rejects the scaling techniques it does not support,
+    // which is left to be covered when composite scaling is supported.
     void UnitTest_InvalidArgs(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
             bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
@@ -1509,6 +1512,15 @@ protected:
                 auto cc         = GenCryptoContext(parameters);
                 enableAll(cc);
                 auto keyPair = cc->KeyGen();
+
+                // more levels after bootstrapping than the chain provides is rejected at setup, rather
+                // than reading past the modulus vector and wrapping the level arithmetic
+                const std::vector<uint32_t> dim1{0, 0};
+                EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
+                                              dim1, t.lvlb, depth + 1, 0, t.order),
+                             OpenFHEException)
+                    << failmsg << " oversized lvlsAfterBoot not rejected";
+
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
                                  t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
                 std::vector<double> y(numSlotsCKKS, 0.5);

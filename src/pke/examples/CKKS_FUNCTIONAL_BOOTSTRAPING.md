@@ -124,4 +124,5 @@ scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for t
 correctness can be achieved with a smaller CKKS scaling factor).
 Composite scaling (COMPOSITESCALINGAUTO and COMPOSITESCALINGMANUAL) is not supported yet, and neither is NORESCALE;
 `EvalFBTSetup` rejects them.
+- The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFBTSetup` rejects it.
 - MULTIPARTY is not supported.
