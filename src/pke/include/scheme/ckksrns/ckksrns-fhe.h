@@ -981,7 +981,6 @@ private:
         std::complex<double>(0, -2.757124392618e-10),
         std::complex<double>(0, 7.211314011213e-11),
         std::complex<double>(0, 4.426391086890e-11)};
-
 };
 
 }  // namespace lbcrypto
