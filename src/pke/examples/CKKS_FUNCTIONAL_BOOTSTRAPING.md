@@ -118,5 +118,11 @@ security.
 - The current multiprecision sign evaluation implementation requires that the digit bit size divides the input bit size.
 - Only sparse secrets are currently supported, with the secret key distributions SPARSE_TERNARY (larger probability of
 failure) and SPARSE_ENCAPSULATED (negligible probability of failure).
-- Only the FIXEDMANUAL mode for rescaling is supported.
+- The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT modes for rescaling are supported (for the 64-bit build).
+The FLEXIBLEAUTO and FLEXIBLEAUTOEXT modes track the exact level-specific scaling factors, which removes the
+scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters (equivalently,
+correctness can be achieved with a smaller CKKS scaling factor).
+Composite scaling (COMPOSITESCALINGAUTO and COMPOSITESCALINGMANUAL) is not supported yet, and neither is NORESCALE;
+`EvalFBTSetup` rejects them.
+- The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFBTSetup` rejects it.
 - MULTIPARTY is not supported.
