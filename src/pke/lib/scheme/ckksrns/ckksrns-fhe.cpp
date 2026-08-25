@@ -45,7 +45,6 @@
 #include "utils/utilities.h"
 
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -1231,10 +1230,9 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW("CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS FEFBT is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
+    OPENFHE_THROW("128-bit CKKS FEFBT is not supported for 128 NATIVEINT.");
 #endif
 
     uint32_t M     = cc.GetCyclotomicOrder();
@@ -1371,7 +1369,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-        OPENFHE_THROW("CKKS FEFBS is only supported for the Hybrid key switching method.");
+        OPENFHE_THROW("CKKS FEFBT is only supported for the Hybrid key switching method.");
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     OPENFHE_THROW("128-bit CKKS FEFBS is not supported for 128 NATIVEINT.");
 #endif
@@ -1393,7 +1391,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(
     if (pair == m_bootPrecomMap.end()) {
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
-                             std::string(" Need to call EvalBootstrapSetup and then EvalBootstrapKeyGen to proceed"));
+                             std::string(" Need to call EvalFEFuncBootstrapSetup and then EvalBootstrapKeyGen to proceed"));
         OPENFHE_THROW(errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
@@ -2602,26 +2600,6 @@ void FHECKKSRNS::AdjustCiphertextFEFBT(Ciphertext<DCRTPoly>& ciphertext) const {
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         ciphertext->SetScalingFactor(cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
     }
-    // const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-    // const auto scalingTechnique = cryptoParams->GetScalingTechnique();
-    // if (scalingTechnique != FLEXIBLEAUTO && scalingTechnique != FLEXIBLEAUTOEXT)
-    //     return;
-
-    // auto cc = ciphertext->GetCryptoContext();
-    // uint32_t level = ciphertext->GetLevel();
-    // double targetSF = cryptoParams->GetScalingFactorReal(level);
-    // double sourceSF = ciphertext->GetScalingFactor();
-
-    // uint32_t numTowers = ciphertext->GetElements()[0].GetNumOfElements();
-    // double modToDrop =
-    //     cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
-    // for (uint32_t j = 2; j <= cryptoParams->GetCompositeDegree(); ++j) {
-    //     modToDrop *= cryptoParams->GetElementParams()->GetParams()[numTowers - j]->GetModulus().ConvertToDouble();
-    // }
-
-    // cc->EvalMultInPlace(ciphertext, (targetSF / sourceSF) * (modToDrop / sourceSF));
-    // cc->GetScheme()->ModReduceInternalInPlace(ciphertext, cryptoParams->GetCompositeDegree());
-    // ciphertext->SetScalingFactor(targetSF);
 }
 
 void FHECKKSRNS::ExtendCiphertext(std::vector<DCRTPoly>& ctxtDCRTs, const CryptoContextImpl<DCRTPoly>& cc,

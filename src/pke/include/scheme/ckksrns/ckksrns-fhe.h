@@ -774,9 +774,7 @@ private:
         0.00021144315086655356181, 0, -0.000030941853901365542544, 0, 3.9566690159249453134e-6,  0,
         -4.4681499226586877671e-7, 0, 4.4954022829997224556e-8,    0, -4.0598440976489881572e-9, 0,
         3.3135648780960312982e-10, 0, -2.6219749998085732829e-11};
-
-};
-
+    
     // Fourier coefficients for the y = x in [-0.5, 0.5] of degree 25
     static const inline std::vector<std::complex<double>> coeff_identity_1_double_25{
         std::complex<double>(0, 0.000000000000e+00),
@@ -804,7 +802,7 @@ private:
         std::complex<double>(0, -1.285522356967e-10),
         std::complex<double>(0, -2.757124392618e-10),
         std::complex<double>(0, 7.211314011213e-11),
-        std::complex<double>(0, 4.426391086890e-11)
+        std::complex<double>(0, 4.426391086890e-11)};
 };
 
 }  // namespace lbcrypto
