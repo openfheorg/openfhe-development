@@ -145,6 +145,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
     * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
     * of failure at a cost of slightly more noise.
+    * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
+    * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
+    * hence they yield less noise than the FIXED* techniques for the same parameters.
     */
     uint32_t dcrtBits                       = Bigq.GetMSB() - 1;
     uint32_t firstMod                       = Bigq.GetMSB() - 1;
@@ -152,13 +155,14 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum                           = 3;
     SecretKeyDist secretKeyDist             = SPARSE_ENCAPSULATED;
+    ScalingTechnique scalTech               = FLEXIBLEAUTO;
     std::vector<uint32_t> lvlb              = {3, 3};
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(scalTech);
     parameters.SetFirstModSize(firstMod);
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -178,8 +182,8 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     cc->Enable(ADVANCEDSHE);
     cc->Enable(FHE);
 
-    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " and a multiplicative depth of "
-              << depth << std::endl
+    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << ", a multiplicative depth of "
+              << depth << " and the " << scalTech << " rescaling technique" << std::endl
               << std::endl;
 
     /* 5. Compute various moduli and scaling sizes, used for scheme conversions.
@@ -302,6 +306,9 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
      * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
      * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
      * of failure at a cost of slightly more noise.
+     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
+     * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
+     * hence they yield less noise than the FIXED* techniques for the same parameters.
      */
     uint32_t dcrtBits                       = Bigq.GetMSB() - 1;
     uint32_t firstMod                       = Bigq.GetMSB() - 1;
@@ -309,13 +316,14 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum                           = 3;
     SecretKeyDist secretKeyDist             = SPARSE_TERNARY;
+    ScalingTechnique scalTech               = FIXEDMANUAL;
     std::vector<uint32_t> lvlb              = {3, 3};
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(scalTech);
     parameters.SetFirstModSize(firstMod);
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -335,8 +343,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     cc->Enable(ADVANCEDSHE);
     cc->Enable(FHE);
 
-    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " and a multiplicative depth of "
-              << depth << std::endl
+    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << ", a multiplicative depth of "
+              << depth << " and the " << scalTech << " rescaling technique" << std::endl
               << std::endl;
 
     /* 6. Compute various moduli and scaling sizes, used for scheme conversions.
@@ -357,10 +365,13 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     auto mask_real = Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlots);
 
+    // The mask level is counted on the full modulus chain, which has an extra modulus for FLEXIBLEAUTOEXT
+    const uint32_t extOff = (scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
+
     // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
     Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
         Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
-        depth - lvlb[1] - levelsAvailableAfterBootstrap - levelsComputation, nullptr, numSlotsCKKS);
+        depth + extOff - lvlb[1] - levelsAvailableAfterBootstrap - levelsComputation, nullptr, numSlotsCKKS);
 
     /* 7. When leveled computations (multiplications, rotations) are desired to be performed while in
      * slot-packed CKKS (before returning to RLWE coefficient packing), and the FFT method is used
@@ -546,6 +557,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
      * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
      * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
      * of failure at a cost of slightly more noise.
+     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
+     * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
+     * hence they yield less noise than the FIXED* techniques for the same parameters.
      */
     uint32_t dcrtBits                       = Bigq.GetMSB() - 1;
     uint32_t firstMod                       = Bigq.GetMSB() - 1;
@@ -553,13 +567,14 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum                           = 3;
     SecretKeyDist secretKeyDist             = SPARSE_ENCAPSULATED;
+    ScalingTechnique scalTech               = FIXEDMANUAL;
     std::vector<uint32_t> lvlb              = {3, 3};
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(scalTech);
     parameters.SetFirstModSize(firstMod);
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -581,8 +596,8 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
     auto keyPair = cc->KeyGen();
 
-    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " and a multiplicative depth of "
-              << depth << std::endl
+    std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << ", a multiplicative depth of "
+              << depth << " and the " << scalTech << " rescaling technique" << std::endl
               << std::endl;
 
     /* 6. Compute various moduli and scaling sizes, used for scheme conversions.
