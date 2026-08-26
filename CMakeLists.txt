@@ -171,8 +171,34 @@ endif("${isSystemDir}" STREQUAL "-1")
 set(C_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
 set(CXX_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
 if(WITH_NATIVEOPT)
-    string(APPEND C_COMPILE_FLAGS " -march=native")
-    string(APPEND CXX_COMPILE_FLAGS " -march=native")
+    # probe rather than hardcode: -march=native is the x86 spelling, some aarch64
+    # toolchains reject it, and cmake does not validate compiler flags at configure time
+    include(CheckCXXCompilerFlag)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64|armv8)")
+        set(NATIVEOPT_CANDIDATES "-mcpu=native" "-march=native")
+    else()
+        set(NATIVEOPT_CANDIDATES "-march=native" "-mcpu=native")
+    endif()
+
+    set(NATIVEOPT_FLAG "")
+    foreach(flag ${NATIVEOPT_CANDIDATES})
+        string(MAKE_C_IDENTIFIER "COMPILER_SUPPORTS${flag}" flagvar)
+        check_cxx_compiler_flag("${flag}" ${flagvar})
+        if(${flagvar})
+            set(NATIVEOPT_FLAG "${flag}")
+            break()
+        endif()
+    endforeach()
+
+    if(NATIVEOPT_FLAG)
+        message(STATUS "WITH_NATIVEOPT flag:    ${NATIVEOPT_FLAG}")
+        string(APPEND C_COMPILE_FLAGS " ${NATIVEOPT_FLAG}")
+        string(APPEND CXX_COMPILE_FLAGS " ${NATIVEOPT_FLAG}")
+    else()
+        message(WARNING "WITH_NATIVEOPT is ON, but ${CMAKE_CXX_COMPILER_ID} on "
+                        "${CMAKE_SYSTEM_PROCESSOR} supports neither -march=native nor "
+                        "-mcpu=native. Building without machine-specific optimization.")
+    endif()
 endif()
 
 set(IGNORE_WARNINGS "") # initialize IGNORE_WARNINGS
