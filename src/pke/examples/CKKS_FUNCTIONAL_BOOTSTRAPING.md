@@ -92,7 +92,8 @@ smaller digits, and process these smaller digits separately.
 
 **Secret key distributions**
 
-Functional bootstrapping is supported for sparse secret keys.
+Functional bootstrapping is supported for sparse secret keys (SPARSE_TERNARY and SPARSE_ENCAPSULATED) and for
+uniform ternary secret keys (UNIFORM_TERNARY).
 
 The SPARSE_TERNARY distribution is the distribution used in the original CKKS paper [[CKKS17](https://eprint.iacr.org/2016/421.pdf)],
 where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 25, this
@@ -107,6 +108,14 @@ levels for the complex exponential approximation is the same. The only caveat fo
 scaling factor is very close to the first modulus size in CKKS (which happens for LUT of input bit-size 14), the noise introduced
 by the extra key switching is larger.
 
+The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption standard. It is handled in the
+same manner as in regular CKKS bootstrapping: the number of overflows is bounded by K = 512, and the complex exponential (or
+cosine, for the binary case) is approximated by a degree-92 Chebyshev interpolation over [-512, 512] followed by six double-angle
+iterations (instead of degree 58/46 and two double-angle iterations for the sparse distributions). This increases the
+multiplicative depth of functional bootstrapping by 5 levels. In addition, since the mod-raised message is scaled down by K
+before the homomorphic encoding, larger scaling factors (roughly 5-9 more bits, depending on the parameters) are needed to
+achieve the same output noise as for the sparse distributions.
+
 **Current limitations**
 - There is no automated selection of parameters and approximation orders. The user needs to choose appropriate RLWE and CKKS
 cryptoparameters, trigonometric Hermite interpolation order and the scaling for the Hermite coefficients. These parameters
@@ -116,8 +125,9 @@ If the output is decrypted under CKKS, noise flooding should be applied in order
 security.
 - With a scaling factor fitting on native int size of 64 bits, LUTs up to 14 bits in size are supported.
 - The current multiprecision sign evaluation implementation requires that the digit bit size divides the input bit size.
-- Only sparse secrets are currently supported, with the secret key distributions SPARSE_TERNARY (larger probability of
-failure) and SPARSE_ENCAPSULATED (negligible probability of failure).
+- The supported secret key distributions are SPARSE_TERNARY (larger probability of failure), SPARSE_ENCAPSULATED
+(negligible probability of failure), and UNIFORM_TERNARY (negligible probability of failure, at the cost of a larger
+multiplicative depth and larger scaling factors).
 - The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT modes for rescaling are supported (for the 64-bit build).
 The FLEXIBLEAUTO and FLEXIBLEAUTOEXT modes track the exact level-specific scaling factors, which removes the
 scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters (equivalently,
