@@ -1545,6 +1545,40 @@ private:
     }
 
     /**
+   * Full single-word product built from half-word partial products, for targets without
+   * a double-width integer type. Compilers do NOT fold this back into a single
+   * high-multiply instruction (measured: ~24 instructions on aarch64 and powerpc64
+   * versus one umulh/mulhdu), so it is only used where no double-width type exists --
+   * every 64-bit target gcc and clang support provides __int128, so on those this is
+   * reachable only when the 128-bit type is deliberately disabled.
+   *
+   * @param a multiplier
+   * @param b multiplicand
+   * @param &res result of multiplication
+   */
+    static void MultDPortable(NativeInt a, NativeInt b, typeD& res) {
+        constexpr uint32_t half{MaxBits() / 2};
+        const NativeInt mask{static_cast<NativeInt>((static_cast<NativeInt>(1) << half) - 1)};
+        const NativeInt a1{static_cast<NativeInt>(a >> half)}, a2{static_cast<NativeInt>(a & mask)};
+        const NativeInt b1{static_cast<NativeInt>(b >> half)}, b2{static_cast<NativeInt>(b & mask)};
+        const NativeInt p1{static_cast<NativeInt>(a2 * b1)}, p2{static_cast<NativeInt>(a1 * b2)};
+        const NativeInt mid{static_cast<NativeInt>(p1 + p2)};
+
+        res.hi = static_cast<NativeInt>(a1 * b1);
+        res.lo = static_cast<NativeInt>(a2 * b2);
+
+        // fold the middle term in, propagating both carries: out of the low word, and
+        // out of (p1 + p2) itself, which lands a half-word up in the high word
+        const NativeInt lowBefore{res.lo};
+        res.hi += mid >> half;
+        res.lo += static_cast<NativeInt>(mid & mask) << half;
+        if (res.lo < lowBefore)
+            ++res.hi;
+        if (mid < p1)
+            res.hi += static_cast<NativeInt>(1) << half;
+    }
+
+    /**
    * Multiplies two single-word integers and stores the result in a
    * typeD data structure.
    *
@@ -1561,55 +1595,18 @@ private:
 
         if constexpr (std::is_same_v<NativeInt, uint64_t>) {
 #if defined(HAVE_INT128)
-            // includes defined(__x86_64__), defined(__powerpc64__), defined(__riscv), defined(__s390__)
             uint128_t c{static_cast<uint128_t>(a) * b};
             res.hi = static_cast<uint64_t>(c >> 64);
             res.lo = static_cast<uint64_t>(c);
-#elif defined(__EMSCRIPTEN__)  // web assembly
-            uint64_t a1 = a >> 32;
-            uint64_t a2 = (uint32_t)a;
-            uint64_t b1 = b >> 32;
-            uint64_t b2 = (uint32_t)b;
-
-            res.hi             = a1 * b1;
-            res.lo             = a2 * b2;
-            uint64_t lowBefore = res.lo;
-
-            uint64_t p1   = a2 * b1;
-            uint64_t p2   = a1 * b2;
-            uint64_t temp = p1 + p2;
-            res.hi += temp >> 32;
-            res.lo += uint64_t((uint32_t)temp) << 32;
-
-            // adds the carry to the high word
-            if (lowBefore > res.lo)
-                ++res.hi;
-
-            // if there is an overflow in temp, add 2^32
-            if ((temp < p1) || (temp < p2))
-                res.hi += (uint64_t)1 << 32;
-#elif defined(__x86_64__)
+#elif defined(__x86_64__) && (defined(__GNUC__) || defined(__clang__))
             // clang-format off
             __asm__("mulq %[b]"
                 : [ lo ] "=a"(res.lo), [ hi ] "=d"(res.hi)
                 : [ a ] "%[lo]"(a), [ b ] "rm"(b)
                 : "cc");
                 // clang-format on
-#elif defined(__aarch64__)
-            typeD x;
-            x.hi = 0;
-            x.lo = a;
-            uint64_t y(b);
-            res.lo = x.lo * y;
-            asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
-            res.hi += x.hi * y;
-#elif defined(__arm__) || defined(__powerpc__)  // 32 bit processor
-            uint64_t wres(0), wa(a), wb(b);
-            wres   = wa * wb;
-            res.hi = wres >> 32;
-            res.lo = (uint32_t)wres & 0xFFFFFFFF;
 #else
-    #error Architecture not supported for MultD()
+            MultDPortable(a, b, res);
 #endif
         }
 
