@@ -70,6 +70,7 @@ enum TEST_CASE_TYPE : int {
     FBT_CONSECLEV,
     FBT_MVB,
     FBT_NOISE,
+    FBT_NOISE_VS_FLEXIBLE,
     FBT_MVB_REUSE,
     FBT_INVALID,
 };
@@ -91,6 +92,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FBT_NOISE:
             typeName = "FBT_NOISE";
+            break;
+        case FBT_NOISE_VS_FLEXIBLE:
+            typeName = "FBT_NOISE_VS_FLEXIBLE";
             break;
         case FBT_MVB_REUSE:
             typeName = "FBT_MVB_REUSE";
@@ -115,8 +119,34 @@ static std::string ScalTechName(ScalingTechnique st) {
             return "FLEXIBLEAUTO";
         case FLEXIBLEAUTOEXT:
             return "FLEXIBLEAUTOEXT";
+        case COMPOSITESCALINGAUTO:
+            return "COMPOSITESCALINGAUTO";
+        case COMPOSITESCALINGMANUAL:
+            return "COMPOSITESCALINGMANUAL";
         default:
             return "UNKNOWN";
+    }
+}
+
+// The CKKS scaling factor has the same bit length as the RLWE ciphertext modulus. The first modulus has the
+// same size too, except for composite scaling, whose parameter generation requires firstModSize > scalingModSize;
+// there the first modulus is one bit larger (the ratio between the first modulus and the RLWE ciphertext
+// modulus is compensated exactly by the scale bookkeeping of functional bootstrapping).
+static uint32_t FirstModSize(uint32_t dcrtBits, ScalingTechnique st) {
+    return (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ? dcrtBits + 1 : dcrtBits;
+}
+
+// Composite scaling with a 32-bit register word size yields composite degree ceil(dcrtBits / 32), i.e., 2 for the
+// scaling factor sizes used in most composite rows and 3 for the 90-bit rows (the default register word size would
+// yield composite degree 1, which is rejected). COMPOSITESCALINGMANUAL requires the composite degree to be set
+// explicitly; the same degree as the one COMPOSITESCALINGAUTO would choose is used.
+static void SetScalingTechniqueParams(CCParams<CryptoContextCKKSRNS>& parameters, ScalingTechnique st,
+                                      uint32_t dcrtBits) {
+    parameters.SetScalingTechnique(st);
+    if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) {
+        parameters.SetRegisterWordSize(32);
+        if (st == COMPOSITESCALINGMANUAL)
+            parameters.SetCompositeDegree((dcrtBits + 31) / 32);
     }
 }
 
@@ -184,6 +214,9 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 [[maybe_unused]] const BigInteger Q64(BigInteger(1) << 64);
 [[maybe_unused]] const BigInteger Q71(BigInteger(1) << 71);
 [[maybe_unused]] const BigInteger Q80(BigInteger(1) << 80);
+[[maybe_unused]] const BigInteger Q90(BigInteger(1) << 90);
+[[maybe_unused]] const BigInteger Q110(BigInteger(1) << 110);
+[[maybe_unused]] const BigInteger Q130(BigInteger(1) << 130);
 
 [[maybe_unused]] constexpr double SCALETHI(32.0);
 [[maybe_unused]] constexpr double SCALESTEPTHI(1.0);
@@ -199,9 +232,9 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 static std::vector<TEST_CASE_FBT> testCases = {
 // Functional Bootstrapping does not support NATIVE_SIZE == 128: every case below fails there, for the
 // FIXED* modes as well, because the 128-bit scaling path that standard CKKS bootstrapping implements
-// (the correction factor) has no counterpart here. Composite scaling, which serves that purpose
-// elsewhere in CKKS, is not supported here either (EvalFBTSetup rejects it), so the supported
-// rescaling modes are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT on the 64-bit build.
+// (the correction factor) has no counterpart here. The supported rescaling modes are FIXEDMANUAL,
+// FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL on the 64-bit
+// build (composite scaling rows are 10xx below).
 #if NATIVEINT != 128
 #ifndef BENCH
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
@@ -337,6 +370,52 @@ static std::vector<TEST_CASE_FBT> testCases = {
     {    FBT_ARBLUT, "944",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
     {    FBT_ARBLUT, "945",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTOEXT},
     { FBT_SIGNDIGIT, "946",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    // COMPOSITESCALINGAUTO (composite degree 2 for these scaling factor sizes, with the default register word
+    // size of 32 bits). The parameter generation for composite scaling requires primes of at least 19 bits,
+    // hence the larger moduli (the same ones as for UNIFORM_TERNARY are used), and a first modulus larger than
+    // the scaling factor (see FirstModSize). The FBT_NOISE_VS_FLEXIBLE rows check that the output noise is
+    // within 3 bits of FLEXIBLEAUTO for the same parameters (measured differences are below 1 bit; the tolerance
+    // covers the run-to-run variation of the maximum noise over the few slots of these small rings, and the rows
+    // are chosen among the configurations whose noise is stable across runs; binary LUTs with UNIFORM_TERNARY
+    // vary by ~3 bits across runs for both techniques and are therefore not used here).
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1001",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1002",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1003",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1004",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1005",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_CONSECLEV, "1006",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1007",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_MVB_REUSE, "1008",      Q60,      2,       4, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1009",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1010",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1011",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1012",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1013",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1014",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1021", Q60,  2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1022", Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1023", Q60,  PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1024", Q60,     16,      16, Q48, Q48,       16, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    // Large scaling factors (90 bits, composite degree 3 with 30-bit primes), which only composite scaling supports
+    // on the 64-bit build; the RLWE ciphertext modulus has the same bit length as the scaling factor.
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1031",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1032",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1033",     Q110,   4096,    4096, Q90, Q90,     2000, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1034",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1035",     Q130,    Q21,       2, Q110, Q90,       1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1036",     Q110, PINPUT,  PINPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_CONSECLEV, "1037",     Q110, PINPUT,  PINPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    // COMPOSITESCALINGMANUAL (composite degree set explicitly, see SetScalingTechniqueParams)
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1041",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {    FBT_ARBLUT, "1042",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {    FBT_ARBLUT, "1043",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGMANUAL},
+    { FBT_SIGNDIGIT, "1044",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {       FBT_MVB, "1045",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {    FBT_ARBLUT, "1046",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    { FBT_NOISE_VS_FLEXIBLE, "1047", Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
     { FBT_CONSECLEV, "947",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
     {       FBT_MVB, "948",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
 #else
@@ -524,8 +603,8 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(t.scalTech);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -695,8 +774,8 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(t.scalTech);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -922,8 +1001,8 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(t.scalTech);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -976,13 +1055,16 @@ protected:
 
             auto mask_real = Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, t.numSlots);
 
-            // The mask level is counted on the full modulus chain, which has an extra modulus for FLEXIBLEAUTOEXT
+            // The mask level is counted in towers on the full modulus chain, which has an extra modulus for
+            // FLEXIBLEAUTOEXT and compositeDegree towers per level for composite scaling
             const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
+            const uint32_t cd =
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
 
             // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
             Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
                 Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
-                depth + extOff - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation, nullptr,
+                cd * (depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation) + extOff, nullptr,
                 numSlotsCKKS);
 
             auto ep =
@@ -1148,8 +1230,8 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(t.scalTech);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -1340,8 +1422,8 @@ protected:
                 parameters.SetSecretKeyDist(t.skd);
                 parameters.SetSecurityLevel(HEStd_NotSet);
                 parameters.SetScalingModSize(dcrtBits);
-                parameters.SetScalingTechnique(scalTech);
-                parameters.SetFirstModSize(dcrtBits);
+                SetScalingTechniqueParams(parameters, scalTech, dcrtBits);
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
                 parameters.SetRingDim(t.ringDim);
@@ -1413,17 +1495,31 @@ protected:
                 return noiseBits;
             };
 
-            int64_t errFixed  = -1;
-            int64_t errFlex   = -1;
-            double noiseFixed = runOnce(FIXEDMANUAL, errFixed);
-            double noiseFlex  = runOnce(t.scalTech, errFlex);
+            // FBT_NOISE checks that t.scalTech yields less noise than FIXEDMANUAL; FBT_NOISE_VS_FLEXIBLE checks
+            // that t.scalTech (composite scaling) yields roughly the same noise as FLEXIBLEAUTO. Both runs use
+            // the same modulus sizes (see FirstModSize).
+            const bool vsFlexible        = (t.testCaseType == FBT_NOISE_VS_FLEXIBLE);
+            const ScalingTechnique refSt = vsFlexible ? FLEXIBLEAUTO : FIXEDMANUAL;
+            int64_t errRef               = -1;
+            int64_t errFlex              = -1;
+            double noiseRef              = runOnce(refSt, errRef);
+            double noiseFlex             = runOnce(t.scalTech, errFlex);
 
-            checkEquality(errFixed, static_cast<int64_t>(0), 0.0001, failmsg + " FIXEDMANUAL LUT evaluation fails");
+            checkEquality(errRef, static_cast<int64_t>(0), 0.0001,
+                          failmsg + " " + ScalTechName(refSt) + " LUT evaluation fails");
             checkEquality(errFlex, static_cast<int64_t>(0), 0.0001,
                           failmsg + " " + ScalTechName(t.scalTech) + " LUT evaluation fails");
-            EXPECT_LT(noiseFlex, noiseFixed)
-                << failmsg << " " << ScalTechName(t.scalTech) << " did not yield smaller noise than FIXEDMANUAL ("
-                << noiseFlex << " vs " << noiseFixed << " bits)";
+            if (vsFlexible) {
+                // roughly the same noise: within 3 bits of FLEXIBLEAUTO
+                EXPECT_LE(noiseFlex, noiseRef + 3.0)
+                    << failmsg << " " << ScalTechName(t.scalTech) << " noise exceeds FLEXIBLEAUTO by more than 3 bits ("
+                    << noiseFlex << " vs " << noiseRef << " bits)";
+            }
+            else {
+                EXPECT_LT(noiseFlex, noiseRef)
+                    << failmsg << " " << ScalTechName(t.scalTech) << " did not yield smaller noise than FIXEDMANUAL ("
+                    << noiseFlex << " vs " << noiseRef << " bits)";
+            }
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -1458,8 +1554,8 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(t.scalTech);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -1522,8 +1618,7 @@ protected:
     // Checks that invalid usage is rejected with an exception instead of silently corrupting results:
     // 1) more levels requested after bootstrapping than the modulus chain has, 2) an oversized
     // levelToReduce in EvalHomDecoding under FLEXIBLE*, and 3) a FLEXIBLEAUTOEXT input that still
-    // includes the extra modulus. EvalFBTSetup also rejects the scaling techniques it does not support,
-    // which is left to be covered when composite scaling is supported.
+    // includes the extra modulus.
     void UnitTest_InvalidArgs(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
             bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
@@ -1545,8 +1640,8 @@ protected:
                 parameters.SetSecretKeyDist(t.skd);
                 parameters.SetSecurityLevel(HEStd_NotSet);
                 parameters.SetScalingModSize(dcrtBits);
-                parameters.SetScalingTechnique(st);
-                parameters.SetFirstModSize(dcrtBits);
+                SetScalingTechniqueParams(parameters, st, dcrtBits);
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
                 parameters.SetRingDim(t.ringDim);
@@ -1633,6 +1728,7 @@ TEST_P(UTCKKSRNS_FBT, CKKSRNS) {
             UnitTest_MVB(test, test.buildTestName());
             break;
         case FBT_NOISE:
+        case FBT_NOISE_VS_FLEXIBLE:
             UnitTest_Noise(test, test.buildTestName());
             break;
         case FBT_MVB_REUSE:

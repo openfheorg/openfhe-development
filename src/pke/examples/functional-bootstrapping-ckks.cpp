@@ -151,7 +151,8 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     * of failure at a cost of slightly more noise. The UNIFORM_TERNARY distribution gives a negligible
     * probability of failure, at the cost of 5 more levels of multiplicative depth and larger scaling
     * factors (as in regular CKKS bootstrapping).
-    * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
+    * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
+     * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
     * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
     * hence they yield less noise than the FIXED* techniques for the same parameters.
     */
@@ -314,7 +315,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
      * of failure at a cost of slightly more noise. The UNIFORM_TERNARY distribution gives a negligible
      * probability of failure, at the cost of 5 more levels of multiplicative depth and larger scaling
      * factors (as in regular CKKS bootstrapping).
-     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
+     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
+     * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
      * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
      * hence they yield less noise than the FIXED* techniques for the same parameters.
      */
@@ -567,7 +569,8 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
      * of failure at a cost of slightly more noise. The UNIFORM_TERNARY distribution gives a negligible
      * probability of failure, at the cost of 5 more levels of multiplicative depth and larger scaling
      * factors (as in regular CKKS bootstrapping).
-     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
+     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
+     * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
      * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
      * hence they yield less noise than the FIXED* techniques for the same parameters.
      */
