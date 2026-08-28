@@ -318,10 +318,8 @@ public:
     }
 
 private:
-    // ceil(log_baseG(Q)) for a power-of-two baseG, computed exactly
     static uint32_t DigitsForBase(const NativeInteger& Q, uint32_t baseG) {
-        const uint32_t gBits{lbcrypto::GetMSB(baseG) - 1};
-        return (lbcrypto::GetMSB(Q.ConvertToInt() - 1) + gBits - 1) / gBits;
+        return lbcrypto::GetDigitCount(Q.ConvertToInt(), baseG);
     }
 
     // modulus for the RingGSW/RingLWE scheme

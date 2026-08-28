@@ -192,6 +192,34 @@ inline constexpr uint32_t GetMSB64(uint64_t x) {
     return GetMSB(x);
 }
 
+/**
+ * Get the number of base-`base` digits needed to represent every value below x,
+ * i.e. exact ceil(log_base(x)). Integer-only, so it is unaffected by the rounding
+ * of std::log and by the loss of precision of converting moduli above 2^53 to double.
+ *
+ * @param x the exclusive upper bound on the values to be represented.
+ * @param base the digit base, at least 2.
+ *
+ * @return the digit count.
+ */
+template <
+    typename T,
+    std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>, bool> = true>
+inline constexpr uint32_t GetDigitCount(T x, uint64_t base) {
+    if (base < 2)
+        OPENFHE_THROW("GetDigitCount() requires a base of at least 2");
+    if (x < 2)
+        return 0;
+    if ((base & (base - 1)) == 0) {
+        const uint32_t bits{GetMSB(base) - 1};
+        return (GetMSB(x - 1) + bits - 1) / bits;
+    }
+    uint32_t count{0};
+    for (T v{static_cast<T>(x - 1)}; v > 0; v = static_cast<T>(v / base))
+        ++count;
+    return count;
+}
+
 template <typename IntType>
 std::shared_ptr<std::vector<int64_t>> GetDigits(const IntType& u, uint64_t base, uint32_t k) {
     auto u_vec = std::make_shared<std::vector<int64_t>>(k);

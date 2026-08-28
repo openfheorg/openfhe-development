@@ -36,8 +36,7 @@ namespace lbcrypto {
 void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseR^i (only for AP bootstrapping)
     if (m_method == BINFHE_METHOD::AP) {
-        auto&& logq = std::log(m_q.ConvertToDouble());
-        auto digitCountR{static_cast<size_t>(std::ceil(logq / std::log(static_cast<double>(m_baseR))))};
+        auto digitCountR{GetDigitCount(m_q.ConvertToInt(), m_baseR)};
         m_digitsR.clear();
         m_digitsR.reserve(digitCountR);
         BasicInteger value{1};

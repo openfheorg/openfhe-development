@@ -256,8 +256,7 @@ public:
 
         auto params = g(0, 0).GetParams()->GetParams();
 
-        uint64_t digitCount =
-            (uint64_t)std::ceil(std::log2(params[0]->GetModulus().ConvertToDouble()) / std::log2(base));
+        uint64_t digitCount = GetDigitCount(params[0]->GetModulus().ConvertToInt(), static_cast<uint64_t>(base));
 
         for (size_t k = 0; k < digitCount; k++) {
             for (size_t i = 0; i < params.size(); i++) {
