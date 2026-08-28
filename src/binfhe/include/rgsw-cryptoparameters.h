@@ -85,12 +85,11 @@ public:
           m_method(method),
           m_keyDist(keyDist),
           m_numAutoKeys(numAutoKeys) {
-        if (!IsPowerOfTwo(baseG))
+        if (baseG <= 1 || !IsPowerOfTwo(baseG))
             OPENFHE_THROW("Gadget base should be a power of two.");
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
-        auto logQ{std::log(m_Q.ConvertToDouble())};
-        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_baseG))));
+        m_digitsG = DigitsForBase(m_Q, m_baseG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
@@ -134,11 +133,18 @@ public:
         }
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
-        auto logQ{std::log(m_Q.ConvertToDouble())};
-        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_baseG))));
+        m_digitsG = DigitsForBase(m_Q, m_baseG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
+
+    // gadget parameters for one LWE index: the base, its digit count, and its gadget powers
+    struct BaseGParams {
+        uint32_t baseG{0};
+        uint32_t digitsG{0};
+        uint32_t gBits{0};
+        const std::vector<NativeInteger>* gpow{nullptr};
+    };
 
     /**
    * Performs precomputations based on the supplied parameters
@@ -157,27 +163,36 @@ public:
         return m_q;
     }
 
-    uint32_t GetBaseG(std::optional<uint32_t> index = std::nullopt) const {
-        if (!index.has_value() || m_baseG_map.empty())
-            return m_baseG;
-
-        uint32_t count{0};
-        for (const auto& [baseG, baseGCount] : m_baseG_map) {
-            count += baseGCount;
-            if (*index < count)
-                return baseG;
-        }
-
-        OPENFHE_THROW("Gadget base map does not cover the LWE dimension.");
+    uint32_t GetBaseG() const {
+        return m_baseG;
     }
 
-    uint32_t GetDigitsG(std::optional<uint32_t> index = std::nullopt) const {
-        if (!index.has_value() || m_baseG_map.empty())
-            return m_digitsG;
+    uint32_t GetDigitsG() const {
+        return m_digitsG;
+    }
 
-        auto baseG{GetBaseG(index)};
-        return static_cast<uint32_t>(
-            std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(baseG))));
+    // Per-LWE-index gadget parameters. PreCompute() expands the base map into one entry per index.
+    // Returned by value, and built from the live members when no base map is in use:
+    // Change_BaseG() mutates m_baseG/m_digitsG/m_Gpower after PreCompute(), and the
+    // large-precision path depends on those switches taking effect.
+    BaseGParams GetDefaultBaseGParams() const {
+        return {m_baseG, m_digitsG, lbcrypto::GetMSB(m_baseG) - 1, &m_Gpower};
+    }
+
+    BaseGParams GetBaseGParams(uint32_t index) const {
+        if (m_baseGByIndex.empty())
+            return GetDefaultBaseGParams();
+        if (index >= m_baseGByIndex.size())
+            OPENFHE_THROW("Gadget base map does not cover the LWE dimension.");
+        return m_baseGByIndex[index];
+    }
+
+    uint32_t GetBaseG(uint32_t index) const {
+        return GetBaseGParams(index).baseG;
+    }
+
+    uint32_t GetDigitsG(uint32_t index) const {
+        return GetBaseGParams(index).digitsG;
     }
 
     uint32_t GetBaseR() const {
@@ -205,6 +220,11 @@ public:
         if (it == m_Gpower_map.end())
             OPENFHE_THROW("No GPower found for the requested gadget base.");
         return it->second;
+    }
+
+    const std::vector<NativeInteger>& GetGPowerByIndex(uint32_t index) const {
+        const auto* gpow = GetBaseGParams(index).gpow;
+        return (gpow == nullptr) ? m_Gpower : *gpow;
     }
 
     const std::vector<int32_t>& GetLogGen() const {
@@ -291,14 +311,19 @@ public:
 
     void Change_BaseG(uint32_t BaseG) {
         if (m_baseG != BaseG) {
-            m_baseG  = BaseG;
-            m_Gpower = m_Gpower_map[m_baseG];
-            m_digitsG =
-                static_cast<uint32_t>(std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(m_baseG))));
+            m_baseG   = BaseG;
+            m_Gpower  = m_Gpower_map[m_baseG];
+            m_digitsG = DigitsForBase(m_Q, m_baseG);
         }
     }
 
 private:
+    // ceil(log_baseG(Q)) for a power-of-two baseG, computed exactly
+    static uint32_t DigitsForBase(const NativeInteger& Q, uint32_t baseG) {
+        const uint32_t gBits{lbcrypto::GetMSB(baseG) - 1};
+        return (lbcrypto::GetMSB(Q.ConvertToInt() - 1) + gBits - 1) / gBits;
+    }
+
     // modulus for the RingGSW/RingLWE scheme
     NativeInteger m_Q;
 
@@ -313,6 +338,9 @@ private:
 
     // number of LWE secret-key coefficients assigned to each gadget base, in ascending base order
     std::map<uint32_t, uint32_t> m_baseG_map;
+
+    // m_baseG_map expanded to one entry per LWE index, filled by PreCompute()
+    std::vector<BaseGParams> m_baseGByIndex;
 
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;

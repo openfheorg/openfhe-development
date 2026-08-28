@@ -54,16 +54,26 @@ namespace lbcrypto {
 
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const std::vector<NativePoly>& input,
-                                              std::vector<NativePoly>& output,
-                                              std::optional<uint32_t> index) const {
+                                              std::vector<NativePoly>& output) const {
+    SignedDigitDecomposeImpl(params, input, output, params->GetDefaultBaseGParams());
+}
+
+void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                              const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                              uint32_t index) const {
+    SignedDigitDecomposeImpl(params, input, output, params->GetBaseGParams(index));
+}
+
+void RingGSWAccumulator::SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                                  const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                                  const RingGSWCryptoParams::BaseGParams& bp) const {
     auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
     auto QHalf{Q >> 1};
-    auto baseG{params->GetBaseG(index)};
-    auto gBits{static_cast<uint32_t>(__builtin_ctz(baseG))};
-    auto gHalf{static_cast<BasicInteger>(baseG >> 1)};
-    auto gMask{static_cast<BasicInteger>(baseG - 1)};
+    auto gBits{bp.gBits};
+    auto gHalf{static_cast<BasicInteger>(bp.baseG >> 1)};
+    auto gMask{static_cast<BasicInteger>(bp.baseG - 1)};
     auto QmHalf{Q - gHalf};
-    uint32_t digitsG{params->GetDigitsG(index)};
+    uint32_t digitsG{bp.digitsG};
     // Biasing by H (gHalf in every digit position) turns balanced-digit extraction into
     // independent unsigned windows: digit_k(x) = (((x + H) >> k*gBits) & gMask) - gHalf.
     // Requires digitsG*gBits < MaxBits, which holds for all supported parameter sets.
@@ -101,7 +111,7 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
     auto QHalf{Q >> 1};
     auto baseG{params->GetBaseG()};
-    auto gBits{static_cast<uint32_t>(__builtin_ctz(baseG))};
+    auto gBits{GetMSB(baseG) - 1};
     auto gHalf{static_cast<BasicInteger>(baseG >> 1)};
     auto gMask{static_cast<BasicInteger>(baseG - 1)};
     auto QmHalf{Q - gHalf};

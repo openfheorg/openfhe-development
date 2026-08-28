@@ -47,14 +47,11 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
 
     // Computes baseG^i
     if (signEval) {
-        constexpr uint32_t baseGlist[]  = {1 << 14, 1 << 18, 1 << 27};
-        // {log(1 << 14), log(1 << 18), log(1 << 27)}
-        constexpr double logbaseGlist[] = {0x1.3687a9f1af2b1p+3, 0x1.8f40b5ed9812dp+3, 0x1.2b708872320e2p+4};
+        constexpr uint32_t baseGlist[]            = {1 << 14, 1 << 18, 1 << 27};
         constexpr NativeInteger nativebaseGlist[] = {1 << 14, 1 << 18, 1 << 27};
-        auto logQ{std::log(m_Q.ConvertToDouble())};
         for (size_t j = 0; j < 3; ++j) {
             NativeInteger vTemp{1};
-            auto tempdigits{static_cast<size_t>(std::ceil(logQ / logbaseGlist[j]))};
+            auto tempdigits{DigitsForBase(m_Q, baseGlist[j])};
             std::vector<NativeInteger> tempvec(tempdigits);
             for (size_t i = 0; i < tempdigits; ++i) {
                 tempvec[i] = vTemp;
@@ -64,13 +61,13 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
                 m_Gpower = tempvec;
             m_Gpower_map[baseGlist[j]] = std::move(tempvec);
         }
-    } else {
+    }
+    else {
         auto precomputeGPower = [&](uint32_t baseG) {
             if (m_Gpower_map.find(baseG) != m_Gpower_map.end())
                 return;
 
-            auto digitsG{static_cast<uint32_t>(
-                std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(baseG))))};
+            auto digitsG{DigitsForBase(m_Q, baseG)};
             NativeInteger vTemp{1};
             std::vector<NativeInteger> tempvec(digitsG);
             for (uint32_t i = 0; i < digitsG; ++i) {
@@ -121,6 +118,23 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             aPoly[i].ModSubFastEq(one, m_Q);  // -X^m
             aPoly.SetFormat(Format::EVALUATION);
             m_monomials.push_back(std::move(aPoly));
+        }
+    }
+
+    // expand the base map into one entry per LWE index. Digit counts are computed here,
+    // once per distinct base, instead of per call in the accumulator.
+    m_baseGByIndex.clear();
+    if (!m_baseG_map.empty()) {
+        uint32_t total{0};
+        for (const auto& [baseG, count] : m_baseG_map)
+            total += count;
+        m_baseGByIndex.reserve(total);
+        for (const auto& [baseG, count] : m_baseG_map) {
+            auto it = m_Gpower_map.find(baseG);
+            if (it == m_Gpower_map.end())
+                OPENFHE_THROW("No GPower found for the requested gadget base.");
+            m_baseGByIndex.insert(m_baseGByIndex.end(), count,
+                                  BaseGParams{baseG, DigitsForBase(m_Q, baseG), GetMSB(baseG) - 1, &it->second});
         }
     }
 

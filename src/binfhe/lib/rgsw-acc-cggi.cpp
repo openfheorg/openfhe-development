@@ -77,8 +77,9 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     NativeInteger Q{params->GetQ()};
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG(index) - 1) << 1};
-    const auto& Gpow{params->GetGPower(params->GetBaseG(index))};
+    const auto& bp = params->GetBaseGParams(index);
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
+    const auto& Gpow{*bp.gpow};
 
     RingGSWEvalKeyImpl result(digitsG2, 2);
     NativePoly tmp;
@@ -101,7 +102,8 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
 void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                                          ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const {
+                                          ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc,
+                                          uint32_t index) const {
     std::vector<NativePoly> ct(acc->GetElements());
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);

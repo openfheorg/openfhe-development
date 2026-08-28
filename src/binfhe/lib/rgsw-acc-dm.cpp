@@ -94,8 +94,9 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
         mm -= N;
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG(index) - 1) << 1};
-    const auto& Gpow{params->GetGPower(params->GetBaseG(index))};
+    const auto& bp = params->GetBaseGParams(index);
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
+    const auto& Gpow{*bp.gpow};
 
     RingGSWEvalKeyImpl result(digitsG2, 2);
     NativePoly tmp;
