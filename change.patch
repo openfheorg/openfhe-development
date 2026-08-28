@@ -1,0 +1,254 @@
+From 786293a6607bf846982ffad1cd422518d4409abd Mon Sep 17 00:00:00 2001
+From: carlosad <carlos0105ad@gmail.com>
+Date: Wed, 8 Jul 2026 11:56:39 +0200
+Subject: [PATCH] patch
+
+---
+ CMakeLists.txt                                      | 11 +++++++----
+ src/core/include/lattice/hal/default/dcrtpoly.h     |  1 +
+ src/core/include/lattice/hal/default/ildcrtparams.h |  3 ++-
+ src/core/include/lattice/hal/default/poly.h         |  2 ++
+ src/pke/include/cryptocontext.h                     |  4 ++--
+ src/pke/include/scheme/ckksrns/ckksrns-fhe.h        | 12 +++++++-----
+ src/pke/include/schemebase/base-cryptoparameters.h  |  3 ++-
+ src/pke/include/schemebase/base-fhe.h               |  2 +-
+ src/pke/include/schemebase/base-scheme.h            |  6 ++++--
+ src/pke/include/schemerns/rns-cryptoparameters.h    |  2 +-
+ src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp          |  5 +++--
+ 11 files changed, 32 insertions(+), 19 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3a3d5e4d..76625e5d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -25,6 +25,9 @@ endif()
+ #
+ # TODO: for now, we use CLang for Mac
+ 
++set(CMAKE_C_COMPILER "gcc")
++set(CMAKE_CXX_COMPILER "g++")
++
+ project (OpenFHE C CXX)
+ 
+ set(OPENFHE_VERSION_MAJOR 1)
+@@ -75,10 +78,10 @@ if (EMSCRIPTEN)
+     message("OpenMP is not supported by Emscripten")
+ else()
+     option(BUILD_SHARED "Set to ON to build shared versions of the library"            ON  )
+-    option(BUILD_STATIC "Set to ON to build static versions of the library"            OFF )
+-    option(BUILD_UNITTESTS "Set to ON to build unit tests for the library"             ON  )
+-    option(BUILD_EXAMPLES "Set to ON to build examples for the library"                ON  )
+-    option(BUILD_BENCHMARKS "Set to ON to build benchmarks for the library"            ON  )
++    option(BUILD_STATIC "Set to ON to build static versions of the library"            ON  )
++    option(BUILD_UNITTESTS "Set to ON to build unit tests for the library"             OFF )
++    option(BUILD_EXAMPLES "Set to ON to build examples for the library"                OFF )
++    option(BUILD_BENCHMARKS "Set to ON to build benchmarks for the library"            OFF )
+     option(WITH_OPENMP "Use OpenMP to enable <omp.h>"                                  ON  )
+ endif()
+ 
+diff --git a/src/core/include/lattice/hal/default/dcrtpoly.h b/src/core/include/lattice/hal/default/dcrtpoly.h
+index 2c5229fc..d207be8d 100644
+--- a/src/core/include/lattice/hal/default/dcrtpoly.h
++++ b/src/core/include/lattice/hal/default/dcrtpoly.h
+@@ -392,6 +392,7 @@ public:
+     }
+ 
+ protected:
++public:
+     std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>()};
+     Format m_format{Format::EVALUATION};
+     std::vector<PolyType> m_vectors;
+diff --git a/src/core/include/lattice/hal/default/ildcrtparams.h b/src/core/include/lattice/hal/default/ildcrtparams.h
+index cc15bc08..2ea846c3 100644
+--- a/src/core/include/lattice/hal/default/ildcrtparams.h
++++ b/src/core/include/lattice/hal/default/ildcrtparams.h
+@@ -362,7 +362,8 @@ protected:
+         return out << std::endl;
+     }
+ 
+-private:
++//private:
++public:
+     // array of smaller ILParams
+     std::vector<std::shared_ptr<ILNativeParams>> m_params;
+ };
+diff --git a/src/core/include/lattice/hal/default/poly.h b/src/core/include/lattice/hal/default/poly.h
+index 4a62ebc7..f58a9697 100644
+--- a/src/core/include/lattice/hal/default/poly.h
++++ b/src/core/include/lattice/hal/default/poly.h
+@@ -364,8 +364,10 @@ public:
+ 
+ protected:
+     Format m_format{Format::EVALUATION};
++public:
+     std::shared_ptr<Params> m_params{nullptr};
+     std::unique_ptr<VecType> m_values{nullptr};
++protected:
+     void ArbitrarySwitchFormat();
+ };
+ 
+diff --git a/src/pke/include/cryptocontext.h b/src/pke/include/cryptocontext.h
+index 28dfd641..5d670e2e 100644
+--- a/src/pke/include/cryptocontext.h
++++ b/src/pke/include/cryptocontext.h
+@@ -3512,8 +3512,8 @@ public:
+     */
+     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
+                             uint32_t slots = 0, uint32_t correctionFactor = 0, bool precompute = true,
+-                            bool BTSlotsEncoding = false) {
+-        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
++                            bool BTSlotsEncoding = false, int32_t modevallevels = -1) {
++        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding, modevallevels);
+     }
+ 
+     /**
+diff --git a/src/pke/include/scheme/ckksrns/ckksrns-fhe.h b/src/pke/include/scheme/ckksrns/ckksrns-fhe.h
+index b610e307..50796def 100644
+--- a/src/pke/include/scheme/ckksrns/ckksrns-fhe.h
++++ b/src/pke/include/scheme/ckksrns/ckksrns-fhe.h
+@@ -125,12 +125,13 @@ using namespace std::literals::complex_literals;
+ 
+ class FHECKKSRNS : public FHERNS {
+ private:
++public:
+     // correction factor, which we scale the message by to improve precision
+     uint32_t m_correctionFactor;
+ 
+     // key tuple is dim1, levelBudgetEnc, levelBudgetDec
+     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
+-
++private:
+     using ParmType = typename DCRTPoly::Params;
+     using DugType  = typename DCRTPoly::DugType;
+     using DggType  = typename DCRTPoly::DggType;
+@@ -145,7 +146,7 @@ public:
+ 
+     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
+                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor, bool precompute,
+-                            bool BTSlotsEncoding) override;
++                            bool BTSlotsEncoding, uint32_t modevallevels = std::numeric_limits<uint32_t>::max()) override;
+ 
+     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
+                                                                                uint32_t slots) override;
+@@ -339,8 +340,9 @@ private:
+     //------------------------------------------------------------------------------
+     // Find Rotation Indices
+     //------------------------------------------------------------------------------
++public:
+     std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
+-
++private:
+     // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
+     // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
+     // These methods completely depend on FindBootstrapRotationIndices() to do that.
+@@ -361,7 +363,7 @@ private:
+ 
+     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
+                           const std::shared_ptr<DCRTPoly::Params> params) const;
+-
++public:
+     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
+ 
+     /**
+@@ -413,7 +415,7 @@ private:
+                                                    uint32_t digitBitSize, size_t order = 1);
+ 
+     // upper bound for the number of overflows in the sparse secret case
+-
++public:
+     // TODO: unify this
+     static constexpr uint32_t K_SPARSE     = 28;
+     static constexpr uint32_t K_SPARSE_ALT = 25;
+diff --git a/src/pke/include/schemebase/base-cryptoparameters.h b/src/pke/include/schemebase/base-cryptoparameters.h
+index 23db5705..2d0f8632 100644
+--- a/src/pke/include/schemebase/base-cryptoparameters.h
++++ b/src/pke/include/schemebase/base-cryptoparameters.h
+@@ -224,8 +224,9 @@ protected:
+     }
+ 
+     // element-specific parameters
++public:
+     std::shared_ptr<typename Element::Params> m_params;
+-
++protected:
+     // encoding-specific parameters
+     EncodingParams m_encodingParams;
+ };
+diff --git a/src/pke/include/schemebase/base-fhe.h b/src/pke/include/schemebase/base-fhe.h
+index 0ac85dd8..3ed32431 100644
+--- a/src/pke/include/schemebase/base-fhe.h
++++ b/src/pke/include/schemebase/base-fhe.h
+@@ -90,7 +90,7 @@ public:
+    */
+     virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
+                                     std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor,
+-                                    bool precompute, bool BTSlotsEncoding) {
++                                    bool precompute, bool BTSlotsEncoding, uint32_t modevallevels = -1) {
+         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
+     }
+ 
+diff --git a/src/pke/include/schemebase/base-scheme.h b/src/pke/include/schemebase/base-scheme.h
+index c5725dc9..7faa6077 100644
+--- a/src/pke/include/schemebase/base-scheme.h
++++ b/src/pke/include/schemebase/base-scheme.h
+@@ -1142,9 +1142,9 @@ public:
+ 
+     void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, const std::vector<uint32_t>& levelBudget = {5, 4},
+                             const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
+-                            uint32_t correctionFactor = 0, bool precompute = true, bool BTSlotsEncoding = false) {
++                            uint32_t correctionFactor = 0, bool precompute = true, bool BTSlotsEncoding = false, int32_t modevallevels = -1) {
+         VerifyFHEEnabled(__func__);
+-        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
++        m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding, modevallevels);
+     }
+ 
+     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
+@@ -1557,7 +1557,9 @@ protected:
+     std::shared_ptr<LeveledSHEBase<Element>> m_LeveledSHE;
+     std::shared_ptr<AdvancedSHEBase<Element>> m_AdvancedSHE;
+     std::shared_ptr<MultipartyBase<Element>> m_Multiparty;
++public:
+     std::shared_ptr<FHEBase<Element>> m_FHE;
++protected:
+     std::shared_ptr<FHEBase<Element>> m_SchemeSwitch;
+ 
+     inline void CheckMultipartyDecryptCompatibility(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
+diff --git a/src/pke/include/schemerns/rns-cryptoparameters.h b/src/pke/include/schemerns/rns-cryptoparameters.h
+index cd9ceb41..70bbda0d 100644
+--- a/src/pke/include/schemerns/rns-cryptoparameters.h
++++ b/src/pke/include/schemerns/rns-cryptoparameters.h
+@@ -1410,7 +1410,7 @@ protected:
+     /////////////////////////////////////
+     // BGVrns ModReduce
+     /////////////////////////////////////
+-
++public:
+     // Stores NTL precomputations for [t]_{q_i}
+     std::vector<NativeInteger> m_tModqPrecon;
+ 
+diff --git a/src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp b/src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp
+index 96c2363e..8e4386ce 100644
+--- a/src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp
++++ b/src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp
+@@ -84,7 +84,7 @@ namespace lbcrypto {
+ 
+ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
+                                     std::vector<uint32_t> dim1, uint32_t numSlots, uint32_t correctionFactor,
+-                                    bool precompute, bool BTSlotsEncoding) {
++                                    bool precompute, bool BTSlotsEncoding, uint32_t modevallevels) {
+     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+ 
+     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
+@@ -209,7 +209,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
+             lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
+         }
+         else {
+-            uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + precom->m_paramsEnc.lvlb +
++	    uint32_t approxModDepth = modevallevels == std::numeric_limits<uint32_t>::max() ? GetModDepthInternal(cryptoParams->GetSecretKeyDist()) : modevallevels;
++            uint32_t depthBT = approxModDepth + precom->m_paramsEnc.lvlb +
+                                precom->m_paramsDec.lvlb;
+             lDec = L0 - compositeDegree * depthBT;
+         }
+-- 
+2.34.1
+

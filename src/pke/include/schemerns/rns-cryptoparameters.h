@@ -635,7 +635,11 @@ public:
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
-                OPENFHE_THROW("invalid level");
+                std::string s = "invalid level ";
+                s += std::to_string(l);
+                s += " greater/eq than ";
+                s += std::to_string(m_scalingFactorsRealBig.size());
+                OPENFHE_THROW(s);
                 return m_approxSF * m_approxSF;
             }
 
