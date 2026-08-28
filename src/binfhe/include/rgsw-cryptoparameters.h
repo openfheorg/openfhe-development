@@ -318,8 +318,13 @@ public:
 
     void Change_BaseG(uint32_t BaseG) {
         if (m_baseG != BaseG) {
+            if (!m_baseGByIndex.empty())
+                OPENFHE_THROW("Change_BaseG is not supported with per-dimension gadget bases");
+            auto it = m_Gpower_map.find(BaseG);
+            if (it == m_Gpower_map.end())
+                OPENFHE_THROW("No gadget powers precomputed for base " + std::to_string(BaseG));
             m_baseG   = BaseG;
-            m_Gpower  = m_Gpower_map[m_baseG];
+            m_Gpower  = it->second;
             m_digitsG = DigitsForBase(m_Q, m_baseG);
         }
     }

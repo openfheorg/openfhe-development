@@ -426,14 +426,12 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     while (mod > q) {
         cttmp = EvalFloor(params, curEK, cttmp, beta);
         // round Q to 2betaQ/q
-        //  mod   = mod / q * 2 * beta;
         mod   = (mod << 1) * beta / q;
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         // if dynamic
         if (EKs.size() == 3) {
-            // TODO: use GetMSB()?
-            uint32_t binLog = static_cast<uint32_t>(std::ceil(GetMSB(mod.ConvertToInt()) - 1));
+            uint32_t binLog = GetMSB(mod.ConvertToInt()) - 1;
             uint32_t base{0};
             if (binLog <= static_cast<uint32_t>(17))
                 base = static_cast<uint32_t>(1) << 27;
@@ -445,7 +443,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
 
                 auto search = EKs.find(base);
                 if (search == EKs.end())
-                    OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
+                    OPENFHE_THROW("No key [" + std::to_string(base) + "] found in the map");
                 curEK = search->second;
             }
         }
@@ -503,12 +501,12 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
         // Floor the input sequentially to obtain the most significant bit
         cttmp = EvalFloor(params, curEK, cttmp, beta);
-        mod   = mod / q * 2 * beta;
         // round Q to 2betaQ/q
+        mod   = (mod << 1) * beta / q;
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
-            uint32_t binLog = static_cast<uint32_t>(std::ceil(std::log2(mod.ConvertToInt())));
+            uint32_t binLog = GetMSB(mod.ConvertToInt()) - 1;
             uint32_t base   = 0;
             if (binLog <= static_cast<uint32_t>(17))
                 base = static_cast<uint32_t>(1) << 27;
@@ -520,7 +518,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
                 auto search = EKs.find(base);
                 if (search == EKs.end())
-                    OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
+                    OPENFHE_THROW("No key [" + std::to_string(base) + "] found in the map");
                 curEK = search->second;
             }
         }
