@@ -42,9 +42,18 @@ static constexpr double STD_DEV = 3.19;
 
 namespace lbcrypto {
 
-void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q,
-                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                                          SecretKeyDist keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
+// RingGSWCryptoParams never sees the LWE dimension, so the map and n meet only here
+static void VerifyGadgetBaseMapCoverage(const std::map<uint32_t, uint32_t>& baseGMap, uint32_t n) {
+    uint32_t count{0};
+    for (const auto& item : baseGMap)
+        count += item.second;
+    if (count != n)
+        OPENFHE_THROW("Gadget base map should cover the LWE dimension.");
+}
+
+void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std,
+                                          uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist,
+                                          BINFHE_METHOD method, uint32_t numAutoKeys) {
     auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
     auto rgswparams =
         std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
@@ -171,10 +180,12 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
     auto lweparams = std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q,
                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,
                                                        params.baseKS, params.keyDist);
-    auto rgswparams =
-        std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.gadgetBaseMap, params.baseRK, method,
-                                              params.stdDev, params.keyDist, false, params.numAutoKeys);
-    m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    VerifyGadgetBaseMapCoverage(params.gadgetBaseMap, params.latticeParam);
+
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase,
+                                                            params.gadgetBaseMap, params.baseRK, method, params.stdDev,
+                                                            params.keyDist, false, params.numAutoKeys);
+    m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
 
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
@@ -189,20 +200,16 @@ void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BIN
                                                        params.baseKS, params.keyDist);
     std::shared_ptr<RingGSWCryptoParams> rgswparams;
     if (params.gadgetBaseMap.empty()) {
-        rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase,
-                                                           params.baseRK, method, params.stdDev, params.keyDist,
-                                                           false, params.numAutoKeys);
+        rgswparams =
+            std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
+                                                  params.stdDev, params.keyDist, false, params.numAutoKeys);
     }
     else {
-        uint32_t count{0};
-        for (const auto& item : params.gadgetBaseMap)
-            count += item.second;
-        if (count != params.latticeParam)
-            OPENFHE_THROW("Gadget base map should cover the LWE dimension.");
+        VerifyGadgetBaseMapCoverage(params.gadgetBaseMap, params.latticeParam);
 
-        rgswparams = std::make_shared<RingGSWCryptoParams>(
-            ringDim, Q, params.mod, params.gadgetBase, params.gadgetBaseMap, params.baseRK, method, params.stdDev,
-            params.keyDist, false, params.numAutoKeys);
+        rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase,
+                                                           params.gadgetBaseMap, params.baseRK, method, params.stdDev,
+                                                           params.keyDist, false, params.numAutoKeys);
     }
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);

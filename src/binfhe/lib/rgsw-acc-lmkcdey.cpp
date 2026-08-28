@@ -41,6 +41,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     auto modHalf{mod >> 1};
     uint32_t N{params->GetN()};
     size_t n{sv.GetLength()};
+    params->VerifyBaseGCoverage(static_cast<uint32_t>(n));
     uint32_t numAutoKeys{params->GetNumAutoKeys()};
 
     // dim2, 0: for RGSW(X^si), 1: for automorphism keys
@@ -225,11 +226,12 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
     ct[1].SetFormat(Format::COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG(index) - 1) << 1};
+    const auto& bp = params->GetBaseGParams(index);
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
 
     std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
-    SignedDigitDecompose(params, ct, dct, index);
+    SignedDigitDecomposeImpl(params, ct, dct, bp);
 
     // calls digitsG2 NTTs
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))

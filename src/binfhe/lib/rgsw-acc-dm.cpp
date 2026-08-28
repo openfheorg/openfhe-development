@@ -42,6 +42,7 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
     auto mod{sv.GetModulus().ConvertToInt<int32_t>()};
     auto modHalf{mod >> 1};
     uint32_t n(sv.GetLength());
+    params->VerifyBaseGCoverage(n);
     int32_t baseR(params->GetBaseR());
     const auto& digitsR = params->GetDigitsR();
     RingGSWACCKey ek    = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
@@ -124,10 +125,11 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     ct[1].SetFormat(Format::COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(params->GetDigitsG(index) - 1) << 1};
+    const auto& bp = params->GetBaseGParams(index);
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
     std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
-    SignedDigitDecompose(params, ct, dct, index);
+    SignedDigitDecomposeImpl(params, ct, dct, bp);
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
     for (uint32_t j = 0; j < digitsG2; ++j)

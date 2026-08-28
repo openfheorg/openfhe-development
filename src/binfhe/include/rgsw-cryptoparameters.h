@@ -195,6 +195,13 @@ public:
         return GetBaseGParams(index).digitsG;
     }
 
+    // the per-index table is built from a map that never sees the LWE dimension, so the two can
+    // only be reconciled by a caller that holds both; do it before entering a parallel region
+    void VerifyBaseGCoverage(uint32_t n) const {
+        if (!m_baseGByIndex.empty() && m_baseGByIndex.size() != n)
+            OPENFHE_THROW("Gadget base map does not cover the LWE dimension.");
+    }
+
     uint32_t GetBaseR() const {
         return m_baseR;
     }
