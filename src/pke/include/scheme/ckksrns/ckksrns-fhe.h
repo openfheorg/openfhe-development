@@ -352,7 +352,7 @@ public:
 
     template <typename VectorDataType>
     static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                   size_t order, SecretKeyDist skd, uint32_t compositeDegree = 1 = SPARSE_TERNARY);
+                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY, uint32_t compositeDegree = 1);
 
     // generates a key going from a denser secret to a sparser one
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
