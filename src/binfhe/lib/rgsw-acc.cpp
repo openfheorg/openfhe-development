@@ -94,13 +94,15 @@ void RingGSWAccumulator::SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWC
 
     for (uint32_t d{0}; d < digitsG2; d += 2) {
         uint32_t shift{((d >> 1) + 1) * gBits};
+        // Q/2 + H can exceed baseG^digitsG, so the top window must keep the carry out of digitsG*gBits.
+        auto mask{(d + 2 < digitsG2) ? gMask : static_cast<BasicInteger>(-1)};
         auto& out0{output[d + 0]};
         auto& out1{output[d + 1]};
         for (uint32_t k{0}; k < N; ++k) {
-            auto r0{(w0[k] >> shift) & gMask};
-            out0[k] += (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
-            auto r1{(w1[k] >> shift) & gMask};
-            out1[k] += (r1 < gHalf) ? r1 + QmHalf : r1 - gHalf;
+            auto r0{(w0[k] >> shift) & mask};
+            out0[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
+            auto r1{(w1[k] >> shift) & mask};
+            out1[k] = (r1 < gHalf) ? r1 + QmHalf : r1 - gHalf;
         }
     }
 }
@@ -131,10 +133,12 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     // approximate gadget decomposition is used; the first digit is ignored
     for (uint32_t d{0}; d < digitsG - 1; ++d) {
         uint32_t shift{(d + 1) * gBits};
+        // Q/2 + H can exceed baseG^digitsG, so the top window must keep the carry out of digitsG*gBits.
+        auto mask{(d + 2 < digitsG) ? gMask : static_cast<BasicInteger>(-1)};
         auto& out{output[d]};
         for (uint32_t k{0}; k < N; ++k) {
-            auto r0{(w[k] >> shift) & gMask};
-            out[k] += (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
+            auto r0{(w[k] >> shift) & mask};
+            out[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
         }
     }
 }
