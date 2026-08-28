@@ -244,21 +244,54 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     // Sparse secret encapsulation (SPARSE_ENCAPSULATED): auxiliary basis and tables for the
     // key switching to/from the sparse secret at the bootstrapping modulus raise
     // (FHECKKSRNS::KeySwitchGenSparse / KeySwitchSparse). The switching key is generated
-    // over q0*P', where P' = p'_0*p'_1 consists of two primes of MAX_MODULUS_SIZE/2 + 3 bits
-    // each (33 bits, i.e., ~66 auxiliary bits, for the standard 64-bit build). A single
-    // auxiliary prime of at most MAX_MODULUS_SIZE bits (the previous approach) makes the key
-    // switching noise floor(q0*e/P') dominate; with P' exceeding the largest possible q0 by
-    // ~6 bits, it becomes comparable to the modulus switching noise
-    // (see https://github.com/openfheorg/openfhe-development/issues/1041). The tables
-    // below support the exact (HPS-style) CRT basis switch (DCRTPoly::SwitchCRTBasis) used
-    // to scale the key-switched ciphertext back down from q0*P' to q0; the exact method is
-    // used so that no alpha*P' overflow term is dropped during the basis switch.
+    // over Ql*P', where Ql = {q_0, ..., q_{d-1}} (d = compositeDegree) is the basis of the
+    // bottom level and P' = p'_0*...*p'_{k-1} is an auxiliary modulus exceeding the bottom
+    // modulus by ~6 bits, so that the key switching noise floor(Ql*e/P') is comparable to the
+    // modulus switching noise (see https://github.com/openfheorg/openfhe-development/issues/1041):
+    // - for a bottom modulus of at most 60 bits, P' has ~66 bits: two primes of
+    //   MAX_MODULUS_SIZE/2 + 3 = 33 bits (the standard 64-bit build), or, for composite scaling
+    //   with a register word size of at most 33 bits, three primes of ~22 bits;
+    // - for a larger bottom modulus (composite scaling only; at most 121 bits), P' has ~127 bits,
+    //   split into primes that fit the register word size.
+    // The primes of the composite scaling cases are searched upwards from the target size, so
+    // that enough primes congruent to 1 modulo 2N exist for ring dimensions up to 2^17 (the
+    // resulting P' is then slightly larger than the target, which only reduces the noise).
+    // The tables below support the exact (HPS-style) CRT basis switches (DCRTPoly::SwitchCRTBasis)
+    // used to extend the ciphertext/keys from Ql to P' and to scale the key-switched ciphertext
+    // back down from Ql*P' to Ql; the exact method is used so that no alpha*P' overflow term is
+    // dropped during the basis switches.
     /////////////////////////////////////
     if (GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
-        constexpr uint32_t sizePSparse = 2;
-        // Two primes of MAX_MODULUS_SIZE/2 + 3 bits each (33 bits for the standard 64-bit
-        // build), so that P' exceeds the largest possible q0 by ~6 bits
-        constexpr uint32_t bitsPSparse = MAX_MODULUS_SIZE / 2 + 3;
+        const uint32_t sizeQl = compositeDegree;
+        if (sizeQ < sizeQl)
+            OPENFHE_THROW("The modulus chain is shorter than the composite degree.");
+
+        BigInteger modulusQl(1);
+        for (uint32_t i = 0; i < sizeQl; ++i)
+            modulusQl *= BigInteger(moduliQ[i]);
+        const uint32_t bitsQl = modulusQl.GetMSB();
+        if (bitsQl > 121)
+            OPENFHE_THROW(
+                "SPARSE_ENCAPSULATED supports a bottom (first) modulus of at most 121 bits; the current one has " +
+                std::to_string(bitsQl) + " bits.");
+
+        // total size of the auxiliary modulus P' and the number/size of its primes: ~66 bits for bottom moduli
+        // of at most 60 bits, and ~127 bits for larger ones (up to 121 bits; the Hamming weight of the sparse
+        // secret is doubled as well)
+        constexpr uint32_t smallBottomModulusBits = 60;
+        const uint32_t auxBitsSparse              = (bitsQl <= smallBottomModulusBits) ? 66 : 127;
+        m_sparseKSHammingWeight                   = (bitsQl <= smallBottomModulusBits) ? 32 : 64;
+        const bool isComposite                    = (compositeDegree > 1);
+        const uint32_t registerBits               = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
+        uint32_t sizePSparse                      = 2;
+        uint32_t bitsPSparse                      = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
+        // the primes have to fit (strictly) in the register word size and in a native integer
+        while (bitsPSparse >= registerBits || bitsPSparse > MAX_MODULUS_SIZE) {
+            ++sizePSparse;
+            bitsPSparse = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
+        }
+        // the original configuration (two 33-bit primes searched downwards) is kept for the non-composite case
+        const bool searchDown = (!isComposite && sizePSparse == 2);
 
         uint32_t n         = GetElementParams()->GetRingDimension();
         uint64_t primeStep = FindAuxPrimeStep();
@@ -274,25 +307,38 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
         std::vector<NativeInteger> moduliPSparse(sizePSparse);
         std::vector<NativeInteger> rootsPSparse(sizePSparse);
-        NativeInteger pPrev = FirstPrime<NativeInteger>(bitsPSparse, primeStep);
+        NativeInteger pCur = FirstPrime<NativeInteger>(bitsPSparse, primeStep);
+        if (!searchDown) {
+            // FirstPrime returns the smallest prime with bitsPSparse bits; start just below it so the
+            // loop below can accept it
+            pCur = PreviousPrime<NativeInteger>(pCur, primeStep);
+        }
         BigInteger modulusPSparse(1);
         for (uint32_t j = 0; j < sizePSparse; ++j) {
             bool found = false;
             do {
-                pPrev = PreviousPrime<NativeInteger>(pPrev, primeStep);
-                found = (std::find(moduliToAvoid.begin(), moduliToAvoid.end(), pPrev) != moduliToAvoid.end());
+                pCur  = (searchDown) ? PreviousPrime<NativeInteger>(pCur, primeStep) :
+                                       NextPrime<NativeInteger>(pCur, primeStep);
+                found = (std::find(moduliToAvoid.begin(), moduliToAvoid.end(), pCur) != moduliToAvoid.end());
             } while (found);
-            moduliPSparse[j] = pPrev;
+            if (isComposite && pCur.GetMSB() > registerBits)
+                OPENFHE_THROW(
+                    "Could not find enough auxiliary primes for SPARSE_ENCAPSULATED that fit the register word "
+                    "size (" +
+                    std::to_string(registerBits) + " bits) for this ring dimension.");
+            moduliPSparse[j] = pCur;
             rootsPSparse[j]  = RootOfUnity<NativeInteger>(2 * n, moduliPSparse[j]);
             modulusPSparse *= BigInteger(moduliPSparse[j]);
         }
 
-        m_sparseKSParamsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliPSparse, rootsPSparse);
-        m_sparseKSParamsQ = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, std::vector<NativeInteger>{moduliQ[0]},
-                                                                       std::vector<NativeInteger>{rootsQ[0]});
+        std::vector<NativeInteger> moduliQlSparse(moduliQ.begin(), moduliQ.begin() + sizeQl);
+        std::vector<NativeInteger> rootsQlSparse(rootsQ.begin(), rootsQ.begin() + sizeQl);
 
-        std::vector<NativeInteger> moduliQPSparse{moduliQ[0]};
-        std::vector<NativeInteger> rootsQPSparse{rootsQ[0]};
+        m_sparseKSParamsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliPSparse, rootsPSparse);
+        m_sparseKSParamsQ = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQlSparse, rootsQlSparse);
+
+        std::vector<NativeInteger> moduliQPSparse(moduliQlSparse);
+        std::vector<NativeInteger> rootsQPSparse(rootsQlSparse);
         moduliQPSparse.insert(moduliQPSparse.end(), moduliPSparse.begin(), moduliPSparse.end());
         rootsQPSparse.insert(rootsQPSparse.end(), rootsPSparse.begin(), rootsPSparse.end());
         m_sparseKSParamsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQPSparse, rootsQPSparse);
@@ -300,35 +346,55 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         // Pre-compute CRT::FFT values for P'
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsPSparse, 2 * n, moduliPSparse);
 
-        BigInteger q0(moduliQ[0]);
-        m_sparseKSPModq    = modulusPSparse.Mod(q0).ConvertToInt();
-        m_sparseKSPInvModq = modulusPSparse.ModInverse(q0).ConvertToInt();
+        const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
 
-        // [(P'/p'_j)^{-1}]_{p'_j} and [P'/p'_j]_{q_0} ([q_i][p'_j] orientation with a single
-        // q_0 row, as expected by DCRTPoly::SwitchCRTBasis)
+        // ---- tables for the switch from P' to Ql (scaling down after the key switch) ----
+        m_sparseKSPModq.resize(sizeQl);
+        m_sparseKSPInvModq.resize(sizeQl);
+        m_sparseKSPHatModq.assign(sizeQl, std::vector<NativeInteger>(sizePSparse));
+        m_sparseKSAlphaPModq.assign(sizePSparse + 1, std::vector<NativeInteger>(sizeQl));
+        m_sparseKSModqBarrettMu.resize(sizeQl);
+        for (uint32_t i = 0; i < sizeQl; ++i) {
+            BigInteger qi(moduliQ[i]);
+            m_sparseKSPModq[i]    = modulusPSparse.Mod(qi).ConvertToInt();
+            m_sparseKSPInvModq[i] = modulusPSparse.ModInverse(qi).ConvertToInt();
+            for (uint32_t j = 0; j < sizePSparse; ++j)
+                m_sparseKSPHatModq[i][j] = (modulusPSparse / BigInteger(moduliPSparse[j])).Mod(qi).ConvertToInt();
+            // the overflow correction [a*P']_{q_i}, 0 <= a <= k (running sum; the a = 0 row stays zero)
+            for (uint32_t a = 1; a <= sizePSparse; ++a)
+                m_sparseKSAlphaPModq[a][i] = m_sparseKSAlphaPModq[a - 1][i].ModAddFast(m_sparseKSPModq[i], moduliQ[i]);
+            // reuse the Barrett constants computed for HYBRID above when available
+            m_sparseKSModqBarrettMu[i] = (m_modqBarrettMu.size() > i) ?
+                                             m_modqBarrettMu[i] :
+                                             (BarrettBase128Bit / qi).ConvertToInt<DoubleNativeInt>();
+        }
+        // [(P'/p'_j)^{-1}]_{p'_j} and 1./p'_j
         m_sparseKSPHatInvModp.resize(sizePSparse);
         m_sparseKSPHatInvModpPrecon.resize(sizePSparse);
-        m_sparseKSPHatModq.assign(1, std::vector<NativeInteger>(sizePSparse));
         m_sparseKSpInv.resize(sizePSparse);
         for (uint32_t j = 0; j < sizePSparse; ++j) {
             BigInteger pj(moduliPSparse[j]);
             BigInteger PHatj               = modulusPSparse / pj;
             m_sparseKSPHatInvModp[j]       = PHatj.ModInverse(pj).ConvertToInt();
             m_sparseKSPHatInvModpPrecon[j] = m_sparseKSPHatInvModp[j].PrepModMulConst(moduliPSparse[j]);
-            m_sparseKSPHatModq[0][j]       = PHatj.Mod(q0).ConvertToInt();
             m_sparseKSpInv[j]              = 1.0 / moduliPSparse[j].ConvertToDouble();
         }
 
-        // the overflow correction [a*P']_{q_0}, 0 <= a <= sizePSparse
-        m_sparseKSAlphaPModq.assign(sizePSparse + 1, std::vector<NativeInteger>(1));
-        for (uint32_t a = 0; a <= sizePSparse; ++a)
-            m_sparseKSAlphaPModq[a][0] = m_sparseKSPModq.ModMul(NativeInteger(a), moduliQ[0]);
-
-        // reuse the Barrett constant computed for HYBRID above when available
-        const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
-        m_sparseKSModqBarrettMu = {(m_modqBarrettMu.size() > 0) ?
-                                       m_modqBarrettMu[0] :
-                                       (BarrettBase128Bit / q0).ConvertToInt<DoubleNativeInt>()};
+        // ---- tables for the switch from Ql to P' (extending the ciphertext and the keys) ----
+        // [(Ql/q_i)^{-1}]_{q_i} and 1/q_i are shared with the composite scaling modulus raise
+        // (m_modRaiseQlHatInvModq etc.); only the P'-dependent tables are computed here.
+        m_sparseKSQlHatModp.assign(sizePSparse, std::vector<NativeInteger>(sizeQl));
+        m_sparseKSAlphaQlModp.assign(sizeQl + 1, std::vector<NativeInteger>(sizePSparse));
+        m_sparseKSModpBarrettMu.resize(sizePSparse);
+        for (uint32_t j = 0; j < sizePSparse; ++j) {
+            BigInteger pj(moduliPSparse[j]);
+            for (uint32_t i = 0; i < sizeQl; ++i)
+                m_sparseKSQlHatModp[j][i] = (modulusQl / BigInteger(moduliQ[i])).Mod(pj).ConvertToInt();
+            NativeInteger QlModpj = modulusQl.Mod(pj).ConvertToInt();
+            for (uint32_t a = 1; a <= sizeQl; ++a)
+                m_sparseKSAlphaQlModp[a][j] = m_sparseKSAlphaQlModp[a - 1][j].ModAddFast(QlModpj, moduliPSparse[j]);
+            m_sparseKSModpBarrettMu[j] = (BarrettBase128Bit / pj).ConvertToInt<DoubleNativeInt>();
+        }
     }
 }
 

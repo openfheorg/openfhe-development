@@ -135,7 +135,8 @@ modes for rescaling are supported (for the 64-bit build).
 The FLEXIBLEAUTO, FLEXIBLEAUTOEXT, and COMPOSITESCALING* modes track the exact level-specific scaling factors, which
 removes the scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters
 (equivalently, correctness can be achieved with a smaller CKKS scaling factor). The noise of the COMPOSITESCALING*
-modes is roughly the same as that of FLEXIBLEAUTO for the same parameters. Note that the parameter generation for
+modes is roughly the same as that of FLEXIBLEAUTO for the same parameters, and all secret key distributions are supported.
+Note that the parameter generation for
 composite scaling requires the first modulus to be larger than the scaling factor (whose bit length matches the RLWE
 ciphertext modulus), so in these modes the first modulus has to be at least one bit larger.
 - The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFBTSetup` rejects it.

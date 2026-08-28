@@ -348,11 +348,11 @@ public:
     template <typename VectorDataType>
     static uint32_t GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
-                                SecretKeyDist skd);
+                                SecretKeyDist skd, uint32_t compositeDegree = 1);
 
     template <typename VectorDataType>
     static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY);
+                                   size_t order, SecretKeyDist skd, uint32_t compositeDegree = 1 = SPARSE_TERNARY);
 
     // generates a key going from a denser secret to a sparser one
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
@@ -435,6 +435,15 @@ private:
 
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
                           const std::shared_ptr<DCRTPoly::Params> params) const;
+
+    /**
+   * Raises the modulus of a depleted ciphertext (bottom level, noise degree 1) to the raised basis, i.e.,
+   * extends its bottom RNS limbs (a single prime, or compositeDegree primes for composite scaling) to
+   * elementParamsRaisedPtr. For SPARSE_ENCAPSULATED, the ciphertext is switched to the sparse secret before
+   * and back to the dense secret after the modulus raise.
+   */
+    void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
+                         const std::shared_ptr<DCRTPoly::Params>& elementParamsRaisedPtr) const;
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
@@ -528,6 +537,22 @@ private:
         4.1486274737866247e-6,  2.7079833113674568e-7,   -4.3245388569898879e-7,   -2.6482744214856919e-8,
         3.9770028771436554e-8,  2.2951153557906580e-9,   -3.2556026220554990e-9,   -1.7691071323926939e-10,
         2.5459052150406730e-10};
+
+    // Chebyshev series coefficients for the SPARSE case with K = K_SPARSE_ALT = 25 (degree 44); used for
+    // SPARSE_ENCAPSULATED with composite scaling, where the sparse secret has a Hamming weight of at most 64
+    static const inline std::vector<double> g_coefficientsSparseAlt{
+        0.28065816308911781,    0.001065647880041345,   0.28011246548790547,     0.012416391742589685,
+        0.26103788564813422,    0.033571995605146728,   0.17508004810742173,     0.054855826491235493,
+        -0.021554182041266932,  0.051362144064914143,   -0.25826819800151879,    -0.00096569786548604003,
+        -0.25282853148110797,   -0.062436548089612308,  0.16281455012391343,     -0.016253441720764833,
+        0.28766063190078216,    0.076999449295199221,   -0.38264807377442408,    -0.062551864160669463,
+        0.22595224758852635,    0.029008719659732007,   -0.085998603729076066,   -0.0093245595801543338,
+        0.02382469483202977,    0.0022605589116219819,  -0.0051150140196274124,  -0.00043396516304594223,
+        0.00088506473886174729, 6.8140317662747287e-5,  -0.00012684196046560619, -8.9582114098946065e-6,
+        1.5365152823660996e-5,  1.0038394431584994e-6,  -1.5983882774746566e-6,  -9.725125725542624e-8,
+        1.446285836848547e-7,   8.2404997911893645e-9,  -1.1504017865226345e-8,  -6.1667134208191285e-10,
+        8.1161383461810438e-10, 4.1094511787131745e-11, -5.1177950487080069e-11, -2.4560811288992939e-12,
+        2.9036434780513846e-12};
 
     // Chebyshev series coefficients for the SPARSE ENCAPSULATED case (degree 32)
     static const inline std::vector<double> g_coefficientsSparseEncapsulated{

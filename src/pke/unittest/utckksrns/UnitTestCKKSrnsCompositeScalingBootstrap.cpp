@@ -31,6 +31,7 @@
 
 #include "cryptocontext-ser.h"
 #include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "UnitTestCCParams.h"
@@ -39,7 +40,9 @@
 
 #include <iostream>
 #include <iterator>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace lbcrypto;
@@ -55,6 +58,7 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_NUM_TOWERS,
     BOOTSTRAP_SERIALIZE,
     BOOTSTRAP_KEY_SERIALIZE,
+    BOOTSTRAP_SPARSE_ENCAPSULATED,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -83,6 +87,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_KEY_SERIALIZE:
             typeName = "BOOTSTRAP_KEY_SERIALIZE";
+            break;
+        case BOOTSTRAP_SPARSE_ENCAPSULATED:
+            typeName = "BOOTSTRAP_SPARSE_ENCAPSULATED";
             break;
         default:
             typeName = "UNKNOWN";
@@ -138,6 +145,15 @@ constexpr uint32_t FMODSIZED3 = 89;
 constexpr uint32_t SMODSIZED2 = 59;
 constexpr uint32_t FMODSIZED2 = 60;
 
+// edge cases of the largest scaling factors: 119 bits with a 120-bit first modulus is the maximum for a register
+// word size of 64 bits (composite degree 2 with two 60-bit primes; a 121-bit first modulus would need a 61-bit
+// prime), and 120 bits (the maximum scaling factor of composite scaling) with a 121-bit first modulus requires a
+// smaller register word size, here 32 bits (composite degree 4, primes of 31/30 bits)
+constexpr uint32_t SMODSIZEMAX64 = 119;
+constexpr uint32_t FMODSIZEMAX64 = 120;
+constexpr uint32_t SMODSIZEMAX32 = 120;
+constexpr uint32_t FMODSIZEMAX32 = 121;
+
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSCS_BOOT> testCases = {
     // TestType,      Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
@@ -191,6 +207,30 @@ static std::vector<TEST_CASE_UTCKKSRNSCS_BOOT> testCases = {
     // TestType,               Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
     { BOOTSTRAP_KEY_SERIALIZE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_KEY_SERIALIZE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    // ==========================================
+    // SPARSE_ENCAPSULATED with composite scaling: the sparse key switching uses an auxiliary modulus of three ~22-bit
+    // primes (register word size 32) for the 60-bit first modulus (d = 2) and of ~127 bits split into 26-bit primes for
+    // the 89-bit first modulus (d = 3).
+    // TestType,      Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,          MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
+    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "09", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 3, 3 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_FULL, "10", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          30,               3},              { 3, 3 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_SPARSE, "13", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE, "14", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    // ==========================================
+    // largest scaling factors: 119/120 bits with register word size 64 (d = 2) and 120/121 bits with register word size 32 (d = 4)
+    // TestType,      Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,          MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
+    { BOOTSTRAP_FULL, "11", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "12", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 3, 3 },  { 0, 0 }  , RDIM/2 },
+    { BOOTSTRAP_FULL, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 3, 3 },  { 0, 0 }  , RDIM/2 },
+    { BOOTSTRAP_FULL, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SPARSE, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
     // ==========================================
 };
 // clang-format on
@@ -720,6 +760,53 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+    // Checks the key switching to a sparse secret over the composite bottom basis (KeySwitchGenSparse /
+    // KeySwitchSparse), i.e., the exact CRT basis switches between the compositeDegree bottom primes and the
+    // auxiliary modulus of sparse encapsulation.
+    void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            auto keyPair = cc->KeyGen();
+
+            auto cryptoParams =
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
+
+            std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 0.375, 0.675, 0.125, 0.925};
+            size_t encodedLength  = x.size();
+
+            // We start with a depleted ciphertext that has one level (compositeDegree towers) left.
+            auto depth = cryptoParams->GetMultiplicativeDepth();
+            auto ptxt  = cc->MakeCKKSPackedPlaintext(x, 1, cryptoParams->GetCompositeDegree() * (depth - 1));
+            ptxt->SetLength(encodedLength);
+            auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
+
+            DCRTPoly::TugType tug;
+            DCRTPoly sNew(tug, cryptoParams->GetElementParams(), Format::EVALUATION,
+                          cryptoParams->GetSparseKSHammingWeight());
+
+            auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
+            skNew->SetPrivateElement(std::move(sNew));
+
+            auto evalKey  = FHECKKSRNS::KeySwitchGenSparse(keyPair.secretKey, skNew);
+            auto ctresult = FHECKKSRNS::KeySwitchSparse(ctxt, evalKey);
+
+            Plaintext result;
+            cc->Decrypt(skNew, ctresult, &result);
+            result->SetLength(encodedLength);
+
+            checkEquality(ptxt->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
+                          failmsg + " input/output mismatch");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 
 //===========================================================================================================
@@ -751,6 +838,9 @@ TEST_P(UTCKKSRNSCS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_KEY_SERIALIZE:
             UnitTest_Bootstrap_SerializeBootstrapKey(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_SPARSE_ENCAPSULATED:
+            UnitTest_BootstrapSE(test, test.buildTestName());
             break;
         default:
             break;

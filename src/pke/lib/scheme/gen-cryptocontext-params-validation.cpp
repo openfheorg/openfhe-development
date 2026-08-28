@@ -33,6 +33,8 @@
 #include "utils/exception.h"
 #include "utils/utilities.h"
 
+#include <string>
+
 namespace lbcrypto {
 
 void validateParametersForCryptocontext(const Params& parameters) {
@@ -73,12 +75,14 @@ void validateParametersForCryptocontext(const Params& parameters) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
             }
-            if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
-                OPENFHE_THROW("SPARSE_ENCAPSULATED not yet supported with COMPOSITESCALING");
+            if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist() && parameters.GetFirstModSize() > 121) {
+                OPENFHE_THROW(
+                    "SPARSE_ENCAPSULATED with COMPOSITESCALING* supports a first modulus of at most 121 bits");
             }
         }
         else {
-            if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() || DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+            if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
+                DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(MAX_MODULUS_SIZE));
             }
@@ -99,7 +103,8 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (parameters.GetFirstModSize() < parameters.GetScalingModSize()) {
             OPENFHE_THROW("firstModSize cannot be less than scalingModSize");
         }
-        if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT && parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+            parameters.GetExecutionMode() == EXEC_EVALUATION) {
             if (parameters.GetNoiseEstimate() == 0) {
                 OPENFHE_THROW(
                     "Noise estimate must be set for the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
@@ -186,7 +191,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
         OPENFHE_THROW(errorMsg);
     }
     if (BV == parameters.GetKeySwitchTechnique()) {
-        const uint32_t maxDigitSize = uint32_t(std::ceil(MAX_MODULUS_SIZE / 2));
+        const uint32_t maxDigitSize = static_cast<uint32_t>(std::ceil(MAX_MODULUS_SIZE / 2));
         if (maxDigitSize < parameters.GetDigitSize()) {
             OPENFHE_THROW("digitSize should not be greater than " + std::to_string(maxDigitSize) +
                           " for keySwitchTechnique == BV");

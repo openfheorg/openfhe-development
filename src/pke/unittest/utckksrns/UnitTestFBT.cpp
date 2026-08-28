@@ -136,17 +136,24 @@ static uint32_t FirstModSize(uint32_t dcrtBits, ScalingTechnique st) {
     return (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ? dcrtBits + 1 : dcrtBits;
 }
 
-// Composite scaling with a 32-bit register word size yields composite degree ceil(dcrtBits / 32), i.e., 2 for the
-// scaling factor sizes used in most composite rows and 3 for the 90-bit rows (the default register word size would
-// yield composite degree 1, which is rejected). COMPOSITESCALINGMANUAL requires the composite degree to be set
-// explicitly; the same degree as the one COMPOSITESCALINGAUTO would choose is used.
+// Composite scaling with a register word size of w bits yields composite degree ceil(dcrtBits / w), i.e., with the
+// default w = 32, 2 for the scaling factor sizes used in most composite rows and 3 for the 90-bit rows (the default
+// register word size of the library would yield composite degree 1, which is rejected). COMPOSITESCALINGMANUAL
+// requires the composite degree to be set explicitly; the same degree as the one COMPOSITESCALINGAUTO would choose
+// is used.
+static uint32_t CompositeDegreeForTest(uint32_t dcrtBits, ScalingTechnique st, uint32_t registerWordSize) {
+    return (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ?
+               (dcrtBits + registerWordSize - 1) / registerWordSize :
+               1;
+}
+
 static void SetScalingTechniqueParams(CCParams<CryptoContextCKKSRNS>& parameters, ScalingTechnique st,
-                                      uint32_t dcrtBits) {
+                                      uint32_t dcrtBits, uint32_t registerWordSize) {
     parameters.SetScalingTechnique(st);
     if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) {
-        parameters.SetRegisterWordSize(32);
+        parameters.SetRegisterWordSize(registerWordSize);
         if (st == COMPOSITESCALINGMANUAL)
-            parameters.SetCompositeDegree((dcrtBits + 31) / 32);
+            parameters.SetCompositeDegree(CompositeDegreeForTest(dcrtBits, st, registerWordSize));
     }
 }
 
@@ -172,6 +179,8 @@ struct TEST_CASE_FBT {
     SecretKeyDist skd;
     // scaling technique used for the CKKS cryptocontext; FIXEDMANUAL by default
     ScalingTechnique scalTech = FIXEDMANUAL;
+    // register word size for the COMPOSITESCALING* techniques; 32 by default
+    uint32_t registerWordSize = 32;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -216,6 +225,9 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 [[maybe_unused]] const BigInteger Q80(BigInteger(1) << 80);
 [[maybe_unused]] const BigInteger Q90(BigInteger(1) << 90);
 [[maybe_unused]] const BigInteger Q110(BigInteger(1) << 110);
+[[maybe_unused]] const BigInteger Q119(BigInteger(1) << 119);
+[[maybe_unused]] const BigInteger Q120(BigInteger(1) << 120);
+[[maybe_unused]] const BigInteger Q140(BigInteger(1) << 140);
 [[maybe_unused]] const BigInteger Q130(BigInteger(1) << 130);
 
 [[maybe_unused]] constexpr double SCALETHI(32.0);
@@ -416,6 +428,26 @@ static std::vector<TEST_CASE_FBT> testCases = {
     {       FBT_MVB, "1045",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
     {    FBT_ARBLUT, "1046",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
     { FBT_NOISE_VS_FLEXIBLE, "1047", Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    // SPARSE_ENCAPSULATED with composite scaling (sparse key switching over the composite bottom basis; the
+    // K = 25 approximation is used in this case)
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1051",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1052",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1053",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1054",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1055",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1056",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1057",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGMANUAL},
+    // Largest scaling factors: 119 bits (120-bit first modulus) is the maximum for a register word size of 64 bits
+    // (composite degree 2 with 60-bit primes), and 120 bits (121-bit first modulus), the maximum of composite scaling,
+    // requires a smaller register word size (32 bits: composite degree 4).
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique, registerWordSize
+    {    FBT_ARBLUT, "1061",     Q140, PINPUT, POUTPUT, Q119, Q119, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO, 64},
+    {    FBT_ARBLUT, "1062",     Q140, PINPUT, POUTPUT, Q119, Q119, SCALETHI, SCALESTEPTHI,   2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO, 64},
+    {    FBT_ARBLUT, "1063",     Q140, PINPUT, POUTPUT, Q119, Q119, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGMANUAL, 64},
+    {    FBT_ARBLUT, "1064",     Q140, PINPUT, POUTPUT, Q120, Q120, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO, 32},
+    {    FBT_ARBLUT, "1065",     Q140, PINPUT, POUTPUT, Q120, Q120, SCALETHI, SCALESTEPTHI,   1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO, 32},
+    {       FBT_MVB, "1066",     Q140, PINPUT,  PINPUT, Q120, Q120, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO, 32},
     { FBT_CONSECLEV, "947",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
     {       FBT_MVB, "948",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
 #else
@@ -603,7 +635,7 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
@@ -611,9 +643,11 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -774,7 +808,7 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
@@ -783,9 +817,11 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1001,7 +1037,7 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
@@ -1009,9 +1045,11 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1230,7 +1268,7 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
@@ -1238,9 +1276,11 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd,
+                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1422,7 +1462,7 @@ protected:
                 parameters.SetSecretKeyDist(t.skd);
                 parameters.SetSecurityLevel(HEStd_NotSet);
                 parameters.SetScalingModSize(dcrtBits);
-                SetScalingTechniqueParams(parameters, scalTech, dcrtBits);
+                SetScalingTechniqueParams(parameters, scalTech, dcrtBits, t.registerWordSize);
                 parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
@@ -1430,9 +1470,11 @@ protected:
                 uint32_t depth = t.levelsAvailableAfterBootstrap;
 
                 if (binaryLUT)
-                    depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+                    depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
                 else
-                    depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
+                    depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
 
                 parameters.SetMultiplicativeDepth(depth);
 
@@ -1504,6 +1546,18 @@ protected:
             int64_t errFlex              = -1;
             double noiseRef              = runOnce(refSt, errRef);
             double noiseFlex             = runOnce(t.scalTech, errFlex);
+            if (vsFlexible) {
+                // The noise of a single run occasionally lands well below the typical value (the approximation
+                // error depends on the key-dependent mod-raise overflows), so the comparison uses the largest
+                // noise over a few runs for both techniques, which is stable.
+                for (uint32_t run = 1; run < 3; ++run) {
+                    int64_t err = -1;
+                    noiseRef    = std::max(noiseRef, runOnce(refSt, err));
+                    errRef      = std::max(errRef, err);
+                    noiseFlex   = std::max(noiseFlex, runOnce(t.scalTech, err));
+                    errFlex     = std::max(errFlex, err);
+                }
+            }
 
             checkEquality(errRef, static_cast<int64_t>(0), 0.0001,
                           failmsg + " " + ScalTechName(refSt) + " LUT evaluation fails");
@@ -1554,13 +1608,14 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
-            uint32_t depth =
-                t.levelsAvailableAfterBootstrap + FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+            uint32_t depth = t.levelsAvailableAfterBootstrap +
+                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
             parameters.SetMultiplicativeDepth(depth);
 
             auto cc = GenCryptoContext(parameters);
@@ -1632,15 +1687,16 @@ protected:
             std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
 
             const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t depth =
-                t.levelsAvailableAfterBootstrap + FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+            uint32_t depth          = t.levelsAvailableAfterBootstrap +
+                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
 
             auto makeParams = [&](ScalingTechnique st) {
                 CCParams<CryptoContextCKKSRNS> parameters;
                 parameters.SetSecretKeyDist(t.skd);
                 parameters.SetSecurityLevel(HEStd_NotSet);
                 parameters.SetScalingModSize(dcrtBits);
-                SetScalingTechniqueParams(parameters, st, dcrtBits);
+                SetScalingTechniqueParams(parameters, st, dcrtBits, t.registerWordSize);
                 parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);

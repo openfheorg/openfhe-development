@@ -34,6 +34,8 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - Both slot-encoding modes of CKKS bootstrapping are supported: the default ModRaise-first mode and the SlotsToCoeffs-first mode (`BTSlotsEncoding = true` in `EvalBootstrapSetup`), with a precision comparable to FLEXIBLEAUTO in both modes.
 
+- All secret key distributions are supported for bootstrapping, including SPARSE_ENCAPSULATED. In this case, the auxiliary modulus of the sparse key switching (~66 bits) is split into three ~22-bit primes when the register word size is at most 33 bits; for first moduli larger than 60 bits (at most 121 bits), an auxiliary modulus of ~127 bits split into primes fitting the register word size is used, and the Hamming weight of the sparse secret is increased from 32 to 64.
+
 ## Current Constraints
 
 - This current CKKS composite scaling implementation does not yet support scheme switching or interactive bootstrapping.
