@@ -228,6 +228,42 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::CloneTowers(uint32_t startTower, ui
 }
 
 template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ExpandRing(const std::shared_ptr<Params>& targetParams) const {
+    if (m_format != Format::EVALUATION)
+        OPENFHE_THROW("DCRTPolyImpl::ExpandRing() requires the source element to be in Format::EVALUATION");
+
+    const uint32_t smallDim = m_params->GetRingDimension();
+    const uint32_t bigDim   = targetParams->GetRingDimension();
+    if (bigDim < smallDim || bigDim % smallDim != 0)
+        OPENFHE_THROW("DCRTPolyImpl::ExpandRing(): target ring dimension must be a multiple of the source ring dimension");
+
+    const auto& sourceTowers = m_params->GetParams();
+    const auto& targetTowers = targetParams->GetParams();
+    if (sourceTowers.size() != targetTowers.size())
+        OPENFHE_THROW("DCRTPolyImpl::ExpandRing(): source and target must have the same number of RNS towers");
+
+    const uint32_t gap = bigDim / smallDim;
+    DCRTPolyImpl<VecType> result(targetParams, Format::EVALUATION, false);
+    for (uint32_t t = 0; t < m_vectors.size(); ++t) {
+        if (sourceTowers[t]->GetModulus() != targetTowers[t]->GetModulus())
+            OPENFHE_THROW("DCRTPolyImpl::ExpandRing(): modulus mismatch between source and target RNS towers");
+
+        const NativeVector& small = m_vectors[t].GetValues();
+        NativeVector big(bigDim, targetTowers[t]->GetModulus());
+        for (uint32_t i = 0; i < smallDim; ++i) {
+            const NativeInteger& v = small[i];
+            for (uint32_t g = 0; g < gap; ++g)
+                big[i * gap + g] = v;
+        }
+
+        PolyType tower(targetTowers[t]);
+        tower.SetValues(std::move(big), Format::EVALUATION);
+        result.SetElementAtIndex(t, std::move(tower));
+    }
+    return result;
+}
+
+template <typename VecType>
 std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const {
     auto bdV(CRTInterpolate().BaseDecompose(baseBits, false));
     std::vector<DCRTPolyImpl<VecType>> result;

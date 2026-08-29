@@ -120,6 +120,8 @@ public:
     DCRTPolyType CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg, Format format) const override;
     DCRTPolyType CloneTowers(uint32_t startTower, uint32_t endTower) const;
 
+    DCRTPolyType ExpandRing(const std::shared_ptr<Params>& targetParams) const;
+
     bool operator==(const DCRTPolyType& rhs) const override;
 
     DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
