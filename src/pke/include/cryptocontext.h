@@ -372,7 +372,8 @@ protected:
 
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
-                                                      const std::shared_ptr<ParmType> params, uint32_t slots) const {
+                                                      const std::shared_ptr<ParmType> params, uint32_t slots,
+                                                      bool compressed = false) const {
         VerifyCKKSScheme(__func__);
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
         if (!cryptoParams)
@@ -433,7 +434,7 @@ protected:
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
                                                                noiseScaleDeg, level, scFact, slots,
-                                                               this->GetCKKSDataType()));
+                                                               this->GetCKKSDataType(), compressed));
         }
         else {
             // Check if plaintext has got enough slots for data (value)
@@ -446,7 +447,8 @@ protected:
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
-                                                               level, scFact, slots, this->GetCKKSDataType()));
+                                                               level, scFact, slots, this->GetCKKSDataType(),
+                                                               compressed));
         }
         p->Encode();
 
@@ -1250,12 +1252,12 @@ public:
     */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t noiseScaleDeg = 1,
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
-                                      uint32_t slots = 0) const {
+                                      uint32_t slots = 0, bool compressed = false) const {
         VerifyCKKSScheme(__func__);
         if (value.empty())
             OPENFHE_THROW("Cannot encode an empty value vector");
 
-        return MakeCKKSPackedPlaintextInternal(value, noiseScaleDeg, level, params, slots);
+        return MakeCKKSPackedPlaintextInternal(value, noiseScaleDeg, level, params, slots, compressed);
     }
 
     /**
@@ -1269,7 +1271,8 @@ public:
     * @return Encoded CKKS plaintext.
     */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t noiseScaleDeg = 1, uint32_t level = 0,
-                                      const std::shared_ptr<ParmType> params = nullptr, uint32_t slots = 0) const {
+                                      const std::shared_ptr<ParmType> params = nullptr, uint32_t slots = 0,
+                                      bool compressed = false) const {
         VerifyCKKSScheme(__func__);
         if (value.empty())
             OPENFHE_THROW("Cannot encode an empty value vector");
@@ -1278,7 +1281,7 @@ public:
         std::transform(value.begin(), value.end(), complexValue.begin(),
                        [](double da) { return std::complex<double>(da); });
 
-        return MakeCKKSPackedPlaintextInternal(complexValue, noiseScaleDeg, level, params, slots);
+        return MakeCKKSPackedPlaintextInternal(complexValue, noiseScaleDeg, level, params, slots, compressed);
     }
 
     /**

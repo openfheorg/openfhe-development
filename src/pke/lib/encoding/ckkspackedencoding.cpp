@@ -112,6 +112,20 @@ double StdDev(const std::vector<std::complex<double>>& vec, const std::vector<st
     return 0.5 * std::sqrt(variance);
 }
 
+static std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> BuildCompressedElementParams(
+    const std::shared_ptr<DCRTPoly::Params>& bigParams, uint32_t smallRingDim) {
+    uint32_t gap                = bigParams->GetRingDimension() / smallRingDim;
+    const auto& bigTowerParams  = bigParams->GetParams();
+    std::vector<std::shared_ptr<ILNativeParams>> smallTowerParams;
+    smallTowerParams.reserve(bigTowerParams.size());
+    for (const auto& p : bigTowerParams) {
+        NativeInteger modulus   = p->GetModulus();
+        NativeInteger smallRoot = p->GetRootOfUnity().ModExp(NativeInteger(gap), modulus);
+        smallTowerParams.push_back(std::make_shared<ILNativeParams>(2 * smallRingDim, modulus, smallRoot));
+    }
+    return std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(2 * smallRingDim, smallTowerParams);
+}
+
 bool CKKSPackedEncoding::Encode() {
     if (isEncoded)
         return true;
@@ -287,12 +301,19 @@ bool CKKSPackedEncoding::Encode() {
     DCRTPoly::Integer intPowP(static_cast<uint64_t>(std::llround(scalingFactor)));
 #endif
 
+    if (m_compressed) {
+        auto compressedParams  = BuildCompressedElementParams(m_expandedParams, 2 * slots);
+        encodedVectorDCRT       = DCRTPoly(compressedParams, Format::COEFFICIENT, true);
+        m_expandedElementValid = false;
+    }
+
     auto nativeParams  = encodedVectorDCRT.GetParams()->GetParams();
     uint32_t numTowers = nativeParams.size();
+    uint32_t storageDim = GetElementRingDimension();
     std::vector<DCRTPoly::Integer> moduli(numTowers);
     for (uint32_t i = 0; i < numTowers; i++) {
         moduli[i] = nativeParams[i]->GetModulus();
-        NativeVector nativeVec(ringDim, nativeParams[i]->GetModulus());
+        NativeVector nativeVec(storageDim, nativeParams[i]->GetModulus());
         FitToNativeVector(temp, MaxBitValue, &nativeVec);
         NativePoly element = GetElement<DCRTPoly>().GetElementAtIndex(i);
         element.SetValues(std::move(nativeVec), Format::COEFFICIENT);  // output was in coefficient format

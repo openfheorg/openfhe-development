@@ -86,6 +86,19 @@ using namespace lbcrypto;
     return cc;
 }
 
+[[maybe_unused]] static CryptoContext<DCRTPoly> GenerateSparseCKKSContext() {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetScalingModSize(50);
+    parameters.SetFirstModSize(60);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetSecurityLevel(HEStd_128_classic);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(LEVELEDSHE);
+    return cc;
+}
+
 [[maybe_unused]] static CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t mdepth = 1) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
@@ -491,6 +504,32 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
 
     while (state.KeepRunning()) {
         cc->Decrypt(keyPair.secretKey, ciphertext1, &plaintextDec1);
+    }
+}
+
+[[maybe_unused]] void CKKSrns_EncodeUncompressed(benchmark::State& state) {
+    CryptoContext<DCRTPoly> cc = GenerateSparseCKKSContext();
+    uint32_t slots             = cc->GetRingDimension() / 256;
+
+    std::vector<double> x(slots);
+    for (uint32_t i = 0; i < slots; i++)
+        x[i] = benchRandReal();
+
+    while (state.KeepRunning()) {
+        auto plaintext = cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, slots, false);
+    }
+}
+
+[[maybe_unused]] void CKKSrns_EncodeCompressed(benchmark::State& state) {
+    CryptoContext<DCRTPoly> cc = GenerateSparseCKKSContext();
+    uint32_t slots             = cc->GetRingDimension() / 256;
+
+    std::vector<double> x(slots);
+    for (uint32_t i = 0; i < slots; i++)
+        x[i] = benchRandReal();
+
+    while (state.KeepRunning()) {
+        auto plaintext = cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, slots, true);
     }
 }
 
@@ -1176,6 +1215,8 @@ BENCHMARK(CKKSrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
 BENCHMARK(CKKSrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
 BENCHMARK(CKKSrns_Encryption)->Unit(benchmark::kMicrosecond);
 BENCHMARK(CKKSrns_Decryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EncodeUncompressed)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EncodeCompressed)->Unit(benchmark::kMicrosecond);
 BENCHMARK(CKKSrns_Add)->Unit(benchmark::kMicrosecond);
 BENCHMARK(CKKSrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond)->Apply(DepthArgs);  // ->Complexity(benchmark::oAuto);

@@ -62,6 +62,10 @@ class CKKSPackedEncoding : public PlaintextImpl {
 private:
     std::vector<std::complex<double>> value;
     double m_logError = 0.;
+    bool m_compressed = false;
+    std::shared_ptr<DCRTPoly::Params> m_expandedParams;
+    mutable DCRTPoly m_expandedElement;
+    mutable bool m_expandedElementValid = false;
 
 public:
     // these two constructors are used inside of Decrypt
@@ -86,13 +90,21 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& v,
-                       size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL)
+                       size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL,
+                       bool compressed = false)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
         ckksDataType  = ckksdt;
         scalingFactor = scFact;
         level         = lvl;
         noiseScaleDeg = nsdeg;
         slots         = GetDefaultSlotSize(slts, v.size());
+
+        if constexpr (std::is_same<T, DCRTPoly::Params>::value) {
+            if (compressed) {
+                m_compressed     = true;
+                m_expandedParams = vp;
+            }
+        }
 
         if (ckksDataType == REAL) {
             auto* rvptr = reinterpret_cast<double*>(value.data()) + 1;
@@ -127,10 +139,22 @@ public:
     }
 
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
-        : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
+        : PlaintextImpl(rhs),
+          value(rhs.value),
+          m_logError(rhs.m_logError),
+          m_compressed(rhs.m_compressed),
+          m_expandedParams(rhs.m_expandedParams),
+          m_expandedElement(rhs.m_expandedElement),
+          m_expandedElementValid(rhs.m_expandedElementValid) {}
 
     CKKSPackedEncoding(CKKSPackedEncoding&& rhs) noexcept
-        : PlaintextImpl(std::move(rhs)), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
+        : PlaintextImpl(std::move(rhs)),
+          value(std::move(rhs.value)),
+          m_logError(rhs.m_logError),
+          m_compressed(rhs.m_compressed),
+          m_expandedParams(std::move(rhs.m_expandedParams)),
+          m_expandedElement(std::move(rhs.m_expandedElement)),
+          m_expandedElementValid(rhs.m_expandedElementValid) {}
 
     bool Encode() override;
 
@@ -150,6 +174,24 @@ public:
         for (auto vit = value.cbegin(); vit != value.cend(); ++vit, ++rvptr)
             *rvptr = vit->real();
         return realValue;
+    }
+
+    bool IsCompressed() const {
+        return m_compressed;
+    }
+
+    uint32_t GetCompressionGap() const {
+        return m_expandedParams->GetRingDimension() / GetElementRingDimension();
+    }
+
+    const DCRTPoly& GetExpandedElement() const {
+        if (!m_compressed)
+            return GetElement<DCRTPoly>();
+        if (!m_expandedElementValid) {
+            m_expandedElement      = GetElement<DCRTPoly>().ExpandRing(m_expandedParams);
+            m_expandedElementValid = true;
+        }
+        return m_expandedElement;
     }
 
     /**
