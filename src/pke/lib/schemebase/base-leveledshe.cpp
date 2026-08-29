@@ -524,7 +524,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::LevelReduce(ConstCiphertext<Element
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext& plaintext,
                                                             ConstCiphertext<Element>& ciphertext) const {
-    auto elem = plaintext->GetElement<Element>();
+    const Element* plaintextElement = &plaintext->GetElement<Element>();
+    if constexpr (std::is_same<Element, DCRTPoly>::value) {
+        auto ckks = std::dynamic_pointer_cast<const CKKSPackedEncoding>(plaintext);
+        if (ckks && ckks->IsCompressed())
+            plaintextElement = &ckks->GetExpandedElement();
+    }
+
+    auto elem = *plaintextElement;
     elem.SetFormat(EVALUATION);
 
     auto result = ciphertext->CloneEmpty();

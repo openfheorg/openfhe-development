@@ -232,3 +232,165 @@ TEST(UTCKKS_EXPAND_RING, CompressedEncodeReducesStorage) {
 
     OpenFHEParallelControls.UnitTestStop();
 }
+
+TEST(UTCKKS_EXPAND_RING, CompressedEncryptDecrypt) {
+    setupSignals();
+    OpenFHEParallelControls.UnitTestStart();
+
+    for (uint32_t depth : DEPTHS_TO_TEST) {
+        const std::string failmsg("CompressedEncryptDecrypt, depth=" + std::to_string(depth));
+        SCOPED_TRACE(failmsg);
+
+        try {
+            CCParams<CryptoContextCKKSRNS> parameters;
+            parameters.SetMultiplicativeDepth(depth);
+            parameters.SetScalingModSize(50);
+            parameters.SetFirstModSize(60);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetSecurityLevel(HEStd_128_classic);
+
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+
+            const uint32_t slots = cc->GetRingDimension() / 16;
+
+            std::vector<double> x(slots);
+            for (uint32_t i = 0; i < slots; ++i)
+                x[i] = static_cast<double>(i) - static_cast<double>(slots) / 2.0;
+
+            Plaintext compressed = cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, slots, true);
+            auto compressedCKKS  = std::dynamic_pointer_cast<CKKSPackedEncoding>(compressed);
+            ASSERT_NE(compressedCKKS, nullptr) << failmsg;
+            ASSERT_TRUE(compressedCKKS->IsCompressed()) << failmsg;
+
+            KeyPair<DCRTPoly> keyPair = cc->KeyGen();
+
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, compressed);
+            ASSERT_NE(ciphertext, nullptr) << failmsg;
+            EXPECT_EQ(ciphertext->GetElements()[0].GetRingDimension(), cc->GetRingDimension()) << failmsg;
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+            result->SetLength(slots);
+
+            checkEquality(x, result->GetRealPackedValue(), EPSILON_HIGH, failmsg);
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
+
+    OpenFHEParallelControls.UnitTestStop();
+}
+
+TEST(UTCKKS_EXPAND_RING, CompressedCiphertextPlaintextArithmetic) {
+    setupSignals();
+    OpenFHEParallelControls.UnitTestStart();
+
+    for (uint32_t depth : DEPTHS_TO_TEST) {
+        const std::string failmsg("CompressedCiphertextPlaintextArithmetic, depth=" + std::to_string(depth));
+        SCOPED_TRACE(failmsg);
+
+        try {
+            CCParams<CryptoContextCKKSRNS> parameters;
+            parameters.SetMultiplicativeDepth(depth);
+            parameters.SetScalingModSize(50);
+            parameters.SetFirstModSize(60);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetSecurityLevel(HEStd_128_classic);
+
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+
+            const uint32_t slots  = cc->GetRingDimension() / 16;
+            const double multEps  = 0.01;
+
+            std::vector<double> y(slots), z(slots);
+            for (uint32_t i = 0; i < slots; ++i) {
+                y[i] = 0.01 * static_cast<double>(i) - 0.5;
+                z[i] = 0.01 * static_cast<double>(i) + 0.25;
+            }
+
+            KeyPair<DCRTPoly> keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            Plaintext ptxtY = cc->MakeCKKSPackedPlaintext(y, 1, 0, nullptr, slots, false);
+            auto ctxtY      = cc->Encrypt(keyPair.publicKey, ptxtY);
+
+            Plaintext ptxtZCompressed = cc->MakeCKKSPackedPlaintext(z, 1, 0, nullptr, slots, true);
+            ASSERT_TRUE(std::dynamic_pointer_cast<CKKSPackedEncoding>(ptxtZCompressed)->IsCompressed()) << failmsg;
+
+            std::vector<double> expectedAdd(slots), expectedSub(slots), expectedMult(slots);
+            for (uint32_t i = 0; i < slots; ++i) {
+                expectedAdd[i]  = y[i] + z[i];
+                expectedSub[i]  = y[i] - z[i];
+                expectedMult[i] = y[i] * z[i];
+            }
+
+            Plaintext resAdd;
+            cc->Decrypt(keyPair.secretKey, cc->EvalAdd(ctxtY, ptxtZCompressed), &resAdd);
+            resAdd->SetLength(slots);
+            checkEquality(expectedAdd, resAdd->GetRealPackedValue(), EPSILON_HIGH, failmsg + " (add, same level)");
+
+            Plaintext resSub;
+            cc->Decrypt(keyPair.secretKey, cc->EvalSub(ctxtY, ptxtZCompressed), &resSub);
+            resSub->SetLength(slots);
+            checkEquality(expectedSub, resSub->GetRealPackedValue(), EPSILON_HIGH, failmsg + " (sub, same level)");
+
+            auto ctxtMult = cc->EvalMult(ctxtY, ptxtZCompressed);
+            cc->RescaleInPlace(ctxtMult);
+            Plaintext resMult;
+            cc->Decrypt(keyPair.secretKey, ctxtMult, &resMult);
+            resMult->SetLength(slots);
+            checkEquality(expectedMult, resMult->GetRealPackedValue(), multEps, failmsg + " (mult, same level)");
+
+            if (depth > 1) {
+                auto ctxtYSquared = cc->EvalMult(ctxtY, ctxtY);
+                cc->RescaleInPlace(ctxtYSquared);
+                ASSERT_EQ(ctxtYSquared->GetLevel(), 1u) << failmsg;
+
+                std::vector<double> ySquared(slots), expectedMorphedAdd(slots), expectedMorphedMult(slots);
+                for (uint32_t i = 0; i < slots; ++i) {
+                    ySquared[i]           = y[i] * y[i];
+                    expectedMorphedAdd[i] = ySquared[i] + z[i];
+                    expectedMorphedMult[i] = ySquared[i] * z[i];
+                }
+
+                Plaintext resMorphedAdd;
+                cc->Decrypt(keyPair.secretKey, cc->EvalAdd(ctxtYSquared, ptxtZCompressed), &resMorphedAdd);
+                resMorphedAdd->SetLength(slots);
+                checkEquality(expectedMorphedAdd, resMorphedAdd->GetRealPackedValue(), multEps,
+                             failmsg + " (add, morphed)");
+
+                auto ctxtMorphedMult = cc->EvalMult(ctxtYSquared, ptxtZCompressed);
+                cc->RescaleInPlace(ctxtMorphedMult);
+                Plaintext resMorphedMult;
+                cc->Decrypt(keyPair.secretKey, ctxtMorphedMult, &resMorphedMult);
+                resMorphedMult->SetLength(slots);
+                checkEquality(expectedMorphedMult, resMorphedMult->GetRealPackedValue(), multEps,
+                             failmsg + " (mult, morphed)");
+            }
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
+
+    OpenFHEParallelControls.UnitTestStop();
+}

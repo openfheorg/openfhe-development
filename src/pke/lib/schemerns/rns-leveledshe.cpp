@@ -42,6 +42,14 @@ inline ScalingTechnique GetScalingTechnique(const CiphertextImpl<DCRTPoly>& ct) 
     return static_cast<const CryptoParametersRNS&>(*ct.GetCryptoParameters()).GetScalingTechnique();
 }
 
+inline const DCRTPoly& GetPlaintextElement(const PlaintextImpl& pt) {
+    if (const auto* ckks = dynamic_cast<const CKKSPackedEncoding*>(&pt)) {
+        if (ckks->IsCompressed())
+            return ckks->GetExpandedElement();
+    }
+    return pt.GetElement<DCRTPoly>();
+}
+
 // AdjustForAddOrSubInPlace() is a no-op when the operands share level, noise-scale degree and tower
 // count (the plaintext overload additionally requires the plaintext element in EVALUATION format).
 inline bool AdjustForAddOrSubIsNoOp(const CiphertextImpl<DCRTPoly>& a, const CiphertextImpl<DCRTPoly>& b) {
@@ -49,7 +57,7 @@ inline bool AdjustForAddOrSubIsNoOp(const CiphertextImpl<DCRTPoly>& a, const Cip
            a.GetElements()[0].GetNumOfElements() == b.GetElements()[0].GetNumOfElements();
 }
 inline bool AdjustForAddOrSubIsNoOp(const CiphertextImpl<DCRTPoly>& ct, const PlaintextImpl& pt) {
-    const auto& pe = pt.GetElement<DCRTPoly>();
+    const auto& pe = GetPlaintextElement(pt);
     return pt.GetLevel() == ct.GetLevel() && pt.GetNoiseScaleDeg() == ct.GetNoiseScaleDeg() &&
            pe.GetFormat() == Format::EVALUATION && pe.GetNumOfElements() == ct.GetElements()[0].GetNumOfElements();
 }
@@ -63,7 +71,7 @@ inline bool AdjustForMultIsNoOp(const CiphertextImpl<DCRTPoly>& a, const Ciphert
            (st == FIXEDMANUAL || (a.GetNoiseScaleDeg() == 1 && b.GetNoiseScaleDeg() == 1));
 }
 inline bool AdjustForMultIsNoOp(const CiphertextImpl<DCRTPoly>& ct, const PlaintextImpl& pt, ScalingTechnique st) {
-    const auto& pe = pt.GetElement<DCRTPoly>();
+    const auto& pe = GetPlaintextElement(pt);
     return ct.GetLevel() == pt.GetLevel() && pe.GetFormat() == Format::EVALUATION &&
            pe.GetNumOfElements() == ct.GetElements()[0].GetNumOfElements() &&
            (st == FIXEDMANUAL || (ct.GetNoiseScaleDeg() == 1 && pt.GetNoiseScaleDeg() == 1));
@@ -117,7 +125,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly>& ciphertex
 void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     auto st = GetScalingTechnique(*ciphertext);
     if (st == NORESCALE || AdjustForAddOrSubIsNoOp(*ciphertext, *plaintext)) {
-        EvalAddCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+        EvalAddCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
     }
     else {
         auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
@@ -185,7 +193,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly>& ciphertex
 void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     auto st = GetScalingTechnique(*ciphertext);
     if (st == NORESCALE || AdjustForAddOrSubIsNoOp(*ciphertext, *plaintext)) {
-        EvalSubCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+        EvalSubCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
     }
     else {
         auto ctmorphed = MorphPlaintext(plaintext, ciphertext);
@@ -263,11 +271,11 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly>& cipherte
 void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     auto st = GetScalingTechnique(*ciphertext);
     if (st == NORESCALE) {
-        EvalMultCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+        EvalMultCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
     }
     else {
         if (AdjustForMultIsNoOp(*ciphertext, *plaintext, st)) {
-            EvalMultCoreInPlace(ciphertext, plaintext->GetElement<DCRTPoly>());
+            EvalMultCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
             ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
         }
         else {

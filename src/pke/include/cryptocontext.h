@@ -1331,7 +1331,14 @@ public:
             OPENFHE_THROW("Input plaintext is nullptr");
         ValidateKey(publicKey);
 
-        Ciphertext<Element> ciphertext = m_scheme->Encrypt(plaintext->GetElement<Element>(), publicKey);
+        const Element* element = &plaintext->GetElement<Element>();
+        if constexpr (std::is_same<Element, DCRTPoly>::value) {
+            auto ckks = std::dynamic_pointer_cast<const CKKSPackedEncoding>(plaintext);
+            if (ckks && ckks->IsCompressed())
+                element = &ckks->GetExpandedElement();
+        }
+
+        Ciphertext<Element> ciphertext = m_scheme->Encrypt(*element, publicKey);
 
         if (ciphertext) {
             ciphertext->SetSlots(plaintext->GetSlots());
@@ -1368,7 +1375,14 @@ public:
         //      OPENFHE_THROW( "Input plaintext is nullptr");
         ValidateKey(privateKey);
 
-        Ciphertext<Element> ciphertext = m_scheme->Encrypt(plaintext->GetElement<Element>(), privateKey);
+        const Element* element = &plaintext->GetElement<Element>();
+        if constexpr (std::is_same<Element, DCRTPoly>::value) {
+            auto ckks = std::dynamic_pointer_cast<const CKKSPackedEncoding>(plaintext);
+            if (ckks && ckks->IsCompressed())
+                element = &ckks->GetExpandedElement();
+        }
+
+        Ciphertext<Element> ciphertext = m_scheme->Encrypt(*element, privateKey);
 
         if (ciphertext) {
             ciphertext->SetSlots(plaintext->GetSlots());
