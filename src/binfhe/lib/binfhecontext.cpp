@@ -35,6 +35,7 @@
 
 #include "binfhecontext.h"
 
+#include <map>
 #include <string>
 #include <unordered_map>
 
