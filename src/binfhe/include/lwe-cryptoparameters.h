@@ -35,6 +35,7 @@
 #include "binfhe-constants.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/math-hal.h"
+#include "math/nbtheory.h"
 #include "utils/serializable.h"
 
 #include <string>
@@ -62,9 +63,8 @@ public:
    * @param baseKS the base used for key switching
    * @param keyDist the key distribution
    */
-    explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q,
-                             NativeInteger q_KS, double std, uint32_t baseKS,
-                             SecretKeyDist keyDist = UNIFORM_TERNARY)
+    explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, NativeInteger q_KS, double std,
+                             uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_n == 0)
             OPENFHE_THROW("m_n (lattice parameter) can not be zero");
@@ -97,8 +97,8 @@ public:
     }
 
     LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        m_q      = rhs.m_q;
-        m_Q      = rhs.m_Q;
+        m_q = rhs.m_q;
+        m_Q = rhs.m_Q;
         // m_qKS    = rhs.m_qKS;
         m_n      = rhs.m_n;
         m_N      = rhs.m_N;
@@ -130,6 +130,10 @@ public:
 
     uint32_t GetBaseKS() const {
         return m_baseKS;
+    }
+
+    uint32_t GetDigitCountKS() const {
+        return GetDigitCount(m_qKS.ConvertToInt(), m_baseKS);
     }
 
     const DiscreteGaussianGeneratorImpl<NativeVector>& GetDgg() const {

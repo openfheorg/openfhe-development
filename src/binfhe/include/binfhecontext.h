@@ -77,6 +77,9 @@ struct BinFHEContextParams {
     SecretKeyDist keyDist;
 
     double stdDev;
+
+    // number of LWE secret-key coefficients assigned to each gadget base, in ascending base order
+    std::map<uint32_t, uint32_t> gadgetBaseMap;
 };
 
 /**

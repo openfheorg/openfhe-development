@@ -87,12 +87,13 @@ enum BINFHE_PARAMSET {
     STD256Q_LMKCDEY,      // STD256Q optimized for LMKCDEY                                   : 2^(-80)
     STD256Q_3_LMKCDEY,    // STD256Q_LMKCDEY for 3 binary inputs                             : 2^(-70)
     STD256Q_4_LMKCDEY,    // STD256Q_LMKCDEY for 4 binary inputs                             : 2^(-50)
-    LPF_STD128,           // STD128 configured with lower probability of failures            : 2^(-135)
-    LPF_STD128Q,          // STD128Q configured with lower probability of failures           : 2^(-130)
-    LPF_STD128_LMKCDEY,   // LPF_STD128 optimized for LMKCDEY                                : 2^(-150)
-    LPF_STD128Q_LMKCDEY,  // LPF_STD128Q optimized for LMKCDEY                               : 2^(-150)
-    SIGNED_MOD_TEST       // special parameter set for confirming the signed modular         : 2^(-45)
+    LPF_STD128,           // STD128 configured with lower probability of failures            : 2^(-128)
+    LPF_STD128Q,          // STD128Q configured with lower probability of failures           : 2^(-128)
+    LPF_STD128_LMKCDEY,   // LPF_STD128 optimized for LMKCDEY                                : 2^(-128)
+    LPF_STD128Q_LMKCDEY,  // LPF_STD128Q optimized for LMKCDEY                               : 2^(-128)
+    SIGNED_MOD_TEST,      // special parameter set for confirming the signed modular         : 2^(-45)
                           // reduction in the accumulator updates works correctly
+    TOY_MULTI_BASE        // no security; multiple gadget bases for testing                  : not evaluated
 };
 // clang-format on
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);

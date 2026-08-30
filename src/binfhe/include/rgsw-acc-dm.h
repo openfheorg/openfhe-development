@@ -75,10 +75,11 @@ private:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param skNTT secret key polynomial in the EVALUATION representation
    * @param m a plaintext
+   * @param index LWE secret-key coefficient index
    * @return a shared pointer to the resulting keys
    */
-    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                            LWEPlaintext m) const;
+    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT, LWEPlaintext m,
+                            uint32_t index) const;
 
     /**
    * DM Accumulation as described in https://eprint.iacr.org/2020/086
@@ -86,10 +87,11 @@ private:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param ek evaluation key for Ring GSW
    * @param acc previous value of the accumulator
+   * @param index LWE secret-key coefficient index
    * @return
    */
-    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
-                    RLWECiphertext& acc) const;
+    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek, RLWECiphertext& acc,
+                    uint32_t index) const;
 };
 
 }  // namespace lbcrypto

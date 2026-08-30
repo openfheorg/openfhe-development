@@ -56,7 +56,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate2) {
     auto ct12 = cc.EvalBinGate(AND, ct_large, ct_small, true);
     EXPECT_EQ(Q, ct12->GetModulus());
 
-    auto ct2  = cc.EvalBinGate(NAND, ct11, ct12, false);
+    auto ct2 = cc.EvalBinGate(NAND, ct11, ct12, false);
     EXPECT_NE(Q, ct2->GetModulus());
     EXPECT_EQ(4, ct2->GetptModulus());
 
@@ -91,7 +91,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate3) {
     EXPECT_EQ(Q, ct12->GetModulus());
     EXPECT_EQ(6, ct12->GetptModulus());
 
-    auto ct2  = cc.EvalBinGate(NAND, ct11, ct12, false);
+    auto ct2 = cc.EvalBinGate(NAND, ct11, ct12, false);
     EXPECT_NE(Q, ct2->GetModulus());
     EXPECT_EQ(4, ct2->GetptModulus());
 
@@ -126,7 +126,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate4) {
     EXPECT_EQ(Q, ct12->GetModulus());
     EXPECT_EQ(8, ct12->GetptModulus());
 
-    auto ct2  = cc.EvalBinGate(NAND, ct11, ct12, false);
+    auto ct2 = cc.EvalBinGate(NAND, ct11, ct12, false);
     EXPECT_NE(Q, ct2->GetModulus());
     EXPECT_EQ(4, ct2->GetptModulus());
 
@@ -151,3 +151,46 @@ TEST(UNITTestFHEWExtended, BootStrap) {
     auto ct0 = cc.Bootstrap(cc.Encrypt(pk, 0, LARGE_DIM, 4), true);
     EXPECT_EQ(Q, ct0->GetModulus());
 }
+
+// BTKeyGen caches the bootstrapping key per gadget base, but its validity also depends on the
+// secret key. A second BTKeyGen with a different key must regenerate, not return the first key.
+TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKey) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(STD128, GINX);
+
+    for (uint32_t round = 0; round < 2; ++round) {
+        auto sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
+        for (uint32_t i = 0; i < 4; ++i) {
+            uint32_t b0 = i & 0x1, b1 = (i >> 1) & 0x1;
+            auto ct = cc.EvalBinGate(NAND, cc.Encrypt(sk, b0), cc.Encrypt(sk, b1));
+            LWEPlaintext result;
+            cc.Decrypt(sk, ct, &result);
+            EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
+                << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
+        }
+    }
+}
+
+// The same, with the time-optimization path, which keeps one key per gadget base.
+// Excluded at NATIVE_SIZE=32 as in UnitTestFunc.cpp: the large-precision constructor sets
+// qKS = 1 << 35, which truncates to zero in a 32-bit NativeInteger.
+#if NATIVEINT != 32
+TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKeyTimeOptimization) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, false, 11, 0, GINX, true);
+
+    for (uint32_t round = 0; round < 2; ++round) {
+        auto sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
+        for (uint32_t i = 0; i < 4; ++i) {
+            uint32_t b0 = i & 0x1, b1 = (i >> 1) & 0x1;
+            auto ct = cc.EvalBinGate(NAND, cc.Encrypt(sk, b0), cc.Encrypt(sk, b1));
+            LWEPlaintext result;
+            cc.Decrypt(sk, ct, &result);
+            EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
+                << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
+        }
+    }
+}
+#endif

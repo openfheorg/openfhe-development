@@ -75,10 +75,11 @@ private:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param skNTT secret key polynomial in the EVALUATION representation
    * @param m a plaintext
+   * @param index LWE secret-key coefficient index
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                                 LWEPlaintext m) const;
+                                 LWEPlaintext m, uint32_t index) const;
 
     /**
    * Automorphism keys generation for internal Ring GSW as described in https://eprint.iacr.org/2022/198
@@ -97,10 +98,11 @@ private:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param ek evaluation key for Ring GSW
    * @param acc previous value of the accumulator
+   * @param index LWE secret-key coefficient index
    * @return
    */
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
-                         RLWECiphertext& acc) const;
+                         RLWECiphertext& acc, uint32_t index) const;
 
     /**
    * LMKCDEY Accumulation automorphism evaluation as described in https://eprint.iacr.org/2022/198

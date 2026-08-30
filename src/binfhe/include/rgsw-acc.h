@@ -77,14 +77,22 @@ public:
 
     /**
    * The signed digit decomposition which takes an RLWE ciphertext input and outputs a vector of its digits, i.e., an
-   * RLWE' ciphertext
+   * RLWE' ciphertext. The current gadget base is used when no coefficient index is provided.
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param input input RLWE ciphertext
    * @param output output RLWE' ciphertext
+   * @param index optional LWE secret-key coefficient index
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
                               std::vector<NativePoly>& output) const;
+
+    void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
+                              std::vector<NativePoly>& output, uint32_t index) const;
+
+    void SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                  const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                  const RingGSWCryptoParams::BaseGParams& bp) const;
 
     /**
    * The signed digit decomposition which takes a ring element input and outputs a vector of its digits, i.e.,

@@ -253,7 +253,7 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
     NativeInteger qKS(params->GetqKS());
     NativeInteger baseKS(params->GetBaseKS());
     NativeInteger value{1};
-    const uint32_t digitCount = std::ceil(std::log(qKS.ConvertToDouble()) / std::log(baseKS.ConvertToDouble()));
+    const uint32_t digitCount = params->GetDigitCountKS();
     std::vector<NativeInteger> digitsKS(digitCount);
     for (uint32_t i = 0; i < digitCount; ++i) {
         digitsKS[i] = value;
@@ -335,7 +335,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
 
     NativeInteger Q(params->GetqKS());
     NativeInteger::Integer baseKS(params->GetBaseKS());
-    const uint32_t digitCount = std::ceil(std::log(Q.ConvertToDouble()) / std::log(static_cast<double>(baseKS)));
+    const uint32_t digitCount = params->GetDigitCountKS();
 
     NativeVector a(n, Q);
     NativeInteger b(ctQN->GetB());

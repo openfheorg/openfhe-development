@@ -49,22 +49,11 @@
 #include "utils/inttypes.h"
 #include "utils/exception.h"
 
+#include <limits>
 #include <memory>
 #include <random>
 #include <set>
-// #include <string>
 #include <vector>
-
-#if defined(HAVE_INT128)
-namespace {  // to define local (or C-style static) functions here
-
-inline int clz_u128(uint128_t u) {
-    uint64_t hi(u >> 64), lo(u);
-    return hi ? __builtin_clzll(hi) : lo ? __builtin_clzll(lo) + 64 : 128;
-}
-
-};  // namespace
-#endif
 
 /**
  * @namespace lbcrypto
@@ -136,17 +125,17 @@ inline uint32_t ReverseBits(uint32_t num, uint32_t msb) {
     uint32_t msbb = (msb >> 3) + (msb & 0x7 ? 1 : 0);
     switch (msbb) {
         case 1:
-            return (reverse_byte((num)&0xff) >> shift_trick[msb & 0x7]);
+            return (reverse_byte((num) & 0xff) >> shift_trick[msb & 0x7]);
 
         case 2:
-            return (reverse_byte((num)&0xff) << 8 | reverse_byte((num >> 8) & 0xff)) >> shift_trick[msb & 0x7];
+            return (reverse_byte((num) & 0xff) << 8 | reverse_byte((num >> 8) & 0xff)) >> shift_trick[msb & 0x7];
 
         case 3:
-            return (reverse_byte((num)&0xff) << 16 | reverse_byte((num >> 8) & 0xff) << 8 |
+            return (reverse_byte((num) & 0xff) << 16 | reverse_byte((num >> 8) & 0xff) << 8 |
                     reverse_byte((num >> 16) & 0xff)) >>
                    shift_trick[msb & 0x7];
         case 4:
-            return (reverse_byte((num)&0xff) << 24 | reverse_byte((num >> 8) & 0xff) << 16 |
+            return (reverse_byte((num) & 0xff) << 24 | reverse_byte((num >> 8) & 0xff) << 16 |
                     reverse_byte((num >> 16) & 0xff) << 8 | reverse_byte((num >> 24) & 0xff)) >>
                    shift_trick[msb & 0x7];
         default:
@@ -175,17 +164,15 @@ inline constexpr uint32_t GetMSB(T x) {
         _BitScanReverse64(&msb, uint64_t(x));
         return msb + 1;
 #else
-        // a wrapper for GCC
-        return 64 -
-               (sizeof(unsigned long) == 8 ? __builtin_clzl(uint64_t(x)) : __builtin_clzll(uint64_t(x)));  // NOLINT
+        static_assert(std::numeric_limits<unsigned long long>::digits == 64,  // NOLINT
+                      "GetMSB assumes a 64-bit unsigned long long");
+        return 64 - static_cast<uint32_t>(__builtin_clzll(static_cast<uint64_t>(x)));
 #endif
     }
 #if defined(HAVE_INT128)
     else if constexpr (sizeof(T) == 16) {
-    #if defined(_MSC_VER)
-        static_assert(false, "MSVC doesn't support 128-bit integers");
-    #endif
-        return 128 - clz_u128(uint128_t(x));
+        auto hi{static_cast<uint64_t>(uint128_t(x) >> 64)};
+        return hi ? 64 + GetMSB(hi) : GetMSB(static_cast<uint64_t>(uint128_t(x)));
     }
 #endif
     else {
@@ -203,6 +190,34 @@ inline constexpr uint32_t GetMSB(T x) {
  */
 inline constexpr uint32_t GetMSB64(uint64_t x) {
     return GetMSB(x);
+}
+
+/**
+ * Get the number of base-`base` digits needed to represent every value below x,
+ * i.e. exact ceil(log_base(x)). Integer-only, so it is unaffected by the rounding
+ * of std::log and by the loss of precision of converting moduli above 2^53 to double.
+ *
+ * @param x the exclusive upper bound on the values to be represented.
+ * @param base the digit base, at least 2.
+ *
+ * @return the digit count.
+ */
+template <
+    typename T,
+    std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>, bool> = true>
+inline constexpr uint32_t GetDigitCount(T x, uint64_t base) {
+    if (base < 2)
+        OPENFHE_THROW("GetDigitCount() requires a base of at least 2");
+    if (x < 2)
+        return 0;
+    if ((base & (base - 1)) == 0) {
+        const uint32_t bits{GetMSB(base) - 1};
+        return (GetMSB(x - 1) + bits - 1) / bits;
+    }
+    uint32_t count{0};
+    for (T v{static_cast<T>(x - 1)}; v > 0; v = static_cast<T>(v / base))
+        ++count;
+    return count;
 }
 
 template <typename IntType>

@@ -55,13 +55,25 @@ namespace lbcrypto {
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const std::vector<NativePoly>& input,
                                               std::vector<NativePoly>& output) const {
+    SignedDigitDecomposeImpl(params, input, output, params->GetDefaultBaseGParams());
+}
+
+void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                              const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                              uint32_t index) const {
+    SignedDigitDecomposeImpl(params, input, output, params->GetBaseGParams(index));
+}
+
+void RingGSWAccumulator::SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                                  const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                                  const RingGSWCryptoParams::BaseGParams& bp) const {
     auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
     auto QHalf{Q >> 1};
-    auto gBits{static_cast<uint32_t>(__builtin_ctz(params->GetBaseG()))};
-    auto gHalf{static_cast<BasicInteger>(params->GetBaseG() >> 1)};
-    auto gMask{static_cast<BasicInteger>(params->GetBaseG() - 1)};
+    auto gBits{bp.gBits};
+    auto gHalf{static_cast<BasicInteger>(bp.baseG >> 1)};
+    auto gMask{static_cast<BasicInteger>(bp.baseG - 1)};
     auto QmHalf{Q - gHalf};
-    uint32_t digitsG{params->GetDigitsG()};
+    uint32_t digitsG{bp.digitsG};
     // Biasing by H (gHalf in every digit position) turns balanced-digit extraction into
     // independent unsigned windows: digit_k(x) = (((x + H) >> k*gBits) & gMask) - gHalf.
     // Requires digitsG*gBits < MaxBits, which holds for all supported parameter sets.
@@ -82,13 +94,15 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
 
     for (uint32_t d{0}; d < digitsG2; d += 2) {
         uint32_t shift{((d >> 1) + 1) * gBits};
+        // Q/2 + H can exceed baseG^digitsG, so the top window must keep the carry out of digitsG*gBits.
+        auto mask{(d + 2 < digitsG2) ? gMask : static_cast<BasicInteger>(-1)};
         auto& out0{output[d + 0]};
         auto& out1{output[d + 1]};
         for (uint32_t k{0}; k < N; ++k) {
-            auto r0{(w0[k] >> shift) & gMask};
-            out0[k] += (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
-            auto r1{(w1[k] >> shift) & gMask};
-            out1[k] += (r1 < gHalf) ? r1 + QmHalf : r1 - gHalf;
+            auto r0{(w0[k] >> shift) & mask};
+            out0[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
+            auto r1{(w1[k] >> shift) & mask};
+            out1[k] = (r1 < gHalf) ? r1 + QmHalf : r1 - gHalf;
         }
     }
 }
@@ -98,9 +112,10 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
                                               const NativePoly& input, std::vector<NativePoly>& output) const {
     auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
     auto QHalf{Q >> 1};
-    auto gBits{static_cast<uint32_t>(__builtin_ctz(params->GetBaseG()))};
-    auto gHalf{static_cast<BasicInteger>(params->GetBaseG() >> 1)};
-    auto gMask{static_cast<BasicInteger>(params->GetBaseG() - 1)};
+    auto baseG{params->GetBaseG()};
+    auto gBits{GetMSB(baseG) - 1};
+    auto gHalf{static_cast<BasicInteger>(baseG >> 1)};
+    auto gMask{static_cast<BasicInteger>(baseG - 1)};
     auto QmHalf{Q - gHalf};
     uint32_t digitsG{params->GetDigitsG()};
     // see the ciphertext overload above for the excess-H digit-extraction identity
@@ -118,10 +133,12 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     // approximate gadget decomposition is used; the first digit is ignored
     for (uint32_t d{0}; d < digitsG - 1; ++d) {
         uint32_t shift{(d + 1) * gBits};
+        // Q/2 + H can exceed baseG^digitsG, so the top window must keep the carry out of digitsG*gBits.
+        auto mask{(d + 2 < digitsG) ? gMask : static_cast<BasicInteger>(-1)};
         auto& out{output[d]};
         for (uint32_t k{0}; k < N; ++k) {
-            auto r0{(w[k] >> shift) & gMask};
-            out[k] += (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
+            auto r0{(w[k] >> shift) & mask};
+            out[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
         }
     }
 }
