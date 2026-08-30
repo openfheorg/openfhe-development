@@ -150,6 +150,9 @@ public:
    */
     void PreCompute(bool signEval = false);
 
+    // gadget powers baseG^i mod Q, computed once per base and cached in m_Gpower_map
+    const std::vector<NativeInteger>& PrecomputeGPower(uint32_t baseG);
+
     uint32_t GetN() const {
         return m_N;
     }
@@ -319,11 +322,8 @@ public:
         if (m_baseG != BaseG) {
             if (!m_baseGByIndex.empty())
                 OPENFHE_THROW("Change_BaseG is not supported with per-dimension gadget bases");
-            auto it = m_Gpower_map.find(BaseG);
-            if (it == m_Gpower_map.end())
-                OPENFHE_THROW("No gadget powers precomputed for base " + std::to_string(BaseG));
             m_baseG   = BaseG;
-            m_Gpower  = it->second;
+            m_Gpower  = PrecomputeGPower(BaseG);
             m_digitsG = DigitsForBase(m_Q, m_baseG);
         }
     }

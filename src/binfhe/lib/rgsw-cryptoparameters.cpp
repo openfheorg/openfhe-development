@@ -33,6 +33,21 @@
 
 namespace lbcrypto {
 
+const std::vector<NativeInteger>& RingGSWCryptoParams::PrecomputeGPower(uint32_t baseG) {
+    auto it = m_Gpower_map.find(baseG);
+    if (it != m_Gpower_map.end())
+        return it->second;
+
+    auto digitsG{DigitsForBase(m_Q, baseG)};
+    NativeInteger vTemp{1};
+    std::vector<NativeInteger> tempvec(digitsG);
+    for (uint32_t i = 0; i < digitsG; ++i) {
+        tempvec[i] = vTemp;
+        vTemp      = vTemp.ModMulFast(NativeInteger(baseG), m_Q);
+    }
+    return m_Gpower_map.emplace(baseG, std::move(tempvec)).first->second;
+}
+
 void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseR^i (only for AP bootstrapping)
     if (m_method == BINFHE_METHOD::AP) {
@@ -62,23 +77,9 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         }
     }
     else {
-        auto precomputeGPower = [&](uint32_t baseG) {
-            if (m_Gpower_map.find(baseG) != m_Gpower_map.end())
-                return;
-
-            auto digitsG{DigitsForBase(m_Q, baseG)};
-            NativeInteger vTemp{1};
-            std::vector<NativeInteger> tempvec(digitsG);
-            for (uint32_t i = 0; i < digitsG; ++i) {
-                tempvec[i] = vTemp;
-                vTemp      = vTemp.ModMulFast(NativeInteger(baseG), m_Q);
-            }
-            m_Gpower_map[baseG] = std::move(tempvec);
-        };
-
-        precomputeGPower(m_baseG);
+        PrecomputeGPower(m_baseG);
         for (const auto& item : m_baseG_map)
-            precomputeGPower(item.first);
+            PrecomputeGPower(item.first);
         m_Gpower = m_Gpower_map.at(m_baseG);
     }
 

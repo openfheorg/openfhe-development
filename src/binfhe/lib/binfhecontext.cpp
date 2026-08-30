@@ -307,15 +307,14 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
     auto&& RGSWParams = m_params->GetRingGSWParams();
     auto temp         = RGSWParams->GetBaseG();
 
+    // the map is keyed by gadget base alone, but what it caches is only valid for the secret
+    // key it was generated from; take a cached entry only when this call just regenerated it
     if (m_timeOptimization) {
         for (auto&& [k, v] : RGSWParams->GetGPowerMap()) {
             RGSWParams->Change_BaseG(k);
             m_BTKey_map[k] = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
         }
         RGSWParams->Change_BaseG(temp);
-    }
-
-    if (m_BTKey_map.size() != 0) {
         m_BTKey = m_BTKey_map[temp];
     }
     else {
