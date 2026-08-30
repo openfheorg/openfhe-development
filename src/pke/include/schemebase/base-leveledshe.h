@@ -800,7 +800,8 @@ public:
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
-    virtual Ciphertext<Element> MorphPlaintext(ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext) const;
+    virtual Ciphertext<Element> MorphPlaintext(ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext,
+                                               const Element& plaintextElement) const;
 
 protected:
     /////////////////////////////////////////

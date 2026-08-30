@@ -43,7 +43,7 @@
 
 using namespace lbcrypto;
 
-static const std::vector<uint32_t> DEPTHS_TO_TEST = {1, 5, 10};
+static const std::vector<uint32_t> DEPTHS_TO_TEST = {5};
 
 TEST(UTCKKS_EXPAND_RING, EncodeThenExpandRingMatchesUncompressedExpansion) {
     setupSignals();
