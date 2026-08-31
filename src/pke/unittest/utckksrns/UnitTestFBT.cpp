@@ -1705,7 +1705,7 @@ protected:
                 parameters.SetSecurityLevel(HEStd_NotSet);
                 parameters.SetScalingModSize(dcrtBits);
                 SetScalingTechniqueParams(parameters, st, dcrtBits, t.registerWordSize);
-                parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, st));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
                 parameters.SetRingDim(t.ringDim);

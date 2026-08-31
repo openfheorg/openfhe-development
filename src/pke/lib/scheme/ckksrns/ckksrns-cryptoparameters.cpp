@@ -262,8 +262,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
     if (GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
         const uint32_t sizeQl = compositeDegree;
-        if (sizeQ < sizeQl)
-            OPENFHE_THROW("The modulus chain is shorter than the composite degree.");
+        // for compositeDegree > 1 the Ql -> P' switch reuses the modulus-raise tables, which are only
+        // precomputed when the chain is longer than the bottom level
+        if (sizeQ < sizeQl || (sizeQl > 1 && sizeQ == sizeQl))
+            OPENFHE_THROW("The modulus chain is too short for the composite degree.");
 
         BigInteger modulusQl(1);
         for (uint32_t i = 0; i < sizeQl; ++i)
@@ -283,6 +285,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         const uint32_t auxBitsSparse              = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
         m_sparseKSHammingWeight                   = (largeBottom) ? 64 : 32;
         const uint32_t registerBits               = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
+        const uint32_t maxPrimeBits               = std::min<uint32_t>(registerBits, MAX_MODULUS_SIZE);
         uint32_t sizePSparse                      = 2;
         uint32_t bitsPSparse                      = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
         // the primes have to fit (strictly) in the register word size and in a native integer
@@ -321,11 +324,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                                        NextPrime<NativeInteger>(pCur, primeStep);
                 found = (std::find(moduliToAvoid.begin(), moduliToAvoid.end(), pCur) != moduliToAvoid.end());
             } while (found);
-            if (isComposite && pCur.GetMSB() > registerBits)
-                OPENFHE_THROW(
-                    "Could not find enough auxiliary primes for SPARSE_ENCAPSULATED that fit the register word "
-                    "size (" +
-                    std::to_string(registerBits) + " bits) for this ring dimension.");
+            if (pCur.GetMSB() > maxPrimeBits)
+                OPENFHE_THROW("Could not find enough auxiliary primes of at most " + std::to_string(maxPrimeBits) +
+                              " bits for SPARSE_ENCAPSULATED at this ring dimension.");
             moduliPSparse[j] = pCur;
             rootsPSparse[j]  = RootOfUnity<NativeInteger>(2 * n, moduliPSparse[j]);
             modulusPSparse *= BigInteger(moduliPSparse[j]);

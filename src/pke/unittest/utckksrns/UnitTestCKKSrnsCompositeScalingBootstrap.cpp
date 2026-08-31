@@ -300,8 +300,8 @@ protected:
             auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
-                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1]), nullptr,
-                testData.slots);
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots);
             auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
 
@@ -310,7 +310,8 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             int32_t rotIndex = (testData.slots < 8) ? 0 : 6;
             auto temp6       = input;
@@ -321,7 +322,8 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
             result6->SetLength(encodedLength);
             checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
-                          failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -637,7 +639,8 @@ protected:
             result->SetLength(encodedLength2);
             plaintext2->SetLength(encodedLength2);
             checkEquality(result->GetCKKSPackedValue(), plaintext2->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for sparsely packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
             //====================================================================================================
             EXPECT_TRUE(1 == 1) << failmsg;
         }
