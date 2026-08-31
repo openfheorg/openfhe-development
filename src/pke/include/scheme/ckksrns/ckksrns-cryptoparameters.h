@@ -193,17 +193,10 @@ public:
     // KeySwitchSparse). The GHS-style switching key is generated over Ql*P', where
     // Ql = {q_0, ..., q_{d-1}} (d = compositeDegree) is the basis of the bottom level and
     // P' = p'_0*...*p'_{k-1} is an auxiliary modulus generated here, during parameter generation:
-    // ~66 bits (two 33-bit primes, or three ~22-bit primes when the register word size of composite
-    // scaling is at most 33 bits) when the bottom modulus has at most 60 bits, and
-    // ~127 bits (split into primes that fit the register word size) for larger bottom moduli of
-    // composite scaling (at most 121 bits). Making P' exceed the bottom modulus by ~6 bits makes
-    // the key switching noise floor(Ql*e/P') comparable to the modulus switching noise
-    // (see https://github.com/openfheorg/openfhe-development/issues/1041).
-    // The tables below support the exact (HPS-style) CRT basis switches used to extend the
-    // ciphertext/keys from Ql to P' and to scale the key-switched ciphertext back down from
-    // Ql*P' to Ql (the Ql-only quantities [(Ql/q_i)^{-1}]_{q_i} and 1/q_i are shared with the
-    // composite scaling modulus raise, see GetModRaiseQlHatInvModq / GetModRaiseqInv).
-    // Only populated when secretKeyDist == SPARSE_ENCAPSULATED; see PrecomputeCRTTables.
+    // two 33-bit primes without composite scaling; with it, ~66 bits when the bottom modulus has at
+    // most 60 bits and ~127 bits for a larger one (at most 121 bits), split into primes that fit the
+    // register word size. Making P' exceed the bottom modulus by ~6 bits makes
+    // the key switching noise floor(Ql*e/P') comparable to the modulus switching noise.
     /////////////////////////////////////
 
     /**
@@ -394,7 +387,7 @@ private:
     std::vector<std::vector<NativeInteger>> m_sparseKSAlphaQlModp;
     // Barrett modulo reduction precomputations for p'_j
     std::vector<DoubleNativeInt> m_sparseKSModpBarrettMu;
-    // Hamming weight of the sparse secret (32, or 64 for bottom moduli larger than 60 bits)
+    // Hamming weight of the sparse secret (32, or 64 for composite bottom moduli larger than 60 bits)
     uint32_t m_sparseKSHammingWeight = 32;
 };
 

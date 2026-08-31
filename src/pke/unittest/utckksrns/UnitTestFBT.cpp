@@ -1557,8 +1557,8 @@ protected:
             if (vsFlexible) {
                 // The noise of a single run occasionally lands well below the typical value (the approximation
                 // error depends on the key-dependent mod-raise overflows), so the comparison uses the largest
-                // noise over a few runs for both techniques, which is stable.
-                for (uint32_t run = 1; run < 3; ++run) {
+                // noise over several runs; row 1023 needs seven (it is bimodal, modes ~3 bits apart).
+                for (uint32_t run = 1; run < 7; ++run) {
                     int64_t err = -1;
                     noiseRef    = std::max(noiseRef, runOnce(refSt, err));
                     errRef      = std::max(errRef, err);

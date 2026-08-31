@@ -247,12 +247,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     // over Ql*P', where Ql = {q_0, ..., q_{d-1}} (d = compositeDegree) is the basis of the
     // bottom level and P' = p'_0*...*p'_{k-1} is an auxiliary modulus exceeding the bottom
     // modulus by ~6 bits, so that the key switching noise floor(Ql*e/P') is comparable to the
-    // modulus switching noise (see https://github.com/openfheorg/openfhe-development/issues/1041):
-    // - for a bottom modulus of at most 60 bits, P' has ~66 bits: two primes of
-    //   MAX_MODULUS_SIZE/2 + 3 = 33 bits (the standard 64-bit build), or, for composite scaling
-    //   with a register word size of at most 33 bits, three primes of ~22 bits;
-    // - for a larger bottom modulus (composite scaling only; at most 121 bits), P' has ~127 bits,
-    //   split into primes that fit the register word size.
+    // modulus switching noise.
+    // - without composite scaling, two primes of MAX_MODULUS_SIZE/2 + 3 = 33 bits (the 64-bit build);
+    // - with composite scaling, ~66 bits for a bottom modulus of at most 60 bits and ~127 bits for a
+    //   larger one (at most 121 bits), split into primes that fit the register word size.
     // The primes of the composite scaling cases are searched upwards from the target size, so
     // that enough primes congruent to 1 modulo 2N exist for ring dimensions up to 2^17 (the
     // resulting P' is then slightly larger than the target, which only reduces the noise).
@@ -261,6 +259,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     // back down from Ql*P' to Ql; the exact method is used so that no alpha*P' overflow term is
     // dropped during the basis switches.
     /////////////////////////////////////
+
     if (GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
         const uint32_t sizeQl = compositeDegree;
         if (sizeQ < sizeQl)
@@ -275,13 +274,14 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 "SPARSE_ENCAPSULATED supports a bottom (first) modulus of at most 121 bits; the current one has " +
                 std::to_string(bitsQl) + " bits.");
 
-        // total size of the auxiliary modulus P' and the number/size of its primes: ~66 bits for bottom moduli
-        // of at most 60 bits, and ~127 bits for larger ones (up to 121 bits; the Hamming weight of the sparse
-        // secret is doubled as well)
+        // total size of P' and the number/size of its primes: with composite scaling ~66 bits, or ~127 bits
+        // for a bottom modulus above 60 bits (whose sparse secret is denser as well); otherwise unchanged
         constexpr uint32_t smallBottomModulusBits = 60;
-        const uint32_t auxBitsSparse              = (bitsQl <= smallBottomModulusBits) ? 66 : 127;
-        m_sparseKSHammingWeight                   = (bitsQl <= smallBottomModulusBits) ? 32 : 64;
+        constexpr uint32_t auxBitsPlain           = 2 * (MAX_MODULUS_SIZE / 2 + 3);
         const bool isComposite                    = (compositeDegree > 1);
+        const bool largeBottom                    = isComposite && (bitsQl > smallBottomModulusBits);
+        const uint32_t auxBitsSparse              = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
+        m_sparseKSHammingWeight                   = (largeBottom) ? 64 : 32;
         const uint32_t registerBits               = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
         uint32_t sizePSparse                      = 2;
         uint32_t bitsPSparse                      = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
