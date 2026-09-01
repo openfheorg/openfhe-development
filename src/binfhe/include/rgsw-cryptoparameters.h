@@ -45,6 +45,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -236,6 +237,13 @@ public:
         return (gpow == nullptr) ? m_Gpower : *gpow;
     }
 
+    const std::vector<uint32_t>& GetAutoMap(uint32_t index) const {
+        auto it = m_autoMap.find(index);
+        if (it == m_autoMap.end())
+            OPENFHE_THROW("No automorphism map precomputed for index " + std::to_string(index));
+        return it->second;
+    }
+
     const std::vector<int32_t>& GetLogGen() const {
         return m_logGen;
     }
@@ -370,6 +378,8 @@ private:
     // m_logGen[1] = 0
     // m_logGen[-1 (mod M)] = M (special case for efficiency)
     std::vector<int32_t> m_logGen;
+
+    std::unordered_map<uint32_t, std::vector<uint32_t>> m_autoMap;
 
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
