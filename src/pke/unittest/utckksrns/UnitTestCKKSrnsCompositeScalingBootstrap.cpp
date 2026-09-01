@@ -31,6 +31,7 @@
 
 #include "cryptocontext-ser.h"
 #include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "UnitTestCCParams.h"
@@ -39,7 +40,9 @@
 
 #include <iostream>
 #include <iterator>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace lbcrypto;
@@ -55,6 +58,7 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_NUM_TOWERS,
     BOOTSTRAP_SERIALIZE,
     BOOTSTRAP_KEY_SERIALIZE,
+    BOOTSTRAP_SPARSE_ENCAPSULATED,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -83,6 +87,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_KEY_SERIALIZE:
             typeName = "BOOTSTRAP_KEY_SERIALIZE";
+            break;
+        case BOOTSTRAP_SPARSE_ENCAPSULATED:
+            typeName = "BOOTSTRAP_SPARSE_ENCAPSULATED";
             break;
         default:
             typeName = "UNKNOWN";
@@ -138,6 +145,15 @@ constexpr uint32_t FMODSIZED3 = 89;
 constexpr uint32_t SMODSIZED2 = 59;
 constexpr uint32_t FMODSIZED2 = 60;
 
+// edge cases of the largest scaling factors: 119 bits with a 120-bit first modulus is the maximum for a register
+// word size of 64 bits (composite degree 2 with two 60-bit primes; a 121-bit first modulus would need a 61-bit
+// prime), and 120 bits (the maximum scaling factor of composite scaling) with a 121-bit first modulus requires a
+// smaller register word size, here 32 bits (composite degree 4, primes of 31/30 bits)
+constexpr uint32_t SMODSIZEMAX64 = 119;
+constexpr uint32_t FMODSIZEMAX64 = 120;
+constexpr uint32_t SMODSIZEMAX32 = 120;
+constexpr uint32_t FMODSIZEMAX32 = 121;
+
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSCS_BOOT> testCases = {
     // TestType,      Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
@@ -191,6 +207,34 @@ static std::vector<TEST_CASE_UTCKKSRNSCS_BOOT> testCases = {
     // TestType,               Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
     { BOOTSTRAP_KEY_SERIALIZE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_KEY_SERIALIZE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    // ==========================================
+    // SPARSE_ENCAPSULATED with composite scaling: the sparse key switching uses an auxiliary modulus of three ~22-bit
+    // primes (register word size 32) for the 60-bit first modulus (d = 2) and of ~127 bits split into 26-bit primes for
+    // the 89-bit first modulus (d = 3).
+    // TestType,      Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,          MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
+    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "09", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 3, 3 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_FULL, "10", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          30,               3},              { 3, 3 },  { 0, 0 },   RDIM/2 },
+    { BOOTSTRAP_SPARSE, "13", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE, "14", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED2, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED2, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZED3, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZED3, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    // ==========================================
+    // largest scaling factors: 119/120 bits with register word size 64 (d = 2) and 120/121 bits with register word size 32 (d = 4).
+    // Excluded for MATHBACKEND 2: the modulus chain (26 levels of 120 bits) together with the key switching extension
+    // exceeds the fixed 3500-bit width of its multiprecision integers.
+#if MATHBACKEND != 2
+    // TestType,      Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,          MaxRelinSkDeg, FModSize,   SecLvl,       KSTech, ScalTech,               LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, multipartyMode, decryptionNoiseMode, executionMode, noiseEstimate, registerWordSize, compositeDegree, LvLBudget, Dim1,       Slots
+    { BOOTSTRAP_FULL, "11", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "12", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 3, 3 },  { 0, 0 }  , RDIM/2 },
+    { BOOTSTRAP_FULL, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 3, 3 },  { 0, 0 }  , RDIM/2 },
+    { BOOTSTRAP_FULL, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SPARSE, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 2, 2 },  { 0, 0 },   8 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX64, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX64, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          64,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_SPARSE_ENCAPSULATED, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZEMAX32, DFLT,  DFLT,    SPARSE_ENCAPSULATED, DFLT,          FMODSIZEMAX32, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,                DFLT,          DFLT,          32,               DFLT},           { 1, 1 },  { 32, 32 }, RDIM/2 },
+#endif
     // ==========================================
 };
 // clang-format on
@@ -256,8 +300,8 @@ protected:
             auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
-                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1]), nullptr,
-                testData.slots);
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots);
             auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
 
@@ -266,7 +310,8 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             int32_t rotIndex = (testData.slots < 8) ? 0 : 6;
             auto temp6       = input;
@@ -277,7 +322,8 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
             result6->SetLength(encodedLength);
             checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
-                          failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -375,12 +421,14 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_Iterative(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
+    void UnitTest_Bootstrap_Iterative(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,
                                       const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+            // For small ring dimensions like the ones tested, the correction factor for StC-first should be small, e.g., 10.
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, (StCFlag) ? 10 : 0, true,
+                                   StCFlag);
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
@@ -394,7 +442,8 @@ protected:
             size_t encodedLength = input.size();
 
             Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
-                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots);
             auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
 
@@ -417,7 +466,8 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult = resultTwoIterations->GetCKKSPackedValue();
             checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed");
+                          failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
             double precisionMultipleIterations =
                 CalculateApproximationError(actualResult, plaintext->GetCKKSPackedValue());
 
@@ -443,7 +493,7 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_NumTowers(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
+    void UnitTest_Bootstrap_NumTowers(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,
                                       const std::string& failmsg = std::string()) {
         // This test checks to make sure that we return the original ciphertext if we
         // start with more towers than the number of towers we would end up with by
@@ -451,7 +501,7 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, StCFlag);
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
@@ -476,7 +526,9 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
             result->SetLength(encodedLength);
             auto actualResult = result->GetCKKSPackedValue();
-            checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps, failmsg + " Bootstrapping failed");
+            checkEquality(
+                actualResult, plaintext->GetCKKSPackedValue(), eps,
+                failmsg + " Bootstrapping failed for " + ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             auto ciphertextTwoIterations             = cc->EvalBootstrap(ciphertext);
             auto bootstrappingNumTowersTwoIterations = ciphertextTwoIterations->GetElements()[0].GetNumOfElements();
@@ -488,7 +540,8 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult2 = result2->GetCKKSPackedValue();
             checkEquality(actualResult2, plaintext->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping with two iterations failed");
+                          failmsg + " Bootstrapping with two iterations failed for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -500,7 +553,7 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_Serialize(const TEST_CASE_UTCKKSRNSCS_BOOT& testData,
+    void UnitTest_Bootstrap_Serialize(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const bool StCFlag,
                                       const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
@@ -509,8 +562,8 @@ protected:
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 
             CryptoContext<Element> ccInit(UnitTestGenerateContext(testData.params));
-            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, false);
-            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots / 2, 0, false);
+            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, false, StCFlag);
+            ccInit->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots / 2, 0, false, StCFlag);
 
             auto keyPairInit = ccInit->KeyGen();
             ccInit->EvalMultKeyGen(keyPairInit.secretKey);
@@ -559,7 +612,8 @@ protected:
             auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
-                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots);
+                input, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots);
             auto ciphertext1      = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext1After = cc->EvalBootstrap(ciphertext1);
 
@@ -568,14 +622,16 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             //====================================================================================================
             auto input2(Fill<std::complex<double>>({0.111111, 0.222222, 0.333333, 0.444444}, testData.slots / 2));
             size_t encodedLength2 = input2.size();
 
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(
-                input2, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1), nullptr, testData.slots / 2);
+                input2, 1, cryptoParams->GetCompositeDegree() * (MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag),
+                nullptr, testData.slots / 2);
             auto ciphertext2      = cc->Encrypt(keyPair.publicKey, plaintext2);
             auto ciphertext2After = cc->EvalBootstrap(ciphertext2);
 
@@ -583,7 +639,8 @@ protected:
             result->SetLength(encodedLength2);
             plaintext2->SetLength(encodedLength2);
             checkEquality(result->GetCKKSPackedValue(), plaintext2->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for sparsely packed ciphertexts fails for " +
+                              ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
             //====================================================================================================
             EXPECT_TRUE(1 == 1) << failmsg;
         }
@@ -631,14 +688,12 @@ protected:
             CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(evalMultKey_stream, SerType::BINARY);
 
             std::stringstream bootstrapKey_stream1;
-            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY,
-                                                                   ccInit, keyPairInit.secretKey->GetKeyTag(),
-                                                                   testData.slots);
+            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream1, SerType::BINARY, ccInit,
+                                                                   keyPairInit.secretKey->GetKeyTag(), testData.slots);
 
             std::stringstream bootstrapKey_stream2;
-            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(bootstrapKey_stream2, SerType::BINARY,
-                                                                   ccInit, keyPairInit.secretKey->GetKeyTag(),
-                                                                   testData.slots / 2);
+            CryptoContextImpl<DCRTPoly>::SerializeEvalBootstrapKey(
+                bootstrapKey_stream2, SerType::BINARY, ccInit, keyPairInit.secretKey->GetKeyTag(), testData.slots / 2);
             //==============================================================
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -712,6 +767,53 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+    // Checks the key switching to a sparse secret over the composite bottom basis (KeySwitchGenSparse /
+    // KeySwitchSparse), i.e., the exact CRT basis switches between the compositeDegree bottom primes and the
+    // auxiliary modulus of sparse encapsulation.
+    void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNSCS_BOOT& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            auto keyPair = cc->KeyGen();
+
+            auto cryptoParams =
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
+
+            std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 0.375, 0.675, 0.125, 0.925};
+            size_t encodedLength  = x.size();
+
+            // We start with a depleted ciphertext that has one level (compositeDegree towers) left.
+            auto depth = cryptoParams->GetMultiplicativeDepth();
+            auto ptxt  = cc->MakeCKKSPackedPlaintext(x, 1, cryptoParams->GetCompositeDegree() * (depth - 1));
+            ptxt->SetLength(encodedLength);
+            auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
+
+            DCRTPoly::TugType tug;
+            DCRTPoly sNew(tug, cryptoParams->GetElementParams(), Format::EVALUATION,
+                          cryptoParams->GetSparseKSHammingWeight());
+
+            auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
+            skNew->SetPrivateElement(std::move(sNew));
+
+            auto evalKey  = FHECKKSRNS::KeySwitchGenSparse(keyPair.secretKey, skNew);
+            auto ctresult = FHECKKSRNS::KeySwitchSparse(ctxt, evalKey);
+
+            Plaintext result;
+            cc->Decrypt(skNew, ctresult, &result);
+            result->SetLength(encodedLength);
+
+            checkEquality(ptxt->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
+                          failmsg + " input/output mismatch");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 
 //===========================================================================================================
@@ -724,23 +826,28 @@ TEST_P(UTCKKSRNSCS_BOOT, CKKSRNS) {
         case BOOTSTRAP_EDGE:
         case BOOTSTRAP_SPARSE:
             UnitTest_Bootstrap(test, false, test.buildTestName());
-            // TODO: enable following test once STC Composite Scaling operational
-            // UnitTest_Bootstrap(test, true, test.buildTestName());
+            UnitTest_Bootstrap(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_KEY_SWITCH:
             UnitTest_Bootstrap_KeySwitching(test, test.buildTestName());
             break;
         case BOOTSTRAP_ITERATIVE:
-            UnitTest_Bootstrap_Iterative(test, test.buildTestName());
+            UnitTest_Bootstrap_Iterative(test, false, test.buildTestName());
+            UnitTest_Bootstrap_Iterative(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_NUM_TOWERS:
-            UnitTest_Bootstrap_NumTowers(test, test.buildTestName());
+            UnitTest_Bootstrap_NumTowers(test, false, test.buildTestName());
+            UnitTest_Bootstrap_NumTowers(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_SERIALIZE:
-            UnitTest_Bootstrap_Serialize(test, test.buildTestName());
+            UnitTest_Bootstrap_Serialize(test, false, test.buildTestName());
+            UnitTest_Bootstrap_Serialize(test, true, test.buildTestName());
             break;
         case BOOTSTRAP_KEY_SERIALIZE:
             UnitTest_Bootstrap_SerializeBootstrapKey(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_SPARSE_ENCAPSULATED:
+            UnitTest_BootstrapSE(test, test.buildTestName());
             break;
         default:
             break;

@@ -163,7 +163,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 
     Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
-    outCtxt->SetElements({std::move(crp)});
+    std::vector<DCRTPoly> crpElems;
+    crpElems.push_back(std::move(crp));
+    outCtxt->SetElements(std::move(crpElems));
     outCtxt->SetEncodingType(CKKS_PACKED_ENCODING);
 
     return outCtxt;
@@ -179,7 +181,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 
     Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext));
 
-    outCtxt->SetElements({std::move(crp)});
+    std::vector<DCRTPoly> crpElems;
+    crpElems.push_back(std::move(crp));
+    outCtxt->SetElements(std::move(crpElems));
     return outCtxt;
 }
 
@@ -291,20 +295,19 @@ DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const
 
 // Generate random mask
 DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
-    // drop twoers until we reach maskBoundNumTowers
-    auto c1Copy = c1;
-    c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);
+    // only the parameters of the first maskBoundNumTowers towers are needed here, not their contents
+    auto params = std::make_shared<DCRTPoly::Params>(c1.GetParams()->GetCyclotomicOrder(),
+                                                     c1.GetParams()->GetParamPartition(0, maskBoundNumTowers - 1));
 
     typename DCRTPoly::DugType dug;
-    return DCRTPoly(dug, c1Copy.GetParams(), Format::EVALUATION);
+    return DCRTPoly(dug, params, Format::EVALUATION);
 }
 
 // Compute h_{0,i}
 DCRTPoly GenerateMaskedDecryptionShare(CryptoContext<DCRTPoly>& cc, const PrivateKey<DCRTPoly> privateKey,
                                        const DCRTPoly& c1, DCRTPoly& Mi, uint32_t compressionLevel) {
-    DCRTPoly sk = privateKey->GetPrivateElement();
-    // reduce sk's numeTowers to c1's numTowers
-    sk.DropLastElements(sk.GetAllElements().size() - c1.GetAllElements().size());
+    // reduce sk's numTowers to c1's numTowers
+    DCRTPoly sk = privateKey->GetPrivateElement().CloneTowers(0, c1.GetAllElements().size() - 1);
 
     DCRTPoly maskedDecryptionShare = ComputeNoisyMult(cc, sk, c1, true);
 
@@ -369,7 +372,9 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootDecrypt(const Priv
     // Encryption to Share protocol to compute: h_{0,i}
     DCRTPoly mdsp = GenerateMaskedDecryptionShare(cc, privateKey, c1, Mi, compressionLevel);
     Ciphertext<DCRTPoly> maskedDecryptionShare(std::make_shared<CiphertextImpl<DCRTPoly>>(privateKey));
-    maskedDecryptionShare->SetElements({std::move(mdsp)});
+    std::vector<DCRTPoly> mdsElems;
+    mdsElems.push_back(std::move(mdsp));
+    maskedDecryptionShare->SetElements(std::move(mdsElems));
 
     // Generate reEncryptionShares: secretShare M_i (no need to recompute, use M_i from above)
     // and publicShare: -s_i*a + e_{1,i} in R_{Q}
@@ -380,7 +385,9 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootDecrypt(const Priv
     // Shares to Encryption protocol to compute h_{1,i}
     DCRTPoly rsp = GenerateReEncryptionShare(cc, privateKey, a, Mi, compressionLevel);
     Ciphertext<DCRTPoly> reEncryptionShare(std::make_shared<CiphertextImpl<DCRTPoly>>(privateKey));
-    reEncryptionShare->SetElements({std::move(rsp)});
+    std::vector<DCRTPoly> rsElems;
+    rsElems.push_back(std::move(rsp));
+    reEncryptionShare->SetElements(std::move(rsElems));
 
     std::vector<Ciphertext<DCRTPoly>> result = {maskedDecryptionShare, reEncryptionShare};
 
@@ -430,7 +437,11 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
 
     Ciphertext<DCRTPoly> outCtxt(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
-    outCtxt->SetElements({std::move(c0Prime), std::move(a->GetElements()[0])});
+    std::vector<DCRTPoly> outElems;
+    outElems.reserve(2);
+    outElems.push_back(std::move(c0Prime));
+    outElems.push_back(std::move(a->GetElements()[0]));
+    outCtxt->SetElements(std::move(outElems));
 
     // Ciphertext depth, level, and scaling factor should be
     // equal to that of the plaintext. However, Encrypt does

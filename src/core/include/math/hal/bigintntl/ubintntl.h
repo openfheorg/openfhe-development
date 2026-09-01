@@ -785,9 +785,8 @@ public:
         catch (InvModErrorObject& e) {  // note this code requires NTL Excptions coto be turned
                                         // on. TODO: provide alternative when that is off.
             std::stringstream errmsg;
-            errmsg << "ModInverse exception "
-                   << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a() << "," << e.get_n() << "!=1"
-                   << std::endl;
+            errmsg << "ModInverse exception " << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a()
+                   << "," << e.get_n() << "!=1" << std::endl;
             OPENFHE_THROW(errmsg.str());
         }
         return tmp;
@@ -809,9 +808,8 @@ public:
         catch (InvModErrorObject& e) {  // note this code requires NTL Excptions coto be turned
                                         // on. TODO: provide alternative when that is off.
             std::stringstream errmsg;
-            errmsg << "ModInverse exception "
-                   << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a() << "," << e.get_n() << "!=1"
-                   << std::endl;
+            errmsg << "ModInverse exception " << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a()
+                   << "," << e.get_n() << "!=1" << std::endl;
             OPENFHE_THROW(errmsg.str());
         }
         return *this;
@@ -894,7 +892,6 @@ public:
     }
     uint64_t ConvertToUint64() const;
     double ConvertToDouble() const;
-    long double ConvertToLongDouble() const;
 
     /**
    * Convert a string representation of a binary number to a myZZ.

@@ -190,69 +190,52 @@ public:
     /////////////////////////////////////
     // Sparse secret encapsulation (SPARSE_ENCAPSULATED): switching between the dense and
     // sparse secrets at the bootstrapping modulus raise (FHECKKSRNS::KeySwitchGenSparse /
-    // KeySwitchSparse). The GHS-style switching key is generated over q0*P', where
-    // P' = p'_0*...*p'_{k-1} is an auxiliary modulus of two primes of MAX_MODULUS_SIZE/2 + 3
-    // bits each (33 bits, i.e., ~66 auxiliary bits, for the standard 64-bit build), generated
-    // here, during parameter generation. Making P' exceed the largest possible q0 by ~6 bits,
-    // instead of using a single prime of at most MAX_MODULUS_SIZE bits, makes the key switching
-    // noise floor(q0*e/P') comparable to the modulus switching noise
-    // (see https://github.com/openfheorg/openfhe-development/issues/1041).
-    // The tables below support the exact (HPS-style) CRT basis switch used to scale the
-    // key-switched ciphertext back down from q0*P' to q0.
-    // Only populated when secretKeyDist == SPARSE_ENCAPSULATED; see PrecomputeCRTTables.
+    // KeySwitchSparse). The GHS-style switching key is generated over Ql*P', where
+    // Ql = {q_0, ..., q_{d-1}} (d = compositeDegree) is the basis of the bottom level and
+    // P' = p'_0*...*p'_{k-1} is an auxiliary modulus generated here, during parameter generation:
+    // two 33-bit primes without composite scaling; with it, ~66 bits when the bottom modulus has at
+    // most 60 bits and ~127 bits for a larger one (at most 121 bits), split into primes that fit the
+    // register word size. Making P' exceed the bottom modulus by ~6 bits makes
+    // the key switching noise floor(Ql*e/P') comparable to the modulus switching noise.
     /////////////////////////////////////
 
     /**
    * Gets the element parameters of the sparse encapsulation auxiliary basis P' = {p'_0, ..., p'_{k-1}}
-   *
-   * @return the precomputed parameters
    */
     const std::shared_ptr<ParmType>& GetSparseKSParamsP() const {
         return m_sparseKSParamsP;
     }
 
     /**
-   * Gets the element parameters of the extended basis {q_0, p'_0, ..., p'_{k-1}} used for
-   * the sparse encapsulation switching key
-   *
-   * @return the precomputed parameters
+   * Gets the element parameters of the extended basis {q_0, ..., q_{d-1}, p'_0, ..., p'_{k-1}}
    */
     const std::shared_ptr<ParmType>& GetSparseKSParamsQP() const {
         return m_sparseKSParamsQP;
     }
 
     /**
-   * Gets the element parameters of the single-limb basis {q_0} (the target basis of the
-   * sparse encapsulation modulus switch)
-   *
-   * @return the precomputed parameters
+   * Gets the element parameters of the bottom basis Ql = {q_0, ..., q_{d-1}}
    */
     const std::shared_ptr<ParmType>& GetSparseKSParamsQ() const {
         return m_sparseKSParamsQ;
     }
 
     /**
-   * Gets the precomputed value [P']_{q_0}
-   *
-   * @return the precomputed value
+   * Gets [P']_{q_i} for q_i in Ql
    */
-    const NativeInteger& GetSparseKSPModq() const {
+    const std::vector<NativeInteger>& GetSparseKSPModq() const {
         return m_sparseKSPModq;
     }
 
     /**
-   * Gets the precomputed value [P'^{-1}]_{q_0}
-   *
-   * @return the precomputed value
+   * Gets [P'^{-1}]_{q_i} for q_i in Ql
    */
-    const NativeInteger& GetSparseKSPInvModq() const {
+    const std::vector<NativeInteger>& GetSparseKSPInvModq() const {
         return m_sparseKSPInvModq;
     }
 
     /**
-   * Gets the precomputed table of [(P'/p'_j)^{-1}]_{p'_j}
-   *
-   * @return the precomputed table
+   * Gets [(P'/p'_j)^{-1}]_{p'_j}
    */
     const std::vector<NativeInteger>& GetSparseKSPHatInvModp() const {
         return m_sparseKSPHatInvModp;
@@ -260,49 +243,66 @@ public:
 
     /**
    * Gets the modular multiplication precomputations for [(P'/p'_j)^{-1}]_{p'_j}
-   *
-   * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetSparseKSPHatInvModpPrecon() const {
         return m_sparseKSPHatInvModpPrecon;
     }
 
     /**
-   * Gets the precomputed table of [P'/p'_j]_{q_0}, indexed as [q_i][p'_j] with a single q_0 row
-   * (the orientation expected by DCRTPoly::SwitchCRTBasis)
-   *
-   * @return the precomputed table
+   * Gets [P'/p'_j]_{q_i}, indexed as [q_i][p'_j]
    */
     const std::vector<std::vector<NativeInteger>>& GetSparseKSPHatModq() const {
         return m_sparseKSPHatModq;
     }
 
     /**
-   * Gets the precomputed table of [a*P']_{q_0}, 0 <= a <= k (the overflow correction used
-   * in the exact CRT reconstruction)
-   *
-   * @return the precomputed table
+   * Gets the overflow correction [a*P']_{q_i}, 0 <= a <= k, indexed as [a][q_i]
    */
     const std::vector<std::vector<NativeInteger>>& GetSparseKSAlphaPModq() const {
         return m_sparseKSAlphaPModq;
     }
 
     /**
-   * Gets the Barrett modulo reduction precomputation for q_0
-   *
-   * @return the precomputed table
+   * Gets the Barrett modulo reduction precomputations for q_i in Ql
    */
     const std::vector<DoubleNativeInt>& GetSparseKSModqBarrettMu() const {
         return m_sparseKSModqBarrettMu;
     }
 
     /**
-   * Gets the precomputed table of 1./p'_j
-   *
-   * @return the precomputed table
+   * Gets 1./p'_j
    */
     const std::vector<double>& GetSparseKSpInv() const {
         return m_sparseKSpInv;
+    }
+
+    /**
+   * Gets [Ql/q_i]_{p'_j}, indexed as [p'_j][q_i]
+   */
+    const std::vector<std::vector<NativeInteger>>& GetSparseKSQlHatModp() const {
+        return m_sparseKSQlHatModp;
+    }
+
+    /**
+   * Gets the overflow correction [a*Ql]_{p'_j}, 0 <= a <= d, indexed as [a][p'_j]
+   */
+    const std::vector<std::vector<NativeInteger>>& GetSparseKSAlphaQlModp() const {
+        return m_sparseKSAlphaQlModp;
+    }
+
+    /**
+   * Gets the Barrett modulo reduction precomputations for p'_j
+   */
+    const std::vector<DoubleNativeInt>& GetSparseKSModpBarrettMu() const {
+        return m_sparseKSModpBarrettMu;
+    }
+
+    /**
+   * Gets the Hamming weight of the sparse secret used for sparse encapsulation: 32 for a bottom (first) modulus
+   * of at most 60 bits, and 64 for larger bottom moduli (composite scaling)
+   */
+    uint32_t GetSparseKSHammingWeight() const {
+        return m_sparseKSHammingWeight;
     }
 
     /////////////////////////////////////
@@ -355,32 +355,40 @@ private:
 
     // Sparse secret encapsulation (SPARSE_ENCAPSULATED) precomputations for the key
     // switching to/from the sparse secret at the bootstrapping modulus raise: auxiliary
-    // basis P' = {p'_0, ..., p'_{k-1}} (two primes of MAX_MODULUS_SIZE/2 + 3 bits each)
-    // and the tables for the exact (HPS-style) CRT basis switch from P' to {q_0}.
+    // basis P' = {p'_0, ..., p'_{k-1}} and the tables for the exact (HPS-style) CRT basis
+    // switches between the bottom basis Ql = {q_0, ..., q_{d-1}} and P'.
     // Not serialized; regenerated by PrecomputeCRTTables (including after deserialization).
 
     // Params for the auxiliary basis P'
     std::shared_ptr<ParmType> m_sparseKSParamsP;
-    // Params for the extended basis {q_0, p'_0, ..., p'_{k-1}}
+    // Params for the extended basis {q_0, ..., q_{d-1}, p'_0, ..., p'_{k-1}}
     std::shared_ptr<ParmType> m_sparseKSParamsQP;
-    // Params for the single-limb basis {q_0}
+    // Params for the bottom basis Ql = {q_0, ..., q_{d-1}}
     std::shared_ptr<ParmType> m_sparseKSParamsQ;
-    // [P']_{q_0}
-    NativeInteger m_sparseKSPModq;
-    // [P'^{-1}]_{q_0}
-    NativeInteger m_sparseKSPInvModq;
+    // [P']_{q_i}
+    std::vector<NativeInteger> m_sparseKSPModq;
+    // [P'^{-1}]_{q_i}
+    std::vector<NativeInteger> m_sparseKSPInvModq;
     // [(P'/p'_j)^{-1}]_{p'_j}
     std::vector<NativeInteger> m_sparseKSPHatInvModp;
     // modular multiplication precomputations for [(P'/p'_j)^{-1}]_{p'_j}
     std::vector<NativeInteger> m_sparseKSPHatInvModpPrecon;
-    // [P'/p'_j]_{q_0}, indexed as [q_i][p'_j] with a single q_0 row
+    // [P'/p'_j]_{q_i}, indexed as [q_i][p'_j]
     std::vector<std::vector<NativeInteger>> m_sparseKSPHatModq;
-    // [a*P']_{q_0}, 0 <= a <= k
+    // [a*P']_{q_i}, 0 <= a <= k, indexed as [a][q_i]
     std::vector<std::vector<NativeInteger>> m_sparseKSAlphaPModq;
-    // Barrett modulo reduction precomputation for q_0
+    // Barrett modulo reduction precomputations for q_i in Ql
     std::vector<DoubleNativeInt> m_sparseKSModqBarrettMu;
     // 1./p'_j
     std::vector<double> m_sparseKSpInv;
+    // [Ql/q_i]_{p'_j}, indexed as [p'_j][q_i]
+    std::vector<std::vector<NativeInteger>> m_sparseKSQlHatModp;
+    // [a*Ql]_{p'_j}, 0 <= a <= d, indexed as [a][p'_j]
+    std::vector<std::vector<NativeInteger>> m_sparseKSAlphaQlModp;
+    // Barrett modulo reduction precomputations for p'_j
+    std::vector<DoubleNativeInt> m_sparseKSModpBarrettMu;
+    // Hamming weight of the sparse secret (32, or 64 for composite bottom moduli larger than 60 bits)
+    uint32_t m_sparseKSHammingWeight = 32;
 };
 
 }  // namespace lbcrypto

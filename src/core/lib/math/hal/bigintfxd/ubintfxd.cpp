@@ -100,8 +100,8 @@ BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(const std::string& strv
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(uint64_t val) {
-    uint32_t msb   = lbcrypto::GetMSB64(val);
-    this->m_MSB = msb;
+    uint32_t msb = lbcrypto::GetMSB64(val);
+    this->m_MSB  = msb;
 
     uint_type ceilInt = ceilIntByUInt(msb);
     int i             = m_nSize - 1;
@@ -505,7 +505,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     uint_type estimate = 0;
     uint_type maskBit  = 0;
     uint_type shifts   = 0;
-    uint32_t ansCtr       = m_nSize - ncharInNormalised_dividend + ncharInDivisor - 1;
+    uint32_t ansCtr    = m_nSize - ncharInNormalised_dividend + ncharInDivisor - 1;
     // Long Division Computation to determine quotient
     for (uint32_t i = ncharInNormalised_dividend - ncharInDivisor;;) {
         runningRemainder = running_dividend.Mod(b);              // Get the remainder from the Modulus operation
@@ -670,7 +670,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     uint_type estimate = 0;
     uint_type maskBit  = 0;
     uint_type shifts   = 0;
-    uint32_t ansCtr       = m_nSize - ncharInNormalised_dividend + ncharInDivisor - 1;
+    uint32_t ansCtr    = m_nSize - ncharInNormalised_dividend + ncharInDivisor - 1;
     // Long Division Computation to determine quotient
     for (uint32_t i = ncharInNormalised_dividend - ncharInDivisor;;) {
         runningRemainder = running_dividend.Mod(q);              // Get the remainder from the Modulus operation
@@ -1351,7 +1351,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::L
     BigIntegerFixedT ans(*this);
 
     uint32_t shiftByUint = shift >> m_logUintBitLength;
-    uint16_t remShift  = (shift & (m_uintBitLength - 1));
+    uint16_t remShift    = (shift & (m_uintBitLength - 1));
 
     if (remShift != 0) {
         uint_type endVal = m_nSize - ceilIntByUInt(m_MSB);
@@ -1392,7 +1392,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
         OPENFHE_THROW("shift overflow");
     }
     uint32_t shiftByUint = shift >> m_logUintBitLength;  // calculate the no.of
-                                                      // shifts
+                                                         // shifts
     uint_type remShift = (shift & (m_uintBitLength - 1));
     if (remShift != 0) {
         uint_type endVal = m_nSize - ceilIntByUInt(this->m_MSB);
@@ -1438,8 +1438,8 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::R
         return BigIntegerFixedT(0);
     }
     BigIntegerFixedT ans(*this);
-    uint32_t shiftByUint  = shift >> m_logUintBitLength;      // no of array shifts
-    uint_type remShift = (shift & (m_uintBitLength - 1));  // no of bit shifts
+    uint32_t shiftByUint = shift >> m_logUintBitLength;      // no of array shifts
+    uint_type remShift   = (shift & (m_uintBitLength - 1));  // no of bit shifts
     if (shiftByUint != 0) {
         // termination index counter
         uint32_t endVal = m_nSize - ceilIntByUInt(ans.m_MSB);
@@ -1462,7 +1462,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::R
         uint_type oldVal;
         uint_type maskVal      = ((uint_type)1 << (remShift)) - 1;
         uint_type compShiftVal = m_uintBitLength - remShift;
-        uint32_t startVal         = m_nSize - ceilIntByUInt(ans.m_MSB);
+        uint32_t startVal      = m_nSize - ceilIntByUInt(ans.m_MSB);
         // perform shifting by bits by calculating the overflow
         // oveflow is added after the shifting operation
         for (; startVal < m_nSize; startVal++) {
@@ -1485,7 +1485,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
         *this = 0;
         return *this;
     }
-    int shiftByUint = shift >> m_logUintBitLength;      // no of array shifts
+    int shiftByUint  = shift >> m_logUintBitLength;      // no of array shifts
     uint8_t remShift = (shift & (m_uintBitLength - 1));  // no of bit shifts
     // perform shifting in arrays
     if (shiftByUint != 0) {
@@ -1507,7 +1507,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
         uint_type oldVal;
         uint_type maskVal      = ((uint_type)1 << (remShift)) - 1;
         uint_type compShiftVal = m_uintBitLength - remShift;
-        uint32_t startVal         = m_nSize - ceilIntByUInt(this->m_MSB);
+        uint32_t startVal      = m_nSize - ceilIntByUInt(this->m_MSB);
         // shift and add the overflow from the previous position
         for (; startVal < m_nSize; startVal++) {
             oldVal                  = this->m_value[startVal];
@@ -1549,27 +1549,13 @@ int BigIntegerFixedT<uint_type, BITLENGTH>::Compare(const BigIntegerFixedT& a) c
 
 template <typename uint_type, uint32_t BITLENGTH>
 inline double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToDouble() const {
-    double result = 0.0;
+    double result    = 0.0;
     uint32_t ceilInt = m_nSize - ceilIntByUInt(m_MSB);
-    double factor = std::pow(2.0, m_uintBitLength);
-    double power  = 1.0;
+    double factor    = std::pow(2.0, m_uintBitLength);
+    double power     = 1.0;
     // copy the values by shift and add
     for (uint32_t i = 0; (m_nSize - i - 1) >= ceilInt; i++) {
         result += static_cast<double>(this->m_value[m_nSize - i - 1]) * power;
-        power *= factor;
-    }
-    return result;
-}
-
-template <typename uint_type, uint32_t BITLENGTH>
-inline long double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToLongDouble() const {
-    long double result = 0.0;
-    uint32_t ceilInt      = m_nSize - ceilIntByUInt(m_MSB);
-    long double factor = std::pow(2.0, m_uintBitLength);
-    long double power  = 1.0;
-    // copy the values by shift and add
-    for (uint32_t i = 0; (m_nSize - i - 1) >= ceilInt; i++) {
-        result += static_cast<long double>(this->m_value[m_nSize - i - 1]) * power;
         power *= factor;
     }
     return result;
@@ -1703,9 +1689,9 @@ const std::string BigIntegerFixedT<uint_type, BITLENGTH>::ToString() const {
 // Reference:http://pctechtips.org/convert-from-decimal-to-binary-with-recursion-in-java/
 template <typename uint_type, uint32_t BITLENGTH>
 void BigIntegerFixedT<uint_type, BITLENGTH>::AssignVal(const std::string& v) {
-    int arrSize      = v.length();
+    int arrSize       = v.length();
     uint8_t* DecValue = new uint8_t[arrSize];  // memory allocated for decimal array
-    for (int i = 0; i < arrSize; i++) {      // store the string to decimal array
+    for (int i = 0; i < arrSize; i++) {        // store the string to decimal array
         DecValue[i] = (uint8_t)atoi(v.substr(i, 1).c_str());
     }
     int zptr = 0;

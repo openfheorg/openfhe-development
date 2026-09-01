@@ -880,7 +880,7 @@ public:
                                bool> = true>
     T ConvertToInt() const {
         constexpr uint32_t bits = sizeof(T) * CHAR_BIT;
-        T result             = 0;
+        T result                = 0;
         // set num to number of equisized chunks
         uint32_t num     = bits / m_uintBitLength;
         uint32_t ceilInt = m_nSize - ceilIntByUInt(m_MSB);
@@ -900,7 +900,6 @@ public:
    * @return double representation of the value.
    */
     double ConvertToDouble() const;
-    long double ConvertToLongDouble() const;
 
     /**
    * Convert a value from an int to a BigIntegerFixedT.
@@ -928,7 +927,6 @@ public:
     uint32_t GetMSB() const {
         return m_MSB;
     }
-
 
     /**
    * Get the number of digits using a specific base - support for arbitrary base

@@ -59,7 +59,7 @@
         #include <utility>
         #include <vector>
 
-        // clang-format off
+    // clang-format off
         // TODO: fix shifting issue when limb_t == Dlimb_t
         #if (NATIVEINT >= 64 && defined(HAVE_INT128))
             using expdtype = uint64_t;
@@ -735,7 +735,6 @@ public:
    */
     float ConvertToFloat() const;
     double ConvertToDouble() const;
-    long double ConvertToLongDouble() const;
 
     /**
    * Convert a string representation of a binary number to a ubint.

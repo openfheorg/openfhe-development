@@ -50,13 +50,9 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     const auto ns                   = cryptoParams->GetNoiseScale();
 
-    auto s(privateKey->GetPrivateElement());
-
-    size_t sizeQ  = s.GetParams()->GetParams().size();
-    size_t sizeQl = cv[0].GetParams()->GetParams().size();
-    size_t diffQl = sizeQ - sizeQl;
-
-    s.DropLastElements(diffQl);
+    const DCRTPoly& sk = privateKey->GetPrivateElement();
+    size_t sizeQl      = cv[0].GetParams()->GetParams().size();
+    auto s             = sk.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
@@ -117,13 +113,9 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
-    auto s(privateKey->GetPrivateElement());
-
-    size_t sizeQ  = s.GetParams()->GetParams().size();
-    size_t sizeQl = cv[0].GetParams()->GetParams().size();
-    size_t diffQl = sizeQ - sizeQl;
-
-    s.DropLastElements(diffQl);
+    const DCRTPoly& sk = privateKey->GetPrivateElement();
+    size_t sizeQl      = cv[0].GetParams()->GetParams().size();
+    auto s             = sk.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
@@ -407,12 +399,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> pr
     size_t sizeQl = c[0].GetParams()->GetParams().size();
 
     const DCRTPoly& s = privateKey->GetPrivateElement();
-    size_t sizeQ      = s.GetParams()->GetParams().size();
-
-    size_t diffQl = sizeQ - sizeQl;
-
-    auto scopy(s);
-    scopy.DropLastElements(diffQl);
+    auto scopy        = s.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly cs{(NUM_POLYNOMIALS == 1) ? (c[0] * scopy) : (c[1] * scopy + c[0])};
     cs.SetFormat(Format::COEFFICIENT);
@@ -465,13 +452,9 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     std::vector<DCRTPoly> cv;
     cv.reserve(2);
     if (sizeQl != sizeQ) {
-        // Clone public keys because we need to drop towers.
-        DCRTPoly b = pk[0].Clone();
-        DCRTPoly a = pk[1].Clone();
-
-        uint32_t diffQl = sizeQ - sizeQl;
-        b.DropLastElements(diffQl);
-        a.DropLastElements(diffQl);
+        // Clone only the towers of the public keys that are still needed.
+        DCRTPoly b = pk[0].CloneTowers(0, sizeQl - 1);
+        DCRTPoly a = pk[1].CloneTowers(0, sizeQl - 1);
 
         // the error e0 was already added to ptxt
         cv.push_back(b * v + ptxt);

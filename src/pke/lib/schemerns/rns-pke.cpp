@@ -47,7 +47,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPo
 
     (*ba)[0] += plaintext;
 
-    ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
@@ -63,7 +63,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPol
 
     (*ba)[0] += plaintext;
 
-    ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
@@ -127,11 +127,8 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
 
     DCRTPoly c0, c1;
     if (sizeQl != sizeQ) {
-        // Clone secret key because we need to drop towers.
-        DCRTPoly scopy(s);
-
-        uint32_t diffQl = sizeQ - sizeQl;
-        scopy.DropLastElements(diffQl);
+        // Clone only the towers of the secret key that are still needed.
+        DCRTPoly scopy = s.CloneTowers(0, sizeQl - 1);
 
         c0 = a * scopy + ns * e;
         c1 = -a;
@@ -142,7 +139,11 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
         c1 = -a;
     }
 
-    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
+    auto result = std::make_shared<std::vector<DCRTPoly>>();
+    result->reserve(2);
+    result->push_back(std::move(c0));
+    result->push_back(std::move(c1));
+    return result;
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
@@ -173,13 +174,9 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
 
     DCRTPoly c0, c1;
     if (sizeQl != sizeQ) {
-        // Clone public keys because we need to drop towers.
-        DCRTPoly p0 = pk[0].Clone();
-        DCRTPoly p1 = pk[1].Clone();
-
-        uint32_t diffQl = sizeQ - sizeQl;
-        p0.DropLastElements(diffQl);
-        p1.DropLastElements(diffQl);
+        // Clone only the towers of the public keys that are still needed.
+        DCRTPoly p0 = pk[0].CloneTowers(0, sizeQl - 1);
+        DCRTPoly p1 = pk[1].CloneTowers(0, sizeQl - 1);
 
         c0 = p0 * v + ns * e0;
         c1 = p1 * v + ns * e1;
@@ -193,19 +190,18 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
         c1 = p1 * v + ns * e1;
     }
 
-    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
+    auto result = std::make_shared<std::vector<DCRTPoly>>();
+    result->reserve(2);
+    result->push_back(std::move(c0));
+    result->push_back(std::move(c1));
+    return result;
 }
 
 DCRTPoly PKERNS::DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const {
     const DCRTPoly& s = privateKey->GetPrivateElement();
 
-    size_t sizeQ  = s.GetParams()->GetParams().size();
     size_t sizeQl = cv[0].GetParams()->GetParams().size();
-
-    size_t diffQl = sizeQ - sizeQl;
-
-    auto scopy(s);
-    scopy.DropLastElements(diffQl);
+    auto scopy    = s.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly sPower(scopy);
 

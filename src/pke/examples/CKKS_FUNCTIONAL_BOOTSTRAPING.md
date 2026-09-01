@@ -123,16 +123,21 @@ should guarantee correct decryption in RLWE (the error should not corrupt the me
 $\textsf{IND}-\textsf{CPA}^{D}$ security.
 If the output is decrypted under CKKS, noise flooding should be applied in order to achieve $\textsf{IND}-\textsf{CPA}^{D}$
 security.
-- With a scaling factor fitting on native int size of 64 bits, LUTs up to 14 bits in size are supported.
+- With a scaling factor fitting on native int size of 64 bits, LUTs up to 14 bits in size are supported. Larger scaling
+factors (e.g., 90 bits) are supported with the COMPOSITESCALING* modes, which represent the scaling factor as a product
+of several smaller primes.
 - The current multiprecision sign evaluation implementation requires that the digit bit size divides the input bit size.
 - The supported secret key distributions are SPARSE_TERNARY (larger probability of failure), SPARSE_ENCAPSULATED
 (negligible probability of failure), and UNIFORM_TERNARY (negligible probability of failure, at the cost of a larger
 multiplicative depth and larger scaling factors).
-- The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT modes for rescaling are supported (for the 64-bit build).
-The FLEXIBLEAUTO and FLEXIBLEAUTOEXT modes track the exact level-specific scaling factors, which removes the
-scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters (equivalently,
-correctness can be achieved with a smaller CKKS scaling factor).
-Composite scaling (COMPOSITESCALINGAUTO and COMPOSITESCALINGMANUAL) is not supported yet, and neither is NORESCALE;
-`EvalFBTSetup` rejects them.
+- The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL
+modes for rescaling are supported (for the 64-bit build).
+The FLEXIBLEAUTO, FLEXIBLEAUTOEXT, and COMPOSITESCALING* modes track the exact level-specific scaling factors, which
+removes the scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters
+(equivalently, correctness can be achieved with a smaller CKKS scaling factor). The noise of the COMPOSITESCALING*
+modes is roughly the same as that of FLEXIBLEAUTO for the same parameters, and all secret key distributions are supported.
+Note that the parameter generation for
+composite scaling requires the first modulus to be larger than the scaling factor (whose bit length matches the RLWE
+ciphertext modulus), so in these modes the first modulus has to be at least one bit larger.
 - The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFBTSetup` rejects it.
 - MULTIPARTY is not supported.

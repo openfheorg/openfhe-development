@@ -253,15 +253,17 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
 std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                          const EvalKey<DCRTPoly> evalKey,
                                                          const std::shared_ptr<ParmType> paramsQl) const {
-    std::vector<DCRTPoly> bv(evalKey->GetBVector());
-    std::vector<DCRTPoly> av(evalKey->GetAVector());
-    const auto diffQl    = bv[0].GetParams()->GetParams().size() - paramsQl->GetParams().size();
-    const uint32_t limit = (*digits).size();
+    const std::vector<DCRTPoly>& bref = evalKey->GetBVector();
+    const std::vector<DCRTPoly>& aref = evalKey->GetAVector();
+    const uint32_t lastQl             = paramsQl->GetParams().size() - 1;
+    const uint32_t limit              = (*digits).size();
+    std::vector<DCRTPoly> bv(limit);
+    std::vector<DCRTPoly> av(limit);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
     for (uint32_t i = 0; i < limit; ++i) {
-        bv[i].DropLastElements(diffQl);
+        bv[i] = bref[i].CloneTowers(0, lastQl);
         bv[i] *= (*digits)[i];
-        av[i].DropLastElements(diffQl);
+        av[i] = aref[i].CloneTowers(0, lastQl);
         av[i] *= (*digits)[i];
     }
     for (uint32_t i = 1; i < limit; ++i) {

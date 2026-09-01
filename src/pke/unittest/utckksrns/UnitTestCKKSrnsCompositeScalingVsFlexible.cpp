@@ -128,16 +128,20 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    // Bootstraps a freshly-encrypted (bottom-level) vector and returns the achieved precision in bits.
+    // Bootstraps a freshly-encrypted vector and returns the achieved precision in bits. With stcFirst the
+    // SlotsToCoeffs-first ("BTSlotsEncoding") variant is used, whose input must keep levelBudget[1] levels for
+    // the initial SlotsToCoeffs; extraLevels additionally leaves the input that many levels above the
+    // minimum, exercising the level adjustment performed before SlotsToCoeffs.
     double BootstrapPrecisionBits(ScalingTechnique scalTech, uint32_t ringDim, uint32_t scalingModSize,
                                   uint32_t firstModSize, const std::vector<uint32_t>& levelBudget, uint32_t numSlots,
-                                  uint32_t levelsAfterBootstrap, uint32_t numLargeDigits) {
+                                  uint32_t levelsAfterBootstrap, uint32_t numLargeDigits, bool stcFirst = false,
+                                  uint32_t extraLevels = 0) {
         uint32_t depth = levelsAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, SK_DIST);
         auto cc        = BuildContext(scalTech, ringDim, depth, scalingModSize, firstModSize, numLargeDigits);
         auto cp        = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
         uint32_t cd    = cp->GetCompositeDegree();
 
-        cc->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots);
+        cc->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots, 0, true, stcFirst);
         auto keys = cc->KeyGen();
         cc->EvalMultKeyGen(keys.secretKey);
         cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
@@ -147,9 +151,10 @@ protected:
         for (uint32_t i = 0; i < numSlots; ++i)
             x[i] = 0.25 + 0.5 * (0.5 * std::sin(0.3 * static_cast<double>(i) + 1.0) + 0.5);
 
-        Plaintext pt = cc->MakeCKKSPackedPlaintext(x, 1, cd * (depth - 1), nullptr, numSlots);
-        auto ct      = cc->Encrypt(keys.publicKey, pt);
-        auto ctAfter = cc->EvalBootstrap(ct);
+        uint32_t inputLevel = depth - 1 - ((stcFirst) ? levelBudget[1] : 0) - extraLevels;
+        Plaintext pt        = cc->MakeCKKSPackedPlaintext(x, 1, cd * inputLevel, nullptr, numSlots);
+        auto ct             = cc->Encrypt(keys.publicKey, pt);
+        auto ctAfter        = cc->EvalBootstrap(ct);
 
         Plaintext result;
         cc->Decrypt(keys.secretKey, ctAfter, &result);
@@ -270,6 +275,81 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
     EXPECT_GT(csBits, 12.0) << "CS 8-slot deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
                                     << ") - large modraise headroom (deg=6) regression";
+}
+
+//===========================================================================================================
+// Scenario 4: SlotsToCoeffs-first ("BTSlotsEncoding") bootstrapping. Composite scaling support for this mode
+// required (a) counting the towers consumed by the initial SlotsToCoeffs in units of compositeDegree, so the
+// input level matches the level at which the StC matrix is encoded (previously a modulus mismatch), and
+// (b) using the level-adjustment formula of AdjustLevelsAndDepthInPlace when the input arrives with extra
+// levels (the current and target levels were mixed up, which is invisible for FA but cost ~10 bits for CS).
+// CS is expected to be within a few bits of FA in this mode, like in the ModRaise-first mode.
+TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrap) {
+    const uint32_t ringDim                  = 1 << 12;
+    const std::vector<uint32_t> levelBudget = {2, 2};
+    const uint32_t numSlots                 = 8;
+    const uint32_t levelsAfterBootstrap     = 2;
+
+    double faBits =
+        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
+    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
+                                           levelsAfterBootstrap, 0, true);
+
+    EXPECT_GT(csBits, 12.0) << "CS StC-first 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
+    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
+                                    << ") - StC-first composite scaling regression";
+}
+
+TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapLargeModRaiseHeadroom) {
+    const uint32_t ringDim                  = 1 << 12;
+    const std::vector<uint32_t> levelBudget = {2, 2};
+    const uint32_t numSlots                 = 8;
+    const uint32_t levelsAfterBootstrap     = 2;
+
+    double faBits =
+        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
+    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots,
+                                           levelsAfterBootstrap, 0, true);
+
+    EXPECT_GT(csBits, 12.0) << "CS StC-first deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
+    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
+                                    << ") - StC-first large modraise headroom regression";
+}
+
+TEST_F(UTCKKSRNSCSvsFA, StCFirstBootstrap1024Slots) {
+    const uint32_t ringDim                  = 1 << 12;
+    const std::vector<uint32_t> levelBudget = {3, 3};
+    const uint32_t numSlots                 = 1024;
+    const uint32_t levelsAfterBootstrap     = 2;
+
+    double faBits =
+        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
+    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
+                                           levelsAfterBootstrap, 0, true);
+
+    EXPECT_GT(csBits, 12.0) << "CS StC-first 1024-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
+    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
+                                    << ") - StC-first composite scaling regression";
+}
+
+// Input arrives with 2 more levels than the StC-first minimum, so the level adjustment before SlotsToCoeffs
+// runs. Pre-fix: CS ~15 bits vs FA ~25 bits at ring 2^6.
+TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapWithExtraLevels) {
+    const uint32_t ringDim                  = 1 << 12;
+    const std::vector<uint32_t> levelBudget = {2, 2};
+    const uint32_t numSlots                 = 8;
+    const uint32_t levelsAfterBootstrap     = 2;
+    const uint32_t extraLevels              = 2;
+
+    double faBits = BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap,
+                                           0, true, extraLevels);
+    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
+                                           levelsAfterBootstrap, 0, true, extraLevels);
+
+    EXPECT_GT(csBits, 12.0) << "CS StC-first bootstrap precision with extra input levels unexpectedly low (" << csBits
+                            << " bits)";
+    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
+                                    << ") - StC-first level adjustment regression";
 }
 
 //===========================================================================================================

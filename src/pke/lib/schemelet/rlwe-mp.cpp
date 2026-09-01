@@ -34,6 +34,7 @@
 #include "schemerns/rns-cryptoparameters.h"
 #include "cryptocontext.h"
 
+#include <memory>
 #include <stdint.h>
 #include <vector>
 
@@ -125,8 +126,14 @@ std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> SchemeletRLWEMP::GetElementPara
         std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
 
     const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
-    if (cryptoParamsRNS != nullptr && cryptoParamsRNS->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        ++level;
+    if (cryptoParamsRNS != nullptr) {
+        auto st = cryptoParamsRNS->GetScalingTechnique();
+        // in the COMPOSITESCALING* modes, every level consists of compositeDegree towers
+        if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL)
+            level *= cryptoParamsRNS->GetCompositeDegree();
+        else if (st == FLEXIBLEAUTOEXT)
+            ++level;
+    }
 
     auto ep = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(*(cryptoParams->GetElementParams()));
     for (uint32_t i = 0; i < level; ++i)
@@ -146,8 +153,7 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
     DCRTPoly a(dug, ep, Format::EVALUATION);
     DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), ep, Format::EVALUATION);
 
-    auto scopy(privateKey->GetPrivateElement());
-    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
+    auto scopy = privateKey->GetPrivateElement().CloneTowers(0, ep->GetParams().size() - 1);
 
     DCRTPoly b = e - a * scopy;  // encryption of 0 using Q'
 
@@ -212,8 +218,7 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
 
     auto ba = (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
 
-    auto scopy(privateKey->GetPrivateElement());
-    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
+    auto scopy = privateKey->GetPrivateElement().CloneTowers(0, ep->GetParams().size() - 1);
 
     auto m = ba[0] + ba[1] * scopy;
 
@@ -267,8 +272,14 @@ Ciphertext<DCRTPoly> SchemeletRLWEMP::ConvertRLWEToCKKS(const CryptoContextImpl<
                                                         const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq,
                                                         uint32_t slots, uint32_t level) {
     const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(cc.GetCryptoParameters());
-    if (cryptoParamsRNS != nullptr && cryptoParamsRNS->GetScalingTechnique() == FLEXIBLEAUTOEXT)
-        ++level;
+    if (cryptoParamsRNS != nullptr) {
+        auto st = cryptoParamsRNS->GetScalingTechnique();
+        // in the COMPOSITESCALING* modes, every level consists of compositeDegree towers
+        if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL)
+            level *= cryptoParamsRNS->GetCompositeDegree();
+        else if (st == FLEXIBLEAUTOEXT)
+            ++level;
+    }
 
     std::vector<std::complex<double>> y(1);
     auto ptxt = cc.MakeCKKSPackedPlaintext(y, 1, level);
