@@ -55,7 +55,7 @@ static void VerifyGadgetBaseMapCoverage(const std::map<uint32_t, uint32_t>& base
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std,
                                           uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist,
                                           BINFHE_METHOD method, uint32_t numAutoKeys) {
-    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
+    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS, keyDist);
     auto rgswparams =
         std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
