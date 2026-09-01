@@ -35,6 +35,7 @@
 #include "math/ternaryuniformgenerator.h"
 #include "utils/parallel.h"
 
+#include <algorithm>
 #include <limits>
 
 namespace lbcrypto {
@@ -340,22 +341,51 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
     NativeInteger::Integer baseKS(params->GetBaseKS());
     const uint32_t digitCount = params->GetDigitCountKS();
 
-    NativeVector a(n, Q);
-    NativeInteger b(ctQN->GetB());
-    for (uint32_t i = 0; i < N; ++i) {
-        auto& refA = K->GetElementsA()[i];
-        auto& refB = K->GetElementsB()[i];
-        NativeInteger::Integer atmp(ctQN->GetA()[i].ConvertToInt());
+    const auto& elemA = K->GetElementsA();
+    const auto& elemB = K->GetElementsB();
+    const auto& ctA   = ctQN->GetA();
+
+    auto accumulateRow = [&](uint32_t i, NativeVector& av, NativeInteger& bv) {
+        const auto& refA = elemA[i];
+        const auto& refB = elemB[i];
+        NativeInteger::Integer atmp(ctA[i].ConvertToInt());
         for (uint32_t j = 0; j < digitCount; ++j) {
             const auto a0 = (atmp % baseKS);
             atmp /= baseKS;
-            b.ModSubFastEq(refB[a0][j], Q);
-            auto& refAj = refA[a0][j];
-            for (uint32_t k = 0; k < n; ++k)
-                a[k].ModSubFastEq(refAj[k], Q);
+            bv.ModAddFastEq(refB[a0][j], Q);
+            av.ModAddNoCheckEq(refA[a0][j]);
+        }
+    };
+
+    NativeVector a(n, Q);
+    NativeInteger bAcc(0);
+
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(std::min<uint32_t>((N * digitCount) / 128, 32));
+    if (nthreads < 2) {
+        for (uint32_t i = 0; i < N; ++i)
+            accumulateRow(i, a, bAcc);
+    }
+    else {
+#pragma omp parallel num_threads(nthreads)
+        {
+            NativeVector aLocal(n, Q);
+            NativeInteger bLocal(0);
+#pragma omp for schedule(static) nowait
+            for (uint32_t i = 0; i < N; ++i)
+                accumulateRow(i, aLocal, bLocal);
+#pragma omp critical(lwe_keyswitch_reduce)
+            {
+                a.ModAddNoCheckEq(aLocal);
+                bAcc.ModAddFastEq(bLocal, Q);
+            }
         }
     }
-    return std::make_shared<LWECiphertextImpl>(std::move(a), b);
+
+    const NativeInteger zero{0};
+    for (uint32_t k = 0; k < n; ++k)
+        a[k] = zero.ModSubFast(a[k], Q);
+
+    return std::make_shared<LWECiphertextImpl>(std::move(a), ctQN->GetB().ModSubFast(bAcc, Q));
 }
 
 // noiseless LWE embedding
