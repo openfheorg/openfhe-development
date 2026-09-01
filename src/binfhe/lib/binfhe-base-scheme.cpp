@@ -225,7 +225,7 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>&
     // input ct expected with SMALL_DIM
     auto cct = (Q == ct->GetModulus()) ? LWEscheme->SwitchCTtoqn(LWEParams, EK.KSkey, ct) :
                                          std::make_shared<LWECiphertextImpl>(*ct);
-    LWEscheme->EvalAddConstEq(cct, (ct->GetModulus() >> 2));
+    LWEscheme->EvalAddConstEq(cct, (cct->GetModulus() >> 2));
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
