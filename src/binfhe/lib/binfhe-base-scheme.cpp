@@ -112,7 +112,8 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    auto accVec{BootstrapGateCore(params, gate, EK.BSkey, cct1)->GetElements()};
+    auto acc{BootstrapGateCore(params, gate, EK.BSkey, cct1)};
+    auto& accVec{acc->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
@@ -186,7 +187,8 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
         // the accumulator result is encrypted w.r.t. the transposed secret key
         // we can transpose "a" to get an encryption under the original secret key
-        auto accVec{BootstrapGateCore(params, gate, EK.BSkey, ct)->GetElements()};
+        auto acc{BootstrapGateCore(params, gate, EK.BSkey, ct)};
+        auto& accVec{acc->GetElements()};
         accVec[0] = accVec[0].Transpose();
         accVec[0].SetFormat(Format::COEFFICIENT);
         accVec[1].SetFormat(Format::COEFFICIENT);
@@ -229,7 +231,8 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>&
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    auto accVec{BootstrapGateCore(params, AND, EK.BSkey, cct)->GetElements()};
+    auto acc{BootstrapGateCore(params, AND, EK.BSkey, cct)};
+    auto& accVec{acc->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
@@ -641,7 +644,8 @@ LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoPara
                                           ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const {
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    auto accVec{BootstrapFuncCore(params, EK.BSkey, ct, f, fmod)->GetElements()};
+    auto acc{BootstrapFuncCore(params, EK.BSkey, ct, f, fmod)};
+    auto& accVec{acc->GetElements()};
     accVec[0] = accVec[0].Transpose();
     accVec[0].SetFormat(Format::COEFFICIENT);
     accVec[1].SetFormat(Format::COEFFICIENT);
