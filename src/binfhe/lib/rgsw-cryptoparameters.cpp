@@ -150,6 +150,20 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             m_logGen[gPow]     = i;
             m_logGen[M - gPow] = -i;
         }
+
+        // EvalAcc only ever rotates by gen^k for k in [1, numAutoKeys] and by M - gen
+        m_autoMap.clear();
+        auto addMap = [this](uint32_t idx) {
+            auto& v = m_autoMap[idx];
+            v.resize(m_N);
+            PrecomputeAutoMap(m_N, idx, &v);
+        };
+        addMap(M - gen);
+        uint32_t idx{1};
+        for (uint32_t k = 1; k <= m_numAutoKeys; ++k) {
+            idx = (idx * gen) % M;
+            addMap(idx);
+        }
     }
 }
 

@@ -251,10 +251,8 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
 // Automorphism
 void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a,
                                              ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const {
-    // precompute bit reversal for the automorphism into vec
-    uint32_t N{params->GetN()};
-    std::vector<uint32_t> vec(N);
-    PrecomputeAutoMap(N, a.ConvertToInt<uint32_t>(), &vec);
+    // the automorphism map is precomputed per rotation index in RingGSWCryptoParams::PreCompute
+    const std::vector<uint32_t>& vec = params->GetAutoMap(a.ConvertToInt<uint32_t>());
 
     acc->GetElements()[1] = acc->GetElements()[1].AutomorphismTransform(a.ConvertToInt<uint32_t>(), vec);
 

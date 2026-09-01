@@ -552,8 +552,13 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
 
     // depending on whether the value is the range, it will be set
     // to either Q/8 or -Q/8 to match binary arithmetic
-    auto& LWEParams      = params->GetLWEParams();
-    NativeInteger Q      = LWEParams->GetQ();
+    auto& LWEParams = params->GetLWEParams();
+    NativeInteger Q = LWEParams->GetQ();
+
+    // TODO: fix this?
+    // the OUTPUT encoding, not the input's. The 2-input caller and Bootstrap both pass a
+    // ciphertext whose copy or ModSwitch has reset this to 4 -- that reset is what re-spaces the
+    // result to q/4 -- while the multi-input caller restores 6 or 8 just above.
     NativeInteger Q2p    = Q / (ct->GetptModulus() * 2) + 1;
     NativeInteger Q2pNeg = Q - Q2p;
 

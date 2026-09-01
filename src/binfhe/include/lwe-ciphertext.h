@@ -52,8 +52,10 @@ public:
 
     LWECiphertextImpl(const NativeVector& a, NativeInteger b, NativeInteger p = 4) : m_a(a), m_b(b), m_p(p) {}
 
-    LWECiphertextImpl(NativeVector&& a, NativeInteger b, NativeInteger p = 4) noexcept : m_a(std::move(a)), m_b(b), m_p(p) {}
+    LWECiphertextImpl(NativeVector&& a, NativeInteger b, NativeInteger p = 4) noexcept
+        : m_a(std::move(a)), m_b(b), m_p(p) {}
 
+    // TODO: m_p deliberately not copied, and completing this copy breaks multi-input gates.
     LWECiphertextImpl(const LWECiphertextImpl& rhs) : m_a(rhs.m_a), m_b(rhs.m_b) {}
 
     LWECiphertextImpl(LWECiphertextImpl&& rhs) noexcept : m_a(std::move(rhs.m_a)), m_b(rhs.m_b) {}
@@ -151,7 +153,7 @@ public:
 private:
     NativeVector m_a;
     NativeInteger m_b;
-    NativeInteger m_p{4};  // pt modulus
+    NativeInteger m_p{4};  // pt modulus; see the copy constructor for why copies reset it
 };
 
 }  // namespace lbcrypto
