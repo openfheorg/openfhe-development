@@ -263,3 +263,32 @@ TEST(UNITTestFHEWExtended, GinxKeyGenRejectsNonTernarySecret) {
     auto sk          = cc.GetLWEScheme()->KeyGenGaussian(lweParams->Getn(), lweParams->GetqKS());
     EXPECT_THROW(cc.BTKeyGen(sk), OpenFHEException);
 }
+
+// Encrypt/Decrypt accumulate the inner product over the whole dimension; holding a ciphertext
+// at the ring modulus Q makes dim*Q exceed a 32-bit word, which corrupts the phase while still
+// decrypting correctly. Only NATIVE_SIZE=32 is close enough to the bound to trip today.
+TEST(UNITTestFHEWExtended, LargeModulusCiphertextPhaseIsClean) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(STD128, GINX);
+    auto&& lweParams = cc.GetParams()->GetLWEParams();
+    auto Q           = lweParams->GetQ();
+    auto skN         = cc.KeyGenN();
+
+    NativeInteger mu = Q.ComputeMu();
+    for (uint32_t m = 0; m < 2; ++m) {
+        auto ct       = cc.Encrypt(skN, m, LARGE_DIM, 4, Q);
+        const auto& a = ct->GetA();
+        const auto& s = skN->GetElement();
+        NativeInteger inner(0);
+        for (uint32_t i = 0; i < a.GetLength(); ++i)
+            inner.ModAddFastEq(a[i].ModMulFast(s[i], Q, mu), Q);
+        auto phase = ct->GetB().ModSub(inner, Q);
+        phase.ModSubFastEq(NativeInteger(m) * (Q / NativeInteger(4)), Q);
+
+        auto qi  = static_cast<int64_t>(Q.ConvertToInt());
+        auto err = static_cast<int64_t>(phase.ConvertToInt());
+        if (err > qi / 2)
+            err -= qi;
+        EXPECT_LT(err < 0 ? -err : err, 1000) << "phase error " << err << " for m=" << m;
+    }
+}
