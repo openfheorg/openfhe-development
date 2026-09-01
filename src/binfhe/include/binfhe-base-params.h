@@ -71,10 +71,12 @@ public:
         auto keyDist = m_LWEParams->GetKeyDist();
         if (keyDist != m_RGSWParams->GetKeyDist())
             OPENFHE_THROW("LWE and RingGSW parameters disagree on the secret key distribution");
+        if (keyDist != UNIFORM_TERNARY && keyDist != GAUSSIAN)
+            OPENFHE_THROW("BinFHE implements UNIFORM_TERNARY and GAUSSIAN secret key distributions only");
         if (m_RGSWParams->GetMethod() == GINX && keyDist == GAUSSIAN)
-            OPENFHE_THROW(
-                "GINX/CGGI encodes the LWE secret as an indicator pair over {-1,0,1} and cannot represent a "
-                "GAUSSIAN secret key distribution; use AP or LMKCDEY");
+            OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key; use AP or LMKCDEY for GAUSSIAN");
+        if (m_RGSWParams->GetMethod() == LMKCDEY && m_RGSWParams->GetNumAutoKeys() >= m_LWEParams->Getn())
+            OPENFHE_THROW("numAutoKeys must be less than the LWE dimension n");
     }
 
     /**
