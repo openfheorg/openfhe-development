@@ -99,15 +99,17 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
 // b = a*s + e + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk,
                                            LWEPlaintext m, LWEPlaintextModulus p, NativeInteger q) const {
-    if (q % p != 0 && q.ConvertToInt() & (1 == 0))
-        OPENFHE_THROW("plaintext modulus p must divide ciphertext modulus q");
-
     NativeVector s(sk->GetElement(), q);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     const uint32_t n = s.GetLength();
     NativeVector a   = dug.GenerateVector(n, q);
-    NativeInteger b  = (m % p) * (q / p) + params->GetDgg().GenerateInteger(q);
+    // TODO: the slot pitch is truncated, so message m sits m*frac(q/p) below its cell centre and
+    // the matching offset in Decrypt truncates too. Free where p divides q, which is every shipped
+    // p except the 6 used by 3-input gates; those lose ~1.4% of the decryption threshold at STD128,
+    // about 3.5 bits of log2(P_fail). Rounded placement halves it, at the integer-placement optimum:
+    // m*(q/p) + (m*(q%p) + p/2)/p, split that way so m*(q%p) < p^2 cannot overflow a 32-bit word.
+    NativeInteger b = (m % p) * (q / p) + params->GetDgg().GenerateInteger(q);
     if (b >= q)
         b.ModEq(q);
     NativeInteger mu = q.ComputeMu();
@@ -122,9 +124,6 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 // b = vs' + e" + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPublicKey& pk,
                                             LWEPlaintext m, LWEPlaintextModulus p, NativeInteger q) const {
-    if (q % p != 0 && q.ConvertToInt() & (1 == 0))
-        OPENFHE_THROW("plaintext modulus p must divide ciphertext modulus q");
-
     auto bp = pk->Getv();
     bp.SwitchModulus(q);  // todo : this is probably not required
     uint32_t N = bp.GetLength();
@@ -143,7 +142,8 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
 
     // compute b in ciphertext (a,b)
     NativeInteger mu = q.ComputeMu();
-    NativeInteger b  = (m % p) * (q / p) + dgg.GenerateInteger(q);
+    // TODO: same truncated slot pitch as Encrypt above
+    NativeInteger b = (m % p) * (q / p) + dgg.GenerateInteger(q);
     if (b >= q)
         b.ModEq(q);
     for (uint32_t i = 0; i < N; ++i)
@@ -178,10 +178,7 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     // the ct parameters
 
     // Create local variables to speed up the computations
-    auto q = ct->GetModulus();
-    if (q % (p * 2) != 0 && q.ConvertToInt() & (1 == 0))
-        OPENFHE_THROW("plaintext modulus p*2 must divide ciphertext modulus q");
-
+    auto q        = ct->GetModulus();
     const auto& a = ct->GetA();
     auto s        = sk->GetElement();
     uint32_t n    = s.GetLength();
