@@ -90,7 +90,11 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool mak
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<DCRTPoly>{std::move(b), std::move(a)});
+    std::vector<DCRTPoly> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
     keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
 
     return keyPair;
@@ -148,7 +152,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
     (*ba)[0].SetFormat(Format::EVALUATION);
     (*ba)[1].SetFormat(Format::EVALUATION);
 
-    ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
@@ -206,7 +210,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     (*ba)[0].SetFormat(Format::EVALUATION);
     (*ba)[1].SetFormat(Format::EVALUATION);
 
-    ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;

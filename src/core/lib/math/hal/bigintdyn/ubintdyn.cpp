@@ -611,8 +611,8 @@ double ubint<limb_t>::ConvertToDouble() const {
     try {
         // ans = std::stod(this->ToString());
         uint32_t ceilInt = MSBToLimbs(m_MSB);
-        double factor = std::pow(2, m_limbBitLength);
-        double power  = 1.0;
+        double factor    = std::pow(2, m_limbBitLength);
+        double power     = 1.0;
 
         ans = 0.0;
         for (uint32_t i = 0; i < ceilInt; ++i, power *= factor)
@@ -620,19 +620,6 @@ double ubint<limb_t>::ConvertToDouble() const {
     }
     catch (const std::exception& e) {
         OPENFHE_THROW("ConvertToDouble() parse error converting to double");
-    }
-    return ans;
-}
-
-// Converts the ubint to long double using the std library functions.
-template <typename limb_t>
-long double ubint<limb_t>::ConvertToLongDouble() const {
-    long double ans{-1.0};
-    try {
-        ans = std::stold(ubint<limb_t>::ToString());
-    }
-    catch (const std::exception& e) {
-        OPENFHE_THROW("ConvertToLongDouble() parse error converting to long double");
     }
     return ans;
 }

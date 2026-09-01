@@ -72,6 +72,18 @@ double GetBigModulus(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& c
     }
     return qDouble;
 }
+
+// num/den as a double, without forming an intermediate that overflows the exponent range: both operands
+// are shifted down to 53 bits (so each converts exactly) and the shift is restored with ldexp.
+double RatioToDouble(const lbcrypto::BigInteger& num, const lbcrypto::BigInteger& den) {
+    constexpr uint32_t keep = 53;
+    const uint32_t nb = num.GetMSB(), db = den.GetMSB();
+    const uint32_t ns = (nb > keep) ? nb - keep : 0;
+    const uint32_t ds = (db > keep) ? db - keep : 0;
+    const double n    = (ns ? num.RShift(static_cast<uint16_t>(ns)) : num).ConvertToDouble();
+    const double d    = (ds ? den.RShift(static_cast<uint16_t>(ds)) : den).ConvertToDouble();
+    return std::ldexp(n / d, static_cast<int>(ns) - static_cast<int>(ds));
+}
 }  // namespace
 
 namespace lbcrypto {
@@ -1305,9 +1317,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
             }
             algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree);
             ctxtDepleted->SetScalingFactor(targetScf);
-        }
-        else {
-            algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1));
         }
     }
 
@@ -3096,14 +3105,8 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     for (uint32_t i = 1; i < outTowers; ++i)
         QPrime *= params[i]->GetModulus();
 
-    // the modulus of the bottom level: a single prime, or the product of compositeDegree primes
-    BigInteger q = params[0]->GetModulus();
-    for (uint32_t i = 1; i < compositeDegree; ++i)
-        q *= params[i]->GetModulus();
-    auto qDouble  = q.ConvertToLongDouble();
-    double factor = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
-    auto st       = cryptoParams->GetScalingTechnique();
-    uint32_t L0   = cryptoParams->GetElementParams()->GetParams().size();
+    auto st     = cryptoParams->GetScalingTechnique();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
     // the modes that track level-specific scaling factors (see EvalMVBPrecompute)
     const bool tracksLevelSF =
         (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT || st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL);
@@ -3116,9 +3119,17 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     // for a single prime q the difference is ~2^-30 and hence invisible, but for composite scaling q is a
     // product of small primes and can be off from a power of two by ~2^-10, which would otherwise multiply the
     // integer overflows of the modulus raise and corrupt the approximate modular reduction.
-    double pre      = (tracksLevelSF) ? 1.0 : qDouble / factor;
+    double pre = 1.0;
+    if (!tracksLevelSF) {
+        // the modulus of the bottom level: a single prime, or the product of compositeDegree primes
+        BigInteger q = params[0]->GetModulus();
+        for (uint32_t i = 1; i < compositeDegree; ++i)
+            q *= params[i]->GetModulus();
+        const double qDouble = q.ConvertToDouble();
+        pre                  = qDouble / std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
+    }
     double scaleEnc = pre / k;
-    double scaleMod = QPrime.ConvertToLongDouble() / (Bigq.ConvertToLongDouble() * POut.ConvertToDouble());
+    double scaleMod = RatioToDouble(QPrime, Bigq * POut);
     double scaleDec = scaleMod / pre;
 
     uint32_t depthBT = depthLeveledComputation + GetFBTDepth(levelBudget, coeffs, PIn, order, skd, compositeDegree);
@@ -3899,10 +3910,10 @@ void FHECKKSRNS::ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
     const uint32_t L0         = cryptoParams->GetElementParams()->GetParams().size();
     const bool isEncapsulated = (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED);
 
+    auto* evalKeyMap = isEncapsulated ? &cc->GetEvalAutomorphismKeyMap(raised->GetKeyTag()) : nullptr;
     if (isEncapsulated) {
         // transform from a denser secret to a sparser one (over the bottom basis)
-        auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(raised->GetKeyTag());
-        raised           = KeySwitchSparse(raised, evalKeyMap.at(2 * N - 4));
+        raised = KeySwitchSparse(raised, evalKeyMap->at(2 * N - 4));
     }
 
     auto& ctxtDCRTs = raised->GetElements();
@@ -3922,9 +3933,8 @@ void FHECKKSRNS::ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
     raised->SetLevel(L0 - ctxtDCRTs[0].GetNumOfElements());
 
     if (isEncapsulated) {
-        // go back to a denser secret
-        auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(raised->GetKeyTag());
-        cc->GetScheme()->KeySwitchInPlace(raised, evalKeyMap.at(2 * N - 2));
+        // go back to a denser secret (KeySwitchSparse preserves the key tag, so the map above still applies)
+        cc->GetScheme()->KeySwitchInPlace(raised, evalKeyMap->at(2 * N - 2));
     }
 }
 
@@ -3933,15 +3943,13 @@ namespace {
 // to the auxiliary basis P'. For a single limb the centered lift (SwitchModulus) is the exact CRT basis
 // extension; for several limbs the exact (HPS-style) CRT basis switch is used. Returns the P' limbs in
 // EVALUATION format.
-DCRTPoly ExtendSparseKSToP(const DCRTPoly& x, const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+DCRTPoly ExtendSparseKSToP(const DCRTPoly& xBottom, const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
     const auto& paramsP  = cryptoParams->GetSparseKSParamsP();
     const auto& paramsQl = cryptoParams->GetSparseKSParamsQ();
     const size_t sizeQl  = paramsQl->GetParams().size();
     const size_t sizeP   = paramsP->GetParams().size();
 
-    DCRTPoly xQl(x);
-    if (xQl.GetNumOfElements() > sizeQl)
-        xQl.DropLastElements(xQl.GetNumOfElements() - sizeQl);
+    DCRTPoly xQl(xBottom);
     xQl.SetFormat(Format::COEFFICIENT);
 
     DCRTPoly xP;
@@ -3974,17 +3982,16 @@ DCRTPoly ExtendSparseKSToQP(const DCRTPoly& x, const std::shared_ptr<CryptoParam
     const size_t sizeQl  = cryptoParams->GetSparseKSParamsQ()->GetParams().size();
     const size_t sizeQP  = paramsqp->GetParams().size();
 
-    DCRTPoly xQl(x);
-    if (xQl.GetNumOfElements() > sizeQl)
-        xQl.DropLastElements(xQl.GetNumOfElements() - sizeQl);
+    DCRTPoly xQl = x.CloneTowers(0, static_cast<uint32_t>(sizeQl) - 1);
+    DCRTPoly xP  = ExtendSparseKSToP(xQl, cryptoParams);
     xQl.SetFormat(Format::EVALUATION);
-    DCRTPoly xP = ExtendSparseKSToP(x, cryptoParams);
 
     DCRTPoly xExt(paramsqp, Format::EVALUATION, false);
+    auto& ext = xExt.GetAllElements();
     for (size_t i = 0; i < sizeQl; ++i)
-        xExt.SetElementAtIndex(i, xQl.GetElementAtIndex(i));
+        ext[i] = std::move(xQl.GetAllElements()[i]);
     for (size_t j = sizeQl; j < sizeQP; ++j)
-        xExt.SetElementAtIndex(j, xP.GetElementAtIndex(j - sizeQl));
+        ext[j] = std::move(xP.GetAllElements()[j - sizeQl]);
     return xExt;
 }
 }  // namespace
@@ -4021,8 +4028,12 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
         b.SetElementAtIndex(j, -a.GetElementAtIndex(j) * sNewExt.GetElementAtIndex(j) + e.GetElementAtIndex(j));
 
     auto ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPrivateKey->GetCryptoContext()));
-    ek->SetAVector({std::move(a)});
-    ek->SetBVector({std::move(b)});
+    std::vector<DCRTPoly> avExt;
+    avExt.push_back(std::move(a));
+    ek->SetAVector(std::move(avExt));
+    std::vector<DCRTPoly> bvExt;
+    bvExt.push_back(std::move(b));
+    ek->SetBVector(std::move(bvExt));
     ek->SetKeyTag(newPrivateKey->GetKeyTag());
     return ek;
 }
@@ -4041,9 +4052,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
     auto& cv = ciphertext->GetElements();
 
     // only the bottom basis Ql of the ciphertext is used (the other towers are ignored, as in the modulus raise)
-    DCRTPoly c0Ql(cv[0]);
-    if (c0Ql.GetNumOfElements() > sizeQl)
-        c0Ql.DropLastElements(c0Ql.GetNumOfElements() - sizeQl);
+    DCRTPoly c0Ql = cv[0].CloneTowers(0, static_cast<uint32_t>(sizeQl) - 1);
     c0Ql.SetFormat(Format::EVALUATION);
 
     // extend cv[1] from Ql to Ql*P'
@@ -4074,11 +4083,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
         partPModq.SetFormat(Format::EVALUATION);
 
         cvRes[i].DropLastElements(sizeP);
+        auto& res         = cvRes[i].GetAllElements();
+        const auto& partQ = partPModq.GetAllElements();
         for (size_t l = 0; l < sizeQl; ++l) {
-            auto polyQ = cvRes[i].GetElementAtIndex(l);
-            polyQ -= partPModq.GetElementAtIndex(l);
-            polyQ *= PInvModq[l];
-            cvRes[i].SetElementAtIndex(l, std::move(polyQ));
+            res[l] -= partQ[l];
+            res[l] *= PInvModq[l];
         }
     }
 

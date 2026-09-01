@@ -153,8 +153,7 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
     DCRTPoly a(dug, ep, Format::EVALUATION);
     DCRTPoly e(cryptoParams->GetDiscreteGaussianGenerator(), ep, Format::EVALUATION);
 
-    auto scopy(privateKey->GetPrivateElement());
-    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
+    auto scopy = privateKey->GetPrivateElement().CloneTowers(0, ep->GetParams().size() - 1);
 
     DCRTPoly b = e - a * scopy;  // encryption of 0 using Q'
 
@@ -219,8 +218,7 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
 
     auto ba = (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
 
-    auto scopy(privateKey->GetPrivateElement());
-    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
+    auto scopy = privateKey->GetPrivateElement().CloneTowers(0, ep->GetParams().size() - 1);
 
     auto m = ba[0] + ba[1] * scopy;
 

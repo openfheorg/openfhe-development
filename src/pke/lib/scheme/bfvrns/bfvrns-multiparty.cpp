@@ -78,7 +78,11 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     DCRTPoly b(ns * e - a * s);
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<DCRTPoly>{std::move(b), std::move(a)});
+    std::vector<DCRTPoly> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
 
     return keyPair;
 }
@@ -131,7 +135,11 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<DCRTPoly>{std::move(b), std::move(a)});
+    std::vector<DCRTPoly> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
 
     return keyPair;
 }

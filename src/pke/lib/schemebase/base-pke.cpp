@@ -92,7 +92,11 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements({std::move(b), std::move(a)});
+    std::vector<Element> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
     keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
     return keyPair;
 }
@@ -136,7 +140,11 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pr
     // {b = ns * e - a * s, a}
     Element b(std::move((e *= ns) -= (a * privateKey->GetPrivateElement())));
 
-    return std::make_shared<std::vector<Element>>(std::initializer_list<Element>({std::move(b), std::move(a)}));
+    auto result = std::make_shared<std::vector<Element>>();
+    result->reserve(2);
+    result->push_back(std::move(b));
+    result->push_back(std::move(a));
+    return result;
 }
 
 // makeSparse is not used by this scheme
@@ -154,16 +162,12 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pu
 
     const std::vector<Element>& pk = publicKey->GetPublicElements();
 
-    Element p0 = pk[0];
-    Element p1 = pk[1];
-
     uint32_t sizeQ  = elementParams->GetParams().size();
-    uint32_t sizePK = p0.GetParams()->GetParams().size();
+    uint32_t sizePK = pk[0].GetParams()->GetParams().size();
 
-    if (sizePK > sizeQ) {
-        p0.DropLastElements(sizePK - sizeQ);
-        p1.DropLastElements(sizePK - sizeQ);
-    }
+    // copy only the towers that are still needed, rather than the whole key followed by a drop
+    Element p0 = (sizePK > sizeQ) ? pk[0].CloneTowers(0, sizeQ - 1) : pk[0];
+    Element p1 = (sizePK > sizeQ) ? pk[1].CloneTowers(0, sizeQ - 1) : pk[1];
 
     Element v = cryptoParams->GetSecretKeyDist() == GAUSSIAN ? Element(dgg, elementParams, Format::EVALUATION) :
                                                                Element(tug, elementParams, Format::EVALUATION);
@@ -172,13 +176,11 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pu
     Element e0(dgg, elementParams, Format::EVALUATION);
     Element e1(dgg, elementParams, Format::EVALUATION);
 
-    Element b(elementParams);
-    Element a(elementParams);
-
-    b = p0 * v + ns * e0;
-    a = p1 * v + ns * e1;
-
-    return std::make_shared<std::vector<Element>>(std::initializer_list<Element>({std::move(b), std::move(a)}));
+    auto result = std::make_shared<std::vector<Element>>();
+    result->reserve(2);
+    result->push_back(p0 * v + ns * e0);
+    result->push_back(p1 * v + ns * e1);
+    return result;
 }
 
 template <class Element>
