@@ -35,6 +35,8 @@
 #include "math/ternaryuniformgenerator.h"
 #include "utils/parallel.h"
 
+#include <limits>
+
 namespace lbcrypto {
 
 // the main rounding operation used in ModSwitch (as described in Section 3 of
@@ -106,11 +108,13 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     const uint32_t n = s.GetLength();
     NativeVector a   = dug.GenerateVector(n, q);
     NativeInteger b  = (m % p) * (q / p) + params->GetDgg().GenerateInteger(q);
+    if (b >= q)
+        b.ModEq(q);
     NativeInteger mu = q.ComputeMu();
     for (uint32_t i = 0; i < n; ++i)
-        b += a[i].ModMulFast(s[i], q, mu);
+        b.ModAddFastEq(a[i].ModMulFast(s[i], q, mu), q);
 
-    return std::make_shared<LWECiphertextImpl>(std::move(a), b.Mod(q), p);
+    return std::make_shared<LWECiphertextImpl>(std::move(a), b, p);
 }
 
 // classical public key LWE encryption
@@ -184,10 +188,8 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     auto mu       = q.ComputeMu();
     s.SwitchModulus(q);
     NativeInteger inner(0);
-    for (uint32_t i = 0; i < n; ++i) {
-        inner += a[i].ModMulFast(s[i], q, mu);
-    }
-    inner.ModEq(q);
+    for (uint32_t i = 0; i < n; ++i)
+        inner.ModAddFastEq(a[i].ModMulFast(s[i], q, mu), q);
 
     NativeInteger r = ct->GetB();
 
@@ -276,6 +278,9 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
     const uint32_t m(baseKS.ConvertToInt<uint32_t>());
     const uint32_t n(params->Getn());
 
+    // the unreduced accumulator below reaches (n+1)*qKS
+    const bool unreducedAccumFits{qKS.ConvertToInt() <= std::numeric_limits<BasicInteger>::max() / (n + 1)};
+
     std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
     std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
 
@@ -298,14 +303,15 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
                 NativeVector& a = vector2A.back();
                 NativeInteger b =
                     (params->GetDggKS().GenerateInteger(qKS)).ModAdd(svN[i].ModMul(j * digitsKS[k], qKS), qKS);
-#if NATIVEINT == 32
-                for (uint32_t i = 0; i < n; ++i)
-                    b.ModAddFastEq(a[i].ModMulFast(sv[i], qKS, mu), qKS);
-#else
-                for (uint32_t i = 0; i < n; ++i)
-                    b += a[i].ModMulFast(sv[i], qKS, mu);
-                b.ModEq(qKS);
-#endif
+                if (unreducedAccumFits) {
+                    for (uint32_t idx = 0; idx < n; ++idx)
+                        b += a[idx].ModMulFast(sv[idx], qKS, mu);
+                    b.ModEq(qKS);
+                }
+                else {
+                    for (uint32_t idx = 0; idx < n; ++idx)
+                        b.ModAddFastEq(a[idx].ModMulFast(sv[idx], qKS, mu), qKS);
+                }
                 vector2B.emplace_back(b);
             }
             vector1A.push_back(std::move(vector2A));
