@@ -67,7 +67,15 @@ public:
    */
     BinFHECryptoParams(const std::shared_ptr<LWECryptoParams>& lweparams,
                        const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
-        : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {}
+        : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {
+        auto keyDist = m_LWEParams->GetKeyDist();
+        if (keyDist != m_RGSWParams->GetKeyDist())
+            OPENFHE_THROW("LWE and RingGSW parameters disagree on the secret key distribution");
+        if (m_RGSWParams->GetMethod() == GINX && keyDist == GAUSSIAN)
+            OPENFHE_THROW(
+                "GINX/CGGI encodes the LWE secret as an indicator pair over {-1,0,1} and cannot represent a "
+                "GAUSSIAN secret key distribution; use AP or LMKCDEY");
+    }
 
     /**
    * Getter for LWE params

@@ -32,6 +32,9 @@
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 
+#include <utility>
+#include <vector>
+
 using namespace lbcrypto;
 
 TEST(UNITTestFHEWExtended, EvalBinGate2) {
@@ -194,3 +197,69 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKeyTimeOptimization) {
     }
 }
 #endif
+
+// TOY, with keyDist left free
+static BinFHEContextParams ToyParams(SecretKeyDist keyDist) {
+    return BinFHEContextParams{27, 1024, 64, 512, 0, 25, 512, 23, 9, keyDist, 3.19, {}};
+}
+
+TEST(UNITTestFHEWExtended, GinxRejectsGaussianSecretKeyDist) {
+    auto params = ToyParams(GAUSSIAN);
+    auto cc     = BinFHEContext();
+    EXPECT_THROW(cc.GenerateBinFHEContext(params, GINX), OpenFHEException);
+    EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, AP));
+    EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, LMKCDEY));
+}
+
+TEST(UNITTestFHEWExtended, ManualContextPropagatesSecretKeyDist) {
+    auto Q  = LastPrime<NativeInteger>(27, 1024);
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(64, 512, 512, Q, 3.19, 25, 512, 23, GAUSSIAN, LMKCDEY, 9);
+    EXPECT_EQ(GAUSSIAN, cc.GetParams()->GetLWEParams()->GetKeyDist());
+    EXPECT_EQ(GAUSSIAN, cc.GetParams()->GetRingGSWParams()->GetKeyDist());
+
+    auto ccGinx = BinFHEContext();
+    EXPECT_THROW(ccGinx.GenerateBinFHEContext(64, 512, 512, Q, 3.19, 25, 512, 23, GAUSSIAN, GINX, 9), OpenFHEException);
+}
+
+// Excluded at NATIVE_SIZE=32 for the reason given above: the large-precision constructor
+// sets qKS = 1 << 35, which truncates to zero in a 32-bit NativeInteger.
+#if NATIVEINT != 32
+TEST(UNITTestFHEWExtended, ArbitraryFunctionContextUnaffected) {
+    auto cc = BinFHEContext();
+    EXPECT_NO_THROW(cc.GenerateBinFHEContext(TOY, false, 11, 0, GINX, false));
+    EXPECT_EQ(UNIFORM_TERNARY, cc.GetParams()->GetLWEParams()->GetKeyDist());
+    EXPECT_EQ(UNIFORM_TERNARY, cc.GetParams()->GetRingGSWParams()->GetKeyDist());
+}
+#endif
+
+TEST(UNITTestFHEWExtended, MethodKeyDistCrossProduct) {
+    const std::vector<std::pair<BINFHE_METHOD, SecretKeyDist>> supported{{GINX, UNIFORM_TERNARY},
+                                                                         {AP, UNIFORM_TERNARY},
+                                                                         {LMKCDEY, UNIFORM_TERNARY},
+                                                                         {AP, GAUSSIAN},
+                                                                         {LMKCDEY, GAUSSIAN}};
+
+    for (const auto& [method, keyDist] : supported) {
+        auto cc = BinFHEContext();
+        cc.GenerateBinFHEContext(ToyParams(keyDist), method);
+        auto sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
+        for (uint32_t i = 0; i < 4; ++i) {
+            uint32_t b0 = i & 0x1, b1 = (i >> 1) & 0x1;
+            auto ct = cc.EvalBinGate(NAND, cc.Encrypt(sk, b0), cc.Encrypt(sk, b1));
+            LWEPlaintext result;
+            cc.Decrypt(sk, ct, &result);
+            EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
+                << "NAND(" << b0 << "," << b1 << ") wrong for " << method << " / " << keyDist;
+        }
+    }
+}
+
+TEST(UNITTestFHEWExtended, GinxKeyGenRejectsNonTernarySecret) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(ToyParams(UNIFORM_TERNARY), GINX);
+    auto&& lweParams = cc.GetParams()->GetLWEParams();
+    auto sk          = cc.GetLWEScheme()->KeyGenGaussian(lweParams->Getn(), lweParams->GetqKS());
+    EXPECT_THROW(cc.BTKeyGen(sk), OpenFHEException);
+}

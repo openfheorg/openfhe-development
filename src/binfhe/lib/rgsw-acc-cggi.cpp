@@ -43,6 +43,12 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
     auto neg   = sv.GetModulus().ConvertToInt() - 1;
     uint32_t n = sv.GetLength();
     params->VerifyBaseGCoverage(n);
+    for (uint32_t i = 0; i < n; ++i) {
+        auto s = sv[i].ConvertToInt();
+        if (s != 0 && s != 1 && s != neg)
+            OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key");
+    }
+
     auto ek    = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
     auto& ek00 = (*ek)[0][0];
     auto& ek01 = (*ek)[0][1];
