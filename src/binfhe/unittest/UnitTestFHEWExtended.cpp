@@ -292,3 +292,38 @@ TEST(UNITTestFHEWExtended, LargeModulusCiphertextPhaseIsClean) {
         EXPECT_LT(err < 0 ? -err : err, 1000) << "phase error " << err << " for m=" << m;
     }
 }
+
+// binfhe generates a Gaussian secret or a uniform ternary one and nothing else, so any other
+// distribution would be silently substituted rather than honoured.
+TEST(UNITTestFHEWExtended, RejectsUnsupportedKeyDist) {
+    for (auto dist : {SPARSE_TERNARY, SPARSE_ENCAPSULATED}) {
+        for (auto method : {GINX, AP, LMKCDEY}) {
+            auto cc = BinFHEContext();
+            EXPECT_THROW(cc.GenerateBinFHEContext(ToyParams(dist), method), OpenFHEException)
+                << "keyDist " << dist << ", method " << method;
+        }
+    }
+}
+
+// LMKCDEY sizes its automorphism-key vector by n and indexes it by numAutoKeys, so numAutoKeys
+// == n writes one past the end -- a segfault before this was rejected.
+TEST(UNITTestFHEWExtended, RejectsNumAutoKeysAtOrAboveLweDimension) {
+    auto params = ToyParams(UNIFORM_TERNARY);
+    ASSERT_EQ(64u, params.latticeParam);
+
+    params.numAutoKeys = params.latticeParam - 1;
+    {
+        auto cc = BinFHEContext();
+        EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, LMKCDEY));
+    }
+    params.numAutoKeys = params.latticeParam;
+    {
+        auto cc = BinFHEContext();
+        EXPECT_THROW(cc.GenerateBinFHEContext(params, LMKCDEY), OpenFHEException);
+    }
+    // the bound is LMKCDEY-only: GINX allocates no automorphism keys
+    {
+        auto cc = BinFHEContext();
+        EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, GINX));
+    }
+}
