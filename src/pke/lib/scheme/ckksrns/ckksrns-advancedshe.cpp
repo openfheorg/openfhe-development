@@ -919,8 +919,7 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
            // std::cout << "cu wSum" << std::endl;
            // for (auto i : divcs->q)
            //     std::cout << i << std::endl;
-
-            cu = EvalPartialLinearWSumWithBias(T, divcs->q, divcs->q.front() / (VectorDataType)2.0,  divcs->q.size()-1, (int)T2[m-1]->GetLevel() - (T2[m-1]->GetNoiseScaleDeg() == 1) + level_offset, true);
+            cu = EvalPartialLinearWSumWithBias(T, divcs->q, divcs->q.front() / (VectorDataType)2.0,  divcs->q.size()-1, (int)T2[m-1]->GetLevel() - (T2[m-1]->GetNoiseScaleDeg() == 1) + level_offset, true);    
         }
 
         if constexpr (CHEBY_PRINT) std::cout << "CU: " << m << " " << k << " " << cu->GetLevel() << " " << cu->GetScalingFactor() << " " << cu->GetNoiseScaleDeg() << std::endl;
@@ -1046,7 +1045,11 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
         cc->EvalAddInPlaceNoCheck(T2[i], T2[i]);
         if (BASELINE) cc->ModReduceInPlace(T2[i]);
         cc->EvalAddInPlace(T2[i], -1.0);
-        if (!BASELINE) cc->ModReduceInPlace(T2[i]);
+        if (!BASELINE) {
+            uint32_t compositeDegree =
+    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+            cc->GetScheme()->ModReduceInternalInPlace(T2[i], compositeDegree);
+        }
         // compute T_{k(2*m - 1)} = 2*T_{k(2^{m-1}-1)}(y)*T_{k*2^{m-1}}(y) - T_k(y)
         T2km1 = cc->EvalMult(T2km1, T2[i]);
         cc->EvalAddInPlaceNoCheck(T2km1, T2km1);
@@ -1074,7 +1077,7 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPSWithPrecomp(const std::shared_
     f2.resize(Degree(f2) + 1);
     f2.resize(2 * k2m2k + k + 1);
     f2.back() = 1;   
-                 
+    
     auto aux = InnerEvalChebyshevPS(T[0], f2, k, m, T, T2);
     if (!BASELINE) T[0]->GetCryptoContext()->ModReduceInPlace(aux);
     T[0]->GetCryptoContext()->EvalSubInPlace(aux, T2km1);
