@@ -601,6 +601,7 @@ inline MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input);
  * @param &input the input matrix
  * @param &modulus the ring modulus
  * @return the resulting matrix of int32_t
+ * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& input, const BigInteger& modulus);
 
@@ -611,6 +612,7 @@ inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& 
  * @param &input the input matrix
  * @param &modulus the ring modulus
  * @return the resulting matrix of int32_t
+ * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& input, const BigInteger& modulus);
 
