@@ -97,7 +97,7 @@ void RingGSWACCKey32Impl::Init(const std::shared_ptr<RingGSWCryptoParams>& param
     m_polyParams = params->GetPolyParams32();
     // force the lazy monomial build now: construction is single-threaded, gates may not be
     if (params->GetMethod() == BINFHE_METHOD::GINX)
-        params->GetMonomials32();
+        params->GetMonomialsPrecon32();
 }
 
 void RingGSWACCKey32Impl::SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const RingGSWEvalKeyImpl& ek) {

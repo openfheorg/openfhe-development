@@ -141,12 +141,21 @@ template <typename P, typename PP>
 void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
                         const RingGSWCryptoParams::BaseGParams& bp, const std::vector<std::vector<P>>& ev,
                         std::vector<P>& acc) {
-    std::vector<P> ct(acc);
+    thread_local std::vector<P> ctScratch, dctScratch;
+    auto& ct  = ctScratch;
+    auto& dct = dctScratch;
+    ct        = acc;
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    std::vector<P> dct(digitsG2, P(polyParams, Format::COEFFICIENT, true));
+    if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
+        dct.assign(digitsG2, P(polyParams, Format::COEFFICIENT, true));
+    }
+    else {
+        for (auto& d : dct)
+            d.OverrideFormat(Format::COEFFICIENT);
+    }
 
     ExcessHDigitDecompose(Q, bp, ct, dct);
 
@@ -165,14 +174,21 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
                            const std::vector<std::vector<P>>& ev, std::vector<P>& acc) {
     acc[1] = acc[1].AutomorphismTransform(a, autoMap);
 
-    P cta(acc[0]);
+    P cta(acc[0].AutomorphismTransform(a, autoMap));
     acc[0].SetValuesToZero();
-    cta = cta.AutomorphismTransform(a, autoMap);
     cta.SetFormat(Format::COEFFICIENT);
 
     // approximate gadget decomposition is used; the first digit is ignored
     uint32_t digitsG{bp.digitsG - 1};
-    std::vector<P> dcta(digitsG, P(polyParams, Format::COEFFICIENT, true));
+    thread_local std::vector<P> dctaScratch;
+    auto& dcta = dctaScratch;
+    if (dcta.size() != digitsG || dcta[0].GetParams() != polyParams) {
+        dcta.assign(digitsG, P(polyParams, Format::COEFFICIENT, true));
+    }
+    else {
+        for (auto& d : dcta)
+            d.OverrideFormat(Format::COEFFICIENT);
+    }
 
     ExcessHDigitDecompose(Q, bp, cta, dcta);
 
@@ -188,6 +204,18 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
 }
 
 #if NATIVEINT != 32
+// a *= b (mod q) using b's Shoup constants: one high-word estimate per lane, vectorizable at
+// every ISA where the Barrett form is not
+inline void ShoupMulEq32(NativePoly32& a, const NativePoly32& b, const NativeVector32& bPrecon, uint32_t q) {
+    uint32_t N{static_cast<uint32_t>(a.GetLength())};
+    for (size_t k = 0; k < N; ++k) {
+        uint32_t x{static_cast<uint32_t>(a[k].ConvertToInt())};
+        uint32_t hi{static_cast<uint32_t>((static_cast<uint64_t>(x) * bPrecon[k].ConvertToInt()) >> 32)};
+        uint32_t r{x * static_cast<uint32_t>(b[k].ConvertToInt()) - hi * q};
+        a[k] = NativeInteger32(r - (q & (uint32_t(0) - static_cast<uint32_t>(r >= q))));
+    }
+}
+
 // Inner product over the gadget digits with ONE modular reduction instead of one per digit.
 inline void LazyInnerProduct32(NativePoly32& out, const std::vector<NativePoly32>& dct,
                                const std::vector<std::vector<NativePoly32>>& ev, uint32_t col, uint32_t rows,
@@ -235,12 +263,21 @@ inline void LazyInnerProduct32(NativePoly32& out, const std::vector<NativePoly32
 inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_t Q,
                                const RingGSWCryptoParams::BaseGParams& bp,
                                const std::vector<std::vector<NativePoly32>>& ev, std::vector<NativePoly32>& acc) {
-    std::vector<NativePoly32> ct(acc);
+    thread_local std::vector<NativePoly32> ctScratch, dctScratch;
+    auto& ct  = ctScratch;
+    auto& dct = dctScratch;
+    ct        = acc;
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    std::vector<NativePoly32> dct(digitsG2, NativePoly32(polyParams, Format::COEFFICIENT, true));
+    if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
+        dct.assign(digitsG2, NativePoly32(polyParams, Format::COEFFICIENT, true));
+    }
+    else {
+        for (auto& d : dct)
+            d.OverrideFormat(Format::COEFFICIENT);
+    }
 
     ExcessHDigitDecompose(Q, bp, ct, dct);
 

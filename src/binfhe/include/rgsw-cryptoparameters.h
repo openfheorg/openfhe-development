@@ -286,6 +286,7 @@ public:
 #if NATIVEINT != 32
     const std::shared_ptr<ILNativeParams32>& GetPolyParams32();
     const std::shared_ptr<const std::vector<NativePoly32>>& GetMonomials32();
+    const std::shared_ptr<const std::vector<NativeVector32>>& GetMonomialsPrecon32();
 #endif
 
     BINFHE_METHOD GetMethod() const {
@@ -427,6 +428,7 @@ private:
     // transient caches for the 32-bit internal path; never serialized, rebuilt on demand
     std::shared_ptr<ILNativeParams32> m_polyParams32;
     std::shared_ptr<const std::vector<NativePoly32>> m_monomials32;
+    std::shared_ptr<const std::vector<NativeVector32>> m_monomialsPrecon32;
 #endif
 
     // Bootstrapping method (DM or CGGI or LMKCDEY)
