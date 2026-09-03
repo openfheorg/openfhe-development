@@ -35,6 +35,7 @@
 #include "rgsw-cryptoparameters.h"
 #include "utils/parallel.h"
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -185,6 +186,75 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
     for (uint32_t d = 0; d < digitsG; ++d)
         acc[1].MultAccEqNoCheck(dcta[d], ev[d][1]);
 }
+
+#if NATIVEINT != 32
+// Inner product over the gadget digits with ONE modular reduction instead of one per digit.
+inline void LazyInnerProduct32(NativePoly32& out, const std::vector<NativePoly32>& dct,
+                               const std::vector<std::vector<NativePoly32>>& ev, uint32_t col, uint32_t rows,
+                               uint32_t N, uint32_t q, uint64_t mu) {
+    thread_local std::vector<uint64_t> acc;
+    if (acc.size() < N)
+        acc.resize(N);
+    {
+        const auto& d0{dct[0].GetValues()};
+        const auto& e0{ev[0][col].GetValues()};
+        for (uint32_t k = 0; k < N; ++k)
+            acc[k] = static_cast<uint64_t>(d0[k].ConvertToInt()) * e0[k].ConvertToInt();
+    }
+    for (uint32_t i = 1; i < rows; ++i) {
+        const auto& di{dct[i].GetValues()};
+        const auto& ei{ev[i][col].GetValues()};
+        for (uint32_t k = 0; k < N; ++k)
+            acc[k] += static_cast<uint64_t>(di[k].ConvertToInt()) * ei[k].ConvertToInt();
+    }
+    for (uint32_t k = 0; k < N; ++k) {
+    #if defined(HAVE_INT128)
+        uint64_t x{acc[k]};
+        uint64_t hi{static_cast<uint64_t>((static_cast<uint128_t>(x) * mu) >> 64)};
+        uint64_t r{x - hi * q};
+        // mu = floor(2^64/q) underestimates the quotient by up to 2, so r is in [0, 3q):
+        // the correction is repeated on purpose
+        if (r >= q)
+            r -= q;
+        if (r >= q)
+            r -= q;
+    #else
+        // no double-width type: the lazy accumulation still stands, only the single reduction
+        // falls back to a hardware divide -- still far better than reducing once per digit.
+        uint64_t r{acc[k] % q};
+    #endif
+        out[k] = NativeInteger32(static_cast<uint32_t>(r));
+    }
+}
+
+// 32-bit overload of the accumulation body above: identical shape, with the lazy inner product
+// replacing the per-digit reduction. Exact-match overload resolution routes the NativePoly32
+// instantiations here; results are bit-identical to the generic body. The automorphism key
+// switch stays on the generic poly-op body: its row count (digitsG - 1) is too small for the
+// lazy kernel to pay.
+inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_t Q,
+                               const RingGSWCryptoParams::BaseGParams& bp,
+                               const std::vector<std::vector<NativePoly32>>& ev, std::vector<NativePoly32>& acc) {
+    std::vector<NativePoly32> ct(acc);
+    ct[0].SetFormat(Format::COEFFICIENT);
+    ct[1].SetFormat(Format::COEFFICIENT);
+
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
+    std::vector<NativePoly32> dct(digitsG2, NativePoly32(polyParams, Format::COEFFICIENT, true));
+
+    ExcessHDigitDecompose(Q, bp, ct, dct);
+
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
+    for (uint32_t d = 0; d < digitsG2; ++d)
+        dct[d].SetFormat(Format::EVALUATION);
+
+    uint32_t N{static_cast<uint32_t>(polyParams->GetRingDimension())};
+    uint64_t mu{static_cast<uint64_t>(-1) / Q};
+    LazyInnerProduct32(acc[0], dct, ev, 0, digitsG2, N, Q, mu);
+    LazyInnerProduct32(acc[1], dct, ev, 1, digitsG2, N, Q, mu);
+}
+
+#endif  // NATIVEINT != 32
 
 // The DM digit schedule: one accumulation per nonzero base-R digit of each LWE coefficient.
 template <typename AddFn>
