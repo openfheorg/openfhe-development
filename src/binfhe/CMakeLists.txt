@@ -40,7 +40,7 @@ add_dependencies(binfheobj OPENFHEcore_static)
         ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY include/ DESTINATION include/openfhe/binfhe)
+install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/binfhe)
 
 add_custom_target(allbinfhe)
 
