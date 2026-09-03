@@ -94,44 +94,6 @@ RingGSWACCKey32 RingGSWAccumulatorCGGI::KeyGenAcc32(const std::shared_ptr<RingGS
 #if NATIVEINT != 32
 namespace {
 
-// Inner product over the gadget digits with ONE modular reduction instead of digitsG2.
-// Valid only at 32-bit width.
-void LazyInnerProduct(NativePoly32& out, const std::vector<NativePoly32>& dct,
-                      const std::vector<std::vector<NativePoly32>>& ev, uint32_t col, uint32_t digitsG2, uint32_t N,
-                      uint32_t q, uint64_t mu) {
-    thread_local std::vector<uint64_t> acc;
-    if (acc.size() < N)
-        acc.resize(N);
-    {
-        const auto& d0{dct[0].GetValues()};
-        const auto& e0{ev[0][col].GetValues()};
-        for (uint32_t k = 0; k < N; ++k)
-            acc[k] = static_cast<uint64_t>(d0[k].ConvertToInt()) * e0[k].ConvertToInt();
-    }
-    for (uint32_t i = 1; i < digitsG2; ++i) {
-        const auto& di{dct[i].GetValues()};
-        const auto& ei{ev[i][col].GetValues()};
-        for (uint32_t k = 0; k < N; ++k)
-            acc[k] += static_cast<uint64_t>(di[k].ConvertToInt()) * ei[k].ConvertToInt();
-    }
-    for (uint32_t k = 0; k < N; ++k) {
-    #if defined(HAVE_INT128)
-        uint64_t x{acc[k]};
-        uint64_t hi{static_cast<uint64_t>((static_cast<uint128_t>(x) * mu) >> 64)};
-        uint64_t r{x - hi * q};
-        if (r >= q)
-            r -= q;
-        if (r >= q)
-            r -= q;
-        out[k] = NativeInteger32(static_cast<uint32_t>(r));
-    #else
-        // no double-width type: the lazy accumulation still stands, only the single reduction
-        // falls back to a hardware divide -- still far better than reducing once per digit.
-        out[k] = NativeInteger32(static_cast<uint32_t>(acc[k] % q));
-    #endif
-    }
-}
-
 void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_t Q, uint64_t mu, uint32_t M,
                     const RingGSWCryptoParams::BaseGParams& bp, const RingGSWACCKey32Impl::EvalKey32& ek1,
                     const RingGSWACCKey32Impl::EvalKey32& ek2, const std::vector<NativePoly32>& monomials,
@@ -160,7 +122,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
             const auto& ev = (j < 2) ? ek1 : ek2;
             uint32_t col{j & 0x1};
             NativePoly32 t(polyParams, Format::EVALUATION, true);
-            LazyInnerProduct(t, dct, ev, col, digitsG2, N, Q, mu);
+            LazyInnerProduct32(t, dct, ev, col, digitsG2, N, Q, mu);
             acc[col] += (t *= (j < 2) ? monomial : monomialNeg);
         }
         return;
@@ -185,7 +147,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
             const auto& ev = (j < 2) ? ek1 : ek2;
             uint32_t col{j & 0x1};
             tmp[j] = NativePoly32(polyParams, Format::EVALUATION, true);
-            LazyInnerProduct(tmp[j], dct, ev, col, digitsG2, N, Q, mu);
+            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, N, Q, mu);
             tmp[j] *= (j < 2) ? monomial : monomialNeg;
         }
     }
