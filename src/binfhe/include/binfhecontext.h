@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -38,6 +38,7 @@
 
 #include "binfhe-base-scheme.h"
 #include "lattice/stdlatticeparms.h"
+#include "utils/memory.h"
 #include "utils/serializable.h"
 
 #include <map>
@@ -68,7 +69,7 @@ struct BinFHEContextParams {
     // for Ring GSW + LWE parameters
     uint32_t gadgetBase;  // gadget base used in the bootstrapping
 
-    uint32_t baseRK;      // base for the refreshing key
+    uint32_t baseRK;  // base for the refreshing key
 
     // number of Automorphism keys for LMKCDEY (> 0)
     uint32_t numAutoKeys;
@@ -109,8 +110,8 @@ public:
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
    * @return creates the cryptocontext
    */
-    void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std,
-                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
+    void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std, uint32_t baseKS,
+                               uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
                                BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
 
     /**
@@ -149,20 +150,31 @@ public:
     void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
 
     /**
-   * Gets the refresh key (used for serialization).
+   * Gets the refresh key (used for serialization). When only the 32-bit internal form exists,
+   * an exact 64-bit copy is built and cached first, so existing serialization code keeps
+   * working; call CompressBTKeys() and AllocTrim() afterwards to release it again.
    *
    * @return a shared pointer to the refresh key
    */
     const RingGSWACCKey& GetRefreshKey() const {
+#if NATIVEINT != 32
+        if (m_BTKey.BSkey == nullptr && m_BTKey.BSkey32 != nullptr)
+            m_BTKey.BSkey = m_BTKey.BSkey32->Widen(m_params->GetRingGSWParams());
+#endif
         return m_BTKey.BSkey;
     }
 
     /**
-   * Gets the switching key (used for serialization).
+   * Gets the switching key (used for serialization). Widens a 32-bit internal form on demand,
+   * exactly as GetRefreshKey() does.
    *
    * @return a shared pointer to the switching key
    */
     const LWESwitchingKey& GetSwitchKey() const {
+#if NATIVEINT != 32
+        if (m_BTKey.KSkey == nullptr && m_BTKey.KSkey32 != nullptr)
+            m_BTKey.KSkey = m_BTKey.KSkey32->Widen(*m_params->GetLWEParams());
+#endif
         return m_BTKey.KSkey;
     }
 
@@ -175,13 +187,48 @@ public:
         return m_BTKey.Pkey;
     }
 
+    // Whether a key is held in the 32-bit internal form. Unlike the serialization getters,
+    // these never widen, so they are safe for introspection and memory accounting.
+    bool HasInternal32RefreshKey() const {
+#if NATIVEINT != 32
+        return m_BTKey.BSkey32 != nullptr;
+#else
+        return false;
+#endif
+    }
+
+    bool HasInternal32SwitchKey() const {
+#if NATIVEINT != 32
+        return m_BTKey.KSkey32 != nullptr;
+#else
+        return false;
+#endif
+    }
+
     /**
     * Gets the bootstrapping key map (used for serialization).
     *
     * @return a shared pointer to the bootstrapping key map
     */
     const std::shared_ptr<std::map<uint32_t, RingGSWBTKey>> GetBTKeyMap() const {
-        return std::make_shared<std::map<uint32_t, RingGSWBTKey>>(m_BTKey_map);
+        auto keyMap = std::make_shared<std::map<uint32_t, RingGSWBTKey>>(m_BTKey_map);
+#if NATIVEINT != 32
+        // widen 32-bit internal forms into the returned copy only: the widened keys die with it
+        // once serialized, so AllocTrim() can reclaim the pages without an explicit release step
+        for (auto& [baseG, key] : *keyMap) {
+            if (key.BSkey == nullptr && key.BSkey32 != nullptr) {
+                key.BSkey = (key.BSkey32 == m_BTKey.BSkey32 && m_BTKey.BSkey != nullptr) ?
+                                m_BTKey.BSkey :
+                                key.BSkey32->Widen(m_params->GetRingGSWParams());
+            }
+            if (key.KSkey == nullptr && key.KSkey32 != nullptr) {
+                key.KSkey = (key.KSkey32 == m_BTKey.KSkey32 && m_BTKey.KSkey != nullptr) ?
+                                m_BTKey.KSkey :
+                                key.KSkey32->Widen(*m_params->GetLWEParams());
+            }
+        }
+#endif
+        return keyMap;
     }
 
     /**
@@ -273,15 +320,35 @@ public:
    * @param sk secret key
    * @param keygenMode key generation mode for symmetric or public encryption
    */
-    void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT);
+    void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT, bool internal32 = false);
 
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)
    *
    * @param key struct with the bootstrapping keys
    */
-    void BTKeyLoad(const RingGSWBTKey& key) {
+    /**
+   * Loads bootstrapping keys in the context (typically after deserializing)
+   *
+   * @param key struct with the bootstrapping keys
+   * @param internal32 convert the loaded keys to the 32-bit internal form where they qualify,
+   *        release the 64-bit copies and return the freed pages to the OS. Any handles the
+   *        caller still holds keep the 64-bit copies resident; drop them and call AllocTrim()
+   *        to finish the release.
+   */
+    void BTKeyLoad(const RingGSWBTKey& key, bool internal32 = false) {
+        // an earlier all-32-bit key generation may have released the 64-bit monomials
+        if (key.BSkey != nullptr)
+            m_params->GetRingGSWParams()->EnsureMonomials();
         m_BTKey = key;
+#if NATIVEINT != 32
+        if (internal32 && CompressBTKeys()) {
+            ReleaseMonomialsIfAll32();
+            AllocTrim();
+        }
+#else
+        (void)internal32;
+#endif
     }
 
     /**
@@ -291,8 +358,61 @@ public:
    * @param key struct with the bootstrapping keys
    */
     void BTKeyMapLoadSingleElement(uint32_t baseG, const RingGSWBTKey& key) {
+        if (key.BSkey != nullptr)
+            m_params->GetRingGSWParams()->EnsureMonomials();
         m_BTKey_map[baseG] = key;
     }
+
+#if NATIVEINT != 32
+    /**
+   * Convert the refreshing and switching keys to their 32-bit internal forms and release the
+   * 64-bit copies, halving resident key material and running the blind rotation and key switch
+   * on 32-bit words. Each key converts only when its modulus qualifies; returns whether anything
+   * converted. Also releases a 64-bit copy cached earlier by the serialization getters, so
+   * "GetRefreshKey/serialize, then CompressBTKeys() + AllocTrim()" returns to the 32-bit
+   * footprint. The released pages return to the OS only after the follow-up AllocTrim()
+   * (measured: full recovery to the direct-generation footprint); peak memory still holds both
+   * forms. The 64-bit keys are gone afterwards until the getters widen them again on demand.
+   *
+   * @return true if a key was converted
+   */
+    bool CompressBTKeys() {
+        bool converted = false;
+        if (m_BTKey.BSkey != nullptr) {
+            const auto& rgswParams = m_params->GetRingGSWParams();
+            if (m_BTKey.BSkey32 == nullptr && RingGSWACCKey32Impl::Fits(*rgswParams))
+                m_BTKey.BSkey32 = std::make_shared<RingGSWACCKey32Impl>(rgswParams, *m_BTKey.BSkey);
+            if (m_BTKey.BSkey32 != nullptr) {
+                // the map entry for the active baseG aliases m_BTKey; release its copy too or
+                // the 64-bit key stays resident through it
+                for (auto& [baseG, key] : m_BTKey_map) {
+                    if (key.BSkey == m_BTKey.BSkey) {
+                        key.BSkey32 = m_BTKey.BSkey32;
+                        key.BSkey.reset();
+                    }
+                }
+                m_BTKey.BSkey.reset();
+                converted = true;
+            }
+        }
+        if (m_BTKey.KSkey != nullptr) {
+            const auto& lweParams = m_params->GetLWEParams();
+            if (m_BTKey.KSkey32 == nullptr && LWESwitchingKey32Impl::Fits(*lweParams))
+                m_BTKey.KSkey32 = std::make_shared<LWESwitchingKey32Impl>(*lweParams, *m_BTKey.KSkey);
+            if (m_BTKey.KSkey32 != nullptr) {
+                for (auto& [baseG, key] : m_BTKey_map) {
+                    if (key.KSkey == m_BTKey.KSkey) {
+                        key.KSkey32 = m_BTKey.KSkey32;
+                        key.KSkey.reset();
+                    }
+                }
+                m_BTKey.KSkey.reset();
+                converted = true;
+            }
+        }
+        return converted;
+    }
+#endif
 
     /**
    * Clear the bootstrapping keys in the current context
@@ -301,6 +421,10 @@ public:
         m_BTKey.BSkey.reset();
         m_BTKey.KSkey.reset();
         m_BTKey.Pkey.reset();
+#if NATIVEINT != 32
+        m_BTKey.BSkey32.reset();
+        m_BTKey.KSkey32.reset();
+#endif
         m_BTKey_map.clear();
     }
 
@@ -458,6 +582,19 @@ public:
     }
 
 private:
+#if NATIVEINT != 32
+    // release the 64-bit monomial table when every held key runs on the 32-bit internal path
+    // (which keeps its own); rebuilt on demand if a 64-bit key is generated or loaded later
+    void ReleaseMonomialsIfAll32() {
+        if (m_BTKey.BSkey != nullptr || m_BTKey.BSkey32 == nullptr)
+            return;
+        for (const auto& [baseG, key] : m_BTKey_map)
+            if (key.BSkey != nullptr)
+                return;
+        m_params->GetRingGSWParams()->ClearMonomials();
+    }
+#endif
+
     // Shared pointer to Ring GSW + LWE parameters
     std::shared_ptr<BinFHECryptoParams> m_params{nullptr};
 
@@ -467,8 +604,9 @@ private:
     // Shared pointer to the underlying RingGSW/RLWE scheme
     std::shared_ptr<BinFHEScheme> m_binfhescheme{nullptr};
 
-    // Struct containing the bootstrapping keys
-    RingGSWBTKey m_BTKey = {0};
+    // Struct containing the bootstrapping keys; mutable so the serialization getters can widen
+    // and cache a 64-bit copy of a 32-bit internal key on demand
+    mutable RingGSWBTKey m_BTKey = {0};
 
     std::map<uint32_t, RingGSWBTKey> m_BTKey_map;
 

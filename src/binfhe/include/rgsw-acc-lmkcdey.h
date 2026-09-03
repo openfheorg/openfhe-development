@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -56,6 +56,14 @@ public:
    */
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
+
+#if NATIVEINT != 32
+    RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                ConstLWEPrivateKey& LWEsk) const override;
+
+    void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
+                   const NativeVector& a) const override;
+#endif
 
     /**
    * Main accumulator function used in bootstrapping - LMKCDEY variant
@@ -113,8 +121,8 @@ private:
    * @param acc previous value of the accumulator
    * @return
    */
-    void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a,
-                      ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const;
+    void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a, ConstRingGSWEvalKey& ak,
+                      RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

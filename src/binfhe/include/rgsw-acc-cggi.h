@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,6 +33,7 @@
 #define _RGSW_ACC_CGGI_H_
 
 #include "rgsw-acc.h"
+#include "rgsw-acckey32.h"
 
 #include <memory>
 
@@ -54,6 +55,20 @@ public:
    * @param LWEsk the secret key
    * @return a shared pointer to the resulting keys
    */
+#if NATIVEINT != 32
+    /**
+   * Generate the refreshing key directly in its 32-bit internal form. Each 64-bit RGSW eval key
+   * is narrowed and released as it is produced, so the full 64-bit key is never materialised --
+   * which is what actually halves resident key material, since the allocator does not return
+   * freed pages. Shares the per-index body with KeyGenAcc, so the two cannot drift.
+   */
+    RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                ConstLWEPrivateKey& LWEsk) const override;
+
+    void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
+                   const NativeVector& a) const override;
+#endif
+
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
 

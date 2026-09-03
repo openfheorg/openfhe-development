@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -102,24 +102,8 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
 
     // Computes polynomials X^m - 1 that are needed in the accumulator for the
     // CGGI bootstrapping
-    if (m_method == BINFHE_METHOD::GINX) {
-        constexpr NativeInteger one{1};
-        m_monomials.reserve(2 * m_N);
-        for (uint32_t i = 0; i < m_N; ++i) {
-            NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
-            aPoly[0].ModSubFastEq(one, m_Q);  // -1
-            aPoly[i].ModAddFastEq(one, m_Q);  // X^m
-            aPoly.SetFormat(Format::EVALUATION);
-            m_monomials.push_back(std::move(aPoly));
-        }
-        for (uint32_t i = 0; i < m_N; ++i) {
-            NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
-            aPoly[0].ModSubFastEq(one, m_Q);  // -1
-            aPoly[i].ModSubFastEq(one, m_Q);  // -X^m
-            aPoly.SetFormat(Format::EVALUATION);
-            m_monomials.push_back(std::move(aPoly));
-        }
-    }
+    if (m_method == BINFHE_METHOD::GINX)
+        BuildMonomials();
 
     // expand the base map into one entry per LWE index. Digit counts are computed here,
     // once per distinct base, instead of per call in the accumulator.
@@ -164,6 +148,61 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             idx = (idx * gen) % M;
             addMap(idx);
         }
+    }
+}
+
+#if NATIVEINT != 32
+const std::shared_ptr<ILNativeParams32>& RingGSWCryptoParams::GetPolyParams32() {
+    if (m_polyParams32 == nullptr) {
+        m_polyParams32 = std::make_shared<ILNativeParams32>(
+            2 * m_N, NativeInteger32(m_Q.ConvertToInt<uint32_t>()),
+            NativeInteger32(m_polyParams->GetRootOfUnity().ConvertToInt<uint32_t>()));
+    }
+    return m_polyParams32;
+}
+
+const std::shared_ptr<const std::vector<NativePoly32>>& RingGSWCryptoParams::GetMonomials32() {
+    if (m_monomials32 == nullptr) {
+        const auto& pp = GetPolyParams32();
+        // X^m - 1 built natively at 32 bits: the NTT mod Q is width-independent, so the table is
+        // identical to narrowing the 64-bit one, which therefore need not exist
+        NativeInteger32 Q32(m_Q.ConvertToInt<uint32_t>());
+        constexpr NativeInteger32 one{1};
+        auto monomials = std::make_shared<std::vector<NativePoly32>>();
+        monomials->reserve(2 * m_N);
+        for (uint32_t i = 0; i < 2 * m_N; ++i) {
+            NativePoly32 aPoly(pp, Format::COEFFICIENT, true);
+            aPoly[0].ModSubFastEq(one, Q32);  // -1
+            if (i < m_N)
+                aPoly[i].ModAddFastEq(one, Q32);  // X^m
+            else
+                aPoly[i - m_N].ModSubFastEq(one, Q32);  // -X^m
+            aPoly.SetFormat(Format::EVALUATION);
+            monomials->push_back(std::move(aPoly));
+        }
+        m_monomials32 = std::move(monomials);
+    }
+    return m_monomials32;
+}
+#endif  // NATIVEINT != 32
+
+void RingGSWCryptoParams::BuildMonomials() {
+    constexpr NativeInteger one{1};
+    m_monomials.clear();
+    m_monomials.reserve(2 * m_N);
+    for (uint32_t i = 0; i < m_N; ++i) {
+        NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
+        aPoly[0].ModSubFastEq(one, m_Q);  // -1
+        aPoly[i].ModAddFastEq(one, m_Q);  // X^m
+        aPoly.SetFormat(Format::EVALUATION);
+        m_monomials.push_back(std::move(aPoly));
+    }
+    for (uint32_t i = 0; i < m_N; ++i) {
+        NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
+        aPoly[0].ModSubFastEq(one, m_Q);  // -1
+        aPoly[i].ModSubFastEq(one, m_Q);  // -X^m
+        aPoly.SetFormat(Format::EVALUATION);
+        m_monomials.push_back(std::move(aPoly));
     }
 }
 

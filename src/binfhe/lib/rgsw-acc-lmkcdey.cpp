@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,6 +30,8 @@
 //==================================================================================
 
 #include "rgsw-acc-lmkcdey.h"
+
+#include "rgsw-acc-common.h"
 
 namespace lbcrypto {
 
@@ -66,93 +68,68 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     return ek;
 }
 
+#if NATIVEINT != 32
+RingGSWACCKey32 RingGSWAccumulatorLMKCDEY::KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                                       const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
+    auto sv{LWEsk->GetElement()};
+    auto mod{sv.GetModulus().ConvertToInt<int32_t>()};
+    auto modHalf{mod >> 1};
+    uint32_t N{params->GetN()};
+    size_t n{sv.GetLength()};
+    params->VerifyBaseGCoverage(static_cast<uint32_t>(n));
+    uint32_t numAutoKeys{params->GetNumAutoKeys()};
+
+    // identical per-index bodies to KeyGenAcc above; each 64-bit eval key is a temporary that
+    // dies at the end of its statement, so the full 64-bit refreshing key is never materialised
+    auto acc = std::make_shared<RingGSWACCKey32Impl>(params, 1, 2, static_cast<uint32_t>(n));
+
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+    for (size_t i = 0; i < n; ++i) {
+        auto s{sv[i].ConvertToInt<int32_t>()};
+        acc->SetEvalKey(0, 0, i, *KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s, i));
+    }
+
+    NativeInteger gen = NativeInteger(5);
+
+    acc->SetEvalKey(0, 1, 0, *KeyGenAuto(params, skNTT, 2 * N - gen.ConvertToInt()));
+
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numAutoKeys))
+    for (uint32_t i = 1; i <= numAutoKeys; ++i)
+        acc->SetEvalKey(0, 1, i, *KeyGenAuto(params, skNTT, gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>()));
+    return acc;
+}
+
+void RingGSWAccumulatorLMKCDEY::EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek,
+                                          RLWECiphertext& acc, const NativeVector& a) const {
+    const auto& polyParams = params->GetPolyParams32();
+    uint32_t Q{static_cast<uint32_t>(params->GetQ().ConvertToInt())};
+    uint32_t M{2 * params->GetN()};
+
+    auto acc32 = NarrowAcc32(polyParams, acc->GetElements());
+    acc32[1]   = acc32[1].AutomorphismTransform(M - 5);
+
+    LMKCDEYAccSchedule(
+        params->GetN(), params->GetNumAutoKeys(), params->GetLogGen(), a,
+        [&](int32_t idx) { AddToAccNoMonomial(polyParams, Q, params->GetBaseGParams(idx), (*ek)[0][0][idx], acc32); },
+        [&](NativeInteger power, uint32_t k) {
+            uint32_t p{power.ConvertToInt<uint32_t>()};
+            AutomorphismKeySwitch(p, params->GetAutoMap(p), polyParams, Q, params->GetDefaultBaseGParams(),
+                                  (*ek)[0][1][k], acc32);
+        });
+
+    WidenAcc32Into(acc32, acc->GetElements());
+}
+#endif
+
 void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
                                         RLWECiphertext& acc, const NativeVector& a) const {
-    // assume a is all-odd ciphertext (using round-to-odd technique)
-    size_t n             = a.GetLength();
-    uint32_t Nh          = params->GetN() / 2;
-    uint32_t M           = 2 * params->GetN();
-    uint32_t numAutoKeys = params->GetNumAutoKeys();
+    uint32_t M            = 2 * params->GetN();
+    acc->GetElements()[1] = (acc->GetElements()[1]).AutomorphismTransform(M - 5);
 
-    NativeInteger MNative(M);
-
-    const auto& logGen = params->GetLogGen();
-    std::unordered_map<int32_t, std::vector<int32_t>> permuteMap;
-
-    for (size_t i = 0; i < n; i++) {  // put ail a_i in the permuteMap
-        // make it odd; round-to-odd(https://eprint.iacr.org/2022/198) will improve error.
-        int32_t aIOdd = NativeInteger(0).ModSubFast(a[i], MNative).ConvertToInt<uint32_t>() | 0x1;
-        int32_t index = logGen[aIOdd];
-
-        permuteMap[index].push_back(i);
-    }
-
-    NativeInteger gen(5);
-    uint32_t genInt       = 5;
-    uint32_t nSkips       = 0;
-    acc->GetElements()[1] = (acc->GetElements()[1]).AutomorphismTransform(M - genInt);
-
-    // for a_j = -5^i
-    for (uint32_t i = Nh - 1; i > 0; i--) {
-        auto it = permuteMap.find(-i);
-        if (it != permuteMap.end()) {
-            if (nSkips != 0) {  // Rotation by 5^nSkips
-                Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
-                nSkips = 0;
-            }
-            auto& indexVec = it->second;
-            for (size_t j = 0; j < indexVec.size(); j++) {
-                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
-            }
-        }
-        nSkips++;
-
-        if (nSkips == numAutoKeys || i == 1) {
-            Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
-            nSkips = 0;
-        }
-    }
-
-    // for -1
-    auto itM = permuteMap.find(M);
-    if (itM != permuteMap.end()) {
-        auto& indexVec = itM->second;
-        for (size_t j = 0; j < indexVec.size(); j++) {
-            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
-        }
-    }
-
-    Automorphism(params, NativeInteger(M - genInt), (*ek)[0][1][0], acc);
-    // for a_j = 5^i
-    for (size_t i = Nh - 1; i > 0; i--) {
-        auto it = permuteMap.find(i);
-        if (it != permuteMap.end()) {
-            if (nSkips != 0) {  // Rotation by 5^nSkips
-                Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
-                nSkips = 0;
-            }
-
-            auto& indexVec = it->second;
-            for (size_t j = 0; j < indexVec.size(); j++) {
-                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
-            }
-        }
-        nSkips++;
-
-        if (nSkips == numAutoKeys || i == 1) {
-            Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
-            nSkips = 0;
-        }
-    }
-
-    // for 0
-    auto it0 = permuteMap.find(0);
-    if (it0 != permuteMap.end()) {
-        auto& indexVec = it0->second;
-        for (size_t j = 0; j < indexVec.size(); j++) {
-            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc, indexVec[j]);
-        }
-    }
+    LMKCDEYAccSchedule(
+        params->GetN(), params->GetNumAutoKeys(), params->GetLogGen(), a,
+        [&](int32_t idx) { AddToAccLMKCDEY(params, (*ek)[0][0][idx], acc, idx); },
+        [&](NativeInteger power, uint32_t k) { Automorphism(params, power, (*ek)[0][1][k], acc); });
 }
 
 // Encryption as described in Section 5 of https://eprint.iacr.org/2022/198
@@ -221,62 +198,16 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingG
 // Same as AP, but multiplied once
 void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                 ConstRingGSWEvalKey& ek, RLWECiphertext& acc, uint32_t index) const {
-    std::vector<NativePoly> ct(acc->GetElements());
-    ct[0].SetFormat(Format::COEFFICIENT);
-    ct[1].SetFormat(Format::COEFFICIENT);
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    const auto& bp = params->GetBaseGParams(index);
-    uint32_t digitsG2{(bp.digitsG - 1) << 1};
-
-    std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
-
-    SignedDigitDecomposeImpl(params, ct, dct, bp);
-
-    // calls digitsG2 NTTs
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
-    for (uint32_t d = 0; d < digitsG2; ++d)
-        dct[d].SetFormat(Format::EVALUATION);
-
-    // acc = dct * ek (matrix product);
-    const auto& ev        = ek->GetElements();
-    acc->GetElements()[0] = (dct[0] * ev[0][0]);
-    for (uint32_t d = 1; d < digitsG2; ++d)
-        acc->GetElements()[0].MultAccEqNoCheck(dct[d], ev[d][0]);
-    acc->GetElements()[1] = (dct[0] *= ev[0][1]);
-    for (uint32_t d = 1; d < digitsG2; ++d)
-        acc->GetElements()[1].MultAccEqNoCheck(dct[d], ev[d][1]);
+    AddToAccNoMonomial(params->GetPolyParams(), params->GetQ().ConvertToInt<BasicInteger>(),
+                       params->GetBaseGParams(index), ek->GetElements(), acc->GetElements());
 }
 
-// Automorphism
 void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a,
                                              ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const {
-    // the automorphism map is precomputed per rotation index in RingGSWCryptoParams::PreCompute
-    const std::vector<uint32_t>& vec = params->GetAutoMap(a.ConvertToInt<uint32_t>());
-
-    acc->GetElements()[1] = acc->GetElements()[1].AutomorphismTransform(a.ConvertToInt<uint32_t>(), vec);
-
-    NativePoly cta(acc->GetElements()[0]);
-    acc->GetElements()[0].SetValuesToZero();
-    cta = cta.AutomorphismTransform(a.ConvertToInt<uint32_t>(), vec);
-    cta.SetFormat(COEFFICIENT);
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG{params->GetDigitsG() - 1};
-    std::vector<NativePoly> dcta(digitsG, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
-
-    SignedDigitDecompose(params, cta, dcta);
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG))
-    for (uint32_t d = 0; d < digitsG; ++d)
-        dcta[d].SetFormat(Format::EVALUATION);
-
-    // acc = dct * input (matrix product);
-    const auto& ev = ak->GetElements();
-    for (uint32_t d = 0; d < digitsG; ++d)
-        acc->GetElements()[0].MultAccEqNoCheck(dcta[d], ev[d][0]);
-    for (uint32_t d = 0; d < digitsG; ++d)
-        acc->GetElements()[1].MultAccEqNoCheck(dcta[d], ev[d][1]);
+    uint32_t aInt{a.ConvertToInt<uint32_t>()};
+    AutomorphismKeySwitch(aInt, params->GetAutoMap(aInt), params->GetPolyParams(),
+                          params->GetQ().ConvertToInt<BasicInteger>(), params->GetDefaultBaseGParams(),
+                          ak->GetElements(), acc->GetElements());
 }
 
 };  // namespace lbcrypto

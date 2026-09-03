@@ -672,6 +672,22 @@ private:
     extern template class intnat::BluesteinFFTNat<intnat::NativeVector>;                 \
     extern template class intnat::ChineseRemainderTransformArbNat<intnat::NativeVector>;
 
+// Same set at 32-bit width, for use alongside the native width in a 64-bit build.
+#define MAKE_TRANSFORM_TYPES32                                                      \
+    template class intnat::NumberTheoreticTransformNat<intnat::NativeVector32>;     \
+    template class intnat::ChineseRemainderTransformFTTNat<intnat::NativeVector32>; \
+    template class intnat::BluesteinFFTNat<intnat::NativeVector32>;                 \
+    template class intnat::ChineseRemainderTransformArbNat<intnat::NativeVector32>;
+
+#define EXTERN_TRANSFORM_TYPES32                                                           \
+    extern template class intnat::NumberTheoreticTransformNat<intnat::NativeVector32>;     \
+    extern template class intnat::ChineseRemainderTransformFTTNat<intnat::NativeVector32>; \
+    extern template class intnat::BluesteinFFTNat<intnat::NativeVector32>;                 \
+    extern template class intnat::ChineseRemainderTransformArbNat<intnat::NativeVector32>;
+
 EXTERN_TRANSFORM_TYPES
+#if NATIVEINT != 32
+EXTERN_TRANSFORM_TYPES32
+#endif
 
 #endif

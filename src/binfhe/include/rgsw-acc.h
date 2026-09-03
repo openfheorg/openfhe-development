@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,6 +33,7 @@
 #define _RGSW_FHE_H_
 
 #include "rgsw-acckey.h"
+#include "rgsw-acckey32.h"
 #include "rgsw-cryptoparameters.h"
 #include "rlwe-ciphertext.h"
 
@@ -57,6 +58,22 @@ public:
    * @param LWEsk the secret key
    * @return a shared pointer to the resulting keys
    */
+#if NATIVEINT != 32
+    // Generate the refreshing key directly in 32-bit internal form. Returns nullptr where the
+    // accumulator does not implement it, so callers fall back to KeyGenAcc.
+    virtual RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>&, const NativePoly&,
+                                        ConstLWEPrivateKey&) const {
+        return nullptr;
+    }
+
+    // Blind rotation on the 32-bit internal key; bit-identical to EvalAcc on the 64-bit key.
+    // Implemented by every accumulator that implements KeyGenAcc32.
+    virtual void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>&, ConstRingGSWACCKey32&, RLWECiphertext&,
+                           const NativeVector&) const {
+        OPENFHE_THROW("32-bit internal evaluation is not supported by this accumulator");
+    }
+#endif
+
     virtual RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                     ConstLWEPrivateKey& LWEsk) const {
         OPENFHE_THROW("Operation not supported");

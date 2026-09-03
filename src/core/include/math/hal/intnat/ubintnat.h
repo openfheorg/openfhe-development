@@ -113,6 +113,25 @@ struct DataTypes<uint128_t> {
 };
 #endif
 
+// Largest modulus bit-width the generalized-Barrett kernels are exact for,
+// keyed on the word type rather than on the build.
+template <typename NativeInt>
+struct MaxModulusBits;
+template <>
+struct MaxModulusBits<uint32_t> {
+    static constexpr uint32_t value{MAX_MODULUS_SIZE32};
+};
+template <>
+struct MaxModulusBits<uint64_t> {
+    static constexpr uint32_t value{MAX_MODULUS_SIZE64};
+};
+#if defined(HAVE_INT128) || NATIVEINT == 128
+template <>
+struct MaxModulusBits<uint128_t> {
+    static constexpr uint32_t value{MAX_MODULUS_SIZE128};
+};
+#endif
+
 /**
  * @brief Main class for big integers represented as an array of native
  * (primitive) unsigned integers
@@ -130,7 +149,12 @@ private:
     friend class NumberTheoreticTransformNat<NativeVectorT<NativeIntegerT<NativeInt>>>;
 
 public:
-    using Integer         = NativeInt;
+    using Integer = NativeInt;
+
+    // Width conversion between native integer widths. Explicit; the caller guarantees value fits target.
+    template <typename OtherInt, typename = std::enable_if_t<!std::is_same_v<OtherInt, NativeInt>>>
+    explicit NativeIntegerT(const NativeIntegerT<OtherInt>& val) noexcept
+        : m_value(static_cast<NativeInt>(val.template ConvertToInt<OtherInt>())) {}
     using SignedNativeInt = typename DataTypes<NativeInt>::SignedType;
     using DNativeInt      = typename DataTypes<NativeInt>::DoubleType;
     using SDNativeInt     = typename DataTypes<NativeInt>::SignedDoubleType;
@@ -1141,7 +1165,7 @@ public:
    * @return is the result of the modulus exponentiation operation.
    */
     NativeIntegerT ModExp(const NativeIntegerT& b, const NativeIntegerT& mod) const {
-        if (mod.GetMSB() <= MAX_MODULUS_SIZE) {
+        if (mod.GetMSB() <= MaxModulusBits<NativeInt>::value) {
             NativeIntegerT t{m_value % mod.m_value};
             NativeIntegerT p{b.m_value};
             NativeIntegerT mu{mod.ComputeMu()};

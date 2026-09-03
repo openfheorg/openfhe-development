@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -37,6 +37,7 @@
 #include "lwe-cryptoparameters.h"
 #include "lwe-keypair.h"
 #include "lwe-keyswitchkey.h"
+#include "lwe-keyswitchkey32.h"
 #include "lwe-privatekey.h"
 #include "lwe-publickey.h"
 
@@ -212,6 +213,17 @@ public:
    */
     LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey& K,
                             ConstLWECiphertext& ctQN) const;
+
+#if NATIVEINT != 32
+    LWESwitchingKey32 KeySwitchGen32(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk,
+                                     ConstLWEPrivateKey& skN) const;
+
+    LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& K,
+                            ConstLWECiphertext& ctQN) const;
+
+    LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& ksk,
+                               ConstLWECiphertext& ct) const;
+#endif
 
     /**
    * Embeds a plaintext bit without noise or encryption

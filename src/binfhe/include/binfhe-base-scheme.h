@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -38,9 +38,11 @@
 #include "rgsw-acc-cggi.h"
 #include "rgsw-acc-dm.h"
 #include "rgsw-acc-lmkcdey.h"
+#include "rgsw-acckey32.h"
 #include "rgsw-acckey.h"
 #include "rlwe-ciphertext.h"
 
+#include <cstdlib>
 #include <map>
 #include <memory>
 #include <vector>
@@ -48,14 +50,31 @@
 namespace lbcrypto {
 
 // The struct for storing bootstrapping keys
-typedef struct {
+struct RingGSWBTKey {
     // refreshing key
     RingGSWACCKey BSkey;
     // switching key
     LWESwitchingKey KSkey;
     // public key
     LWEPublicKey Pkey;
-} RingGSWBTKey;
+#if NATIVEINT != 32
+    // 32-bit internal forms, generated directly by KeyGen(internal32) or narrowed by
+    // BinFHEContext::CompressBTKeys(). When set, the 64-bit member stays null (or is released)
+    // and the 32-bit copy is the only resident one, so the key material is half size.
+    // Serialization requires the 64-bit forms, so the internal path is opt-in.
+    RingGSWACCKey32 BSkey32;
+    LWESwitchingKey32 KSkey32;
+#endif
+
+    // a refreshing key is present in either representation
+    bool HasRefreshKey() const {
+#if NATIVEINT != 32
+        return (BSkey != nullptr) || (BSkey32 != nullptr);
+#else
+        return BSkey != nullptr;
+#endif
+    }
+};
 
 /**
  * @brief Ring GSW accumulator schemes described in
@@ -86,7 +105,7 @@ public:
    * @return a shared pointer to the refresh key
    */
     RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
-                        KEYGEN_MODE keygenMode) const;
+                        KEYGEN_MODE keygenMode, bool internal32) const;
 
     /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)
@@ -145,8 +164,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                           ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT,
-                           NativeInteger beta) const;
+                           ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT, NativeInteger beta) const;
 
     /**
    * Evaluate a round down function
@@ -172,8 +190,8 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
-                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                           NativeInteger beta, bool schemeSwitch = false) const;
+                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta,
+                           bool schemeSwitch = false) const;
 
     /**
    * Evaluate digit decomposition over a large precision LWE ciphertext
@@ -199,7 +217,7 @@ private:
    * @return the output RingLWE accumulator
    */
     RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                     ConstRingGSWACCKey& ek, ConstLWECiphertext& ct) const;
+                                     const RingGSWBTKey& EK, ConstLWECiphertext& ct) const;
 
     // Arbitrary function evaluation purposes
 
@@ -214,7 +232,7 @@ private:
    * @return a shared pointer to the resulting ciphertext
    */
     template <typename Func>
-    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, ConstRingGSWACCKey& ek,
+    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                      ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
 
     /**
@@ -230,6 +248,13 @@ private:
     template <typename Func>
     LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                 ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
+
+    // dispatch to the key representation EK actually holds
+    LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
+                               ConstLWECiphertext& ct) const;
+
+    LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
+                            ConstLWECiphertext& ct) const;
 
 protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -198,6 +198,12 @@ public:
         return GetBaseGParams(index).digitsG;
     }
 
+    // empty when no per-dimension base map is in use; then GetDefaultBaseGParams() applies to
+    // every index
+    const std::vector<BaseGParams>& GetBaseGByIndex() const {
+        return m_baseGByIndex;
+    }
+
     // the per-index table is built from a map that never sees the LWE dimension, so the two can
     // only be reconciled by a caller that holds both; do it before entering a parallel region
     void VerifyBaseGCoverage(uint32_t n) const {
@@ -263,6 +269,24 @@ public:
     const NativePoly& GetMonomial(uint32_t i) const {
         return m_monomials[i];
     }
+
+    bool HasMonomials() const {
+        return !m_monomials.empty();
+    }
+
+    void ClearMonomials() {
+        std::vector<NativePoly>().swap(m_monomials);
+    }
+
+    void EnsureMonomials() {
+        if (m_method == BINFHE_METHOD::GINX && m_monomials.empty())
+            BuildMonomials();
+    }
+
+#if NATIVEINT != 32
+    const std::shared_ptr<ILNativeParams32>& GetPolyParams32();
+    const std::shared_ptr<const std::vector<NativePoly32>>& GetMonomials32();
+#endif
 
     BINFHE_METHOD GetMethod() const {
         return m_method;
@@ -341,6 +365,8 @@ private:
         return lbcrypto::GetDigitCount(Q.ConvertToInt(), baseG);
     }
 
+    void BuildMonomials();
+
     // modulus for the RingGSW/RingLWE scheme
     NativeInteger m_Q;
 
@@ -396,6 +422,12 @@ private:
     // Precomputed polynomials in Format::EVALUATION representation for X^m - 1
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
+
+#if NATIVEINT != 32
+    // transient caches for the 32-bit internal path; never serialized, rebuilt on demand
+    std::shared_ptr<ILNativeParams32> m_polyParams32;
+    std::shared_ptr<const std::vector<NativePoly32>> m_monomials32;
+#endif
 
     // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method{BINFHE_METHOD::INVALID_METHOD};

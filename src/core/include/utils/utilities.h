@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -109,7 +109,8 @@ inline bool is64BitOverflow(double d) {
 
 #if NATIVEINT == 128
 inline constexpr __int128 Max128BitValue() {
-    return static_cast<__int128>(((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1);
+    return static_cast<int128_t>((static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) -
+                                 static_cast<uint128_t>(1));
 }
 
 inline bool is128BitOverflow(double d) {

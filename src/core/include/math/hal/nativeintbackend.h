@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -47,9 +47,15 @@ namespace lbcrypto {
 using NativeInteger = intnat::NativeInteger;
 using NativeVector  = intnat::NativeVector;
 
+using NativeInteger32 = intnat::NativeInteger32;
+using NativeVector32  = intnat::NativeVector32;
+
 }  // namespace lbcrypto
 
 using NativeInteger = lbcrypto::NativeInteger;
 using NativeVector  = lbcrypto::NativeVector;
+
+using NativeInteger32 = lbcrypto::NativeInteger32;
+using NativeVector32  = lbcrypto::NativeVector32;
 
 #endif

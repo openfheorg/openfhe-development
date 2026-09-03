@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -68,6 +68,13 @@ struct FTTTypedef<NativeVector> {
     typedef NatChineseRemainderTransformFTT<NativeVector> type;
 };
 
+#if NATIVEINT != 32
+template <>
+struct FTTTypedef<NativeVector32> {
+    typedef NatChineseRemainderTransformFTT<NativeVector32> type;
+};
+#endif
+
 #ifdef WITH_BE2
 template <>
 struct FTTTypedef<M2Vector> {
@@ -103,6 +110,13 @@ template <>
 struct ArbTypedef<NativeVector> {
     typedef NatChineseRemainderTransformArb<NativeVector> type;
 };
+
+#if NATIVEINT != 32
+template <>
+struct ArbTypedef<NativeVector32> {
+    typedef NatChineseRemainderTransformArb<NativeVector32> type;
+};
+#endif
 
 #ifdef WITH_BE2
 template <>

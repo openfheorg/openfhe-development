@@ -793,5 +793,8 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const N
 }
 
 template class NativeVectorT<NativeInteger>;
+#if NATIVEINT != 32
+template class NativeVectorT<NativeInteger32>;
+#endif
 
 }  // namespace intnat

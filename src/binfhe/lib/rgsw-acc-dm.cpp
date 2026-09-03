@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,6 +30,8 @@
 //==================================================================================
 
 #include "rgsw-acc-dm.h"
+
+#include "rgsw-acc-common.h"
 
 #include <string>
 
@@ -60,21 +62,55 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
     return ek;
 }
 
-void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
-                                   RLWECiphertext& acc, const NativeVector& a) const {
-    NativeInteger baseR{params->GetBaseR()};
-    auto q       = params->Getq();
-    auto digitsR = params->GetDigitsR().size();
-    uint32_t n   = a.GetLength();
+#if NATIVEINT != 32
+RingGSWACCKey32 RingGSWAccumulatorDM::KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                                  const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
+    auto sv{LWEsk->GetElement()};
+    auto mod{sv.GetModulus().ConvertToInt<int32_t>()};
+    auto modHalf{mod >> 1};
+    uint32_t n(sv.GetLength());
+    params->VerifyBaseGCoverage(n);
+    int32_t baseR(params->GetBaseR());
+    const auto& digitsR = params->GetDigitsR();
 
+    auto acc = std::make_shared<RingGSWACCKey32Impl>(params, n, baseR, digitsR.size());
+
+    // identical per-index body to KeyGenAcc above; each 64-bit eval key is a temporary that dies
+    // at the end of its statement, so the full 64-bit refreshing key is never materialised
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (uint32_t i = 0; i < n; ++i) {
-        auto aI = NativeInteger(0).ModSubFast(a[i], q);
-        for (size_t k = 0; k < digitsR; ++k, aI /= baseR) {
-            auto a0 = (aI.Mod(baseR)).ConvertToInt<uint32_t>();
-            if (a0)
-                AddToAccDM(params, (*ek)[i][a0][k], acc, i);
+        for (int32_t j = 1; j < baseR; ++j) {
+            for (size_t k = 0; k < digitsR.size(); ++k) {
+                auto s{sv[i].ConvertToInt<int32_t>()};
+                acc->SetEvalKey(
+                    i, j, k,
+                    *KeyGenDM(params, skNTT, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>(), i));
+            }
         }
     }
+    return acc;
+}
+
+void RingGSWAccumulatorDM::EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek,
+                                     RLWECiphertext& acc, const NativeVector& a) const {
+    const auto& polyParams = params->GetPolyParams32();
+    uint32_t Q{static_cast<uint32_t>(params->GetQ().ConvertToInt())};
+
+    auto acc32 = NarrowAcc32(polyParams, acc->GetElements());
+
+    DMAccSchedule(params->Getq(), params->GetBaseR(), params->GetDigitsR().size(), a,
+                  [&](uint32_t i, uint32_t a0, size_t k) {
+                      AddToAccNoMonomial(polyParams, Q, params->GetBaseGParams(i), (*ek)[i][a0][k], acc32);
+                  });
+
+    WidenAcc32Into(acc32, acc->GetElements());
+}
+#endif
+
+void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
+                                   RLWECiphertext& acc, const NativeVector& a) const {
+    DMAccSchedule(params->Getq(), params->GetBaseR(), params->GetDigitsR().size(), a,
+                  [&](uint32_t i, uint32_t a0, size_t k) { AddToAccDM(params, (*ek)[i][a0][k], acc, i); });
 }
 
 // Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
@@ -120,30 +156,8 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 // AP Accumulation as described in https://eprint.iacr.org/2020/086
 void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
                                       RLWECiphertext& acc, uint32_t index) const {
-    std::vector<NativePoly> ct(acc->GetElements());
-    ct[0].SetFormat(Format::COEFFICIENT);
-    ct[1].SetFormat(Format::COEFFICIENT);
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    const auto& bp = params->GetBaseGParams(index);
-    uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
-
-    SignedDigitDecomposeImpl(params, ct, dct, bp);
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
-    for (uint32_t j = 0; j < digitsG2; ++j)
-        dct[j].SetFormat(Format::EVALUATION);
-
-    // acc = dct * ek (matrix product);
-    // uses in-place * operators for the last call to dct[i] to gain performance improvement
-    const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
-    acc->GetElements()[0]                          = (dct[0] * ev[0][0]);
-    for (uint32_t l = 1; l < digitsG2; ++l)
-        acc->GetElements()[0].MultAccEqNoCheck(dct[l], ev[l][0]);
-    acc->GetElements()[1] = (dct[0] *= ev[0][1]);
-    for (uint32_t l = 1; l < digitsG2; ++l)
-        acc->GetElements()[1].MultAccEqNoCheck(dct[l], ev[l][1]);
+    AddToAccNoMonomial(params->GetPolyParams(), params->GetQ().ConvertToInt<BasicInteger>(),
+                       params->GetBaseGParams(index), ek->GetElements(), acc->GetElements());
 }
 
 };  // namespace lbcrypto

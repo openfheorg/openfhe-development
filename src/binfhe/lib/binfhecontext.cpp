@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -266,7 +266,12 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
     // This is done by default while calling Encrypt but the output could
     // be set to LARGE_DIM to skip this switching
     if (output == SMALL_DIM) {
-        ct = SwitchCTtoqn(m_BTKey.KSkey, ct);
+#if NATIVEINT != 32
+        if (m_BTKey.KSkey32 != nullptr)
+            ct = m_LWEscheme->SwitchCTtoqn(LWEParams, m_BTKey.KSkey32, ct);
+        else
+#endif
+            ct = SwitchCTtoqn(m_BTKey.KSkey, ct);
         ct->SetptModulus(p);
     }
     return ct;
@@ -301,7 +306,7 @@ LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPriv
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
-void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
+void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode, bool internal32) {
     if (sk == nullptr)
         OPENFHE_THROW("PrivateKey is empty");
     auto&& RGSWParams = m_params->GetRingGSWParams();
@@ -312,15 +317,19 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
     if (m_timeOptimization) {
         for (auto&& [k, v] : RGSWParams->GetGPowerMap()) {
             RGSWParams->Change_BaseG(k);
-            m_BTKey_map[k] = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
+            m_BTKey_map[k] = m_binfhescheme->KeyGen(m_params, sk, keygenMode, internal32);
         }
         RGSWParams->Change_BaseG(temp);
         m_BTKey = m_BTKey_map[temp];
     }
     else {
-        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
+        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode, internal32);
         m_BTKey_map[temp] = m_BTKey;
     }
+
+#if NATIVEINT != 32
+    ReleaseMonomialsIfAll32();
+#endif
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,

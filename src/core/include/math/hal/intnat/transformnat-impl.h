@@ -711,7 +711,7 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(const IntType& rootOfUnity, 
     uint32_t msb               = GetMSB(ringDim - 1);
     IntType mu                 = modulus.ComputeMu();
     IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);
-    NativeInteger nModulus     = modulus.ConvertToInt();
+    const IntType& nModulus{modulus};
     VecType Table(ringDim, modulus);
     VecType TableI(ringDim, modulus);
     VecType preconTable(ringDim, nModulus);
@@ -719,10 +719,10 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(const IntType& rootOfUnity, 
     for (uint32_t i = 0; i < ringDim; ++i) {
         auto iinv         = ReverseBits(i, msb);
         Table[iinv]       = x;
-        preconTable[iinv] = NativeInteger(x.ConvertToInt()).PrepModMulConst(nModulus);
+        preconTable[iinv] = x.PrepModMulConst(nModulus);
         x.ModMulEq(rootOfUnity, modulus, mu);
         TableI[iinv]       = xinv;
-        preconTableI[iinv] = NativeInteger(xinv.ConvertToInt()).PrepModMulConst(nModulus);
+        preconTableI[iinv] = xinv.PrepModMulConst(nModulus);
         xinv.ModMulEq(rootOfUnityInverse, modulus, mu);
     }
     t->rootReverse              = std::move(Table);
@@ -735,7 +735,7 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(const IntType& rootOfUnity, 
     VecType preconTableCOI(msb + 1, nModulus);
     for (uint32_t i = 0; i <= msb; ++i) {
         TableCOI[i]       = coInv.ModInverse(modulus);
-        preconTableCOI[i] = NativeInteger(TableCOI[i].ConvertToInt()).PrepModMulConst(nModulus);
+        preconTableCOI[i] = TableCOI[i].PrepModMulConst(nModulus);
         coInv <<= 1;
     }
     t->cycloOrderInverse       = std::move(TableCOI);

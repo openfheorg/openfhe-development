@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -387,6 +387,187 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
 
     return std::make_shared<LWECiphertextImpl>(std::move(a), ctQN->GetB().ModSubFast(bAcc, Q));
 }
+
+#if NATIVEINT != 32
+LWESwitchingKey32Impl::LWESwitchingKey32Impl(const LWECryptoParams& params, const LWESwitchingKeyImpl& K)
+    : LWESwitchingKey32Impl(params.GetN(), params.GetBaseKS(), params.GetDigitCountKS(), params.Getn()) {
+    const auto& elemA = K.GetElementsA();
+    const auto& elemB = K.GetElementsB();
+    for (uint32_t i = 0; i < m_N; ++i) {
+        for (uint32_t j = 0; j < m_m; ++j) {
+            for (uint32_t k = 0; k < m_d; ++k) {
+                const auto& src = elemA[i][j][k];
+                uint32_t* dst   = RowA(i, j, k);
+                for (uint32_t idx = 0; idx < m_n; ++idx)
+                    dst[idx] = static_cast<uint32_t>(src[idx].ConvertToInt());
+                B(i, j, k) = static_cast<uint32_t>(elemB[i][j][k].ConvertToInt());
+            }
+        }
+    }
+}
+
+LWESwitchingKey LWESwitchingKey32Impl::Widen(const LWECryptoParams& params) const {
+    NativeInteger qKS(params.GetqKS());
+    std::vector<std::vector<std::vector<NativeVector>>> keyA(m_N);
+    std::vector<std::vector<std::vector<NativeInteger>>> keyB(m_N);
+    for (uint32_t i = 0; i < m_N; ++i) {
+        keyA[i].resize(m_m);
+        keyB[i].resize(m_m);
+        for (uint32_t j = 0; j < m_m; ++j) {
+            keyA[i][j].reserve(m_d);
+            keyB[i][j].reserve(m_d);
+            for (uint32_t k = 0; k < m_d; ++k) {
+                NativeVector v(m_n, qKS);
+                const uint32_t* row = RowA(i, j, k);
+                for (uint32_t idx = 0; idx < m_n; ++idx)
+                    v[idx] = NativeInteger(row[idx]);
+                keyA[i][j].push_back(std::move(v));
+                keyB[i][j].emplace_back(B(i, j, k));
+            }
+        }
+    }
+    return std::make_shared<LWESwitchingKeyImpl>(std::move(keyA), std::move(keyB));
+}
+
+// identical sampling sequence to KeySwitchGen above; each 64-bit row is a temporary that dies at
+// the end of its statement, so the full 64-bit key is never materialised
+LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWECryptoParams>& params,
+                                                      ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const {
+    NativeInteger qKS(params->GetqKS());
+    NativeInteger baseKS(params->GetBaseKS());
+    NativeInteger value{1};
+    const uint32_t digitCount = params->GetDigitCountKS();
+    std::vector<NativeInteger> digitsKS(digitCount);
+    for (uint32_t i = 0; i < digitCount; ++i) {
+        digitsKS[i] = value;
+        value *= baseKS;
+    }
+
+    // newSK stores negative values using modulus q
+    // we need to switch to modulus Q
+    NativeVector sv(sk->GetElement());
+    sv.SwitchModulus(qKS);
+
+    NativeVector svN(skN->GetElement());
+    svN.SwitchModulus(qKS);
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug(qKS);
+
+    NativeInteger mu(qKS.ComputeMu());
+
+    const uint32_t N(params->GetN());
+    const uint32_t m(baseKS.ConvertToInt<uint32_t>());
+    const uint32_t n(params->Getn());
+
+    // the unreduced accumulator below reaches (n+1)*qKS
+    const bool unreducedAccumFits{qKS.ConvertToInt() <= std::numeric_limits<BasicInteger>::max() / (n + 1)};
+
+    auto result = std::make_shared<LWESwitchingKey32Impl>(N, m, digitCount, n);
+
+    #if !defined(__MINGW32__) && !defined(__MINGW64__)
+        #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N)) firstprivate(dug)
+    #endif
+    for (uint32_t i = 0; i < N; ++i) {
+        for (uint32_t j = 0; j < m; ++j) {
+            for (uint32_t k = 0; k < digitCount; ++k) {
+                NativeVector a(dug.GenerateVector(n));
+                NativeInteger b =
+                    (params->GetDggKS().GenerateInteger(qKS)).ModAdd(svN[i].ModMul(j * digitsKS[k], qKS), qKS);
+                if (unreducedAccumFits) {
+                    for (uint32_t idx = 0; idx < n; ++idx)
+                        b += a[idx].ModMulFast(sv[idx], qKS, mu);
+                    b.ModEq(qKS);
+                }
+                else {
+                    for (uint32_t idx = 0; idx < n; ++idx)
+                        b.ModAddFastEq(a[idx].ModMulFast(sv[idx], qKS, mu), qKS);
+                }
+                uint32_t* row = result->RowA(i, j, k);
+                for (uint32_t idx = 0; idx < n; ++idx)
+                    row[idx] = static_cast<uint32_t>(a[idx].ConvertToInt());
+                result->B(i, j, k) = static_cast<uint32_t>(b.ConvertToInt());
+            }
+        }
+    }
+    return result;
+}
+
+LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& K,
+                                             ConstLWECiphertext& ctQN) const {
+    if (K == nullptr)
+        OPENFHE_THROW("SwitchingKey is empty");
+    if (ctQN == nullptr)
+        OPENFHE_THROW("Ciphertext is empty");
+
+    const uint32_t n(params->Getn());
+    const uint32_t N(params->GetN());
+    if (ctQN->GetLength() != N)
+        OPENFHE_THROW("Ciphertext dimension must be equal to N for key switching");
+    if (K->GetN() != N || K->Getn() != n)
+        OPENFHE_THROW("Switching key dimension must be equal to N");
+
+    NativeInteger Q(params->GetqKS());
+    const uint64_t q64{Q.ConvertToInt<uint64_t>()};
+    const uint64_t baseKS{params->GetBaseKS()};
+    const uint32_t digitCount = params->GetDigitCountKS();
+
+    const auto& ctA = ctQN->GetA();
+
+    // rows accumulate unreduced: all N*digitCount values below qKS fit a uint64
+    // (LWESwitchingKey32Impl::Fits), so one reduction per output coefficient replaces one per
+    // row and the residues match the 64-bit path bit for bit
+    auto accumulateRow = [&](uint32_t i, std::vector<uint64_t>& av, uint64_t& bv) {
+        uint64_t atmp{ctA[i].ConvertToInt<uint64_t>()};
+        for (uint32_t j = 0; j < digitCount; ++j) {
+            const auto a0 = static_cast<uint32_t>(atmp % baseKS);
+            atmp /= baseKS;
+            bv += K->B(i, a0, j);
+            const uint32_t* row = K->RowA(i, a0, j);
+            for (uint32_t k = 0; k < n; ++k)
+                av[k] += row[k];
+        }
+    };
+
+    std::vector<uint64_t> acc(n, 0);
+    uint64_t bAcc{0};
+
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(std::min<uint32_t>((N * digitCount) / 128, 32));
+    if (nthreads < 2) {
+        for (uint32_t i = 0; i < N; ++i)
+            accumulateRow(i, acc, bAcc);
+    }
+    else {
+    #pragma omp parallel num_threads(nthreads)
+        {
+            std::vector<uint64_t> accLocal(n, 0);
+            uint64_t bLocal{0};
+    #pragma omp for schedule(static) nowait
+            for (uint32_t i = 0; i < N; ++i)
+                accumulateRow(i, accLocal, bLocal);
+    #pragma omp critical(lwe_keyswitch32_reduce)
+            {
+                for (uint32_t k = 0; k < n; ++k)
+                    acc[k] += accLocal[k];
+                bAcc += bLocal;
+            }
+        }
+    }
+
+    NativeVector a(n, Q);
+    for (uint32_t k = 0; k < n; ++k) {
+        uint64_t r{acc[k] % q64};
+        a[k] = NativeInteger(r != 0 ? q64 - r : 0);
+    }
+    return std::make_shared<LWECiphertextImpl>(std::move(a), ctQN->GetB().ModSubFast(NativeInteger(bAcc % q64), Q));
+}
+
+LWECiphertext LWEEncryptionScheme::SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params,
+                                                ConstLWESwitchingKey32& ksk, ConstLWECiphertext& ct) const {
+    auto ctMS = ModSwitch(params->GetqKS(), ct);
+    auto ctKS = KeySwitch(params, ksk, ctMS);
+    return ModSwitch(params->Getq(), ctKS);
+}
+#endif  // NATIVEINT != 32
 
 // noiseless LWE embedding
 // a is a zero vector of dimension n; with integers mod q
