@@ -184,6 +184,24 @@ const std::shared_ptr<const std::vector<NativePoly32>>& RingGSWCryptoParams::Get
     }
     return m_monomials32;
 }
+
+const std::shared_ptr<const std::vector<NativeVector32>>& RingGSWCryptoParams::GetMonomialsPrecon32() {
+    if (m_monomialsPrecon32 == nullptr) {
+        const auto& monomials = *GetMonomials32();
+        NativeInteger32 Q32(m_Q.ConvertToInt<uint32_t>());
+        auto precon = std::make_shared<std::vector<NativeVector32>>();
+        precon->reserve(monomials.size());
+        for (const auto& m : monomials) {
+            const auto& mv = m.GetValues();
+            NativeVector32 p(mv.GetLength(), Q32);
+            for (size_t k = 0; k < mv.GetLength(); ++k)
+                p[k] = mv[k].PrepModMulConst(Q32);
+            precon->push_back(std::move(p));
+        }
+        m_monomialsPrecon32 = std::move(precon);
+    }
+    return m_monomialsPrecon32;
+}
 #endif  // NATIVEINT != 32
 
 void RingGSWCryptoParams::BuildMonomials() {
