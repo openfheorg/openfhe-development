@@ -40,8 +40,8 @@ if(BUILD_STATIC)
         ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY include/ DESTINATION include/openfhe/pke)
-install(DIRECTORY unittest/utils/ DESTINATION include/openfhe/pke/unittest/utils FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/pke)
+install(DIRECTORY unittest/utils/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/pke/unittest/utils FILES_MATCHING PATTERN "*.h")
 
 add_custom_target(allpke)
 

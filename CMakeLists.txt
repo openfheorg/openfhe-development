@@ -253,35 +253,69 @@ if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
 endif()
 include(GNUInstallDirs)
 
-if(DEFINED INSTALL_LIB_DIR)
+# INSTALL_LIB_DIR and INSTALL_INCLUDE_DIR are superseded by the CMAKE_INSTALL_*DIR variables
+# above. Neither was ever honored by any install rule (every destination was hardcoded), so a
+# non-default value only changed the paths advertised in OpenFHEConfig.cmake and pointed
+# consumers at directories that were never populated.
+#
+# Warn only when a value other than the historical default is present: the old code cached
+# those defaults unconditionally, so every build tree created before this change carries them,
+# and warning on their mere presence would report variables the user never set on every
+# reconfigure (cmake re-runs on make). Then drop the entries.
+if(DEFINED INSTALL_LIB_DIR AND NOT "${INSTALL_LIB_DIR}" STREQUAL "lib")
     message(WARNING "INSTALL_LIB_DIR is deprecated and ignored; use -DCMAKE_INSTALL_LIBDIR instead.")
 endif()
-# Not cached: mirrors CMAKE_INSTALL_LIBDIR so a later -DCMAKE_INSTALL_LIBDIR is picked
-# up on reconfigure. Retained only to fill @INSTALL_LIB_DIR@ in OpenFHEConfig.cmake.in.
-set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR})
-set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH "Installation directory for headers")
-if(NOT IS_ABSOLUTE "${INSTALL_INCLUDE_DIR}")
-    set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}")
+if(DEFINED INSTALL_INCLUDE_DIR AND NOT "${INSTALL_INCLUDE_DIR}" STREQUAL "include/openfhe")
+    message(WARNING "INSTALL_INCLUDE_DIR is deprecated and ignored; use -DCMAKE_INSTALL_INCLUDEDIR instead.")
 endif()
+unset(INSTALL_LIB_DIR CACHE)
+unset(INSTALL_INCLUDE_DIR CACHE)
 
+# INSTALL_CMAKE_DIR, unlike the two variables above, has always been honored by the install
+# rules for the package files, so it stays an override (e.g. -DINSTALL_CMAKE_DIR=share/cmake/OpenFHE).
+# Only its default changes: the package files now go next to the libraries they describe, so
+# that a libdir-based layout (lib64, lib/<arch-triplet>) does not create a second tree under
+# <prefix>/lib solely to hold them.
 if(WIN32 AND NOT CYGWIN)
-    set(DEF_INSTALL_CMAKE_DIR CMake)
+    set(DEF_INSTALL_CMAKE_DIR "CMake")
+    set(OLD_DEF_INSTALL_CMAKE_DIR "CMake")
 else()
-    set(DEF_INSTALL_CMAKE_DIR lib/OpenFHE)
+    set(DEF_INSTALL_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/OpenFHE")
+    set(OLD_DEF_INSTALL_CMAKE_DIR "lib/OpenFHE")
 endif()
-set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+# The default is cached, so a tree configured earlier carries whatever default was derived then.
+# Recording it lets a carried-over default be told apart from a value the user chose: the former
+# is refreshed when the default changes (e.g. after adding -DCMAKE_INSTALL_LIBDIR=lib64 to an
+# existing build tree), the latter is left alone. Versions before this change cached the old
+# hardcoded default without recording it, hence the fallback.
+if(NOT DEFINED OpenFHE_DEF_INSTALL_CMAKE_DIR)
+    set(OpenFHE_DEF_INSTALL_CMAKE_DIR "${OLD_DEF_INSTALL_CMAKE_DIR}")
+endif()
+if(DEFINED INSTALL_CMAKE_DIR AND "${INSTALL_CMAKE_DIR}" STREQUAL "${OpenFHE_DEF_INSTALL_CMAKE_DIR}")
+    unset(INSTALL_CMAKE_DIR CACHE)
+endif()
+# Declared STRING rather than PATH on purpose: cmake rewrites a relative value given for a PATH
+# cache entry into an absolute path against the current working directory, so
+# -DINSTALL_CMAKE_DIR=share/cmake/OpenFHE used to land the package files in the directory cmake
+# was invoked from instead of under CMAKE_INSTALL_PREFIX. As a STRING the value arrives intact
+# and a relative one is resolved against the prefix below, as install(DESTINATION) would.
+set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE STRING "Installation directory for CMake files")
+set(OpenFHE_DEF_INSTALL_CMAKE_DIR "${DEF_INSTALL_CMAKE_DIR}" CACHE INTERNAL
+    "Default INSTALL_CMAKE_DIR last derived by OpenFHE; used to detect a user-supplied override")
+if(NOT IS_ABSOLUTE "${INSTALL_CMAKE_DIR}")
+    set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}")
+endif()
 
-# Relative copies for install(DESTINATION): the loop below rewrites the variables
-# above to absolute paths, and an absolute DESTINATION ignores CMAKE_INSTALL_PREFIX.
-set(OpenFHE_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}")
-set(OpenFHE_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
-
-foreach(p LIB INCLUDE CMAKE)
-    set(var INSTALL_${p}_DIR)
-    if(NOT IS_ABSOLUTE "${${var}}")
-        set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-    endif()
-endforeach()
+# Destinations for install(): the relative forms are passed to install(DESTINATION), which
+# resolves them against CMAKE_INSTALL_PREFIX. The CMAKE_INSTALL_FULL_* variables computed by
+# GNUInstallDirs are the matching absolute paths exported to consumers through
+# OpenFHEConfig.cmake; they also handle the case of an absolute CMAKE_INSTALL_<dir>DIR.
+set(OpenFHE_INSTALL_LIBDIR          "${CMAKE_INSTALL_LIBDIR}")
+set(OpenFHE_INSTALL_BINDIR          "${CMAKE_INSTALL_BINDIR}")
+set(OpenFHE_INSTALL_INCLUDEDIR      "${CMAKE_INSTALL_INCLUDEDIR}/openfhe")
+set(OpenFHE_FULL_INSTALL_LIBDIR     "${CMAKE_INSTALL_FULL_LIBDIR}")
+set(OpenFHE_FULL_INSTALL_BINDIR     "${CMAKE_INSTALL_FULL_BINDIR}")
+set(OpenFHE_FULL_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}/openfhe")
 
 message("***** INSTALL IS AT ${CMAKE_INSTALL_PREFIX}; to change, run cmake with -DCMAKE_INSTALL_PREFIX=/your/path")
 set(CMAKE_INSTALL_MESSAGE LAZY)
@@ -424,7 +458,7 @@ endif()
 
 # Build configure_core.h to make options available
 configure_file(./configure/config_core.in src/core/config_core.h)
-install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/openfhe/core)
+install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/core)
 
 # TODO (dsuponit): do we need TAR?
 find_program(TAR "gtar")
@@ -645,7 +679,7 @@ set(THIRDPARTYDIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 include_directories(${THIRDPARTYDIR}/include)
 
 include_directories(${THIRDPARTYDIR}/cereal/include)
-install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
+install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest/include)
@@ -679,11 +713,14 @@ if(BUILD_SHARED)
 endif()
 
 if(WITH_TCM)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib DESTINATION .
+    # Trailing slash: install the contents of third-party/lib, so the destination follows
+    # CMAKE_INSTALL_LIBDIR instead of always being the literal <prefix>/lib. Consumers look
+    # for these next to the OpenFHE libraries, via OpenFHE_LIBDIR.
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib/ DESTINATION ${OpenFHE_INSTALL_LIBDIR}
         FILES_MATCHING PATTERN "libtcmalloc_minimal.*")
     list(APPEND THIRDPARTYLIBS "tcmalloc")
     list(APPEND THIRDPARTYSTATICLIBS "tcmalloc_static")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION include/openfhe/third-party/)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/third-party/)
 endif()
 
 if(WITH_NTL)
@@ -824,7 +861,7 @@ export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 export(PACKAGE OpenFHE)
 
 # Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${OpenFHE_FULL_INSTALL_INCLUDEDIR}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)

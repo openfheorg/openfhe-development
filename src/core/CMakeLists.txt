@@ -40,7 +40,7 @@ if(BUILD_STATIC)
         ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY include/ DESTINATION include/openfhe/core)
+install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/core)
 
 add_custom_target(allcore)
 
