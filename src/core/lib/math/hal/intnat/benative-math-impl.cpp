@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -92,4 +92,7 @@ CEREAL_CLASS_VERSION(NativeVector, NativeVector::SerializedVersion());
 
 #ifdef TRANSFORM_IMPLEMENTATION
 MAKE_TRANSFORM_TYPES
+    #if NATIVEINT != 32
+MAKE_TRANSFORM_TYPES32
+    #endif
 #endif
