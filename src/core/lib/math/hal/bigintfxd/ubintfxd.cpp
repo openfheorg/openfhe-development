@@ -1616,7 +1616,7 @@ bool BigIntegerFixedT<uint_type, BITLENGTH>::CheckIfPowerOfTwo(const BigIntegerF
 
 template <typename uint_type, uint32_t BITLENGTH>
 uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
-    uint32_t DigitLen = std::ceil(std::log2(base));
+    uint32_t DigitLen = lbcrypto::GetMSB(base - 1);
     uint32_t digit    = 0;
     uint32_t newIndex = 1 + (index - 1) * DigitLen;
     for (uint32_t i = 1; i < base; i = i * 2) {
