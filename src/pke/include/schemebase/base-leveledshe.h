@@ -410,7 +410,7 @@ class LeveledSHEBase {
      * @param privateKey the private key the relinearization key is generated for.
      * @return the relinearization (evaluation) key for s^2.
      */
-    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey) const;
+    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels = 0) const;
 
     /**
      * Virtual function to define the interface for generating a evaluation key
@@ -419,7 +419,8 @@ class LeveledSHEBase {
      * @param privateKey the private key the relinearization keys are generated for.
      * @return the vector of relinearization (evaluation) keys for s^2, s^3, ...
      */
-    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const;
+    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey,
+                                                          uint32_t levels = 0) const;
 
     //------------------------------------------------------------------------------
     // EVAL MULTIPLICATION CIPHERTEXT & CIPHERTEXT
@@ -774,7 +775,7 @@ class LeveledSHEBase {
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels = 0) const;
 
     /**
      * Virtual function for evaluating automorphism of ciphertext at index i
@@ -863,7 +864,7 @@ class LeveledSHEBase {
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList, uint32_t levels = 0) const;
 
     /**
      * Rotates the slots of the ciphertext by index
