@@ -325,7 +325,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
     // dropped from every stage and the peeled final stage folds the values back down with a
     // fixed chain.
     const uint32_t stages{GetMSB(n)};
-#if defined(__clang__) && !defined(__AVX2__)
+#if defined(__clang__) && defined(__x86_64__) && !defined(__AVX2__)
     constexpr bool kLazyWide{sizeof(NInt) == 4};
 #else
     constexpr bool kLazyWide{true};
