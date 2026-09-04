@@ -192,7 +192,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey) const {
+    const PrivateKey<Element> privateKey, uint32_t levels) const {
     if (!privateKey)
         OPENFHE_THROW("Input private key is nullptr");
 
@@ -201,12 +201,13 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::
     std::vector<uint32_t> indices(indx_set.begin(), indx_set.end());
 
     auto algo = privateKey->GetCryptoContext()->GetScheme();
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+    return algo->EvalAutomorphismKeyGen(privateKey, indices, levels);
 }
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices) const {
+    const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices,
+    uint32_t levels) const {
     auto cc = privateKey->GetCryptoContext();
 
     if (!isCKKS(cc->getSchemeId()))
@@ -223,12 +224,12 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::
     indices.insert(indices.end(), rowsIndices.begin(), rowsIndices.end());
 
     auto algo = cc->GetScheme();
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+    return algo->EvalAutomorphismKeyGen(privateKey, indices, levels);
 }
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const {
+    const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices, uint32_t levels) const {
     auto cc = privateKey->GetCryptoContext();
 
     if (!isCKKS(cc->getSchemeId()))
@@ -249,7 +250,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> AdvancedSHEBase<Element>::
     indices.insert(indices.end(), evalSumColsIndices.begin(), evalSumColsIndices.end());
 
     auto algo = cc->GetScheme();
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+    return algo->EvalAutomorphismKeyGen(privateKey, indices, levels);
 }
 
 template <class Element>
