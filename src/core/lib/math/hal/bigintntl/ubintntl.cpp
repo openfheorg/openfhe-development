@@ -318,7 +318,7 @@ uint32_t myZZ::GetBitRangeAtIndex(uint32_t ppo, uint32_t length) const {
 }
 
 uint32_t myZZ::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
-    uint32_t DigitLen = std::ceil(std::log2(base));
+    uint32_t DigitLen = lbcrypto::GetMSB(base - 1);
     uint32_t digit    = 0;
     uint32_t newIndex = 1 + (index - 1) * DigitLen;
     digit             = GetBitRangeAtIndex(newIndex, DigitLen);

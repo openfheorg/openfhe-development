@@ -87,24 +87,25 @@ public:
     LWECryptoParams(const LWECryptoParams& rhs)
         : m_q(rhs.m_q),
           m_Q(rhs.m_Q),
-          // m_qKS(rhs.m_qKS),
+          m_qKS(rhs.m_qKS),
           m_n(rhs.m_n),
           m_N(rhs.m_N),
           m_baseKS(rhs.m_baseKS),
           m_keyDist(rhs.m_keyDist) {
         m_dgg.SetStd(rhs.m_dgg.GetStd());
-        // m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
+        m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
     }
 
     LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        m_q = rhs.m_q;
-        m_Q = rhs.m_Q;
-        // m_qKS    = rhs.m_qKS;
-        m_n      = rhs.m_n;
-        m_N      = rhs.m_N;
-        m_baseKS = rhs.m_baseKS;
+        m_q       = rhs.m_q;
+        m_Q       = rhs.m_Q;
+        m_qKS     = rhs.m_qKS;
+        m_n       = rhs.m_n;
+        m_N       = rhs.m_N;
+        m_baseKS  = rhs.m_baseKS;
+        m_keyDist = rhs.m_keyDist;
         m_dgg.SetStd(rhs.m_dgg.GetStd());
-        // m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
+        m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
         return *this;
     }
 
