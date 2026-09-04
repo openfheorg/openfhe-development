@@ -40,13 +40,18 @@
  */
 
 #include "cryptocontext.h"
+#include "cryptocontext-ser.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
+#include "key/key-ser.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
+#include "scheme/bgvrns/bgvrns-ser.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 #include "UnitTestUtils.h"
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -472,6 +477,52 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, EvalSumKeysAtLevel) {
             }
 
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+}
+
+// reduced and compressed keys survive a serialization round trip and still key-switch
+// correctly at their level
+TEST(UTGENERAL_EVAL_KEY_LEVELS, SerializeReducedKeys) {
+    setupSignals();
+    OpenFHEParallelControls.UnitTestStart();
+
+    constexpr uint32_t levels = 2;
+    for (const auto& [scheme, ksTech] : TEST_CASES) {
+        const std::string failmsg = "SerializeReducedKeys " + TestLabel(scheme, ksTech);
+        try {
+            // deserialized keys resolve their cryptocontext through the factory registry;
+            // clear it so they attach to the context created below
+            CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+            auto cc  = MakeContext(scheme, ksTech);
+            auto kp  = cc->KeyGen();
+            auto kp2 = cc->KeyGen();
+
+            auto keyReduced    = cc->KeySwitchGen(kp.secretKey, kp2.secretKey, levels);
+            auto keyCompressed = cc->CompressEvalKey(cc->KeySwitchGen(kp.secretKey, kp2.secretKey), levels);
+
+            for (const auto& key : {keyReduced, keyCompressed}) {
+                std::stringstream ss;
+                Serial::Serialize(key, ss, SerType::BINARY);
+                EvalKey<DCRTPoly> keyDeser;
+                Serial::Deserialize(keyDeser, ss, SerType::BINARY);
+                ASSERT_TRUE(keyDeser != nullptr) << failmsg;
+                EXPECT_EQ(keyDeser->GetAVector()[0].GetNumOfElements(), key->GetAVector()[0].GetNumOfElements())
+                    << failmsg;
+
+                auto ptxt       = MakeTestPlaintext(scheme, cc);
+                auto ct         = cc->Encrypt(kp.publicKey, ptxt);
+                auto ctReduced  = DropCiphertextLevels(scheme, cc, ct, levels);
+                auto ctSwitched = cc->KeySwitch(ctReduced, keyDeser);
+                CheckDecryption(scheme, cc, kp2.secretKey, ctSwitched, ptxt, 0, failmsg);
+            }
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
