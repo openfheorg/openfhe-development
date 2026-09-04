@@ -69,6 +69,74 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 }
 
 #if NATIVEINT != 32
+namespace {
+
+// native 32-bit twin of KeyGenLMKCDEY (see KeyGenLMKCDEY for the mm derivation)
+RingGSWACCKey32Impl::EvalKey32 KeyGenLMKCDEY32(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                               const std::shared_ptr<ILNativeParams32>& polyParams,
+                                               const NativePoly32& skNTT32,
+                                               const DiscreteGaussianGeneratorImpl<NativeVector32>& dgg, LWEPlaintext m,
+                                               uint32_t index) {
+    DiscreteUniformGeneratorImpl<NativeVector32> dug;
+    NativeInteger32 Q32{static_cast<uint32_t>(params->GetQ().ConvertToInt())};
+
+    // Reduce mod q (dealing with negative number as well)
+    int64_t q  = params->Getq().ConvertToInt<int64_t>();
+    int64_t N  = params->GetN();
+    int64_t mm = (((m % q) + q) % q) * (2 * N / q);
+    bool isReducedMM{false};
+    if (mm >= N) {
+        mm -= N;
+        isReducedMM = true;
+    }
+
+    // approximate gadget decomposition is used; the first digit is ignored
+    const auto& bp = params->GetBaseGParams(index);
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
+    const auto& Gpow{*bp.gpow};
+
+    RingGSWACCKey32Impl::EvalKey32 result(digitsG2, std::vector<NativePoly32>(2));
+    NativePoly32 tmp;
+    for (uint32_t i = 0; i < digitsG2; ++i) {
+        result[i][0] = NativePoly32(dug, polyParams, Format::COEFFICIENT);
+        tmp          = result[i][0];
+        tmp.SetFormat(Format::EVALUATION);
+        result[i][1] = NativePoly32(dgg, polyParams, Format::COEFFICIENT);
+        NativeInteger32 g32{Gpow[(i >> 1) + 1].ConvertToInt<uint32_t>()};
+        if (!isReducedMM)  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
+            result[i][i & 0x1][mm].ModAddFastEq(g32, Q32);
+        else  // (i even) Sub G Multiple, (i odd) [a,as+e] - X^m*G
+            result[i][i & 0x1][mm].ModSubFastEq(g32, Q32);
+        result[i][0].SetFormat(Format::EVALUATION);
+        result[i][1].SetFormat(Format::EVALUATION);
+        result[i][1] += (tmp *= skNTT32);
+    }
+    return result;
+}
+
+// native 32-bit twin of KeyGenAuto
+RingGSWACCKey32Impl::EvalKey32 KeyGenAuto32(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                            const std::shared_ptr<ILNativeParams32>& polyParams,
+                                            const NativePoly32& skNTT32,
+                                            const DiscreteGaussianGeneratorImpl<NativeVector32>& dgg, LWEPlaintext k) {
+    const auto& Gpow{params->GetGPower()};
+    auto skAuto{skNTT32.AutomorphismTransform(k)};
+
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG{params->GetDigitsG() - 1};
+    RingGSWACCKey32Impl::EvalKey32 result(digitsG, std::vector<NativePoly32>(2));
+    DiscreteUniformGeneratorImpl<NativeVector32> dug;
+    for (uint32_t i = 0; i < digitsG; ++i) {
+        NativeInteger32 g32{Gpow[i + 1].ConvertToInt<uint32_t>()};
+        result[i][0] = NativePoly32(dug, polyParams, EVALUATION);
+        result[i][1] = NativePoly32(dgg, polyParams, EVALUATION) - skAuto * g32;
+        result[i][1] += result[i][0] * skNTT32;
+    }
+    return result;
+}
+
+}  // namespace
+
 RingGSWACCKey32 RingGSWAccumulatorLMKCDEY::KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                        const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
     auto sv{LWEsk->GetElement()};
@@ -79,23 +147,27 @@ RingGSWACCKey32 RingGSWAccumulatorLMKCDEY::KeyGenAcc32(const std::shared_ptr<Rin
     params->VerifyBaseGCoverage(static_cast<uint32_t>(n));
     uint32_t numAutoKeys{params->GetNumAutoKeys()};
 
-    // identical per-index bodies to KeyGenAcc above; each 64-bit eval key is a temporary that
-    // dies at the end of its statement, so the full 64-bit refreshing key is never materialised
     auto acc = std::make_shared<RingGSWACCKey32Impl>(params, 1, 2, static_cast<uint32_t>(n));
+
+    const auto& polyParams32 = params->GetPolyParams32();
+    const auto skNTT32       = NarrowPoly32(skNTT, polyParams32);
+    DiscreteGaussianGeneratorImpl<NativeVector32> dgg32(params->GetDgg().GetStd());
 
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (size_t i = 0; i < n; ++i) {
         auto s{sv[i].ConvertToInt<int32_t>()};
-        acc->SetEvalKey(0, 0, i, *KeyGenLMKCDEY(params, skNTT, s > modHalf ? s - mod : s, i));
+        acc->SetEvalKey(0, 0, i, KeyGenLMKCDEY32(params, polyParams32, skNTT32, dgg32, s > modHalf ? s - mod : s, i));
     }
 
     NativeInteger gen = NativeInteger(5);
 
-    acc->SetEvalKey(0, 1, 0, *KeyGenAuto(params, skNTT, 2 * N - gen.ConvertToInt()));
+    acc->SetEvalKey(0, 1, 0, KeyGenAuto32(params, polyParams32, skNTT32, dgg32, 2 * N - gen.ConvertToInt()));
 
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numAutoKeys))
     for (uint32_t i = 1; i <= numAutoKeys; ++i)
-        acc->SetEvalKey(0, 1, i, *KeyGenAuto(params, skNTT, gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>()));
+        acc->SetEvalKey(
+            0, 1, i,
+            KeyGenAuto32(params, polyParams32, skNTT32, dgg32, gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>()));
     return acc;
 }
 

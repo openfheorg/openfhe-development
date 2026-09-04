@@ -43,6 +43,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -158,6 +159,7 @@ public:
    */
     const RingGSWACCKey& GetRefreshKey() const {
 #if NATIVEINT != 32
+        std::lock_guard<std::mutex> lk(m_widenMutex);
         if (m_BTKey.BSkey == nullptr && m_BTKey.BSkey32 != nullptr)
             m_BTKey.BSkey = m_BTKey.BSkey32->Widen(m_params->GetRingGSWParams());
 #endif
@@ -172,6 +174,7 @@ public:
    */
     const LWESwitchingKey& GetSwitchKey() const {
 #if NATIVEINT != 32
+        std::lock_guard<std::mutex> lk(m_widenMutex);
         if (m_BTKey.KSkey == nullptr && m_BTKey.KSkey32 != nullptr)
             m_BTKey.KSkey = m_BTKey.KSkey32->Widen(*m_params->GetLWEParams());
 #endif
@@ -607,6 +610,9 @@ private:
     // Struct containing the bootstrapping keys; mutable so the serialization getters can widen
     // and cache a 64-bit copy of a 32-bit internal key on demand
     mutable RingGSWBTKey m_BTKey = {0};
+
+    // guards the lazy widening in GetRefreshKey/GetSwitchKey against concurrent first access
+    mutable std::mutex m_widenMutex;
 
     std::map<uint32_t, RingGSWBTKey> m_BTKey_map;
 
