@@ -948,7 +948,7 @@ void SWITCHCKKSRNS::EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKK
         m_numSlotsCKKS = numSlotsCKKS;
     }
 
-    m_modulus_LWE = (logQ != 0) ? 1 << logQ : m_ccLWE->GetParams()->GetLWEParams()->Getq().ConvertToInt();
+    m_modulus_LWE = (logQ != 0) ? uint64_t{1} << logQ : m_ccLWE->GetParams()->GetLWEParams()->Getq().ConvertToInt();
 }
 
 std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalFHEWtoCKKSKeyGen(
