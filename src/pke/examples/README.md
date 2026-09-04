@@ -23,6 +23,7 @@ File Listing
 - [advanced-real-numbers.cpp](advanced-real-numbers.cpp): shows several advanced examples of approximate homomorphic encryption using CKKS
 - [advanced-real-numbers-128.cpp](advanced-real-numbers-128.cpp): shows several advanced examples of approximate homomorphic encryption using high-precision CKKS
 - [ckks-bootstrap-keys-serial.cpp](ckks-bootstrap-keys-serial.cpp): demonstrates serialization and deserialization of the CKKS bootstrapping keys (`SerializeEvalBootstrapKey` and `DeserializeEvalBootstrapKey`), so that bootstrapping can run on a party that did not generate the keys
+- [ckks-bootstrapping-leveled-keys.cpp](ckks-bootstrapping-leveled-keys.cpp): demonstrates generating the application's rotation keys at a reduced level (and CompressEvalKey) in a CKKS bootstrapping workload
 - [ckks-noise-flooding.cpp](ckks-noise-flooding.cpp): demonstrates use of experimental feature NOISE_FLOODING_DECRYPT mode in CKKS, which enhances security
 - [ckks-release-memory.cpp](ckks-release-memory.cpp): demonstrates how to release the memory held by the CKKS bootstrapping precomputations, comparing `ClearBootstrapPrecom` with `CryptoContextFactory<DCRTPoly>::ReleaseAllContexts`
 - [depth-bfvrns.cpp](depth-bfvrns.cpp): demonstrates use of the BFVrns scheme for basic homomorphic encryption
