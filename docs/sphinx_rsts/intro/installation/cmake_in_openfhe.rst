@@ -94,6 +94,7 @@ The table below shows the current list of options, definition for the option, an
   WITH_BE4               Include Backend 4 in build by setting WITH_BE4 to ON                                                                                                                  ON
   WITH_NTL               Include Backend 6 and NTL in build by setting WITH_NTL to ON                                                                                                          OFF
   WITH_TCM               Activate tcmalloc by setting WITH_TCM to ON                                                                                                                           OFF
+  WITH_MALLOC_TUNING     Tune glibc malloc to retain freed memory for reuse (higher performance, higher resident memory; see AllocTrim())                                                      ON
   WITH_OPENMP            Use OpenMP to enable <omp.h>                                                                                                                                          ON
   WITH_NATIVEOPT         Use machine-specific optimizations (major speedup for clang)                                                                                                          OFF
   WITH_NUMA_INTERLEAVE   Interleave memory across NUMA nodes at library load (multi-socket Linux only; no effect elsewhere)                                                                    ON
@@ -104,7 +105,7 @@ The table below shows the current list of options, definition for the option, an
 
 .. note:: More Options will be added as development progresses
 
-The default math backend for the OpenFHE build is Backend 2 (basic fixed-maximum-length big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
+The default math backend for the OpenFHE build is Backend 4 (dynamically-sized big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
 
 Detecting Local Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

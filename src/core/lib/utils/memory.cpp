@@ -28,10 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+
 #include "config_core.h"
 #include "utils/memory.h"
 
-#if defined(__GLIBC__)
+#if defined(__APPLE__)
+    #include <malloc/malloc.h>
+#elif defined(__GLIBC__)
+    #include <malloc.h>
+#elif defined(_MSC_VER)
     #include <malloc.h>
 #endif
 
@@ -45,22 +50,36 @@
 
 namespace lbcrypto {
 
-#if defined(__GLIBC__)
-// Tune glibc malloc for FHE allocation patterns. Each homomorphic operation allocates and
-// frees many large (~0.5-30 MB) polynomial coefficient buffers. By default glibc returns
-// these freed buffers to the OS (brk heap-trim / munmap) and re-faults the pages on the next
-// operation; under a single thread this page-fault / kernel-time overhead can dominate
-// runtime. Keeping large allocations on the heap (M_MMAP_MAX=0) and never trimming it back to
-// the OS (M_TRIM_THRESHOLD=-1) lets the buffers be reused, eliminating the churn. Runs once,
-// process-wide, at library load. NOTE: this retains freed memory in-process, so workloads
-// with large transient allocation peaks will show a higher resident set size. Use AllocTrim()
-// after large allocations are freed if this becomes an issue.
+#if defined(WITH_MALLOC_TUNING)
+// Tune the process allocator to retain freed memory for reuse. OpenFHE operations allocate and
+// free many large (~0.5-30 MB) buffers; on allocators that return freed buffers to the OS right
+// away, re-faulting the pages on the next operation can dominate single-threaded runtime. Any
+// tuning below runs once, process-wide, at library load. NOTE: retained memory shows up as a
+// higher resident set size for workloads with large transient allocation peaks. Use AllocTrim()
+// after large allocations are freed if this becomes an issue, or build with
+// -DWITH_MALLOC_TUNING=OFF to disable this tuning entirely.
 namespace {
+    #if defined(__APPLE__)
+    // Nothing to tune: macOS libmalloc already retains freed memory in-process. Freed pages of
+    // small/medium allocations stay mapped and are marked reusable (the kernel reclaims them only
+    // under memory pressure), and freed large allocations are held in the default zone's cache.
+    // There is no public API to tune this behavior further; AllocTrim() releases these caches.
+    #elif defined(__GLIBC__)
+// By default glibc returns freed large buffers to the OS (brk heap-trim / munmap) and re-faults
+// the pages on the next operation. Keeping large allocations on the heap (M_MMAP_MAX=0) and
+// never trimming it back to the OS (M_TRIM_THRESHOLD=-1) lets the buffers be reused,
+// eliminating the churn.
 [[maybe_unused]] const bool ofheGlibcMallocTuned = []() noexcept {
     mallopt(M_MMAP_MAX, 0);
     mallopt(M_TRIM_THRESHOLD, -1);
     return true;
 }();
+    #elif defined(_MSC_VER)
+    // Nothing to tune: the CRT heap is the Windows process heap, which serves allocations above
+    // roughly 0.5-1 MB directly via VirtualAlloc and returns them to the OS on free, with no
+    // supported process-wide switch to retain them. If this churn matters, link a caching
+    // allocator (e.g. mimalloc or tcmalloc) instead.
+    #endif
 }  // namespace
 #endif
 
@@ -129,16 +148,24 @@ constexpr MemPolicyWord OPENFHE_MAXNODE   = 1024;
 // Not async-signal-safe and acquires allocator locks; call only from normal execution context,
 // never from a signal handler. Returns true if a trim was attempted, false on unsupported builds.
 bool AllocTrim() {
-#if defined(__GLIBC__)
+#if defined(__APPLE__)
+    malloc_zone_pressure_relief(nullptr, 0);
+    return true;
+#elif defined(__GLIBC__)
     malloc_trim(0);
+    return true;
+#elif defined(_MSC_VER)
+    _heapmin();
     return true;
 #else
     return false;
 #endif
 }
 
+// secure_memset() overwrites memory with c and, unlike a plain std::memset() of an object about
+// to be freed or go out of scope, is guaranteed not to be removed by dead-store elimination.
 void secure_memset(volatile void* mem, uint8_t c, size_t len) {
-    volatile uint8_t* ptr = (volatile uint8_t*)mem;
+    volatile uint8_t* ptr = static_cast<volatile uint8_t*>(mem);
     for (size_t i = 0; i < len; ++i)
         *(ptr + i) = c;
 }

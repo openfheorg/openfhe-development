@@ -119,7 +119,6 @@ constexpr uint32_t BATCH      = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,  EncTech, PREMode
-#if !defined(__EMSCRIPTEN__)
     { CONTEXT_WITH_SERTYPE, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,      DFLT,    DFLT}, },
     { CONTEXT_WITH_SERTYPE, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,      DFLT,    DFLT}, },
     { CONTEXT_WITH_SERTYPE, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,      DFLT,    DFLT}, },
@@ -129,7 +128,6 @@ static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
     { CONTEXT_WITH_SERTYPE, "06", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,      DFLT,    DFLT}, },
     { CONTEXT_WITH_SERTYPE, "07", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,      DFLT,    DFLT}, },
     { CONTEXT_WITH_SERTYPE, "08", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,      DFLT,    DFLT}, },
-#endif
 #endif
     // ==========================================
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,  EncTech, PREMode
@@ -189,6 +187,7 @@ protected:
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
         UnitTestContextWithSertype(cc, SerType::JSON, "json");
+        cc->ClearAllCKKSCaches();
         UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
     }
 

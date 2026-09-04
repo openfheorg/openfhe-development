@@ -647,6 +647,14 @@ public:
     }
 
     /**
+    * @brief Release all scheme-level caches (bootstrap + scheme-switch).
+    */
+    void ClearAllCKKSCaches() noexcept {
+        ClearBootstrapPrecom();
+        ClearSchemeSwitchPrecom();
+    }
+
+    /**
     * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
     *
     * @param ser stream to serialize to
