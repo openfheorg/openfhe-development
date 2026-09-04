@@ -634,16 +634,16 @@ public:
     * @brief Clear CKKS bootstrap precomputations cached by this context's scheme.
     */
     void ClearBootstrapPrecom() noexcept {
-        if (m_scheme)
-            m_scheme->ClearBootstrapPrecom();
+        VerifyCKKSScheme(__func__);
+        m_scheme->ClearBootstrapPrecom();
     }
 
     /**
     * @brief Clear CKKS/FHEW scheme-switch precomputations cached by this context's scheme.
     */
     void ClearSchemeSwitchPrecom() noexcept {
-        if (m_scheme)
-            m_scheme->ClearSchemeSwitchPrecom();
+        VerifyCKKSScheme(__func__);
+        m_scheme->ClearSchemeSwitchPrecom();
     }
 
     /**
