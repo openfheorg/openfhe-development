@@ -43,7 +43,6 @@
 
 #include <map>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -152,31 +151,29 @@ public:
 
     /**
    * Gets the refresh key (used for serialization). When only the 32-bit internal form exists,
-   * an exact 64-bit copy is built and cached first, so existing serialization code keeps
-   * working; call CompressBTKeys() and AllocTrim() afterwards to release it again.
+   * an exact 64-bit copy is built into the returned handle; nothing is cached, so the copy
+   * lives only as long as the caller holds it.
    *
    * @return a shared pointer to the refresh key
    */
-    const RingGSWACCKey& GetRefreshKey() const {
+    RingGSWACCKey GetRefreshKey() const {
 #if NATIVEINT != 32
-        std::lock_guard<std::mutex> lk(m_widenMutex);
         if (m_BTKey.BSkey == nullptr && m_BTKey.BSkey32 != nullptr)
-            m_BTKey.BSkey = m_BTKey.BSkey32->Widen(m_params->GetRingGSWParams());
+            return m_BTKey.BSkey32->Widen(m_params->GetRingGSWParams());
 #endif
         return m_BTKey.BSkey;
     }
 
     /**
-   * Gets the switching key (used for serialization). Widens a 32-bit internal form on demand,
-   * exactly as GetRefreshKey() does.
+   * Gets the switching key (used for serialization). Widens a 32-bit internal form into the
+   * returned handle, exactly as GetRefreshKey() does.
    *
    * @return a shared pointer to the switching key
    */
-    const LWESwitchingKey& GetSwitchKey() const {
+    LWESwitchingKey GetSwitchKey() const {
 #if NATIVEINT != 32
-        std::lock_guard<std::mutex> lk(m_widenMutex);
         if (m_BTKey.KSkey == nullptr && m_BTKey.KSkey32 != nullptr)
-            m_BTKey.KSkey = m_BTKey.KSkey32->Widen(*m_params->GetLWEParams());
+            return m_BTKey.KSkey32->Widen(*m_params->GetLWEParams());
 #endif
         return m_BTKey.KSkey;
     }
@@ -371,11 +368,9 @@ public:
    * Convert the refreshing and switching keys to their 32-bit internal forms and release the
    * 64-bit copies, halving resident key material and running the blind rotation and key switch
    * on 32-bit words. Each key converts only when its modulus qualifies; returns whether anything
-   * converted. Also releases a 64-bit copy cached earlier by the serialization getters, so
-   * "GetRefreshKey/serialize, then CompressBTKeys() + AllocTrim()" returns to the 32-bit
-   * footprint. The released pages return to the OS only after the follow-up AllocTrim()
-   * (measured: full recovery to the direct-generation footprint); peak memory still holds both
-   * forms. The 64-bit keys are gone afterwards until the getters widen them again on demand.
+   * converted. The released pages return to the OS only after a follow-up AllocTrim(); peak
+   * memory still holds both forms during the conversion. The 64-bit keys are gone afterwards;
+   * the serialization getters widen fresh copies into their returned handles on demand.
    *
    * @return true if a key was converted
    */
@@ -607,12 +602,8 @@ private:
     // Shared pointer to the underlying RingGSW/RLWE scheme
     std::shared_ptr<BinFHEScheme> m_binfhescheme{nullptr};
 
-    // Struct containing the bootstrapping keys; mutable so the serialization getters can widen
-    // and cache a 64-bit copy of a 32-bit internal key on demand
-    mutable RingGSWBTKey m_BTKey = {0};
-
-    // guards the lazy widening in GetRefreshKey/GetSwitchKey against concurrent first access
-    mutable std::mutex m_widenMutex;
+    // Struct containing the bootstrapping keys
+    RingGSWBTKey m_BTKey = {0};
 
     std::map<uint32_t, RingGSWBTKey> m_BTKey_map;
 
