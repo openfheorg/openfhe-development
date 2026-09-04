@@ -527,17 +527,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             modulusPSparse *= BigInteger(moduliPSparse[j]);
         }
 
-        std::vector<NativeInteger> moduliQlSparse(moduliQ.begin(), moduliQ.begin() + sizeQl);
-        std::vector<NativeInteger> rootsQlSparse(rootsQ.begin(), rootsQ.begin() + sizeQl);
-
         m_sparseKSParamsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliPSparse, rootsPSparse);
-        m_sparseKSParamsQ = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQlSparse, rootsQlSparse);
-
-        std::vector<NativeInteger> moduliQPSparse(moduliQlSparse);
-        std::vector<NativeInteger> rootsQPSparse(rootsQlSparse);
-        moduliQPSparse.insert(moduliQPSparse.end(), moduliPSparse.begin(), moduliPSparse.end());
-        rootsQPSparse.insert(rootsQPSparse.end(), rootsPSparse.begin(), rootsPSparse.end());
-        m_sparseKSParamsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQPSparse, rootsQPSparse);
+        m_sparseKSParamsQ = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQl);
+        m_sparseKSParamsQP = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQl, *m_sparseKSParamsP,
+                                                                        sizePSparse);
 
         // Pre-compute CRT::FFT values for P'
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsPSparse, 2 * n, moduliPSparse);
