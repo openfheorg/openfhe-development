@@ -1545,12 +1545,13 @@ private:
     }
 
     /**
-   * Full single-word product built from half-word partial products, for targets without
-   * a double-width integer type. Compilers do NOT fold this back into a single
+   * Full double-word product built from half-word partial products, for use where no
+   * double-width integer type exists. Compilers do NOT fold this back into a single
    * high-multiply instruction (measured: ~24 instructions on aarch64 and powerpc64
-   * versus one umulh/mulhdu), so it is only used where no double-width type exists --
-   * every 64-bit target gcc and clang support provides __int128, so on those this is
-   * reachable only when the 128-bit type is deliberately disabled.
+   * versus one umulh/mulhdu), so it serves only the widest lane on any given target:
+   * uint128_t always, and uint64_t only when __int128 is unavailable -- every 64-bit
+   * target gcc and clang support provides __int128, so there only when the 128-bit
+   * type is deliberately disabled.
    *
    * @param a multiplier
    * @param b multiplicand
@@ -1574,6 +1575,7 @@ private:
         res.lo += static_cast<NativeInt>(mid & mask) << half;
         if (res.lo < lowBefore)
             ++res.hi;
+        // (p1 + p2) wrapped iff the sum is below either addend, so one comparison suffices
         if (mid < p1)
             res.hi += static_cast<NativeInt>(1) << half;
     }
@@ -1611,27 +1613,8 @@ private:
         }
 
 #if defined(HAVE_INT128)
-        if constexpr (std::is_same_v<NativeInt, uint128_t>) {
-            static constexpr uint128_t masklo = (static_cast<uint128_t>(1) << 64) - 1;
-            static constexpr uint128_t onehi  = static_cast<uint128_t>(1) << 64;
-
-            uint128_t a1{a >> 64};
-            uint128_t a2{a & masklo};
-            uint128_t b1{b >> 64};
-            uint128_t b2{b & masklo};
-            uint128_t a1b2{a1 * b2};
-            uint128_t a2b1{a2 * b1};
-            uint128_t tmp{a1b2 + a2b1};
-            uint128_t lo{a2 * b2};
-
-            res = {a1 * b1, lo};
-            res.lo += tmp << 64;
-            if (lo > res.lo)
-                ++res.hi;
-            if ((tmp < a1b2) || (tmp < a2b1))
-                res.hi += onehi;
-            res.hi += tmp >> 64;
-        }
+        if constexpr (std::is_same_v<NativeInt, uint128_t>)
+            MultDPortable(a, b, res);
 #endif
     }
 
