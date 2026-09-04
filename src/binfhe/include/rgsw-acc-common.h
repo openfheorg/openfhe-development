@@ -145,8 +145,6 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
     auto& ct  = ctScratch;
     auto& dct = dctScratch;
     ct        = acc;
-    ct[0].SetFormat(Format::COEFFICIENT);
-    ct[1].SetFormat(Format::COEFFICIENT);
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
     if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
@@ -157,13 +155,41 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
             d.OverrideFormat(Format::COEFFICIENT);
     }
 
-    ExcessHDigitDecompose(Q, bp, ct, dct);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
+    if (nthreads < 2) {
+        ct[0].SetFormat(Format::COEFFICIENT);
+        ct[1].SetFormat(Format::COEFFICIENT);
+        ExcessHDigitDecompose(Q, bp, ct, dct);
+        for (uint32_t d = 0; d < digitsG2; ++d)
+            dct[d].SetFormat(Format::EVALUATION);
+        GadgetMatrixProduct(acc, dct, ev, digitsG2);
+        return;
+    }
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
-    for (uint32_t d = 0; d < digitsG2; ++d)
-        dct[d].SetFormat(Format::EVALUATION);
+#pragma omp parallel num_threads(nthreads)
+    {
+#pragma omp for schedule(static) nowait
+        for (uint32_t i = 0; i < 2; ++i)
+            ct[i].SetFormat(Format::COEFFICIENT);
 
-    GadgetMatrixProduct(acc, dct, ev, digitsG2);
+#pragma omp barrier
+#pragma omp single
+        ExcessHDigitDecompose(Q, bp, ct, dct);
+
+#pragma omp for schedule(static)
+        for (uint32_t d = 0; d < digitsG2; ++d)
+            dct[d].SetFormat(Format::EVALUATION);
+
+            // each column writes only its own acc element, so GadgetMatrixProduct's in-place
+            // reuse of dct[0] for the second column cannot be used here
+#pragma omp for schedule(static)
+        for (uint32_t j = 0; j < 2; ++j) {
+            acc[j] = dct[0];
+            acc[j] *= ev[0][j];
+            for (uint32_t d = 1; d < digitsG2; ++d)
+                acc[j].MultAccEqNoCheck(dct[d], ev[d][j]);
+        }
+    }
 }
 
 // The LMKCDEY automorphism: permute both components by X -> X^a, then switch key of
@@ -192,15 +218,28 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
 
     ExcessHDigitDecompose(Q, bp, cta, dcta);
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG))
-    for (uint32_t d = 0; d < digitsG; ++d)
-        dcta[d].SetFormat(Format::EVALUATION);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG > 4 ? digitsG : 4);
+    if (nthreads < 2) {
+        for (uint32_t d = 0; d < digitsG; ++d)
+            dcta[d].SetFormat(Format::EVALUATION);
+        for (uint32_t d = 0; d < digitsG; ++d)
+            acc[0].MultAccEqNoCheck(dcta[d], ev[d][0]);
+        for (uint32_t d = 0; d < digitsG; ++d)
+            acc[1].MultAccEqNoCheck(dcta[d], ev[d][1]);
+        return;
+    }
 
-    // acc = dct * input (matrix product);
-    for (uint32_t d = 0; d < digitsG; ++d)
-        acc[0].MultAccEqNoCheck(dcta[d], ev[d][0]);
-    for (uint32_t d = 0; d < digitsG; ++d)
-        acc[1].MultAccEqNoCheck(dcta[d], ev[d][1]);
+#pragma omp parallel num_threads(nthreads)
+    {
+#pragma omp for schedule(static)
+        for (uint32_t d = 0; d < digitsG; ++d)
+            dcta[d].SetFormat(Format::EVALUATION);
+
+#pragma omp for schedule(static)
+        for (uint32_t j = 0; j < 2; ++j)
+            for (uint32_t d = 0; d < digitsG; ++d)
+                acc[j].MultAccEqNoCheck(dcta[d], ev[d][j]);
+    }
 }
 
 #if NATIVEINT != 32
@@ -267,8 +306,6 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
     auto& ct  = ctScratch;
     auto& dct = dctScratch;
     ct        = acc;
-    ct[0].SetFormat(Format::COEFFICIENT);
-    ct[1].SetFormat(Format::COEFFICIENT);
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
     if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
@@ -279,16 +316,39 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
             d.OverrideFormat(Format::COEFFICIENT);
     }
 
-    ExcessHDigitDecompose(Q, bp, ct, dct);
-
-    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
-    for (uint32_t d = 0; d < digitsG2; ++d)
-        dct[d].SetFormat(Format::EVALUATION);
-
     uint32_t N{static_cast<uint32_t>(polyParams->GetRingDimension())};
     uint64_t mu{static_cast<uint64_t>(-1) / Q};
-    LazyInnerProduct32(acc[0], dct, ev, 0, digitsG2, N, Q, mu);
-    LazyInnerProduct32(acc[1], dct, ev, 1, digitsG2, N, Q, mu);
+
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
+    if (nthreads < 2) {
+        ct[0].SetFormat(Format::COEFFICIENT);
+        ct[1].SetFormat(Format::COEFFICIENT);
+        ExcessHDigitDecompose(Q, bp, ct, dct);
+        for (uint32_t d = 0; d < digitsG2; ++d)
+            dct[d].SetFormat(Format::EVALUATION);
+        LazyInnerProduct32(acc[0], dct, ev, 0, digitsG2, N, Q, mu);
+        LazyInnerProduct32(acc[1], dct, ev, 1, digitsG2, N, Q, mu);
+        return;
+    }
+
+    #pragma omp parallel num_threads(nthreads)
+    {
+    #pragma omp for schedule(static) nowait
+        for (uint32_t i = 0; i < 2; ++i)
+            ct[i].SetFormat(Format::COEFFICIENT);
+
+    #pragma omp barrier
+    #pragma omp single
+        ExcessHDigitDecompose(Q, bp, ct, dct);
+
+    #pragma omp for schedule(static)
+        for (uint32_t d = 0; d < digitsG2; ++d)
+            dct[d].SetFormat(Format::EVALUATION);
+
+    #pragma omp for schedule(static)
+        for (uint32_t j = 0; j < 2; ++j)
+            LazyInnerProduct32(acc[j], dct, ev, j, digitsG2, N, Q, mu);
+    }
 }
 
 #endif  // NATIVEINT != 32
