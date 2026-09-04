@@ -116,16 +116,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         for (uint32_t j = 0; j < m_numPartQ; j++) {
             auto startTower = j * a;
             auto endTower   = ((j + 1) * a - 1 < sizeQ) ? (j + 1) * a - 1 : sizeQ - 1;
-            std::vector<std::shared_ptr<ILNativeParams>> params =
-                GetElementParams()->GetParamPartition(startTower, endTower);
-            std::vector<NativeInteger> moduli(params.size());
-            std::vector<NativeInteger> roots(params.size());
-            for (uint32_t i = 0; i < params.size(); i++) {
-                moduli[i] = params[i]->GetModulus();
-                roots[i]  = params[i]->GetRootOfUnity();
-            }
-            m_paramsPartQ[j] =
-                std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
+            auto params      = GetElementParams()->GetParamPartition(startTower, endTower);
+            m_paramsPartQ[j] = std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), params);
         }
 
         // Find number and size of individual special primes.
@@ -191,30 +183,15 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // Store the created moduli and roots in m_paramsP
         m_paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliP, rootsP);
 
-        // Create the moduli and roots for the extended CRT basis QP
-        std::vector<NativeInteger> moduliQP(sizeQ + sizeP);
-        std::vector<NativeInteger> rootsQP(sizeQ + sizeP);
-        for (size_t i = 0; i < sizeQ; i++) {
-            moduliQP[i] = moduliQ[i];
-            rootsQP[i]  = rootsQ[i];
-        }
-        for (size_t i = 0; i < sizeP; i++) {
-            moduliQP[sizeQ + i] = moduliP[i];
-            rootsQP[sizeQ + i]  = rootsP[i];
-        }
-
-        m_paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQP, rootsQP);
+        // Create the extended CRT basis QP
+        m_paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), static_cast<uint32_t>(sizeQ),
+                                                                *m_paramsP, static_cast<uint32_t>(sizeP));
 
         // Precompute params for first 1..sizeQ towers of Q for KeySwitchDown (avoids per-call allocation).
         m_paramsQlHybrid.resize(sizeQ);
-        std::vector<NativeInteger> moduliQl, rootsQl;
-        moduliQl.reserve(sizeQ);
-        rootsQl.reserve(sizeQ);
-        for (size_t i = 0; i < sizeQ; ++i) {
-            moduliQl.push_back(moduliQ[i]);
-            rootsQl.push_back(rootsQ[i]);
-            m_paramsQlHybrid[i] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQl, rootsQl);
-        }
+        for (size_t i = 0; i < sizeQ; ++i)
+            m_paramsQlHybrid[i] =
+                std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), static_cast<uint32_t>(i + 1));
 
         // Pre-compute CRT::FFT values for P
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n, moduliP);

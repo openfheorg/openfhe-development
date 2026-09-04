@@ -885,21 +885,8 @@ typename VecType::Integer DCRTPolyImpl<VecType>::GetWorkingModulus() const {
 template <typename VecType>
 std::shared_ptr<typename DCRTPolyImpl<VecType>::Params> DCRTPolyImpl<VecType>::GetExtendedCRTBasis(
     const std::shared_ptr<Params>& paramsP) const {
-    uint32_t sizeQ  = m_vectors.size();
-    uint32_t sizeQP = sizeQ + paramsP->GetParams().size();
-    std::vector<NativeInteger> moduliQP(sizeQP);
-    std::vector<NativeInteger> rootsQP(sizeQP);
-    const auto& parq = m_params->GetParams();
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduliQP[i] = parq[i]->GetModulus();
-        rootsQP[i]  = parq[i]->GetRootOfUnity();
-    }
-    const auto& parp = paramsP->GetParams();
-    for (uint32_t i = sizeQ, j = 0; i < sizeQP; ++i, ++j) {
-        moduliQP[i] = parp[j]->GetModulus();
-        rootsQP[i]  = parp[j]->GetRootOfUnity();
-    }
-    return std::make_shared<Params>(2 * m_params->GetRingDimension(), moduliQP, rootsQP);
+    return std::make_shared<Params>(*m_params, static_cast<uint32_t>(m_vectors.size()), *paramsP,
+                                    static_cast<uint32_t>(paramsP->GetParams().size()));
 }
 
 template <typename VecType>

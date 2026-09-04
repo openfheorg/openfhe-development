@@ -56,12 +56,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     uint32_t compositeDegree = m_compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
-    std::vector<NativeInteger> rootsQ(sizeQ);
 
-    for (size_t i = 0; i < sizeQ; i++) {
+    for (size_t i = 0; i < sizeQ; i++)
         moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-        rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
-    }
 
     // Pre-compute values for rescaling
     m_qlInvModq.resize(sizeQ - 1);
@@ -187,9 +184,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         uint32_t sizeComplQl = sizeQ - sizeQl;
 
         std::vector<NativeInteger> moduliComplQl(moduliQ.begin() + sizeQl, moduliQ.end());
-        std::vector<NativeInteger> rootsComplQl(rootsQ.begin() + sizeQl, rootsQ.end());
-        m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(GetElementParams()->GetCyclotomicOrder(),
-                                                                             moduliComplQl, rootsComplQl);
+        m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(
+            GetElementParams()->GetCyclotomicOrder(),
+            GetElementParams()->GetParamPartition(sizeQl, static_cast<uint32_t>(sizeQ) - 1));
 
         BigInteger modulusQl(1);
         for (uint32_t i = 0; i < sizeQl; ++i)
@@ -332,17 +329,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             modulusPSparse *= BigInteger(moduliPSparse[j]);
         }
 
-        std::vector<NativeInteger> moduliQlSparse(moduliQ.begin(), moduliQ.begin() + sizeQl);
-        std::vector<NativeInteger> rootsQlSparse(rootsQ.begin(), rootsQ.begin() + sizeQl);
-
-        m_sparseKSParamsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliPSparse, rootsPSparse);
-        m_sparseKSParamsQ = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQlSparse, rootsQlSparse);
-
-        std::vector<NativeInteger> moduliQPSparse(moduliQlSparse);
-        std::vector<NativeInteger> rootsQPSparse(rootsQlSparse);
-        moduliQPSparse.insert(moduliQPSparse.end(), moduliPSparse.begin(), moduliPSparse.end());
-        rootsQPSparse.insert(rootsQPSparse.end(), rootsPSparse.begin(), rootsPSparse.end());
-        m_sparseKSParamsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQPSparse, rootsQPSparse);
+        m_sparseKSParamsP  = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliPSparse, rootsPSparse);
+        m_sparseKSParamsQ  = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQl);
+        m_sparseKSParamsQP =
+            std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQl, *m_sparseKSParamsP, sizePSparse);
 
         // Pre-compute CRT::FFT values for P'
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsPSparse, 2 * n, moduliPSparse);

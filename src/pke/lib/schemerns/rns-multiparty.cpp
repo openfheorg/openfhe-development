@@ -63,17 +63,9 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
         DugType dug;
         auto params                            = cv[0].GetParams();
         auto cyclOrder                         = params->GetCyclotomicOrder();
-        std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
-        std::vector<NativeInteger> rootsFirst  = {params->GetParams()[0]->GetRootOfUnity()};
-        auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
-        std::vector<NativeInteger> moduliAllButFirst(sizeQl - 1);
-        std::vector<NativeInteger> rootsAllButFirst(sizeQl - 1);
-        for (size_t i = 1; i < sizeQl; i++) {
-            moduliAllButFirst[i - 1] = params->GetParams()[i]->GetModulus();
-            rootsAllButFirst[i - 1]  = params->GetParams()[i]->GetRootOfUnity();
-        }
-        auto paramsAllButFirst =
-            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
+        auto paramsFirst       = std::make_shared<ILDCRTParams<BigInteger>>(*params, 1);
+        auto paramsAllButFirst = std::make_shared<ILDCRTParams<BigInteger>>(
+            cyclOrder, params->GetParamPartition(1, static_cast<uint32_t>(sizeQl) - 1));
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
         e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
@@ -325,12 +317,12 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     }
 
     std::vector<NativeInteger> moduliP(sizeP);
-    std::vector<NativeInteger> rootsP(sizeP);
-    for (size_t i = 0; i < sizeP; i++) {
+    for (size_t i = 0; i < sizeP; i++)
         moduliP[i] = paramsQP->GetParams()[i + sizeQ]->GetModulus();
-        rootsP[i]  = paramsQP->GetParams()[i + sizeQ]->GetRootOfUnity();
-    }
-    auto paramsP = std::make_shared<typename DCRTPoly::Params>(2 * paramsQ->GetRingDimension(), moduliP, rootsP);
+    // the P part may be empty when the bases coincide
+    auto towersP = (sizeQP > sizeQ) ? paramsQP->GetParamPartition(sizeQ, sizeQP - 1) :
+                                      std::vector<std::shared_ptr<typename DCRTPoly::Params::ILNativeParams>>{};
+    auto paramsP = std::make_shared<typename DCRTPoly::Params>(paramsQP->GetCyclotomicOrder(), towersP);
 
     // Does all RNS precomputations
     std::vector<NativeInteger> QHatInvModq(sizeQ);
