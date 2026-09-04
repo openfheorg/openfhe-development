@@ -111,6 +111,11 @@ public:
     RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params, uint32_t d1, uint32_t d2, uint32_t d3);
     void SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const RingGSWEvalKeyImpl& ek);
 
+    // native 32-bit form, for key generation that never materialises a 64-bit key
+    void SetEvalKey(uint32_t i, uint32_t j, uint32_t k, EvalKey32&& ek) {
+        m_key[i][j][k] = std::move(ek);
+    }
+
     // the 64-bit key's [d1][d2][d3] layout; entries the method leaves unset stay empty
     const std::vector<std::vector<std::vector<EvalKey32>>>& GetElements() const {
         return m_key;

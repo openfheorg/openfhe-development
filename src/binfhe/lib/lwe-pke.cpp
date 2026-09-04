@@ -429,19 +429,20 @@ LWESwitchingKey LWESwitchingKey32Impl::Widen(const LWECryptoParams& params) cons
     return std::make_shared<LWESwitchingKeyImpl>(std::move(keyA), std::move(keyB));
 }
 
-// identical sampling sequence to KeySwitchGen above; each 64-bit row is a temporary that dies at
-// the end of its statement, so the full 64-bit key is never materialised
+// native 32-bit sampling: the whole key is generated on 32-bit words (the outputs follow the
+// same distributions as KeySwitchGen but the sampling sequence differs, so keys are not
+// bit-comparable across widths -- verify by truth tables)
 LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWECryptoParams>& params,
                                                       ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const {
     NativeInteger qKS(params->GetqKS());
-    NativeInteger baseKS(params->GetBaseKS());
-    NativeInteger value{1};
+    const uint64_t qKS64{qKS.ConvertToInt()};
+    const uint32_t qKS32{static_cast<uint32_t>(qKS64)};
+    const uint64_t baseKS{params->GetBaseKS()};
     const uint32_t digitCount = params->GetDigitCountKS();
-    std::vector<NativeInteger> digitsKS(digitCount);
-    for (uint32_t i = 0; i < digitCount; ++i) {
-        digitsKS[i] = value;
-        value *= baseKS;
-    }
+    std::vector<uint64_t> digitsKS(digitCount);
+    digitsKS[0] = 1;
+    for (uint32_t i = 1; i < digitCount; ++i)
+        digitsKS[i] = digitsKS[i - 1] * baseKS;
 
     // newSK stores negative values using modulus q
     // we need to switch to modulus Q
@@ -451,16 +452,22 @@ LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWEC
     NativeVector svN(skN->GetElement());
     svN.SwitchModulus(qKS);
 
-    DiscreteUniformGeneratorImpl<NativeVector> dug(qKS);
-
-    NativeInteger mu(qKS.ComputeMu());
-
     const uint32_t N(params->GetN());
-    const uint32_t m(baseKS.ConvertToInt<uint32_t>());
+    const uint32_t m(static_cast<uint32_t>(baseKS));
     const uint32_t n(params->Getn());
 
-    // the unreduced accumulator below reaches (n+1)*qKS
-    const bool unreducedAccumFits{qKS.ConvertToInt() <= std::numeric_limits<BasicInteger>::max() / (n + 1)};
+    // the secret key is fixed across the whole generation: precompute its Shoup constants so
+    // the inner products run at one high-word estimate per lane, with a lazy 64-bit accumulator
+    // (bound (n + 1) * qKS < 2^64 -- qKS is a 32-bit word and n <= 2^16)
+    std::vector<uint32_t> s32(n), sp32(n);
+    for (uint32_t idx = 0; idx < n; ++idx) {
+        s32[idx]  = static_cast<uint32_t>(sv[idx].ConvertToInt());
+        sp32[idx] = static_cast<uint32_t>((static_cast<uint64_t>(s32[idx]) << 32) / qKS64);
+    }
+
+    DiscreteUniformGeneratorImpl<NativeVector32> dug{NativeInteger32(qKS32)};
+    DiscreteGaussianGeneratorImpl<NativeVector32> dggKS32(params->GetDggKS().GetStd());
+    const NativeInteger32 qKS32i{qKS32};
 
     auto result = std::make_shared<LWESwitchingKey32Impl>(N, m, digitCount, n);
 
@@ -468,24 +475,21 @@ LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWEC
         #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N)) firstprivate(dug)
     #endif
     for (uint32_t i = 0; i < N; ++i) {
+        const uint64_t svNi{svN[i].ConvertToInt()};
         for (uint32_t j = 0; j < m; ++j) {
             for (uint32_t k = 0; k < digitCount; ++k) {
-                NativeVector a(dug.GenerateVector(n));
-                NativeInteger b =
-                    (params->GetDggKS().GenerateInteger(qKS)).ModAdd(svN[i].ModMul(j * digitsKS[k], qKS), qKS);
-                if (unreducedAccumFits) {
-                    for (uint32_t idx = 0; idx < n; ++idx)
-                        b += a[idx].ModMulFast(sv[idx], qKS, mu);
-                    b.ModEq(qKS);
-                }
-                else {
-                    for (uint32_t idx = 0; idx < n; ++idx)
-                        b.ModAddFastEq(a[idx].ModMulFast(sv[idx], qKS, mu), qKS);
-                }
+                NativeVector32 a(dug.GenerateVector(n));
+                uint64_t noise{dggKS32.GenerateInteger(qKS32i).ConvertToInt()};
+                uint64_t acc{(noise + svNi * ((j * digitsKS[k]) % qKS64)) % qKS64};
                 uint32_t* row = result->RowA(i, j, k);
-                for (uint32_t idx = 0; idx < n; ++idx)
-                    row[idx] = static_cast<uint32_t>(a[idx].ConvertToInt());
-                result->B(i, j, k) = static_cast<uint32_t>(b.ConvertToInt());
+                for (uint32_t idx = 0; idx < n; ++idx) {
+                    uint32_t av{static_cast<uint32_t>(a[idx].ConvertToInt())};
+                    row[idx] = av;
+                    uint32_t hi{static_cast<uint32_t>((static_cast<uint64_t>(av) * sp32[idx]) >> 32)};
+                    uint32_t r{av * s32[idx] - hi * qKS32};
+                    acc += r - (qKS32 & (uint32_t(0) - static_cast<uint32_t>(r >= qKS32)));
+                }
+                result->B(i, j, k) = static_cast<uint32_t>(acc % qKS64);
             }
         }
     }
