@@ -272,36 +272,44 @@ unset(INSTALL_LIB_DIR CACHE)
 unset(INSTALL_INCLUDE_DIR CACHE)
 
 # INSTALL_CMAKE_DIR, unlike the two variables above, has always been honored by the install
-# rules for the package files, so it stays an override (e.g. -DINSTALL_CMAKE_DIR=share/cmake/OpenFHE).
-# Only its default changes: the package files now go next to the libraries they describe, so
-# that a libdir-based layout (lib64, lib/<arch-triplet>) does not create a second tree under
+# rules for the package files, so -DINSTALL_CMAKE_DIR=share/cmake/OpenFHE keeps working. Only
+# its default changes: the package files now go next to the libraries they describe, so that a
+# libdir-based layout (lib64, lib/<arch-triplet>) does not create a second tree under
 # <prefix>/lib solely to hold them.
+#
+# Deliberately no longer declared as a cache entry of our own. Doing that pins an existing build
+# tree to whatever default was derived when it was first configured, so adding
+# -DCMAKE_INSTALL_LIBDIR later moves the libraries but leaves the package files behind. It also
+# avoids the PATH cache type, for which cmake rewrites a relative value into an absolute path
+# against the current working directory - that is what made the example above install into the
+# directory cmake was invoked from rather than under CMAKE_INSTALL_PREFIX. The cost is that the
+# variable no longer shows up in ccmake/cmake-gui.
 if(WIN32 AND NOT CYGWIN)
     set(DEF_INSTALL_CMAKE_DIR "CMake")
-    set(OLD_DEF_INSTALL_CMAKE_DIR "CMake")
 else()
     set(DEF_INSTALL_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/OpenFHE")
-    set(OLD_DEF_INSTALL_CMAKE_DIR "lib/OpenFHE")
 endif()
-# The default is cached, so a tree configured earlier carries whatever default was derived then.
-# Recording it lets a carried-over default be told apart from a value the user chose: the former
-# is refreshed when the default changes (e.g. after adding -DCMAKE_INSTALL_LIBDIR=lib64 to an
-# existing build tree), the latter is left alone. Versions before this change cached the old
-# hardcoded default without recording it, hence the fallback.
-if(NOT DEFINED OpenFHE_DEF_INSTALL_CMAKE_DIR)
-    set(OpenFHE_DEF_INSTALL_CMAKE_DIR "${OLD_DEF_INSTALL_CMAKE_DIR}")
-endif()
-if(DEFINED INSTALL_CMAKE_DIR AND "${INSTALL_CMAKE_DIR}" STREQUAL "${OpenFHE_DEF_INSTALL_CMAKE_DIR}")
+
+# Earlier versions of this file did cache the derived default, for every user, so a build tree
+# configured by one of them carries a value nobody chose. Discard that and re-derive, otherwise
+# such a tree stays pinned to lib/OpenFHE when CMAKE_INSTALL_LIBDIR is changed. Two things have
+# to hold for the value to be one of those rather than a deliberate choice: it still has the help
+# string those set(... CACHE) calls gave it, and it is one of the defaults they hardcoded. cmake
+# gives any entry that came from the command line its own help string instead, whether or not a
+# type was supplied, so -DINSTALL_CMAKE_DIR=lib/OpenFHE and -DINSTALL_CMAKE_DIR:PATH=lib/OpenFHE
+# are both left alone even alongside a different CMAKE_INSTALL_LIBDIR.
+get_property(_install_cmake_dir_help CACHE INSTALL_CMAKE_DIR PROPERTY HELPSTRING)
+if("${_install_cmake_dir_help}" STREQUAL "Installation directory for CMake files"
+        AND ("${INSTALL_CMAKE_DIR}" STREQUAL "lib/OpenFHE" OR "${INSTALL_CMAKE_DIR}" STREQUAL "CMake"))
     unset(INSTALL_CMAKE_DIR CACHE)
 endif()
-# Declared STRING rather than PATH on purpose: cmake rewrites a relative value given for a PATH
-# cache entry into an absolute path against the current working directory, so
-# -DINSTALL_CMAKE_DIR=share/cmake/OpenFHE used to land the package files in the directory cmake
-# was invoked from instead of under CMAKE_INSTALL_PREFIX. As a STRING the value arrives intact
-# and a relative one is resolved against the prefix below, as install(DESTINATION) would.
-set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE STRING "Installation directory for CMake files")
-set(OpenFHE_DEF_INSTALL_CMAKE_DIR "${DEF_INSTALL_CMAKE_DIR}" CACHE INTERNAL
-    "Default INSTALL_CMAKE_DIR last derived by OpenFHE; used to detect a user-supplied override")
+unset(_install_cmake_dir_help)
+# Sentinel written by an earlier revision of this file; no longer read.
+unset(OpenFHE_DEF_INSTALL_CMAKE_DIR CACHE)
+
+if(NOT DEFINED INSTALL_CMAKE_DIR)
+    set(INSTALL_CMAKE_DIR "${DEF_INSTALL_CMAKE_DIR}")
+endif()
 if(NOT IS_ABSOLUTE "${INSTALL_CMAKE_DIR}")
     set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}")
 endif()
@@ -861,13 +869,9 @@ export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 export(PACKAGE OpenFHE)
 
 # Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${OpenFHE_FULL_INSTALL_INCLUDEDIR}")
 # ... for the build tree
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
 # ... for the install tree
-set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-# set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/../../include/openfhe") # supposed to be relocatable?
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
 # ... for both
 configure_file(OpenFHEConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)

@@ -37,10 +37,6 @@ function openfhe_manifest_line() {
 
 function openfhe_remove_manifest_files() {
     local line count=0
-    if [[ ! -s install_manifest.txt ]]; then
-        echo "Nothing in install_manifest.txt to be uninstalled!"
-        return
-    fi
     while IFS= read -r line; do
         rm -vf -- "${line}"
         count=$((count + 1))
@@ -91,6 +87,15 @@ function uninstall_mingw() {
 
     echo "Be sure to cleanup your env PATH"
 }
+
+# Everything below reads install_manifest.txt, so stop here if there is nothing to act on. This
+# script runs with root privileges and deletes directories, so bail out rather than continue with
+# paths derived from a manifest that could not be read.
+if [[ ! -s install_manifest.txt ]]; then
+    echo "Nothing in install_manifest.txt to be uninstalled!"
+    echo "Run this from the build directory that was used for 'make install'."
+    exit 0
+fi
 
 # On MinGW sudo is not a valid command, and the user needs to run this in a mingw terminal with
 # admin priviledges. Match the Windows-like environments explicitly rather than testing for
