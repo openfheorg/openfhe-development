@@ -68,7 +68,7 @@ static inline NInt condSubNoCmp(NInt v, NInt q) {
 
 // Shoup high-word multiply for the raw-lane butterflies. gcc's vectorizer takes the
 // 32-bit-halves form with AVX2+ lanes and never takes the double-width form; clang vectorizes
-// the double-width form on its own, and the halves form measured slower there, so the halves
+// the double-width form on its own and is slower with the halves form, so the halves
 // form is gcc-only. Scalar, the double-width form always wins, hence the fallbacks.
 static inline uint32_t shoupMulHi(uint32_t a, uint32_t b) {
     return static_cast<uint32_t>((static_cast<uint64_t>(a) * b) >> 32);
@@ -320,25 +320,91 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
     const NInt mv{element->GetModulus().m_value};
     const NInt mv2{static_cast<NInt>(mv + mv)};
     const uint32_t n(element->GetLength() >> 1);
-    for (size_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
-        for (size_t i{0}; i < m; ++i) {
-            const NInt omega{rootOfUnityTable[i + m].m_value};
-            const NInt preconOmega{preconRootOfUnityTable[i + m].m_value};
-            // size_t induction keeps [j1] and [j1 + t] affine for the vectorizer (u32 indexing could wrap)
-            for (size_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
-                NInt hi{(*element)[j1 + t].m_value};
-                NInt of{static_cast<NInt>(hi * omega - shoupMulHi(hi, preconOmega) * mv)};
-                NInt lo{(*element)[j1 + 0].m_value};
-                lo                         = condSubNoCmp(lo, mv2);
-                (*element)[j1 + 0].m_value = lo + of;
-                (*element)[j1 + t].m_value = lo - of + mv2;
+    // Deferred reduction: from [0, modulus) inputs the values grow by 2*modulus per stage, so
+    // when (2*stages + 3)*modulus fits the word the per-butterfly conditional subtract can be
+    // dropped from every stage and the peeled final stage folds the values back down with a
+    // fixed chain.
+    const uint32_t stages{GetMSB(n)};
+#if defined(__clang__) && !defined(__AVX2__)
+    constexpr bool kLazyWide{sizeof(NInt) == 4};
+#else
+    constexpr bool kLazyWide{true};
+#endif
+    const bool lazy{kLazyWide && mv <= static_cast<NInt>(-1) / static_cast<NInt>(2 * stages + 3)};
+    if (lazy) {
+        for (size_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
+            for (size_t i{0}; i < m; ++i) {
+                const NInt omega{rootOfUnityTable[i + m].m_value};
+                const NInt preconOmega{preconRootOfUnityTable[i + m].m_value};
+                // size_t induction keeps [j1] and [j1 + t] affine for the vectorizer
+                for (size_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
+                    NInt hi{(*element)[j1 + t].m_value};
+                    NInt of{static_cast<NInt>(hi * omega - shoupMulHi(hi, preconOmega) * mv)};
+                    NInt lo{(*element)[j1 + 0].m_value};
+                    (*element)[j1 + 0].m_value = lo + of;
+                    (*element)[j1 + t].m_value = lo - of + mv2;  // of < 2*modulus, so the offset holds
+                }
             }
         }
     }
-    // peeled final stage, reducing the outputs to [0, modulus)
+    else {
+        for (size_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
+            for (size_t i{0}; i < m; ++i) {
+                const NInt omega{rootOfUnityTable[i + m].m_value};
+                const NInt preconOmega{preconRootOfUnityTable[i + m].m_value};
+                // size_t induction keeps [j1] and [j1 + t] affine for the vectorizer (u32 indexing could wrap)
+                for (size_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
+                    NInt hi{(*element)[j1 + t].m_value};
+                    NInt of{static_cast<NInt>(hi * omega - shoupMulHi(hi, preconOmega) * mv)};
+                    NInt lo{(*element)[j1 + 0].m_value};
+                    lo                         = condSubNoCmp(lo, mv2);
+                    (*element)[j1 + 0].m_value = lo + of;
+                    (*element)[j1 + t].m_value = lo - of + mv2;
+                }
+            }
+        }
+    }
+    // peeled final stage, reducing the outputs to [0, modulus). When the stages ran lazily the
+    // values sit in [0, (2*stages + 1)*modulus) and fold down through a fixed four-step chain
+    // of halving multiples of the modulus (steps at or below the value are no-ops, and every
+    // step is a multiple of the modulus, so residues are untouched).
+    NInt c0{mv2}, c1{mv2}, c2{mv2}, c3{mv2};
+    if (lazy) {
+        // largest halving chain start below the value bound; comparing against bound/2 keeps
+        // the doubling itself from overflowing (the bound fits the word by the lazy test)
+        const NInt bound{static_cast<NInt>(mv * (2 * stages + 1))};
+        while (c0 < static_cast<NInt>(bound >> 1))
+            c0 <<= 1;
+        c1 = (c0 >> 1 > mv2) ? c0 >> 1 : mv2;
+        c2 = (c1 >> 1 > mv2) ? c1 >> 1 : mv2;
+        c3 = (c2 >> 1 > mv2) ? c2 >> 1 : mv2;
+    }
     if constexpr (sizeof(NInt) == 4 || kPairLoop64) {
         // the index-doubled pair form (2i, 2i + 1) is the stride-2 shape gcc's vectorizer
         // accepts, i += 2 is not
+        if (lazy) {
+            for (size_t i{0}; i < n; ++i) {
+                const NInt omega{rootOfUnityTable[i + n].m_value};
+                const NInt preconOmega{preconRootOfUnityTable[i + n].m_value};
+                NInt hi{(*element)[2 * i + 1].m_value};
+                NInt of{static_cast<NInt>(hi * omega - shoupMulHi(hi, preconOmega) * mv)};
+                NInt lo{(*element)[2 * i + 0].m_value};
+                lo = condSubNoCmp(lo, c0);
+                lo = condSubNoCmp(lo, c1);
+                lo = condSubNoCmp(lo, c2);
+                lo = condSubNoCmp(lo, c3);
+                lo = condSubNoCmp(lo, mv2);
+                NInt s{static_cast<NInt>(lo + of)};
+                s = condSubNoCmp(s, mv2);
+                s = condSubNoCmp(s, mv);
+                NInt d{static_cast<NInt>(lo - of + mv2)};
+                d                             = condSubNoCmp(d, mv2);
+                d                             = condSubNoCmp(d, mv);
+                (*element)[2 * i + 0].m_value = s;
+                (*element)[2 * i + 1].m_value = d;
+            }
+            return;
+        }
         for (size_t i{0}; i < n; ++i) {
             const NInt omega{rootOfUnityTable[i + n].m_value};
             const NInt preconOmega{preconRootOfUnityTable[i + n].m_value};
@@ -358,7 +424,30 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
     }
     else {
         // wide words without wide lanes: nothing vectorizes here and the classic i += 2 form
-        // is the faster scalar (index-doubling measured 2% slower on gcc at baseline ISA)
+        // is the faster scalar
+        if (lazy) {
+            for (size_t i{0}; i < (static_cast<size_t>(n) << 1); i += 2) {
+                const NInt omega{rootOfUnityTable[(i >> 1) + n].m_value};
+                const NInt preconOmega{preconRootOfUnityTable[(i >> 1) + n].m_value};
+                NInt hi{(*element)[i + 1].m_value};
+                NInt of{static_cast<NInt>(hi * omega - shoupMulHi(hi, preconOmega) * mv)};
+                NInt lo{(*element)[i + 0].m_value};
+                lo = condSubNoCmp(lo, c0);
+                lo = condSubNoCmp(lo, c1);
+                lo = condSubNoCmp(lo, c2);
+                lo = condSubNoCmp(lo, c3);
+                lo = condSubNoCmp(lo, mv2);
+                NInt s{static_cast<NInt>(lo + of)};
+                s = condSubNoCmp(s, mv2);
+                s = condSubNoCmp(s, mv);
+                NInt d{static_cast<NInt>(lo - of + mv2)};
+                d                         = condSubNoCmp(d, mv2);
+                d                         = condSubNoCmp(d, mv);
+                (*element)[i + 0].m_value = s;
+                (*element)[i + 1].m_value = d;
+            }
+            return;
+        }
         for (size_t i{0}; i < (static_cast<size_t>(n) << 1); i += 2) {
             const NInt omega{rootOfUnityTable[(i >> 1) + n].m_value};
             const NInt preconOmega{preconRootOfUnityTable[(i >> 1) + n].m_value};
