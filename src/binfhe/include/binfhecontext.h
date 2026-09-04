@@ -319,14 +319,12 @@ public:
    *
    * @param sk secret key
    * @param keygenMode key generation mode for symmetric or public encryption
+   * @param internal32 generate the keys directly in their 32-bit internal form where they
+   *        qualify. Qualification is per key and automatic: a key whose moduli do not fit is
+   *        generated in the 64-bit form instead.
    */
-    void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT, bool internal32 = false);
+    void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT, bool internal32 = true);
 
-    /**
-   * Loads bootstrapping keys in the context (typically after deserializing)
-   *
-   * @param key struct with the bootstrapping keys
-   */
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)
    *
@@ -336,7 +334,7 @@ public:
    *        caller still holds keep the 64-bit copies resident; drop them and call AllocTrim()
    *        to finish the release.
    */
-    void BTKeyLoad(const RingGSWBTKey& key, bool internal32 = false) {
+    void BTKeyLoad(const RingGSWBTKey& key, bool internal32 = true) {
         // an earlier all-32-bit key generation may have released the 64-bit monomials
         if (key.BSkey != nullptr)
             m_params->GetRingGSWParams()->EnsureMonomials();
