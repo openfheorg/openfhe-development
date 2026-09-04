@@ -58,7 +58,7 @@ using namespace lbcrypto;
 
 template <typename NInt>
 static inline NInt condSubNoCmp(NInt v, NInt q) {
-#if defined(__clang__) && !defined(__AVX2__)
+#if defined(__clang__) && defined(__x86_64__) && !defined(__AVX2__)
     const NInt t{static_cast<NInt>(v - q)};
     return static_cast<NInt>(t + (q & (NInt(0) - static_cast<NInt>(t >> (8 * sizeof(NInt) - 1)))));
 #else

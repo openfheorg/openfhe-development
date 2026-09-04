@@ -687,7 +687,7 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const Integer
         const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
         const NInt mu{modulus.ComputeMu().m_value};
         for (size_t i = 0; i < size; ++i) {
-#if defined(__clang__) && defined(__AVX2__)
+#if defined(__clang__) && defined(__x86_64__) && defined(__AVX2__)
             DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
             NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
             NInt r{static_cast<NInt>(prod) - qhat * mv};
@@ -720,7 +720,7 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const Integ
         const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
         const NInt mu{modulus.ComputeMu().m_value};
         for (size_t i = 0; i < size; ++i) {
-#if defined(__clang__) && defined(__AVX2__)
+#if defined(__clang__) && defined(__x86_64__) && defined(__AVX2__)
             DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
             NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
             NInt r{static_cast<NInt>(prod) - qhat * mv};
@@ -753,7 +753,7 @@ void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const Inte
         const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
         const NInt mu{modulus.ComputeMu().m_value};
         for (size_t i = 0; i < size; ++i) {
-#if defined(__clang__) && defined(__AVX2__)
+#if defined(__clang__) && defined(__x86_64__) && defined(__AVX2__)
             DInt prod{static_cast<DInt>(a[i].m_value) * b[i].m_value};
             NInt qhat{static_cast<NInt>((static_cast<DInt>(static_cast<NInt>(prod >> n)) * mu) >> (n + 7))};
             NInt r{static_cast<NInt>(prod) - qhat * mv};
