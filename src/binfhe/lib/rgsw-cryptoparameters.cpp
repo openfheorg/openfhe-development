@@ -59,29 +59,16 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             m_digitsR.emplace_back(value);
     }
 
-    // Computes baseG^i
+    // Computes baseG^i. The context's own base is always precomputed: sign evaluation adds
+    // the three bases Change_BaseG switches between, it does not replace the base in use.
+    PrecomputeGPower(m_baseG);
+    for (const auto& item : m_baseG_map)
+        PrecomputeGPower(item.first);
     if (signEval) {
-        constexpr uint32_t baseGlist[]            = {1 << 14, 1 << 18, 1 << 27};
-        constexpr NativeInteger nativebaseGlist[] = {1 << 14, 1 << 18, 1 << 27};
-        for (size_t j = 0; j < 3; ++j) {
-            NativeInteger vTemp{1};
-            auto tempdigits{DigitsForBase(m_Q, baseGlist[j])};
-            std::vector<NativeInteger> tempvec(tempdigits);
-            for (size_t i = 0; i < tempdigits; ++i) {
-                tempvec[i] = vTemp;
-                vTemp      = vTemp.ModMulFast(nativebaseGlist[j], m_Q);
-            }
-            if (m_baseG == baseGlist[j])
-                m_Gpower = tempvec;
-            m_Gpower_map[baseGlist[j]] = std::move(tempvec);
-        }
+        for (uint32_t baseG : {1 << 14, 1 << 18, 1 << 27})
+            PrecomputeGPower(baseG);
     }
-    else {
-        PrecomputeGPower(m_baseG);
-        for (const auto& item : m_baseG_map)
-            PrecomputeGPower(item.first);
-        m_Gpower = m_Gpower_map.at(m_baseG);
-    }
+    m_Gpower = m_Gpower_map.at(m_baseG);
 
     // Sets the gate constants for supported binary operations
     m_gateConst = {
