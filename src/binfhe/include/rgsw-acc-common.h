@@ -165,7 +165,7 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
             d.OverrideFormat(Format::COEFFICIENT);
     }
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 8 ? (digitsG2 >> 1) : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
         ct[1].SetFormat(Format::COEFFICIENT);
@@ -281,7 +281,7 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
 
     ExcessHDigitDecompose(Q, bp, cta, dcta);
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG > 4 ? digitsG : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit((digitsG << 1) > 4 ? (digitsG << 1) : 4);
     if (nthreads < 2) {
         for (uint32_t d = 0; d < digitsG; ++d)
             dcta[d].SetFormat(Format::EVALUATION);
@@ -389,7 +389,7 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
     }
     uint64_t mu{static_cast<uint64_t>(-1) / Q};
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 8 ? (digitsG2 >> 1) : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
         ct[1].SetFormat(Format::COEFFICIENT);
