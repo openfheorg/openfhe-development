@@ -59,7 +59,7 @@ struct RingGSWBTKey {
     LWEPublicKey Pkey;
 #if NATIVEINT != 32
     // 32-bit internal forms, generated directly by KeyGen(internal32) or narrowed by
-    // BinFHEContext::CompressBTKeys(). When set, the 64-bit member stays null (or is released)
+    // BTKeyGen or BTKeyLoad with internal32 requested. When set, the 64-bit member stays null (or is released)
     // and the 32-bit copy is the only resident one, so the key material is half size.
     // Serialization requires the 64-bit forms, so the internal path is opt-in.
     RingGSWACCKey32 BSkey32;

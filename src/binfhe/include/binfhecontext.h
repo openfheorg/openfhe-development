@@ -361,55 +361,6 @@ public:
         m_BTKey_map[baseG] = key;
     }
 
-#if NATIVEINT != 32
-    /**
-   * Convert the refreshing and switching keys to their 32-bit internal forms and release the
-   * 64-bit copies, halving resident key material and running the blind rotation and key switch
-   * on 32-bit words. Each key converts only when its modulus qualifies; returns whether anything
-   * converted. The released pages return to the OS only after a follow-up AllocTrim(); peak
-   * memory still holds both forms during the conversion. The 64-bit keys are gone afterwards;
-   * the serialization getters widen fresh copies into their returned handles on demand.
-   *
-   * @return true if a key was converted
-   */
-    bool CompressBTKeys() {
-        bool converted = false;
-        if (m_BTKey.BSkey != nullptr) {
-            const auto& rgswParams = m_params->GetRingGSWParams();
-            if (m_BTKey.BSkey32 == nullptr && RingGSWACCKey32Impl::Fits(*rgswParams))
-                m_BTKey.BSkey32 = std::make_shared<RingGSWACCKey32Impl>(rgswParams, *m_BTKey.BSkey);
-            if (m_BTKey.BSkey32 != nullptr) {
-                // the map entry for the active baseG aliases m_BTKey; release its copy too or
-                // the 64-bit key stays resident through it
-                for (auto& [baseG, key] : m_BTKey_map) {
-                    if (key.BSkey == m_BTKey.BSkey) {
-                        key.BSkey32 = m_BTKey.BSkey32;
-                        key.BSkey.reset();
-                    }
-                }
-                m_BTKey.BSkey.reset();
-                converted = true;
-            }
-        }
-        if (m_BTKey.KSkey != nullptr) {
-            const auto& lweParams = m_params->GetLWEParams();
-            if (m_BTKey.KSkey32 == nullptr && LWESwitchingKey32Impl::Fits(*lweParams))
-                m_BTKey.KSkey32 = std::make_shared<LWESwitchingKey32Impl>(*lweParams, *m_BTKey.KSkey);
-            if (m_BTKey.KSkey32 != nullptr) {
-                for (auto& [baseG, key] : m_BTKey_map) {
-                    if (key.KSkey == m_BTKey.KSkey) {
-                        key.KSkey32 = m_BTKey.KSkey32;
-                        key.KSkey.reset();
-                    }
-                }
-                m_BTKey.KSkey.reset();
-                converted = true;
-            }
-        }
-        return converted;
-    }
-#endif
-
     /**
    * Clear the bootstrapping keys in the current context
    */
@@ -578,6 +529,58 @@ public:
     }
 
 private:
+#if NATIVEINT != 32
+    /**
+   * Convert the refreshing and switching keys to their 32-bit internal forms and release the
+   * originals, halving resident key material and running the blind rotation and key switch on
+   * 32-bit words. Each key converts only when its modulus qualifies. Peak memory holds both
+   * forms during the conversion, and the released pages return to the OS only after a
+   * follow-up AllocTrim().
+   *
+   * Callers select this through BTKeyGen and BTKeyLoad rather than here: false means the keys
+   * were already narrowed as well as that they do not qualify, which is not a distinction an
+   * application should have to make.
+   *
+   * @return true if a key was converted
+   */
+    bool CompressBTKeys() {
+        bool converted = false;
+        if (m_BTKey.BSkey != nullptr) {
+            const auto& rgswParams = m_params->GetRingGSWParams();
+            if (m_BTKey.BSkey32 == nullptr && RingGSWACCKey32Impl::Fits(*rgswParams))
+                m_BTKey.BSkey32 = std::make_shared<RingGSWACCKey32Impl>(rgswParams, *m_BTKey.BSkey);
+            if (m_BTKey.BSkey32 != nullptr) {
+                // the map entry for the active baseG aliases m_BTKey; release its copy too or
+                // the 64-bit key stays resident through it
+                for (auto& [baseG, key] : m_BTKey_map) {
+                    if (key.BSkey == m_BTKey.BSkey) {
+                        key.BSkey32 = m_BTKey.BSkey32;
+                        key.BSkey.reset();
+                    }
+                }
+                m_BTKey.BSkey.reset();
+                converted = true;
+            }
+        }
+        if (m_BTKey.KSkey != nullptr) {
+            const auto& lweParams = m_params->GetLWEParams();
+            if (m_BTKey.KSkey32 == nullptr && LWESwitchingKey32Impl::Fits(*lweParams))
+                m_BTKey.KSkey32 = std::make_shared<LWESwitchingKey32Impl>(*lweParams, *m_BTKey.KSkey);
+            if (m_BTKey.KSkey32 != nullptr) {
+                for (auto& [baseG, key] : m_BTKey_map) {
+                    if (key.KSkey == m_BTKey.KSkey) {
+                        key.KSkey32 = m_BTKey.KSkey32;
+                        key.KSkey.reset();
+                    }
+                }
+                m_BTKey.KSkey.reset();
+                converted = true;
+            }
+        }
+        return converted;
+    }
+#endif
+
 #if NATIVEINT != 32
     // release the 64-bit monomial table when every held key runs on the 32-bit internal path
     // (which keeps its own); rebuilt on demand if a 64-bit key is generated or loaded later
