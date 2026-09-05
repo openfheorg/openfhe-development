@@ -90,6 +90,7 @@ public:
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
         m_digitsG = DigitsForBase(m_Q, m_baseG);
+        CheckDigitsG(m_baseG, m_digitsG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
@@ -130,10 +131,12 @@ public:
         for (const auto& [baseG, count] : baseGMap) {
             if (count == 0 || baseG <= 1 || !IsPowerOfTwo(baseG))
                 OPENFHE_THROW("Gadget base should be a power of two and its count should be greater than zero.");
+            CheckDigitsG(baseG, DigitsForBase(Q, baseG));
         }
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
         m_digitsG = DigitsForBase(m_Q, m_baseG);
+        CheckDigitsG(m_baseG, m_digitsG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
@@ -355,6 +358,7 @@ public:
         if (m_baseG != BaseG) {
             if (!m_baseGByIndex.empty())
                 OPENFHE_THROW("Change_BaseG is not supported with per-dimension gadget bases");
+            CheckDigitsG(BaseG, DigitsForBase(m_Q, BaseG));
             m_baseG   = BaseG;
             m_Gpower  = PrecomputeGPower(BaseG);
             m_digitsG = DigitsForBase(m_Q, m_baseG);
@@ -362,6 +366,14 @@ public:
     }
 
 private:
+    // the approximate gadget decomposition drops the first digit, so a single-digit gadget
+    // leaves the external product with no rows at all
+    static void CheckDigitsG(uint32_t baseG, uint32_t digitsG) {
+        if (digitsG < 2)
+            OPENFHE_THROW("Gadget base " + std::to_string(baseG) +
+                          " is too large for Q: the approximate gadget decomposition needs at least two digits.");
+    }
+
     static uint32_t DigitsForBase(const NativeInteger& Q, uint32_t baseG) {
         return lbcrypto::GetDigitCount(Q.ConvertToInt(), baseG);
     }
