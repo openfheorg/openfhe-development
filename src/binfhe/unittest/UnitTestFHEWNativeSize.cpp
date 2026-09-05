@@ -98,9 +98,10 @@ void UnitTestInternal32BitIdentical(BINFHE_PARAMSET set, BINFHE_METHOD method, c
         before.push_back(cc.EvalBinGate(g.gate, in0.back(), in1.back()));
     }
 
-    ASSERT_TRUE(cc.CompressBTKeys()) << msg << " the parameter set was expected to qualify";
-    EXPECT_TRUE(cc.HasInternal32RefreshKey()) << msg << " refresh key did not convert";
-    EXPECT_TRUE(cc.HasInternal32SwitchKey()) << msg << " switching key did not convert";
+    // narrow through the public route an application would use
+    cc.BTKeyLoad({cc.GetRefreshKey(), cc.GetSwitchKey()}, /*internal32=*/true);
+    ASSERT_TRUE(cc.HasInternal32RefreshKey()) << msg << " refresh key did not convert";
+    ASSERT_TRUE(cc.HasInternal32SwitchKey()) << msg << " switching key did not convert";
 
     for (size_t i = 0; i < gates.size(); ++i) {
         auto after = cc.EvalBinGate(gates[i].gate, in0[i], in1[i]);
