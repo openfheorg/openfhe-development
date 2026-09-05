@@ -141,10 +141,20 @@ template <typename P, typename PP>
 void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
                         const RingGSWCryptoParams::BaseGParams& bp, const std::vector<std::vector<P>>& ev,
                         std::vector<P>& acc) {
+    using I = typename P::Integer::Integer;
     thread_local std::vector<P> ctScratch, dctScratch;
+    thread_local std::vector<I> w0Scratch, w1Scratch;
     auto& ct  = ctScratch;
     auto& dct = dctScratch;
+    auto& w0  = w0Scratch;
+    auto& w1  = w1Scratch;
     ct        = acc;
+
+    uint32_t N{acc[0].GetLength()};
+    if (w0.size() != N) {
+        w0.resize(N);
+        w1.resize(N);
+    }
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
     if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
@@ -155,7 +165,7 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
             d.OverrideFormat(Format::COEFFICIENT);
     }
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 8 ? (digitsG2 >> 1) : 4);
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
         ct[1].SetFormat(Format::COEFFICIENT);
@@ -173,21 +183,74 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
             ct[i].SetFormat(Format::COEFFICIENT);
 
 #pragma omp barrier
+        // the shared form spreads the decomposition across the region at the price of one
+        // more barrier, which only repays itself once the gadget is wide and the split deep
+        if (digitsG2 >= 8 && nthreads >= 4) {
+            ExcessHDigitDecomposeShared(Q, bp, ct, dct, w0, w1);
+        }
+        else {
 #pragma omp single
-        ExcessHDigitDecompose(Q, bp, ct, dct);
+            ExcessHDigitDecompose(Q, bp, ct, dct);
+        }
 
 #pragma omp for schedule(static)
         for (uint32_t d = 0; d < digitsG2; ++d)
             dct[d].SetFormat(Format::EVALUATION);
 
             // each column writes only its own acc element, so GadgetMatrixProduct's in-place
-            // reuse of dct[0] for the second column cannot be used here
-#pragma omp for schedule(static)
+            // reuse of dct[0] for the second column cannot be used here. nowait: the region's
+            // own closing barrier is the one the caller needs
+#pragma omp for schedule(static) nowait
         for (uint32_t j = 0; j < 2; ++j) {
             acc[j] = dct[0];
             acc[j] *= ev[0][j];
             for (uint32_t d = 1; d < digitsG2; ++d)
                 acc[j].MultAccEqNoCheck(dct[d], ev[d][j]);
+        }
+    }
+}
+
+// As above, but the two loops are worksharing constructs that bind to the region the caller
+// already opened, so the decomposition runs across that region's threads instead of on one.
+// w0 and w1 are the caller's, and must be sized N before the region opens: every thread runs
+// this body and each fills part of the one shared pair.
+template <typename P>
+void ExcessHDigitDecomposeShared(typename P::Integer::Integer Q, const RingGSWCryptoParams::BaseGParams& bp,
+                                 const std::vector<P>& input, std::vector<P>& output,
+                                 std::vector<typename P::Integer::Integer>& w0,
+                                 std::vector<typename P::Integer::Integer>& w1) {
+    using I = typename P::Integer::Integer;
+    I QHalf{Q >> 1};
+    uint32_t gBits{bp.gBits};
+    I gHalf{static_cast<I>(bp.baseG >> 1)};
+    I gMask{static_cast<I>(bp.baseG - 1)};
+    I QmHalf{Q - gHalf};
+    uint32_t digitsG{bp.digitsG};
+    I H{0};
+    for (uint32_t i{0}; i < digitsG; ++i)
+        H += gHalf << (i * gBits);
+    uint32_t digitsG2{(digitsG - 1) << 1};
+    uint32_t N{input[0].GetLength()};
+
+#pragma omp for schedule(static)
+    for (uint32_t k = 0; k < N; ++k) {
+        auto t0{input[0][k].template ConvertToInt<I>()};
+        w0[k] = t0 + H - (t0 < QHalf ? 0 : Q);
+        auto t1{input[1][k].template ConvertToInt<I>()};
+        w1[k] = t1 + H - (t1 < QHalf ? 0 : Q);
+    }
+
+#pragma omp for schedule(static)
+    for (uint32_t d = 0; d < digitsG2; d += 2) {
+        uint32_t shift{((d >> 1) + 1) * gBits};
+        auto mask{(d + 2 < digitsG2) ? gMask : static_cast<I>(-1)};
+        auto& out0{output[d + 0]};
+        auto& out1{output[d + 1]};
+        for (uint32_t k{0}; k < N; ++k) {
+            auto r0{(w0[k] >> shift) & mask};
+            out0[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
+            auto r1{(w1[k] >> shift) & mask};
+            out1[k] = (r1 < gHalf) ? r1 + QmHalf : r1 - gHalf;
         }
     }
 }
@@ -235,7 +298,7 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
         for (uint32_t d = 0; d < digitsG; ++d)
             dcta[d].SetFormat(Format::EVALUATION);
 
-#pragma omp for schedule(static)
+#pragma omp for schedule(static) nowait
         for (uint32_t j = 0; j < 2; ++j)
             for (uint32_t d = 0; d < digitsG; ++d)
                 acc[j].MultAccEqNoCheck(dcta[d], ev[d][j]);
@@ -258,23 +321,23 @@ inline void ShoupMulEq32(NativePoly32& a, const NativePoly32& b, const NativeVec
 // Inner product over the gadget digits with ONE modular reduction instead of one per digit.
 inline void LazyInnerProduct32(NativePoly32& out, const std::vector<NativePoly32>& dct,
                                const std::vector<std::vector<NativePoly32>>& ev, uint32_t col, uint32_t rows,
-                               uint32_t N, uint32_t q, uint64_t mu) {
+                               uint32_t kBegin, uint32_t kEnd, uint32_t N, uint32_t q, uint64_t mu) {
     thread_local std::vector<uint64_t> acc;
     if (acc.size() < N)
         acc.resize(N);
     {
         const auto& d0{dct[0].GetValues()};
         const auto& e0{ev[0][col].GetValues()};
-        for (uint32_t k = 0; k < N; ++k)
+        for (uint32_t k = kBegin; k < kEnd; ++k)
             acc[k] = static_cast<uint64_t>(d0[k].ConvertToInt()) * e0[k].ConvertToInt();
     }
     for (uint32_t i = 1; i < rows; ++i) {
         const auto& di{dct[i].GetValues()};
         const auto& ei{ev[i][col].GetValues()};
-        for (uint32_t k = 0; k < N; ++k)
+        for (uint32_t k = kBegin; k < kEnd; ++k)
             acc[k] += static_cast<uint64_t>(di[k].ConvertToInt()) * ei[k].ConvertToInt();
     }
-    for (uint32_t k = 0; k < N; ++k) {
+    for (uint32_t k = kBegin; k < kEnd; ++k) {
     #if defined(HAVE_INT128)
         uint64_t x{acc[k]};
         uint64_t hi{static_cast<uint64_t>((static_cast<uint128_t>(x) * mu) >> 64)};
@@ -303,6 +366,7 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
                                const RingGSWCryptoParams::BaseGParams& bp,
                                const std::vector<std::vector<NativePoly32>>& ev, std::vector<NativePoly32>& acc) {
     thread_local std::vector<NativePoly32> ctScratch, dctScratch;
+    thread_local std::vector<uint32_t> w0Scratch, w1Scratch;
     auto& ct  = ctScratch;
     auto& dct = dctScratch;
     ct        = acc;
@@ -317,17 +381,23 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
     }
 
     uint32_t N{static_cast<uint32_t>(polyParams->GetRingDimension())};
+    auto& w0 = w0Scratch;
+    auto& w1 = w1Scratch;
+    if (w0.size() != N) {
+        w0.resize(N);
+        w1.resize(N);
+    }
     uint64_t mu{static_cast<uint64_t>(-1) / Q};
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 8 ? (digitsG2 >> 1) : 4);
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
         ct[1].SetFormat(Format::COEFFICIENT);
         ExcessHDigitDecompose(Q, bp, ct, dct);
         for (uint32_t d = 0; d < digitsG2; ++d)
             dct[d].SetFormat(Format::EVALUATION);
-        LazyInnerProduct32(acc[0], dct, ev, 0, digitsG2, N, Q, mu);
-        LazyInnerProduct32(acc[1], dct, ev, 1, digitsG2, N, Q, mu);
+        LazyInnerProduct32(acc[0], dct, ev, 0, digitsG2, 0, N, N, Q, mu);
+        LazyInnerProduct32(acc[1], dct, ev, 1, digitsG2, 0, N, N, Q, mu);
         return;
     }
 
@@ -338,16 +408,25 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
             ct[i].SetFormat(Format::COEFFICIENT);
 
     #pragma omp barrier
+        if (digitsG2 >= 8 && nthreads >= 4) {
+            ExcessHDigitDecomposeShared(Q, bp, ct, dct, w0, w1);
+        }
+        else {
     #pragma omp single
-        ExcessHDigitDecompose(Q, bp, ct, dct);
+            ExcessHDigitDecompose(Q, bp, ct, dct);
+        }
 
     #pragma omp for schedule(static)
         for (uint32_t d = 0; d < digitsG2; ++d)
             dct[d].SetFormat(Format::EVALUATION);
 
-    #pragma omp for schedule(static)
-        for (uint32_t j = 0; j < 2; ++j)
-            LazyInnerProduct32(acc[j], dct, ev, j, digitsG2, N, Q, mu);
+    #pragma omp for schedule(static) nowait
+        for (uint32_t blk = 0; blk < static_cast<uint32_t>(nthreads); ++blk) {
+            uint32_t kb{(N * blk) / static_cast<uint32_t>(nthreads)};
+            uint32_t ke{(N * (blk + 1)) / static_cast<uint32_t>(nthreads)};
+            LazyInnerProduct32(acc[0], dct, ev, 0, digitsG2, kb, ke, N, Q, mu);
+            LazyInnerProduct32(acc[1], dct, ev, 1, digitsG2, kb, ke, N, Q, mu);
+        }
     }
 }
 

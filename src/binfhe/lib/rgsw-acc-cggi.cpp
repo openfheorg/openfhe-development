@@ -176,7 +176,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
         for (uint32_t j = 0; j < 4; ++j) {
             const auto& ev = (j < 2) ? ek1 : ek2;
             uint32_t col{j & 0x1};
-            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, N, Q, mu);
+            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, 0, N, N, Q, mu);
             ShoupMulEq32(tmp[j], (j < 2) ? monomial : monomialNeg, (j < 2) ? monomialPre : monomialPreNeg, Q);
             acc[col] += tmp[j];
         }
@@ -201,7 +201,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
         for (uint32_t j = 0; j < 4; ++j) {
             const auto& ev = (j < 2) ? ek1 : ek2;
             uint32_t col{j & 0x1};
-            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, N, Q, mu);
+            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, 0, N, N, Q, mu);
             ShoupMulEq32(tmp[j], (j < 2) ? monomial : monomialNeg, (j < 2) ? monomialPre : monomialPreNeg, Q);
         }
     }
