@@ -68,13 +68,18 @@ public:
         return rows <= static_cast<uint64_t>(-1) / qKS.ConvertToInt<uint64_t>();
     }
 
+    // storage is deliberately left uninitialized: both generation paths write every element, and
+    // value-initialization would fault and zero the whole key on the constructing thread before
+    // the parallel fill re-touches it
     LWESwitchingKey32Impl(uint32_t N, uint32_t baseKS, uint32_t digitCount, uint32_t n)
         : m_N(N),
           m_m(baseKS),
           m_d(digitCount),
           m_n(n),
-          m_keyA(static_cast<uint64_t>(N) * baseKS * digitCount * n),
-          m_keyB(static_cast<uint64_t>(N) * baseKS * digitCount) {}
+          m_sizeA(static_cast<uint64_t>(N) * baseKS * digitCount * n),
+          m_sizeB(static_cast<uint64_t>(N) * baseKS * digitCount),
+          m_keyA(new uint32_t[m_sizeA]),
+          m_keyB(new uint32_t[m_sizeB]) {}
 
     // Narrow an existing 64-bit key. Peak memory holds both forms; the released pages come back
     // only after AllocTrim(). Prefer KeySwitchGen32, which never materialises the 64-bit key.
@@ -84,11 +89,11 @@ public:
     LWESwitchingKey Widen(const LWECryptoParams& params) const;
 
     uint32_t* RowA(uint32_t i, uint32_t val, uint32_t pos) {
-        return m_keyA.data() + ((static_cast<uint64_t>(i) * m_m + val) * m_d + pos) * m_n;
+        return m_keyA.get() + ((static_cast<uint64_t>(i) * m_m + val) * m_d + pos) * m_n;
     }
 
     const uint32_t* RowA(uint32_t i, uint32_t val, uint32_t pos) const {
-        return m_keyA.data() + ((static_cast<uint64_t>(i) * m_m + val) * m_d + pos) * m_n;
+        return m_keyA.get() + ((static_cast<uint64_t>(i) * m_m + val) * m_d + pos) * m_n;
     }
 
     uint32_t& B(uint32_t i, uint32_t val, uint32_t pos) {
@@ -116,7 +121,7 @@ public:
     }
 
     uint64_t KeyBytes() const {
-        return (m_keyA.size() + m_keyB.size()) * sizeof(uint32_t);
+        return (m_sizeA + m_sizeB) * sizeof(uint32_t);
     }
 
 private:
@@ -124,8 +129,10 @@ private:
     uint32_t m_m{0};
     uint32_t m_d{0};
     uint32_t m_n{0};
-    std::vector<uint32_t> m_keyA;
-    std::vector<uint32_t> m_keyB;
+    uint64_t m_sizeA{0};
+    uint64_t m_sizeB{0};
+    std::unique_ptr<uint32_t[]> m_keyA;
+    std::unique_ptr<uint32_t[]> m_keyB;
 };
 
 #endif  // NATIVEINT != 32
