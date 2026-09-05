@@ -24,18 +24,24 @@ if(BUILD_SHARED)
     set_property(TARGET OPENFHEpke PROPERTY VERSION ${PKE_VERSION})
     set_property(TARGET OPENFHEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
     set_property(TARGET OPENFHEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEpke EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEpke
+        EXPORT OpenFHETargets
+        RUNTIME DESTINATION ${OpenFHE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${OpenFHE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
 if(BUILD_STATIC)
     add_dependencies(pkeobj OPENFHEcore_static OPENFHEbinfhe_static)
     add_library(OPENFHEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
     set_property(TARGET OPENFHEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEpke_static EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEpke_static
+        EXPORT OpenFHETargets
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY include/ DESTINATION include/openfhe/pke)
-install(DIRECTORY unittest/utils/ DESTINATION include/openfhe/pke/unittest/utils FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/pke)
+install(DIRECTORY unittest/utils/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/pke/unittest/utils FILES_MATCHING PATTERN "*.h")
 
 add_custom_target(allpke)
 

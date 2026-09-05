@@ -2,6 +2,9 @@
 # It defines the following variables
 #  OpenFHE_INCLUDE_DIRS - include directories for OpenFHE
 #  OpenFHE_LIBRARIES    - libraries to link against
+#  OpenFHE_INCLUDE      - directory holding the installed OpenFHE headers
+#  OpenFHE_LIBDIR       - directory holding the installed libraries (import libraries on Windows)
+#  OpenFHE_BINDIR       - directory holding the installed runtime libraries (the DLLs on Windows)
 get_filename_component(OpenFHE_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 # Our library dependencies (contains definitions for IMPORTED targets)
@@ -12,8 +15,9 @@ endif()
 # These are IMPORTED targets created by OpenFHETargets.cmake
 # set(OpenFHE_INCLUDE "${OpenFHE_CMAKE_DIR}/../../include/openfhe")
 # set(OpenFHE_LIBDIR "${OpenFHE_CMAKE_DIR}/../../lib")
-set(OpenFHE_INCLUDE "@INSTALL_INCLUDE_DIR@")
-set(OpenFHE_LIBDIR "@INSTALL_LIB_DIR@")
+set(OpenFHE_INCLUDE "@OpenFHE_FULL_INSTALL_INCLUDEDIR@")
+set(OpenFHE_LIBDIR "@OpenFHE_FULL_INSTALL_LIBDIR@")
+set(OpenFHE_BINDIR "@OpenFHE_FULL_INSTALL_BINDIR@")
 set(OpenFHE_LIBRARIES @OpenFHE_PACKAGE_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
 set(OpenFHE_STATIC_LIBRARIES @OpenFHE_STATIC_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
 set(OpenFHE_SHARED_LIBRARIES @OpenFHE_SHARED_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)

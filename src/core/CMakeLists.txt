@@ -25,16 +25,22 @@ if(BUILD_SHARED)
     set_property(TARGET OPENFHEcore PROPERTY VERSION ${CORE_VERSION})
     set_property(TARGET OPENFHEcore PROPERTY SOVERSION ${CORE_VERSION_MAJOR})
     set_property(TARGET OPENFHEcore PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEcore EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEcore
+        EXPORT OpenFHETargets
+        RUNTIME DESTINATION ${OpenFHE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${OpenFHE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
 if(BUILD_STATIC)
     add_library(OPENFHEcore_static STATIC $<TARGET_OBJECTS:coreobj>)
     set_property(TARGET OPENFHEcore_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEcore_static EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEcore_static
+        EXPORT OpenFHETargets
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY include/ DESTINATION include/openfhe/core)
+install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/core)
 
 add_custom_target(allcore)
 
