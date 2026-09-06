@@ -435,7 +435,7 @@ LWESwitchingKey LWESwitchingKey32Impl::Widen(const LWECryptoParams& params) cons
 LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWECryptoParams>& params,
                                                       ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const {
     NativeInteger qKS(params->GetqKS());
-    const uint64_t qKS64{qKS.ConvertToInt()};
+    const uint64_t qKS64{qKS.ConvertToInt<uint64_t>()};
     const uint32_t qKS32{static_cast<uint32_t>(qKS64)};
     const uint64_t baseKS{params->GetBaseKS()};
     const uint32_t digitCount = params->GetDigitCountKS();
@@ -475,7 +475,7 @@ LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWEC
         #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N)) firstprivate(dug)
     #endif
     for (uint32_t i = 0; i < N; ++i) {
-        const uint64_t svNi{svN[i].ConvertToInt()};
+        const uint64_t svNi{svN[i].ConvertToInt<uint64_t>()};
         for (uint32_t j = 0; j < m; ++j) {
             for (uint32_t k = 0; k < digitCount; ++k) {
                 NativeVector32 a(dug.GenerateVector(n));
