@@ -32,6 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
 #define LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
 
+#include "math/hermite.h"
 #include "constants.h"
 #include "encoding/plaintext-fwd.h"
 #include "math/hal/basicint.h"
@@ -168,54 +169,63 @@ public:
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                      uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+                      uint32_t depthLeveledComputation = 0, size_t order = 1,
+                      DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                      uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+                      uint32_t depthLeveledComputation = 0, size_t order = 1,
+                      DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
-    Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
-                                 const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
-                                 const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
-                                 size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
-                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
-                                 uint32_t levelToReduce = 0, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFBT(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<std::complex<double>>& coefficients,
+        uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
+        size_t order = 1, DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
+    Ciphertext<DCRTPoly> EvalFBT(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
+        const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
-    Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
-                                           const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
-                                           const BigInteger& initialScaling, size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
-                                           const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                           const BigInteger& initialScaling, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalFBTNoDecoding(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<std::complex<double>>& coefficients,
+        uint32_t digitBitSize, const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
+    Ciphertext<DCRTPoly> EvalFBTNoDecoding(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
+        const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
     Ciphertext<DCRTPoly> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                          uint32_t levelToReduce = 0) override;
 
-    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                              const std::vector<std::complex<double>>& coeffs,
-                                                              uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                              size_t order = 1) override;
-    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                              const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
-                                                              const BigInteger& initialScaling,
-                                                              size_t order = 1) override;
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
+        const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
+        const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
-    Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
-                                 const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
-                                 const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
-                                 const std::vector<int64_t>& coeffs, uint32_t digitBitSize, const uint64_t postScaling,
-                                 uint32_t levelToReduce = 0, size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalMVB(
+        const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts, const std::vector<std::complex<double>>& coeffs,
+        uint32_t digitBitSize, const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
+    Ciphertext<DCRTPoly> EvalMVB(
+        const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts, const std::vector<int64_t>& coeffs,
+        uint32_t digitBitSize, const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
-    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
-                                           const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
-                                           size_t order = 1) override;
-    Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
-                                           const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                           size_t order = 1) override;
+    Ciphertext<DCRTPoly> EvalMVBNoDecoding(
+        const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
+        const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
+    Ciphertext<DCRTPoly> EvalMVBNoDecoding(
+        const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts, const std::vector<int64_t>& coefficients,
+        uint32_t digitBitSize, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) override;
 
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
@@ -348,11 +358,13 @@ public:
     template <typename VectorDataType>
     static uint32_t GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
-                                SecretKeyDist skd, uint32_t compositeDegree = 1);
+                                SecretKeyDist skd, uint32_t compositeDegree = 1,
+                                DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
     template <typename VectorDataType>
     static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY, uint32_t compositeDegree = 1);
+                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY, uint32_t compositeDegree = 1,
+                                   DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
     // generates a key going from a denser secret to a sparser one
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
@@ -474,7 +486,8 @@ private:
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                              uint32_t depthLeveledComputation = 0, size_t order = 1);
+                              uint32_t depthLeveledComputation = 0, size_t order = 1,
+                              DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
     template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -484,16 +497,16 @@ private:
                                                        size_t precomp);
 
     template <typename VectorDataType>
-    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecomputeInternal(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                                      const std::vector<VectorDataType>& coefficients,
-                                                                      uint32_t digitBitSize,
-                                                                      const BigInteger& initialScaling,
-                                                                      size_t order = 1);
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecomputeInternal(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<VectorDataType>& coefficients, uint32_t digitBitSize,
+        const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
     template <typename VectorDataType>
-    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(const std::shared_ptr<seriesPowers<DCRTPoly>>& ciphertext,
-                                                   const std::vector<VectorDataType>& coefficients,
-                                                   uint32_t digitBitSize, size_t order = 1);
+    Ciphertext<DCRTPoly> EvalMVBNoDecodingInternal(
+        const std::shared_ptr<seriesPowers<DCRTPoly>>& ciphertext, const std::vector<VectorDataType>& coefficients,
+        uint32_t digitBitSize, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
     // upper bound for the number of overflows in the sparse secret case
 

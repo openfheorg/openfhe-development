@@ -58,11 +58,15 @@ struct seriesPowers {
     std::vector<Ciphertext<Element>> powersRe;
     std::vector<Ciphertext<Element>> powers2Re;
     Ciphertext<Element> power2km1Re;
-    uint32_t k;
-    uint32_t m;
+    uint32_t k = 0;
+    uint32_t m = 0;
     std::vector<Ciphertext<Element>> powersIm;
     std::vector<Ciphertext<Element>> powers2Im;
     Ciphertext<Element> power2km1Im;
+
+    // Sparse-THI: Auxiliary entry ell-1 stores z^(ell*p), separately for each packed component.
+    std::vector<Ciphertext<Element>> auxiliaryPowersRe;
+    std::vector<Ciphertext<Element>> auxiliaryPowersIm;
 
     seriesPowers() = default;
 

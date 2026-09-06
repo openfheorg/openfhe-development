@@ -36,6 +36,7 @@
 #ifndef __CRYPTOCONTEXT_H__
 #define __CRYPTOCONTEXT_H__
 
+#include "math/hermite.h"
 #include "binfhecontext.h"
 #include "ciphertext.h"
 #include "cryptocontextfactory.h"
@@ -2794,6 +2795,18 @@ public:
     }
 
     /**
+    * @brief Precomputes shared polynomial and auxiliary powers for Sparse-THI (CKKS only).
+    * @param ciphertext Input ciphertext.
+    * @param p Input modulus.
+    * @param order Interpolation order.
+    */
+    std::shared_ptr<seriesPowers<Element>> EvalPowersSparseTHI(ConstCiphertext<Element>& ciphertext,
+                                                               uint32_t p, size_t order) const {
+        ValidateCiphertext(ciphertext);
+        return m_scheme->EvalPowersSparseTHI(ciphertext, p, order);
+    }
+
+    /**
     * @brief Evaluates a polynomial (given as a power series) on a ciphertext (CKKS only).
     *        Use EvalPolyLinear() for low polynomial degrees (degree < 5), or EvalPolyPS() for higher degrees.
     *
@@ -2814,6 +2827,15 @@ public:
                                             const std::vector<VectorDataType>& coefficients) const {
         ValidateSeriesPowers(powers);
         return m_scheme->EvalPolyWithPrecomp(powers, coefficients);
+    }
+
+    // Evaluate a Sparse-THI block using the PS basis from EvalPowersSparseTHI,
+    // including blocks below the ordinary linear-evaluation degree threshold.
+    template <typename VectorDataType = double>
+    Ciphertext<Element> EvalPolyWithPrecompSparseTHI(std::shared_ptr<seriesPowers<Element>> powers,
+                                                     const std::vector<VectorDataType>& coefficients) const {
+        ValidateSeriesPowers(powers);
+        return m_scheme->EvalPolyWithPrecompSparseTHI(powers, coefficients);
     }
 
     /**
@@ -3637,23 +3659,27 @@ public:
     void EvalFBTSetup(const std::vector<VectorDataType>& coeffs, uint32_t numSlots, const BigInteger& PIn,
                       const BigInteger& POut, const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
                       const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                      uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1) {
+                      uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1,
+                      DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) {
         m_scheme->EvalFBTSetup(*this, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                               depthLeveledComputation, order);
+                               depthLeveledComputation, order, method);
     }
 
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
-                                uint32_t levelToReduce = 0, size_t order = 1) {
-        return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order);
+                                uint32_t levelToReduce = 0, size_t order = 1,
+                                DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) {
+        return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order,
+                                 method);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalFBTNoDecoding(ConstCiphertext<Element>& ciphertext,
-                                          const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
-                                          const BigInteger& initialScaling, size_t order = 1) {
-        return m_scheme->EvalFBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order);
+    Ciphertext<Element> EvalFBTNoDecoding(
+        ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
+        const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) {
+        return m_scheme->EvalFBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order, method);
     }
 
     Ciphertext<Element> EvalHomDecoding(ConstCiphertext<Element>& ciphertext, uint64_t postScaling,
@@ -3662,25 +3688,27 @@ public:
     }
 
     template <typename VectorDataType>
-    std::shared_ptr<seriesPowers<Element>> EvalMVBPrecompute(ConstCiphertext<Element>& ciphertext,
-                                                             const std::vector<VectorDataType>& coeffs,
-                                                             uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                             size_t order = 1) {
-        return m_scheme->EvalMVBPrecompute(ciphertext, coeffs, digitBitSize, initialScaling, order);
+    std::shared_ptr<seriesPowers<Element>> EvalMVBPrecompute(
+        ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
+        const BigInteger& initialScaling, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) {
+        return m_scheme->EvalMVBPrecompute(ciphertext, coeffs, digitBitSize, initialScaling, order, method);
     }
 
     template <typename VectorDataType>
     Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                 const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
-                                const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) {
-        return m_scheme->EvalMVB(ciphertexts, coeffs, digitBitSize, postScaling, levelToReduce, order);
+                                const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1,
+                                DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) {
+        return m_scheme->EvalMVB(ciphertexts, coeffs, digitBitSize, postScaling, levelToReduce, order, method);
     }
 
     template <typename VectorDataType>
-    Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
-                                          const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
-                                          size_t order = 1) {
-        return m_scheme->EvalMVBNoDecoding(ciphertexts, coeffs, digitBitSize, order);
+    Ciphertext<Element> EvalMVBNoDecoding(
+        const std::shared_ptr<seriesPowers<Element>> ciphertexts, const std::vector<VectorDataType>& coeffs,
+        uint32_t digitBitSize, size_t order = 1,
+        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP) {
+        return m_scheme->EvalMVBNoDecoding(ciphertexts, coeffs, digitBitSize, order, method);
     }
 
     template <typename VectorDataType>

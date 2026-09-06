@@ -50,12 +50,15 @@ const BigInteger QBFVINITLARGE(BigInteger(1) << 80);
 
 void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
                   uint64_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
-                  std::function<int64_t(int64_t)> func);
+                  std::function<int64_t(int64_t)> func,
+                  DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
                              uint64_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
-                             uint32_t levelComputation);
+                             uint32_t levelComputation,
+                             DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigit, BigInteger Q, BigInteger Bigq,
-                        uint64_t scaleTHI, uint64_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim);
+                        uint64_t scaleTHI, uint64_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
+                        DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
 int main() {
     std::cerr << "\n*1.* Compute the function (x % PInput - POutput / 2) % POutput." << std::endl << std::endl;
@@ -97,12 +100,21 @@ int main() {
     MultiPrecisionSign(QBFVINITLARGE, BigInteger(1) << 32, BigInteger(256), BigInteger(1) << 71, BigInteger(1) << 47,
                        256, 32, 1, 64, 2048);
 
+    std::cerr << "\n\n*4.* Evaluating LUT using Sparse-THI" << std::endl << std::endl;
+    std::cerr << "\n=====Sparse-THI order 3 LUT, sparse packing=====\n";
+    ArbitraryLUT(
+        QBFVINIT, BigInteger(16), BigInteger(16), BigInteger(1) << 47, BigInteger(1) << 47, 32, 3, 8, 4096,
+        [](int64_t x) { return (x % 16 - 8) % 16; }, DiscreteCKKSInterpolationMethod::SPARSE_THI);
+    std::cerr << "\n=====Sparse-THI order 2 multivalue LUT, full packing=====\n";
+    MultiValueBootstrapping(QBFVINIT, BigInteger(16), BigInteger(16), BigInteger(1) << 47, BigInteger(1) << 47, 32, 2,
+                            2048, 2048, 1, DiscreteCKKSInterpolationMethod::SPARSE_THI);
+
     return 0;
 }
 
 void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
                   uint64_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
-                  std::function<int64_t(int64_t)> func) {
+                  std::function<int64_t(int64_t)> func, DiscreteCKKSInterpolationMethod method) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
      * If this number is the same as the ring dimension, then the CKKS slots is half.
@@ -130,7 +142,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
      */
     std::vector<int64_t> coeffint;
     std::vector<std::complex<double>> coeffcomp;
-    bool binaryLUT = (PInput.ConvertToInt() == 2) && (order == 1);
+    bool binaryLUT = (method == DiscreteCKKSInterpolationMethod::AKP) && (PInput.ConvertToInt() == 2) && (order == 1);
 
     if (binaryLUT) {
         coeffint = {
@@ -139,7 +151,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
                 func(1)};  // those are coefficients for [1, cos^2(pi x)], not [1, cos(2pi x)] as in the general case.
     }
     else {
-        coeffcomp = GetHermiteTrigCoefficients(func, PInput.ConvertToInt(), order, scaleTHI);  // divided by 2
+        coeffcomp = GetHermiteTrigCoefficients(func, PInput.ConvertToInt(), order, scaleTHI, method);  // divided by 2
     }
 
     /* 4. Set up the cryptoparameters.
@@ -177,9 +189,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
     uint32_t depth = levelsAvailableAfterBootstrap;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffint, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffint, PInput, order, secretKeyDist, 1, method);
     else
-        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcomp, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcomp, PInput, order, secretKeyDist, 1, method);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -200,10 +212,10 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, method);
     else
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, method);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -226,9 +238,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     */
     Ciphertext<DCRTPoly> ctxtAfterFBT;
     if (binaryLUT)
-        ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
+        ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order, method);
     else
-        ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
+        ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order, method);
 
     /* 9. Convert the result back to RLWE.
     */
@@ -254,7 +266,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
 void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, BigInteger Q, BigInteger Bigq,
                              uint64_t scaleTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
-                             uint32_t levelsComputation) {
+                             uint32_t levelsComputation, DiscreteCKKSInterpolationMethod method) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
      * If this number is the same as the ring dimension, then the CKKS slots is half.
@@ -295,15 +307,15 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     std::vector<int64_t> coeffint2;
     std::vector<std::complex<double>> coeffcomp1;
     std::vector<std::complex<double>> coeffcomp2;
-    bool binaryLUT = (PInput.ConvertToInt() == 2) && (order == 1);
+    bool binaryLUT = (method == DiscreteCKKSInterpolationMethod::AKP) && (PInput.ConvertToInt() == 2) && (order == 1);
 
     if (binaryLUT) {
         coeffint1 = {func1(1), func1(0) - func1(1)};
         coeffint2 = {func2(1), func2(0) - func2(1)};
     }
     else {
-        coeffcomp1 = GetHermiteTrigCoefficients(func1, PInput.ConvertToInt(), order, scaleTHI);
-        coeffcomp2 = GetHermiteTrigCoefficients(func2, PInput.ConvertToInt(), order, scaleTHI);
+        coeffcomp1 = GetHermiteTrigCoefficients(func1, PInput.ConvertToInt(), order, scaleTHI, method);
+        coeffcomp2 = GetHermiteTrigCoefficients(func2, PInput.ConvertToInt(), order, scaleTHI, method);
     }
 
     /* 5. Set up the cryptoparameters.
@@ -341,9 +353,9 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     uint32_t depth = levelsAvailableAfterBootstrap + levelsComputation;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffint1, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffint1, PInput, order, secretKeyDist, 1, method);
     else
-        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcomp1, PInput, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcomp1, PInput, order, secretKeyDist, 1, method);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -364,10 +376,10 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, levelsComputation, order);
+                         levelsAvailableAfterBootstrap, levelsComputation, order, method);
     else
         cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, levelsComputation, order);
+                         levelsAvailableAfterBootstrap, levelsComputation, order, method);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -424,12 +436,13 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     });
 
     if (binaryLUT) {
-        auto complexExpPowers = cc->EvalMVBPrecompute(ctxt, coeffint1, PInput.GetMSB() - 1, ep->GetModulus(), order);
+        auto complexExpPowers =
+            cc->EvalMVBPrecompute(ctxt, coeffint1, PInput.GetMSB() - 1, ep->GetModulus(), order, method);
 
         ctxtAfterFBT1 =
-            cc->EvalMVB(complexExpPowers, coeffint1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order);
+            cc->EvalMVB(complexExpPowers, coeffint1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order, method);
 
-        ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, PInput.GetMSB() - 1, order);
+        ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, PInput.GetMSB() - 1, order, method);
 
         // Apply a rotation
         ctxtAfterFBT2 = cc->EvalRotate(ctxtAfterFBT2, -2);
@@ -445,12 +458,13 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
         ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, scaleTHI, levelsComputation - 1);
     }
     else {
-        auto complexExpPowers = cc->EvalMVBPrecompute(ctxt, coeffcomp1, PInput.GetMSB() - 1, ep->GetModulus(), order);
+        auto complexExpPowers =
+            cc->EvalMVBPrecompute(ctxt, coeffcomp1, PInput.GetMSB() - 1, ep->GetModulus(), order, method);
 
         ctxtAfterFBT1 =
-            cc->EvalMVB(complexExpPowers, coeffcomp1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order);
+            cc->EvalMVB(complexExpPowers, coeffcomp1, PInput.GetMSB() - 1, scaleTHI, levelsComputation, order, method);
 
-        ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, PInput.GetMSB() - 1, order);
+        ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, PInput.GetMSB() - 1, order, method);
 
         // Apply a rotation
         ctxtAfterFBT2 = cc->EvalRotate(ctxtAfterFBT2, -2);
@@ -500,7 +514,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 }
 
 void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigit, BigInteger Q, BigInteger Bigq,
-                        uint64_t scaleTHI, uint64_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim) {
+                        uint64_t scaleTHI, uint64_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim,
+                        DiscreteCKKSInterpolationMethod method) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
      * If this number is the same as the ring dimension, then the CKKS slots is half.
@@ -549,15 +564,16 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     std::vector<int64_t> coeffintMod;
     std::vector<std::complex<double>> coeffcompMod;
     std::vector<std::complex<double>> coeffcompStep;
-    bool binaryLUT = (PDigit.ConvertToInt() == 2) && (order == 1);
+    bool binaryLUT = (method == DiscreteCKKSInterpolationMethod::AKP) && (PDigit.ConvertToInt() == 2) && (order == 1);
 
     if (binaryLUT) {
         coeffintMod = {funcMod(1), funcMod(0) - funcMod(1)};
     }
     else {
-        coeffcompMod  = GetHermiteTrigCoefficients(funcMod, PDigit.ConvertToInt(), order, scaleTHI);  // divided by 2
-        coeffcompStep = GetHermiteTrigCoefficients(funcStep, PDigit.ConvertToInt(), order,
-                                                   scaleStepTHI);  // divided by 2
+        coeffcompMod =
+            GetHermiteTrigCoefficients(funcMod, PDigit.ConvertToInt(), order, scaleTHI, method);  // divided by 2
+        coeffcompStep =
+            GetHermiteTrigCoefficients(funcStep, PDigit.ConvertToInt(), order, scaleStepTHI, method);  // divided by 2
     }
 
     /* 5. Set up the cryptoparameters.
@@ -595,9 +611,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
     uint32_t depth = levelsAvailableAfterBootstrap;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffintMod, PDigit, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffintMod, PDigit, order, secretKeyDist, 1, method);
     else
-        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcompMod, PDigit, order, secretKeyDist);
+        depth += FHECKKSRNS::GetFBTDepth(lvlb, coeffcompMod, PDigit, order, secretKeyDist, 1, method);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -620,10 +636,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, method);
     else
         cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, method);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
 
@@ -675,10 +691,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
         Ciphertext<DCRTPoly> ctxtAfterFBT;
         if (binaryLUT)
             ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, pDigitBits, ep->GetModulus(), scaleTHI * (1 << postScalingBits),
-                                       levelsToDrop, order);
+                                       levelsToDrop, order, method);
         else
             ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, pDigitBits, ep->GetModulus(), scaleTHI * (1 << postScalingBits),
-                                       levelsToDrop, order);
+                                       levelsToDrop, order, method);
 
         /* 9.3 Convert the result back to RLWE and update the
          * plaintext and ciphertext modulus of the ciphertext for the next iteration.

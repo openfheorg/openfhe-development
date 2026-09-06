@@ -40,9 +40,14 @@
 
 namespace lbcrypto {
 
+/** Interpolation used by CKKS functional bootstrapping. */
+enum class DiscreteCKKSInterpolationMethod { AKP, SPARSE_THI };
+
 /**
- * Method for calculating the intermediate Hermite trigonometric interpolation (of order 1)
- * coefficients for an input function. These coefficents can be input into
+ * Calculates Hermite trigonometric interpolation coefficients for an input function.
+ * AKP supports orders 1, 2, and 3; Sparse-THI supports positive orders with a
+ * power-of-two modulus p >= 2, except p = 2 with order = 1, which must use AKP.
+ * Existing calls default to AKP. These coefficients can be input into
  * EvalPoly over ciphertexts encrypting exp(2*Pi*x) to evaluate the function.
  * The coefficients are divided by 2 to account for the fact that the real part
  * of the output of EvalPoly needs to be taken in order to get the Hermite
@@ -50,13 +55,17 @@ namespace lbcrypto {
  *
  *
  * @param func is the function to be approximated
+ * @param order interpolation order
+ * @param scale output normalization: twice the real part evaluates to func(x)/scale
+ * @param method interpolation method, defaulting to AKP
  * @param p number of interpolation points
  * @return the coefficients of the intermediate Hermite trigonometric interpolation.
  */
 
 // TODO: templatize this
-std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                             size_t order, double scale);
+std::vector<std::complex<double>> GetHermiteTrigCoefficients(
+    std::function<int64_t(int64_t)> func, uint32_t p, size_t order, double scale,
+    DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
 
 }  // namespace lbcrypto
 

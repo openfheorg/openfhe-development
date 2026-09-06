@@ -50,8 +50,8 @@ static bool IsNotEqualZero(std::complex<double> v) {
 
 namespace lbcrypto {
 
-std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                             size_t order, double scale) {
+static std::vector<std::complex<double>> GetHermiteTrigCoefficientsAKP(std::function<int64_t(int64_t)> func, uint32_t p,
+                                                                       size_t order, double scale) {
     using namespace std::complex_literals;
     if (p == 0)
         OPENFHE_THROW("The degree of approximation can not be zero");
@@ -181,6 +181,59 @@ std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64
         } break;
         default:
             OPENFHE_THROW("Order must be 1, 2, or 3");
+    }
+}
+
+// Theorem 6 of https://eprint.iacr.org/2026/1026. Normalized products avoid
+// forming factorial(n) and p^n separately. Unused frequency bands remain zero.
+static std::vector<std::complex<double>> GetHermiteTrigCoefficientsSparseTHI(
+    const std::function<int64_t(int64_t)>& func, uint32_t p, size_t order, double scale) {
+    if (p == 2 && order == 1)
+        OPENFHE_THROW("Sparse-THI does not support p = 2 with order = 1; use DiscreteCKKSInterpolationMethod::AKP instead");
+    if (p < 2 || (p & (p - 1)) != 0 || order == 0)
+        OPENFHE_THROW("Sparse-THI requires a power-of-two modulus >= 2 and positive order");
+    if (!std::isfinite(scale) || scale == 0)
+        OPENFHE_THROW("Sparse-THI requires a finite nonzero scale");
+    std::vector<double> values(p);
+    for (uint32_t j = 0; j < p; ++j)
+        values[j] = static_cast<double>(func(j));
+    std::vector<std::complex<double>> coeffs(order * p + p / 2 + 1);
+    for (uint32_t k = 0; k <= p / 2; ++k) {
+        std::complex<double> frequency{0.0, 0.0};
+        for (uint32_t j = 0; j < p; ++j)
+            frequency += values[j] * std::polar(1.0, -2.0 * M_PI * (double(k) * j / p));
+        frequency /= double(p);
+        frequency /= scale;
+        if (k == 0) {
+            coeffs[0] = frequency.real() / 2.0;
+            continue;
+        }
+        if (k == p / 2)
+            frequency = frequency.real() / 2.0;
+        for (size_t ell = 0; ell <= order; ++ell) {
+            long double weight = 1.0;
+            for (size_t j = 0; j <= order; ++j) {
+                if (j != ell)
+                    weight *= (static_cast<long double>(j) + static_cast<long double>(k) / p) /
+                              (static_cast<long double>(j) - static_cast<long double>(ell));
+            }
+            auto value          = static_cast<double>(weight) * frequency;
+            coeffs[ell * p + k] = value;
+        }
+    }
+    return coeffs;
+}
+
+std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
+                                                             size_t order, double scale,
+                                                             DiscreteCKKSInterpolationMethod method) {
+    switch (method) {
+        case DiscreteCKKSInterpolationMethod::AKP:
+            return GetHermiteTrigCoefficientsAKP(func, p, order, scale);
+        case DiscreteCKKSInterpolationMethod::SPARSE_THI:
+            return GetHermiteTrigCoefficientsSparseTHI(func, p, order, scale);
+        default:
+            OPENFHE_THROW("Unknown interpolation method");
     }
 }
 

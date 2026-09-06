@@ -78,6 +78,9 @@ public:
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(
         ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const override;
 
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowersSparseTHI(ConstCiphertext<DCRTPoly>& x, uint32_t p,
+                                                                size_t order) const override;
+
     Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext,
                                   const std::vector<int64_t>& coefficients) const override;
     Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -91,6 +94,14 @@ public:
                                              const std::vector<double>& coefficients) const override;
     Ciphertext<DCRTPoly> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<DCRTPoly>> powers,
                                              const std::vector<std::complex<double>>& coefficients) const override;
+
+    Ciphertext<DCRTPoly> EvalPolyWithPrecompSparseTHI(std::shared_ptr<seriesPowers<DCRTPoly>> powers,
+                                                      const std::vector<int64_t>& coefficients) const override;
+    Ciphertext<DCRTPoly> EvalPolyWithPrecompSparseTHI(std::shared_ptr<seriesPowers<DCRTPoly>> powers,
+                                                      const std::vector<double>& coefficients) const override;
+    Ciphertext<DCRTPoly> EvalPolyWithPrecompSparseTHI(
+        std::shared_ptr<seriesPowers<DCRTPoly>> powers,
+        const std::vector<std::complex<double>>& coefficients) const override;
 
     Ciphertext<DCRTPoly> EvalPolyLinear(ConstCiphertext<DCRTPoly>& x,
                                         const std::vector<int64_t>& coefficients) const override;

@@ -181,6 +181,7 @@ struct TEST_CASE_FBT {
     ScalingTechnique scalTech = FIXEDMANUAL;
     // register word size for the COMPOSITESCALING* techniques; 32 by default
     uint32_t registerWordSize = 32;
+    DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -626,11 +627,12 @@ protected:
 
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
-            bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+            bool binaryLUT =
+                (t.method == DiscreteCKKSInterpolationMethod::AKP) && (t.PInput.ConvertToInt() == 2) && (t.order == 1);
             if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
                 coeffint = {f(1), f(0) - f(1)};
             else  // divided by 2
-                coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
+                coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI, t.method);
 
 #ifdef BENCH
             auto stop = std::chrono::high_resolution_clock::now();
@@ -651,11 +653,13 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -676,10 +680,10 @@ protected:
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
             else
                 cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -714,11 +718,16 @@ protected:
 
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
-                ctxtAfterFBT =
-                    cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                           t.order, t.method);
             else
-                ctxtAfterFBT =
-                    cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                           t.order, t.method);
+
+            const auto compositeDegree = CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize);
+            // FLEXIBLEAUTOEXT has an extra input modulus outside the logical depth.
+            EXPECT_LE(ctxtAfterFBT->GetLevel(),
+                      compositeDegree * (depth - t.levelsAvailableAfterBootstrap) + (t.scalTech == FLEXIBLEAUTOEXT));
 
             auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
@@ -793,16 +802,17 @@ protected:
             std::vector<int64_t> coeffintMod;
             std::vector<std::complex<double>> coeffcompMod;
             std::vector<std::complex<double>> coeffcompStep;
-            bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
+            bool binaryLUT =
+                (t.method == DiscreteCKKSInterpolationMethod::AKP) && (t.POutput.ConvertToInt() == 2) && (t.order == 1);
             if (binaryLUT) {
                 coeffintMod = {funcMod(1),
                                funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
             }
             else {
-                coeffcompMod =
-                    GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
-                coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
-                                                           t.scaleStepTHI);  // divided by 2
+                coeffcompMod  = GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI,
+                                                           t.method);  // divided by 2
+                coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order, t.scaleStepTHI,
+                                                           t.method);  // divided by 2
             }
 
 #ifdef BENCH
@@ -825,11 +835,13 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -850,10 +862,10 @@ protected:
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
             else
                 cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -924,10 +936,10 @@ protected:
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
                 if (binaryLUT)
                     ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, pDigitBits, ep->GetModulus(),
-                                               scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
+                                               scaleTHI * (1 << postScalingBits), levelsToDrop, t.order, t.method);
                 else
                     ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, pDigitBits, ep->GetModulus(),
-                                               scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
+                                               scaleTHI * (1 << postScalingBits), levelsToDrop, t.order, t.method);
 
                 auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
@@ -1028,11 +1040,12 @@ protected:
 
             std::vector<int64_t> coeffint;
             std::vector<std::complex<double>> coeffcomp;
-            bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+            bool binaryLUT =
+                (t.method == DiscreteCKKSInterpolationMethod::AKP) && (t.PInput.ConvertToInt() == 2) && (t.order == 1);
             if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
                 coeffint = {f(1), f(0) - f(1)};
             else  // divided by 2
-                coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
+                coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI, t.method);
 
 #ifdef BENCH
             auto stop = std::chrono::high_resolution_clock::now();
@@ -1053,11 +1066,13 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1078,10 +1093,10 @@ protected:
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.method);
             else
                 cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.method);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1133,9 +1148,11 @@ protected:
             // Apply LUT and remain in slots encodings.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
-                ctxtAfterFBT = cc->EvalFBTNoDecoding(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                ctxtAfterFBT =
+                    cc->EvalFBTNoDecoding(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order, t.method);
             else
-                ctxtAfterFBT = cc->EvalFBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                ctxtAfterFBT =
+                    cc->EvalFBTNoDecoding(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order, t.method);
 
             // Apply a rotation
             ctxtAfterFBT = cc->EvalRotate(ctxtAfterFBT, -2);
@@ -1155,10 +1172,10 @@ protected:
 
             if (binaryLUT)
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
-                                           t.levelsComputation, t.order);
+                                           t.levelsComputation, t.order, t.method);
             else
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI,
-                                           t.levelsComputation, t.order);
+                                           t.levelsComputation, t.order, t.method);
 
             auto polys2 = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
@@ -1255,14 +1272,15 @@ protected:
             std::vector<int64_t> coeffint2;
             std::vector<std::complex<double>> coeffcomp1;
             std::vector<std::complex<double>> coeffcomp2;
-            bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+            bool binaryLUT =
+                (t.method == DiscreteCKKSInterpolationMethod::AKP) && (t.PInput.ConvertToInt() == 2) && (t.order == 1);
             if (binaryLUT) {
                 coeffint1 = {f1(1), f1(0) - f1(1)};
                 coeffint2 = {f2(1), f2(0) - f2(1)};
             }
             else {
-                coeffcomp1 = GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
-                coeffcomp2 = GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
+                coeffcomp1 = GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI, t.method);
+                coeffcomp2 = GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI, t.method);
             }
 
 #ifdef BENCH
@@ -1284,11 +1302,13 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                depth +=
+                    FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd,
+                                            CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1309,10 +1329,10 @@ protected:
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.method);
             else
                 cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.method);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1351,22 +1371,29 @@ protected:
             if (binaryLUT) {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
-                    cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                    cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order, t.method);
                 // Apply multiple LUTs
                 ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, t.scaleTHI,
-                                            t.levelsComputation, t.order);
-                ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
+                                            t.levelsComputation, t.order, t.method);
+                ctxtAfterFBT2 =
+                    cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order, t.method);
                 ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
             }
             else {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
-                    cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                    cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order, t.method);
                 // Apply multiple LUTs
                 ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
-                                            t.levelsComputation, t.order);
-                ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order);
+                                            t.levelsComputation, t.order, t.method);
+                ctxtAfterFBT2 =
+                    cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order, t.method);
                 ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
+                if (t.method == DiscreteCKKSInterpolationMethod::SPARSE_THI) {
+                    auto repeated = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
+                                                t.levelsComputation, t.order, t.method);
+                    EXPECT_EQ(repeated->GetElements(), ctxtAfterFBT1->GetElements());
+                }
             }
 
             auto polys1 = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT1, t.Q);
@@ -1459,11 +1486,12 @@ protected:
 
                 std::vector<int64_t> coeffint;
                 std::vector<std::complex<double>> coeffcomp;
-                bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+                bool binaryLUT = (t.method == DiscreteCKKSInterpolationMethod::AKP) && (t.PInput.ConvertToInt() == 2) &&
+                                 (t.order == 1);
                 if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
                     coeffint = {f(1), f(0) - f(1)};
                 else  // divided by 2
-                    coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
+                    coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI, t.method);
 
                 const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
                 CCParams<CryptoContextCKKSRNS> parameters;
@@ -1479,10 +1507,12 @@ protected:
 
                 if (binaryLUT)
                     depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize),
+                                                     t.method);
                 else
                     depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize),
+                                                     t.method);
 
                 parameters.SetMultiplicativeDepth(depth);
 
@@ -1497,10 +1527,10 @@ protected:
 
                 if (binaryLUT)
                     cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
                 else
                     cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
 
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
@@ -1516,11 +1546,11 @@ protected:
 
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
                 if (binaryLUT)
-                    ctxtAfterFBT =
-                        cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                               t.order, t.method);
                 else
-                    ctxtAfterFBT =
-                        cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                               t.order, t.method);
 
                 auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
@@ -1621,9 +1651,10 @@ protected:
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
-            uint32_t depth = t.levelsAvailableAfterBootstrap +
-                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+            uint32_t depth =
+                t.levelsAvailableAfterBootstrap +
+                FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                        CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
             parameters.SetMultiplicativeDepth(depth);
 
             auto cc = GenCryptoContext(parameters);
@@ -1636,7 +1667,7 @@ protected:
             auto keyPair = cc->KeyGen();
 
             cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                             t.levelsAvailableAfterBootstrap, 0, t.order);
+                             t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
             cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
             cc->EvalMultKeyGen(keyPair.secretKey);
 
@@ -1646,13 +1677,15 @@ protected:
             auto ctxt =
                 SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
 
-            auto powers = cc->EvalMVBPrecompute(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+            auto powers =
+                cc->EvalMVBPrecompute(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order, t.method);
 
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(), f);
 
             for (uint32_t run = 1; run <= 2; ++run) {
-                auto ctxtAfterFBT = cc->EvalMVB(powers, coeffint, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
+                auto ctxtAfterFBT =
+                    cc->EvalMVB(powers, coeffint, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order, t.method);
                 auto polys        = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
                 auto computed     = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
                                                                   numSlotsCKKS, t.numSlots);
@@ -1695,9 +1728,10 @@ protected:
             std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
 
             const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t depth          = t.levelsAvailableAfterBootstrap +
-                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+            uint32_t depth =
+                t.levelsAvailableAfterBootstrap +
+                FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                        CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize), t.method);
 
             auto makeParams = [&](ScalingTechnique st) {
                 CCParams<CryptoContextCKKSRNS> parameters;
@@ -1731,12 +1765,12 @@ protected:
                 // than reading past the modulus vector and wrapping the level arithmetic
                 const std::vector<uint32_t> dim1{0, 0};
                 EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
-                                              dim1, t.lvlb, depth + 1, 0, t.order),
+                                              dim1, t.lvlb, depth + 1, 0, t.order, t.method),
                              OpenFHEException)
                     << failmsg << " oversized lvlsAfterBoot not rejected";
 
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
                 std::vector<double> y(numSlotsCKKS, 0.5);
                 auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
                 EXPECT_THROW(cc->EvalHomDecoding(ctxt, 1, depth), OpenFHEException)
@@ -1751,14 +1785,15 @@ protected:
                 enableAll(cc);
                 auto keyPair = cc->KeyGen();
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.method);
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
                 std::vector<double> y(numSlotsCKKS, 0.5);
                 // a level-0 ciphertext still includes the FLEXIBLEAUTOEXT extra modulus
                 auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
-                EXPECT_THROW(cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, t.Bigq, t.scaleTHI, 0, t.order),
-                             OpenFHEException)
+                EXPECT_THROW(
+                    cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, t.Bigq, t.scaleTHI, 0, t.order, t.method),
+                    OpenFHEException)
                     << failmsg << " FLEXIBLEAUTOEXT level-0 input not rejected";
                 cc->ClearStaticMapsAndVectors();
             }
@@ -1808,3 +1843,39 @@ TEST_P(UTCKKSRNS_FBT, CKKSRNS) {
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(UTCKKSRNS_FBT);  // testCases.size() == 0 if NATIVEINT == 128
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_FBT, ::testing::ValuesIn(testCases), testName);
+
+// Reuse the same end-to-end assertions and mainline scaling configurations.
+static std::vector<TEST_CASE_FBT> SparseTHITestCases() {
+    std::vector<TEST_CASE_FBT> result;
+#if NATIVEINT != 128
+    for (const auto& original : testCases) {
+        if (original.testCaseType != FBT_ARBLUT && original.testCaseType != FBT_MVB &&
+            original.testCaseType != FBT_CONSECLEV)
+            continue;
+        if (original.order != 1 && original.testCaseType != FBT_ARBLUT)
+            continue;
+        if (original.PInput == BigInteger(2) && original.order == 1)
+            continue;  // First-order Boolean LUTs use AKP.
+        // Include existing packing, scaling and secret distributions without duplicating every row.
+        auto t        = original;
+        t.method      = DiscreteCKKSInterpolationMethod::SPARSE_THI;
+        t.description = "SparseTHI_" + t.description;
+        result.push_back(t);
+    }
+    // Explicit low-degree and arbitrary-order coverage on the usual LUT scale.
+    auto base                          = testCases[6];
+    base.levelsAvailableAfterBootstrap = 2;
+    for (uint32_t p : {4, 16}) {
+        for (size_t n : {2, 3, 5}) {
+            base.PInput      = p;
+            base.POutput     = p;
+            base.order       = n;
+            base.method      = DiscreteCKKSInterpolationMethod::SPARSE_THI;
+            base.description = "SparseTHI_p" + std::to_string(p) + "_order" + std::to_string(n);
+            result.push_back(base);
+        }
+    }
+#endif
+    return result;
+}
+INSTANTIATE_TEST_SUITE_P(SparseTHI, UTCKKSRNS_FBT, ::testing::ValuesIn(SparseTHITestCases()), testName);

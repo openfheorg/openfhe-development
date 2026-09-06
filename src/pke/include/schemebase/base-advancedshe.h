@@ -170,6 +170,11 @@ public:
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
+    virtual std::shared_ptr<seriesPowers<Element>> EvalPowersSparseTHI(ConstCiphertext<Element>& ciphertext,
+                                                                       uint32_t p, size_t order) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+
     /**
    * Method for computing the powers of a ciphertext to be used when evaluating a polynomial.
    * Uses EvalPowersLinear() for low polynomial degrees (degree < 5), or EvalPowersPS() for higher degrees.
@@ -202,6 +207,19 @@ public:
     }
     virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
                                                     const std::vector<std::complex<double>>& coefficients) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+
+    virtual Ciphertext<Element> EvalPolyWithPrecompSparseTHI(std::shared_ptr<seriesPowers<Element>> powers,
+                                                             const std::vector<int64_t>& coefficients) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalPolyWithPrecompSparseTHI(std::shared_ptr<seriesPowers<Element>> powers,
+                                                             const std::vector<double>& coefficients) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalPolyWithPrecompSparseTHI(
+        std::shared_ptr<seriesPowers<Element>> powers, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 

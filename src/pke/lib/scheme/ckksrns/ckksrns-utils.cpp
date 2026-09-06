@@ -349,6 +349,36 @@ std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
     return std::vector<uint32_t>{klist[minIndex], mlist[minIndex]};
 }
 
+std::vector<uint32_t> ComputeDegreesPSSparseTHI(uint32_t p, size_t order) {
+    if (p < 2 || (p & (p - 1)) != 0 || order == 0)
+        OPENFHE_THROW("Sparse-THI requires a power-of-two modulus >= 2 and positive order");
+    const uint32_t degree = p / 2;
+    const uint32_t logp   = std::log2(p);
+    uint64_t bestCost     = UINT64_MAX;
+    uint32_t bestDepth    = UINT32_MAX;
+    std::vector<uint32_t> degrees(2);
+    for (uint32_t k = 1; k <= degree; ++k) {
+        uint32_t m = 2;
+        while (uint64_t(k) * ((uint64_t(1) << m) - 1) <= degree)
+            ++m;
+        // Shared baby/giant steps, n+1 block evaluations, and the extension to z^p.
+        const uint64_t cost =
+            k - 1 + 2 * (m - 1) + (order + 1) * ((uint64_t(1) << (m - 1)) - 1) + logp - uint32_t(std::log2(k));
+        const uint32_t depth = std::ceil(std::log2(k)) + m;
+        if (cost < bestCost || (cost == bestCost && depth < bestDepth)) {
+            bestCost  = cost;
+            bestDepth = depth;
+            degrees   = {k, m};
+        }
+    }
+    return degrees;
+}
+
+uint32_t GetDepthSparseTHI(uint32_t p, size_t order) {
+    const uint32_t auxiliaryDepth = std::log2(p) + std::ceil(std::log2(order));
+    return auxiliaryDepth + 1;
+}
+
 std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
                                                          int index) {
     uint32_t cols = A[0].size();

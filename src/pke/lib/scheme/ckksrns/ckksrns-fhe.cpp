@@ -3017,7 +3017,8 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
                                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
                                       const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
                                       const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                                      uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order) {
+                                      uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order,
+                                      DiscreteCKKSInterpolationMethod method) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS Functional Bootstrapping is only supported for the Hybrid key switching method.");
@@ -3132,7 +3133,8 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     double scaleMod = RatioToDouble(QPrime, Bigq * POut);
     double scaleDec = scaleMod / pre;
 
-    uint32_t depthBT = depthLeveledComputation + GetFBTDepth(levelBudget, coeffs, PIn, order, skd, compositeDegree);
+    uint32_t depthBT =
+        depthLeveledComputation + GetFBTDepth(levelBudget, coeffs, PIn, order, skd, compositeDegree, method);
 
     // compute # of levels to remain when encoding the coefficients
     // for FLEXIBLEAUTOEXT the raised ciphertext does not include the extra modulus
@@ -3209,18 +3211,18 @@ void FHECKKSRNS::EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc,
                               const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
-                              uint32_t depthLeveledComputation, size_t order) {
+                              uint32_t depthLeveledComputation, size_t order, DiscreteCKKSInterpolationMethod method) {
     EvalFBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                         depthLeveledComputation, order);
+                         depthLeveledComputation, order, method);
 }
 
 void FHECKKSRNS::EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
-                              uint32_t depthLeveledComputation, size_t order) {
+                              uint32_t depthLeveledComputation, size_t order, DiscreteCKKSInterpolationMethod method) {
     EvalFBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                         depthLeveledComputation, order);
+                         depthLeveledComputation, order, method);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
@@ -3308,7 +3310,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciph
 template <typename VectorDataType>
 std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<VectorDataType>& coefficients, uint32_t digitBitSize,
-    const BigInteger& initialScaling, size_t order) {
+    const BigInteger& initialScaling, size_t order, DiscreteCKKSInterpolationMethod method) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS Bootstrapping is only supported for the Hybrid key switching method.");
@@ -3475,7 +3477,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         // Computing the powers for Approximate Mod Reduction
         //------------------------------------------------------------------------------
 
-        if (digitBitSize == 1 && order == 1) {
+        if (method == DiscreteCKKSInterpolationMethod::AKP && digitBitSize == 1 && order == 1) {
             auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
                                                              coeff_cos_25_double;
@@ -3515,8 +3517,15 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             }
         }
 
-        auto ctxtPowersRe = algo->EvalPowers(ctxtEnc[0], coefficients);
-        auto ctxtPowersIm = algo->EvalPowers(ctxtEnc[1], coefficients);
+        std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowersRe, ctxtPowersIm;
+        if (method == DiscreteCKKSInterpolationMethod::SPARSE_THI) {
+            ctxtPowersRe  = algo->EvalPowersSparseTHI(ctxtEnc[0], 1U << digitBitSize, order);
+            ctxtPowersIm  = algo->EvalPowersSparseTHI(ctxtEnc[1], 1U << digitBitSize, order);
+        }
+        else {
+            ctxtPowersRe = algo->EvalPowers(ctxtEnc[0], coefficients);
+            ctxtPowersIm = algo->EvalPowers(ctxtEnc[1], coefficients);
+        }
 
         if (ctxtPowersRe->powers2Re.size() == 0) {
             ctxtPowers = std::make_shared<seriesPowers<DCRTPoly>>(ctxtPowersRe->powersRe, ctxtPowersIm->powersRe);
@@ -3526,6 +3535,8 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
                 ctxtPowersRe->powersRe, ctxtPowersRe->powers2Re, ctxtPowersRe->power2km1Re, ctxtPowersRe->k,
                 ctxtPowersRe->m, ctxtPowersIm->powersRe, ctxtPowersIm->powers2Re, ctxtPowersIm->power2km1Re);
         }
+        ctxtPowers->auxiliaryPowersRe = ctxtPowersRe->auxiliaryPowersRe;
+        ctxtPowers->auxiliaryPowersIm = ctxtPowersIm->auxiliaryPowersRe;
     }
     else {
         //------------------------------------------------------------------------------
@@ -3563,7 +3574,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         // Running Approximate Mod Reduction
         //------------------------------------------------------------------------------
 
-        if (digitBitSize == 1 && order == 1) {
+        if (method == DiscreteCKKSInterpolationMethod::AKP && digitBitSize == 1 && order == 1) {
             auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
                                                              coeff_cos_25_double;
@@ -3598,7 +3609,12 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         }
 
         // No need to scale the message back up after Chebyshev interpolation
-        ctxtPowers = algo->EvalPowers(ctxtEnc[0], coefficients);
+        if (method == DiscreteCKKSInterpolationMethod::SPARSE_THI) {
+            ctxtPowers    = algo->EvalPowersSparseTHI(ctxtEnc[0], 1U << digitBitSize, order);
+        }
+        else {
+            ctxtPowers = algo->EvalPowers(ctxtEnc[0], coefficients);
+        }
     }
 
     // 64-bit only: No need to scale back the message to its original scale.
@@ -3607,20 +3623,22 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
 
 std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecompute(
     ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
-    const BigInteger& initialScaling, size_t order) {
-    return EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order);
+    const BigInteger& initialScaling, size_t order, DiscreteCKKSInterpolationMethod method) {
+    return EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order, method);
 }
 std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                                       const std::vector<int64_t>& coefficients,
                                                                       uint32_t digitBitSize,
-                                                                      const BigInteger& initialScaling, size_t order) {
-    return EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order);
+                                                                      const BigInteger& initialScaling, size_t order,
+                                                                      DiscreteCKKSInterpolationMethod method) {
+    return EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order, method);
 }
 
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr<seriesPowers<DCRTPoly>>& ciphertexts,
                                                            const std::vector<VectorDataType>& coefficients,
-                                                           uint32_t digitBitSize, size_t order) {
+                                                           uint32_t digitBitSize, size_t order,
+                                                           DiscreteCKKSInterpolationMethod method) {
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts->powersRe[0]->GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -3631,6 +3649,45 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
     uint32_t M4    = cc->GetCyclotomicOrder() / 4;
     uint32_t slots = ciphertexts->powersRe[0]->GetSlots();
     auto algo      = cc->GetScheme();
+
+    auto evalSparseTHI = [&](const std::shared_ptr<seriesPowers<DCRTPoly>>& powers,
+                             const std::vector<Ciphertext<DCRTPoly>>& auxiliary) {
+        const uint32_t p = 1U << digitBitSize;
+        if (coefficients.size() != order * p + p / 2 + 1)
+            OPENFHE_THROW("Incorrect Sparse-THI coefficient count");
+        // P(z) = sum_{ell=0}^order z^(ell*p) B_ell(z), deg(B_ell) <= p/2.
+        std::vector<Ciphertext<DCRTPoly>> terms(order + 1);
+        for (size_t ell = 0; ell <= order; ++ell) {
+            std::vector<VectorDataType> block(coefficients.begin() + ell * p,
+                                              coefficients.begin() + ell * p + p / 2 + 1);
+            terms[ell] = cc->EvalPolyWithPrecompSparseTHI(powers, block);
+            if (ell) {
+                auto power = auxiliary[ell - 1]->Clone();
+                if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+                    // Auxiliary powers are already aligned and are at least as deep as the blocks.
+                    cc->LevelReduceInPlace(terms[ell], nullptr, power->GetLevel() - terms[ell]->GetLevel());
+                }
+                else {
+                    algo->AdjustLevelsAndDepthInPlace(terms[ell], power);
+                }
+                terms[ell] = cc->EvalMult(terms[ell], power);
+                cc->ModReduceInPlace(terms[ell]);
+            }
+        }
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+            const uint32_t level = terms.back()->GetLevel();
+            for (size_t ell = 0; ell < order; ++ell)
+                cc->LevelReduceInPlace(terms[ell], nullptr, level - terms[ell]->GetLevel());
+        }
+        else {
+            for (size_t ell = 0; ell < order; ++ell)
+                algo->AdjustLevelsAndDepthInPlace(terms[ell], terms.back());
+        }
+        auto result = terms[0];
+        for (size_t ell = 1; ell <= order; ++ell)
+            cc->EvalAddInPlace(result, terms[ell]);
+        return result;
+    };
 
     Ciphertext<DCRTPoly> ctxtEnc;
 
@@ -3646,7 +3703,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
         // Running Approximate Mod Reduction using the complex explonential
         //------------------------------------------------------------------------------
 
-        if (digitBitSize == 1 && order == 1) {
+        if (method == DiscreteCKKSInterpolationMethod::AKP && digitBitSize == 1 && order == 1) {
             ctxtEnc  = ciphertexts->powersRe[0]->Clone();
             ctxtEncI = ciphertexts->powersIm[0]->Clone();
             // Assumes the function is integer and real!
@@ -3682,9 +3739,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
 
             // Take the real part
             // Division by 2 was already performed
-            ctxtEnc = cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
+            ctxtEnc = (method == DiscreteCKKSInterpolationMethod::SPARSE_THI) ?
+                          evalSparseTHI(ctxtPowersRe, ciphertexts->auxiliaryPowersRe) :
+                          cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
             cc->EvalAddInPlace(ctxtEnc, Conjugate(ctxtEnc, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
-            ctxtEncI = cc->EvalPolyWithPrecomp(ctxtPowersIm, coefficients);
+            ctxtEncI = (method == DiscreteCKKSInterpolationMethod::SPARSE_THI) ?
+                           evalSparseTHI(ctxtPowersIm, ciphertexts->auxiliaryPowersIm) :
+                           cc->EvalPolyWithPrecomp(ctxtPowersIm, coefficients);
             cc->EvalAddInPlace(ctxtEncI, Conjugate(ctxtEncI, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
         }
 
@@ -3701,7 +3762,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
         // Running Approximate Mod Reduction using the complex exponential
         //------------------------------------------------------------------------------
 
-        if (digitBitSize == 1 && order == 1) {
+        if (method == DiscreteCKKSInterpolationMethod::AKP && digitBitSize == 1 && order == 1) {
             ctxtEnc = ciphertexts->powersRe[0]->Clone();
             // Assumes the function is integer and real!
             if (ToReal(coefficients[1]) > 0) {  // MultByInteger only works with positive integers
@@ -3725,7 +3786,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
                     std::make_shared<seriesPowers<DCRTPoly>>(ciphertexts->powersRe, ciphertexts->powers2Re,
                                                              ciphertexts->power2km1Re, ciphertexts->k, ciphertexts->m);
             }
-            ctxtEnc = cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
+            ctxtEnc = (method == DiscreteCKKSInterpolationMethod::SPARSE_THI) ?
+                          evalSparseTHI(ctxtPowersRe, ciphertexts->auxiliaryPowersRe) :
+                          cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
 
             // Take the real part
             // Division by 2 was already performed
@@ -3742,60 +3805,64 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
                                          const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                          const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce,
-                                         size_t order) {
-    return EvalHomDecoding(EvalMVBNoDecodingInternal(
-                               EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order),
-                               coefficients, digitBitSize, order),
+                                         size_t order, DiscreteCKKSInterpolationMethod method) {
+    return EvalHomDecoding(EvalMVBNoDecodingInternal(EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize,
+                                                                               initialScaling, order, method),
+                                                     coefficients, digitBitSize, order, method),
                            postScaling, levelToReduce);
 }
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
                                          const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
                                          const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce,
-                                         size_t order) {
-    return EvalHomDecoding(EvalMVBNoDecodingInternal(
-                               EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order),
-                               coefficients, digitBitSize, order),
+                                         size_t order, DiscreteCKKSInterpolationMethod method) {
+    return EvalHomDecoding(EvalMVBNoDecodingInternal(EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize,
+                                                                               initialScaling, order, method),
+                                                     coefficients, digitBitSize, order, method),
                            postScaling, levelToReduce);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const std::vector<std::complex<double>>& coefficients,
                                                    uint32_t digitBitSize, const BigInteger& initialScaling,
-                                                   size_t order) {
+                                                   size_t order, DiscreteCKKSInterpolationMethod method) {
     return EvalMVBNoDecodingInternal(
-        EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order), coefficients,
-        digitBitSize, order);
+        EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order, method), coefficients,
+        digitBitSize, order, method);
 }
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                                   const BigInteger& initialScaling, size_t order) {
+                                                   const BigInteger& initialScaling, size_t order,
+                                                   DiscreteCKKSInterpolationMethod method) {
     return EvalMVBNoDecodingInternal(
-        EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order), coefficients,
-        digitBitSize, order);
+        EvalMVBPrecomputeInternal(ciphertext, coefficients, digitBitSize, initialScaling, order, method), coefficients,
+        digitBitSize, order, method);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                          const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
-                                         uint64_t postScaling, uint32_t levelToReduce, size_t order) {
-    return EvalHomDecoding(EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order), postScaling,
-                           levelToReduce);
+                                         uint64_t postScaling, uint32_t levelToReduce, size_t order,
+                                         DiscreteCKKSInterpolationMethod method) {
+    return EvalHomDecoding(EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order, method),
+                           postScaling, levelToReduce);
 }
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                          const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                         uint64_t postScaling, uint32_t levelToReduce, size_t order) {
-    return EvalHomDecoding(EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order), postScaling,
-                           levelToReduce);
+                                         uint64_t postScaling, uint32_t levelToReduce, size_t order,
+                                         DiscreteCKKSInterpolationMethod method) {
+    return EvalHomDecoding(EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order, method),
+                           postScaling, levelToReduce);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                                    const std::vector<std::complex<double>>& coefficients,
-                                                   uint32_t digitBitSize, size_t order) {
-    return EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order);
+                                                   uint32_t digitBitSize, size_t order,
+                                                   DiscreteCKKSInterpolationMethod method) {
+    return EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order, method);
 }
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                                    const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
-                                                   size_t order) {
-    return EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order);
+                                                   size_t order, DiscreteCKKSInterpolationMethod method) {
+    return EvalMVBNoDecodingInternal(ciphertexts, coefficients, digitBitSize, order, method);
 }
 
 template <typename VectorDataType>
@@ -3843,7 +3910,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>
 
 template <typename VectorDataType>
 uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                    size_t order, SecretKeyDist skd, uint32_t compositeDegree) {
+                                    size_t order, SecretKeyDist skd, uint32_t compositeDegree,
+                                    DiscreteCKKSInterpolationMethod method) {
     // with composite scaling, the sparse-encapsulated case uses the K = 25 approximation
     if (skd == SPARSE_ENCAPSULATED && compositeDegree > 1)
         skd = SPARSE_TERNARY;
@@ -3855,26 +3923,20 @@ uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficie
                       (PInput.ConvertToInt() > 1024) ? coeff_exp_25_double_66 :
                                                        coeff_exp_25_double_58;
     uint32_t depth  = 0;
-    switch (PInput.ConvertToInt()) {
-        case 2:
-            if (order > 1) {
-                depth += 3;
-            }
-            depth += GetMultiplicativeDepthByCoeffVector(coeff_cos, false);
-            break;
-        case 4:
-            if (order == 1) {
-                depth += 3;
-            }
-            else {
-                depth += GetMultiplicativeDepthByCoeffVector(coefficients, true);
-            }
-            depth += GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
-            break;
-        default:
+    const auto p    = PInput.ConvertToInt<uint32_t>();
+    if (method == DiscreteCKKSInterpolationMethod::AKP && p == 2) {
+        if (order > 1)
+            depth += 3;
+        depth += GetMultiplicativeDepthByCoeffVector(coeff_cos, false);
+    }
+    else {
+        depth += GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
+        if (method == DiscreteCKKSInterpolationMethod::SPARSE_THI)
+            depth += GetDepthSparseTHI(p, order);
+        else if (p == 4 && order == 1)
+            depth += 3;
+        else
             depth += GetMultiplicativeDepthByCoeffVector(coefficients, true);
-            depth += GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
-            break;
     }
     // the number of double-angle iterations: 2 for the sparse distributions and 6 for UNIFORM_TERNARY
     depth += (skd == UNIFORM_TERNARY) ? R_UNIFORM_FBT : R_SPARSE_FBT;
@@ -3882,25 +3944,28 @@ uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<VectorDataType>& coefficie
 }
 
 template uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<int64_t>& coefficients, const BigInteger& PInput,
-                                             size_t order, SecretKeyDist skd, uint32_t compositeDegree);
+                                             size_t order, SecretKeyDist skd, uint32_t compositeDegree,
+                                             DiscreteCKKSInterpolationMethod method);
 template uint32_t FHECKKSRNS::AdjustDepthFBT(const std::vector<std::complex<double>>& coefficients,
                                              const BigInteger& PInput, size_t order, SecretKeyDist skd,
-                                             uint32_t compositeDegree);
+                                             uint32_t compositeDegree, DiscreteCKKSInterpolationMethod method);
 
 template <typename VectorDataType>
 uint32_t FHECKKSRNS::GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                  const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                 size_t order, SecretKeyDist skd, uint32_t compositeDegree) {
-    return levelBudget[0] + levelBudget[1] + AdjustDepthFBT(coefficients, PInput, order, skd, compositeDegree);
+                                 size_t order, SecretKeyDist skd, uint32_t compositeDegree,
+                                 DiscreteCKKSInterpolationMethod method) {
+    return levelBudget[0] + levelBudget[1] + AdjustDepthFBT(coefficients, PInput, order, skd, compositeDegree, method);
 }
 
 template uint32_t FHECKKSRNS::GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                           const std::vector<int64_t>& coefficients, const BigInteger& PInput,
-                                          size_t order, SecretKeyDist skd, uint32_t compositeDegree);
+                                          size_t order, SecretKeyDist skd, uint32_t compositeDegree,
+                                          DiscreteCKKSInterpolationMethod method);
 template uint32_t FHECKKSRNS::GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                           const std::vector<std::complex<double>>& coefficients,
                                           const BigInteger& PInput, size_t order, SecretKeyDist skd,
-                                          uint32_t compositeDegree);
+                                          uint32_t compositeDegree, DiscreteCKKSInterpolationMethod method);
 
 void FHECKKSRNS::ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
                                  const std::shared_ptr<DCRTPoly::Params>& elementParamsRaisedPtr) const {

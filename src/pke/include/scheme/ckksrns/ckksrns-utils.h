@@ -127,6 +127,10 @@ std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(const std::vector<VecDT
  */
 std::vector<uint32_t> ComputeDegreesPS(uint32_t n);
 
+// PS parameters and multiplicative depth for order-n Sparse-THI with modulus p.
+std::vector<uint32_t> ComputeDegreesPSSparseTHI(uint32_t p, size_t order);
+uint32_t GetDepthSparseTHI(uint32_t p, size_t order);
+
 uint32_t GetDepthByDegree(size_t degree);
 
 /**
