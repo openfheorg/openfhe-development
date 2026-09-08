@@ -40,7 +40,6 @@
 #include <unordered_map>
 #include <vector>
 
-#if !defined(__EMSCRIPTEN__)
 using namespace lbcrypto;
 class Params;
 
@@ -651,7 +650,7 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
             case INTERACTIVE_MP_BOOT_CHEBYSHEV:
                 UnitTest_MultiPartyBootChebyshev(test, test.buildTestName());
                 break;
-    #if NATIVEINT != 128
+#if NATIVEINT != 128
             case INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY:
                 UnitTest_MultiPartyBootEncrypt2(test, test.buildTestName());
                 break;
@@ -664,7 +663,7 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
             case INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY:
                 UnitTest_MultiPartyBootChebyshev2(test, test.buildTestName());
                 break;
-    #endif
+#endif
             default:
                 break;
         }
@@ -673,4 +672,3 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_INTERACTIVE_BOOT,
                          ::testing::ValuesIn(testCasesUTCKKSRNS_INTERACTIVE_BOOT), testName);
-#endif  // __EMSCRIPTEN__
