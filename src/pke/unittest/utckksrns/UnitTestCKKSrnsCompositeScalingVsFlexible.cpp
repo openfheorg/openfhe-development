@@ -57,6 +57,29 @@
 
   The remaining two branch fixes (ExtendCiphertext and composite prime modulation) do not need
   dedicated tests per the issue.
+
+  Tolerances (kGapTol, one per test)
+  ----------------------------------
+  Each test compares one CS run against one FA run, both with unseeded randomness, so the gap
+  (faBits - csBits) is a random variable, not a fixed quantity. Measured over 200 runs per test
+  (52 for the two expensive scenarios) on x86_64 / GCC 13, NATIVE_SIZE = 64:
+
+    FullPackingBootstrap_HybridKeySwitch          gap -1.50 +/- 0.22
+    SparseBootstrapModRaiseHeadroom               gap -1.64 +/- 0.62
+    SparseBootstrapLargeModRaiseHeadroom          gap  1.30 +/- 0.71
+    StCFirstSparseBootstrap                       gap  1.06 +/- 0.72
+    StCFirstSparseBootstrapLargeModRaiseHeadroom  gap  1.33 +/- 0.69
+    StCFirstBootstrap1024Slots                    gap -0.56 +/- 0.33
+    StCFirstSparseBootstrapWithExtraLevels        gap -0.09 +/- 0.63
+    DeepComputationWithFillers                    gap -0.55 +/- 1.21
+
+  Each kGapTol sits at least 5 standard deviations above its measured mean, so a false failure
+  is under 1e-6 per run, and at most half of the pre-fix gap the test guards against, so it
+  still separates noise from signal in both directions. The tolerance is deliberately per-test:
+  the spread differs by 6x across scenarios, so a single shared value would be either flaky for
+  the noisy tests or blind for the quiet ones. At the original uniform 3.0 the three tests with
+  a positive mean gap sat only ~2.4 sd out and failed about one run in 200 (issue #1290) - the
+  failures were not CS precision losses but FA reference runs that happened to land high.
 */
 
 #include "openfhe.h"
@@ -219,6 +242,7 @@ protected:
 // margin for composite scaling. Needs ring 2^14 for the digit margin to become tight (verified to not
 // reproduce at 2^12/2^13); sparse 1024-slot packing keeps the test cheap. Pre-fix: CS ~4 bits below FA.
 TEST_F(UTCKKSRNSCSvsFA, FullPackingBootstrap_HybridKeySwitch) {
+    constexpr double kGapTol                = 2.0;  // measured gap -1.50 +/- 0.22; pre-fix gap ~4
     const uint32_t ringDim                  = 1 << 14;
     const std::vector<uint32_t> levelBudget = {4, 4};
     const uint32_t numSlots                 = 1024;
@@ -231,8 +255,8 @@ TEST_F(UTCKKSRNSCSvsFA, FullPackingBootstrap_HybridKeySwitch) {
                                            levelsAfterBootstrap, numLargeDigits);
 
     EXPECT_GT(csBits, 6.0) << "CS bootstrap precision unexpectedly low (" << csBits << " bits)";
-    EXPECT_GE(csBits, faBits - 2.0) << "CS lags FA by >2 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - HYBRID key-switching regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - HYBRID key-switching regression";
 }
 
 //===========================================================================================================
@@ -240,6 +264,7 @@ TEST_F(UTCKKSRNSCSvsFA, FullPackingBootstrap_HybridKeySwitch) {
 // Fixed by applying the pre/post 1/(kN) scaling as an exact power-of-two, the same way as FA. The bug
 // only triggers when firstModSize > scalingModSize + 1. Pre-fix: CS ~7 bits below FA.
 TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapModRaiseHeadroom) {
+    constexpr double kGapTol                = 3.0;  // measured gap -1.64 +/- 0.62; pre-fix gap ~7
     const uint32_t ringDim                  = 1 << 12;
     const std::vector<uint32_t> levelBudget = {3, 3};
     const uint32_t numSlots                 = 8;
@@ -251,8 +276,8 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapModRaiseHeadroom) {
         BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 56, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
 
     EXPECT_GT(csBits, 6.0) << "CS 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
-    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - bootstrap pre/post scaling (deg>1) regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - bootstrap pre/post scaling (deg>1) regression";
 }
 
 //===========================================================================================================
@@ -262,6 +287,7 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapModRaiseHeadroom) {
 // into the CoeffsToSlots matrix closes it (CS now within ~1.5 bits of FA, ~17 vs ~18.5). Pre-fix: CS ~8 bits
 // (gap ~10).
 TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
+    constexpr double kGapTol                = 5.0;  // measured gap 1.30 +/- 0.71; pre-fix gap ~10
     const uint32_t ringDim                  = 1 << 12;
     const std::vector<uint32_t> levelBudget = {3, 3};
     const uint32_t numSlots                 = 8;
@@ -273,8 +299,8 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
         BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
 
     EXPECT_GT(csBits, 12.0) << "CS 8-slot deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
-    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - large modraise headroom (deg=6) regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - large modraise headroom (deg=6) regression";
 }
 
 //===========================================================================================================
@@ -285,6 +311,7 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
 // levels (the current and target levels were mixed up, which is invisible for FA but cost ~10 bits for CS).
 // CS is expected to be within a few bits of FA in this mode, like in the ModRaise-first mode.
 TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrap) {
+    constexpr double kGapTol                = 5.0;  // measured gap 1.06 +/- 0.72; pre-fix gap ~10
     const uint32_t ringDim                  = 1 << 12;
     const std::vector<uint32_t> levelBudget = {2, 2};
     const uint32_t numSlots                 = 8;
@@ -296,11 +323,12 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrap) {
                                            levelsAfterBootstrap, 0, true);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
-    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - StC-first composite scaling regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - StC-first composite scaling regression";
 }
 
 TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapLargeModRaiseHeadroom) {
+    constexpr double kGapTol                = 5.0;  // measured gap 1.33 +/- 0.69; pre-fix gap ~10
     const uint32_t ringDim                  = 1 << 12;
     const std::vector<uint32_t> levelBudget = {2, 2};
     const uint32_t numSlots                 = 8;
@@ -312,11 +340,12 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapLargeModRaiseHeadroom) {
                                            levelsAfterBootstrap, 0, true);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
-    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - StC-first large modraise headroom regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - StC-first large modraise headroom regression";
 }
 
 TEST_F(UTCKKSRNSCSvsFA, StCFirstBootstrap1024Slots) {
+    constexpr double kGapTol                = 3.0;  // measured gap -0.56 +/- 0.33; pre-fix gap ~10
     const uint32_t ringDim                  = 1 << 12;
     const std::vector<uint32_t> levelBudget = {3, 3};
     const uint32_t numSlots                 = 1024;
@@ -328,13 +357,14 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstBootstrap1024Slots) {
                                            levelsAfterBootstrap, 0, true);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first 1024-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
-    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - StC-first composite scaling regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - StC-first composite scaling regression";
 }
 
 // Input arrives with 2 more levels than the StC-first minimum, so the level adjustment before SlotsToCoeffs
 // runs. Pre-fix: CS ~15 bits vs FA ~25 bits at ring 2^6.
 TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapWithExtraLevels) {
+    constexpr double kGapTol                = 5.0;  // measured gap -0.09 +/- 0.63; pre-fix gap ~10
     const uint32_t ringDim                  = 1 << 12;
     const std::vector<uint32_t> levelBudget = {2, 2};
     const uint32_t numSlots                 = 8;
@@ -348,8 +378,8 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapWithExtraLevels) {
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first bootstrap precision with extra input levels unexpectedly low (" << csBits
                             << " bits)";
-    EXPECT_GE(csBits, faBits - 3.0) << "CS lags FA by >3 bits (CS=" << csBits << ", FA=" << faBits
-                                    << ") - StC-first level adjustment regression";
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
+                                        << ") - StC-first level adjustment regression";
 }
 
 //===========================================================================================================
@@ -362,15 +392,18 @@ TEST_F(UTCKKSRNSCSvsFA, DeepComputationWithFillers) {
         GTEST_SKIP() << "Disabled for MATHBACKEND 2: the coefficient modulus at filler depth D = 20 is too large "
                         "for the default BACKEND 2 configuration.";
 
-    const uint32_t ringDim = 1 << 12;
-    const uint32_t D       = 20;
+    constexpr double kGapTol = 7.0;  // measured gap -0.55 +/- 1.21; pre-fix gap ~18
+    const uint32_t ringDim   = 1 << 12;
+    const uint32_t D         = 20;
 
     double faBits = DeepComputationBgPrecisionBits(FLEXIBLEAUTO, ringDim, D);
     double csBits = DeepComputationBgPrecisionBits(COMPOSITESCALINGAUTO, ringDim, D);
 
-    // CS background-leak precision must stay within 5 bits of FA (pre-fix the gap was ~18 bits).
-    EXPECT_GE(csBits, faBits - 5.0) << "CS background leakage worse than FA by >5 bits at filler depth D=" << D
-                                    << " (CS=" << csBits << " bits, FA=" << faBits << " bits)";
+    // This scenario has the widest run-to-run spread in the file (sd 1.25 bits, ~2x the sparse
+    // bootstrap tests), so it needs the widest tolerance; the pre-fix gap of ~18 bits leaves room.
+    EXPECT_GE(csBits, faBits - kGapTol) << "CS background leakage worse than FA by >" << kGapTol
+                                        << " bits at filler depth D=" << D << " (CS=" << csBits
+                                        << " bits, FA=" << faBits << " bits)";
 }
 //===========================================================================================================
 #endif  // NATIVEINT == 64
