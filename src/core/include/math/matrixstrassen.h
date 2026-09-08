@@ -596,7 +596,7 @@ inline MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input);
 
 /**
  * Convert a matrix of integers from BigInteger to int32_t
- * Convert from Z_q to [-q/2, q/2]
+ * Convert from Z_q to (-q/2, q/2]
  *
  * @param &input the input matrix
  * @param &modulus the ring modulus
@@ -607,7 +607,7 @@ inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& 
 
 /**
  * Convert a matrix of BigVector to int32_t
- * Convert from Z_q to [-q/2, q/2]
+ * Convert from Z_q to (-q/2, q/2]
  *
  * @param &input the input matrix
  * @param &modulus the ring modulus

@@ -152,14 +152,16 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
     }
 }
 
-//  Convert from Z_q to [-q/2, q/2]
+//  Convert from Z_q to (-q/2, q/2]
 Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32Converter converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            result(i, j) = ConvertCenteredToInt32(input(i, j), modulus);
+            result(i, j) = converter.Convert(inputRow[j]);
         }
     }
     return result;
@@ -169,10 +171,11 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger&
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32Converter converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            const BigInteger& elem = input(i, j).at(0);
-            result(i, j)           = ConvertCenteredToInt32(elem, modulus);
+            result(i, j) = converter.Convert(inputRow[j][0]);
         }
     }
     return result;

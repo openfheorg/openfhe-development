@@ -36,31 +36,79 @@
 
 #include <cstdint>
 #include <limits>
+#include <string>
 
 namespace lbcrypto {
 
-inline int32_t ConvertCenteredToInt32(const BigInteger& value, const BigInteger& modulus) {
-    constexpr uint64_t int32MaxValue = static_cast<uint64_t>(std::numeric_limits<int32_t>::max());
-    const BigInteger negativeThreshold(modulus / BigInteger(2));
-    const BigInteger int32Max(int32MaxValue);
-    const BigInteger int32MinMagnitude(int32MaxValue + 1);  // abs(INT32_MIN)
+/**
+ * @brief Converts elements of Z_q to their centered representatives in (-q/2, q/2] as int32_t.
+ *
+ * The modulus-dependent bounds are computed once, at construction; Convert() then performs at
+ * most two comparisons and one subtraction per element and throws if the centered representative
+ * does not fit in an int32_t. Every representative fits if q <= 2^32 - 1. For an even q the
+ * class q/2 has the two representatives -q/2 and q/2; the representable one is returned.
+ */
+template <typename IntType>
+class CenteredToInt32ConverterImpl {
+public:
+    explicit CenteredToInt32ConverterImpl(const IntType& modulus)
+        : m_modulus(modulus), m_native(modulus.GetMSB() <= 64) {
+        const IntType int32Max(int32MaxValue);
+        const IntType negativeThreshold(modulus / IntType(2));
 
-    if (value <= negativeThreshold) {
-        if (value > int32Max)
-            OPENFHE_THROW("Centered value cannot be represented as int32_t");
+        // the largest value mapping to a non-negative int32_t
+        m_maxPositive = (negativeThreshold > int32Max) ? int32Max : negativeThreshold;
 
-        return static_cast<int32_t>(value.ConvertToInt<uint32_t>());
+        // the smallest value mapping to a negative int32_t
+        m_minNegative = negativeThreshold + IntType(1);
+        if (modulus > IntType(int32MinMagnitude)) {
+            const IntType lowestNegative(modulus - IntType(int32MinMagnitude));
+            if (lowestNegative > m_minNegative)
+                m_minNegative = lowestNegative;
+        }
+
+        if (m_native) {
+            m_modulus64     = modulus.template ConvertToInt<uint64_t>();
+            m_maxPositive64 = m_maxPositive.template ConvertToInt<uint64_t>();
+        }
     }
 
-    const BigInteger magnitude(modulus - value);
-    if (magnitude > int32MinMagnitude)
-        OPENFHE_THROW("Centered value cannot be represented as int32_t");
+    int32_t Convert(const IntType& value) const {
+        if (m_native) {
+            //  q <= 2^64: both bounds and the magnitude fit in a native word, so the comparisons
+            //  and the subtraction need no big-integer temporary. A value outside Z_q wraps the
+            //  subtraction, which the magnitude bound then rejects
+            const uint64_t v{value.template ConvertToInt<uint64_t>()};
+            if (v <= m_maxPositive64)
+                return static_cast<int32_t>(v);
+            const uint64_t magnitude{m_modulus64 - v};
+            if (magnitude <= int32MinMagnitude)
+                return static_cast<int32_t>(-static_cast<int64_t>(magnitude));
+        }
+        else {
+            if (value <= m_maxPositive)
+                return static_cast<int32_t>(value.template ConvertToInt<uint64_t>());
+            if (value >= m_minNegative && value < m_modulus)
+                return static_cast<int32_t>(
+                    -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
+        }
+        OPENFHE_THROW("The centered representative of " + value.ToString() + " mod " + m_modulus.ToString() +
+                      " cannot be represented as int32_t");
+    }
 
-    if (magnitude == int32MinMagnitude)
-        return std::numeric_limits<int32_t>::min();
+private:
+    static constexpr uint64_t int32MaxValue{static_cast<uint64_t>(std::numeric_limits<int32_t>::max())};
+    static constexpr uint64_t int32MinMagnitude{int32MaxValue + 1};  // abs(INT32_MIN)
 
-    return -static_cast<int32_t>(magnitude.ConvertToInt<uint32_t>());
-}
+    IntType m_modulus;
+    IntType m_maxPositive;
+    IntType m_minNegative;
+    uint64_t m_modulus64{0};
+    uint64_t m_maxPositive64{0};
+    bool m_native{false};
+};
+
+using CenteredToInt32Converter = CenteredToInt32ConverterImpl<BigInteger>;
 
 }  // namespace lbcrypto
 

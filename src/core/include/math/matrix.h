@@ -777,7 +777,7 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result);
 
 /**
  * Convert a matrix of integers from BigInteger to int32_t
- * Convert from Z_q to [-q/2, q/2]
+ * Convert from Z_q to (-q/2, q/2]
  *
  * @param &input the input matrix
  * @param &modulus the ring modulus
@@ -788,7 +788,7 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger
 
 /**
  * Convert a matrix of BigVector to int32_t
- * Convert from Z_q to [-q/2, q/2]
+ * Convert from Z_q to (-q/2, q/2]
  *
  * @param &input the input matrix
  * @param &modulus the ring modulus
