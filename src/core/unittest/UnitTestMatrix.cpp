@@ -40,6 +40,7 @@
 #include "utils/utilities.h"
 
 #include <iostream>
+#include <limits>
 
 using namespace lbcrypto;
 
@@ -71,6 +72,185 @@ static std::function<Element()> fastUniformIL2nAlloc() {
 
 TEST(UTMatrix, serializer) {
     Matrix<int32_t> m([]() { return 0; }, 3, 5);
+}
+
+TEST(UTMatrix, convert_to_int32_checks_centered_range) {
+    constexpr uint64_t int32MaxValue     = static_cast<uint64_t>(std::numeric_limits<int32_t>::max());
+    constexpr uint64_t int32MinMagnitude = int32MaxValue + 1;
+    const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = BigInteger(int32MaxValue);
+    EXPECT_EQ(std::numeric_limits<int32_t>::max(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = BigInteger(int32MinMagnitude);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    input(0, 0) = modulus - BigInteger(int32MinMagnitude);
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(int32MinMagnitude + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+}
+
+TEST(UTMatrix, convert_to_int32_checks_all_matrix_overloads) {
+    constexpr uint64_t int32MinMagnitude = static_cast<uint64_t>(std::numeric_limits<int32_t>::max()) + 1;
+    const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
+    const BigInteger unrepresentable(int32MinMagnitude);
+    auto vectorAllocator = [&modulus]() {
+        return BigVector(1, modulus);
+    };
+
+    Matrix<BigVector> vectorInput(vectorAllocator, 1, 1);
+    vectorInput(0, 0).at(0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(vectorInput, modulus), OpenFHEException);
+
+    MatrixStrassen<BigInteger> strassenInput([]() { return BigInteger(0); }, 1, 1);
+    strassenInput(0, 0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(strassenInput, modulus), OpenFHEException);
+
+    MatrixStrassen<BigVector> strassenVectorInput(vectorAllocator, 1, 1);
+    strassenVectorInput(0, 0).at(0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(strassenVectorInput, modulus), OpenFHEException);
+}
+
+// additional coverage: values that must still convert, on every overload, plus the
+// modulus from the bug report (q = 2^32 + 15, value = 2^31)
+TEST(UTMatrix, convert_to_int32_representable_values) {
+    constexpr int32_t int32Max = std::numeric_limits<int32_t>::max();
+    constexpr int32_t int32Min = std::numeric_limits<int32_t>::min();
+    const BigInteger modulus(static_cast<uint64_t>(4294967311ULL));
+    const BigInteger minusOne(modulus - BigInteger(1));
+    const BigInteger lowest(modulus - BigInteger(static_cast<uint64_t>(int32Max) + 1));
+
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 2, 2);
+    input(0, 0)         = BigInteger(0);
+    input(0, 1)         = BigInteger(static_cast<uint64_t>(int32Max));
+    input(1, 0)         = minusOne;
+    input(1, 1)         = lowest;
+    Matrix<int32_t> out = ConvertToInt32(input, modulus);
+    EXPECT_EQ(0, out(0, 0));
+    EXPECT_EQ(int32Max, out(0, 1));
+    EXPECT_EQ(-1, out(1, 0));
+    EXPECT_EQ(int32Min, out(1, 1));
+
+    // the value from the bug report is not representable and must throw, not wrap to INT32_MIN
+    input(0, 0) = BigInteger(static_cast<uint64_t>(int32Max) + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    // the largest positive representative of this modulus, 2^31 + 7, used to wrap to -2147483641
+    input(0, 0) = modulus / BigInteger(2);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    auto vectorAllocator = [&modulus]() {
+        return BigVector(1, modulus);
+    };
+    Matrix<BigVector> vectorInput(vectorAllocator, 1, 2);
+    vectorInput(0, 0).at(0)   = BigInteger(static_cast<uint64_t>(int32Max));
+    vectorInput(0, 1).at(0)   = lowest;
+    Matrix<int32_t> vectorOut = ConvertToInt32(vectorInput, modulus);
+    EXPECT_EQ(int32Max, vectorOut(0, 0));
+    EXPECT_EQ(int32Min, vectorOut(0, 1));
+
+    MatrixStrassen<BigInteger> strassenInput([]() { return BigInteger(0); }, 1, 2);
+    strassenInput(0, 0)                 = BigInteger(static_cast<uint64_t>(int32Max));
+    strassenInput(0, 1)                 = lowest;
+    MatrixStrassen<int32_t> strassenOut = ConvertToInt32(strassenInput, modulus);
+    EXPECT_EQ(int32Max, strassenOut(0, 0));
+    EXPECT_EQ(int32Min, strassenOut(0, 1));
+
+    MatrixStrassen<BigVector> strassenVectorInput(vectorAllocator, 1, 2);
+    strassenVectorInput(0, 0).at(0)           = BigInteger(static_cast<uint64_t>(int32Max));
+    strassenVectorInput(0, 1).at(0)           = lowest;
+    MatrixStrassen<int32_t> strassenVectorOut = ConvertToInt32(strassenVectorInput, modulus);
+    EXPECT_EQ(int32Max, strassenVectorOut(0, 0));
+    EXPECT_EQ(int32Min, strassenVectorOut(0, 1));
+}
+
+// a small modulus leaves every residue representable: no throw is possible
+TEST(UTMatrix, convert_to_int32_small_modulus) {
+    const BigInteger modulus(static_cast<uint64_t>(1024));
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 3);
+    input(0, 0)         = BigInteger(512);
+    input(0, 1)         = BigInteger(513);
+    input(0, 2)         = BigInteger(1023);
+    Matrix<int32_t> out = ConvertToInt32(input, modulus);
+    EXPECT_EQ(512, out(0, 0));
+    EXPECT_EQ(-511, out(0, 1));
+    EXPECT_EQ(-1, out(0, 2));
+}
+
+// q = 2^32 - 1 is the largest modulus for which every centered representative is
+// representable: both extremes must convert rather than throw
+TEST(UTMatrix, convert_to_int32_widest_representable_modulus) {
+    constexpr int32_t int32Max = std::numeric_limits<int32_t>::max();
+    const BigInteger modulus(static_cast<uint64_t>(4294967295ULL));
+    const BigInteger half(modulus / BigInteger(2));
+
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 3);
+    input(0, 0) = half;                     // largest positive representative, +INT32_MAX
+    input(0, 1) = half + BigInteger(1);     // largest negative magnitude, -INT32_MAX
+    input(0, 2) = modulus - BigInteger(1);  // -1
+
+    Matrix<int32_t> out([]() { return 0; }, 1, 1);
+    EXPECT_NO_THROW(out = ConvertToInt32(input, modulus));
+    EXPECT_EQ(int32Max, out(0, 0));
+    EXPECT_EQ(-int32Max, out(0, 1));
+    EXPECT_EQ(-1, out(0, 2));
+}
+
+// for an even modulus the class q/2 has the two representatives -q/2 and q/2, of equal
+// magnitude; q = 2^32 is the only modulus for which exactly one of them is an int32_t
+TEST(UTMatrix, convert_to_int32_even_modulus_endpoint) {
+    const BigInteger modulus(static_cast<uint64_t>(4294967296ULL));  // 2^32
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = modulus / BigInteger(2);  // 2^31, representable only as INT32_MIN
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus / BigInteger(2) - BigInteger(1);
+    EXPECT_EQ(std::numeric_limits<int32_t>::max(), ConvertToInt32(input, modulus)(0, 0));
+
+    //  q = 2^33: the class q/2 has magnitude 2^32 either way, so neither fits
+    const BigInteger wider(static_cast<uint64_t>(8589934592ULL));
+    input(0, 0) = wider / BigInteger(2);
+    EXPECT_THROW(ConvertToInt32(input, wider), OpenFHEException);
+}
+
+// large modulus: only values near 0 and near q are representable
+TEST(UTMatrix, convert_to_int32_large_modulus) {
+    constexpr int32_t int32Max = std::numeric_limits<int32_t>::max();
+    const BigInteger modulus("1237940039285380274899124357");
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = BigInteger(12345);
+    EXPECT_EQ(12345, ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(12345);
+    EXPECT_EQ(-12345, ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(static_cast<uint64_t>(int32Max) + 1);
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = BigInteger(static_cast<uint64_t>(int32Max) + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    input(0, 0) = modulus - BigInteger(static_cast<uint64_t>(int32Max) + 2);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+}
+
+// a value outside Z_q has no centered representative: it must throw rather than
+// convert to whatever the modular subtraction happens to produce
+TEST(UTMatrix, convert_to_int32_value_outside_ring) {
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    const BigInteger smallModulus(static_cast<uint64_t>(67108913));
+    input(0, 0) = smallModulus + BigInteger(5);
+    EXPECT_THROW(ConvertToInt32(input, smallModulus), OpenFHEException);
+
+    const BigInteger largeModulus("1237940039285380274899124357");
+    input(0, 0) = largeModulus + BigInteger(5);
+    EXPECT_THROW(ConvertToInt32(input, largeModulus), OpenFHEException);
 }
 
 template <typename Element>

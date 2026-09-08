@@ -37,6 +37,7 @@
 #define LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
 
 #include "math/matrix-impl.h"
+#include "math/matrix-utils.h"
 
 #include "utils/parallel.h"
 
@@ -135,21 +136,17 @@ void Matrix<Element>::SwitchFormat() {
     }
 }
 
-//  Convert from Z_q to [-q/2, q/2]
+//  Convert from Z_q to (-q/2, q/2]
 template <typename T>
 Matrix<int32_t> ConvertToInt32(const Matrix<T>& input, const T& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    T negativeThreshold(modulus / BigInteger(2));
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32ConverterImpl<T> converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            if (input(i, j) > negativeThreshold) {
-                result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
-            }
-            else {
-                result(i, j) = input(i, j).ConvertToInt();
-            }
+            result(i, j) = converter.Convert(inputRow[j]);
         }
     }
     return result;
@@ -159,17 +156,12 @@ template <typename V>
 Matrix<int32_t> ConvertToInt32(const Matrix<V>& input, const typename V::Integer& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    typename V::Integer negativeThreshold(modulus / BigInteger(2));
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32ConverterImpl<typename V::Integer> converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            const typename V::Integer& elem = input(i, j).at(0);
-            if (elem > negativeThreshold) {
-                result(i, j) = -1 * (modulus - elem).ConvertToInt();
-            }
-            else {
-                result(i, j) = elem.ConvertToInt();
-            }
+            result(i, j) = converter.Convert(inputRow[j][0]);
         }
     }
     return result;
