@@ -109,8 +109,8 @@ public:
     }
 
     void SetModulus(NativeInteger q) {
-        m_a.ModEq(q);
         m_a.SetModulus(q);
+        m_a.ModReduceEq();
         m_b.ModEq(q);
     }
 
