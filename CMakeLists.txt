@@ -155,17 +155,9 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # (but later on when installing)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-set(CMAKE_INSTALL_RPATH "${LIBINSTALL}")
-
 # Add the automatically determined parts of the RPATH,
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${LIBINSTALL}" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "${LIBINSTALL}")
-endif("${isSystemDir}" STREQUAL "-1")
 
 # Compiler flags
 set(C_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
@@ -354,14 +346,9 @@ if("${_install_cmake_dir_help}" STREQUAL "Installation directory for CMake files
     unset(INSTALL_CMAKE_DIR CACHE)
 endif()
 unset(_install_cmake_dir_help)
-# Sentinel written by an earlier revision of this file; no longer read.
-unset(OpenFHE_DEF_INSTALL_CMAKE_DIR CACHE)
 
 if(NOT DEFINED INSTALL_CMAKE_DIR)
     set(INSTALL_CMAKE_DIR "${DEF_INSTALL_CMAKE_DIR}")
-endif()
-if(NOT IS_ABSOLUTE "${INSTALL_CMAKE_DIR}")
-    set(INSTALL_CMAKE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}")
 endif()
 
 # Destinations for install(): the relative forms are passed to install(DESTINATION), which
@@ -374,6 +361,14 @@ set(OpenFHE_INSTALL_INCLUDEDIR      "${CMAKE_INSTALL_INCLUDEDIR}/openfhe")
 set(OpenFHE_FULL_INSTALL_LIBDIR     "${CMAKE_INSTALL_FULL_LIBDIR}")
 set(OpenFHE_FULL_INSTALL_BINDIR     "${CMAKE_INSTALL_FULL_BINDIR}")
 set(OpenFHE_FULL_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}/openfhe")
+
+# RPATH to be used when installing, but only if it's not a system directory. Set here rather
+# than with the other RPATH options above: it needs CMAKE_INSTALL_FULL_LIBDIR, which only
+# exists once GNUInstallDirs has run.
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+endif()
 
 message("***** INSTALL IS AT ${CMAKE_INSTALL_PREFIX}; to change, run cmake with -DCMAKE_INSTALL_PREFIX=/your/path")
 set(CMAKE_INSTALL_MESSAGE LAZY)
