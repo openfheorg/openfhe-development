@@ -1155,14 +1155,16 @@ public:
         m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor, precompute, BTSlotsEncoding);
     }
 
+    // Cache teardown is best-effort and must stay noexcept: a scheme that never enabled the
+    // feature simply holds nothing to clear, so these are no-ops rather than errors.
     void ClearBootstrapPrecom() noexcept {
-        VerifyFHEEnabled(__func__);
-        m_FHE->ClearBootstrapPrecom();
+        if (m_FHE)
+            m_FHE->ClearBootstrapPrecom();
     }
 
     void ClearSchemeSwitchPrecom() noexcept {
-        VerifySchemeSwitchEnabled(__func__);
-        m_SchemeSwitch->ClearSchemeSwitchPrecom();
+        if (m_SchemeSwitch)
+            m_SchemeSwitch->ClearSchemeSwitchPrecom();
     }
 
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
