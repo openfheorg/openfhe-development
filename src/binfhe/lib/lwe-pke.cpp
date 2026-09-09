@@ -290,11 +290,11 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
 #endif
     for (uint32_t i = 0; i < N; ++i) {
         std::vector<std::vector<NativeVector>> vector1A;
-        vector1A.reserve(m);
+        vector1A.reserve(m - 1);
         std::vector<std::vector<NativeInteger>> vector1B;
-        vector1B.reserve(m);
+        vector1B.reserve(m - 1);
 
-        for (uint32_t j = 0; j < m; ++j) {
+        for (uint32_t j = 1; j < m; ++j) {
             const uint32_t positions = (j < topExtent) ? digitCount : digitCount - 1;
             std::vector<NativeVector> vector2A;
             vector2A.reserve(positions);
@@ -356,8 +356,10 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
         for (uint32_t j = 0; j < digitCount; ++j) {
             const auto a0 = (atmp % baseKS);
             atmp /= baseKS;
-            bv.ModAddFastEq(refB[a0][j], Q);
-            av.ModAddNoCheckEq(refA[a0][j]);
+            if (a0 == 0)
+                continue;
+            bv.ModAddFastEq(refB[a0 - 1][j], Q);
+            av.ModAddNoCheckEq(refA[a0 - 1][j]);
         }
     };
 
@@ -401,18 +403,18 @@ LWESwitchingKey32Impl::LWESwitchingKey32Impl(const LWECryptoParams& params, cons
     if (elemA.size() != m_N || elemB.size() != m_N)
         OPENFHE_THROW("Switching key dimension must be equal to N");
     for (uint32_t i = 0; i < m_N; ++i) {
-        if (elemA[i].size() != m_m || elemB[i].size() != m_m)
+        if (elemA[i].size() != m_m - 1 || elemB[i].size() != m_m - 1)
             OPENFHE_THROW("Switching key does not match the key-switching base");
         for (uint32_t k = 0; k < m_d; ++k) {
             const uint32_t extent{GetDigitExtent(k)};
-            for (uint32_t j = 0; j < extent; ++j) {
-                if (elemA[i][j].size() <= k || elemB[i][j].size() <= k)
+            for (uint32_t j = 1; j < extent; ++j) {
+                if (elemA[i][j - 1].size() <= k || elemB[i][j - 1].size() <= k)
                     OPENFHE_THROW("Switching key is missing a reachable digit row");
-                const auto& src = elemA[i][j][k];
+                const auto& src = elemA[i][j - 1][k];
                 uint32_t* dst   = RowA(i, j, k);
                 for (uint32_t idx = 0; idx < m_n; ++idx)
                     dst[idx] = static_cast<uint32_t>(src[idx].ConvertToInt());
-                B(i, j, k) = static_cast<uint32_t>(elemB[i][j][k].ConvertToInt());
+                B(i, j, k) = static_cast<uint32_t>(elemB[i][j - 1][k].ConvertToInt());
             }
         }
     }
@@ -423,19 +425,19 @@ LWESwitchingKey LWESwitchingKey32Impl::Widen(const LWECryptoParams& params) cons
     std::vector<std::vector<std::vector<NativeVector>>> keyA(m_N);
     std::vector<std::vector<std::vector<NativeInteger>>> keyB(m_N);
     for (uint32_t i = 0; i < m_N; ++i) {
-        keyA[i].resize(m_m);
-        keyB[i].resize(m_m);
-        for (uint32_t j = 0; j < m_m; ++j) {
+        keyA[i].resize(m_m - 1);
+        keyB[i].resize(m_m - 1);
+        for (uint32_t j = 1; j < m_m; ++j) {
             const uint32_t positions = (j < m_top) ? m_d : m_d - 1;
-            keyA[i][j].reserve(positions);
-            keyB[i][j].reserve(positions);
+            keyA[i][j - 1].reserve(positions);
+            keyB[i][j - 1].reserve(positions);
             for (uint32_t k = 0; k < positions; ++k) {
                 NativeVector v(m_n, qKS);
                 const uint32_t* row = RowA(i, j, k);
                 for (uint32_t idx = 0; idx < m_n; ++idx)
                     v[idx] = NativeInteger(row[idx]);
-                keyA[i][j].push_back(std::move(v));
-                keyB[i][j].emplace_back(B(i, j, k));
+                keyA[i][j - 1].push_back(std::move(v));
+                keyB[i][j - 1].emplace_back(B(i, j, k));
             }
         }
     }
@@ -492,7 +494,7 @@ LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWEC
         const uint64_t svNi{svN[i].ConvertToInt<uint64_t>()};
         for (uint32_t k = 0; k < digitCount; ++k) {
             const uint32_t extent{result->GetDigitExtent(k)};
-            for (uint32_t j = 0; j < extent; ++j) {
+            for (uint32_t j = 1; j < extent; ++j) {
                 NativeVector32 a(dug.GenerateVector(n));
                 uint64_t noise{dggKS32.GenerateInteger(qKS32i).ConvertToInt()};
                 uint64_t acc{(noise + svNi * ((j * digitsKS[k]) % qKS64)) % qKS64};
@@ -540,6 +542,8 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
         for (uint32_t j = 0; j < digitCount; ++j) {
             const auto a0 = static_cast<uint32_t>(atmp % baseKS);
             atmp /= baseKS;
+            if (a0 == 0)
+                continue;
             bv += K->B(i, a0, j);
             const uint32_t* row = K->RowA(i, a0, j);
             for (uint32_t k = 0; k < n; ++k)
