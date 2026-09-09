@@ -120,10 +120,10 @@
 
     #endif  // PROFILE
 
-    #define TIC(t)    t = timeNow()
-    #define TOC_NS(t) duration_ns(timeNow() - t)
-    #define TOC_US(t) duration_us(timeNow() - t)
-    #define TOC_MS(t) duration_ms(timeNow() - t)
+    #define TIC(t)    t = ::lbcrypto::timeNow()
+    #define TOC_NS(t) ::lbcrypto::duration_ns(::lbcrypto::timeNow() - t)
+    #define TOC_US(t) ::lbcrypto::duration_us(::lbcrypto::timeNow() - t)
+    #define TOC_MS(t) ::lbcrypto::duration_ms(::lbcrypto::timeNow() - t)
     #define TOC(t)    TOC_MS(t)
 
 #else  // NDEBUG
@@ -145,7 +145,7 @@
         #define PROFILELOGEXP(x)
         #define PROFILELOGWHERE(x)
 
-        #define TIC(t)    t = timeNow()
+        #define TIC(t)    t = ::lbcrypto::timeNow()
         #define TOC(t)    std::chrono::steady_clock::duration::zero().count()
         #define TOC_NS(t) std::chrono::steady_clock::duration::zero().count()
         #define TOC_US(t) std::chrono::steady_clock::duration::zero().count()
@@ -179,14 +179,14 @@
         #define PROFILELOGWHERE(x)                                                                          \
             do {                                                                                            \
                 if (true) {                                                                                 \
-                    std::cout << #x << ":" << x << " at " << __FILE__ << " line " << __LINE__ LL std::endl; \
+                    std::cout << #x << ":" << x << " at " << __FILE__ << " line " << __LINE__ << std::endl; \
                 }                                                                                           \
             } while (0)
 
-        #define TIC(t)    t = timeNow()
-        #define TOC_NS(t) duration_ns(timeNow() - t)
-        #define TOC_US(t) duration_us(timeNow() - t)
-        #define TOC_MS(t) duration_ms(timeNow() - t)
+        #define TIC(t)    t = ::lbcrypto::timeNow()
+        #define TOC_NS(t) ::lbcrypto::duration_ns(::lbcrypto::timeNow() - t)
+        #define TOC_US(t) ::lbcrypto::duration_us(::lbcrypto::timeNow() - t)
+        #define TOC_MS(t) ::lbcrypto::duration_ms(::lbcrypto::timeNow() - t)
         #define TOC(t)    TOC_MS(t)
 
     #endif  // PROFILE
@@ -195,18 +195,36 @@
 
 typedef std::chrono::high_resolution_clock::time_point TimeVar;
 
-#define duration_ns(a) std::chrono::duration_cast<std::chrono::nanoseconds>(a).count()
-#define duration_us(a) std::chrono::duration_cast<std::chrono::microseconds>(a).count()
-#define duration_ms(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
-#define timeNow()      std::chrono::high_resolution_clock::now()
+namespace lbcrypto {
+
+inline TimeVar timeNow() {
+    return std::chrono::high_resolution_clock::now();
+}
+
+template <typename Duration>
+inline auto duration_ns(const Duration& d) {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(d).count();
+}
+
+template <typename Duration>
+inline auto duration_us(const Duration& d) {
+    return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
+}
+
+template <typename Duration>
+inline auto duration_ms(const Duration& d) {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
+}
+
+}  // namespace lbcrypto
 
 double currentDateTime();
 
 template <typename F, typename... Args>
 double funcTime(F func, Args&&... args) {
-    TimeVar t1 = timeNow();
+    TimeVar t1 = lbcrypto::timeNow();
     func(std::forward<Args>(args)...);
-    return duration_ms(timeNow() - t1);
+    return lbcrypto::duration_ms(lbcrypto::timeNow() - t1);
 }
 
 #endif  // #__dbg_h__
