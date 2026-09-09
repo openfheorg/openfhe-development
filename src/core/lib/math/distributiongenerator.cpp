@@ -36,21 +36,23 @@
 
 #include "math/distributiongenerator.h"
 #include "utils/prng/blake2engine.h"
+#include "utils/diagnostic_output.h"
 #include "utils/exception.h"
 
 #include <iostream>
-#include "utils/openfhe_log.h"
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
     #include <dlfcn.h>
 #endif
 
 namespace lbcrypto {
 
+// clang-format off
 #if defined(WITH_OPENMP)
     std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng = nullptr;
 #else
     thread_local std::shared_ptr<PRNG> m_prng = nullptr;
 #endif
+// clang-format on
 PseudoRandomNumberGenerator::GenPRNGEngineFuncPtr PseudoRandomNumberGenerator::genPRNGEngine = nullptr;
 
 void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
@@ -62,7 +64,7 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
         genPRNGEngine = default_prng::createEngineInstance;
         if (!genPRNGEngine)
             OPENFHE_THROW("Cannot find symbol: default_prng::createEngineInstance");
-        // OPENFHE_LOG_ERR << "InitPRNGEngine: using local PRNG" << std::endl;
+        // OPENFHE_DIAGNOSTIC_ERR << "InitPRNGEngine: using local PRNG" << std::endl;
     }
     else {
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
@@ -84,7 +86,7 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
             dlclose(libraryHandle);
             OPENFHE_THROW(errMsg);
         }
-        OPENFHE_LOG_ERR << __FUNCTION__ << ": using external PRNG" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << __FUNCTION__ << ": using external PRNG" << std::endl;
 #else
         OPENFHE_THROW("OpenFHE may use an external PRNG library linked with g++ on Linux only");
 #endif

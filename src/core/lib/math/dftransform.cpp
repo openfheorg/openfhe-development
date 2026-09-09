@@ -36,12 +36,12 @@
 #include "math/dftransform.h"
 #include "math/nbtheory.h"
 
+#include "utils/diagnostic_output.h"
 #include "utils/inttypes.h"
 #include "utils/parallel.h"
 
 #include <complex>
 #include <vector>
-#include "utils/openfhe_log.h"
 
 namespace lbcrypto {
 
@@ -143,7 +143,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
             //  cosTable.resize(l);
             //  maxMCached = m;
             // }
-            // OPENFHE_LOG_OUT<<"miss m "<<m<<" != M "<<cachedM[l]<<std::endl;
+            // OPENFHE_DIAGNOSTIC_OUT<<"miss m "<<m<<" != M "<<cachedM[l]<<std::endl;
             cachedM[l] = m;
 
             sinTable[l].resize(m / 2);

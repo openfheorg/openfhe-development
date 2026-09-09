@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,25 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  Default diagnostic sink for OpenFHE: routes OpenFHEErrStream() /
-  OpenFHEOutStream() to std::cerr / std::cout.
+// Built-in diagnostic sink; see diagnostic_output.h for the interface contract.
 
-  This translation unit is the ONLY place in the library that names
-  std::cerr / std::cout. It is compiled only when OPENFHE_DEFAULT_LOG_SINK
-  is defined (controlled by the CMake option of the same name, ON by
-  default). When the option is OFF this file compiles to nothing, and the
-  embedding application must provide its own definitions of
-  lbcrypto::OpenFHEErrStream() / OpenFHEOutStream() (and, if it uses them,
-  the Set* setters). That lets an embedder keep std::cerr / std::cout out
-  of the compiled OpenFHE archive entirely — e.g. an R package, where
-  CRAN's "compiled code should not write to stdout/stderr" rule forbids
-  those symbols — while still receiving the library's diagnostics.
-*/
+#include "config_core.h"
+#include "utils/diagnostic_output.h"
 
-#include "utils/openfhe_log.h"
-
-#ifdef OPENFHE_DEFAULT_LOG_SINK
+#ifdef WITH_DEFAULT_LOG_SINK
 
     #include <iostream>
 
@@ -58,12 +45,16 @@ std::ostream* g_errStream = &std::cerr;
 std::ostream* g_outStream = &std::cout;
 }  // namespace
 
+namespace internal_diagnostics {
+
 std::ostream& OpenFHEErrStream() {
     return *g_errStream;
 }
 std::ostream& OpenFHEOutStream() {
     return *g_outStream;
 }
+
+}  // namespace internal_diagnostics
 
 void SetOpenFHEErrStream(std::ostream& os) {
     g_errStream = &os;
@@ -74,4 +65,4 @@ void SetOpenFHEOutStream(std::ostream& os) {
 
 }  // namespace lbcrypto
 
-#endif  // OPENFHE_DEFAULT_LOG_SINK
+#endif  // WITH_DEFAULT_LOG_SINK
