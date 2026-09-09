@@ -36,6 +36,7 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <string>
 
 namespace lbcrypto {
 
@@ -43,60 +44,154 @@ using LWEPlaintext        = int64_t;
 using LWEPlaintextModulus = uint64_t;
 
 /**
- * @brief Security levels for predefined parameter sets
+ * @brief Bootstrapping method
+ */
+enum BINFHE_METHOD {
+    INVALID_METHOD = 0,
+    AP,       // Ducas-Micciancio variant
+    GINX,     // Chillotti-Gama-Georgieva-Izabachene variant
+    LMKCDEY,  // Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo variant, ia.cr/2022/198
+};
+std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
+
+/**
+ * @brief Bootstrapping methods a predefined parameter set is configured for, one bit per BINFHE_METHOD
+ */
+enum BINFHE_METHOD_SET : uint32_t {
+    FOR_AP         = 1u << AP,
+    FOR_GINX       = 1u << GINX,
+    FOR_LMKCDEY    = 1u << LMKCDEY,
+    FOR_ANY_METHOD = FOR_GINX | FOR_LMKCDEY | FOR_AP,
+};
+
+/**
+ * @brief Predefined parameter sets: name, the bootstrapping methods each may be used with, and the
+ * approximate probability of failure. Sets without a method suffix are tuned for GINX but stay open to
+ * every method for backward compatibility; the failure probability is stated for the tuned method only.
+ * The list expands into BINFHE_PARAMSET, its name table and isMethodCompatible, so a new set is added
+ * here and in the parameter table of binfhecontext.cpp only.
  */
 // clang-format off
+#define BINFHE_PARAMSET_LIST(X)                                                                                                            \
+    /* NAME                    METHODS            DESCRIPTION                                                     : PROBABILITY OF FAILURE */ \
+    X(TOY,                     FOR_ANY_METHOD) /* no security                                                     : 2^(-270) */ \
+    X(MEDIUM,                  FOR_ANY_METHOD) /* 108 bits of security for classical and 100 bits for quantum     : 2^(-40) */ \
+    X(STD128,                  FOR_ANY_METHOD) /* more than 128 bits of security for classical computer attacks   : 2^(-68) */ \
+    X(STD128_3,                FOR_ANY_METHOD) /* STD128 for 3 binary inputs                                      : 2^(-67) */ \
+    X(STD128_4,                FOR_ANY_METHOD) /* STD128 for 4 binary inputs                                      : 2^(-66) */ \
+    X(STD128Q,                 FOR_ANY_METHOD) /* more than 128 bits of security for quantum attacks              : 2^(-68) */ \
+    X(STD128Q_3,               FOR_ANY_METHOD) /* STD128Q for 3 binary inputs                                     : 2^(-67) */ \
+    X(STD128Q_4,               FOR_ANY_METHOD) /* STD128Q for 4 binary inputs                                     : 2^(-67) */ \
+    X(STD192,                  FOR_ANY_METHOD) /* more than 192 bits of security for classical computer attacks   : 2^(-67) */ \
+    X(STD192_3,                FOR_ANY_METHOD) /* STD192 for 3 binary inputs                                      : 2^(-67) */ \
+    X(STD192_4,                FOR_ANY_METHOD) /* STD192 for 4 binary inputs                                      : 2^(-67) */ \
+    X(STD192Q,                 FOR_ANY_METHOD) /* more than 192 bits of security for quantum attacks              : 2^(-67) */ \
+    X(STD192Q_3,               FOR_ANY_METHOD) /* STD192Q for 3 binary inputs                                     : 2^(-67) */ \
+    X(STD192Q_4,               FOR_ANY_METHOD) /* STD192Q for 4 binary inputs                                     : 2^(-67) */ \
+    X(STD256,                  FOR_ANY_METHOD) /* more than 256 bits of security for classical computer attacks   : 2^(-67) */ \
+    X(STD256_3,                FOR_ANY_METHOD) /* STD256 for 3 binary inputs                                      : 2^(-67) */ \
+    X(STD256_4,                FOR_ANY_METHOD) /* STD256 for 4 binary inputs                                      : 2^(-67) */ \
+    X(STD256Q,                 FOR_ANY_METHOD) /* more than 256 bits of security for quantum attacks              : 2^(-67) */ \
+    X(STD256Q_3,               FOR_ANY_METHOD) /* STD256Q for 3 binary inputs                                     : 2^(-67) */ \
+    X(STD256Q_4,               FOR_ANY_METHOD) /* STD256Q for 4 binary inputs                                     : 2^(-67) */ \
+    X(LPF_STD128,              FOR_ANY_METHOD) /* STD128 configured with lower probability of failures            : 2^(-134) */ \
+    X(LPF_STD128_3,            FOR_ANY_METHOD) /* LPF_STD128 for 3 binary inputs                                  : 2^(-133) */ \
+    X(LPF_STD128_4,            FOR_ANY_METHOD) /* LPF_STD128 for 4 binary inputs                                  : 2^(-134) */ \
+    X(LPF_STD128Q,             FOR_ANY_METHOD) /* STD128Q configured with lower probability of failures           : 2^(-134) */ \
+    X(LPF_STD128Q_3,           FOR_ANY_METHOD) /* LPF_STD128Q for 3 binary inputs                                 : 2^(-133) */ \
+    X(LPF_STD128Q_4,           FOR_ANY_METHOD) /* LPF_STD128Q for 4 binary inputs                                 : 2^(-134) */ \
+    X(LPF_STD192,              FOR_ANY_METHOD) /* STD192 configured with lower probability of failures            : 2^(-136) */ \
+    X(LPF_STD192_3,            FOR_ANY_METHOD) /* LPF_STD192 for 3 binary inputs                                  : 2^(-135) */ \
+    X(LPF_STD192_4,            FOR_ANY_METHOD) /* LPF_STD192 for 4 binary inputs                                  : 2^(-134) */ \
+    X(LPF_STD192Q,             FOR_ANY_METHOD) /* STD192Q configured with lower probability of failures           : 2^(-136) */ \
+    X(LPF_STD192Q_3,           FOR_ANY_METHOD) /* LPF_STD192Q for 3 binary inputs                                 : 2^(-135) */ \
+    X(LPF_STD192Q_4,           FOR_ANY_METHOD) /* LPF_STD192Q for 4 binary inputs                                 : 2^(-133) */ \
+    X(LPF_STD256,              FOR_ANY_METHOD) /* STD256 configured with lower probability of failures            : 2^(-136) */ \
+    X(LPF_STD256_3,            FOR_ANY_METHOD) /* LPF_STD256 for 3 binary inputs                                  : 2^(-134) */ \
+    X(LPF_STD256_4,            FOR_ANY_METHOD) /* LPF_STD256 for 4 binary inputs                                  : 2^(-133) */ \
+    X(LPF_STD256Q,             FOR_ANY_METHOD) /* STD256Q configured with lower probability of failures           : 2^(-135) */ \
+    X(LPF_STD256Q_3,           FOR_ANY_METHOD) /* LPF_STD256Q for 3 binary inputs                                 : 2^(-134) */ \
+    X(STD128_LMKCDEY,          FOR_LMKCDEY)    /* STD128 optimized for LMKCDEY                                    : 2^(-70) */ \
+    X(STD128_3_LMKCDEY,        FOR_LMKCDEY)    /* STD128_LMKCDEY for 3 binary inputs                              : 2^(-67) */ \
+    X(STD128_4_LMKCDEY,        FOR_LMKCDEY)    /* STD128_LMKCDEY for 4 binary inputs                              : 2^(-66) */ \
+    X(STD128Q_LMKCDEY,         FOR_LMKCDEY)    /* STD128Q optimized for LMKCDEY                                   : 2^(-68) */ \
+    X(STD128Q_3_LMKCDEY,       FOR_LMKCDEY)    /* STD128Q_LMKCDEY for 3 binary inputs                             : 2^(-67) */ \
+    X(STD128Q_4_LMKCDEY,       FOR_LMKCDEY)    /* STD128Q_LMKCDEY for 4 binary inputs                             : 2^(-68) */ \
+    X(STD192_LMKCDEY,          FOR_LMKCDEY)    /* STD192 optimized for LMKCDEY (using Gaussian secrets)           : 2^(-67) */ \
+    X(STD192_3_LMKCDEY,        FOR_LMKCDEY)    /* STD192_LMKCDEY for 3 binary inputs                              : 2^(-67) */ \
+    X(STD192_4_LMKCDEY,        FOR_LMKCDEY)    /* STD192_LMKCDEY for 4 binary inputs                              : 2^(-67) */ \
+    X(STD192Q_LMKCDEY,         FOR_LMKCDEY)    /* STD192Q optimized for LMKCDEY (using Gaussian secrets)          : 2^(-67) */ \
+    X(STD192Q_3_LMKCDEY,       FOR_LMKCDEY)    /* STD192Q_LMKCDEY for 3 binary inputs                             : 2^(-67) */ \
+    X(STD192Q_4_LMKCDEY,       FOR_LMKCDEY)    /* STD192Q_LMKCDEY for 4 binary inputs                             : 2^(-67) */ \
+    X(STD256_LMKCDEY,          FOR_LMKCDEY)    /* STD256 optimized for LMKCDEY (using Gaussian secrets)           : 2^(-67) */ \
+    X(STD256_3_LMKCDEY,        FOR_LMKCDEY)    /* STD256_LMKCDEY for 3 binary inputs                              : 2^(-67) */ \
+    X(STD256_4_LMKCDEY,        FOR_LMKCDEY)    /* STD256_LMKCDEY for 4 binary inputs                              : 2^(-67) */ \
+    X(STD256Q_LMKCDEY,         FOR_LMKCDEY)    /* STD256Q optimized for LMKCDEY (using Gaussian secrets)          : 2^(-66) */ \
+    X(STD256Q_3_LMKCDEY,       FOR_LMKCDEY)    /* STD256Q_LMKCDEY for 3 binary inputs                             : 2^(-67) */ \
+    X(STD256Q_4_LMKCDEY,       FOR_LMKCDEY)    /* STD256Q_LMKCDEY for 4 binary inputs                             : 2^(-67) */ \
+    X(LPF_STD128_LMKCDEY,      FOR_LMKCDEY)    /* LPF_STD128 optimized for LMKCDEY                                : 2^(-134) */ \
+    X(LPF_STD128_3_LMKCDEY,    FOR_LMKCDEY)    /* LPF_STD128_LMKCDEY for 3 binary inputs                          : 2^(-133) */ \
+    X(LPF_STD128_4_LMKCDEY,    FOR_LMKCDEY)    /* LPF_STD128_LMKCDEY for 4 binary inputs                          : 2^(-135) */ \
+    X(LPF_STD128Q_LMKCDEY,     FOR_LMKCDEY)    /* LPF_STD128Q optimized for LMKCDEY                               : 2^(-134) */ \
+    X(LPF_STD128Q_3_LMKCDEY,   FOR_LMKCDEY)    /* LPF_STD128Q_LMKCDEY for 3 binary inputs                         : 2^(-133) */ \
+    X(LPF_STD128Q_4_LMKCDEY,   FOR_LMKCDEY)    /* LPF_STD128Q_LMKCDEY for 4 binary inputs                         : 2^(-134) */ \
+    X(LPF_STD192_LMKCDEY,      FOR_LMKCDEY)    /* LPF_STD192 optimized for LMKCDEY                                : 2^(-136) */ \
+    X(LPF_STD192_3_LMKCDEY,    FOR_LMKCDEY)    /* LPF_STD192_LMKCDEY for 3 binary inputs                          : 2^(-135) */ \
+    X(LPF_STD192_4_LMKCDEY,    FOR_LMKCDEY)    /* LPF_STD192_LMKCDEY for 4 binary inputs                          : 2^(-134) */ \
+    X(LPF_STD192Q_LMKCDEY,     FOR_LMKCDEY)    /* LPF_STD192Q optimized for LMKCDEY                               : 2^(-136) */ \
+    X(LPF_STD192Q_3_LMKCDEY,   FOR_LMKCDEY)    /* LPF_STD192Q_LMKCDEY for 3 binary inputs                         : 2^(-135) */ \
+    X(LPF_STD192Q_4_LMKCDEY,   FOR_LMKCDEY)    /* LPF_STD192Q_LMKCDEY for 4 binary inputs                         : 2^(-133) */ \
+    X(LPF_STD256_LMKCDEY,      FOR_LMKCDEY)    /* LPF_STD256 optimized for LMKCDEY                                : 2^(-135) */ \
+    X(LPF_STD256_3_LMKCDEY,    FOR_LMKCDEY)    /* LPF_STD256_LMKCDEY for 3 binary inputs                          : 2^(-134) */ \
+    X(LPF_STD256_4_LMKCDEY,    FOR_LMKCDEY)    /* LPF_STD256_LMKCDEY for 4 binary inputs                          : 2^(-133) */ \
+    X(LPF_STD256Q_LMKCDEY,     FOR_LMKCDEY)    /* LPF_STD256Q optimized for LMKCDEY                               : 2^(-135) */ \
+    X(LPF_STD256Q_3_LMKCDEY,   FOR_LMKCDEY)    /* LPF_STD256Q_LMKCDEY for 3 binary inputs                         : 2^(-134) */ \
+    X(STD128_AP,               FOR_AP)         /* STD128 optimized for AP                                         : 2^(-68) */ \
+    X(STD128_3_AP,             FOR_AP)         /* STD128_AP for 3 binary inputs                                   : 2^(-67) */ \
+    X(STD128_4_AP,             FOR_AP)         /* STD128_AP for 4 binary inputs                                   : 2^(-66) */ \
+    X(STD128Q_AP,              FOR_AP)         /* STD128Q optimized for AP                                        : 2^(-68) */ \
+    X(STD128Q_3_AP,            FOR_AP)         /* STD128Q_AP for 3 binary inputs                                  : 2^(-67) */ \
+    X(STD128Q_4_AP,            FOR_AP)         /* STD128Q_AP for 4 binary inputs                                  : 2^(-68) */ \
+    X(STD192_AP,               FOR_AP)         /* STD192 optimized for AP                                         : 2^(-67) */ \
+    X(STD192_3_AP,             FOR_AP)         /* STD192_AP for 3 binary inputs                                   : 2^(-67) */ \
+    X(STD192_4_AP,             FOR_AP)         /* STD192_AP for 4 binary inputs                                   : 2^(-67) */ \
+    X(STD192Q_AP,              FOR_AP)         /* STD192Q optimized for AP                                        : 2^(-67) */ \
+    X(STD192Q_3_AP,            FOR_AP)         /* STD192Q_AP for 3 binary inputs                                  : 2^(-67) */ \
+    X(STD192Q_4_AP,            FOR_AP)         /* STD192Q_AP for 4 binary inputs                                  : 2^(-67) */ \
+    X(STD256_AP,               FOR_AP)         /* STD256 optimized for AP                                         : 2^(-66) */ \
+    X(STD256_3_AP,             FOR_AP)         /* STD256_AP for 3 binary inputs                                   : 2^(-67) */ \
+    X(STD256_4_AP,             FOR_AP)         /* STD256_AP for 4 binary inputs                                   : 2^(-67) */ \
+    X(STD256Q_AP,              FOR_AP)         /* STD256Q optimized for AP (using Gaussian secrets)               : 2^(-66) */ \
+    X(STD256Q_3_AP,            FOR_AP)         /* STD256Q_AP for 3 binary inputs                                  : 2^(-67) */ \
+    X(STD256Q_4_AP,            FOR_AP)         /* STD256Q_AP for 4 binary inputs                                  : 2^(-67) */ \
+    X(LPF_STD128_AP,           FOR_AP)         /* LPF_STD128 optimized for AP                                     : 2^(-134) */ \
+    X(LPF_STD128_3_AP,         FOR_AP)         /* LPF_STD128_AP for 3 binary inputs                               : 2^(-133) */ \
+    X(LPF_STD128_4_AP,         FOR_AP)         /* LPF_STD128_AP for 4 binary inputs                               : 2^(-134) */ \
+    X(LPF_STD128Q_AP,          FOR_AP)         /* LPF_STD128Q optimized for AP                                    : 2^(-134) */ \
+    X(LPF_STD128Q_3_AP,        FOR_AP)         /* LPF_STD128Q_AP for 3 binary inputs                              : 2^(-133) */ \
+    X(LPF_STD128Q_4_AP,        FOR_AP)         /* LPF_STD128Q_AP for 4 binary inputs                              : 2^(-134) */ \
+    X(LPF_STD192_AP,           FOR_AP)         /* LPF_STD192 optimized for AP                                     : 2^(-134) */ \
+    X(LPF_STD192_3_AP,         FOR_AP)         /* LPF_STD192_AP for 3 binary inputs                               : 2^(-136) */ \
+    X(LPF_STD192_4_AP,         FOR_AP)         /* LPF_STD192_AP for 4 binary inputs                               : 2^(-133) */ \
+    X(LPF_STD192Q_AP,          FOR_AP)         /* LPF_STD192Q optimized for AP                                    : 2^(-135) */ \
+    X(LPF_STD192Q_3_AP,        FOR_AP)         /* LPF_STD192Q_AP for 3 binary inputs                              : 2^(-134) */ \
+    X(LPF_STD192Q_4_AP,        FOR_AP)         /* LPF_STD192Q_AP for 4 binary inputs                              : 2^(-133) */ \
+    X(LPF_STD256_AP,           FOR_AP)         /* LPF_STD256 optimized for AP                                     : 2^(-134) */ \
+    X(LPF_STD256_3_AP,         FOR_AP)         /* LPF_STD256_AP for 3 binary inputs                               : 2^(-134) */ \
+    X(LPF_STD256_4_AP,         FOR_AP)         /* LPF_STD256_AP for 4 binary inputs                               : 2^(-133) */ \
+    X(LPF_STD256Q_AP,          FOR_AP)         /* LPF_STD256Q optimized for AP                                    : 2^(-135) */ \
+    X(LPF_STD256Q_3_AP,        FOR_AP)         /* LPF_STD256Q_AP for 3 binary inputs                              : 2^(-135) */ \
+    X(SIGNED_MOD_TEST,         FOR_ANY_METHOD) /* special parameter set for confirming the signed modular reduction in the accumulator updates works correctly: 2^(-45) */ \
+    X(TOY_MULTI_BASE,          FOR_ANY_METHOD) /* no security; multiple gadget bases for testing                  : not evaluated */
+
 enum BINFHE_PARAMSET {
-//  NAME,                 // Description                                                     : Approximate Probability of Failure
-    TOY,                  // no security                                                     : 2^(-270)
-    MEDIUM,               // 108 bits of security for classical and 100 bits for quantum     : 2^(-40)
-    STD128_AP,            // more than 128 bits of security for classical computer attacks   : 2^(-65)
-    STD128,               // more than 128 bits of security for classical computer attacks   : 2^(-135)
-    STD128_3,             // STD128 for 3 binary inputs                                      : 2^(-70)
-    STD128_4,             // STD128 for 4 binary inputs                                      : 2^(-65)
-    STD128Q,              // more than 128 bits of security for quantum attacks              : 2^(-145)
-    STD128Q_3,            // STD128Q for 3 binary inputs                                     : 2^(-80)
-    STD128Q_4,            // STD128Q for 4 binary inputs                                     : 2^(-125)
-    STD192,               // more than 192 bits of security for classical computer attacks   : 2^(-80)
-    STD192_3,             // STD192 for 3 binary inputs                                      : 2^(-70)
-    STD192_4,             // STD192 for 4 binary inputs                                      : 2^(-110)
-    STD192Q,              // more than 192 bits of security for quantum attacks              : 2^(-85)
-    STD192Q_3,            // STD192Q for 3 binary inputs                                     : 2^(-60)
-    STD192Q_4,            // STD192Q for 4 binary inputs                                     : 2^(-85)
-    STD256,               // more than 256 bits of security for classical computer attacks   : 2^(-55)
-    STD256_3,             // STD256 for 3 binary inputs                                      : 2^(-60)
-    STD256_4,             // STD256 for 4 binary inputs                                      : 2^(-90)
-    STD256Q,              // more than 256 bits of security for quantum attacks              : 2^(-70)
-    STD256Q_3,            // STD256Q for 3 binary inputs                                     : 2^(-65)
-    STD256Q_4,            // STD256Q for 4 binary inputs                                     : 2^(-50)
-    STD128_LMKCDEY,       // STD128 optimized for LMKCDEY                                    : 2^(-60)
-    STD128_3_LMKCDEY,     // STD128_LMKCDEY for 3 binary inputs                              : 2^(-90)
-    STD128_4_LMKCDEY,     // STD128_LMKCDEY for 4 binary inputs                              : 2^(-60)
-    STD128Q_LMKCDEY,      // STD128Q optimized for LMKCDEY                                   : 2^(-60)
-    STD128Q_3_LMKCDEY,    // STD128Q_LMKCDEY for 3 binary inputs                             : 2^(-95)
-    STD128Q_4_LMKCDEY,    // STD128Q_LMKCDEY for 4 binary inputs                             : 2^(-55)
-    STD192_LMKCDEY,       // STD192 optimized for LMKCDEY (using Gaussian secrets)           : 2^(-65)
-    STD192_3_LMKCDEY,     // STD192_LMKCDEY for 3 binary inputs                              : 2^(-60)
-    STD192_4_LMKCDEY,     // STD192_LMKCDEY for 4 binary inputs                              : 2^(-110)
-    STD192Q_LMKCDEY,      // STD192Q optimized for LMKCDEY (using Gaussian secrets)          : 2^(-65)
-    STD192Q_3_LMKCDEY,    // STD192Q_LMKCDEY for 3 binary inputs                             : 2^(-65)
-    STD192Q_4_LMKCDEY,    // STD192Q_LMKCDEY for 4 binary inputs                             : 2^(-105)
-    STD256_LMKCDEY,       // STD256 optimized for LMKCDEY                                    : 2^(-60)
-    STD256_3_LMKCDEY,     // STD256_LMKCDEY for 3 binary inputs                              : 2^(-80)
-    STD256_4_LMKCDEY,     // STD256_LMKCDEY for 4 binary inputs                              : 2^(-70)
-    STD256Q_LMKCDEY,      // STD256Q optimized for LMKCDEY                                   : 2^(-80)
-    STD256Q_3_LMKCDEY,    // STD256Q_LMKCDEY for 3 binary inputs                             : 2^(-70)
-    STD256Q_4_LMKCDEY,    // STD256Q_LMKCDEY for 4 binary inputs                             : 2^(-50)
-    LPF_STD128,           // STD128 configured with lower probability of failures            : 2^(-128)
-    LPF_STD128Q,          // STD128Q configured with lower probability of failures           : 2^(-128)
-    LPF_STD128_LMKCDEY,   // LPF_STD128 optimized for LMKCDEY                                : 2^(-128)
-    LPF_STD128Q_LMKCDEY,  // LPF_STD128Q optimized for LMKCDEY                               : 2^(-128)
-    SIGNED_MOD_TEST,      // special parameter set for confirming the signed modular         : 2^(-45)
-                          // reduction in the accumulator updates works correctly
-    TOY_MULTI_BASE        // no security; multiple gadget bases for testing                  : not evaluated
+#define BINFHE_PARAMSET_ENUMERATOR(name, methods) name,
+    BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_ENUMERATOR)
+#undef BINFHE_PARAMSET_ENUMERATOR
 };
 // clang-format on
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);
+BINFHE_PARAMSET convertToBINFHE_PARAMSET(const std::string& str);
 
 /**
  * @brief Type of ciphertext generated by the Encrypt method
@@ -109,17 +204,6 @@ enum BINFHE_OUTPUT {
     SMALL_DIM,     // a freshly encrypted ciphertext of dimension N and modulus Q switched to n and q
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
-
-/**
- * @brief Bootstrapping method
- */
-enum BINFHE_METHOD {
-    INVALID_METHOD = 0,
-    AP,       // Ducas-Micciancio variant
-    GINX,     // Chillotti-Gama-Georgieva-Izabachene variant
-    LMKCDEY,  // Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo variant, ia.cr/2022/198
-};
-std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 
 /**
  * @brief Type of gates supported, with two, three or four inputs

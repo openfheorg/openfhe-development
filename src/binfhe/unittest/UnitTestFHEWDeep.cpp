@@ -112,7 +112,7 @@ TEST(UnitTestFHEDeep, AND_GINX_VERY_LONG) {
 // test very deep FHE operations
 TEST(UnitTestFHEDeep, AND_AP_VERY_LONG) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(STD128, AP);
+    cc.GenerateBinFHEContext(STD128_AP, AP);
 
     auto sk = cc.KeyGen();
     // Generate the bootstrapping keys (refresh and switching keys)
@@ -159,7 +159,7 @@ TEST(UnitTestFHEDeep, AND_AP_VERY_LONG) {
 // test very deep FHE operations
 TEST(UnitTestFHEDeep, XOR_AP_VERY_LONG) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(STD128, AP);
+    cc.GenerateBinFHEContext(STD128_AP, AP);
 
     auto sk = cc.KeyGen();
     // Generate the bootstrapping keys (refresh and switching keys)
@@ -246,7 +246,7 @@ TEST(UnitTestFHEDeep, XOR_GINX_VERY_LONG) {
 // test very deep FHE operations
 TEST(UnitTestFHEDeep, OR_AP_VERY_LONG) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(STD128, AP);
+    cc.GenerateBinFHEContext(STD128_AP, AP);
 
     auto sk = cc.KeyGen();
     // Generate the bootstrapping keys (refresh and switching keys)

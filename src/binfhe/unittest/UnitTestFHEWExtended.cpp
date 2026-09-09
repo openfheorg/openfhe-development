@@ -32,6 +32,7 @@
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -197,6 +198,32 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKeyTimeOptimization) {
     }
 }
 #endif
+
+TEST(UNITTestFHEWExtended, ParamSetNamesRoundTrip) {
+    for (int i = 0; i <= static_cast<int>(TOY_MULTI_BASE); ++i) {
+        auto set = static_cast<BINFHE_PARAMSET>(i);
+        std::ostringstream os;
+        os << set;
+        EXPECT_NE("UNKNOWN", os.str()) << i;
+        EXPECT_EQ(set, convertToBINFHE_PARAMSET(os.str())) << os.str();
+    }
+    EXPECT_THROW(convertToBINFHE_PARAMSET("STD128_NONE"), OpenFHEException);
+}
+
+// suffixed sets are bound to their method; unsuffixed sets are tuned for GINX but accept every method
+TEST(UNITTestFHEWExtended, MethodParamSetCompatibility) {
+    for (auto m : {GINX, AP, LMKCDEY}) {
+        for (auto s : {TOY, TOY_MULTI_BASE, MEDIUM, STD128, STD256Q_4, LPF_STD192_3, SIGNED_MOD_TEST})
+            EXPECT_NO_THROW(isMethodCompatible(m, s)) << m << " " << s;
+        if (m != LMKCDEY)
+            EXPECT_THROW(isMethodCompatible(m, STD128_LMKCDEY), OpenFHEException) << m;
+        if (m != AP)
+            EXPECT_THROW(isMethodCompatible(m, STD128_AP), OpenFHEException) << m;
+    }
+    EXPECT_NO_THROW(isMethodCompatible(LMKCDEY, STD128_LMKCDEY));
+    EXPECT_NO_THROW(isMethodCompatible(AP, STD128_AP));
+    EXPECT_THROW(isMethodCompatible(INVALID_METHOD, TOY), OpenFHEException);
+}
 
 // TOY, with keyDist left free
 static BinFHEContextParams ToyParams(SecretKeyDist keyDist) {

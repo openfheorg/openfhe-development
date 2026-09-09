@@ -161,12 +161,14 @@ TEST(UnitTestFHEWNativeSize, Internal32KeyGenLMKCDEY) {
     UnitTestInternal32KeyGen(TOY, LMKCDEY, "UnitTestFHEWNativeSize.Internal32KeyGenLMKCDEY:");
 }
 
-// Qualification is per key. STD192's modulus is too wide for a 32-bit refresh key, but its
+// Qualification is per key. Every predefined set now fits both keys, so the mixed case is
+// built explicitly: a 37-bit modulus is too wide for a 32-bit refresh key while its
 // key-switching modulus still fits, so the context ends up mixed and must still evaluate.
 TEST(UnitTestFHEWNativeSize, PartialQualification) {
     const std::string msg("UnitTestFHEWNativeSize.PartialQualification:");
     BinFHEContext cc;
-    cc.GenerateBinFHEContext(STD192, GINX);
+    cc.GenerateBinFHEContext(
+        BinFHEContextParams{37, 4096, 821, 2048, 32768, 32, 8192, 64, 10, UNIFORM_TERNARY, 3.19, {}}, GINX);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk, SYM_ENCRYPT, /*internal32=*/true);
     EXPECT_FALSE(cc.HasInternal32RefreshKey()) << msg << " a 37-bit modulus must not yield a 32-bit refresh key";
