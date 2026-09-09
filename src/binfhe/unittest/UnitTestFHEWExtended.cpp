@@ -215,14 +215,47 @@ TEST(UNITTestFHEWExtended, MethodParamSetCompatibility) {
     for (auto m : {GINX, AP, LMKCDEY}) {
         for (auto s : {TOY, TOY_MULTI_BASE, MEDIUM, STD128, STD256Q_4, LPF_STD192_3, SIGNED_MOD_TEST})
             EXPECT_NO_THROW(isMethodCompatible(m, s)) << m << " " << s;
-        if (m != LMKCDEY)
+        if (m != LMKCDEY) {
             EXPECT_THROW(isMethodCompatible(m, STD128_LMKCDEY), OpenFHEException) << m;
-        if (m != AP)
+        }
+        if (m != AP) {
             EXPECT_THROW(isMethodCompatible(m, STD128_AP), OpenFHEException) << m;
+        }
     }
     EXPECT_NO_THROW(isMethodCompatible(LMKCDEY, STD128_LMKCDEY));
     EXPECT_NO_THROW(isMethodCompatible(AP, STD128_AP));
     EXPECT_THROW(isMethodCompatible(INVALID_METHOD, TOY), OpenFHEException);
+}
+
+// DM's refresh key holds, at the top digit position of the base-R decomposition of q, only the
+// values a coefficient below q can reach; the slots above that extent stay empty
+TEST(UNITTestFHEWExtended, RefreshKeyTopPositionCompact) {
+    BinFHEContextParams params{27, 1024, 64, 1024, 0, 25, 512, 128, 9, UNIFORM_TERNARY, 3.19, {}};
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(params, AP);
+    auto&& rgsw = cc.GetParams()->GetRingGSWParams();
+    ASSERT_EQ(2u, rgsw->GetDigitsR().size());
+    EXPECT_EQ(128u, rgsw->GetDigitExtentR(0));
+    EXPECT_EQ(8u, rgsw->GetDigitExtentR(1)) << "q = 1024 in base 128 reaches 8 values at the top position";
+
+    auto sk = cc.KeyGen();
+    cc.BTKeyGen(sk);
+    auto refreshKey = cc.GetRefreshKey();
+    const auto& key = refreshKey->GetElements();
+    ASSERT_EQ(params.latticeParam, key.size());
+    ASSERT_EQ(128u, key[0].size());
+    ASSERT_EQ(2u, key[0][1].size());
+    EXPECT_EQ(nullptr, key[0][0][0]);
+    EXPECT_NE(nullptr, key[0][127][0]);
+    EXPECT_NE(nullptr, key[0][7][1]);
+    EXPECT_EQ(nullptr, key[0][8][1]) << "rows above the top extent must not be generated";
+
+    for (uint32_t i = 0; i < 4; ++i) {
+        uint32_t b0 = i & 0x1, b1 = (i >> 1) & 0x1;
+        LWEPlaintext result;
+        cc.Decrypt(sk, cc.EvalBinGate(NAND, cc.Encrypt(sk, b0), cc.Encrypt(sk, b1)), &result);
+        EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result) << "NAND(" << b0 << "," << b1 << ")";
+    }
 }
 
 // TOY, with keyDist left free

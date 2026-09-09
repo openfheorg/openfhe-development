@@ -52,8 +52,9 @@ using ConstLWESwitchingKey32 = const std::shared_ptr<const LWESwitchingKey32Impl
  *
  * Every stored value is a residue mod qKS, so when qKS fits a 32-bit word the key stores in half
  * the memory of the 64-bit form -- and it is by far the largest key object. Storage is two flat
- * arrays indexed by (LWE index i, digit value, digit position): rows of n words in m_keyA and one
- * word each in m_keyB, replacing the nested vector-of-vectors layout. The key switch itself
+ * arrays indexed by (LWE index i, digit position, digit value): rows of n words in m_keyA and one
+ * word each in m_keyB, replacing the nested vector-of-vectors layout, with the top digit position
+ * holding only the values a coefficient below qKS can reach. The key switch itself
  * accumulates rows in uint64 and reduces once per output coefficient, which yields the same
  * residues as the 64-bit path, so results are bit-identical.
  */
@@ -71,13 +72,17 @@ public:
     // storage is deliberately left uninitialized: both generation paths write every element, and
     // value-initialization would fault and zero the whole key on the constructing thread before
     // the parallel fill re-touches it
-    LWESwitchingKey32Impl(uint32_t N, uint32_t baseKS, uint32_t digitCount, uint32_t n)
+    // Each LWE index holds baseKS rows per digit position except the top position, which holds
+    // only the topExtent values a coefficient below qKS can reach there.
+    LWESwitchingKey32Impl(uint32_t N, uint32_t baseKS, uint32_t digitCount, uint32_t topExtent, uint32_t n)
         : m_N(N),
           m_m(baseKS),
           m_d(digitCount),
+          m_top(topExtent),
           m_n(n),
-          m_sizeA(static_cast<uint64_t>(N) * baseKS * digitCount * n),
-          m_sizeB(static_cast<uint64_t>(N) * baseKS * digitCount),
+          m_rows(static_cast<uint64_t>(digitCount - 1) * baseKS + topExtent),
+          m_sizeA(static_cast<uint64_t>(N) * m_rows * n),
+          m_sizeB(static_cast<uint64_t>(N) * m_rows),
           m_keyA(new uint32_t[m_sizeA]),
           m_keyB(new uint32_t[m_sizeB]) {}
 
@@ -89,19 +94,23 @@ public:
     LWESwitchingKey Widen(const LWECryptoParams& params) const;
 
     uint32_t* RowA(uint32_t i, uint32_t val, uint32_t pos) {
-        return m_keyA.get() + ((static_cast<uint64_t>(i) * m_m + val) * m_d + pos) * m_n;
+        return m_keyA.get() + (static_cast<uint64_t>(i) * m_rows + static_cast<uint64_t>(pos) * m_m + val) * m_n;
     }
 
     const uint32_t* RowA(uint32_t i, uint32_t val, uint32_t pos) const {
-        return m_keyA.get() + ((static_cast<uint64_t>(i) * m_m + val) * m_d + pos) * m_n;
+        return m_keyA.get() + (static_cast<uint64_t>(i) * m_rows + static_cast<uint64_t>(pos) * m_m + val) * m_n;
     }
 
     uint32_t& B(uint32_t i, uint32_t val, uint32_t pos) {
-        return m_keyB[(static_cast<uint64_t>(i) * m_m + val) * m_d + pos];
+        return m_keyB[static_cast<uint64_t>(i) * m_rows + static_cast<uint64_t>(pos) * m_m + val];
     }
 
     uint32_t B(uint32_t i, uint32_t val, uint32_t pos) const {
-        return m_keyB[(static_cast<uint64_t>(i) * m_m + val) * m_d + pos];
+        return m_keyB[static_cast<uint64_t>(i) * m_rows + static_cast<uint64_t>(pos) * m_m + val];
+    }
+
+    uint32_t GetDigitExtent(uint32_t pos) const {
+        return pos + 1 < m_d ? m_m : m_top;
     }
 
     uint32_t GetN() const {
@@ -128,7 +137,9 @@ private:
     uint32_t m_N{0};
     uint32_t m_m{0};
     uint32_t m_d{0};
+    uint32_t m_top{0};
     uint32_t m_n{0};
+    uint64_t m_rows{0};
     uint64_t m_sizeA{0};
     uint64_t m_sizeB{0};
     std::unique_ptr<uint32_t[]> m_keyA;

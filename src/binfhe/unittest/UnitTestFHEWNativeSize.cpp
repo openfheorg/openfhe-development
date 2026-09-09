@@ -225,4 +225,38 @@ TEST(UnitTestFHEWNativeSize, SerializationGettersWiden) {
     ExpectTruthTables(loaded, sk, msg);
 }
 
+// The switching key's top digit position holds only the values a coefficient below qKS can reach,
+// in both key widths, and the key switch still decrypts.
+TEST(UnitTestFHEWNativeSize, SwitchingKeyTopPositionCompact) {
+    const std::string msg("UnitTestFHEWNativeSize.SwitchingKeyTopPositionCompact:");
+    BinFHEContext cc;
+    cc.GenerateBinFHEContext(STD128, GINX);
+    auto&& lwe            = cc.GetParams()->GetLWEParams();
+    const uint32_t d      = lwe->GetDigitCountKS();
+    const uint32_t baseKS = lwe->GetBaseKS();
+    const uint32_t top    = lwe->GetDigitExtentKS(d - 1);
+    ASSERT_EQ(2u, d) << msg;
+    EXPECT_EQ(baseKS, lwe->GetDigitExtentKS(0)) << msg;
+    EXPECT_EQ(128u, top) << msg << " qKS = 2^15 in base 256 reaches 128 values at the top position";
+
+    auto sk       = cc.KeyGen();
+    auto skN      = cc.KeyGenN();
+    auto ksk      = cc.KeySwitchGen(sk, skN);
+    const auto& A = ksk->GetElementsA();
+    ASSERT_EQ(lwe->GetN(), A.size()) << msg;
+    ASSERT_EQ(baseKS, A[0].size()) << msg;
+    EXPECT_EQ(d, A[0][top - 1].size()) << msg;
+    EXPECT_EQ(d - 1, A[0][top].size()) << msg << " rows above the top extent must not be stored";
+
+    auto ct = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());
+    LWEPlaintext result;
+    cc.Decrypt(sk, cc.SwitchCTtoqn(ksk, ct), &result);
+    EXPECT_EQ(1, static_cast<int>(result)) << msg;
+
+    LWESwitchingKey32Impl narrow(*lwe, *ksk);
+    const uint64_t rows = static_cast<uint64_t>(lwe->GetN()) * ((d - 1) * baseKS + top);
+    EXPECT_EQ(rows * (lwe->Getn() + 1) * sizeof(uint32_t), narrow.KeyBytes()) << msg;
+    EXPECT_EQ(*ksk, *narrow.Widen(*lwe)) << msg << " narrowing and widening must round-trip the compact key";
+}
+
 #endif  // NATIVEINT != 32

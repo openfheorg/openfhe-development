@@ -51,8 +51,9 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (uint32_t i = 0; i < n; ++i) {
-        for (int32_t j = 1; j < baseR; ++j) {
-            for (size_t k = 0; k < digitsR.size(); ++k) {
+        for (size_t k = 0; k < digitsR.size(); ++k) {
+            const int32_t extent = params->GetDigitExtentR(k);
+            for (int32_t j = 1; j < extent; ++j) {
                 auto s{sv[i].ConvertToInt<int32_t>()};
                 (*ek)[i][j][k] =
                     KeyGenDM(params, skNTT, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>(), i);
@@ -126,8 +127,9 @@ RingGSWACCKey32 RingGSWAccumulatorDM::KeyGenAcc32(const std::shared_ptr<RingGSWC
 
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (uint32_t i = 0; i < n; ++i) {
-        for (int32_t j = 1; j < baseR; ++j) {
-            for (size_t k = 0; k < digitsR.size(); ++k) {
+        for (size_t k = 0; k < digitsR.size(); ++k) {
+            const int32_t extent = params->GetDigitExtentR(k);
+            for (int32_t j = 1; j < extent; ++j) {
                 auto s{sv[i].ConvertToInt<int32_t>()};
                 acc->SetEvalKey(i, j, k,
                                 KeyGenDM32(params, polyParams32, skNTT32, dgg32,

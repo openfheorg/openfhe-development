@@ -137,6 +137,18 @@ public:
         return GetDigitCount(m_qKS.ConvertToInt(), m_baseKS);
     }
 
+    // number of values the digit at position pos can take when a value below qKS is written in
+    // base baseKS: every position spans the whole base except the top one
+    uint32_t GetDigitExtentKS(uint32_t pos) const {
+        const uint32_t digits = GetDigitCountKS();
+        if (pos + 1 < digits)
+            return m_baseKS;
+        uint64_t top{m_qKS.ConvertToInt<uint64_t>() - 1};
+        for (uint32_t k = 1; k < digits; ++k)
+            top /= m_baseKS;
+        return static_cast<uint32_t>(top) + 1;
+    }
+
     const DiscreteGaussianGeneratorImpl<NativeVector>& GetDgg() const {
         return m_dgg;
     }

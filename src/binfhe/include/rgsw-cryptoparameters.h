@@ -228,6 +228,15 @@ public:
         return m_digitsR;
     }
 
+    // number of values the digit at position pos can take when a coefficient below q is written in
+    // base baseR: every position spans the whole base except the top one
+    uint32_t GetDigitExtentR(uint32_t pos) const {
+        if (pos + 1 < m_digitsR.size())
+            return m_baseR;
+        return static_cast<uint32_t>((m_q.ConvertToInt<uint64_t>() - 1) / m_digitsR.back().ConvertToInt<uint64_t>()) +
+               1;
+    }
+
     const std::shared_ptr<ILNativeParams> GetPolyParams() const {
         return m_polyParams;
     }

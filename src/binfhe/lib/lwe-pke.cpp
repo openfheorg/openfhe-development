@@ -279,6 +279,9 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
     // the unreduced accumulator below reaches (n+1)*qKS
     const bool unreducedAccumFits{qKS.ConvertToInt() <= std::numeric_limits<BasicInteger>::max() / (n + 1)};
 
+    // the top digit position only reaches topExtent values: rows beyond it are never read
+    const uint32_t topExtent = params->GetDigitExtentKS(digitCount - 1);
+
     std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
     std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
 
@@ -292,11 +295,12 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
         vector1B.reserve(m);
 
         for (uint32_t j = 0; j < m; ++j) {
+            const uint32_t positions = (j < topExtent) ? digitCount : digitCount - 1;
             std::vector<NativeVector> vector2A;
-            vector2A.reserve(digitCount);
+            vector2A.reserve(positions);
             std::vector<NativeInteger> vector2B;
-            vector2B.reserve(digitCount);
-            for (uint32_t k = 0; k < digitCount; ++k) {
+            vector2B.reserve(positions);
+            for (uint32_t k = 0; k < positions; ++k) {
                 vector2A.emplace_back(dug.GenerateVector(n));
                 NativeVector& a = vector2A.back();
                 NativeInteger b =
@@ -390,12 +394,20 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
 
 #if NATIVEINT != 32
 LWESwitchingKey32Impl::LWESwitchingKey32Impl(const LWECryptoParams& params, const LWESwitchingKeyImpl& K)
-    : LWESwitchingKey32Impl(params.GetN(), params.GetBaseKS(), params.GetDigitCountKS(), params.Getn()) {
+    : LWESwitchingKey32Impl(params.GetN(), params.GetBaseKS(), params.GetDigitCountKS(),
+                            params.GetDigitExtentKS(params.GetDigitCountKS() - 1), params.Getn()) {
     const auto& elemA = K.GetElementsA();
     const auto& elemB = K.GetElementsB();
+    if (elemA.size() != m_N || elemB.size() != m_N)
+        OPENFHE_THROW("Switching key dimension must be equal to N");
     for (uint32_t i = 0; i < m_N; ++i) {
-        for (uint32_t j = 0; j < m_m; ++j) {
-            for (uint32_t k = 0; k < m_d; ++k) {
+        if (elemA[i].size() != m_m || elemB[i].size() != m_m)
+            OPENFHE_THROW("Switching key does not match the key-switching base");
+        for (uint32_t k = 0; k < m_d; ++k) {
+            const uint32_t extent{GetDigitExtent(k)};
+            for (uint32_t j = 0; j < extent; ++j) {
+                if (elemA[i][j].size() <= k || elemB[i][j].size() <= k)
+                    OPENFHE_THROW("Switching key is missing a reachable digit row");
                 const auto& src = elemA[i][j][k];
                 uint32_t* dst   = RowA(i, j, k);
                 for (uint32_t idx = 0; idx < m_n; ++idx)
@@ -414,9 +426,10 @@ LWESwitchingKey LWESwitchingKey32Impl::Widen(const LWECryptoParams& params) cons
         keyA[i].resize(m_m);
         keyB[i].resize(m_m);
         for (uint32_t j = 0; j < m_m; ++j) {
-            keyA[i][j].reserve(m_d);
-            keyB[i][j].reserve(m_d);
-            for (uint32_t k = 0; k < m_d; ++k) {
+            const uint32_t positions = (j < m_top) ? m_d : m_d - 1;
+            keyA[i][j].reserve(positions);
+            keyB[i][j].reserve(positions);
+            for (uint32_t k = 0; k < positions; ++k) {
                 NativeVector v(m_n, qKS);
                 const uint32_t* row = RowA(i, j, k);
                 for (uint32_t idx = 0; idx < m_n; ++idx)
@@ -469,15 +482,17 @@ LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWEC
     DiscreteGaussianGeneratorImpl<NativeVector32> dggKS32(params->GetDggKS().GetStd());
     const NativeInteger32 qKS32i{qKS32};
 
-    auto result = std::make_shared<LWESwitchingKey32Impl>(N, m, digitCount, n);
+    auto result =
+        std::make_shared<LWESwitchingKey32Impl>(N, m, digitCount, params->GetDigitExtentKS(digitCount - 1), n);
 
     #if !defined(__MINGW32__) && !defined(__MINGW64__)
         #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N)) firstprivate(dug)
     #endif
     for (uint32_t i = 0; i < N; ++i) {
         const uint64_t svNi{svN[i].ConvertToInt<uint64_t>()};
-        for (uint32_t j = 0; j < m; ++j) {
-            for (uint32_t k = 0; k < digitCount; ++k) {
+        for (uint32_t k = 0; k < digitCount; ++k) {
+            const uint32_t extent{result->GetDigitExtent(k)};
+            for (uint32_t j = 0; j < extent; ++j) {
                 NativeVector32 a(dug.GenerateVector(n));
                 uint64_t noise{dggKS32.GenerateInteger(qKS32i).ConvertToInt()};
                 uint64_t acc{(noise + svNi * ((j * digitsKS[k]) % qKS64)) % qKS64};
