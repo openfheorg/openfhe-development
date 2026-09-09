@@ -192,6 +192,47 @@ public:
         RecalculateModulus();
     }
 
+    /**
+   * @brief Constructor for parameters over the leading towers of existing parameters.
+   * The component parameters are shared with the source object.
+   * @param params the source parameters.
+   * @param numTowers the number of leading towers to include (1 to params.GetParams().size()).
+   */
+    ILDCRTParams(const ILDCRTParams& params, uint32_t numTowers)
+        : ElemParams<IntType>(params.GetCyclotomicOrder(), 0) {
+        const auto& towers = params.GetParams();
+        if (numTowers == 0 || numTowers > towers.size())
+            OPENFHE_THROW("numTowers [" + std::to_string(numTowers) + "] must be in [1, " +
+                          std::to_string(towers.size()) + "]");
+        m_params.assign(towers.begin(), towers.begin() + numTowers);
+        RecalculateModulus();
+    }
+
+    /**
+   * @brief Constructor for a basis that concatenates the leading towers of two existing
+   * parameter objects: the first sizeA towers of paramsA followed by the first sizeB
+   * towers of paramsB (e.g., the key-switching basis Q_l*P built from the parameters of
+   * Q and P). The component parameters are shared with the source objects; the cyclotomic
+   * order is taken from paramsA.
+   * @param paramsA the source parameters for the leading part of the basis.
+   * @param sizeA the number of leading towers of paramsA to include.
+   * @param paramsB the source parameters for the trailing part of the basis.
+   * @param sizeB the number of leading towers of paramsB to include.
+   */
+    ILDCRTParams(const ILDCRTParams& paramsA, uint32_t sizeA, const ILDCRTParams& paramsB, uint32_t sizeB)
+        : ElemParams<IntType>(paramsA.GetCyclotomicOrder(), 0) {
+        const auto& towersA = paramsA.GetParams();
+        const auto& towersB = paramsB.GetParams();
+        if (sizeA == 0 || sizeA > towersA.size() || sizeB > towersB.size())
+            OPENFHE_THROW("sizeA [" + std::to_string(sizeA) + "] must be in [1, " + std::to_string(towersA.size()) +
+                          "] and sizeB [" + std::to_string(sizeB) + "] must be at most " +
+                          std::to_string(towersB.size()));
+        m_params.reserve(sizeA + sizeB);
+        m_params.assign(towersA.begin(), towersA.begin() + sizeA);
+        m_params.insert(m_params.end(), towersB.begin(), towersB.begin() + sizeB);
+        RecalculateModulus();
+    }
+
     ILDCRTParams(const ILDCRTParams& rhs) : ElemParams<IntType>(rhs), m_params(rhs.m_params) {}
 
     ILDCRTParams(ILDCRTParams&& rhs) noexcept

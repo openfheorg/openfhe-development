@@ -821,16 +821,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     if (st == FLEXIBLEAUTOEXT)
         elementParamsRaised.PopLastParam();
 
-    const auto& paramsQ = elementParamsRaised.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    std::vector<NativeInteger> moduli(sizeQ);
-    std::vector<NativeInteger> roots(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-    auto elementParamsRaisedPtr =
-        std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elementParamsRaised);
 
     double qDouble = GetBigModulus(cryptoParams);
     double powP    = std::pow(2, cryptoParams->GetPlaintextModulus());
@@ -1201,16 +1192,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     if (st == FLEXIBLEAUTOEXT)
         elementParamsRaised.PopLastParam();
 
-    const auto& paramsQ = elementParamsRaised.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    std::vector<NativeInteger> moduli(sizeQ);
-    std::vector<NativeInteger> roots(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-    auto elementParamsRaisedPtr =
-        std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elementParamsRaised);
 
     double qDouble = GetBigModulus(cryptoParams);
     double powP    = std::pow(2, cryptoParams->GetPlaintextModulus());
@@ -1635,21 +1617,9 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP      = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
-    }
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+        elementParams, static_cast<uint32_t>(elementParams.GetParams().size()), *cryptoParams->GetParamsP(),
+        static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     auto g = GetBootPrecom(slots).m_paramsEnc.g;
 
@@ -1681,21 +1651,9 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP      = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
-    }
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+        elementParams, static_cast<uint32_t>(elementParams.GetParams().size()), *cryptoParams->GetParamsP(),
+        static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     const int32_t slots = static_cast<int32_t>(A.size());
 
@@ -1780,30 +1738,15 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
 
     uint32_t level0 = towersToDrop + compositeDegree * (p.lvlb - 1);
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP      = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
-    }
+    const auto& paramsP = cryptoParams->GetParamsP();
+    uint32_t sizeQ      = elementParams.GetParams().size();
+    uint32_t sizeP      = paramsP->GetParams().size();
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
     uint32_t M = cc.GetCyclotomicOrder();
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(p.lvlb - stop);
-    for (int32_t s = p.lvlb - 1; s >= stop; --s) {
-        paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(M, moduli, roots);
-        sizeQ -= compositeDegree;
-        moduli.erase(moduli.begin() + sizeQ, moduli.begin() + sizeQ + compositeDegree);
-        roots.erase(roots.begin() + sizeQ, roots.begin() + sizeQ + compositeDegree);
-    }
+    for (int32_t s = p.lvlb - 1; s >= stop; --s, sizeQ -= compositeDegree)
+        paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(elementParams, sizeQ, *paramsP, sizeP);
 
     // zero-based inner indices require shifting the pre-rotation by +offset*scale
     const int32_t offset    = static_cast<int32_t>((p.numRotations + 1) / 2) - 1;
@@ -1948,31 +1891,15 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP      = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i]  = paramsP[i]->GetRootOfUnity();
-    }
+    const auto& paramsP = cryptoParams->GetParamsP();
+    uint32_t sizeQ      = elementParams.GetParams().size();
+    uint32_t sizeP      = paramsP->GetParams().size();
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
     const uint32_t pvlen = p.lvlb + 1 - flagRem;
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(pvlen);
-    for (uint32_t s = 0; s < pvlen; ++s) {
-        paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(cc.GetCyclotomicOrder(), moduli, roots);
-        for (uint32_t i = 0; i < compositeDegree; ++i, --sizeQ) {
-            moduli.erase(moduli.begin() + sizeQ - 1);
-            roots.erase(roots.begin() + sizeQ - 1);
-        }
-    }
+    for (uint32_t s = 0; s < pvlen; ++s, sizeQ -= compositeDegree)
+        paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(elementParams, sizeQ, *paramsP, sizeP);
 
     // zero-based inner indices require shifting the pre-rotation by +offset*shiftScale
     const int32_t offset    = static_cast<int32_t>((p.numRotations + 1) / 2) - 1;
@@ -3334,20 +3261,11 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     if (st == FLEXIBLEAUTOEXT)
         elementParamsRaised.PopLastParam();
 
-    const auto& paramsQ = elementParamsRaised.GetParams();
-    uint32_t sizeQ      = paramsQ.size();
-    std::vector<NativeInteger> moduli(sizeQ);
-    std::vector<NativeInteger> roots(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i]  = paramsQ[i]->GetRootOfUnity();
-    }
-
     auto cc = ciphertext->GetCryptoContext();
     auto M  = cc->GetCyclotomicOrder();
     auto N  = cc->GetRingDimension();
 
-    auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elementParamsRaised);
 
     // We don't need the type of scaling and correction as in the standard CKKS bootstrapping
     // because the message doesn't have to be scaled down.

@@ -143,18 +143,20 @@ void LeveledSHEBase<Element>::EvalSubInPlace(Ciphertext<Element>& ciphertext, Co
 /////////////////////////////////////////
 
 template <class Element>
-EvalKey<Element> LeveledSHEBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey) const {
+EvalKey<Element> LeveledSHEBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey,
+                                                         uint32_t levels) const {
     const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
     auto privateKeySquared = std::make_shared<PrivateKeyImpl<Element>>(cc);
     privateKeySquared->SetPrivateElement(s * s);
 
-    return cc->GetScheme()->KeySwitchGen(privateKeySquared, privateKey);
+    return cc->GetScheme()->KeySwitchGen(privateKeySquared, privateKey, levels);
 }
 
 template <class Element>
-std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey) const {
+std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey,
+                                                                       uint32_t levels) const {
     const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
@@ -166,7 +168,7 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const Pri
     evalKeyVec.reserve(maxRelinSkDeg);
     for (uint32_t i = 0; i < maxRelinSkDeg; ++i) {
         privateKeyPower->SetPrivateElement(s * privateKeyPower->GetPrivateElement());
-        evalKeyVec.emplace_back(cc->GetScheme()->KeySwitchGen(privateKeyPower, privateKey));
+        evalKeyVec.emplace_back(cc->GetScheme()->KeySwitchGen(privateKeyPower, privateKey, levels));
     }
 
     return evalKeyVec;
@@ -334,11 +336,15 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
-    // Do not generate duplicate keys that have been already generated and added to the static storage (map)
+    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels) const {
+    const auto cc = privateKey->GetCryptoContext();
+
+    // Do not generate duplicate keys that have been already generated and added to the static storage (map).
+    // An existing key is reused only if it has at least as many towers as the requested key.
+    const uint32_t numTowers = cc->GetScheme()->GetNumEvalKeyTowers(privateKey->GetCryptoParameters(), levels);
     std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
     std::set<uint32_t> indicesToGenerate{
-        CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
+        CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices, numTowers)};
     std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
 
     // we already have checks on higher level?
@@ -346,7 +352,6 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     //  if (it != newIndices.end())
     //    OPENFHE_THROW("conjugation is disabled");
 
-    const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
     const uint32_t N = s.GetRingDimension();
@@ -372,7 +377,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
 
         auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-        (*evalKeys)[newIndices[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
+        (*evalKeys)[newIndices[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted, levels);
     }
 
     return evalKeys;
@@ -480,12 +485,12 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
+    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList, uint32_t levels) const {
     uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++)
         autoIndices[i] = FindAutomorphismIndex(indexList[i], M);
-    return EvalAutomorphismKeyGen(privateKey, autoIndices);
+    return EvalAutomorphismKeyGen(privateKey, autoIndices, levels);
 }
 
 template <class Element>
