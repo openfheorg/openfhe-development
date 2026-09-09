@@ -2070,7 +2070,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
 
         if (flagRem == 1) {
             const int32_t shiftScaleRem = 1 << (smax * p.layersCollapse);
-            const int32_t rotScale      = shiftScaleRem * static_cast<int32_t>(p.g);
+            const int32_t rotScale      = shiftScaleRem * static_cast<int32_t>(p.gRem);
             const uint32_t limit        = p.bRem * p.gRem;
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
