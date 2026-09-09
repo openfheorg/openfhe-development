@@ -351,7 +351,8 @@ protected:
         if (cryptoParams == nullptr)
             OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
         if (cryptoParams->GetKeySwitchTechnique() == HYBRID && cryptoParams->GetPREMode() == NOT_SET)
-            OPENFHE_THROW("PRE is disabled (default = NOT_SET). Enable with SetPREMode() before generating cryptocontext.");
+            OPENFHE_THROW(
+                "PRE is disabled (default = NOT_SET). Enable with SetPREMode() before generating cryptocontext.");
     }
 
     void ValidateSeriesPowers(std::shared_ptr<seriesPowers<Element>> powers, CALLER_INFO_ARGS_HDR) const {
@@ -633,7 +634,7 @@ public:
     /**
     * @brief Clear CKKS bootstrap precomputations cached by this context's scheme.
     */
-    void ClearBootstrapPrecom() noexcept {
+    void ClearBootstrapPrecom() {
         VerifyCKKSScheme(__func__);
         m_scheme->ClearBootstrapPrecom();
     }
@@ -641,9 +642,21 @@ public:
     /**
     * @brief Clear CKKS/FHEW scheme-switch precomputations cached by this context's scheme.
     */
-    void ClearSchemeSwitchPrecom() noexcept {
+    void ClearSchemeSwitchPrecom() {
         VerifyCKKSScheme(__func__);
         m_scheme->ClearSchemeSwitchPrecom();
+    }
+
+    /**
+    * @brief Release all scheme-level caches (bootstrap + scheme-switch). Unlike the two calls
+    *        above this is a teardown helper used to sweep contexts of any scheme, so it is a
+    *        noexcept no-op when the caches cannot exist rather than an error.
+    */
+    void ClearAllCKKSCaches() noexcept {
+        if (m_scheme && isCKKS(m_schemeId)) {
+            m_scheme->ClearBootstrapPrecom();
+            m_scheme->ClearSchemeSwitchPrecom();
+        }
     }
 
     /**

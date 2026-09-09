@@ -40,7 +40,6 @@
 #include <unordered_map>
 #include <vector>
 
-#if !defined(__EMSCRIPTEN__)
 using namespace lbcrypto;
 class Params;
 
@@ -186,7 +185,7 @@ class UTBGVRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS
     const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
     const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
     const uint32_t invalidIndexAutomorphism = 4;
-    const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
+    const int64_t vector8Sum                = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 protected:
     void SetUp() {
@@ -417,4 +416,3 @@ TEST_P(UTBGVRNS_AUTOMORPHISM, Automorphism) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTBGVRNS_AUTOMORPHISM),
                          testName);
-#endif  // __EMSCRIPTEN__

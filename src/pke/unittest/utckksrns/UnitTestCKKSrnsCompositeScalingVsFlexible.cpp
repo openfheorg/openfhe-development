@@ -145,8 +145,6 @@ protected:
         OpenFHEParallelControls.UnitTestStart();
     }
     void TearDown() override {
-        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
         OpenFHEParallelControls.UnitTestStop();
     }
@@ -154,7 +152,9 @@ protected:
     // Bootstraps a freshly-encrypted vector and returns the achieved precision in bits. With stcFirst the
     // SlotsToCoeffs-first ("BTSlotsEncoding") variant is used, whose input must keep levelBudget[1] levels for
     // the initial SlotsToCoeffs; extraLevels additionally leaves the input that many levels above the
-    // minimum, exercising the level adjustment performed before SlotsToCoeffs.
+    // minimum, exercising the level adjustment performed before SlotsToCoeffs. Releases its own context
+    // before returning: a test that takes two measurements would otherwise hold both bootstrapping key
+    // sets at once, over 4 GB at ring 2^14.
     double BootstrapPrecisionBits(ScalingTechnique scalTech, uint32_t ringDim, uint32_t scalingModSize,
                                   uint32_t firstModSize, const std::vector<uint32_t>& levelBudget, uint32_t numSlots,
                                   uint32_t levelsAfterBootstrap, uint32_t numLargeDigits, bool stcFirst = false,
@@ -182,7 +182,9 @@ protected:
         Plaintext result;
         cc->Decrypt(keys.secretKey, ctAfter, &result);
         result->SetLength(numSlots);
-        return PrecisionBits(MaxAbsError(result->GetRealPackedValue(), x, numSlots));
+        double bits = PrecisionBits(MaxAbsError(result->GetRealPackedValue(), x, numSlots));
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        return bits;
     }
 
     // Bootstraps a spike vector, applies `fillerLevels` plaintext multiplications by 1 (each rescales),
@@ -233,7 +235,9 @@ protected:
         double bgLeak = 0.0;
         for (uint32_t i = 1; i < numSlots; ++i)
             bgLeak = std::max(bgLeak, std::abs(vo[i] - impulse(kBackground)));
-        return PrecisionBits(bgLeak);
+        double bits = PrecisionBits(bgLeak);
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        return bits;
     }
 };
 
@@ -242,7 +246,13 @@ protected:
 // margin for composite scaling. Needs ring 2^14 for the digit margin to become tight (verified to not
 // reproduce at 2^12/2^13); sparse 1024-slot packing keeps the test cheap. Pre-fix: CS ~4 bits below FA.
 TEST_F(UTCKKSRNSCSvsFA, FullPackingBootstrap_HybridKeySwitch) {
-    constexpr double kGapTol                = 2.0;  // measured gap -1.50 +/- 0.22; pre-fix gap ~4
+    #if defined(__EMSCRIPTEN__)
+    // Ring 2^14 at composite degree 2 keeps ~4.0 GB live across bootstrapping key generation, against
+    // the 4 GB address space of wasm32. It does fit, but with ~1.5% to spare, which is not a margin to
+    // run CI on. Every other case in this file stays under 0.5 GB.
+    GTEST_SKIP() << "ring 2^14 composite-scaling bootstrap does not fit the 4 GB wasm32 address space";
+    #endif
+    constexpr double kGapTol                = 1.0;  // measured gap -1.50 +/- 0.22; pre-fix gap ~4
     const uint32_t ringDim                  = 1 << 14;
     const std::vector<uint32_t> levelBudget = {4, 4};
     const uint32_t numSlots                 = 1024;
