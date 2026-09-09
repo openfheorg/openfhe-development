@@ -60,8 +60,11 @@ You would probably need to run ``sudo make install`` unless you are specifying s
 ``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``.
 
 - The header files are placed in the ``include/openfhe`` folder of the specified path, and the binaries of the library
-  are copied directly to the ``lib`` folder. For example, if no installation path is provided in Ubuntu (and many other Unix-based OSes), the header and library
+  in the ``lib`` folder. For example, if no installation path is provided in Ubuntu (and many other Unix-based OSes), the header and library
   binary files will be placed in ``/usr/local/include/openfhe`` and ``/usr/local/lib``, respectively.
+  Those two folders can be changed with ``CMAKE_INSTALL_INCLUDEDIR`` and ``CMAKE_INSTALL_LIBDIR``, which is what distribution
+  packagers use to install into ``lib64`` or an architecture-specific directory. On Windows the DLLs go to the ``bin`` folder
+  (``CMAKE_INSTALL_BINDIR``) and only the import libraries are placed in the library folder.
 
 Testing and cleaning the build
 ##############################
