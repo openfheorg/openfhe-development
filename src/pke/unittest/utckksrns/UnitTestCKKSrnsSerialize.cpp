@@ -187,7 +187,8 @@ protected:
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
         UnitTestContextWithSertype(cc, SerType::JSON, "json");
-        cc->ClearAllCKKSCaches();
+        CryptoContextImpl<Element>::ClearEvalMultKeys(cc);
+        CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(cc);
         UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
     }
 

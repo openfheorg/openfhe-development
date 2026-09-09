@@ -37,6 +37,7 @@
 #include "scheme/scheme-swch-params.h"
 #include "utils/memory.h"
 
+#include <memory>
 #include <vector>
 
 #if defined(__GLIBC__)
@@ -129,6 +130,53 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 };
+
+// These checks do not depend on allocator statistics and also run with tcmalloc and Emscripten.
+class UTCKKSReleaseAllContexts : public ::testing::Test {
+protected:
+    void TearDown() override {
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
+};
+
+TEST_F(UTCKKSReleaseAllContexts, ClearsBootstrapPrecomWithLiveContext) {
+    auto cc = MakeBootstrapCC();
+    const std::vector<uint32_t> slotCounts{cc->GetRingDimension() / 4, cc->GetRingDimension() / 2};
+    for (auto slots : slotCounts) {
+        cc->EvalBootstrapSetup({1, 1}, {0, 0}, slots);
+        ASSERT_FALSE(cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, slots).empty());
+    }
+
+    // Keep cc alive: dropping the factory's references alone must not make this test pass.
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+
+    EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 0);
+    for (auto slots : slotCounts) {
+        EXPECT_THROW(cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, slots), OpenFHEException);
+    }
+}
+
+TEST_F(UTCKKSReleaseAllContexts, ClearsSchemeSwitchPrecomWithLiveContext) {
+    auto cc = MakeSchemeSwitchCC();
+    auto kp = cc->KeyGen();
+
+    SchSwchParams p;
+    p.SetSecurityLevelCKKS(HEStd_NotSet);
+    p.SetSecurityLevelFHEW(TOY);
+    p.SetCtxtModSizeFHEWLargePrec(25);
+    p.SetNumSlotsCKKS(16);
+    auto lweSk = cc->EvalCKKStoFHEWSetup(p);
+    cc->EvalCKKStoFHEWKeyGen(kp, lweSk);
+    std::weak_ptr<BinFHEContext> binCC = cc->GetBinCCForSchemeSwitch();
+    ASSERT_FALSE(binCC.expired());
+
+    // Neither cc nor its keys go out of scope before the cache lifetime is checked.
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+
+    EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 0);
+    EXPECT_EQ(cc->GetBinCCForSchemeSwitch(), nullptr);
+    EXPECT_TRUE(binCC.expired());
+}
 
 // Full clear drops every slot-keyed entry in FHECKKSRNS::m_bootPrecomMap.
 TEST_F(UTCKKSCacheClear, FullBootstrapClear) {
