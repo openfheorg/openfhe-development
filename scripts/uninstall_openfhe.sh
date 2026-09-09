@@ -18,6 +18,18 @@
 # also occur inside the install prefix (-DCMAKE_INSTALL_PREFIX=$HOME/OpenFHE), and cutting there
 # names a directory far above the install tree.
 #
+# The two are then removed differently, because only one of them is certainly ours:
+#
+#   - <includedir>/openfhe is CMAKE_INSTALL_INCLUDEDIR plus a hardcoded "openfhe" component, so
+#     no setting can aim it at a directory another package shares. It is taken with everything
+#     below it, which also clears headers an earlier install left behind.
+#
+#   - the CMake package directory is INSTALL_CMAKE_DIR verbatim, which the user chooses freely
+#     and which find_package is happy to locate in a shared directory: -DINSTALL_CMAKE_DIR=cmake,
+#     or "." for the install prefix itself, are both working layouts. Removing that recursively
+#     would take unrelated packages - or the entire prefix - with it, so only the directories the
+#     manifest has already emptied are pruned and anything else found there is left alone.
+#
 # The enclosing <includedir>, <libdir> and <bindir> are deliberately left in place: they are
 # shared with other packages, and their OpenFHE contents are already gone with the manifest.
 # ---------------------------------------------------------------------------------------------------------------------
@@ -44,8 +56,9 @@ function openfhe_remove_manifest_files() {
     echo "Removed ${count} file(s) listed in install_manifest.txt"
 }
 
-# Remove the directory holding the first manifest entry that ends in $1, with $1 stripped off.
-function openfhe_remove_dir_of() {
+# Print the directory holding the first manifest entry that ends in $1, with $1 stripped off.
+# Prints nothing when the manifest has no such entry or the directory is already gone.
+function openfhe_dir_of() {
     local suffix="$1"
     local line match
     while IFS= read -r line; do
@@ -56,10 +69,37 @@ function openfhe_remove_dir_of() {
     done < <(openfhe_manifest_line < install_manifest.txt)
 
     if [[ -n "${match}" && -d "${match}" ]]; then
+        printf '%s\n' "${match}"
+    fi
+}
+
+# Remove that directory and everything below it. Only for a directory OpenFHE owns outright.
+function openfhe_remove_dir_of() {
+    local match
+    match="$(openfhe_dir_of "$1")"
+    if [[ -n "${match}" ]]; then
         echo "Removing: ${match}"
         rm -vr -- "${match}"
     else
-        echo "Nothing to remove for *${suffix}"
+        echo "Nothing to remove for *$1"
+    fi
+}
+
+# Remove that directory only as far as it is empty, for a directory that may be shared with other
+# packages. -depth visits children first, so nested directories the manifest emptied go before
+# their parents; rmdir refuses the rest, and its complaints about them are the expected case.
+function openfhe_prune_dir_of() {
+    local match
+    match="$(openfhe_dir_of "$1")"
+    if [[ -z "${match}" ]]; then
+        echo "Nothing to remove for *$1"
+        return
+    fi
+
+    echo "Pruning: ${match}"
+    find "${match}" -depth -type d -exec rmdir -- {} + 2>/dev/null
+    if [[ -d "${match}" ]]; then
+        echo "Kept: ${match} still holds files this install did not put there"
     fi
 }
 
@@ -67,7 +107,7 @@ function openfhe_remove_dir_of() {
 # sits directly in the CMake package directory.
 function openfhe_remove_dirs() {
     openfhe_remove_dir_of "/core/config_core.h"
-    openfhe_remove_dir_of "/OpenFHEConfig.cmake"
+    openfhe_prune_dir_of "/OpenFHEConfig.cmake"
 }
 
 function uninstall_unix() {

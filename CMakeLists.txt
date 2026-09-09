@@ -353,8 +353,8 @@ endif()
 
 # Destinations for install(): the relative forms are passed to install(DESTINATION), which
 # resolves them against CMAKE_INSTALL_PREFIX. The CMAKE_INSTALL_FULL_* variables computed by
-# GNUInstallDirs are the matching absolute paths exported to consumers through
-# OpenFHEConfig.cmake; they also handle the case of an absolute CMAKE_INSTALL_<dir>DIR.
+# GNUInstallDirs are retained for the build-tree config. The installed config uses
+# package-relative paths instead; explicit absolute destinations are also supported.
 set(OpenFHE_INSTALL_LIBDIR          "${CMAKE_INSTALL_LIBDIR}")
 set(OpenFHE_INSTALL_BINDIR          "${CMAKE_INSTALL_BINDIR}")
 set(OpenFHE_INSTALL_INCLUDEDIR      "${CMAKE_INSTALL_INCLUDEDIR}/openfhe")
@@ -362,12 +362,12 @@ set(OpenFHE_FULL_INSTALL_LIBDIR     "${CMAKE_INSTALL_FULL_LIBDIR}")
 set(OpenFHE_FULL_INSTALL_BINDIR     "${CMAKE_INSTALL_FULL_BINDIR}")
 set(OpenFHE_FULL_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}/openfhe")
 
-# RPATH to be used when installing, but only if it's not a system directory. Set here rather
-# than with the other RPATH options above: it needs CMAKE_INSTALL_FULL_LIBDIR, which only
-# exists once GNUInstallDirs has run.
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+# Shared OpenFHE libraries are installed together. Resolve their dependencies relative
+# to the loading library so moving the installation does not retain the old prefix.
+if(APPLE)
+    set(OpenFHE_INSTALL_RPATH "@loader_path")
+elseif(UNIX)
+    set(OpenFHE_INSTALL_RPATH "$ORIGIN")
 endif()
 
 message("***** INSTALL IS AT ${CMAKE_INSTALL_PREFIX}; to change, run cmake with -DCMAKE_INSTALL_PREFIX=/your/path")
@@ -914,10 +914,21 @@ export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 export(PACKAGE OpenFHE)
 
 # Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
-# ... for the build tree
+# Preserve the build-tree config's existing install-path variables.
+set(PACKAGE_INIT "")
+set(PACKAGE_OpenFHE_INSTALL_INCLUDEDIR "${OpenFHE_FULL_INSTALL_INCLUDEDIR}")
+set(PACKAGE_OpenFHE_INSTALL_LIBDIR "${OpenFHE_FULL_INSTALL_LIBDIR}")
+set(PACKAGE_OpenFHE_INSTALL_BINDIR "${OpenFHE_FULL_INSTALL_BINDIR}")
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
-# ... for the install tree
-configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
+
+# Resolve install-tree paths relative to the package file, including custom libdirs.
+include(CMakePackageConfigHelpers)
+configure_package_config_file(OpenFHEConfig.cmake.in
+    "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake"
+    INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}"
+    PATH_VARS OpenFHE_INSTALL_INCLUDEDIR OpenFHE_INSTALL_LIBDIR OpenFHE_INSTALL_BINDIR
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 # ... for both
 configure_file(OpenFHEConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
 
