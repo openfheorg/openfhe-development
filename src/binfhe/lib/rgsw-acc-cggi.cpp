@@ -144,7 +144,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
     ct        = acc;
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
+    if (dct.size() < digitsG2 || dct[0].GetParams() != polyParams) {
         dct.assign(digitsG2, NativePoly32(polyParams, Format::COEFFICIENT, true));
         tmp.assign(4, NativePoly32(polyParams, Format::EVALUATION, true));
     }
@@ -165,7 +165,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
     const NativeVector32& monomialPre    = monomialsPrecon[indexPos];
     const NativeVector32& monomialPreNeg = monomialsPrecon[indexNeg];
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
 
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
@@ -296,7 +296,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     const auto& bp = params->GetBaseGParams(index);
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
     const auto& polyParams = params->GetPolyParams();
-    if (dct.size() != digitsG2 || dct[0].GetParams() != polyParams) {
+    if (dct.size() < digitsG2 || dct[0].GetParams() != polyParams) {
         dct.assign(digitsG2, NativePoly(polyParams, Format::COEFFICIENT, true));
     }
     else {
@@ -319,7 +319,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     const auto& ev1(ek1->GetElements());
     const auto& ev2(ek2->GetElements());
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(digitsG2 > 4 ? digitsG2 : 4);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
 
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);

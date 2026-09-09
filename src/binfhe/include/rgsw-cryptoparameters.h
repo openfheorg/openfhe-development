@@ -147,6 +147,7 @@ public:
         uint32_t digitsG{0};
         uint32_t gBits{0};
         const std::vector<NativeInteger>* gpow{nullptr};
+        uint32_t teamWidth{0};
     };
 
     /**
@@ -182,7 +183,8 @@ public:
     // Change_BaseG() mutates m_baseG/m_digitsG/m_Gpower after PreCompute(), and the
     // large-precision path depends on those switches taking effect.
     BaseGParams GetDefaultBaseGParams() const {
-        return {m_baseG, m_digitsG, lbcrypto::GetMSB(m_baseG) - 1, &m_Gpower};
+        return {m_baseG, m_digitsG, lbcrypto::GetMSB(m_baseG) - 1, &m_Gpower,
+                m_baseGByIndex.empty() ? ((m_digitsG - 1) << 1) : m_teamWidth};
     }
 
     BaseGParams GetBaseGParams(uint32_t index) const {
@@ -397,6 +399,7 @@ private:
 
     // m_baseG_map expanded to one entry per LWE index, filled by PreCompute()
     std::vector<BaseGParams> m_baseGByIndex;
+    uint32_t m_teamWidth{0};
 
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;

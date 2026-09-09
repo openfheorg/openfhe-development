@@ -31,6 +31,8 @@
 
 #include "rgsw-cryptoparameters.h"
 
+#include <algorithm>
+
 namespace lbcrypto {
 
 const std::vector<NativeInteger>& RingGSWCryptoParams::PrecomputeGPower(uint32_t baseG) {
@@ -100,12 +102,16 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         for (const auto& [baseG, count] : m_baseG_map)
             total += count;
         m_baseGByIndex.reserve(total);
+        m_teamWidth = (m_digitsG - 1) << 1;
+        for (const auto& [baseG, count] : m_baseG_map)
+            m_teamWidth = std::max(m_teamWidth, (DigitsForBase(m_Q, baseG) - 1) << 1);
         for (const auto& [baseG, count] : m_baseG_map) {
             auto it = m_Gpower_map.find(baseG);
             if (it == m_Gpower_map.end())
                 OPENFHE_THROW("No GPower found for the requested gadget base.");
-            m_baseGByIndex.insert(m_baseGByIndex.end(), count,
-                                  BaseGParams{baseG, DigitsForBase(m_Q, baseG), GetMSB(baseG) - 1, &it->second});
+            m_baseGByIndex.insert(
+                m_baseGByIndex.end(), count,
+                BaseGParams{baseG, DigitsForBase(m_Q, baseG), GetMSB(baseG) - 1, &it->second, m_teamWidth});
         }
     }
 
