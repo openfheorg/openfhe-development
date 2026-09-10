@@ -78,6 +78,11 @@ public:
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(
         ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const override;
 
+    // Shared BSGS basis for the BKSS evaluators (FIXEDMANUAL, real LUTs).
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowersBKSS(ConstCiphertext<DCRTPoly>& x, uint32_t p) const;
+    Ciphertext<DCRTPoly> EvalPolyBKSS(const std::shared_ptr<seriesPowers<DCRTPoly>>& powers,
+                                     const std::vector<std::complex<double>>& coefficients) const;
+
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowersSparseTHI(ConstCiphertext<DCRTPoly>& x, uint32_t p,
                                                                 size_t order) const override;
 

@@ -1,0 +1,67 @@
+Mode=precision ring_dim=131072 key_dist=SPARSE_TERNARY slots=131072 sf=59 eval_exp_degree=58 order=5 noise_stage=PRE_EVALEXP scaling=FIXEDMANUAL mul_depth=22 p_input=16 p_output=16 all_inputs=1 complex_lut=0 level_budget=3,2
+Noise bases=24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53
+
+ID          Sparse THI                   noise=24 PASS max_error=0 in=-32.044 lut=-29.780 out=-30.279 pred=-156.670 pred_gap=126.392 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=25 PASS max_error=0 in=-31.874 lut=-29.780 out=-30.279 pred=-155.654 pred_gap=125.375 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=26 PASS max_error=0 in=-31.685 lut=-29.780 out=-30.279 pred=-154.520 pred_gap=124.241 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=27 PASS max_error=0 in=-31.227 lut=-29.780 out=-30.279 pred=-151.769 pred_gap=121.491 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=28 PASS max_error=0 in=-30.578 lut=-29.780 out=-30.279 pred=-147.876 pred_gap=117.597 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=29 PASS max_error=0 in=-29.865 lut=-29.779 out=-30.279 pred=-143.597 pred_gap=113.318 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=30 PASS max_error=0 in=-29.022 lut=-29.780 out=-30.279 pred=-138.538 pred_gap=108.260 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=31 PASS max_error=0 in=-28.088 lut=-29.780 out=-30.279 pred=-132.936 pred_gap=102.658 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=32 PASS max_error=0 in=-27.127 lut=-29.780 out=-30.279 pred=-127.169 pred_gap=96.890 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=33 PASS max_error=0 in=-26.141 lut=-29.780 out=-30.279 pred=-121.253 pred_gap=90.974 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=34 PASS max_error=0 in=-25.153 lut=-29.780 out=-30.279 pred=-115.326 pred_gap=85.047 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=35 PASS max_error=0 in=-24.159 lut=-29.780 out=-30.279 pred=-109.358 pred_gap=79.079 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=36 PASS max_error=0 in=-23.161 lut=-29.780 out=-30.279 pred=-103.371 pred_gap=73.092 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=37 PASS max_error=0 in=-22.162 lut=-29.780 out=-30.279 pred=-97.381 pred_gap=67.102 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=38 PASS max_error=0 in=-21.163 lut=-29.780 out=-30.279 pred=-91.385 pred_gap=61.106 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=39 PASS max_error=0 in=-20.163 lut=-29.780 out=-30.279 pred=-85.386 pred_gap=55.107 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=40 PASS max_error=0 in=-19.163 lut=-29.780 out=-30.279 pred=-79.387 pred_gap=49.108 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=41 PASS max_error=0 in=-18.163 lut=-29.780 out=-30.279 pred=-73.388 pred_gap=43.109 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=42 PASS max_error=0 in=-17.163 lut=-29.780 out=-30.279 pred=-67.388 pred_gap=37.109 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=43 PASS max_error=0 in=-16.163 lut=-29.780 out=-30.279 pred=-61.388 pred_gap=31.109 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=44 PASS max_error=0 in=-15.163 lut=-29.780 out=-30.279 pred=-55.388 pred_gap=25.109 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=45 PASS max_error=0 in=-14.163 lut=-29.780 out=-30.277 pred=-49.388 pred_gap=19.111 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=46 PASS max_error=0 in=-13.163 lut=-29.772 out=-30.269 pred=-43.388 pred_gap=13.119 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=47 PASS max_error=0 in=-12.163 lut=-29.758 out=-30.255 pred=-37.388 pred_gap=7.134 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=48 PASS max_error=0 in=-11.163 lut=-29.509 out=-30.055 pred=-31.388 pred_gap=1.333 exp_ks=36 lut_ks=46 pred_status=optimistic
+ID          Sparse THI                   noise=49 PASS max_error=0 in=-10.163 lut=-24.997 out=-25.497 pred=-25.388 pred_gap=-0.109 exp_ks=36 lut_ks=46
+ID          Sparse THI                   noise=50 PASS max_error=0 in=-9.163 lut=-18.922 out=-19.422 pred=-19.388 pred_gap=-0.034 exp_ks=36 lut_ks=46
+ID          Sparse THI                   noise=51 PASS max_error=0 in=-8.163 lut=-13.014 out=-13.514 pred=-13.388 pred_gap=-0.126 exp_ks=36 lut_ks=46
+ID          Sparse THI                   noise=52 PASS max_error=0 in=-7.163 lut=-7.660 out=-8.160 pred=-7.388 pred_gap=-0.772 exp_ks=36 lut_ks=46
+ID          Sparse THI                   noise=53 FAIL max_error=3 in=-6.163 lut=-4.575 out=-5.075 pred=-1.388 pred_gap=-3.687 exp_ks=36 lut_ks=46
+
+CSV_BEGIN
+lut,method,run,noise_base,max_error,input_precision,lut_precision,lut_margin,output_precision,predicted_output_precision,prediction_gap,output_margin,eval_exp_key_switch_count,key_switch_count
+ID,Sparse THI,1,24,0,-32.044,-29.780,nan,-30.279,-156.670,126.392,nan,36,46
+ID,Sparse THI,1,25,0,-31.874,-29.780,nan,-30.279,-155.654,125.375,nan,36,46
+ID,Sparse THI,1,26,0,-31.685,-29.780,nan,-30.279,-154.520,124.241,nan,36,46
+ID,Sparse THI,1,27,0,-31.227,-29.780,nan,-30.279,-151.769,121.491,nan,36,46
+ID,Sparse THI,1,28,0,-30.578,-29.780,nan,-30.279,-147.876,117.597,nan,36,46
+ID,Sparse THI,1,29,0,-29.865,-29.779,nan,-30.279,-143.597,113.318,nan,36,46
+ID,Sparse THI,1,30,0,-29.022,-29.780,nan,-30.279,-138.538,108.260,nan,36,46
+ID,Sparse THI,1,31,0,-28.088,-29.780,nan,-30.279,-132.936,102.658,nan,36,46
+ID,Sparse THI,1,32,0,-27.127,-29.780,nan,-30.279,-127.169,96.890,nan,36,46
+ID,Sparse THI,1,33,0,-26.141,-29.780,nan,-30.279,-121.253,90.974,nan,36,46
+ID,Sparse THI,1,34,0,-25.153,-29.780,nan,-30.279,-115.326,85.047,nan,36,46
+ID,Sparse THI,1,35,0,-24.159,-29.780,nan,-30.279,-109.358,79.079,nan,36,46
+ID,Sparse THI,1,36,0,-23.161,-29.780,nan,-30.279,-103.371,73.092,nan,36,46
+ID,Sparse THI,1,37,0,-22.162,-29.780,nan,-30.279,-97.381,67.102,nan,36,46
+ID,Sparse THI,1,38,0,-21.163,-29.780,nan,-30.279,-91.385,61.106,nan,36,46
+ID,Sparse THI,1,39,0,-20.163,-29.780,nan,-30.279,-85.386,55.107,nan,36,46
+ID,Sparse THI,1,40,0,-19.163,-29.780,nan,-30.279,-79.387,49.108,nan,36,46
+ID,Sparse THI,1,41,0,-18.163,-29.780,nan,-30.279,-73.388,43.109,nan,36,46
+ID,Sparse THI,1,42,0,-17.163,-29.780,nan,-30.279,-67.388,37.109,nan,36,46
+ID,Sparse THI,1,43,0,-16.163,-29.780,nan,-30.279,-61.388,31.109,nan,36,46
+ID,Sparse THI,1,44,0,-15.163,-29.780,nan,-30.279,-55.388,25.109,nan,36,46
+ID,Sparse THI,1,45,0,-14.163,-29.780,nan,-30.277,-49.388,19.111,nan,36,46
+ID,Sparse THI,1,46,0,-13.163,-29.772,nan,-30.269,-43.388,13.119,nan,36,46
+ID,Sparse THI,1,47,0,-12.163,-29.758,nan,-30.255,-37.388,7.134,nan,36,46
+ID,Sparse THI,1,48,0,-11.163,-29.509,nan,-30.055,-31.388,1.333,nan,36,46
+ID,Sparse THI,1,49,0,-10.163,-24.997,nan,-25.497,-25.388,-0.109,nan,36,46
+ID,Sparse THI,1,50,0,-9.163,-18.922,nan,-19.422,-19.388,-0.034,nan,36,46
+ID,Sparse THI,1,51,0,-8.163,-13.014,nan,-13.514,-13.388,-0.126,nan,36,46
+ID,Sparse THI,1,52,0,-7.163,-7.660,nan,-8.160,-7.388,-0.772,nan,36,46
+ID,Sparse THI,1,53,3,-6.163,-4.575,nan,-5.075,-1.388,-3.687,nan,36,46
+CSV_END

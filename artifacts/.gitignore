@@ -1,0 +1,5 @@
+__pycache__/
+.venv/
+
+# Keep the bundled historical raw logs despite the repository-wide *.log rule.
+!results/archived/**/*.log

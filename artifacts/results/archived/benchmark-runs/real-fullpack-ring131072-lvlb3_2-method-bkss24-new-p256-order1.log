@@ -1,0 +1,9 @@
+Mode=benchmark ring_dim=131072 key_dist=SPARSE_TERNARY slots=131072 sf=59 eval_exp_degree=58 order=1 noise_stage=PRE_EVALEXP scaling=FIXEDMANUAL mul_depth=23 p_input=256 p_output=256 all_inputs=0 complex_lut=0 level_budget=3,2
+Measured runs=5 warmup_runs=1 noise_base=10
+
+ID          BKSS24_NEW                   run=1 noise=10 PASS max_error=0 overall_ms=57420.46 lut_ms=18695.84 exp_ks=36 lut_ks=98
+ID          BKSS24_NEW                   run=2 noise=10 PASS max_error=0 overall_ms=59631.15 lut_ms=19035.72 exp_ks=36 lut_ks=98
+ID          BKSS24_NEW                   run=3 noise=10 PASS max_error=0 overall_ms=58308.39 lut_ms=18748.73 exp_ks=36 lut_ks=98
+ID          BKSS24_NEW                   run=4 noise=10 PASS max_error=0 overall_ms=58833.21 lut_ms=18850.44 exp_ks=36 lut_ks=98
+ID          BKSS24_NEW                   run=5 noise=10 PASS max_error=0 overall_ms=58938.84 lut_ms=19005.06 exp_ks=36 lut_ks=98
+ID          BKSS24_NEW                   summary avg_overall_ms=58626.41 max_overall_ms=59631.15 avg_lut_ms=18867.16 max_lut_ms=19035.72 exp_ks=36 lut_ks=98

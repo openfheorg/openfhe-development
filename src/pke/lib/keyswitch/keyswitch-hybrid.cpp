@@ -34,6 +34,7 @@
  * Appendix of https://eprint.iacr.org/2021/204 for details.
  */
 
+#include "scheme/ckksrns/ckksrns-fbt-instrumentation.h"
 #include "ciphertext.h"
 #include "key/evalkeyrelin.h"
 #include "key/privatekey.h"
@@ -385,6 +386,10 @@ std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCore(const std::shared_p
 std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                                 const EvalKey<DCRTPoly> evalKey,
                                                                 const std::shared_ptr<ParmType> paramsQl) const {
+#ifdef OPENFHE_FBT_INSTRUMENTATION
+    ++FBTInstrumentation::keySwitchCount;
+#endif
+
     const auto paramsQlP   = (*digits)[0].GetParams();
     const uint32_t sizeQlP = paramsQlP->GetParams().size();
 

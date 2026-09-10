@@ -1389,7 +1389,7 @@ protected:
                 ctxtAfterFBT2 =
                     cc->EvalMVBNoDecoding(complexExpPowers, coeffcomp2, t.PInput.GetMSB() - 1, t.order, t.method);
                 ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
-                if (t.method == DiscreteCKKSInterpolationMethod::SPARSE_THI) {
+                if (t.method != DiscreteCKKSInterpolationMethod::AKP) {
                     auto repeated = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
                                                 t.levelsComputation, t.order, t.method);
                     EXPECT_EQ(repeated->GetElements(), ctxtAfterFBT1->GetElements());
@@ -1879,3 +1879,35 @@ static std::vector<TEST_CASE_FBT> SparseTHITestCases() {
     return result;
 }
 INSTANTIATE_TEST_SUITE_P(SparseTHI, UTCKKSRNS_FBT, ::testing::ValuesIn(SparseTHITestCases()), testName);
+
+// The paper comparison methods share the existing full/sparse RLWE assertions.
+static std::vector<TEST_CASE_FBT> PaperInterpolationTestCases() {
+    std::vector<TEST_CASE_FBT> result;
+#if NATIVEINT != 128
+    for (auto method : {DiscreteCKKSInterpolationMethod::BKSS, DiscreteCKKSInterpolationMethod::BKSS_NEW,
+                        DiscreteCKKSInterpolationMethod::FULL_THI}) {
+        for (auto slots : {SLOTFULL, SLOTSPARSE}) {
+            for (size_t order = 1; order <= (method == DiscreteCKKSInterpolationMethod::FULL_THI ? 3U : 1U); ++order) {
+                auto t = testCases[6];
+                // Use the paper's 59-bit scale and normalize the LUT by p.
+                // Full-THI uses the generic PS evaluator, whose intermediate
+                // polynomial divisions are sensitive to large coefficients.
+                t.scaleTHI = t.PInput.ConvertToInt<uint64_t>();
+                t.Q = Q59;
+                t.Bigq = Q59;
+                t.method = method;
+                t.order = order;
+                t.numSlots = slots;
+                t.description = "Paper_" + std::to_string(static_cast<int>(method)) + "_slots" +
+                                std::to_string(slots) + "_order" + std::to_string(order);
+                result.push_back(t);
+                t.testCaseType = FBT_MVB;
+                result.push_back(t);
+            }
+        }
+    }
+#endif
+    return result;
+}
+INSTANTIATE_TEST_SUITE_P(PaperInterpolation, UTCKKSRNS_FBT,
+                         ::testing::ValuesIn(PaperInterpolationTestCases()), testName);

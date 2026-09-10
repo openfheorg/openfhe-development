@@ -1,0 +1,9 @@
+Mode=benchmark ring_dim=131072 key_dist=SPARSE_TERNARY slots=131072 sf=59 eval_exp_degree=58 order=1 noise_stage=PRE_EVALEXP scaling=FIXEDMANUAL mul_depth=23 p_input=256 p_output=256 all_inputs=0 complex_lut=0 level_budget=3,2
+Measured runs=5 warmup_runs=1 noise_base=10
+
+ID          Sparse THI                   run=1 noise=10 PASS max_error=0 overall_ms=54652.14 lut_ms=13555.78 exp_ks=36 lut_ks=68
+ID          Sparse THI                   run=2 noise=10 PASS max_error=0 overall_ms=54301.20 lut_ms=13563.43 exp_ks=36 lut_ks=68
+ID          Sparse THI                   run=3 noise=10 PASS max_error=0 overall_ms=52805.98 lut_ms=13241.09 exp_ks=36 lut_ks=68
+ID          Sparse THI                   run=4 noise=10 PASS max_error=0 overall_ms=53550.50 lut_ms=13496.49 exp_ks=36 lut_ks=68
+ID          Sparse THI                   run=5 noise=10 PASS max_error=0 overall_ms=53322.04 lut_ms=13299.99 exp_ks=36 lut_ks=68
+ID          Sparse THI                   summary avg_overall_ms=53726.37 max_overall_ms=54652.14 avg_lut_ms=13431.36 max_lut_ms=13563.43 exp_ks=36 lut_ks=68

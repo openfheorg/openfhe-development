@@ -41,13 +41,16 @@
 namespace lbcrypto {
 
 /** Interpolation used by CKKS functional bootstrapping. */
-enum class DiscreteCKKSInterpolationMethod { AKP, SPARSE_THI };
+enum class DiscreteCKKSInterpolationMethod { AKP, SPARSE_THI, BKSS, BKSS_NEW, FULL_THI };
 
 /**
  * Calculates Hermite trigonometric interpolation coefficients for an input function.
  * AKP supports orders 1, 2, and 3; Sparse-THI supports positive orders with a
  * power-of-two modulus p >= 2, except p = 2 with order = 1, which must use AKP.
- * Existing calls default to AKP. These coefficients can be input into
+ * Full-THI supports orders 1–3 with p >= 4 and is evaluated without taking 2*Re.
+ * BKSS and BKSS_NEW support order 1 and p >= 4, using a packed four-block
+ * coefficient layout consumed only by the matching FBT evaluator (see below).
+ * Existing calls default to AKP. AKP/Sparse-THI coefficients can be input into
  * EvalPoly over ciphertexts encrypting exp(2*Pi*x) to evaluate the function.
  * The coefficients are divided by 2 to account for the fact that the real part
  * of the output of EvalPoly needs to be taken in order to get the Hermite
@@ -66,6 +69,22 @@ enum class DiscreteCKKSInterpolationMethod { AKP, SPARSE_THI };
 std::vector<std::complex<double>> GetHermiteTrigCoefficients(
     std::function<int64_t(int64_t)> func, uint32_t p, size_t order, double scale,
     DiscreteCKKSInterpolationMethod method = DiscreteCKKSInterpolationMethod::AKP);
+
+/** BKSS coefficient layout: four length-p blocks followed by the constant term.
+ * BKSS_NEW stores its Nyquist correction in the first entry of the second block.
+ * Both require real LUTs, a power-of-two p >= 4, and order 1.
+ * These are evaluator-specific layouts, not ordinary EvalPoly coefficients.
+ */
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsBKSS(
+    std::function<int64_t(int64_t)> func, uint32_t p, double scale);
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsBKSSNew(
+    std::function<int64_t(int64_t)> func, uint32_t p, double scale);
+
+/** Full holomorphic THI (CKKL), orders 1–3. Evaluate directly, without 2*Re. */
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsFullTHI(
+    std::function<int64_t(int64_t)> func, uint32_t p, size_t order, double scale);
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsFullTHIForComplexLUT(
+    std::function<std::complex<double>(int64_t)> func, uint32_t p, size_t order, double scale);
 
 }  // namespace lbcrypto
 

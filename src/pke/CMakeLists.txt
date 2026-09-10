@@ -75,6 +75,9 @@ if(BUILD_EXAMPLES)
     file(GLOB PKE_EXAMPLES_SRC_FILES CONFIGURE_DEPENDS examples/*.cpp)
     foreach(app ${PKE_EXAMPLES_SRC_FILES})
         get_filename_component(exe ${app} NAME_WE)
+        if(${exe} STREQUAL "fbt-benchmark" AND NOT WITH_FBT_INSTRUMENTATION)
+            continue()
+        endif()
         if(${exe} STREQUAL "scheme-switching-serial")
             # add schemeswitching-data-serializer.cpp to link line and
             # include the unittest/utils directory where schemeswitching-data-serializer.h is

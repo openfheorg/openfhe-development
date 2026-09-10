@@ -1,0 +1,9 @@
+Mode=benchmark ring_dim=65536 key_dist=SPARSE_TERNARY slots=65536 sf=59 eval_exp_degree=58 order=3 noise_stage=PRE_EVALEXP scaling=FIXEDMANUAL mul_depth=20 p_input=16 p_output=16 all_inputs=0 complex_lut=0 level_budget=3,2
+Measured runs=5 warmup_runs=1 noise_base=10
+
+ID          AKP25                        run=1 noise=10 PASS max_error=0 overall_ms=12809.74 lut_ms=1097.65 exp_ks=36 lut_ks=24
+ID          AKP25                        run=2 noise=10 PASS max_error=0 overall_ms=12657.29 lut_ms=1086.71 exp_ks=36 lut_ks=24
+ID          AKP25                        run=3 noise=10 PASS max_error=0 overall_ms=12832.50 lut_ms=1116.02 exp_ks=36 lut_ks=24
+ID          AKP25                        run=4 noise=10 PASS max_error=0 overall_ms=13222.49 lut_ms=1099.53 exp_ks=36 lut_ks=24
+ID          AKP25                        run=5 noise=10 PASS max_error=0 overall_ms=13174.81 lut_ms=1110.70 exp_ks=36 lut_ks=24
+ID          AKP25                        summary avg_overall_ms=12939.37 max_overall_ms=13222.49 avg_lut_ms=1102.12 max_lut_ms=1116.02 exp_ks=36 lut_ks=24

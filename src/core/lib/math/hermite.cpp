@@ -224,6 +224,224 @@ static std::vector<std::complex<double>> GetHermiteTrigCoefficientsSparseTHI(
     return coeffs;
 }
 
+static void ValidateHermiteParameters(uint32_t p, size_t order, double scale) {
+    if (p < 4 || (p & (p - 1)) != 0 || order == 0)
+        OPENFHE_THROW("BKSS and Full-THI require a power-of-two modulus >= 4 and positive order");
+    if (!std::isfinite(scale) || scale == 0)
+        OPENFHE_THROW("Hermite interpolation requires a finite nonzero scale");
+}
+
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsFullTHIForComplexLUT(
+    std::function<std::complex<double>(int64_t)> func, uint32_t p, size_t order, double scale) {
+    ValidateHermiteParameters(p, order, scale);
+    if (order > 3)
+        OPENFHE_THROW("Full-THI supports orders 1, 2, and 3");
+    using namespace std::complex_literals;
+    auto omega = std::exp(2i * M_PI / double(p));
+
+    // Compute IDFT
+    std::vector<std::complex<double>> idft;
+    for (size_t m = 0; m != p; ++m) {
+        std::complex<double> ret = 0;
+        for (size_t ell = 0; ell != p; ++ell) {
+            ret += func(ell) * std::pow(omega, -double(ell) * m);
+        }
+        ret /= double(p);
+        idft.push_back(ret);
+    }
+
+    // Compute coeffs
+    std::vector<std::complex<double>> coeffs;
+    if (order == 1) {
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back((1.0 + double(m) / p) * idft[m]);
+        }
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back((-double(m) / p) * idft[m]);
+        }
+    }
+    if (order == 2) {
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back((1.0 + double(m) * (double(m) + 3 * p) / (2.0 * p * p)) * idft[m]);
+        }
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back((-double(m) * (double(m) + 2 * p) / (double(p) * p)) * idft[m]);
+        }
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back((double(m) * (double(m) + p) / (2.0 * double(p) * p)) * idft[m]);
+        }
+    }
+    if (order == 3) {
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back(((double(m) + p) * (double(m) + 2 * p) * (double(m) + 3 * p) / (6.0 * p * p * p)) *
+                             idft[m]);
+        }
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back(-((double(m)) * (double(m) + 2 * p) * (double(m) + 3 * p) / (2.0 * p * p * p)) * idft[m]);
+        }
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back(((double(m)) * (double(m) + p) * (double(m) + 3 * p) / (2.0 * p * p * p)) * idft[m]);
+        }
+        for (size_t m = 0; m != p; ++m) {
+            coeffs.push_back(-(double(m) * (double(m) + p) * (double(m) + 2 * p) / (6.0 * p * p * p)) * idft[m]);
+        }
+    }
+
+    // normalization
+    for (size_t m = 0; m != coeffs.size(); ++m) {
+        coeffs[m] /= scale;
+    }
+
+    return coeffs;
+}
+
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsFullTHI(std::function<int64_t(int64_t)> func, uint32_t p,
+                                                                    size_t order, double scale) {
+    auto funcComplex = [&](int64_t x) -> std::complex<double> {
+        return std::complex<double>(static_cast<double>(func(x)), 0.0);
+    };
+    return GetHermiteTrigCoefficientsFullTHIForComplexLUT(funcComplex, p, order, scale);
+}
+
+static std::vector<std::complex<double>> GetHermiteTrigCoefficientsBKSSForComplexLUT(
+    std::function<std::complex<double>(int64_t)> func, uint32_t p, double scale) {
+    ValidateHermiteParameters(p, 1, scale);
+    using namespace std::complex_literals;
+    auto omega = std::exp(2i * M_PI / double(p));
+
+    // Compute IDFT
+    std::vector<std::complex<double>> idft;
+    for (size_t m = 0; m != p; ++m) {
+        std::complex<double> ret = 0;
+        for (size_t ell = 0; ell != p; ++ell) {
+            ret += func(ell) * std::pow(omega, -double(ell) * m);
+        }
+        ret /= double(p);
+        idft.push_back(ret);
+    }
+
+    std::vector<std::complex<double>> f0 = {idft[0]};
+    std::vector<std::complex<double>> Pf(p, 0);
+    std::vector<std::complex<double>> Qf(p, 0);
+    std::vector<std::complex<double>> Pfr(p, 0);
+    std::vector<std::complex<double>> Qfr(p, 0);
+
+    for (size_t k = 1; k <= p / 2; ++k) {
+        Pf[k] = idft[k] * (double(p) - k) * (double(k) + 1) / double(p);
+        Qf[k] = idft[k] * double(k) * (double(p) - k) / double(p);
+    }
+    for (size_t k = p / 2 + 1; k < p; ++k) {
+        Pf[k] = idft[k] * (double(p) - k) / double(p);
+    }
+    // Reverse-frequency blocks used by the original BKSS evaluator.
+    for (size_t k = 1; k <= p / 2 - 1; ++k) {
+        Pfr[k] = idft[p - k] * (double(p) - k) * (double(k) + 1) / double(p);
+        Qfr[k] = idft[p - k] * double(k) * (double(p) - k) / double(p);
+    }
+    for (size_t k = p / 2; k < p; ++k) {
+        Pfr[k] = idft[p - k] * (double(p) - k) / double(p);
+    }
+
+    // normalization
+    f0[0] /= scale;
+    for (size_t m = 0; m != p; ++m) {
+        Pf[m] /= scale;
+        Qf[m] /= scale;
+        Pfr[m] /= scale;
+        Qfr[m] /= scale;
+    }
+
+    // Pack them for convenience of APIs...
+    // {Pf, Pfr, Qf, Qfr, f0}
+    std::vector<std::complex<double>> coeffs;
+    coeffs.reserve(1 + 4 * p);
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(Pf[k]);
+    }
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(Pfr[k]);
+    }
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(Qf[k]);
+    }
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(Qfr[k]);
+    }
+    coeffs.push_back(f0[0]);
+    return coeffs;
+}
+
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsBKSS(std::function<int64_t(int64_t)> func, uint32_t p,
+                                                                 double scale) {
+    auto funcComplex = [&](int64_t x) -> std::complex<double> {
+        return std::complex<double>(static_cast<double>(func(x)), 0.0);
+    };
+    return GetHermiteTrigCoefficientsBKSSForComplexLUT(funcComplex, p, scale);
+}
+
+std::vector<std::complex<double>> GetHermiteTrigCoefficientsBKSSNew(std::function<int64_t(int64_t)> func, uint32_t p,
+                                                                    double scale) {
+    ValidateHermiteParameters(p, 1, scale);
+    using namespace std::complex_literals;
+    auto omega = std::exp(2i * M_PI / double(p));
+
+    // Compute IDFT
+    std::vector<std::complex<double>> idft;
+    for (size_t m = 0; m != p; ++m) {
+        std::complex<double> ret = 0;
+        for (size_t ell = 0; ell != p; ++ell) {
+            ret += static_cast<double>(func(ell)) * std::pow(omega, -double(ell) * m);
+        }
+        ret /= double(p);
+        idft.push_back(ret);
+    }
+
+    std::vector<std::complex<double>> f0 = {idft[0]};
+    std::vector<std::complex<double>> Pf(p, 0);
+    std::vector<std::complex<double>> Qf(p, 0);
+    std::complex<double> rem;
+
+    for (size_t k = 1; k <= p / 2 - 1; ++k) {
+        Pf[k] = idft[k] * (double(p) - k) * (double(k) + 1) / double(p);
+        Qf[k] = idft[k] * double(k) * (double(p) - k) / double(p);
+    }
+    for (size_t k = p / 2 + 1; k < p; ++k) {
+        Pf[k] = idft[k] * (double(p) - k) / double(p);
+    }
+    Pf[p / 2] = idft[p / 2] * (double(p) / 2.0) / double(p);
+    rem       = idft[p / 2] * (double(p) / 2.0) * (double(p) / 2.0) / double(p);
+
+    // 2Re[Pf(z)] - |z|^2 * 2Re[Qf(z)] + rem*z^(p/2)*(1-|z|^2) + f0
+
+    // normalization
+    f0[0] /= scale;
+    rem /= scale;
+    for (size_t m = 0; m != p; ++m) {
+        Pf[m] /= scale;
+        Qf[m] /= scale;
+    }
+
+    // Pack them for convenience of APIs...
+    // {Pf, Pfr (0), Qf, Qfr (0), f0}
+    std::vector<std::complex<double>> coeffs;
+    coeffs.reserve(1 + 4 * p);
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(Pf[k]);
+    }
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(0.0);
+    }
+    coeffs[p] = rem;
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(Qf[k]);
+    }
+    for (size_t k = 0; k < p; ++k) {
+        coeffs.push_back(0.0);
+    }
+    coeffs.push_back(f0[0]);
+    return coeffs;
+}
+
 std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
                                                              size_t order, double scale,
                                                              DiscreteCKKSInterpolationMethod method) {
@@ -232,6 +450,15 @@ std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64
             return GetHermiteTrigCoefficientsAKP(func, p, order, scale);
         case DiscreteCKKSInterpolationMethod::SPARSE_THI:
             return GetHermiteTrigCoefficientsSparseTHI(func, p, order, scale);
+        case DiscreteCKKSInterpolationMethod::BKSS:
+        case DiscreteCKKSInterpolationMethod::BKSS_NEW:
+            if (order != 1)
+                OPENFHE_THROW("BKSS supports order 1 only");
+            return method == DiscreteCKKSInterpolationMethod::BKSS ?
+                       GetHermiteTrigCoefficientsBKSS(func, p, scale) :
+                       GetHermiteTrigCoefficientsBKSSNew(func, p, scale);
+        case DiscreteCKKSInterpolationMethod::FULL_THI:
+            return GetHermiteTrigCoefficientsFullTHI(func, p, order, scale);
         default:
             OPENFHE_THROW("Unknown interpolation method");
     }

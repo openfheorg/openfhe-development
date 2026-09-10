@@ -1,0 +1,447 @@
+{
+  "format": "historical-fbt-v1",
+  "source_directory": "openfhe-development-private/experiments/generated",
+  "source_revision": null,
+  "compiler": null,
+  "arithmetic_backend": null,
+  "cpu": null,
+  "threads": null,
+  "description": "Historical measurements copied without modification; not runs of the current branch. Missing build/hardware provenance is unknown, not inferred from the paper.",
+  "cases": [
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 1,
+        "method": "AKP",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-akp25-p16-order1.log": "0f0dbba2b57a8004f10ffc35c5fdd140cd549b98187055f9c2121a3200732c28"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 1,
+        "method": "BKSS",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-bkss24-new-p16-order1.log": "af4ecd0b1bb9449f5d3b887878487f7fc00d26d684c486afdd321078e1d69dfd"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 1,
+        "method": "SPARSE_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-mixedconstraints-p16-order1.log": "1aa3affeed9c11b3c93373ceb72f17fb3483062c47a8d9c9eeaddc052a9a7f42"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 2,
+        "method": "AKP",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-akp25-p16-order2.log": "1c20168c01abdb1a63aa3a5ecb62c86427266d514a1d1af9576a311a1d9d24fb"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 2,
+        "method": "SPARSE_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-mixedconstraints-p16-order2.log": "b93e29a8106e5a42a6a52ad97b94096f6a069f142d0027f749da1f0196b83e9c"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 3,
+        "method": "AKP",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-akp25-p16-order3.log": "d199e0836a1937975b4fe43ed36c7b30c2801ab8b262865e3c18f2280d06d7a8"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 3,
+        "method": "SPARSE_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": true
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-mixedconstraints-p16-order3.log": "1f627dd74dcdf2e8e60c5990fa45d92f83d9824f7e13d209d98cca5febabd62f"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 16,
+        "order": 5,
+        "method": "SPARSE_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": true
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring65536-lvlb3_2-method-mixedconstraints-p16-order5.log": "6f539798d46f76f421af04922b3cf7ef9e8fefced0a304b103bb52873718e750"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 1,
+        "method": "AKP",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-akp25-p256-order1.log": "c1f8919e1bf8ce3ad8a62e5624a3eef3e5d870366610ac0e1520d90498f4a4ae"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 1,
+        "method": "BKSS",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-bkss24-new-p256-order1.log": "58e6539916d6301c073bce005eca52d3ed371f32bddcab6e4d728d2702b4a5f3"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 1,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-mixedconstraints-p256-order1.log": "3b8ffdede4cccccab4c5426c4e09debb953cee0afcca88431a26fac33f24e467"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 2,
+        "method": "AKP",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-akp25-p256-order2.log": "04c1de9c581d777903f9c0ab31c63f48b2c0bd4245dd4a5ede83da8a60917698"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 2,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-mixedconstraints-p256-order2.log": "fa5788518c7c1b4962bcff749c548649449b3af30c9ae2782b2a5e1e0647cf5c"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 3,
+        "method": "AKP",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-akp25-p256-order3.log": "8a5d8a0117d353637d992d839daa522e9676ce9098b631e7fcc96c682f83d0bb"
+      }
+    },
+    {
+      "case": {
+        "table": 4,
+        "p": 256,
+        "order": 3,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "benchmark-runs/real-fullpack-ring131072-lvlb3_2-method-mixedconstraints-p256-order3.log": "5ca22332064ea35c551568a053ad7b194ca4895ed9ff460d67d497e8cc940c78"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 1,
+        "method": "AKP",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "akp25-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "c91c36d22da07fb77008401e61be4dd0819ec9fe09657a0bb7ae68429844b728",
+        "akp25-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "8e46ea9b5ef4579eb4de640e5c53aa9d724fadbd434c799149f38eed1e2a4834"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 1,
+        "method": "BKSS",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "bkss24-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "7614e6cc16882b109b6d0e28a2a9ebabbf6a604bf140a55e6adfeb57725eddd1",
+        "bkss24-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "ce528178ee27512171e5e29fea5ffd5fc2ae3fba3ce12ce193bbf6b13408c3a0"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 1,
+        "method": "FULL_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "full-thi-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "417b40e271e5d6134a21652b6bc0bd013c0c2a3764b06629254235c3ae64aeea",
+        "full-thi-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "0e128aaf26940d240e80357e6419620bbc7c0d97577a1c2a33629977cbb6fd23"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 1,
+        "method": "SPARSE_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "sparse-thi-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "82ca6280bd8a7f8510b33a78511bcae97171167a19cad0d31cda938945a6abac",
+        "sparse-thi-id-p16-order1-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "b459a0eb2431aac0423bdc4995ce06d410ef541896914172d13bec5bdc3e1495"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 2,
+        "method": "AKP",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "akp25-id-p16-order2-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "e1261f83ab646f263dd9612bba74bf255bb0dedfcf125517c7621156691863ac",
+        "akp25-id-p16-order2-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "26807c4aa510e62fbd732021cc968f723058bab98f2878c72464229c23cde0ba"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 2,
+        "method": "SPARSE_THI",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "sparse-thi-id-p16-order2-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "d0bb58e8a50d426d3b12f38a7085391ecddf7135bfc2d5304783142ed149cecc",
+        "sparse-thi-id-p16-order2-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "c3f8201c81f7af3c659d80a58a75867600581038cb4fbca2a9af92bb629b8dd5"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 3,
+        "method": "AKP",
+        "ring": 65536,
+        "slots": 65536,
+        "unsafe": false
+      },
+      "files": {
+        "akp25-id-p16-order3-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "ff61edc514fd189ea36476bef1ad3c1f65ff12e9e1128a17ddac8713e6b4ae04",
+        "akp25-id-p16-order3-ring_65536-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "dfc735bcacffdd5166692a94a2872d75dbffbeb05ce79533348889095f3a8b77"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 3,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "sparse-thi-id-p16-order3-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "c5c000cb02b1d76d5197b1f72c2106bdfe4ba83a5dbcf905462ce802bb9657ff",
+        "sparse-thi-id-p16-order3-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "244f8e52deb75e75a8c595c79e552c66d52a55886bfd1f0d119756b693ea6b9c"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 16,
+        "order": 5,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "sparse-thi-id-p16-order5-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "41b8b83ff15b4f78e85f122c3fdb33147040d4f1e24c721a7433407678819cc1",
+        "sparse-thi-id-p16-order5-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "57ae92a308250fcc04bd2eb0dee4571835a6e28be76f7d4b17b0ce11e0d619b8"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 256,
+        "order": 1,
+        "method": "AKP",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "akp25-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "6697f052752406bebc35b5688334cef399c4acf68343d31d25d039cae0061ef1",
+        "akp25-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "e68924e95282aaf5f7d2e6febe6eb477b89f80ad010e7f7d5dd0b1592fcf2b47"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 256,
+        "order": 1,
+        "method": "BKSS",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "bkss24-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "33baa30ee66b07d5c32f084a5c1d4db27220df60b7336effce21967d1f6a977f",
+        "bkss24-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "bb68bc755b50968a0841e635991c0846f0e9fabce90d9cb75d201135b39af729"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 256,
+        "order": 1,
+        "method": "FULL_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "full-thi-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "5de860dee68fe3111200a5d32cd65efa6f29c81c25cd285fa8d645f03dfb9314",
+        "full-thi-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "cf2325b91971683c8ef9dbd1386e90a1512d4a7b47d0a0a77c93a7fda57646ed"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 256,
+        "order": 1,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "sparse-thi-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "4a10fdfec4241222fb3a62e6d73645a8c5f5866912ce2a749ba2ac373004f4cf",
+        "sparse-thi-id-p256-order1-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "ee19666367d6bf47cad8876865076477e02476e230a3e18ccdac58fefe579506"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 256,
+        "order": 2,
+        "method": "AKP",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "akp25-id-p256-order2-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "02001f59a5d337a4acc106efa6009a11666a38d6c2c3cd4d9c4cd23f9f1c8f26",
+        "akp25-id-p256-order2-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "dd19c66632aac68996cef747cba0f2727f78cea185ed6ee3d48a964164074e8b"
+      }
+    },
+    {
+      "case": {
+        "table": 5,
+        "p": 256,
+        "order": 2,
+        "method": "SPARSE_THI",
+        "ring": 131072,
+        "slots": 131072,
+        "unsafe": false
+      },
+      "files": {
+        "sparse-thi-id-p256-order2-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.csv": "44ce4d1841d28f270162182e6a27251da902f513fee8acb5b6c704db1d672c68",
+        "sparse-thi-id-p256-order2-ring_131072-SPARSE_TERNARY-FIXEDMANUAL-lvlb3_2.log": "82e8ebcde1153626f6a4f1bccb5c66563d61225963a2bbb73df6ef1895c03796"
+      }
+    }
+  ]
+}

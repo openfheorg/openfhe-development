@@ -1,0 +1,69 @@
+Mode=precision ring_dim=131072 key_dist=SPARSE_TERNARY slots=131072 sf=59 eval_exp_degree=58 order=1 noise_stage=PRE_EVALEXP scaling=FIXEDMANUAL mul_depth=23 p_input=256 p_output=256 all_inputs=1 complex_lut=0 level_budget=3,2
+Noise bases=16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46
+
+ID          AKP25                        noise=16 PASS max_error=0 in=-32.239 lut=-13.827 out=-14.313 pred=-47.760 pred_gap=33.447 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=17 PASS max_error=0 in=-32.090 lut=-13.827 out=-14.313 pred=-47.462 pred_gap=33.149 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=18 PASS max_error=0 in=-32.352 lut=-13.829 out=-14.098 pred=-47.986 pred_gap=33.888 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=19 PASS max_error=0 in=-32.084 lut=-13.818 out=-14.313 pred=-47.449 pred_gap=33.136 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=20 PASS max_error=0 in=-32.128 lut=-13.825 out=-14.313 pred=-47.539 pred_gap=33.225 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=21 PASS max_error=0 in=-32.243 lut=-13.827 out=-14.313 pred=-47.768 pred_gap=33.455 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=22 PASS max_error=0 in=-32.184 lut=-13.827 out=-14.313 pred=-47.650 pred_gap=33.337 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=23 PASS max_error=0 in=-32.248 lut=-13.827 out=-14.313 pred=-47.777 pred_gap=33.464 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=24 PASS max_error=0 in=-32.178 lut=-13.827 out=-14.313 pred=-47.637 pred_gap=33.324 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=25 PASS max_error=0 in=-31.973 lut=-13.820 out=-14.313 pred=-47.227 pred_gap=32.914 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=26 PASS max_error=0 in=-31.565 lut=-13.829 out=-14.313 pred=-46.411 pred_gap=32.098 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=27 PASS max_error=0 in=-31.215 lut=-13.818 out=-14.313 pred=-45.711 pred_gap=31.398 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=28 PASS max_error=0 in=-30.582 lut=-13.825 out=-14.313 pred=-44.447 pred_gap=30.133 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=29 PASS max_error=0 in=-29.875 lut=-13.827 out=-14.313 pred=-43.031 pred_gap=28.718 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=30 PASS max_error=0 in=-29.002 lut=-13.820 out=-14.098 pred=-41.287 pred_gap=27.189 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=31 PASS max_error=0 in=-28.080 lut=-13.820 out=-14.313 pred=-39.441 pred_gap=25.128 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=32 PASS max_error=0 in=-27.122 lut=-13.820 out=-14.092 pred=-37.527 pred_gap=23.435 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=33 PASS max_error=0 in=-26.143 lut=-13.766 out=-14.092 pred=-35.568 pred_gap=21.476 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=34 PASS max_error=0 in=-25.154 lut=-13.825 out=-14.313 pred=-33.590 pred_gap=19.277 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=35 PASS max_error=0 in=-24.158 lut=-13.823 out=-14.313 pred=-31.598 pred_gap=17.285 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=36 PASS max_error=0 in=-23.161 lut=-13.829 out=-14.313 pred=-29.604 pred_gap=15.291 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=37 PASS max_error=0 in=-22.162 lut=-13.820 out=-14.098 pred=-27.607 pred_gap=13.509 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=38 PASS max_error=0 in=-21.163 lut=-13.828 out=-14.318 pred=-25.608 pred_gap=11.290 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=39 PASS max_error=0 in=-20.163 lut=-13.831 out=-14.316 pred=-23.608 pred_gap=9.293 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=40 PASS max_error=0 in=-19.163 lut=-13.770 out=-14.102 pred=-21.609 pred_gap=7.507 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=41 PASS max_error=0 in=-18.163 lut=-13.871 out=-14.350 pred=-19.609 pred_gap=5.259 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=42 PASS max_error=0 in=-17.163 lut=-13.817 out=-14.317 pred=-17.609 pred_gap=3.292 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=43 PASS max_error=0 in=-16.163 lut=-13.423 out=-13.920 pred=-15.609 pred_gap=1.689 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=44 PASS max_error=0 in=-15.163 lut=-12.463 out=-12.954 pred=-13.609 pred_gap=0.655 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=45 PASS max_error=0 in=-14.163 lut=-10.889 out=-11.383 pred=-11.609 pred_gap=0.226 exp_ks=36 lut_ks=62 pred_status=optimistic
+ID          AKP25                        noise=46 PASS max_error=0 in=-13.163 lut=-9.000 out=-9.500 pred=-9.609 pred_gap=0.109 exp_ks=36 lut_ks=62 pred_status=optimistic
+
+CSV_BEGIN
+lut,method,run,noise_base,max_error,input_precision,lut_precision,lut_margin,output_precision,predicted_output_precision,prediction_gap,output_margin,eval_exp_key_switch_count,key_switch_count
+ID,AKP25,1,16,0,-32.239,-13.827,nan,-14.313,-47.760,33.447,nan,36,62
+ID,AKP25,1,17,0,-32.090,-13.827,nan,-14.313,-47.462,33.149,nan,36,62
+ID,AKP25,1,18,0,-32.352,-13.829,nan,-14.098,-47.986,33.888,nan,36,62
+ID,AKP25,1,19,0,-32.084,-13.818,nan,-14.313,-47.449,33.136,nan,36,62
+ID,AKP25,1,20,0,-32.128,-13.825,nan,-14.313,-47.539,33.225,nan,36,62
+ID,AKP25,1,21,0,-32.243,-13.827,nan,-14.313,-47.768,33.455,nan,36,62
+ID,AKP25,1,22,0,-32.184,-13.827,nan,-14.313,-47.650,33.337,nan,36,62
+ID,AKP25,1,23,0,-32.248,-13.827,nan,-14.313,-47.777,33.464,nan,36,62
+ID,AKP25,1,24,0,-32.178,-13.827,nan,-14.313,-47.637,33.324,nan,36,62
+ID,AKP25,1,25,0,-31.973,-13.820,nan,-14.313,-47.227,32.914,nan,36,62
+ID,AKP25,1,26,0,-31.565,-13.829,nan,-14.313,-46.411,32.098,nan,36,62
+ID,AKP25,1,27,0,-31.215,-13.818,nan,-14.313,-45.711,31.398,nan,36,62
+ID,AKP25,1,28,0,-30.582,-13.825,nan,-14.313,-44.447,30.133,nan,36,62
+ID,AKP25,1,29,0,-29.875,-13.827,nan,-14.313,-43.031,28.718,nan,36,62
+ID,AKP25,1,30,0,-29.002,-13.820,nan,-14.098,-41.287,27.189,nan,36,62
+ID,AKP25,1,31,0,-28.080,-13.820,nan,-14.313,-39.441,25.128,nan,36,62
+ID,AKP25,1,32,0,-27.122,-13.820,nan,-14.092,-37.527,23.435,nan,36,62
+ID,AKP25,1,33,0,-26.143,-13.766,nan,-14.092,-35.568,21.476,nan,36,62
+ID,AKP25,1,34,0,-25.154,-13.825,nan,-14.313,-33.590,19.277,nan,36,62
+ID,AKP25,1,35,0,-24.158,-13.823,nan,-14.313,-31.598,17.285,nan,36,62
+ID,AKP25,1,36,0,-23.161,-13.829,nan,-14.313,-29.604,15.291,nan,36,62
+ID,AKP25,1,37,0,-22.162,-13.820,nan,-14.098,-27.607,13.509,nan,36,62
+ID,AKP25,1,38,0,-21.163,-13.828,nan,-14.318,-25.608,11.290,nan,36,62
+ID,AKP25,1,39,0,-20.163,-13.831,nan,-14.316,-23.608,9.293,nan,36,62
+ID,AKP25,1,40,0,-19.163,-13.770,nan,-14.102,-21.609,7.507,nan,36,62
+ID,AKP25,1,41,0,-18.163,-13.871,nan,-14.350,-19.609,5.259,nan,36,62
+ID,AKP25,1,42,0,-17.163,-13.817,nan,-14.317,-17.609,3.292,nan,36,62
+ID,AKP25,1,43,0,-16.163,-13.423,nan,-13.920,-15.609,1.689,nan,36,62
+ID,AKP25,1,44,0,-15.163,-12.463,nan,-12.954,-13.609,0.655,nan,36,62
+ID,AKP25,1,45,0,-14.163,-10.889,nan,-11.383,-11.609,0.226,nan,36,62
+ID,AKP25,1,46,0,-13.163,-9.000,nan,-9.500,-9.609,0.109,nan,36,62
+CSV_END
