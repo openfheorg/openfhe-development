@@ -42,10 +42,12 @@ inline ScalingTechnique GetScalingTechnique(const CiphertextImpl<DCRTPoly>& ct) 
     return static_cast<const CryptoParametersRNS&>(*ct.GetCryptoParameters()).GetScalingTechnique();
 }
 
-inline const DCRTPoly& GetPlaintextElement(const PlaintextImpl& pt) {
+inline const DCRTPoly& GetPlaintextElement(const PlaintextImpl& pt, DCRTPoly& expandedStorage) {
     if (const auto* plaintextCKKS = dynamic_cast<const CKKSPackedEncoding*>(&pt)) {
-        if (plaintextCKKS->IsCompressed())
-            return plaintextCKKS->GetExpandedElement();
+        if (plaintextCKKS->IsCompressed()) {
+            expandedStorage = plaintextCKKS->GetExpandedElement();
+            return expandedStorage;
+        }
     }
     return pt.GetElement<DCRTPoly>();
 }
@@ -123,25 +125,28 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalAdd(ConstCiphertext<DCRTPoly>& ciphertex
 }
 
 void LeveledSHERNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    DCRTPoly expanded;
     auto st = GetScalingTechnique(*ciphertext);
     if (st == NORESCALE || AdjustForAddOrSubIsNoOp(*ciphertext, *plaintext)) {
-        EvalAddCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
+        EvalAddCoreInPlace(ciphertext, GetPlaintextElement(*plaintext, expanded));
     }
     else {
-        auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
         AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
         EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
     }
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+    DCRTPoly expanded;
+    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     return EvalAddCore(ciphertext, ctmorphed->GetElements()[0]);
 }
 
 void LeveledSHERNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+    DCRTPoly expanded;
+    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     EvalAddCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 }
@@ -191,25 +196,28 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSub(ConstCiphertext<DCRTPoly>& ciphertex
 }
 
 void LeveledSHERNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    DCRTPoly expanded;
     auto st = GetScalingTechnique(*ciphertext);
     if (st == NORESCALE || AdjustForAddOrSubIsNoOp(*ciphertext, *plaintext)) {
-        EvalSubCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
+        EvalSubCoreInPlace(ciphertext, GetPlaintextElement(*plaintext, expanded));
     }
     else {
-        auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+        auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
         AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
         EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
     }
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+    DCRTPoly expanded;
+    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     return EvalSubCore(ciphertext, ctmorphed->GetElements()[0]);
 }
 
 void LeveledSHERNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+    DCRTPoly expanded;
+    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
     AdjustForAddOrSubInPlace(ciphertext, ctmorphed);
     EvalSubCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 }
@@ -269,17 +277,18 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly>& cipherte
 }
 
 void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
+    DCRTPoly expanded;
     auto st = GetScalingTechnique(*ciphertext);
     if (st == NORESCALE) {
-        EvalMultCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
+        EvalMultCoreInPlace(ciphertext, GetPlaintextElement(*plaintext, expanded));
     }
     else {
         if (AdjustForMultIsNoOp(*ciphertext, *plaintext, st)) {
-            EvalMultCoreInPlace(ciphertext, GetPlaintextElement(*plaintext));
+            EvalMultCoreInPlace(ciphertext, GetPlaintextElement(*plaintext, expanded));
             ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
         }
         else {
-            auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+            auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
             AdjustForMultInPlace(ciphertext, ctmorphed);
             EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
             ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
@@ -288,7 +297,8 @@ void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlain
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+    DCRTPoly expanded;
+    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
     AdjustForMultInPlace(ciphertext, ctmorphed);
     auto result = EvalMultCore(ciphertext, ctmorphed->GetElements()[0]);
 
@@ -305,7 +315,8 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& cipher
 
 // TODO (Andrey) : currently do same as EvalMultInPlace, as Plaintext element is immutable
 void LeveledSHERNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const {
-    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext));
+    DCRTPoly expanded;
+    auto ctmorphed = MorphPlaintext(plaintext, ciphertext, GetPlaintextElement(*plaintext, expanded));
     AdjustForMultInPlace(ciphertext, ctmorphed);
     EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 

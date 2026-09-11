@@ -291,6 +291,82 @@ TEST(UTCKKS_EXPAND_RING, CompressedEncryptDecrypt) {
     OpenFHEParallelControls.UnitTestStop();
 }
 
+TEST(UTCKKS_EXPAND_RING, CompressedPlaintextStaysSmallAcrossRepeatedUse) {
+    setupSignals();
+    OpenFHEParallelControls.UnitTestStart();
+
+    for (uint32_t depth : DEPTHS_TO_TEST) {
+        const std::string failmsg("CompressedPlaintextStaysSmallAcrossRepeatedUse, depth=" + std::to_string(depth));
+        SCOPED_TRACE(failmsg);
+
+        try {
+            CCParams<CryptoContextCKKSRNS> parameters;
+            parameters.SetMultiplicativeDepth(depth);
+            parameters.SetScalingModSize(50);
+            parameters.SetFirstModSize(60);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetSecurityLevel(HEStd_128_classic);
+
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+
+            const uint32_t slots    = cc->GetRingDimension() / 16;
+            const uint32_t smallDim = 2 * slots;
+
+            std::vector<double> w(slots);
+            for (uint32_t i = 0; i < slots; ++i)
+                w[i] = 0.01 * static_cast<double>(i) - 0.3;
+
+            KeyPair<DCRTPoly> keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            Plaintext weight = cc->MakeCKKSPackedPlaintext(w, 1, 0, nullptr, slots, true);
+            auto weightCKKS  = std::dynamic_pointer_cast<CKKSPackedEncoding>(weight);
+            ASSERT_NE(weightCKKS, nullptr) << failmsg;
+            ASSERT_TRUE(weightCKKS->IsCompressed()) << failmsg;
+            ASSERT_EQ(weight->GetElement<DCRTPoly>().GetRingDimension(), smallDim) << failmsg;
+
+            for (uint32_t trial = 0; trial < 4; ++trial) {
+                std::vector<double> input(slots);
+                for (uint32_t i = 0; i < slots; ++i)
+                    input[i] = 0.001 * static_cast<double>(trial * slots + i);
+
+                Plaintext ptxtInput = cc->MakeCKKSPackedPlaintext(input, 1, 0, nullptr, slots, false);
+                auto ctxtInput      = cc->Encrypt(keyPair.publicKey, ptxtInput);
+
+                auto ctxtResult = cc->EvalMult(ctxtInput, weight);
+                cc->RescaleInPlace(ctxtResult);
+
+                std::vector<double> expected(slots);
+                for (uint32_t i = 0; i < slots; ++i)
+                    expected[i] = input[i] * w[i];
+
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ctxtResult, &result);
+                result->SetLength(slots);
+                checkEquality(expected, result->GetRealPackedValue(), 0.01,
+                             failmsg + " (trial " + std::to_string(trial) + ")");
+
+                EXPECT_TRUE(weightCKKS->IsCompressed()) << failmsg;
+                EXPECT_EQ(weight->GetElement<DCRTPoly>().GetRingDimension(), smallDim) << failmsg;
+            }
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
+
+    OpenFHEParallelControls.UnitTestStop();
+}
+
 TEST(UTCKKS_EXPAND_RING, CompressedCiphertextPlaintextArithmetic) {
     setupSignals();
     OpenFHEParallelControls.UnitTestStart();

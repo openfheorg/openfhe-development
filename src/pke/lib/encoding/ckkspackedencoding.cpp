@@ -302,9 +302,8 @@ bool CKKSPackedEncoding::Encode() {
 #endif
 
     if (m_compressed) {
-        auto compressedParams  = BuildCompressedElementParams(m_expandedParams, 2 * slots);
-        encodedVectorDCRT       = DCRTPoly(compressedParams, Format::COEFFICIENT, true);
-        m_expandedElementValid = false;
+        auto compressedParams = BuildCompressedElementParams(m_expandedParams, 2 * slots);
+        encodedVectorDCRT      = DCRTPoly(compressedParams, Format::COEFFICIENT, true);
     }
 
     auto nativeParams  = encodedVectorDCRT.GetParams()->GetParams();

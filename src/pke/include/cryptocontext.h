@@ -1332,10 +1332,13 @@ public:
         ValidateKey(publicKey);
 
         const Element* element = &plaintext->GetElement<Element>();
+        DCRTPoly expandedElement;
         if constexpr (std::is_same<Element, DCRTPoly>::value) {
             auto plaintextCKKS = std::dynamic_pointer_cast<const CKKSPackedEncoding>(plaintext);
-            if (plaintextCKKS && plaintextCKKS->IsCompressed())
-                element = &plaintextCKKS->GetExpandedElement();
+            if (plaintextCKKS && plaintextCKKS->IsCompressed()) {
+                expandedElement = plaintextCKKS->GetExpandedElement();
+                element         = &expandedElement;
+            }
         }
 
         Ciphertext<Element> ciphertext = m_scheme->Encrypt(*element, publicKey);
@@ -1376,10 +1379,13 @@ public:
         ValidateKey(privateKey);
 
         const Element* element = &plaintext->GetElement<Element>();
+        DCRTPoly expandedElement;
         if constexpr (std::is_same<Element, DCRTPoly>::value) {
             auto plaintextCKKS = std::dynamic_pointer_cast<const CKKSPackedEncoding>(plaintext);
-            if (plaintextCKKS && plaintextCKKS->IsCompressed())
-                element = &plaintextCKKS->GetExpandedElement();
+            if (plaintextCKKS && plaintextCKKS->IsCompressed()) {
+                expandedElement = plaintextCKKS->GetExpandedElement();
+                element         = &expandedElement;
+            }
         }
 
         Ciphertext<Element> ciphertext = m_scheme->Encrypt(*element, privateKey);

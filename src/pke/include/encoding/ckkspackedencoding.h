@@ -64,8 +64,6 @@ private:
     double m_logError = 0.;
     bool m_compressed = false;
     std::shared_ptr<DCRTPoly::Params> m_expandedParams;
-    mutable DCRTPoly m_expandedElement;
-    mutable bool m_expandedElementValid = false;
 
 public:
     // these two constructors are used inside of Decrypt
@@ -143,18 +141,14 @@ public:
           value(rhs.value),
           m_logError(rhs.m_logError),
           m_compressed(rhs.m_compressed),
-          m_expandedParams(rhs.m_expandedParams),
-          m_expandedElement(rhs.m_expandedElement),
-          m_expandedElementValid(rhs.m_expandedElementValid) {}
+          m_expandedParams(rhs.m_expandedParams) {}
 
     CKKSPackedEncoding(CKKSPackedEncoding&& rhs) noexcept
         : PlaintextImpl(std::move(rhs)),
           value(std::move(rhs.value)),
           m_logError(rhs.m_logError),
           m_compressed(rhs.m_compressed),
-          m_expandedParams(std::move(rhs.m_expandedParams)),
-          m_expandedElement(std::move(rhs.m_expandedElement)),
-          m_expandedElementValid(rhs.m_expandedElementValid) {}
+          m_expandedParams(std::move(rhs.m_expandedParams)) {}
 
     bool Encode() override;
 
@@ -184,14 +178,10 @@ public:
         return m_expandedParams->GetRingDimension() / GetElementRingDimension();
     }
 
-    const DCRTPoly& GetExpandedElement() const {
+    DCRTPoly GetExpandedElement() const {
         if (!m_compressed)
             return GetElement<DCRTPoly>();
-        if (!m_expandedElementValid) {
-            m_expandedElement      = GetElement<DCRTPoly>().ExpandRing(m_expandedParams);
-            m_expandedElementValid = true;
-        }
-        return m_expandedElement;
+        return GetElement<DCRTPoly>().ExpandRing(m_expandedParams);
     }
 
     /**
