@@ -33,6 +33,7 @@
 #include "math/binaryuniformgenerator.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/ternaryuniformgenerator.h"
+#include "utils/diagnostic_output.h"
 #include "utils/parallel.h"
 
 namespace lbcrypto {
@@ -205,7 +206,7 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     double error =
         (static_cast<double>(p) * (r.ConvertToDouble() - q.ConvertToDouble() / (p * 2))) / q.ConvertToDouble() -
         static_cast<double>(*result);
-    std::cerr << error * q.ConvertToDouble() / static_cast<double>(p) << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << error * q.ConvertToDouble() / static_cast<double>(p) << std::endl;
 #endif
 }
 
