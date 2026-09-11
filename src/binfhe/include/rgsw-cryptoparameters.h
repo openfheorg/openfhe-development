@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -45,6 +45,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -89,6 +90,7 @@ public:
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
         m_digitsG = DigitsForBase(m_Q, m_baseG);
+        CheckDigitsG(m_baseG, m_digitsG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
@@ -129,10 +131,12 @@ public:
         for (const auto& [baseG, count] : baseGMap) {
             if (count == 0 || baseG <= 1 || !IsPowerOfTwo(baseG))
                 OPENFHE_THROW("Gadget base should be a power of two and its count should be greater than zero.");
+            CheckDigitsG(baseG, DigitsForBase(Q, baseG));
         }
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
         m_digitsG = DigitsForBase(m_Q, m_baseG);
+        CheckDigitsG(m_baseG, m_digitsG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
@@ -143,6 +147,7 @@ public:
         uint32_t digitsG{0};
         uint32_t gBits{0};
         const std::vector<NativeInteger>* gpow{nullptr};
+        uint32_t teamWidth{0};
     };
 
     /**
@@ -178,7 +183,8 @@ public:
     // Change_BaseG() mutates m_baseG/m_digitsG/m_Gpower after PreCompute(), and the
     // large-precision path depends on those switches taking effect.
     BaseGParams GetDefaultBaseGParams() const {
-        return {m_baseG, m_digitsG, lbcrypto::GetMSB(m_baseG) - 1, &m_Gpower};
+        return {m_baseG, m_digitsG, lbcrypto::GetMSB(m_baseG) - 1, &m_Gpower,
+                m_baseGByIndex.empty() ? ((m_digitsG - 1) << 1) : m_teamWidth};
     }
 
     BaseGParams GetBaseGParams(uint32_t index) const {
@@ -195,6 +201,12 @@ public:
 
     uint32_t GetDigitsG(uint32_t index) const {
         return GetBaseGParams(index).digitsG;
+    }
+
+    // empty when no per-dimension base map is in use; then GetDefaultBaseGParams() applies to
+    // every index
+    const std::vector<BaseGParams>& GetBaseGByIndex() const {
+        return m_baseGByIndex;
     }
 
     // the per-index table is built from a map that never sees the LWE dimension, so the two can
@@ -214,6 +226,15 @@ public:
 
     const std::vector<NativeInteger>& GetDigitsR() const {
         return m_digitsR;
+    }
+
+    // number of values the digit at position pos can take when a coefficient below q is written in
+    // base baseR: every position spans the whole base except the top one
+    uint32_t GetDigitExtentR(uint32_t pos) const {
+        if (pos + 1 < m_digitsR.size())
+            return m_baseR;
+        return static_cast<uint32_t>((m_q.ConvertToInt<uint64_t>() - 1) / m_digitsR.back().ConvertToInt<uint64_t>()) +
+               1;
     }
 
     const std::shared_ptr<ILNativeParams> GetPolyParams() const {
@@ -236,6 +257,13 @@ public:
         return (gpow == nullptr) ? m_Gpower : *gpow;
     }
 
+    const std::vector<uint32_t>& GetAutoMap(uint32_t index) const {
+        auto it = m_autoMap.find(index);
+        if (it == m_autoMap.end())
+            OPENFHE_THROW("No automorphism map precomputed for index " + std::to_string(index));
+        return it->second;
+    }
+
     const std::vector<int32_t>& GetLogGen() const {
         return m_logGen;
     }
@@ -255,6 +283,25 @@ public:
     const NativePoly& GetMonomial(uint32_t i) const {
         return m_monomials[i];
     }
+
+    bool HasMonomials() const {
+        return !m_monomials.empty();
+    }
+
+    void ClearMonomials() {
+        std::vector<NativePoly>().swap(m_monomials);
+    }
+
+    void EnsureMonomials() {
+        if (m_method == BINFHE_METHOD::GINX && m_monomials.empty())
+            BuildMonomials();
+    }
+
+#if NATIVEINT != 32
+    const std::shared_ptr<ILNativeParams32>& GetPolyParams32();
+    const std::shared_ptr<const std::vector<NativePoly32>>& GetMonomials32();
+    const std::shared_ptr<const std::vector<NativeVector32>>& GetMonomialsPrecon32();
+#endif
 
     BINFHE_METHOD GetMethod() const {
         return m_method;
@@ -322,6 +369,7 @@ public:
         if (m_baseG != BaseG) {
             if (!m_baseGByIndex.empty())
                 OPENFHE_THROW("Change_BaseG is not supported with per-dimension gadget bases");
+            CheckDigitsG(BaseG, DigitsForBase(m_Q, BaseG));
             m_baseG   = BaseG;
             m_Gpower  = PrecomputeGPower(BaseG);
             m_digitsG = DigitsForBase(m_Q, m_baseG);
@@ -329,9 +377,19 @@ public:
     }
 
 private:
+    // the approximate gadget decomposition drops the first digit, so a single-digit gadget
+    // leaves the external product with no rows at all
+    static void CheckDigitsG(uint32_t baseG, uint32_t digitsG) {
+        if (digitsG < 2)
+            OPENFHE_THROW("Gadget base " + std::to_string(baseG) +
+                          " is too large for Q: the approximate gadget decomposition needs at least two digits.");
+    }
+
     static uint32_t DigitsForBase(const NativeInteger& Q, uint32_t baseG) {
         return lbcrypto::GetDigitCount(Q.ConvertToInt(), baseG);
     }
+
+    void BuildMonomials();
 
     // modulus for the RingGSW/RingLWE scheme
     NativeInteger m_Q;
@@ -350,6 +408,7 @@ private:
 
     // m_baseG_map expanded to one entry per LWE index, filled by PreCompute()
     std::vector<BaseGParams> m_baseGByIndex;
+    uint32_t m_teamWidth{0};
 
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;
@@ -371,6 +430,8 @@ private:
     // m_logGen[-1 (mod M)] = M (special case for efficiency)
     std::vector<int32_t> m_logGen;
 
+    std::unordered_map<uint32_t, std::vector<uint32_t>> m_autoMap;
+
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
 
@@ -386,6 +447,13 @@ private:
     // Precomputed polynomials in Format::EVALUATION representation for X^m - 1
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
+
+#if NATIVEINT != 32
+    // transient caches for the 32-bit internal path; never serialized, rebuilt on demand
+    std::shared_ptr<ILNativeParams32> m_polyParams32;
+    std::shared_ptr<const std::vector<NativePoly32>> m_monomials32;
+    std::shared_ptr<const std::vector<NativeVector32>> m_monomialsPrecon32;
+#endif
 
     // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method{BINFHE_METHOD::INVALID_METHOD};

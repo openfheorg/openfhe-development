@@ -550,7 +550,7 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(uint32_t baseBit
         // TP: x is same for BACKEND 2 and 6
         for (uint32_t i = 0; i < nWindows; ++i) {
             PolyImpl<VecType> xDigit(m_params);
-            xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, 1 << baseBits), Format::COEFFICIENT);
+            xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, uint32_t{1} << baseBits), Format::COEFFICIENT);
 
             // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
             // *********************************************************

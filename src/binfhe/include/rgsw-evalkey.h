@@ -66,6 +66,8 @@ public:
         : m_elements(rowSize, std::vector<NativePoly>(colSize)) {}
 
     explicit RingGSWEvalKeyImpl(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
+    explicit RingGSWEvalKeyImpl(std::vector<std::vector<NativePoly>>&& elements) noexcept
+        : m_elements(std::move(elements)) {}
 
     RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl& rhs) : m_elements(rhs.m_elements) {}
 

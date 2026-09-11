@@ -224,7 +224,7 @@ template <typename IntType>
 std::shared_ptr<std::vector<int64_t>> GetDigits(const IntType& u, uint64_t base, uint32_t k) {
     auto u_vec = std::make_shared<std::vector<int64_t>>(k);
 
-    size_t baseDigits = (uint32_t)(std::round(std::log2(base)));  // ?
+    size_t baseDigits = GetMSB(base) - 1;
 
     // if (!(base & (base - 1)))
     IntType uu = u;

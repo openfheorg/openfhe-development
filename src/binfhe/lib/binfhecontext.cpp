@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -55,7 +55,7 @@ static void VerifyGadgetBaseMapCoverage(const std::map<uint32_t, uint32_t>& base
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std,
                                           uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist,
                                           BINFHE_METHOD method, uint32_t numAutoKeys) {
-    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
+    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS, keyDist);
     auto rgswparams =
         std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
@@ -121,52 +121,116 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
 
     // clang-format off
     static const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap{
-    //  { BINFHE_PARAMSET      { bits, cycOrder, latParam, modq,   modKS, Bks,        Bg, Brk, autoKeys,         keyDist, stdDev, gadgetBaseMap } },
-        { TOY,                 {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19, {{512, 64}} } },
-        { TOY_MULTI_BASE,      {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19, {{128, 32}, {512, 32}} } },
-        { MEDIUM,              {   28,     2048,      422, 1024,   16384, 128,      1024,  32,       10, UNIFORM_TERNARY,   3.19, {{1024, 422}} } },
-        { STD128_AP,           {   27,     2048,      559, 2048,   32768,  32,       512,  64,       10, UNIFORM_TERNARY,   3.19, {{512, 559}} } },
-        { STD128,              {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 556}} } },
-        { STD128_3,            {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 595}} } },
-        { STD128_4,            {   27,     2048,      635, 2048,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 635}} } },
-        { STD128Q,             {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 601}} } },
-        { STD128Q_3,           {   25,     2048,      641, 2048,   65536,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 641}} } },
-        { STD128Q_4,           {   50,     4096,      683, 4096,  131072,  64,    131072,  64,       10, UNIFORM_TERNARY,   3.19, {{131072, 683}} } },
-        { STD192,              {   37,     4096,      821, 2048,   32768,  32,      8192,  64,       10, UNIFORM_TERNARY,   3.19, {{8192, 821}} } },
-        { STD192_3,            {   37,     4096,      876, 2048,   65536,  64,      8192,  64,       10, UNIFORM_TERNARY,   3.19, {{8192, 876}} } },
-        { STD192_4,            {   37,     4096,      932, 4096,  131072,  64,      8192,  64,       10, UNIFORM_TERNARY,   3.19, {{8192, 932}} } },
-        { STD192Q,             {   34,     4096,      890, 2048,   32768,  32,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 890}} } },
-        { STD192Q_3,           {   34,     4096,      948, 2048,   65536,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 948}} } },
-        { STD192Q_4,           {   34,     4096,     1009, 4096,  131072,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 1009}} } },
-        { STD256,              {   29,     4096,     1299, 2048,  262144,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 1299}} } },
-        { STD256_3,            {   29,     4096,     1241, 2048,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19, {{256, 1241}} } },
-        { STD256_4,            {   29,     4096,     1218, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 1218}} } },
-        { STD256Q,             {   26,     4096,     1242, 2048,   65536,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 1242}} } },
-        { STD256Q_3,           {   26,     4096,     1319, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 1319}} } },
-        { STD256Q_4,           {   26,     4096,     1319, 4096,  131072,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 1319}} } },
-        { STD128_LMKCDEY,      {   27,     2048,      581, 1024,   32768,  32,       512,  32,       10, UNIFORM_TERNARY,   3.19, {{512, 581}} } },
-        { STD128_3_LMKCDEY,    {   27,     2048,      595, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 595}} } },
-        { STD128_4_LMKCDEY,    {   27,     2048,      635, 2048,  131072,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 635}} } },
-        { STD128Q_LMKCDEY,     {   25,     2048,      640, 1024,   32768,  32,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 640}} } },
-        { STD128Q_3_LMKCDEY,   {   25,     2048,      641, 2048,   65536,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 641}} } },
-        { STD128Q_4_LMKCDEY,   {   25,     2048,      685, 2048,  131072,  64,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 685}} } },
-        { STD192_LMKCDEY,      {   39,     4096,      716, 4096,   32768,  32,   1048576,  64,       10,        GAUSSIAN,   3.19, {{1048576, 716}} } },
-        { STD192_3_LMKCDEY,    {   37,     4096,      876, 2048,   65536,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 876}} } },
-        { STD192_4_LMKCDEY,    {   37,     4096,      932, 4096,  131072,  64,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 932}} } },
-        { STD192Q_LMKCDEY,     {   36,     4096,      778, 4096,   32768,  32,      4096,  64,       10,        GAUSSIAN,   3.19, {{4096, 778}} } },
-        { STD192Q_3_LMKCDEY,   {   34,     4096,      948, 2048,   65536,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 948}} } },
-        { STD192Q_4_LMKCDEY,   {   34,     4096,     1009, 4096,  131072,  64,      4096,  64,       10, UNIFORM_TERNARY,   3.19, {{4096, 1009}} } },
-        { STD256_LMKCDEY,      {   29,     4096,     1079, 2048,   32768,  32,      1024,  64,       10, UNIFORM_TERNARY,   3.19, {{1024, 1079}} } },
-        { STD256_3_LMKCDEY,    {   29,     4096,     1218, 2048,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19, {{256, 1218}} } },
-        { STD256_4_LMKCDEY,    {   29,     4096,     1218, 4096,  131072,  64,       256,  64,       10, UNIFORM_TERNARY,   3.19, {{256, 1218}} } },
-        { STD256Q_LMKCDEY,     {   26,     4096,     1242, 2048,   65536,  64,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 1242}} } },
-        { STD256Q_3_LMKCDEY,   {   26,     4096,     1319, 4096,  131072,  64,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 1319}} } },
-        { STD256Q_4_LMKCDEY,   {   26,     4096,     1319, 4096,  131072,  64,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 1319}} } },
-        { LPF_STD128,          {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 547}, {512, 9}} } },
-        { LPF_STD128Q,         {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 581}, {32, 20}} } },
-        { LPF_STD128_LMKCDEY,  {   27,     2048,      556, 2048,   32768,  32,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 392}, {512, 164}} } },
-        { LPF_STD128Q_LMKCDEY, {   25,     2048,      601, 2048,   32768,  32,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 567}, {32, 34}} } },
-        { SIGNED_MOD_TEST,     {   28,     2048,      512, 1024,   PRIME,  25,       128,  23,       10, UNIFORM_TERNARY,   3.19, {{128, 512}} } },
+    //  { BINFHE_PARAMSET         { bits, cycOrder, latParam, modq,   modKS, Bks,        Bg, Brk, autoKeys,         keyDist, stdDev, gadgetBaseMap } },
+        { TOY,                    {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19, {{512, 64}} } },
+        { TOY_MULTI_BASE,         {   27,     1024,       64,  512,   PRIME,  25,       512,  23,        9, UNIFORM_TERNARY,   3.19, {{128, 32}, {512, 32}} } },
+        { MEDIUM,                 {   28,     2048,      422, 1024,   16384, 128,      1024,  32,       10, UNIFORM_TERNARY,   3.19, {{1024, 422}} } },
+        { STD128,                 {   27,     2048,      554, 2048,   32768, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 304}, {512, 250}} } },
+        { STD128_3,               {   27,     2048,      592, 2048,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 575}, {512, 17}} } },
+        { STD128_4,               {   27,     2048,      630, 2048,  131072, 512,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 137}, {32, 493}} } },
+        { STD128Q,                {   25,     2048,      598, 2048,   32768, 256,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 378}, {128, 220}} } },
+        { STD128Q_3,              {   25,     2048,      639, 2048,   65536, 256,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 288}, {32, 351}} } },
+        { STD128Q_4,              {   28,     4096,      680, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 119}, {128, 561}} } },
+        { STD192,                 {   28,     4096,      820, 4096,   32768, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 659}, {1024, 161}} } },
+        { STD192_3,               {   28,     4096,      874, 4096,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 857}, {1024, 17}} } },
+        { STD192_4,               {   28,     4096,      928, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 563}, {128, 365}} } },
+        { STD192Q,                {   28,     4096,      889, 4096,   32768, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 733}, {1024, 156}} } },
+        { STD192Q_3,              {   28,     4096,      947, 4096,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 935}, {1024, 12}} } },
+        { STD192Q_4,              {   28,     4096,     1004, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 700}, {128, 304}} } },
+        { STD256,                 {   28,     4096,     1077, 4096,   32768, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 932}, {1024, 145}} } },
+        { STD256_3,               {   28,     4096,     1146, 4096,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 1146}} } },
+        { STD256_4,               {   28,     4096,     1214, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 1076}, {128, 138}} } },
+        { STD256Q,                {   26,     4096,     1169, 4096,   32768, 256,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 182}, {64, 987}} } },
+        { STD256Q_3,              {   26,     4096,     1243, 4096,   65536, 256,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 584}, {32, 659}} } },
+        { STD256Q_4,              {   26,     4096,     1391, 4096,  262144, 512,         8,  64,       10, UNIFORM_TERNARY,   3.19, {{8, 182}, {16, 1209}} } },
+        { LPF_STD128,             {   27,     2048,      554, 2048,   32768, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 523}, {512, 31}} } },
+        { LPF_STD128_3,           {   27,     2048,      630, 2048,  131072, 512,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 166}, {64, 464}} } },
+        { LPF_STD128_4,           {   28,     4096,      668, 4096,  262144, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 582}, {128, 86}} } },
+        { LPF_STD128Q,            {   25,     2048,      598, 2048,   32768, 256,        16,  64,       10, UNIFORM_TERNARY,   3.19, {{16, 112}, {32, 486}} } },
+        { LPF_STD128Q_3,          {   25,     2048,      680, 2048,  131072, 512,         4,  64,       10, UNIFORM_TERNARY,   3.19, {{4, 45}, {8, 635}} } },
+        { LPF_STD128Q_4,          {   28,     4096,      720, 4096,  262144, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 675}, {128, 45}} } },
+        { LPF_STD192,             {   28,     4096,      874, 4096,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 782}, {1024, 92}} } },
+        { LPF_STD192_3,           {   28,     4096,      928, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 338}, {128, 590}} } },
+        { LPF_STD192_4,           {   28,     4096,      982, 4096,  262144, 512,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 718}, {64, 264}} } },
+        { LPF_STD192Q,            {   28,     4096,      947, 4096,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 859}, {1024, 88}} } },
+        { LPF_STD192Q_3,          {   28,     4096,     1004, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 475}, {128, 529}} } },
+        { LPF_STD192Q_4,          {   28,     4096,     1062, 4096,  262144, 512,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 999}, {64, 63}} } },
+        { LPF_STD256,             {   28,     4096,     1146, 4096,   65536, 256,       128,  64,       10, UNIFORM_TERNARY,   3.19, {{128, 1071}, {1024, 75}} } },
+        { LPF_STD256_3,           {   28,     4096,     1214, 4096,  131072, 512,        64,  64,       10, UNIFORM_TERNARY,   3.19, {{64, 851}, {128, 363}} } },
+        { LPF_STD256_4,           {   28,     4096,     1352, 4096,  524288, 128,         8,  64,       10, UNIFORM_TERNARY,   3.19, {{8, 128}, {16, 1224}} } },
+        { LPF_STD256Q,            {   26,     4096,     1243, 4096,   65536, 256,        32,  64,       10, UNIFORM_TERNARY,   3.19, {{32, 832}, {64, 411}} } },
+        { LPF_STD256Q_3,          {   26,     4096,     1317, 4096,  131072, 512,         8,  64,       10, UNIFORM_TERNARY,   3.19, {{8, 36}, {16, 1281}} } },
+        { STD128_LMKCDEY,         {   27,     2048,      554, 2048,   32768, 256,       512,  64,       40, UNIFORM_TERNARY,   3.19, {{512, 552}, {16384, 2}} } },
+        { STD128_3_LMKCDEY,       {   27,     2048,      592, 2048,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 440}, {512, 152}} } },
+        { STD128_4_LMKCDEY,       {   27,     2048,      630, 2048,  131072, 512,        32,  64,       40, UNIFORM_TERNARY,   3.19, {{32, 97}, {64, 533}} } },
+        { STD128Q_LMKCDEY,        {   25,     2048,      598, 2048,   32768, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 565}, {512, 33}} } },
+        { STD128Q_3_LMKCDEY,      {   25,     2048,      639, 2048,   65536, 256,        32,  64,       40, UNIFORM_TERNARY,   3.19, {{32, 532}, {128, 107}} } },
+        { STD128Q_4_LMKCDEY,      {   28,     4096,      680, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 626}, {1024, 54}} } },
+        { STD192_LMKCDEY,         {   28,     4096,      768, 4096,   65536, 256,       128,  64,       40,        GAUSSIAN,   3.19, {{128, 280}, {1024, 488}} } },
+        { STD192_3_LMKCDEY,       {   28,     4096,      874, 4096,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 732}, {1024, 142}} } },
+        { STD192_4_LMKCDEY,       {   28,     4096,      928, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 897}, {1024, 31}} } },
+        { STD192Q_LMKCDEY,        {   28,     4096,      832, 4096,   65536, 256,       128,  64,       40,        GAUSSIAN,   3.19, {{128, 394}, {1024, 438}} } },
+        { STD192Q_3_LMKCDEY,      {   28,     4096,      947, 4096,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 812}, {1024, 135}} } },
+        { STD192Q_4_LMKCDEY,      {   28,     4096,     1004, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 980}, {1024, 24}} } },
+        { STD256_LMKCDEY,         {   28,     4096,     1009, 4096,   65536, 256,       128,  64,       40,        GAUSSIAN,   3.19, {{128, 712}, {1024, 297}} } },
+        { STD256_3_LMKCDEY,       {   28,     4096,     1146, 4096,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 1029}, {1024, 117}} } },
+        { STD256_4_LMKCDEY,       {   28,     4096,     1214, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 1210}, {1024, 4}} } },
+        { STD256Q_LMKCDEY,        {   28,     4096,     1120, 4096,   65536, 256,       128,  64,       40,        GAUSSIAN,   3.19, {{128, 913}, {1024, 207}} } },
+        { STD256Q_3_LMKCDEY,      {   26,     4096,     1243, 4096,   65536, 256,        32,  64,       40, UNIFORM_TERNARY,   3.19, {{32, 522}, {64, 721}} } },
+        { STD256Q_4_LMKCDEY,      {   26,     4096,     1317, 4096,  131072, 512,        16,  64,       40, UNIFORM_TERNARY,   3.19, {{16, 607}, {32, 710}} } },
+        { LPF_STD128_LMKCDEY,     {   27,     2048,      554, 2048,   32768, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 366}, {512, 188}} } },
+        { LPF_STD128_3_LMKCDEY,   {   27,     2048,      630, 2048,  131072, 512,        64,  64,       40, UNIFORM_TERNARY,   3.19, {{64, 121}, {128, 509}} } },
+        { LPF_STD128_4_LMKCDEY,   {   28,     4096,      668, 4096,  262144, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 665}, {1024, 3}} } },
+        { LPF_STD128Q_LMKCDEY,    {   25,     2048,      598, 2048,   32768, 256,        32,  64,       40, UNIFORM_TERNARY,   3.19, {{32, 450}, {128, 148}} } },
+        { LPF_STD128Q_3_LMKCDEY,  {   25,     2048,      680, 2048,  131072, 512,        16,  64,       40, UNIFORM_TERNARY,   3.19, {{16, 659}, {32, 21}} } },
+        { LPF_STD128Q_4_LMKCDEY,  {   28,     4096,      720, 4096,  262144, 512,        64,  64,       40, UNIFORM_TERNARY,   3.19, {{64, 44}, {128, 676}} } },
+        { LPF_STD192_LMKCDEY,     {   28,     4096,      874, 4096,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 493}, {1024, 381}} } },
+        { LPF_STD192_3_LMKCDEY,   {   28,     4096,      928, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 872}, {1024, 56}} } },
+        { LPF_STD192_4_LMKCDEY,   {   28,     4096,      982, 4096,  262144, 512,        64,  64,       40, UNIFORM_TERNARY,   3.19, {{64, 772}, {128, 210}} } },
+        { LPF_STD192Q_LMKCDEY,    {   28,     4096,      947, 4096,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 572}, {1024, 375}} } },
+        { LPF_STD192Q_3_LMKCDEY,  {   28,     4096,     1004, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 955}, {1024, 49}} } },
+        { LPF_STD192Q_4_LMKCDEY,  {   28,     4096,     1062, 4096,  262144, 512,        64,  64,       40, UNIFORM_TERNARY,   3.19, {{64, 996}, {128, 66}} } },
+        { LPF_STD256_LMKCDEY,     {   28,     4096,     1146, 4096,   65536, 256,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 789}, {1024, 357}} } },
+        { LPF_STD256_3_LMKCDEY,   {   28,     4096,     1214, 4096,  131072, 512,       128,  64,       40, UNIFORM_TERNARY,   3.19, {{128, 1185}, {1024, 29}} } },
+        { LPF_STD256_4_LMKCDEY,   {   28,     4096,     1352, 4096,  524288, 128,        32,  64,       40, UNIFORM_TERNARY,   3.19, {{32, 1283}, {64, 69}} } },
+        { LPF_STD256Q_LMKCDEY,    {   26,     4096,     1243, 4096,   65536, 256,        64,  64,       40, UNIFORM_TERNARY,   3.19, {{64, 699}, {128, 544}} } },
+        { LPF_STD256Q_3_LMKCDEY,  {   26,     4096,     1317, 4096,  131072, 512,        16,  64,       40, UNIFORM_TERNARY,   3.19, {{16, 19}, {32, 1298}} } },
+        { STD128_AP,              {   27,     2048,      554, 2048,   32768, 256,       128, 128,       10, UNIFORM_TERNARY,   3.19, {{128, 11}, {512, 543}} } },
+        { STD128_3_AP,            {   27,     2048,      592, 2048,   65536, 256,       128, 128,       10, UNIFORM_TERNARY,   3.19, {{128, 512}, {512, 80}} } },
+        { STD128_4_AP,            {   27,     2048,      630, 2048,  131072, 512,        32, 128,       10, UNIFORM_TERNARY,   3.19, {{32, 408}, {64, 222}} } },
+        { STD128Q_AP,             {   25,     2048,      598, 2048,   32768, 256,        32, 128,       10, UNIFORM_TERNARY,   3.19, {{32, 73}, {128, 525}} } },
+        { STD128Q_3_AP,           {   25,     2048,      639, 2048,   65536, 256,        32, 128,       10, UNIFORM_TERNARY,   3.19, {{32, 605}, {128, 34}} } },
+        { STD128Q_4_AP,           {   28,     4096,      680, 4096,  131072, 512,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 673}, {1024, 7}} } },
+        { STD192_AP,              {   28,     4096,      874, 1024,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 653}, {1024, 221}} } },
+        { STD192_3_AP,            {   28,     4096,      928, 2048,  131072, 512,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 896}, {1024, 32}} } },
+        { STD192_4_AP,            {   28,     4096,      928, 4096,  131072, 512,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 265}, {128, 663}} } },
+        { STD192Q_AP,             {   28,     4096,      947, 1024,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 766}, {1024, 181}} } },
+        { STD192Q_3_AP,           {   28,     4096,     1004, 2048,  131072,  64,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 992}, {1024, 12}} } },
+        { STD192Q_4_AP,           {   28,     4096,     1004, 4096,  131072,  64,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 655}, {128, 349}} } },
+        { STD256_AP,              {   28,     4096,     1146, 1024,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 1075}, {1024, 71}} } },
+        { STD256_3_AP,            {   28,     4096,     1146, 4096,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 1123}, {1024, 23}} } },
+        { STD256_4_AP,            {   28,     4096,     1214, 4096,  131072,  64,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 1074}, {128, 140}} } },
+        { STD256Q_AP,             {   28,     4096,     1120, 4096,   65536, 256,       128,  32,       10,        GAUSSIAN,   3.19, {{128, 1055}, {1024, 65}} } },
+        { STD256Q_3_AP,           {   26,     4096,     1243, 4096,   65536, 256,        16,   8,       10, UNIFORM_TERNARY,   3.19, {{16, 458}, {32, 785}} } },
+        { STD256Q_4_AP,           {   26,     4096,     1391, 4096,  262144,  64,         8,   8,       10, UNIFORM_TERNARY,   3.19, {{8, 103}, {16, 1288}} } },
+        { LPF_STD128_AP,          {   27,     2048,      554, 2048,   32768, 256,       128, 128,       10, UNIFORM_TERNARY,   3.19, {{128, 450}, {512, 104}} } },
+        { LPF_STD128_3_AP,        {   27,     2048,      630, 2048,  131072, 512,        64, 128,       10, UNIFORM_TERNARY,   3.19, {{64, 424}, {128, 206}} } },
+        { LPF_STD128_4_AP,        {   28,     4096,      668, 4096,  262144, 512,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 445}, {128, 223}} } },
+        { LPF_STD128Q_AP,         {   25,     2048,      598, 2048,   32768, 256,        32, 128,       10, UNIFORM_TERNARY,   3.19, {{32, 536}, {128, 62}} } },
+        { LPF_STD128Q_3_AP,       {   25,     2048,      680, 2048,  131072, 512,         8,  32,       10, UNIFORM_TERNARY,   3.19, {{8, 488}, {16, 192}} } },
+        { LPF_STD128Q_4_AP,       {   28,     4096,      720, 4096,  262144, 512,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 548}, {128, 172}} } },
+        { LPF_STD192_AP,          {   28,     4096,      874, 2048,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 768}, {1024, 106}} } },
+        { LPF_STD192_3_AP,        {   28,     4096,      928, 4096,  131072, 512,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 927}, {1024, 1}} } },
+        { LPF_STD192_4_AP,        {   28,     4096,      982, 4096,  262144,  64,        32,  32,       10, UNIFORM_TERNARY,   3.19, {{32, 654}, {64, 328}} } },
+        { LPF_STD192Q_AP,         {   28,     4096,      947, 2048,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 852}, {1024, 95}} } },
+        { LPF_STD192Q_3_AP,       {   28,     4096,     1004, 4096,  131072,  64,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 330}, {128, 674}} } },
+        { LPF_STD192Q_4_AP,       {   28,     4096,     1120, 4096,  524288,  32,        32,  32,       10, UNIFORM_TERNARY,   3.19, {{32, 732}, {64, 388}} } },
+        { LPF_STD256_AP,          {   28,     4096,     1146, 2048,   65536, 256,       128,  32,       10, UNIFORM_TERNARY,   3.19, {{128, 1079}, {1024, 67}} } },
+        { LPF_STD256_3_AP,        {   28,     4096,     1214, 4096,  131072,  64,        64,  32,       10, UNIFORM_TERNARY,   3.19, {{64, 749}, {128, 465}} } },
+        { LPF_STD256_4_AP,        {   28,     4096,     1352, 4096,  524288, 128,        16,   8,       10, UNIFORM_TERNARY,   3.19, {{16, 1326}, {32, 26}} } },
+        { LPF_STD256Q_AP,         {   26,     4096,     1243, 4096,   65536, 256,        32,   8,       10, UNIFORM_TERNARY,   3.19, {{32, 726}, {64, 517}} } },
+        { LPF_STD256Q_3_AP,       {   26,     4096,     1391, 4096,  262144,  64,        16,   8,       10, UNIFORM_TERNARY,   3.19, {{16, 1219}, {32, 172}} } },
+        { SIGNED_MOD_TEST,        {   28,     2048,      512, 1024,   PRIME,  25,       128,  23,       10, UNIFORM_TERNARY,   3.19, {{128, 512}} } },
     };
     // clang-format on
 
@@ -266,7 +330,12 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
     // This is done by default while calling Encrypt but the output could
     // be set to LARGE_DIM to skip this switching
     if (output == SMALL_DIM) {
-        ct = SwitchCTtoqn(m_BTKey.KSkey, ct);
+#if NATIVEINT != 32
+        if (m_BTKey.KSkey32 != nullptr)
+            ct = m_LWEscheme->SwitchCTtoqn(LWEParams, m_BTKey.KSkey32, ct);
+        else
+#endif
+            ct = SwitchCTtoqn(m_BTKey.KSkey, ct);
         ct->SetptModulus(p);
     }
     return ct;
@@ -301,7 +370,7 @@ LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPriv
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
-void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
+void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode, bool internal32) {
     if (sk == nullptr)
         OPENFHE_THROW("PrivateKey is empty");
     auto&& RGSWParams = m_params->GetRingGSWParams();
@@ -312,15 +381,19 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode) {
     if (m_timeOptimization) {
         for (auto&& [k, v] : RGSWParams->GetGPowerMap()) {
             RGSWParams->Change_BaseG(k);
-            m_BTKey_map[k] = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
+            m_BTKey_map[k] = m_binfhescheme->KeyGen(m_params, sk, keygenMode, internal32);
         }
         RGSWParams->Change_BaseG(temp);
         m_BTKey = m_BTKey_map[temp];
     }
     else {
-        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
+        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode, internal32);
         m_BTKey_map[temp] = m_BTKey;
     }
+
+#if NATIVEINT != 32
+    ReleaseMonomialsIfAll32();
+#endif
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,

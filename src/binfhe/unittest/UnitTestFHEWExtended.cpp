@@ -32,6 +32,10 @@
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 
+#include <sstream>
+#include <utility>
+#include <vector>
+
 using namespace lbcrypto;
 
 TEST(UNITTestFHEWExtended, EvalBinGate2) {
@@ -194,3 +198,260 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKeyTimeOptimization) {
     }
 }
 #endif
+
+TEST(UNITTestFHEWExtended, ParamSetNamesRoundTrip) {
+    for (int i = 0; i <= static_cast<int>(TOY_MULTI_BASE); ++i) {
+        auto set = static_cast<BINFHE_PARAMSET>(i);
+        std::ostringstream os;
+        os << set;
+        EXPECT_NE("UNKNOWN", os.str()) << i;
+        EXPECT_EQ(set, convertToBINFHE_PARAMSET(os.str())) << os.str();
+    }
+    EXPECT_THROW(convertToBINFHE_PARAMSET("STD128_NONE"), OpenFHEException);
+}
+
+// suffixed sets are bound to their method; unsuffixed sets are tuned for GINX but accept every method
+TEST(UNITTestFHEWExtended, MethodParamSetCompatibility) {
+    for (auto m : {GINX, AP, LMKCDEY}) {
+        for (auto s : {TOY, TOY_MULTI_BASE, MEDIUM, STD128, STD256Q_4, LPF_STD192_3, SIGNED_MOD_TEST})
+            EXPECT_NO_THROW(isMethodCompatible(m, s)) << m << " " << s;
+        if (m != LMKCDEY) {
+            EXPECT_THROW(isMethodCompatible(m, STD128_LMKCDEY), OpenFHEException) << m;
+        }
+        if (m != AP) {
+            EXPECT_THROW(isMethodCompatible(m, STD128_AP), OpenFHEException) << m;
+        }
+    }
+    EXPECT_NO_THROW(isMethodCompatible(LMKCDEY, STD128_LMKCDEY));
+    EXPECT_NO_THROW(isMethodCompatible(AP, STD128_AP));
+    EXPECT_THROW(isMethodCompatible(INVALID_METHOD, TOY), OpenFHEException);
+}
+
+// DM's refresh key holds, at the top digit position of the base-R decomposition of q, only the
+// values a coefficient below q can reach; the slots above that extent stay empty
+TEST(UNITTestFHEWExtended, RefreshKeyTopPositionCompact) {
+    BinFHEContextParams params{27, 1024, 64, 1024, 0, 25, 512, 128, 9, UNIFORM_TERNARY, 3.19, {}};
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(params, AP);
+    auto&& rgsw = cc.GetParams()->GetRingGSWParams();
+    ASSERT_EQ(2u, rgsw->GetDigitsR().size());
+    EXPECT_EQ(128u, rgsw->GetDigitExtentR(0));
+    EXPECT_EQ(8u, rgsw->GetDigitExtentR(1)) << "q = 1024 in base 128 reaches 8 values at the top position";
+
+    auto sk = cc.KeyGen();
+    cc.BTKeyGen(sk);
+    auto refreshKey = cc.GetRefreshKey();
+    const auto& key = refreshKey->GetElements();
+    ASSERT_EQ(params.latticeParam, key.size());
+    ASSERT_EQ(128u, key[0].size());
+    ASSERT_EQ(2u, key[0][1].size());
+    EXPECT_EQ(nullptr, key[0][0][0]);
+    EXPECT_NE(nullptr, key[0][127][0]);
+    EXPECT_NE(nullptr, key[0][7][1]);
+    EXPECT_EQ(nullptr, key[0][8][1]) << "rows above the top extent must not be generated";
+
+    for (uint32_t i = 0; i < 4; ++i) {
+        uint32_t b0 = i & 0x1, b1 = (i >> 1) & 0x1;
+        LWEPlaintext result;
+        cc.Decrypt(sk, cc.EvalBinGate(NAND, cc.Encrypt(sk, b0), cc.Encrypt(sk, b1)), &result);
+        EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result) << "NAND(" << b0 << "," << b1 << ")";
+    }
+}
+
+// TOY, with keyDist left free
+static BinFHEContextParams ToyParams(SecretKeyDist keyDist) {
+    return BinFHEContextParams{27, 1024, 64, 512, 0, 25, 512, 23, 9, keyDist, 3.19, {}};
+}
+
+TEST(UNITTestFHEWExtended, GinxRejectsGaussianSecretKeyDist) {
+    auto params = ToyParams(GAUSSIAN);
+    auto cc     = BinFHEContext();
+    EXPECT_THROW(cc.GenerateBinFHEContext(params, GINX), OpenFHEException);
+    EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, AP));
+    EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, LMKCDEY));
+}
+
+TEST(UNITTestFHEWExtended, ManualContextPropagatesSecretKeyDist) {
+    auto Q  = LastPrime<NativeInteger>(27, 1024);
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(64, 512, 512, Q, 3.19, 25, 512, 23, GAUSSIAN, LMKCDEY, 9);
+    EXPECT_EQ(GAUSSIAN, cc.GetParams()->GetLWEParams()->GetKeyDist());
+    EXPECT_EQ(GAUSSIAN, cc.GetParams()->GetRingGSWParams()->GetKeyDist());
+
+    auto ccGinx = BinFHEContext();
+    EXPECT_THROW(ccGinx.GenerateBinFHEContext(64, 512, 512, Q, 3.19, 25, 512, 23, GAUSSIAN, GINX, 9), OpenFHEException);
+}
+
+// Excluded at NATIVE_SIZE=32 for the reason given above: the large-precision constructor
+// sets qKS = 1 << 35, which truncates to zero in a 32-bit NativeInteger.
+#if NATIVEINT != 32
+TEST(UNITTestFHEWExtended, ArbitraryFunctionContextUnaffected) {
+    auto cc = BinFHEContext();
+    EXPECT_NO_THROW(cc.GenerateBinFHEContext(TOY, false, 11, 0, GINX, false));
+    EXPECT_EQ(UNIFORM_TERNARY, cc.GetParams()->GetLWEParams()->GetKeyDist());
+    EXPECT_EQ(UNIFORM_TERNARY, cc.GetParams()->GetRingGSWParams()->GetKeyDist());
+}
+#endif
+
+TEST(UNITTestFHEWExtended, MethodKeyDistCrossProduct) {
+    const std::vector<std::pair<BINFHE_METHOD, SecretKeyDist>> supported{{GINX, UNIFORM_TERNARY},
+                                                                         {AP, UNIFORM_TERNARY},
+                                                                         {LMKCDEY, UNIFORM_TERNARY},
+                                                                         {AP, GAUSSIAN},
+                                                                         {LMKCDEY, GAUSSIAN}};
+
+    for (const auto& [method, keyDist] : supported) {
+        auto cc = BinFHEContext();
+        cc.GenerateBinFHEContext(ToyParams(keyDist), method);
+        auto sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
+        for (uint32_t i = 0; i < 4; ++i) {
+            uint32_t b0 = i & 0x1, b1 = (i >> 1) & 0x1;
+            auto ct = cc.EvalBinGate(NAND, cc.Encrypt(sk, b0), cc.Encrypt(sk, b1));
+            LWEPlaintext result;
+            cc.Decrypt(sk, ct, &result);
+            EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
+                << "NAND(" << b0 << "," << b1 << ") wrong for " << method << " / " << keyDist;
+        }
+    }
+}
+
+TEST(UNITTestFHEWExtended, GinxKeyGenRejectsNonTernarySecret) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(ToyParams(UNIFORM_TERNARY), GINX);
+    auto&& lweParams = cc.GetParams()->GetLWEParams();
+    auto sk          = cc.GetLWEScheme()->KeyGenGaussian(lweParams->Getn(), lweParams->GetqKS());
+    EXPECT_THROW(cc.BTKeyGen(sk), OpenFHEException);
+}
+
+// Encrypt/Decrypt accumulate the inner product over the whole dimension; holding a ciphertext
+// at the ring modulus Q makes dim*Q exceed a 32-bit word, which corrupts the phase while still
+// decrypting correctly. Only NATIVE_SIZE=32 is close enough to the bound to trip today.
+TEST(UNITTestFHEWExtended, LargeModulusCiphertextPhaseIsClean) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(STD128, GINX);
+    auto&& lweParams = cc.GetParams()->GetLWEParams();
+    auto Q           = lweParams->GetQ();
+    auto skN         = cc.KeyGenN();
+
+    NativeInteger mu = Q.ComputeMu();
+    for (uint32_t m = 0; m < 2; ++m) {
+        auto ct       = cc.Encrypt(skN, m, LARGE_DIM, 4, Q);
+        const auto& a = ct->GetA();
+        const auto& s = skN->GetElement();
+        NativeInteger inner(0);
+        for (uint32_t i = 0; i < a.GetLength(); ++i)
+            inner.ModAddFastEq(a[i].ModMulFast(s[i], Q, mu), Q);
+        auto phase = ct->GetB().ModSub(inner, Q);
+        phase.ModSubFastEq(NativeInteger(m) * (Q / NativeInteger(4)), Q);
+
+        auto qi  = static_cast<int64_t>(Q.ConvertToInt());
+        auto err = static_cast<int64_t>(phase.ConvertToInt());
+        if (err > qi / 2)
+            err -= qi;
+        EXPECT_LT(err < 0 ? -err : err, 1000) << "phase error " << err << " for m=" << m;
+    }
+}
+
+// binfhe generates a Gaussian secret or a uniform ternary one and nothing else, so any other
+// distribution would be silently substituted rather than honoured.
+TEST(UNITTestFHEWExtended, RejectsUnsupportedKeyDist) {
+    for (auto dist : {SPARSE_TERNARY, SPARSE_ENCAPSULATED}) {
+        for (auto method : {GINX, AP, LMKCDEY}) {
+            auto cc = BinFHEContext();
+            EXPECT_THROW(cc.GenerateBinFHEContext(ToyParams(dist), method), OpenFHEException)
+                << "keyDist " << dist << ", method " << method;
+        }
+    }
+}
+
+// LMKCDEY sizes its automorphism-key vector by n and indexes it by numAutoKeys, so numAutoKeys
+// == n writes one past the end -- a segfault before this was rejected.
+TEST(UNITTestFHEWExtended, RejectsNumAutoKeysAtOrAboveLweDimension) {
+    auto params = ToyParams(UNIFORM_TERNARY);
+    ASSERT_EQ(64u, params.latticeParam);
+
+    params.numAutoKeys = params.latticeParam - 1;
+    {
+        auto cc = BinFHEContext();
+        EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, LMKCDEY));
+    }
+    params.numAutoKeys = params.latticeParam;
+    {
+        auto cc = BinFHEContext();
+        EXPECT_THROW(cc.GenerateBinFHEContext(params, LMKCDEY), OpenFHEException);
+    }
+    // the bound is LMKCDEY-only: GINX allocates no automorphism keys
+    {
+        auto cc = BinFHEContext();
+        EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, GINX));
+    }
+}
+
+TEST(UNITTestFHEWExtended, RejectsLweModulusNotDividing2N) {
+    auto params = ToyParams(UNIFORM_TERNARY);
+    ASSERT_EQ(1024u, params.cyclOrder);
+    params.mod = 768;
+    for (auto method : {GINX, AP, LMKCDEY}) {
+        auto cc = BinFHEContext();
+        EXPECT_THROW(cc.GenerateBinFHEContext(params, method), OpenFHEException) << "method " << method;
+    }
+    params.mod = 256;
+    for (auto method : {GINX, AP, LMKCDEY}) {
+        auto cc = BinFHEContext();
+        EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, method)) << "method " << method;
+    }
+}
+
+// A ciphertext whose modulus is neither q nor Q passes EvalBinGate's switch untouched. The
+// bootstrap needs it to divide 2N, and the DM and LMKCDEY refresh keys are tied to q itself.
+TEST(UNITTestFHEWExtended, BootstrapRejectsForeignCiphertextModulus) {
+    for (auto method : {GINX, AP, LMKCDEY}) {
+        auto cc = BinFHEContext();
+        cc.GenerateBinFHEContext(TOY, method);
+        auto sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
+        const auto q = cc.GetParams()->GetLWEParams()->Getq();
+        const auto N = cc.GetParams()->GetLWEParams()->GetN();
+        ASSERT_EQ(NativeInteger(N), q) << "TOY has q == N";
+
+        auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, 4, 4 * N);
+        auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, 4, 4 * N);
+        EXPECT_THROW(cc.EvalBinGate(AND, ct1, ct2), OpenFHEException) << "method " << method << ": modulus above 2N";
+
+        if (method == GINX)
+            continue;
+        auto ct3 = cc.Encrypt(sk, 1, SMALL_DIM, 4, q >> 1);
+        auto ct4 = cc.Encrypt(sk, 1, SMALL_DIM, 4, q >> 1);
+        EXPECT_THROW(cc.EvalBinGate(AND, ct3, ct4), OpenFHEException) << "method " << method << ": modulus below q";
+    }
+}
+
+TEST(UNITTestFHEWExtended, KeySwitchRejectsCiphertextAboveKeySwitchingModulus) {
+    BinFHEContextParams params{27, 1024, 64, 512, 16384, 32, 512, 23, 9, UNIFORM_TERNARY, 3.19, {}};
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(params, GINX);
+    auto&& lwe = cc.GetParams()->GetLWEParams();
+    ASSERT_LT(lwe->GetDigitExtentKS(lwe->GetDigitCountKS() - 1), lwe->GetBaseKS()) << "top position must be truncated";
+
+    auto sk  = cc.KeyGen();
+    auto skN = cc.KeyGenN();
+    auto ksk = cc.KeySwitchGen(sk, skN);
+    auto ctQ = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());
+    EXPECT_THROW(cc.GetLWEScheme()->KeySwitch(lwe, ksk, ctQ), OpenFHEException);
+
+    LWEPlaintext result;
+    cc.Decrypt(sk, cc.SwitchCTtoqn(ksk, ctQ), &result);
+    EXPECT_EQ(1, static_cast<int>(result));
+}
+
+TEST(UNITTestFHEWExtended, LweParamsEqualityCoversKeySwitchingFields) {
+    auto Q = LastPrime<NativeInteger>(27, 1024);
+    LWECryptoParams a(64, 512, 512, Q, 4096, 3.19, 32);
+    LWECryptoParams b(64, 512, 512, Q, 4096, 3.19, 32);
+    EXPECT_TRUE(a == b);
+    LWECryptoParams c(64, 512, 512, Q, 8192, 3.19, 32);
+    EXPECT_TRUE(a != c) << "qKS must take part in the comparison";
+    LWECryptoParams d(64, 512, 512, Q, 4096, 3.19, 32, GAUSSIAN);
+    EXPECT_TRUE(a != d) << "keyDist must take part in the comparison";
+}

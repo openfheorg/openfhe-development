@@ -87,24 +87,25 @@ public:
     LWECryptoParams(const LWECryptoParams& rhs)
         : m_q(rhs.m_q),
           m_Q(rhs.m_Q),
-          // m_qKS(rhs.m_qKS),
+          m_qKS(rhs.m_qKS),
           m_n(rhs.m_n),
           m_N(rhs.m_N),
           m_baseKS(rhs.m_baseKS),
           m_keyDist(rhs.m_keyDist) {
         m_dgg.SetStd(rhs.m_dgg.GetStd());
-        // m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
+        m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
     }
 
     LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        m_q = rhs.m_q;
-        m_Q = rhs.m_Q;
-        // m_qKS    = rhs.m_qKS;
-        m_n      = rhs.m_n;
-        m_N      = rhs.m_N;
-        m_baseKS = rhs.m_baseKS;
+        m_q       = rhs.m_q;
+        m_Q       = rhs.m_Q;
+        m_qKS     = rhs.m_qKS;
+        m_n       = rhs.m_n;
+        m_N       = rhs.m_N;
+        m_baseKS  = rhs.m_baseKS;
+        m_keyDist = rhs.m_keyDist;
         m_dgg.SetStd(rhs.m_dgg.GetStd());
-        // m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
+        m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
         return *this;
     }
 
@@ -136,6 +137,18 @@ public:
         return GetDigitCount(m_qKS.ConvertToInt(), m_baseKS);
     }
 
+    // number of values the digit at position pos can take when a value below qKS is written in
+    // base baseKS: every position spans the whole base except the top one
+    uint32_t GetDigitExtentKS(uint32_t pos) const {
+        const uint32_t digits = GetDigitCountKS();
+        if (pos + 1 < digits)
+            return m_baseKS;
+        uint64_t top{m_qKS.ConvertToInt<uint64_t>() - 1};
+        for (uint32_t k = 1; k < digits; ++k)
+            top /= m_baseKS;
+        return static_cast<uint32_t>(top) + 1;
+    }
+
     const DiscreteGaussianGeneratorImpl<NativeVector>& GetDgg() const {
         return m_dgg;
     }
@@ -149,8 +162,9 @@ public:
     }
 
     bool operator==(const LWECryptoParams& other) const {
-        return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q &&
-               m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS;
+        return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q && m_qKS == other.m_qKS &&
+               m_baseKS == other.m_baseKS && m_keyDist == other.m_keyDist && m_dgg.GetStd() == other.m_dgg.GetStd() &&
+               m_ks_dgg.GetStd() == other.m_ks_dgg.GetStd();
     }
 
     bool operator!=(const LWECryptoParams& other) const {

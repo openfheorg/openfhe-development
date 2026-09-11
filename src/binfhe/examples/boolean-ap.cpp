@@ -49,7 +49,7 @@ int main() {
     // (AP or GINX). The default method is GINX. Here we explicitly set AP. GINX
     // typically provides better performance: the bootstrapping key is much
     // smaller in GINX (by 20x) while the runtime is roughly the same.
-    cc.GenerateBinFHEContext(STD128, AP);
+    cc.GenerateBinFHEContext(STD128_AP, AP);
 
     // Sample Program: Step 2: Key Generation
 
