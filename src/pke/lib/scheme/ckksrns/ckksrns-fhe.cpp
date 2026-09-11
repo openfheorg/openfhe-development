@@ -52,7 +52,6 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
-#include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
@@ -964,7 +963,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeEncode = TOC(t);
-        std::cerr << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
         // Running Approximate Mod Reduction
         TIC(t);
 #endif
@@ -1057,7 +1056,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeEncode = TOC(t);
-        OPENFHE_DIAGNOSTIC_ERR << "\nEncoding time: " << timeEncode / 1000.0 << " s" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
         // Running Approximate Mod Reduction
         TIC(t);
 #endif
@@ -1109,8 +1108,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
     timeDecode = TOC(t);
-
-    OPENFHE_DIAGNOSTIC_OUT << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
 #endif
 
     // If we start with more towers, than we obtain from bootstrapping, return the original ciphertext.
@@ -1348,8 +1346,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
 #ifdef BOOTSTRAPTIMING
     timeDecode = TOC(t);
-
-    OPENFHE_DIAGNOSTIC_OUT << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
 #endif
 
     //------------------------------------------------------------------------------
@@ -1427,7 +1424,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
 #ifdef BOOTSTRAPTIMING
     timeEncode = TOC(t);
-    OPENFHE_DIAGNOSTIC_ERR << "\nEncoding time: " << timeEncode / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
     // Running Approximate Mod Reduction
     TIC(t);
 #endif
@@ -1468,8 +1465,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 #ifdef BOOTSTRAPTIMING
     timeModReduce = TOC(t);
     OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s" << std::endl;
-    // Running SlotToCoeff
-    TIC(t);
 #endif
 
 #if NATIVEINT != 128

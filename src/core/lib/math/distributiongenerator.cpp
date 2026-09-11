@@ -39,20 +39,17 @@
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"
 
-#include <iostream>
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
     #include <dlfcn.h>
 #endif
 
 namespace lbcrypto {
 
-// clang-format off
 #if defined(WITH_OPENMP)
-    std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng = nullptr;
+std::shared_ptr<PRNG> PseudoRandomNumberGenerator::m_prng = nullptr;
 #else
-    thread_local std::shared_ptr<PRNG> m_prng = nullptr;
+thread_local std::shared_ptr<PRNG> m_prng = nullptr;
 #endif
-// clang-format on
 PseudoRandomNumberGenerator::GenPRNGEngineFuncPtr PseudoRandomNumberGenerator::genPRNGEngine = nullptr;
 
 void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
@@ -64,7 +61,6 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
         genPRNGEngine = default_prng::createEngineInstance;
         if (!genPRNGEngine)
             OPENFHE_THROW("Cannot find symbol: default_prng::createEngineInstance");
-        // OPENFHE_DIAGNOSTIC_ERR << "InitPRNGEngine: using local PRNG" << std::endl;
     }
     else {
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)

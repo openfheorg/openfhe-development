@@ -34,7 +34,7 @@
 #include "config_core.h"
 #include "utils/diagnostic_output.h"
 
-#ifdef WITH_DEFAULT_LOG_SINK
+#ifdef WITH_DEFAULT_DIAGNOSTIC_SINK
 
     #include <iostream>
 
@@ -56,13 +56,17 @@ std::ostream& OpenFHEOutStream() {
 
 }  // namespace internal_diagnostics
 
-void SetOpenFHEErrStream(std::ostream& os) {
-    g_errStream = &os;
+std::ostream& SetOpenFHEErrStream(std::ostream& os) {
+    std::ostream& previous = *g_errStream;
+    g_errStream            = &os;
+    return previous;
 }
-void SetOpenFHEOutStream(std::ostream& os) {
-    g_outStream = &os;
+std::ostream& SetOpenFHEOutStream(std::ostream& os) {
+    std::ostream& previous = *g_outStream;
+    g_outStream            = &os;
+    return previous;
 }
 
 }  // namespace lbcrypto
 
-#endif  // WITH_DEFAULT_LOG_SINK
+#endif  // WITH_DEFAULT_DIAGNOSTIC_SINK
