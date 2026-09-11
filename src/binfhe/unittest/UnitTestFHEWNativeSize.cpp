@@ -259,4 +259,32 @@ TEST(UnitTestFHEWNativeSize, SwitchingKeyTopPositionCompact) {
     EXPECT_EQ(*ksk, *narrow.Widen(*lwe)) << msg << " narrowing and widening must round-trip the compact key";
 }
 
+TEST(UnitTestFHEWNativeSize, SwitchingKey32FitsCapsModulus) {
+    auto Q    = LastPrime<NativeInteger>(27, 1024);
+    auto fits = [&](uint64_t qKS) {
+        return LWESwitchingKey32Impl::Fits(LWECryptoParams(64, 512, 512, Q, qKS, 3.19, 32));
+    };
+    EXPECT_TRUE(fits((1ull << 28) - 57));
+    EXPECT_FALSE(fits(1ull << 28));
+    EXPECT_FALSE(fits((1ull << 31) + 11));
+    EXPECT_FALSE(fits((1ull << 32) - 5));
+}
+
+TEST(UnitTestFHEWNativeSize, SwitchingKey32RejectsCiphertextAboveKeySwitchingModulus) {
+    const std::string msg("UnitTestFHEWNativeSize.SwitchingKey32RejectsCiphertextAboveKeySwitchingModulus:");
+    BinFHEContext cc;
+    cc.GenerateBinFHEContext(BinFHEContextParams{27, 1024, 64, 512, 16384, 32, 512, 23, 9, UNIFORM_TERNARY, 3.19, {}},
+                             GINX);
+    auto&& lwe = cc.GetParams()->GetLWEParams();
+    auto sk    = cc.KeyGen();
+    auto skN   = cc.KeyGenN();
+    auto ksk   = std::make_shared<LWESwitchingKey32Impl>(*lwe, *cc.KeySwitchGen(sk, skN));
+    auto ctQ   = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());
+    EXPECT_THROW(cc.GetLWEScheme()->KeySwitch(lwe, ksk, ctQ), OpenFHEException) << msg;
+
+    LWEPlaintext result;
+    cc.Decrypt(sk, cc.GetLWEScheme()->SwitchCTtoqn(lwe, ksk, ctQ), &result);
+    EXPECT_EQ(1, static_cast<int>(result)) << msg;
+}
+
 #endif  // NATIVEINT != 32

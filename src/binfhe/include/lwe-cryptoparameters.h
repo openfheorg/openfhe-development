@@ -162,8 +162,9 @@ public:
     }
 
     bool operator==(const LWECryptoParams& other) const {
-        return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q &&
-               m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS;
+        return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q && m_qKS == other.m_qKS &&
+               m_baseKS == other.m_baseKS && m_keyDist == other.m_keyDist && m_dgg.GetStd() == other.m_dgg.GetStd() &&
+               m_ks_dgg.GetStd() == other.m_ks_dgg.GetStd();
     }
 
     bool operator!=(const LWECryptoParams& other) const {

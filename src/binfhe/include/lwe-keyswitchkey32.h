@@ -61,10 +61,11 @@ using ConstLWESwitchingKey32 = const std::shared_ptr<const LWESwitchingKey32Impl
  */
 class LWESwitchingKey32Impl {
 public:
-    // storage is uint32, and the key switch accumulates N*digitCount unreduced rows in uint64
+    // generation runs on 32-bit kernels, exact up to MAX_MODULUS_SIZE32, and the key switch
+    // accumulates N*digitCount unreduced rows in uint64
     static bool Fits(const LWECryptoParams& params) {
         const auto& qKS = params.GetqKS();
-        if (qKS.GetMSB() > 32)
+        if (qKS.GetMSB() > MAX_MODULUS_SIZE32)
             return false;
         uint64_t rows{static_cast<uint64_t>(params.GetN()) * params.GetDigitCountKS()};
         return rows <= static_cast<uint64_t>(-1) / qKS.ConvertToInt<uint64_t>();

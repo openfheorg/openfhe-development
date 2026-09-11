@@ -342,6 +342,8 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
         OPENFHE_THROW("Switching key dimension must be equal to N");
 
     NativeInteger Q(params->GetqKS());
+    if (ctQN->GetModulus() > Q)
+        OPENFHE_THROW("Ciphertext modulus must not exceed the key-switching modulus");
     NativeInteger::Integer baseKS(params->GetBaseKS());
     const uint32_t digitCount = params->GetDigitCountKS();
 
@@ -528,6 +530,8 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
         OPENFHE_THROW("Switching key dimension must be equal to N");
 
     NativeInteger Q(params->GetqKS());
+    if (ctQN->GetModulus() > Q)
+        OPENFHE_THROW("Ciphertext modulus must not exceed the key-switching modulus");
     const uint64_t q64{Q.ConvertToInt<uint64_t>()};
     const uint64_t baseKS{params->GetBaseKS()};
     const uint32_t digitCount = params->GetDigitCountKS();

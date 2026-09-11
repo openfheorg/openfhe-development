@@ -40,7 +40,7 @@ namespace lbcrypto {
 
 // wrapper for KeyGen methods
 RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
-                                  KEYGEN_MODE keygenMode = SYM_ENCRYPT, bool internal32 = false) const {
+                                  KEYGEN_MODE keygenMode, bool internal32) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (LWEsk == nullptr)
@@ -576,7 +576,10 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
         OPENFHE_THROW("Bootstrapping keys have not been generated. Please call BTKeyGen before calling bootstrapping.");
 
     // Specifies the range [lb, ub) that will be used for mapping
-    NativeInteger q  = ct->GetModulus();
+    NativeInteger q = ct->GetModulus();
+    const uint64_t qInt{q.ConvertToInt<uint64_t>()};
+    if (qInt == 0 || (2 * static_cast<uint64_t>(params->GetLWEParams()->GetN())) % qInt != 0)
+        OPENFHE_THROW("Ciphertext modulus must divide 2N");
     auto qHalf       = q.ConvertToInt<uint32_t>() >> 1;
     auto& RGSWParams = params->GetRingGSWParams();
     NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<size_t>(gate)];

@@ -387,3 +387,71 @@ TEST(UNITTestFHEWExtended, RejectsNumAutoKeysAtOrAboveLweDimension) {
         EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, GINX));
     }
 }
+
+TEST(UNITTestFHEWExtended, RejectsLweModulusNotDividing2N) {
+    auto params = ToyParams(UNIFORM_TERNARY);
+    ASSERT_EQ(1024u, params.cyclOrder);
+    params.mod = 768;
+    for (auto method : {GINX, AP, LMKCDEY}) {
+        auto cc = BinFHEContext();
+        EXPECT_THROW(cc.GenerateBinFHEContext(params, method), OpenFHEException) << "method " << method;
+    }
+    params.mod = 256;
+    for (auto method : {GINX, AP, LMKCDEY}) {
+        auto cc = BinFHEContext();
+        EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, method)) << "method " << method;
+    }
+}
+
+// A ciphertext whose modulus is neither q nor Q passes EvalBinGate's switch untouched. The
+// bootstrap needs it to divide 2N, and the DM and LMKCDEY refresh keys are tied to q itself.
+TEST(UNITTestFHEWExtended, BootstrapRejectsForeignCiphertextModulus) {
+    for (auto method : {GINX, AP, LMKCDEY}) {
+        auto cc = BinFHEContext();
+        cc.GenerateBinFHEContext(TOY, method);
+        auto sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
+        const auto q = cc.GetParams()->GetLWEParams()->Getq();
+        const auto N = cc.GetParams()->GetLWEParams()->GetN();
+        ASSERT_EQ(NativeInteger(N), q) << "TOY has q == N";
+
+        auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, 4, 4 * N);
+        auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, 4, 4 * N);
+        EXPECT_THROW(cc.EvalBinGate(AND, ct1, ct2), OpenFHEException) << "method " << method << ": modulus above 2N";
+
+        if (method == GINX)
+            continue;
+        auto ct3 = cc.Encrypt(sk, 1, SMALL_DIM, 4, q >> 1);
+        auto ct4 = cc.Encrypt(sk, 1, SMALL_DIM, 4, q >> 1);
+        EXPECT_THROW(cc.EvalBinGate(AND, ct3, ct4), OpenFHEException) << "method " << method << ": modulus below q";
+    }
+}
+
+TEST(UNITTestFHEWExtended, KeySwitchRejectsCiphertextAboveKeySwitchingModulus) {
+    BinFHEContextParams params{27, 1024, 64, 512, 16384, 32, 512, 23, 9, UNIFORM_TERNARY, 3.19, {}};
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(params, GINX);
+    auto&& lwe = cc.GetParams()->GetLWEParams();
+    ASSERT_LT(lwe->GetDigitExtentKS(lwe->GetDigitCountKS() - 1), lwe->GetBaseKS()) << "top position must be truncated";
+
+    auto sk  = cc.KeyGen();
+    auto skN = cc.KeyGenN();
+    auto ksk = cc.KeySwitchGen(sk, skN);
+    auto ctQ = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());
+    EXPECT_THROW(cc.GetLWEScheme()->KeySwitch(lwe, ksk, ctQ), OpenFHEException);
+
+    LWEPlaintext result;
+    cc.Decrypt(sk, cc.SwitchCTtoqn(ksk, ctQ), &result);
+    EXPECT_EQ(1, static_cast<int>(result));
+}
+
+TEST(UNITTestFHEWExtended, LweParamsEqualityCoversKeySwitchingFields) {
+    auto Q = LastPrime<NativeInteger>(27, 1024);
+    LWECryptoParams a(64, 512, 512, Q, 4096, 3.19, 32);
+    LWECryptoParams b(64, 512, 512, Q, 4096, 3.19, 32);
+    EXPECT_TRUE(a == b);
+    LWECryptoParams c(64, 512, 512, Q, 8192, 3.19, 32);
+    EXPECT_TRUE(a != c) << "qKS must take part in the comparison";
+    LWECryptoParams d(64, 512, 512, Q, 4096, 3.19, 32, GAUSSIAN);
+    EXPECT_TRUE(a != d) << "keyDist must take part in the comparison";
+}

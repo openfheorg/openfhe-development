@@ -181,7 +181,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc32(const std::shared_ptr<RingGSWCryptoPar
     acc32[1]   = acc32[1].AutomorphismTransform(M - 5);
 
     LMKCDEYAccSchedule(
-        params->GetN(), params->GetNumAutoKeys(), params->GetLogGen(), a,
+        params->Getq(), params->GetN(), params->GetNumAutoKeys(), params->GetLogGen(), a,
         [&](int32_t idx) { AddToAccNoMonomial(polyParams, Q, params->GetBaseGParams(idx), (*ek)[0][0][idx], acc32); },
         [&](NativeInteger power, uint32_t k) {
             uint32_t p{power.ConvertToInt<uint32_t>()};
@@ -199,7 +199,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     acc->GetElements()[1] = (acc->GetElements()[1]).AutomorphismTransform(M - 5);
 
     LMKCDEYAccSchedule(
-        params->GetN(), params->GetNumAutoKeys(), params->GetLogGen(), a,
+        params->Getq(), params->GetN(), params->GetNumAutoKeys(), params->GetLogGen(), a,
         [&](int32_t idx) { AddToAccLMKCDEY(params, (*ek)[0][0][idx], acc, idx); },
         [&](NativeInteger power, uint32_t k) { Automorphism(params, power, (*ek)[0][1][k], acc); });
 }

@@ -77,6 +77,8 @@ public:
             OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key; use AP or LMKCDEY for GAUSSIAN");
         if (m_RGSWParams->GetMethod() == LMKCDEY && m_RGSWParams->GetNumAutoKeys() >= m_LWEParams->Getn())
             OPENFHE_THROW("numAutoKeys must be less than the LWE dimension n");
+        if ((2 * static_cast<uint64_t>(m_LWEParams->GetN())) % m_LWEParams->Getq().ConvertToInt<uint64_t>() != 0)
+            OPENFHE_THROW("the LWE modulus q must divide 2N");
     }
 
     /**

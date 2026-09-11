@@ -435,6 +435,8 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
 // The DM digit schedule: one accumulation per nonzero base-R digit of each LWE coefficient.
 template <typename AddFn>
 void DMAccSchedule(NativeInteger q, uint32_t baseR, size_t digitsRCount, const NativeVector& a, AddFn&& addToAcc) {
+    if (a.GetModulus() != q)
+        OPENFHE_THROW("Ciphertext modulus must equal the LWE modulus q");
     NativeInteger baseRN{baseR};
     uint32_t n{static_cast<uint32_t>(a.GetLength())};
     for (uint32_t i = 0; i < n; ++i) {
@@ -454,8 +456,10 @@ void DMAccSchedule(NativeInteger q, uint32_t baseR, size_t digitsRCount, const N
 // addToAcc(i) performs the external product for LWE coefficient i;
 // automorphism(power, k) applies X -> X^power using automorphism key k.
 template <typename AddFn, typename AutoFn>
-void LMKCDEYAccSchedule(uint32_t N, uint32_t numAutoKeys, const std::vector<int32_t>& logGen, const NativeVector& a,
-                        AddFn&& addToAcc, AutoFn&& automorphism) {
+void LMKCDEYAccSchedule(NativeInteger q, uint32_t N, uint32_t numAutoKeys, const std::vector<int32_t>& logGen,
+                        const NativeVector& a, AddFn&& addToAcc, AutoFn&& automorphism) {
+    if (a.GetModulus() != q)
+        OPENFHE_THROW("Ciphertext modulus must equal the LWE modulus q");
     // assume a is all-odd ciphertext (using round-to-odd technique)
     size_t n{a.GetLength()};
     uint32_t Nh{N / 2};
