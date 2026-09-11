@@ -23,3 +23,12 @@ repos:
           language: system
           files: \.(c|cc|cxx|cpp|h|hpp|hxx)$
           args: ["--recursive"]
+        - id: check-diagnostic-output
+          name: no direct stdout/stderr in library code
+          description: >
+            Library diagnostics must go through utils/diagnostic_output.h, so an
+            embedder can redirect them and -DWITH_DEFAULT_DIAGNOSTIC_SINK=OFF
+            leaves the library free of std::cerr/std::cout.
+          entry: scripts/maint/check-diagnostic-output.py
+          language: script
+          files: ^src/[^/]+/(lib|include)/.*\.(c|cpp|h|hpp)$

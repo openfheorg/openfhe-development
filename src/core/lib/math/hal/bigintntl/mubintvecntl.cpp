@@ -38,7 +38,6 @@
 //==================================================================================
 
 #include "config_core.h"
-#include "utils/diagnostic_output.h"
 #ifdef WITH_NTL
 
     #define FASTNLOOSE
@@ -47,6 +46,7 @@
     #include <chrono>
     #include "math/math-hal.h"
     #include "math/hal/bigintntl/mubintvecntl.h"
+    #include "utils/diagnostic_output.h"
     #include "time.h"
     #include "utils/debug.h"
     #include "utils/serializable.h"

@@ -47,12 +47,13 @@
 
 namespace lbcrypto {
 
-// Redirect the channels at runtime. The referenced stream must outlive
-// any subsequent OpenFHE diagnostic. Intended to be called once during
+// Redirect the channels at runtime and return the stream that was previously
+// installed, so a caller can restore it afterwards. The referenced stream must
+// outlive any subsequent OpenFHE diagnostic. Intended to be called once during
 // initialization; concurrent use with library diagnostics is the
 // caller's responsibility.
-void SetOpenFHEErrStream(std::ostream& os);
-void SetOpenFHEOutStream(std::ostream& os);
+std::ostream& SetOpenFHEErrStream(std::ostream& os);
+std::ostream& SetOpenFHEOutStream(std::ostream& os);
 
 namespace internal_diagnostics {
 
