@@ -69,74 +69,6 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 }
 
 #if NATIVEINT != 32
-namespace {
-
-// native 32-bit twin of KeyGenLMKCDEY (see KeyGenLMKCDEY for the mm derivation)
-RingGSWACCKey32Impl::EvalKey32 KeyGenLMKCDEY32(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                               const std::shared_ptr<ILNativeParams32>& polyParams,
-                                               const NativePoly32& skNTT32,
-                                               const DiscreteGaussianGeneratorImpl<NativeVector32>& dgg, LWEPlaintext m,
-                                               uint32_t index) {
-    DiscreteUniformGeneratorImpl<NativeVector32> dug;
-    NativeInteger32 Q32{static_cast<uint32_t>(params->GetQ().ConvertToInt())};
-
-    // Reduce mod q (dealing with negative number as well)
-    int64_t q  = params->Getq().ConvertToInt<int64_t>();
-    int64_t N  = params->GetN();
-    int64_t mm = (((m % q) + q) % q) * (2 * N / q);
-    bool isReducedMM{false};
-    if (mm >= N) {
-        mm -= N;
-        isReducedMM = true;
-    }
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    const auto& bp = params->GetBaseGParams(index);
-    uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    const auto& Gpow{*bp.gpow};
-
-    RingGSWACCKey32Impl::EvalKey32 result(digitsG2, std::vector<NativePoly32>(2));
-    NativePoly32 tmp;
-    for (uint32_t i = 0; i < digitsG2; ++i) {
-        result[i][0] = NativePoly32(dug, polyParams, Format::COEFFICIENT);
-        tmp          = result[i][0];
-        tmp.SetFormat(Format::EVALUATION);
-        result[i][1] = NativePoly32(dgg, polyParams, Format::COEFFICIENT);
-        NativeInteger32 g32{Gpow[(i >> 1) + 1].ConvertToInt<uint32_t>()};
-        if (!isReducedMM)  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
-            result[i][i & 0x1][mm].ModAddFastEq(g32, Q32);
-        else  // (i even) Sub G Multiple, (i odd) [a,as+e] - X^m*G
-            result[i][i & 0x1][mm].ModSubFastEq(g32, Q32);
-        result[i][0].SetFormat(Format::EVALUATION);
-        result[i][1].SetFormat(Format::EVALUATION);
-        result[i][1] += (tmp *= skNTT32);
-    }
-    return result;
-}
-
-// native 32-bit twin of KeyGenAuto
-RingGSWACCKey32Impl::EvalKey32 KeyGenAuto32(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                            const std::shared_ptr<ILNativeParams32>& polyParams,
-                                            const NativePoly32& skNTT32,
-                                            const DiscreteGaussianGeneratorImpl<NativeVector32>& dgg, LWEPlaintext k) {
-    const auto& Gpow{params->GetGPower()};
-    auto skAuto{skNTT32.AutomorphismTransform(k)};
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG{params->GetDigitsG() - 1};
-    RingGSWACCKey32Impl::EvalKey32 result(digitsG, std::vector<NativePoly32>(2));
-    DiscreteUniformGeneratorImpl<NativeVector32> dug;
-    for (uint32_t i = 0; i < digitsG; ++i) {
-        NativeInteger32 g32{Gpow[i + 1].ConvertToInt<uint32_t>()};
-        result[i][0] = NativePoly32(dug, polyParams, EVALUATION);
-        result[i][1] = NativePoly32(dgg, polyParams, EVALUATION) - skAuto * g32;
-        result[i][1] += result[i][0] * skNTT32;
-    }
-    return result;
-}
-
-}  // namespace
-
 RingGSWACCKey32 RingGSWAccumulatorLMKCDEY::KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                        const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
     auto sv{LWEsk->GetElement()};
@@ -156,18 +88,19 @@ RingGSWACCKey32 RingGSWAccumulatorLMKCDEY::KeyGenAcc32(const std::shared_ptr<Rin
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (size_t i = 0; i < n; ++i) {
         auto s{sv[i].ConvertToInt<int32_t>()};
-        acc->SetEvalKey(0, 0, i, KeyGenLMKCDEY32(params, polyParams32, skNTT32, dgg32, s > modHalf ? s - mod : s, i));
+        const auto mono = MonomialOf(params, s > modHalf ? s - mod : s);
+        acc->SetEvalKey(0, 0, i, RGSWEncrypt(params, polyParams32, skNTT32, dgg32, i, mono));
     }
 
     NativeInteger gen = NativeInteger(5);
 
-    acc->SetEvalKey(0, 1, 0, KeyGenAuto32(params, polyParams32, skNTT32, dgg32, 2 * N - gen.ConvertToInt()));
+    acc->SetEvalKey(0, 1, 0, RGSWEncryptAutomorphism(params, polyParams32, skNTT32, dgg32, 2 * N - gen.ConvertToInt()));
 
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numAutoKeys))
     for (uint32_t i = 1; i <= numAutoKeys; ++i)
-        acc->SetEvalKey(
-            0, 1, i,
-            KeyGenAuto32(params, polyParams32, skNTT32, dgg32, gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>()));
+        acc->SetEvalKey(0, 1, i,
+                        RGSWEncryptAutomorphism(params, polyParams32, skNTT32, dgg32,
+                                                gen.ModExp(i, 2 * N).ConvertToInt<LWEPlaintext>()));
     return acc;
 }
 
@@ -209,61 +142,15 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 // skNTT corresponds to the secret key z
 RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                         const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
-    auto polyParams = params->GetPolyParams();
-
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeInteger Q{params->GetQ()};
-
-    // Reduce mod q (dealing with negative number as well)
-    int64_t q  = params->Getq().ConvertToInt<int64_t>();
-    int64_t N  = params->GetN();
-    int64_t mm = (((m % q) + q) % q) * (2 * N / q);
-    bool isReducedMM{false};
-    if (mm >= N) {
-        mm -= N;
-        isReducedMM = true;
-    }
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    const auto& bp = params->GetBaseGParams(index);
-    uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    const auto& Gpow{*bp.gpow};
-
-    RingGSWEvalKeyImpl result(digitsG2, 2);
-    NativePoly tmp;
-    for (uint32_t i = 0; i < digitsG2; ++i) {
-        result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
-        tmp          = result[i][0];
-        tmp.SetFormat(Format::EVALUATION);
-        result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
-        if (!isReducedMM)  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
-            result[i][i & 0x1][mm].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
-        else  // (i even) Sub G Multiple, (i odd) [a,as+e] - X^m*G
-            result[i][i & 0x1][mm].ModSubFastEq(Gpow[(i >> 1) + 1], Q);
-        result[i][0].SetFormat(Format::EVALUATION);
-        result[i][1].SetFormat(Format::EVALUATION);
-        result[i][1] += (tmp *= skNTT);
-    }
-    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
+    return std::make_shared<RingGSWEvalKeyImpl>(
+        RGSWEncrypt(params, params->GetPolyParams(), skNTT, params->GetDgg(), index, MonomialOf(params, m)));
 }
 
 // Generation of an autormorphism key
 RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                      const NativePoly& skNTT, LWEPlaintext k) const {
-    auto polyParams{params->GetPolyParams()};
-    const auto& Gpow{params->GetGPower()};
-    auto skAuto{skNTT.AutomorphismTransform(k)};
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG{params->GetDigitsG() - 1};
-    RingGSWEvalKeyImpl result(digitsG, 2);
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    for (uint32_t i = 0; i < digitsG; ++i) {
-        result[i][0] = NativePoly(dug, polyParams, EVALUATION);
-        result[i][1] = NativePoly(params->GetDgg(), polyParams, EVALUATION) - skAuto * Gpow[i + 1];
-        result[i][1] += result[i][0] * skNTT;
-    }
-    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
+    return std::make_shared<RingGSWEvalKeyImpl>(
+        RGSWEncryptAutomorphism(params, params->GetPolyParams(), skNTT, params->GetDgg(), k));
 }
 
 // LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198

@@ -36,14 +36,101 @@
 #include "utils/parallel.h"
 
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
-// Accumulator bodies shared between the 64-bit accumulators and the 32-bit internal path,
-// templated on the polynomial type so each algorithm exists exactly once. P's word type is
-// P::Integer::Integer (BasicInteger for NativePoly, uint32_t for NativePoly32).
+// Accumulator and key-generation bodies shared between the 64-bit accumulators and the 32-bit
+// internal path, templated on the polynomial type so each algorithm exists exactly once. P's
+// word type is P::Integer::Integer (BasicInteger for NativePoly, uint32_t for NativePoly32).
 
 namespace lbcrypto {
+
+// NativeInteger at width of P::Integer: identity for NativePoly, narrowing copy for NativePoly32
+template <typename Int>
+Int AtWidth(const NativeInteger& x) {
+    if constexpr (std::is_same_v<Int, NativeInteger>)
+        return x;
+    else
+        return Int(x.template ConvertToInt<typename Int::Integer>());
+}
+
+enum class GadgetTerm { NONE, ADD, SUB };
+
+// the plaintext of one RGSW encryption: term * X^position * G
+struct GadgetMonomial {
+    uint32_t position{0};
+    GadgetTerm term{GadgetTerm::NONE};
+};
+
+// X^m for an exponent m given modulo q: scaled to the cyclotomic order 2N and folded past N into
+// a sign, since X^N = -1
+inline GadgetMonomial MonomialOf(const std::shared_ptr<RingGSWCryptoParams>& params, LWEPlaintext m) {
+    const int64_t q  = params->Getq().ConvertToInt<int64_t>();
+    const int64_t N  = params->GetN();
+    const int64_t mm = (((m % q) + q) % q) * (2 * N / q);
+    if (mm >= N)
+        return {static_cast<uint32_t>(mm - N), GadgetTerm::SUB};
+    return {static_cast<uint32_t>(mm), GadgetTerm::ADD};
+}
+
+// RGSW encryption of mono under skNTT at the width of P, with the gadget base assigned to LWE
+// index `index`: 2(digitsG - 1) rows, the first digit being dropped by the approximate decomposition
+template <typename P, typename PP>
+std::vector<std::vector<P>> RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams>& params, const PP& polyParams,
+                                        const P& skNTT, const DiscreteGaussianGeneratorImpl<typename P::Vector>& dgg,
+                                        uint32_t index, GadgetMonomial mono) {
+    using Int = typename P::Integer;
+    DiscreteUniformGeneratorImpl<typename P::Vector> dug;
+    const Int Q{AtWidth<Int>(params->GetQ())};
+
+    // approximate gadget decomposition is used; the first digit is ignored
+    const auto& bp = params->GetBaseGParams(index);
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
+    const auto& Gpow{*bp.gpow};
+
+    std::vector<std::vector<P>> result(digitsG2, std::vector<P>(2));
+    P tmp;
+    for (uint32_t i = 0; i < digitsG2; ++i) {
+        result[i][0] = P(dug, polyParams, Format::COEFFICIENT);
+        tmp          = result[i][0];
+        tmp.SetFormat(Format::EVALUATION);
+        result[i][1] = P(dgg, polyParams, Format::COEFFICIENT);
+        const Int g{AtWidth<Int>(Gpow[(i >> 1) + 1])};
+        if (mono.term == GadgetTerm::ADD)  // (i even) Add G Multiple, (i odd) [a,as+e] + X^m*G
+            result[i][i & 0x1][mono.position].ModAddFastEq(g, Q);
+        else if (mono.term == GadgetTerm::SUB)  // (i even) Sub G Multiple, (i odd) [a,as+e] - X^m*G
+            result[i][i & 0x1][mono.position].ModSubFastEq(g, Q);
+        result[i][0].SetFormat(Format::EVALUATION);
+        result[i][1].SetFormat(Format::EVALUATION);
+        result[i][1] += (tmp *= skNTT);
+    }
+    return result;
+}
+
+// RGSW encryption of skNTT(X^k) * G under skNTT at the width of P, for the LMKCDEY automorphism
+// keys: digitsG - 1 rows, sampled directly in evaluation form
+template <typename P, typename PP>
+std::vector<std::vector<P>> RGSWEncryptAutomorphism(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                                    const PP& polyParams, const P& skNTT,
+                                                    const DiscreteGaussianGeneratorImpl<typename P::Vector>& dgg,
+                                                    LWEPlaintext k) {
+    using Int = typename P::Integer;
+    const auto& Gpow{params->GetGPower()};
+    auto skAuto{skNTT.AutomorphismTransform(k)};
+
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG{params->GetDigitsG() - 1};
+    std::vector<std::vector<P>> result(digitsG, std::vector<P>(2));
+    DiscreteUniformGeneratorImpl<typename P::Vector> dug;
+    for (uint32_t i = 0; i < digitsG; ++i) {
+        const Int g{AtWidth<Int>(Gpow[i + 1])};
+        result[i][0] = P(dug, polyParams, Format::EVALUATION);
+        result[i][1] = P(dgg, polyParams, Format::EVALUATION) - skAuto * g;
+        result[i][1] += result[i][0] * skNTT;
+    }
+    return result;
+}
 
 // Excess-H signed digit decomposition of an RLWE ciphertext (both components) into digitsG2
 // digits. Biasing by H (gHalf in every digit position) turns balanced-digit extraction into

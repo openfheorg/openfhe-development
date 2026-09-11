@@ -57,10 +57,8 @@ public:
    */
 #if NATIVEINT != 32
     /**
-   * Generate the refreshing key directly in its 32-bit internal form. Each 64-bit RGSW eval key
-   * is narrowed and released as it is produced, so the full 64-bit key is never materialised --
-   * which is what actually halves resident key material, since the allocator does not return
-   * freed pages. Shares the per-index body with KeyGenAcc, so the two cannot drift.
+   * Generate the refreshing key directly in its 32-bit internal form, on 32-bit words, so the
+   * 64-bit key is never materialised.
    */
     RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                 ConstLWEPrivateKey& LWEsk) const override;
