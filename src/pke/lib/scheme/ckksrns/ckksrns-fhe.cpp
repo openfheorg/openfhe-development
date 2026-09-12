@@ -1475,6 +1475,408 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     return ctxtEnc;
 }
 
+void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
+                                          std::vector<uint32_t> dim1, uint32_t numSlots) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+
+    if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
+        OPENFHE_THROW("CKKS FE functional bootstrapping is only supported for the Hybrid key switching method.");
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    OPENFHE_THROW("128-bit CKKS FE functional bootstrapping is not supported.");
+#endif
+
+    uint32_t M     = cc.GetCyclotomicOrder();
+    uint32_t N     = cc.GetRingDimension();
+    uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
+
+    m_bootPrecomMap[slots]  = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom            = m_bootPrecomMap[slots];
+    precom->m_slots         = slots;
+    precom->BTSlotsEncoding = true;
+
+    // even for the case of a single slot we need one level for rescaling
+    uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
+
+    // Perform some checks on the level budget and compute parameters
+    uint32_t newBudget0 = levelBudget[0];
+    if (newBudget0 > logSlots) {
+        std::cerr << "\nWarning, the level budget for encoding is too large. Setting it to " << logSlots << std::endl;
+        newBudget0 = logSlots;
+    }
+    if (newBudget0 < 1) {
+        std::cerr << "\nWarning, the level budget for encoding can not be zero. Setting it to 1" << std::endl;
+        newBudget0 = 1;
+    }
+    uint32_t newBudget1 = levelBudget[1];
+    if (newBudget1 > logSlots) {
+        std::cerr << "\nWarning, the level budget for decoding is too large. Setting it to " << logSlots << std::endl;
+        newBudget1 = logSlots;
+    }
+    if (newBudget1 < 1) {
+        std::cerr << "\nWarning, the level budget for decoding can not be zero. Setting it to 1" << std::endl;
+        newBudget1 = 1;
+    }
+
+    precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
+    precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+
+    uint32_t m     = 4 * slots;
+    uint32_t mmask = m - 1;  // assumes m is power of 2
+    bool isSparse  = (M != m);
+
+    // computes indices for all primitive roots of unity
+    std::vector<uint32_t> rotGroup(slots);
+    uint32_t fivePows = 1;
+    for (uint32_t i = 0; i < slots; ++i) {
+        rotGroup[i] = fivePows;
+        fivePows *= 5;
+        fivePows &= mmask;
+    }
+
+    // computes all powers of a primitive root of unity exp(2 * M_PI/m)
+    std::vector<std::complex<double>> ksiPows(m + 1);
+    double ak = 2 * M_PI / m;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(2))
+    for (uint32_t j = 0; j < m; ++j) {
+        double angle = ak * j;
+        ksiPows[j].real(std::cos(angle));
+        ksiPows[j].imag(std::sin(angle));
+    }
+    ksiPows[m] = ksiPows[0];
+
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    // K is the mod-raise overflow bound folded into the CoeffsToSlots matrix; it must match the range of
+    // the complex-exponential Chebyshev table selected in EvalFEFuncBootstrap.
+    double k;
+    switch (cryptoParams->GetSecretKeyDist()) {
+        case UNIFORM_TERNARY:
+            // Only the K = 512 exponential table is available. Mirror the K_UNIFORMEXT restriction of
+            // regular bootstrapping (EvalBootstrapStCFirst): K = 512 provides a sufficient failure
+            // probability only for composite degree 1, or degree 2 with ring dimension below 2^17.
+            if (compositeDegree > 2 || (compositeDegree == 2 && N >= (1 << 17)))
+                OPENFHE_THROW(
+                    "CKKS FE functional bootstrapping with UNIFORM_TERNARY supports composite scaling only for "
+                    "composite degree 2 with ring dimension below 2^17 (no K > 512 exponential table is available).");
+            k = 1.0;  // K_UNIFORM is applied at runtime in EvalFEFuncBootstrap
+            break;
+        case SPARSE_TERNARY:
+            k = K_SPARSE;
+            break;
+        case SPARSE_ENCAPSULATED:
+            // with composite scaling, the K = 16 sparse-encapsulated bound is not guaranteed (see the
+            // K_SPARSE_ALT switch in EvalBootstrapSetup); fall back to the K = 28 exponential table
+            k = (compositeDegree > 1) ? K_SPARSE : K_SPARSE_ENCAPSULATED;
+            break;
+        default:
+            OPENFHE_THROW("Unsupported SecretKeyDist.");
+    }
+
+    double qDouble = GetBigModulus(cryptoParams);
+    double factor  = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
+    // Same folding as EvalBootstrapSetup: for composite scaling the (inexact) overflow normalization
+    // SF0*post/qDouble is captured as a coefficient close to 1 that the CoeffsToSlots/SlotsToCoeffs
+    // matrices encode at full precision and telescope away, and the exact power-of-two shrink 1/post is
+    // folded into the CoeffsToSlots matrix so the CtS rotations act on the full-magnitude message.
+    // Unlike regular bootstrapping, nothing is restored after the approximate evaluation: the 2^-deg
+    // shrink (deg = 1, enforced in EvalFEFuncBootstrap) is exactly the half-period embedding of the
+    // message into the argument of the Fourier series.
+    double pre;
+    double post = 1.0;
+    if (compositeDegree > 1) {
+        double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
+        post        = std::pow(2, std::round(std::log2(qDouble / powP)));
+        pre         = cryptoParams->GetScalingFactorReal(0) * post / qDouble;
+    }
+    else {
+        pre = qDouble / factor;
+    }
+    double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
+    double scaleDec = 1.0 / pre;
+
+    // compute # of levels to remain when encoding the coefficients
+    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
+    auto st     = cryptoParams->GetScalingTechnique();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
+
+    uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
+    uint32_t lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
+
+    bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
+
+    if (isLTBootstrap) {
+        if (isSparse) {
+            std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
+            std::vector<std::vector<std::complex<double>>> U0hatT(slots, std::vector<std::complex<double>>(slots));
+            std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
+            std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
+            for (uint32_t i = 0; i < slots; ++i) {
+                for (uint32_t j = 0; j < slots; ++j) {
+                    U0[i][j]     = ksiPows[(j * rotGroup[i]) & mmask];
+                    U0hatT[j][i] = std::conj(U0[i][j]);
+                    U1[i][j]     = std::complex<double>(0, 1) * U0[i][j];
+                    U1hatT[j][i] = std::conj(U1[i][j]);
+                }
+            }
+            if (cc.GetCKKSDataType() == REAL) {
+                precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
+                precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
+            }
+            else {
+                precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
+                precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, scaleEnc, lEnc);
+            }
+        }
+        else {
+            std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
+            std::vector<std::vector<std::complex<double>>> U0hatT(slots, std::vector<std::complex<double>>(slots));
+            for (uint32_t i = 0; i < slots; ++i) {
+                for (uint32_t j = 0; j < slots; ++j) {
+                    U0[i][j]     = ksiPows[(j * rotGroup[i]) & mmask];
+                    U0hatT[j][i] = std::conj(U0[i][j]);
+                }
+            }
+            precom->m_U0Pre     = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
+            precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, scaleEnc, lEnc);
+        }
+    }
+    else {
+        bool flagPack          = !(cc.GetCKKSDataType() == REAL);
+        precom->m_U0PreFFT     = EvalSlotsToCoeffsPrecompute(cc, ksiPows, rotGroup, false, scaleDec, lDec, flagPack);
+        precom->m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc, flagPack);
+    }
+}
+
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly> ciphertext,
+                                                     std::vector<std::complex<double>> coefficients) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+
+    if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
+        OPENFHE_THROW("CKKS FE functional bootstrapping is only supported for the Hybrid key switching method.");
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    OPENFHE_THROW("128-bit CKKS FE functional bootstrapping is not supported.");
+#endif
+
+#ifdef BOOTSTRAPTIMING
+    TimeVar t;
+    double timeStC(0.0);
+    double timeCtS(0.0);
+    double timeExp(0.0);
+    double timeSeries(0.0);
+#endif
+
+    auto cc                  = ciphertext->GetCryptoContext();
+    auto algo                = cc->GetScheme();
+    uint32_t N               = cc->GetRingDimension();
+    uint32_t L0              = cryptoParams->GetElementParams()->GetParams().size();
+    uint32_t slots           = ciphertext->GetSlots();
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    auto st                  = cryptoParams->GetScalingTechnique();
+    auto skd                 = cryptoParams->GetSecretKeyDist();
+
+    auto& p            = GetBootPrecom(slots);
+    bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
+
+    auto elementParamsRaised = *(cryptoParams->GetElementParams());
+    // For FLEXIBLEAUTOEXT the raised ciphertext does not include the extra modulus
+    // as it is multiplied by auxiliary plaintext
+    if (st == FLEXIBLEAUTOEXT)
+        elementParamsRaised.PopLastParam();
+
+    const auto& paramsQ = elementParamsRaised.GetParams();
+    uint32_t sizeQ      = paramsQ.size();
+    std::vector<NativeInteger> moduli(sizeQ);
+    std::vector<NativeInteger> roots(sizeQ);
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i]  = paramsQ[i]->GetRootOfUnity();
+    }
+    auto elementParamsRaisedPtr =
+        std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+
+    // The Fourier series argument is the message embedded into half of its [-1/2, 1/2) period (t = mu/2),
+    // realized by the exact 2^-deg shrink with deg = 1. Unlike regular bootstrapping, the shrink cannot
+    // be restored after the approximate evaluation (it determines the argument of the complex
+    // exponential), so deg must be exactly 1 and no correction factor is applied.
+    double qDouble = GetBigModulus(cryptoParams);
+    double powP    = std::pow(2, cryptoParams->GetPlaintextModulus());
+    int32_t deg    = std::round(std::log2(qDouble / powP));
+    if (deg != 1)
+        OPENFHE_THROW(
+            "CKKS FE functional bootstrapping requires the first level modulus to be twice the scaling "
+            "factor (FirstModSize = ScalingModSize + 1); log2(q0/SF) = " +
+            std::to_string(deg) + ".");
+    // For composite scaling the shrink is folded into the CoeffsToSlots matrix (see EvalFEFuncBootstrapSetup)
+    double pre = (compositeDegree > 1) ? 1.0 : std::pow(2, -deg);
+
+    // the runtime part of the overflow-bound normalization; for the sparse distributions K is folded
+    // into the CoeffsToSlots matrix instead (see EvalFEFuncBootstrapSetup)
+    double k = (skd == UNIFORM_TERNARY) ? K_UNIFORM : 1.0;
+
+    // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup
+    const auto& coeffExp = (skd == UNIFORM_TERNARY)                             ? coeff_exp_512_double_23 :
+                           (skd == SPARSE_ENCAPSULATED && compositeDegree == 1) ? coeff_exp_16_double_23 :
+                                                                                  coeff_exp_28_double_48;
+    const uint32_t rFunc = (skd == UNIFORM_TERNARY)                             ? R_func_512_double_23 :
+                           (skd == SPARSE_ENCAPSULATED && compositeDegree == 1) ? R_func_16_double_23 :
+                                                                                  R_func_28_double_48;
+
+    //------------------------------------------------------------------------------
+    // Dropping Unnecessary Towers
+    //------------------------------------------------------------------------------
+    // Only work with the minimum number of required levels.
+    auto ctxtDepleted = ciphertext->Clone();
+
+    // The SlotsToCoeffs matrix is encoded for an input with compositeDegree * (lvlb + 2) towers
+    // remaining (lDec in EvalFEFuncBootstrapSetup), so each level below costs compositeDegree towers.
+    // FLEXIBLEAUTOEXT (one extra tower) and composite scaling are mutually exclusive.
+    auto expectedLevel = L0 - compositeDegree * (p.m_paramsDec.lvlb + 2) - (st == FLEXIBLEAUTOEXT);
+
+    if (ctxtDepleted->GetLevel() + compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1) > expectedLevel) {
+        OPENFHE_THROW("Not enough levels to perform FE functional bootstrapping.");
+    }
+
+    algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1));
+    auto ctxtLevel = ctxtDepleted->GetLevel();
+
+    if (st == FIXEDMANUAL || st == FIXEDAUTO) {
+        if (ctxtDepleted->GetLevel() < expectedLevel) {
+            cc->GetScheme()->LevelReduceInternalInPlace(ctxtDepleted, expectedLevel - ctxtDepleted->GetLevel());
+        }
+    }
+    else {
+        if (ctxtLevel < expectedLevel) {
+            // Bring the (noise degree 1) ciphertext down to expectedLevel with the exact scaling factor of
+            // that level, using the same maneuver as AdjustLevelsAndDepthInPlace (see EvalBootstrapStCFirst).
+            double scf2      = ctxtDepleted->GetScalingFactor();
+            double scf1      = cryptoParams->GetScalingFactorRealBig(expectedLevel - compositeDegree);
+            double scf       = cryptoParams->GetScalingFactorReal(ctxtLevel);
+            double targetScf = cryptoParams->GetScalingFactorReal(expectedLevel);
+            ctxtDepleted     = cc->EvalMult(ctxtDepleted, scf1 / scf2 / scf);
+            if (ctxtLevel + compositeDegree < expectedLevel) {
+                cc->GetScheme()->LevelReduceInternalInPlace(ctxtDepleted, expectedLevel - ctxtLevel - compositeDegree);
+            }
+            algo->ModReduceInternalInPlace(ctxtDepleted, compositeDegree);
+            ctxtDepleted->SetScalingFactor(targetScf);
+        }
+    }
+
+#ifdef BOOTSTRAPTIMING
+    TIC(t);
+#endif
+
+    //------------------------------------------------------------------------------
+    // Running SlotsToCoeffs
+    //------------------------------------------------------------------------------
+
+    // Linear transform for decoding
+    ctxtDepleted =
+        (isLTBootstrap) ? EvalLinearTransform(p.m_U0Pre, ctxtDepleted) : EvalSlotsToCoeffs(p.m_U0PreFFT, ctxtDepleted);
+
+    if (slots != N / 2 && cc->GetCKKSDataType() == REAL) {
+        //------------------------------------------------------------------------------
+        // SPARSELY PACKED CASE
+        //------------------------------------------------------------------------------
+        cc->EvalAddInPlaceNoCheck(ctxtDepleted, cc->EvalRotate(ctxtDepleted, slots));
+    }
+
+#ifdef BOOTSTRAPTIMING
+    timeStC = TOC(t);
+    std::cerr << "\nSlotsToCoeffs time: " << timeStC / 1000.0 << " s" << std::endl;
+    TIC(t);
+#endif
+
+    //------------------------------------------------------------------------------
+    // RAISING THE MODULUS
+    //------------------------------------------------------------------------------
+
+    auto raised = ctxtDepleted;
+    algo->ModReduceInternalInPlace(raised, compositeDegree * (raised->GetNoiseScaleDeg() - 1));
+    uint32_t lvl = (st != FLEXIBLEAUTOEXT) ? 0 : 1;
+    // correction factor 1: the argument of the complex exponential must stay at the exact message scale
+    AdjustCiphertext(raised, 1.0, lvl);
+
+    ModRaiseInPlace(raised, elementParamsRaisedPtr);
+
+    // Scaling adjustment before CoeffsToSlots
+    double normalization = pre * (1.0 / (k * N));
+    cc->EvalMultInPlace(raised, normalization);
+
+    if (slots != N / 2) {
+        //------------------------------------------------------------------------------
+        // SPARSELY PACKED CASE: Running PartialSum
+        //------------------------------------------------------------------------------
+        EvalPartialSumInPlace(raised, slots);
+    }
+
+    //------------------------------------------------------------------------------
+    // Running CoeffsToSlots
+    //------------------------------------------------------------------------------
+
+    algo->ModReduceInternalInPlace(raised, compositeDegree);
+
+    auto ctxtEnc =
+        (isLTBootstrap) ? EvalLinearTransform(p.m_U0hatTPre, raised) : EvalCoeffsToSlots(p.m_U0hatTPreFFT, raised);
+
+    auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
+    auto conj        = Conjugate(ctxtEnc, evalKeyMap);
+    cc->EvalAddInPlace(ctxtEnc, conj);
+
+    if (st == FIXEDMANUAL) {
+        while (ctxtEnc->GetNoiseScaleDeg() > 1) {
+            cc->ModReduceInPlace(ctxtEnc);
+        }
+    }
+    else {
+        if (ctxtEnc->GetNoiseScaleDeg() == 2) {
+            algo->ModReduceInternalInPlace(ctxtEnc, compositeDegree);
+        }
+    }
+
+#ifdef BOOTSTRAPTIMING
+    timeCtS = TOC(t);
+    std::cerr << "CoeffsToSlots time: " << timeCtS / 1000.0 << " s" << std::endl;
+    TIC(t);
+#endif
+
+    //------------------------------------------------------------------------------
+    // Running the Complex Exponential Evaluation
+    //------------------------------------------------------------------------------
+
+    auto ctxtExp = cc->EvalChebyshevSeries(ctxtEnc, coeffExp, -1, 1);
+    // double-angle iterations for the complex exponential: each squaring doubles the argument
+    for (uint32_t i = 0; i < rFunc; ++i) {
+        cc->EvalSquareInPlace(ctxtExp);
+        cc->ModReduceInPlace(ctxtExp);
+    }
+
+#ifdef BOOTSTRAPTIMING
+    timeExp = TOC(t);
+    std::cerr << "EvalExp time: " << timeExp / 1000.0 << " s" << std::endl;
+    TIC(t);
+#endif
+
+    //------------------------------------------------------------------------------
+    // Running the Fourier Series Evaluation
+    //------------------------------------------------------------------------------
+
+    // evaluate the series on z = exp(2*Pi*i*t) and take twice the real part:
+    // f(t) = a0 + 2*Re(sum_{j>=1} c_j z^j)
+    auto a0             = coefficients[0].real();
+    coefficients[0]     = {0.0, 0.0};
+    auto ctxtSeries     = cc->EvalPoly(ctxtExp, coefficients);
+    auto ctxtSeriesConj = Conjugate(ctxtSeries, evalKeyMap);
+    auto result         = cc->EvalAdd(ctxtSeries, ctxtSeriesConj);
+    result              = cc->EvalAdd(result, a0 * 2);
+
+#ifdef BOOTSTRAPTIMING
+    timeSeries = TOC(t);
+    std::cerr << "EvalSeries time: " << timeSeries / 1000.0 << " s" << std::endl;
+#endif
+
+    return result;
+}
+
 //------------------------------------------------------------------------------
 // Find Rotation Indices
 //------------------------------------------------------------------------------
@@ -3995,6 +4397,30 @@ DCRTPoly ExtendSparseKSToQP(const DCRTPoly& x, const std::shared_ptr<CryptoParam
     return xExt;
 }
 }  // namespace
+
+template <typename VectorDataType>
+uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                   const std::vector<VectorDataType>& coefficients, SecretKeyDist skd,
+                                   uint32_t compositeDegree) {
+    // with composite scaling, SPARSE_ENCAPSULATED falls back to the K = 28 exponential table
+    // (see EvalFEFuncBootstrapSetup)
+    const bool sparseTable  = (skd == SPARSE_TERNARY) || (skd == SPARSE_ENCAPSULATED && compositeDegree > 1);
+    const auto& coeff_exp   = (skd == UNIFORM_TERNARY) ? coeff_exp_512_double_23 :
+                              sparseTable              ? coeff_exp_28_double_48 :
+                                                         coeff_exp_16_double_23;
+    const uint32_t expDepth = GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
+    const uint32_t rFunc    = (skd == UNIFORM_TERNARY) ? R_func_512_double_23 :
+                              sparseTable              ? R_func_28_double_48 :
+                                                         R_func_16_double_23;
+    return levelBudget[0] + levelBudget[1] + expDepth + rFunc + GetMultiplicativeDepthByCoeffVector(coefficients, true);
+}
+
+template uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                            const std::vector<int64_t>& coefficients, SecretKeyDist skd,
+                                            uint32_t compositeDegree);
+template uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                            const std::vector<std::complex<double>>& coefficients, SecretKeyDist skd,
+                                            uint32_t compositeDegree);
 
 EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
                                                  const PrivateKey<DCRTPoly>& newPrivateKey) {
