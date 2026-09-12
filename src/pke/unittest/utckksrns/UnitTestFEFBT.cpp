@@ -35,6 +35,7 @@
  */
 
 #include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
@@ -47,6 +48,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace lbcrypto;
@@ -56,6 +58,7 @@ namespace {
 enum TEST_CASE_TYPE : int {
     FEFBT_ACCURACY = 0,
     FEFBT_POST_ROTATION,
+    FEFBT_CS_VS_FA,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -66,6 +69,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FEFBT_POST_ROTATION:
             typeName = "FEFBT_POST_ROTATION";
+            break;
+        case FEFBT_CS_VS_FA:
+            typeName = "FEFBT_CS_VS_FA";
             break;
         default:
             typeName = "UNKNOWN";
@@ -107,6 +113,8 @@ struct TEST_CASE_UTCKKSRNS_FEFBT {
     std::vector<uint32_t> dim1;
     uint32_t slots;
     FEFBT_FUNCTION functionType;
+    // FEFBT_CS_VS_FA only: COMPOSITESCALINGAUTO may lag FLEXIBLEAUTO by at most this many precision bits
+    double gapTolBits = 0.0;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -116,8 +124,8 @@ struct TEST_CASE_UTCKKSRNS_FEFBT {
 
     std::string toString() const {
         std::stringstream ss;
-        ss << "testCaseType [" << testCaseType << "], functionType [" << functionType << "], "
-           << params.toString() << ", slots [" << slots << "]";
+        ss << "testCaseType [" << testCaseType << "], functionType [" << functionType << "], " << params.toString()
+           << ", slots [" << slots << "]";
         return ss.str();
     }
 };
@@ -134,6 +142,8 @@ constexpr uint32_t MULT_DEPTH   = 26;
 constexpr uint32_t RDIM         = 1 << 12;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 constexpr uint32_t SPARSE_SLOTS = 8;
+// register word size for the COMPOSITESCALING* techniques: composite degree 2 for the 59-bit scaling factor
+constexpr uint32_t REG_WORD_SIZE = 32;
 
 #if NATIVEINT != 128
 constexpr uint32_t SMODSIZE = 59;
@@ -154,13 +164,17 @@ UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
     params.scalTech            = scalingTechnique;
     params.numLargeDigits      = NUM_LRG_DIGS;
     params.ckksDataType        = REAL;
+    if (scalingTechnique == COMPOSITESCALINGAUTO || scalingTechnique == COMPOSITESCALINGMANUAL) {
+        params.registerWordSize = REG_WORD_SIZE;
+        if (scalingTechnique == COMPOSITESCALINGMANUAL)
+            params.compositeDegree = (SMODSIZE + REG_WORD_SIZE - 1) / REG_WORD_SIZE;
+    }
 
     return params;
 }
 
-TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::string& description,
-                                        uint32_t batchSize, SecretKeyDist skd, uint32_t slots,
-                                        FEFBT_FUNCTION functionType,
+TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::string& description, uint32_t batchSize,
+                                        SecretKeyDist skd, uint32_t slots, FEFBT_FUNCTION functionType,
                                         std::vector<uint32_t> levelBudget = {3, 2},
                                         ScalingTechnique scalingTechnique = FIXEDMANUAL) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase;
@@ -172,6 +186,18 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::
     testCase.slots        = slots;
     testCase.functionType = functionType;
 
+    return testCase;
+}
+
+// A CS-vs-FA precision-gap case: the same FE functional bootstrapping is run under FLEXIBLEAUTO and under
+// COMPOSITESCALINGAUTO, and the CS precision must come within gapTolBits of the FA precision (the analog of
+// the FBT_NOISE_VS_FLEXIBLE rows of UnitTestFBT and of UnitTestCKKSrnsCompositeScalingVsFlexible).
+TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCSvsFACase(const std::string& description, uint32_t slots, SecretKeyDist skd,
+                                              FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget,
+                                              double gapTolBits) {
+    TEST_CASE_UTCKKSRNS_FEFBT testCase =
+        MakeFEFBTCase(FEFBT_CS_VS_FA, description, slots, skd, slots, functionType, std::move(levelBudget));
+    testCase.gapTolBits = gapTolBits;
     return testCase;
 }
 
@@ -198,6 +224,30 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
                   {3, 2}, FLEXIBLEAUTOEXT),
     MakeFEFBTCase(FEFBT_ACCURACY,      "14", SPARSE_SLOTS, SPARSE_TERNARY,     SPARSE_SLOTS, FEFBT_SIGMOID,
                   {1, 1}, FLEXIBLEAUTOEXT),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "15", RDIM / 2,    SPARSE_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "16", SPARSE_SLOTS, SPARSE_TERNARY,     SPARSE_SLOTS, FEFBT_SIGMOID,
+                  {1, 1}, COMPOSITESCALINGAUTO),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "17", RDIM / 2,    SPARSE_TERNARY,      RDIM / 2,   FEFBT_EXP,
+                  {3, 2}, COMPOSITESCALINGMANUAL),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "18", RDIM / 2,    UNIFORM_TERNARY,     RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "19", RDIM / 2,    SPARSE_ENCAPSULATED, RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO),
+    // CS-vs-FA precision-gap cases. Each gap (faBits - csBits) is a random variable; measured over 10 runs
+    // per case on x86_64 / GCC, NATIVE_SIZE = 64:
+    //   20 full packing, SPARSE_TERNARY, {3,2}       gap  0.010 +/- 0.008  (FA 31.6, CS 31.6)
+    //   21 8 slots (LT), SPARSE_TERNARY, {1,1}       gap  0.001 +/- 0.007  (FA 31.9, CS 31.9)
+    //   22 full packing, UNIFORM_TERNARY, {3,2}      gap -0.219 +/- 0.165  (FA 29.1, CS 29.4)
+    //   23 full packing, SPARSE_ENCAPSULATED, {3,2}  gap -0.102 +/- 0.017  (FA 31.5, CS 31.6)
+    // The shared 1.0-bit tolerance sits more than 5 standard deviations above every measured mean, so a
+    // false failure is negligible while a real regression of even one bit is caught. Note that for
+    // SPARSE_ENCAPSULATED the CS run uses the K = 28 exponential table instead of K = 16 (see
+    // EvalFEFuncBootstrapSetup), so this case also guards the table switch.
+    MakeFEFBTCSvsFACase("20", RDIM / 2,     SPARSE_TERNARY,      FEFBT_SIGMOID, {3, 2}, 1.0),
+    MakeFEFBTCSvsFACase("21", SPARSE_SLOTS, SPARSE_TERNARY,      FEFBT_SIGMOID, {1, 1}, 1.0),
+    MakeFEFBTCSvsFACase("22", RDIM / 2,     UNIFORM_TERNARY,     FEFBT_SIGMOID, {3, 2}, 1.0),
+    MakeFEFBTCSvsFACase("23", RDIM / 2,     SPARSE_ENCAPSULATED, FEFBT_SIGMOID, {3, 2}, 1.0),
 };
 // clang-format on
 #else
@@ -320,6 +370,13 @@ static const std::vector<std::complex<double>> coeff_gelu_8_double_44{
     std::complex<double>(1.478126284614e-10, -1.420742295235e-12),
     std::complex<double>(1.014093012815e-10, 4.286355138519e-13)};
 
+// each level consists of compositeDegree towers, so the encoding level scales accordingly
+static uint32_t FEFBTEncodeLevel(const CryptoContext<DCRTPoly>& cc, const TEST_CASE_UTCKKSRNS_FEFBT& testData) {
+    uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
+    return compositeDegree * (MULT_DEPTH - (testData.levelBudget[1] + 1));
+}
+
 class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFBT> {
     using Element = DCRTPoly;
 
@@ -400,7 +457,8 @@ protected:
         return input;
     }
 
-    std::vector<double> BuildExpectedOutput(FEFBT_FUNCTION functionType, const std::vector<double>& normalizedInput) const {
+    std::vector<double> BuildExpectedOutput(FEFBT_FUNCTION functionType,
+                                            const std::vector<double>& normalizedInput) const {
         std::vector<double> expected(normalizedInput.size());
         const double radius = GetRadius(functionType);
 
@@ -421,10 +479,10 @@ protected:
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto input         = BuildNormalizedInput(testData.slots);
-            auto expected      = BuildExpectedOutput(testData.functionType, input);
-            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
-                input, 1, MULT_DEPTH - (testData.levelBudget[1] + 1), nullptr, testData.slots);
+            auto input    = BuildNormalizedInput(testData.slots);
+            auto expected = BuildExpectedOutput(testData.functionType, input);
+            Plaintext plaintext =
+                cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
             auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
 
@@ -432,9 +490,70 @@ protected:
             cc->Decrypt(keyPair.secretKey, resultCt, &result);
             result->SetLength(expected.size());
 
-            checkEquality(result->GetRealPackedValue(), expected, eps,
-                          failmsg + " FE functional bootstrapping failed for " +
-                              GetFunctionName(testData.functionType) + ".");
+            checkEquality(
+                result->GetRealPackedValue(), expected, eps,
+                failmsg + " FE functional bootstrapping failed for " + GetFunctionName(testData.functionType) + ".");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // Runs the FE functional bootstrapping of testData under the given scaling technique and returns the
+    // achieved precision in bits (-log2 of the maximum slot error). Releases its own context before
+    // returning so a CS-vs-FA test never holds two bootstrapping key sets at once.
+    double FEFBTPrecisionBits(const TEST_CASE_UTCKKSRNS_FEFBT& testData, ScalingTechnique scalingTechnique) {
+        auto params     = testData.params;
+        params.scalTech = scalingTechnique;
+        if (scalingTechnique == COMPOSITESCALINGAUTO)
+            params.registerWordSize = REG_WORD_SIZE;
+
+        CryptoContext<Element> cc(UnitTestGenerateContext(params));
+
+        cc->EvalFEFuncBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+
+        auto keyPair = cc->KeyGen();
+        cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+        cc->EvalMultKeyGen(keyPair.secretKey);
+
+        auto input    = BuildNormalizedInput(testData.slots);
+        auto expected = BuildExpectedOutput(testData.functionType, input);
+        Plaintext plaintext =
+            cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
+        auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+        auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+
+        Plaintext result;
+        cc->Decrypt(keyPair.secretKey, resultCt, &result);
+        result->SetLength(expected.size());
+        auto values = result->GetRealPackedValue();
+
+        double maxErr = 0.0;
+        for (size_t i = 0; i < expected.size(); ++i)
+            maxErr = std::max(maxErr, std::abs(values[i] - expected[i]));
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        // a tiny floor avoids +inf when the error is ~0
+        return -std::log2(std::max(maxErr, 1e-18));
+    }
+
+    // Verifies that COMPOSITESCALINGAUTO does not lose precision relative to FLEXIBLEAUTO: the same FE
+    // functional bootstrapping is run under both techniques and the CS precision must come within
+    // testData.gapTolBits of the FA precision (see the tolerance notes next to the test cases).
+    void UnitTest_FEFBT_CSvsFA(const TEST_CASE_UTCKKSRNS_FEFBT& testData, const std::string& failmsg = std::string()) {
+        try {
+            double faBits = FEFBTPrecisionBits(testData, FLEXIBLEAUTO);
+            double csBits = FEFBTPrecisionBits(testData, COMPOSITESCALINGAUTO);
+
+            // sanity floor: the accuracy tests require eps = 1e-4, i.e. ~13.3 bits
+            EXPECT_GT(csBits, 13.3) << failmsg << " CS FE functional bootstrapping precision unexpectedly low ("
+                                    << csBits << " bits) for " << GetFunctionName(testData.functionType) << ".";
+            EXPECT_GE(csBits, faBits - testData.gapTolBits)
+                << failmsg << " CS lags FA by >" << testData.gapTolBits << " bits (CS=" << csBits << ", FA=" << faBits
+                << ") for " << GetFunctionName(testData.functionType) << ".";
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -457,10 +576,10 @@ protected:
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto input         = BuildNormalizedInput(testData.slots);
-            auto expected      = BuildExpectedOutput(testData.functionType, input);
-            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
-                input, 1, MULT_DEPTH - (testData.levelBudget[1] + 1), nullptr, testData.slots);
+            auto input    = BuildNormalizedInput(testData.slots);
+            auto expected = BuildExpectedOutput(testData.functionType, input);
+            Plaintext plaintext =
+                cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
             auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
 
@@ -496,6 +615,9 @@ TEST_P(UTCKKSRNS_FEFBT, CKKSRNS) {
             break;
         case FEFBT_POST_ROTATION:
             UnitTest_FEFBT_PostRotation(test, test.buildTestName());
+            break;
+        case FEFBT_CS_VS_FA:
+            UnitTest_FEFBT_CSvsFA(test, test.buildTestName());
             break;
         default:
             break;
