@@ -149,16 +149,17 @@ constexpr uint32_t REG_WORD_SIZE = 32;
 constexpr uint32_t SMODSIZE = 59;
 constexpr uint32_t FMODSIZE = 60;
 
-UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
-                                 ScalingTechnique scalingTechnique = FIXEDMANUAL) {
+UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd, ScalingTechnique scalingTechnique = FIXEDMANUAL,
+                                 uint32_t ringDim = RDIM, uint32_t multDepth = MULT_DEPTH,
+                                 uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
     UnitTestCCParams params;
     params.schemeId            = CKKSRNS_SCHEME;
-    params.ringDimension       = RDIM;
-    params.multiplicativeDepth = MULT_DEPTH;
-    params.scalingModSize      = SMODSIZE;
+    params.ringDimension       = ringDim;
+    params.multiplicativeDepth = multDepth;
+    params.scalingModSize      = scalingModSize;
     params.batchSize           = batchSize;
     params.secretKeyDist       = skd;
-    params.firstModSize        = FMODSIZE;
+    params.firstModSize        = firstModSize;
     params.securityLevel       = HEStd_NotSet;
     params.ksTech              = HYBRID;
     params.scalTech            = scalingTechnique;
@@ -167,7 +168,7 @@ UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
     if (scalingTechnique == COMPOSITESCALINGAUTO || scalingTechnique == COMPOSITESCALINGMANUAL) {
         params.registerWordSize = REG_WORD_SIZE;
         if (scalingTechnique == COMPOSITESCALINGMANUAL)
-            params.compositeDegree = (SMODSIZE + REG_WORD_SIZE - 1) / REG_WORD_SIZE;
+            params.compositeDegree = (scalingModSize + REG_WORD_SIZE - 1) / REG_WORD_SIZE;
     }
 
     return params;
@@ -176,11 +177,14 @@ UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
 TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::string& description, uint32_t batchSize,
                                         SecretKeyDist skd, uint32_t slots, FEFBT_FUNCTION functionType,
                                         std::vector<uint32_t> levelBudget = {3, 2},
-                                        ScalingTechnique scalingTechnique = FIXEDMANUAL) {
+                                        ScalingTechnique scalingTechnique = FIXEDMANUAL, uint32_t ringDim = RDIM,
+                                        uint32_t multDepth = MULT_DEPTH, uint32_t scalingModSize = SMODSIZE,
+                                        uint32_t firstModSize = FMODSIZE) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase;
     testCase.testCaseType = testCaseType;
     testCase.description  = description;
-    testCase.params       = MakeFEFBTParams(batchSize, skd, scalingTechnique);
+    testCase.params =
+        MakeFEFBTParams(batchSize, skd, scalingTechnique, ringDim, multDepth, scalingModSize, firstModSize);
     testCase.levelBudget  = std::move(levelBudget);
     testCase.dim1         = {0, 0};
     testCase.slots        = slots;
@@ -248,6 +252,21 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     MakeFEFBTCSvsFACase("21", SPARSE_SLOTS, SPARSE_TERNARY,      FEFBT_SIGMOID, {1, 1}, 1.0),
     MakeFEFBTCSvsFACase("22", RDIM / 2,     UNIFORM_TERNARY,     FEFBT_SIGMOID, {3, 2}, 1.0),
     MakeFEFBTCSvsFACase("23", RDIM / 2,     SPARSE_ENCAPSULATED, FEFBT_SIGMOID, {3, 2}, 1.0),
+    // The K = K_UNIFORMEXT regime (K = 768 exponential table), triggered for UNIFORM_TERNARY when the
+    // composite degree exceeds 2, or equals 2 at ring dimension >= 2^17. Case 24 covers the second
+    // trigger at ring 2^17 (measured ~27 bits, better than FLEXIBLEAUTO there: K = 512 leaves FA more
+    // exposed to mod-raise overflows, which is the reason for the larger-K switch); it is the heaviest
+    // case in the file (~35 s, a few GB). Case 25 covers the first trigger cheaply at ring 2^12 with a
+    // degree-3 configuration: an 89-bit scaling factor with the 32-bit register word gives three ~30-bit
+    // primes per level (degree 3 at ~20-bit primes, e.g. ScalingModSize 59 with register word 20, is not
+    // viable: the band of NTT primes = 1 mod 2N is too sparse for the whole modulus chain, and parameter
+    // validation rejects it). Measured precision ~26.8 bits.
+#if !defined(__EMSCRIPTEN__)
+    MakeFEFBTCase(FEFBT_ACCURACY,      "24", SPARSE_SLOTS, UNIFORM_TERNARY,    SPARSE_SLOTS, FEFBT_SIGMOID,
+                  {1, 1}, COMPOSITESCALINGAUTO, 1 << 17, 24),
+#endif
+    MakeFEFBTCase(FEFBT_ACCURACY,      "25", RDIM / 2,    UNIFORM_TERNARY,     RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO, RDIM, MULT_DEPTH, 89, 90),
 };
 // clang-format on
 #else
@@ -374,7 +393,8 @@ static const std::vector<std::complex<double>> coeff_gelu_8_double_44{
 static uint32_t FEFBTEncodeLevel(const CryptoContext<DCRTPoly>& cc, const TEST_CASE_UTCKKSRNS_FEFBT& testData) {
     uint32_t compositeDegree =
         std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
-    return compositeDegree * (MULT_DEPTH - (testData.levelBudget[1] + 1));
+    uint32_t multDepth = static_cast<uint32_t>(testData.params.multiplicativeDepth);
+    return compositeDegree * (multDepth - (testData.levelBudget[1] + 1));
 }
 
 class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFBT> {

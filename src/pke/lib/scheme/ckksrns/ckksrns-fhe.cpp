@@ -1486,7 +1486,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
 #endif
 
     uint32_t M     = cc.GetCyclotomicOrder();
-    uint32_t N     = cc.GetRingDimension();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
     m_bootPrecomMap[slots]  = std::make_shared<CKKSBootstrapPrecom>();
@@ -1551,14 +1550,9 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     double k;
     switch (cryptoParams->GetSecretKeyDist()) {
         case UNIFORM_TERNARY:
-            // Only the K = 512 exponential table is available. Mirror the K_UNIFORMEXT restriction of
-            // regular bootstrapping (EvalBootstrapStCFirst): K = 512 provides a sufficient failure
-            // probability only for composite degree 1, or degree 2 with ring dimension below 2^17.
-            if (compositeDegree > 2 || (compositeDegree == 2 && N >= (1 << 17)))
-                OPENFHE_THROW(
-                    "CKKS FE functional bootstrapping with UNIFORM_TERNARY supports composite scaling only for "
-                    "composite degree 2 with ring dimension below 2^17 (no K > 512 exponential table is available).");
-            k = 1.0;  // K_UNIFORM is applied at runtime in EvalFEFuncBootstrap
+            // K_UNIFORM or K_UNIFORMEXT is applied at runtime in EvalFEFuncBootstrap (following the same
+            // K_UNIFORMEXT criterion as regular bootstrapping), so nothing is folded into the matrix here
+            k = 1.0;
             break;
         case SPARSE_TERNARY:
             k = K_SPARSE;
@@ -1709,15 +1703,20 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly> c
     // For composite scaling the shrink is folded into the CoeffsToSlots matrix (see EvalFEFuncBootstrapSetup)
     double pre = (compositeDegree > 1) ? 1.0 : std::pow(2, -deg);
 
+    // For larger composite degrees, a larger K is used to achieve a reasonable probability of failure
+    // (the same criterion as the K_UNIFORMEXT switch in EvalBootstrapStCFirst)
+    const bool uniformExt =
+        (skd == UNIFORM_TERNARY) && !(compositeDegree == 1 || (compositeDegree == 2 && N < (1 << 17)));
+
     // the runtime part of the overflow-bound normalization; for the sparse distributions K is folded
     // into the CoeffsToSlots matrix instead (see EvalFEFuncBootstrapSetup)
-    double k = (skd == UNIFORM_TERNARY) ? K_UNIFORM : 1.0;
+    double k = (skd == UNIFORM_TERNARY) ? (uniformExt ? K_UNIFORMEXT : K_UNIFORM) : 1.0;
 
-    // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup
-    const auto& coeffExp = (skd == UNIFORM_TERNARY)                             ? coeff_exp_512_double_23 :
+    // complex-exponential Chebyshev table matching the overflow bound K
+    const auto& coeffExp = (skd == UNIFORM_TERNARY) ? (uniformExt ? coeff_exp_768_double_27 : coeff_exp_512_double_23) :
                            (skd == SPARSE_ENCAPSULATED && compositeDegree == 1) ? coeff_exp_16_double_23 :
                                                                                   coeff_exp_28_double_48;
-    const uint32_t rFunc = (skd == UNIFORM_TERNARY)                             ? R_func_512_double_23 :
+    const uint32_t rFunc = (skd == UNIFORM_TERNARY) ? (uniformExt ? R_func_768_double_27 : R_func_512_double_23) :
                            (skd == SPARSE_ENCAPSULATED && compositeDegree == 1) ? R_func_16_double_23 :
                                                                                   R_func_28_double_48;
 
@@ -4403,7 +4402,9 @@ uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
                                    const std::vector<VectorDataType>& coefficients, SecretKeyDist skd,
                                    uint32_t compositeDegree) {
     // with composite scaling, SPARSE_ENCAPSULATED falls back to the K = 28 exponential table
-    // (see EvalFEFuncBootstrapSetup)
+    // (see EvalFEFuncBootstrapSetup). For UNIFORM_TERNARY the K = 768 table used in the K_UNIFORMEXT
+    // regime (see EvalFEFuncBootstrap) has the same Paterson-Stockmeyer depth and the same number of
+    // double-angle iterations as the K = 512 table, so no ring-dimension parameter is needed here.
     const bool sparseTable  = (skd == SPARSE_TERNARY) || (skd == SPARSE_ENCAPSULATED && compositeDegree > 1);
     const auto& coeff_exp   = (skd == UNIFORM_TERNARY) ? coeff_exp_512_double_23 :
                               sparseTable              ? coeff_exp_28_double_48 :

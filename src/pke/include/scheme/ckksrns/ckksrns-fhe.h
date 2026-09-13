@@ -538,6 +538,8 @@ private:
     static const uint32_t R_func_16_double_23 = 4;
     // for UNIFORM_TERNARY secret key distribution
     static const uint32_t R_func_512_double_23 = 9;
+    // for UNIFORM_TERNARY with composite scaling beyond degree 2 or ring dimension 2^17 (K = K_UNIFORMEXT)
+    static const uint32_t R_func_768_double_27 = 9;
 
     // TODO: regenerate these as hexfloat
 
@@ -855,6 +857,25 @@ private:
         std::complex<double>(-1.6396846620747584922e-07, 0), std::complex<double>(0, -2.7852909912067652654e-08),
         std::complex<double>(4.4828133381284258415e-09, 0),  std::complex<double>(0, 6.8557357458132878181e-10),
         std::complex<double>(-9.9853771085012255071e-11, 0), std::complex<double>(0, -1.4132101422613974449e-11)};
+
+    // Coefficients for the function std::exp(1i * Pi/256.0 * x) in [-768, 768] of degree 27
+    // (Jacobi-Anger closed form: c_n = 2 * i^n * J_n(3*Pi)). Used for UNIFORM_TERNARY with composite
+    // scaling in the K = K_UNIFORMEXT regime; same nine double-angle iterations as the K = 512 table.
+    static const inline std::vector<std::complex<double>> coeff_exp_768_double_27{
+        std::complex<double>(-0.36242290701785569315, 0),    std::complex<double>(0, 0.35345039822305867639),
+        std::complex<double>(-0.43742741103785389042, 0),    std::complex<double>(0, 0.16780043899488602150),
+        std::complex<double>(-0.54425248831395844933, 0),    std::complex<double>(0, -0.29417542129967658257),
+        std::complex<double>(-0.23212267207406270578, 0),    std::complex<double>(0, -0.58972318661396564342),
+        std::complex<double>(0.64387935651076146301, 0),     std::complex<double>(0, 0.50336035838354293464),
+        std::complex<double>(-0.31746811380822434156, 0),    std::complex<double>(0, -0.17032790277164769104),
+        std::complex<double>(0.080123625389666553230, 0),    std::complex<double>(0, 0.033705233855691837387),
+        std::complex<double>(-0.012858520597828858816, 0),   std::complex<double>(0, -0.0044960456055185949203),
+        std::complex<double>(0.0014528370518687027944, 0),   std::complex<double>(0, 0.00043677995846989330216),
+        std::complex<double>(-0.00012285190863430614328, 0), std::complex<double>(0, -0.000032479766188275965160),
+        std::complex<double>(8.1040799621330873016e-6, 0),   std::complex<double>(0, 1.9150174166696566298e-6),
+        std::complex<double>(-4.2988570102824603743e-7, 0),  std::complex<double>(0, -9.1923322303330926108e-8),
+        std::complex<double>(1.8769200291894625142e-8, 0),   std::complex<double>(0, 3.6674298354490543540e-9),
+        std::complex<double>(-6.8711926658581889971e-10, 0), std::complex<double>(0, -1.2366232727238904600e-10)};
     // Coefficients for the function std::cos(Pi/2.0 * x) in [-25, 25] of degree 58
     // Need one double-angle iteration to get std::cos(Pi x)
     static const inline std::vector<double> coeff_cos_25_double{
