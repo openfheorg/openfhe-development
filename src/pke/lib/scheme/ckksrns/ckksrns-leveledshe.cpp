@@ -221,6 +221,21 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphert
 /////////////////////////////////////
 
 #if NATIVEINT == 128
+namespace {
+// Returns (value * 2^shift) mod modulus for any shift >= 0. Applying the power of two in
+// steps keeps every intermediate inside one 128-bit word, so scalars whose scaled
+// representation needs more than 128 bits no longer shift out of range or wrap silently.
+DCRTPoly::Integer ModShiftLeft(const DCRTPoly::Integer& value, int32_t shift, const DCRTPoly::Integer& modulus) {
+    constexpr int32_t maxLogStep = LargeScalingFactorConstants::MAX_LOG_STEP;
+    DCRTPoly::Integer result(value.Mod(modulus));
+    for (; shift > 0; shift -= maxLogStep) {
+        int32_t logStep = std::min(shift, maxLogStep);
+        result          = result.ModMul(DCRTPoly::Integer(1) << logStep, modulus);
+    }
+    return result;
+}
+}  // namespace
+
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
                                                                             double operand) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
@@ -246,26 +261,35 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     int32_t pCurrent   = cryptoParams->GetPlaintextModulus() - precision;
     int32_t pRemaining = pCurrent + n1;
 
-    DCRTPoly::Integer scaledConstant;
+    // The operand is non-negative here: CryptoContext turns EvalAdd of a negative scalar into
+    // EvalSub of its magnitude and vice versa, and the complex overloads pass std::fabs.
+    std::vector<DCRTPoly::Integer> currPowP(numTowers);
     if (pRemaining < 0) {
-        scaledConstant = NativeInteger(((uint128_t)scaled64) >> (-pRemaining));
+        // Discard scalars below the integer precision without an out-of-range shift.
+        DCRTPoly::Integer scaledConstant(pRemaining <= -64 ? uint64_t(0) : uint64_t(scaled64) >> (-pRemaining));
+        currPowP.assign(numTowers, scaledConstant);
     }
     else {
-        int128_t ppRemaining = ((int128_t)1) << pRemaining;
-        scaledConstant       = NativeInteger((int128_t)scaled64 * ppRemaining);
+        // scaled64 * 2^pRemaining needs more than 128 bits once the operand is large, so the
+        // power of two is applied modulo each tower rather than to scaled64 itself.
+        for (uint32_t i = 0; i < numTowers; ++i)
+            currPowP[i] = ModShiftLeft(DCRTPoly::Integer(uint64_t(scaled64)), pRemaining, moduli[i]);
     }
 
-    DCRTPoly::Integer intPowP;
+    // 2^precision * 2^pCurrent, reduced per tower: CRTMult below uses ModMulFast, which assumes
+    // both operands are already below the modulus, and 2^pCurrent exceeds some towers.
     uint64_t powp64 = (static_cast<uint64_t>(1)) << precision;
+    std::vector<DCRTPoly::Integer> crtPowP(numTowers);
     if (pCurrent < 0) {
-        intPowP = NativeInteger((uint128_t)powp64 >> (-pCurrent));
+        // pCurrent is bounded below by -precision, so this shift count stays in range.
+        DCRTPoly::Integer intPowP(powp64 >> (-pCurrent));
+        for (uint32_t i = 0; i < numTowers; ++i)
+            crtPowP[i] = intPowP.Mod(moduli[i]);
     }
     else {
-        intPowP = NativeInteger((uint128_t)powp64 << pCurrent);
+        for (uint32_t i = 0; i < numTowers; ++i)
+            crtPowP[i] = ModShiftLeft(DCRTPoly::Integer(powp64), pCurrent, moduli[i]);
     }
-
-    std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
-    std::vector<DCRTPoly::Integer> currPowP(numTowers, scaledConstant);
 
     // multiply c*powP with powP a total of (depth-1) times to get c*powP^d
     for (uint32_t i = 0; i < ciphertext->GetNoiseScaleDeg() - 1; ++i)
@@ -419,14 +443,20 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     int64_t scaled64   = std::llround(static_cast<double>(std::frexp(operand, &n1)) * powP);
     int32_t pCurrent   = cryptoParams->GetPlaintextModulus() - precision;
     int32_t pRemaining = pCurrent + n1;
-    int128_t scaled128 = 0;
+
+    // Unlike EvalAdd/EvalSub, the operand keeps its sign here, so it is split into sign and
+    // magnitude: the magnitude is applied modulo each tower below and the sign is restored
+    // afterwards. The negation goes through uint64_t because std::llround returns an
+    // unspecified value when the operand is non-finite or out of range, and negating the
+    // signed minimum would be undefined behaviour.
+    const bool isNegative = (scaled64 < 0);
+    uint64_t magnitude    = isNegative ? uint64_t(0) - uint64_t(scaled64) : uint64_t(scaled64);
 
     if (pRemaining < 0) {
-        scaled128 = scaled64 >> (-pRemaining);
-    }
-    else {
-        int128_t ppRemaining = ((int128_t)1) << pRemaining;
-        scaled128            = ppRemaining * scaled64;
+        // Scalars below the integer precision truncate toward zero for either sign instead of
+        // shifting by an out-of-range count.
+        magnitude  = (pRemaining <= -64) ? 0 : magnitude >> (-pRemaining);
+        pRemaining = 0;
     }
 
     const auto& cv     = ciphertext->GetElements();
@@ -434,18 +464,11 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
     for (uint32_t i = 0; i < numTowers; i++) {
-        DCRTPoly::Integer modulus = cv[0].GetElementAtIndex(i).GetModulus();
-
-        if (scaled128 < 0) {
-            DCRTPoly::Integer reducedUnsigned = static_cast<BasicInteger>(-scaled128);
-            reducedUnsigned.ModEq(modulus);
-            factors[i] = modulus - reducedUnsigned;
-        }
-        else {
-            DCRTPoly::Integer reducedUnsigned = static_cast<BasicInteger>(scaled128);
-            reducedUnsigned.ModEq(modulus);
-            factors[i] = reducedUnsigned;
-        }
+        DCRTPoly::Integer modulus         = cv[0].GetElementAtIndex(i).GetModulus();
+        DCRTPoly::Integer reducedUnsigned = ModShiftLeft(DCRTPoly::Integer(magnitude), pRemaining, modulus);
+        // ModSub rather than (modulus - reducedUnsigned) so that a magnitude divisible by the
+        // modulus yields 0 instead of an unreduced modulus.
+        factors[i] = isNegative ? modulus.ModSub(reducedUnsigned, modulus) : reducedUnsigned;
     }
     return factors;
 }
