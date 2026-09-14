@@ -3646,13 +3646,13 @@ public:
         return m_scheme->EvalBootstrapStCFirst(ciphertext, numIterations, precision);
     }
 
-    void EvalFEFuncBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
-                                  uint32_t slots = 0) {
+    void EvalFEFuncBootstrapSetup(const std::vector<uint32_t>& levelBudget = {5, 4},
+                                  const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) {
         GetScheme()->EvalFEFuncBootstrapSetup(*this, levelBudget, dim1, slots);
     }
 
-    Ciphertext<Element> EvalFEFuncBootstrap(
-        ConstCiphertext<Element> ciphertext, std::vector<std::complex<double>> coefficients) const {
+    Ciphertext<Element> EvalFEFuncBootstrap(ConstCiphertext<Element>& ciphertext,
+                                            const std::vector<std::complex<double>>& coefficients) const {
         return GetScheme()->EvalFEFuncBootstrap(ciphertext, coefficients);
     }
 

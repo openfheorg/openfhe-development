@@ -1475,8 +1475,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     return ctxtEnc;
 }
 
-void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-                                          std::vector<uint32_t> dim1, uint32_t numSlots) {
+void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                                          const std::vector<uint32_t>& levelBudget, const std::vector<uint32_t>& dim1,
+                                          uint32_t numSlots) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -1647,8 +1648,8 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     }
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly> ciphertext,
-                                                     std::vector<std::complex<double>> coefficients) const {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                     const std::vector<std::complex<double>>& coefficients) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -1860,14 +1861,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly> c
     // Running the Fourier Series Evaluation
     //------------------------------------------------------------------------------
 
-    // evaluate the series on z = exp(2*Pi*i*t) and take twice the real part:
-    // f(t) = a0 + 2*Re(sum_{j>=1} c_j z^j)
-    auto a0             = coefficients[0].real();
-    coefficients[0]     = {0.0, 0.0};
-    auto ctxtSeries     = cc->EvalPoly(ctxtExp, coefficients);
-    auto ctxtSeriesConj = Conjugate(ctxtSeries, evalKeyMap);
-    auto result         = cc->EvalAdd(ctxtSeries, ctxtSeriesConj);
-    result              = cc->EvalAdd(result, a0 * 2);
+    // Evaluate the truncated Fourier series on z = exp(2*Pi*i*t) and take twice its real part:
+    //   f(t) = 2*Re(c_0 + sum_{j>=1} c_j z^j).
+    // The constant term c_0 is part of the polynomial passed to EvalPoly, which applies it as a single
+    // plaintext addition after the Paterson-Stockmeyer tree, and the conjugate-add below doubles its real
+    // part along with the rest of the series.
+    auto ctxtSeries = cc->EvalPoly(ctxtExp, coefficients);
+    auto result     = cc->EvalAdd(ctxtSeries, Conjugate(ctxtSeries, evalKeyMap));
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);

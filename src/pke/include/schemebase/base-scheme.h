@@ -1202,8 +1202,8 @@ public:
         m_FHE->EvalFEFuncBootstrapSetup(cc, levelBudget, dim1, slots);
     }
 
-    Ciphertext<Element> EvalFEFuncBootstrap(
-        ConstCiphertext<Element> ciphertext, std::vector<std::complex<double>> coefficients) const {
+    Ciphertext<Element> EvalFEFuncBootstrap(ConstCiphertext<Element>& ciphertext,
+                                            const std::vector<std::complex<double>>& coefficients) const {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalFEFuncBootstrap(ciphertext, coefficients);
     }

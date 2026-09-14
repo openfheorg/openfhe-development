@@ -164,11 +164,11 @@ public:
     Ciphertext<DCRTPoly> EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const override;
 
-    void EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-                                  std::vector<uint32_t> dim1, uint32_t numSlots) override;
+    void EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<uint32_t>& levelBudget,
+                                  const std::vector<uint32_t>& dim1, uint32_t numSlots) override;
 
-    Ciphertext<DCRTPoly> EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly> ciphertext,
-                                             std::vector<std::complex<double>> coefficients) const override;
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
+                                             const std::vector<std::complex<double>>& coefficients) const override;
 
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
