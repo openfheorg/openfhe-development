@@ -159,8 +159,8 @@ public:
         ar(::cereal::make_nvp("d", m_d));
         ar(::cereal::make_nvp("top", m_top));
         ar(::cereal::make_nvp("n", m_n));
-        ar(::cereal::make_nvp("a", ::cereal::binary_data(m_keyA.get(), m_sizeA * sizeof(uint32_t))));
-        ar(::cereal::make_nvp("b", ::cereal::binary_data(m_keyB.get(), m_sizeB * sizeof(uint32_t))));
+        Bytes(ar, m_keyA.get(), m_sizeA);
+        Bytes(ar, m_keyB.get(), m_sizeB);
     }
 
     template <class Archive>
@@ -177,8 +177,8 @@ public:
         Size();
         m_keyA.reset(new uint32_t[m_sizeA]);
         m_keyB.reset(new uint32_t[m_sizeB]);
-        ar(::cereal::make_nvp("a", ::cereal::binary_data(m_keyA.get(), m_sizeA * sizeof(uint32_t))));
-        ar(::cereal::make_nvp("b", ::cereal::binary_data(m_keyB.get(), m_sizeB * sizeof(uint32_t))));
+        Bytes(ar, m_keyA.get(), m_sizeA);
+        Bytes(ar, m_keyB.get(), m_sizeB);
     }
 
     std::string SerializedObjectName() const override {
@@ -190,6 +190,21 @@ public:
     }
 
 private:
+    // One flat array, in whichever form the archive takes: the binary archives move it as a block,
+    // and the JSON archive, which has no binary support, takes it one element at a time. Both sides
+    // call this, so the two representations stay paired.
+    template <class Archive, typename T>
+    static void Bytes(Archive& ar, T* p, uint64_t n) {
+        if constexpr (::cereal::traits::is_output_serializable<::cereal::BinaryData<T*>, Archive>::value ||
+                      ::cereal::traits::is_input_serializable<::cereal::BinaryData<T*>, Archive>::value) {
+            ar(::cereal::binary_data(p, n * sizeof(T)));
+        }
+        else {
+            for (uint64_t i = 0; i < n; ++i)
+                ar(p[i]);
+        }
+    }
+
     void Size() {
         m_rows  = static_cast<uint64_t>(m_d - 1) * (m_m - 1) + (m_top - 1);
         m_sizeA = static_cast<uint64_t>(m_N) * m_rows * m_n;
