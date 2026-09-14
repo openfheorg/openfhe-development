@@ -34,8 +34,8 @@
 
 using namespace lbcrypto;
 
-template <typename ST>
-void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType,
+template <typename ST, typename PS>
+void UnitTestFHEWSerial(const ST& sertype, const PS& secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType,
                         const std::string& errMsg) {
     const LWEPlaintext val(1);
     auto cc1 = BinFHEContext();
@@ -133,4 +133,12 @@ TEST(UnitTestFHEWSerialGINX, BINARY) {
 TEST(UnitTestFHEWSerialLMKCDEY, BINARY) {
     std::string msg = "UnitTestFHEWSerialGINX.BINARY serialization test failed: ";
     UnitTestFHEWSerial(SerType::BINARY, TOY, LMKCDEY, SMALL_DIM, msg);
+}
+
+// The secret key distribution is the one context field key generation dispatches on, and every
+// predefined Gaussian set is too large to serialize in a unit test, so this builds a small one.
+TEST(UnitTestFHEWSerialGaussian, BINARY) {
+    std::string msg = "UnitTestFHEWSerialGaussian.BINARY serialization test failed: ";
+    BinFHEContextParams p{27, 1024, 64, 512, 0, 25, 512, 23, 9, GAUSSIAN, 3.19, {}};
+    UnitTestFHEWSerial(SerType::BINARY, p, LMKCDEY, SMALL_DIM, msg);
 }

@@ -333,6 +333,7 @@ public:
         ar(::cereal::make_nvp("bparams", m_polyParams));
         ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
         ar(::cereal::make_nvp("baseGMap", m_baseG_map));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
     }
 
     template <class Archive>
@@ -354,6 +355,7 @@ public:
         ar(::cereal::make_nvp("bparams", m_polyParams));
         ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
         ar(::cereal::make_nvp("baseGMap", m_baseG_map));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
         PreCompute();
     }
 

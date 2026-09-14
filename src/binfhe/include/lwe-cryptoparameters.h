@@ -181,6 +181,7 @@ public:
         ar(::cereal::make_nvp("sigma", m_dgg.GetStd()));
         ar(::cereal::make_nvp("sigmaKS", m_ks_dgg.GetStd()));
         ar(::cereal::make_nvp("bKS", m_baseKS));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
     }
 
     template <class Archive>
@@ -202,6 +203,7 @@ public:
         ar(::cereal::make_nvp("sigmaKS", sigmaKS));
         m_ks_dgg.SetStd(sigmaKS);
         ar(::cereal::make_nvp("bKS", m_baseKS));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
     }
 
     std::string SerializedObjectName() const override {
