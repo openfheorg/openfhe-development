@@ -175,6 +175,17 @@ public:
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 
+    virtual std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
+        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+        OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
+    }
+
+    virtual Ciphertext<Element> EvalFEFuncBootstrapWithPrecomp(
+        const std::shared_ptr<seriesPowers<Element>>& powers,
+        const std::vector<std::complex<double>>& coefficients) const {
+        OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
+    }
+
     virtual void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<std::complex<double>>& coeffs,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,

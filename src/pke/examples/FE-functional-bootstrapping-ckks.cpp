@@ -1,3 +1,34 @@
+//==================================================================================
+// BSD 2-Clause License
+//
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
+//
+// All rights reserved.
+//
+// Author TPOC: contact@openfhe.org
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//==================================================================================
+
 #include "openfhe.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 
@@ -134,7 +165,7 @@ static const std::vector<std::complex<double>> coeff_gelu_8_double_44{
 
 std::vector<double> BuildNormalizedInput(size_t slots) {
     std::vector<double> input(slots);
-    constexpr double left = -0.5;
+    constexpr double left  = -0.5;
     constexpr double right = 0.5;
     for (size_t i = 0; i < slots; ++i) {
         input[i] = left + static_cast<double>(i) * (right - left) / static_cast<double>(slots);
@@ -176,20 +207,25 @@ void PrintValues(const std::vector<double>& values, size_t count) {
 }  // namespace
 
 int main() {
-    const uint32_t ringDim = 1 << 16;
-    const uint32_t numSlots = 1 << 15;
+    const uint32_t ringDim                  = 1 << 16;
+    const uint32_t numSlots                 = 1 << 15;
     const ScalingTechnique scalingTechnique = FLEXIBLEAUTO;
     const std::vector<uint32_t> levelBudget = {3, 2};
-    const std::vector<uint32_t> bsgsDim = {0, 0};
-    const usint dcrtBits = 59;
-    const usint firstMod = 60;
-    const SecretKeyDist skd = SPARSE_TERNARY;
+    const std::vector<uint32_t> bsgsDim     = {0, 0};
+    const usint dcrtBits                    = 59;
+    const usint firstMod                    = 60;
+    const SecretKeyDist skd                 = SPARSE_TERNARY;
+
+    // GetFEFBTDepth covers the functional bootstrapping itself, for the longest of the three series; the
+    // levels added on top of it are what is left to compute with on the refreshed ciphertext.
+    constexpr uint32_t levelsAfterBootstrapping = 6;
 
     const uint32_t depth = std::max({
-        FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_exp_2_double_29, skd),
-        FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_sigmoid_8_double_34, skd),
-        FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_gelu_8_double_44, skd),
-    }) + 6;
+                               FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_exp_2_double_29, skd),
+                               FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_sigmoid_8_double_34, skd),
+                               FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_gelu_8_double_44, skd),
+                           }) +
+                           levelsAfterBootstrapping;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetCKKSDataType(COMPLEX);
@@ -217,13 +253,26 @@ int main() {
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     const auto normalizedInput = BuildNormalizedInput(numSlots);
-    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(normalizedInput, 1, depth - (levelBudget[1] + 1), nullptr, numSlots);
-    auto input           = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext =
+        cc->MakeCKKSPackedPlaintext(normalizedInput, 1, depth - (levelBudget[1] + 1), nullptr, numSlots);
+    auto input                = cc->Encrypt(keyPair.publicKey, plaintext);
     uint32_t totalModulusBits = 0;
     for (const auto& modParams : cc->GetCryptoParameters()->GetElementParams()->GetParams()) {
         totalModulusBits += modParams->GetModulus().GetMSB();
     }
-    const uint32_t levelBeforeBoot  = plaintext->GetLevel();
+    const uint32_t levelBeforeBoot = plaintext->GetLevel();
+
+    // The refresh itself - SlotsToCoeffs, modulus raise, CoeffsToSlots and the complex exponential - does not
+    // depend on the target function, so it is run once here and shared by every function below. The powers
+    // are precomputed for the longest series of the family (gelu, degree 44); the shorter ones are evaluated
+    // against those same powers.
+    auto precomputeStart      = std::chrono::high_resolution_clock::now();
+    auto sharedPowers         = cc->EvalFEFuncBootstrapPrecompute(input, coeff_gelu_8_double_44);
+    auto precomputeStop       = std::chrono::high_resolution_clock::now();
+    const double precomputeMs = std::chrono::duration<double, std::milli>(precomputeStop - precomputeStart).count();
+
+    std::cout << "Shared bootstrapping and complex exponential: " << static_cast<int64_t>(std::llround(precomputeMs))
+              << " ms (paid once for all functions below)\n";
 
     auto runOne = [&](const std::string& title, double radius, const std::vector<std::complex<double>>& coeffs,
                       const auto& target) {
@@ -232,8 +281,8 @@ int main() {
             value = target(2.0 * radius * value);
         }
 
-        auto start  = std::chrono::high_resolution_clock::now();
-        auto output  = cc->EvalFEFuncBootstrap(input, coeffs);
+        auto start   = std::chrono::high_resolution_clock::now();
+        auto output  = cc->EvalFEFuncBootstrapWithPrecomp(sharedPowers, coeffs);
         auto stop    = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration<double, std::milli>(stop - start).count();
 
@@ -246,7 +295,7 @@ int main() {
         std::cout << "CKKS total modulus: " << totalModulusBits << " bits\n";
         std::cout << "Level before bootstrapping: " << levelBeforeBoot << "\n\n";
         std::cout << "Level after bootstrapping: " << output->GetLevel() << "\n";
-        std::cout << "Total time: " << static_cast<int64_t>(std::llround(elapsed)) << " ms\n";
+        std::cout << "Series evaluation time: " << static_cast<int64_t>(std::llround(elapsed)) << " ms\n";
         std::cout << "Slots amortize time: " << std::fixed << std::setprecision(6) << elapsed / numSlots << " ms\n\n";
         std::cout << "--- Sample Points Inspection (Total 10 points) ---\n";
         PrintValues(normalizedInput, 10);
@@ -255,13 +304,15 @@ int main() {
         std::cout << "------- Functional Bootstrapping Results: -------\n";
         PrintValues(actual, 10);
         std::cout << "-------------------------------------------------\n";
-        std::cout << "Precision: " << std::fixed << std::setprecision(4) << ComputeMeanPrecisionBits(expected, actual) << " bits\n";
+        std::cout << "Precision: " << std::fixed << std::setprecision(4) << ComputeMeanPrecisionBits(expected, actual)
+                  << " bits\n";
     };
 
     runOne("exp[-2,2]", 2.0, coeff_exp_2_double_29, [](double x) { return std::exp(x); });
     runOne("sigmoid[-8,8]", 8.0, coeff_sigmoid_8_double_34, [](double x) { return 1.0 / (1.0 + std::exp(-x)); });
-    runOne("gelu_tanh[-8,8]", 8.0, coeff_gelu_8_double_44,
-           [](double x) { return 0.5 * x * (1.0 + std::tanh(std::sqrt(2.0 / M_PI) * (x + 0.044715 * std::pow(x, 3)))); });
+    runOne("gelu_tanh[-8,8]", 8.0, coeff_gelu_8_double_44, [](double x) {
+        return 0.5 * x * (1.0 + std::tanh(std::sqrt(2.0 / M_PI) * (x + 0.044715 * std::pow(x, 3))));
+    });
 
     return 0;
 }

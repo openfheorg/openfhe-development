@@ -1648,8 +1648,11 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     }
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                     const std::vector<std::complex<double>>& coefficients) const {
+// Everything in FE functional bootstrapping that does not depend on the target function: SlotsToCoeffs,
+// modulus raise, CoeffsToSlots, and the complex exponential. The result encrypts exp(2*Pi*i*t) with
+// t = mu/2 the message embedded into half of the Fourier series period, which is the variable that every
+// target function's series is then evaluated at.
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -1663,7 +1666,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
     double timeStC(0.0);
     double timeCtS(0.0);
     double timeExp(0.0);
-    double timeSeries(0.0);
 #endif
 
     auto cc                  = ciphertext->GetCryptoContext();
@@ -1847,7 +1849,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
     // Running the Complex Exponential Evaluation
     //------------------------------------------------------------------------------
 
-    auto ctxtExp = cc->EvalChebyshevSeries(ctxtEnc, coeffExp, -1, 1);
+    auto ctxtExp = algo->EvalChebyshevSeries(ctxtEnc, coeffExp, -1, 1);
     // double-angle iterations for the complex exponential: each squaring doubles the argument
     for (uint32_t i = 0; i < rFunc; ++i) {
         cc->EvalSquareInPlace(ctxtExp);
@@ -1857,24 +1859,114 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
 #ifdef BOOTSTRAPTIMING
     timeExp = TOC(t);
     std::cerr << "EvalExp time: " << timeExp / 1000.0 << " s" << std::endl;
+#endif
+
+    return ctxtExp;
+}
+
+// Twice the real part of an evaluated Fourier series, which is the FE functional bootstrapping output
+//   f(t) = 2*Re(c_0 + sum_{j>=1} c_j z^j).
+// The constant term c_0 stays in the polynomial handed to EvalPoly, which applies it as a single plaintext
+// addition after the Paterson-Stockmeyer tree, and the conjugate-add doubles its real part along with the
+// rest of the series.
+Ciphertext<DCRTPoly> FHECKKSRNS::TwiceRealPart(const Ciphertext<DCRTPoly>& ctxtSeries) {
+    auto cc = ctxtSeries->GetCryptoContext();
+    return cc->EvalAdd(ctxtSeries, Conjugate(ctxtSeries, cc->GetEvalAutomorphismKeyMap(ctxtSeries->GetKeyTag())));
+}
+
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                     const std::vector<std::complex<double>>& coefficients) const {
+    auto ctxtExp = EvalFEFuncBootstrapExp(ciphertext);
+    auto algo    = ctxtExp->GetCryptoContext()->GetScheme();
+
+#ifdef BOOTSTRAPTIMING
+    TimeVar t;
+    double timeSeries(0.0);
     TIC(t);
 #endif
 
-    //------------------------------------------------------------------------------
-    // Running the Fourier Series Evaluation
-    //------------------------------------------------------------------------------
-
-    // Evaluate the truncated Fourier series on z = exp(2*Pi*i*t) and take twice its real part:
-    //   f(t) = 2*Re(c_0 + sum_{j>=1} c_j z^j).
-    // The constant term c_0 is part of the polynomial passed to EvalPoly, which applies it as a single
-    // plaintext addition after the Paterson-Stockmeyer tree, and the conjugate-add below doubles its real
-    // part along with the rest of the series.
-    auto ctxtSeries = cc->EvalPoly(ctxtExp, coefficients);
-    auto result     = cc->EvalAdd(ctxtSeries, Conjugate(ctxtSeries, evalKeyMap));
+    auto result = TwiceRealPart(algo->EvalPoly(ctxtExp, coefficients));
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
     std::cerr << "EvalSeries time: " << timeSeries / 1000.0 << " s" << std::endl;
+#endif
+
+    return result;
+}
+
+std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapPrecompute(
+    ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+    // Below degree 5 EvalPowers builds only those powers the given coefficient vector actually needs and
+    // leaves the rest of the basis unset, so the result is specific to one function and cannot be shared.
+    // Fourier extensions of useful functions are far above this bound.
+    if (Degree(coefficients) < 5)
+        OPENFHE_THROW(
+            "CKKS FE functional bootstrapping needs a series of degree 5 or more to precompute shareable "
+            "complex-exponential powers; use EvalFEFuncBootstrap for a shorter series.");
+
+    auto ctxtExp = EvalFEFuncBootstrapExp(ciphertext);
+    auto algo    = ctxtExp->GetCryptoContext()->GetScheme();
+
+#ifdef BOOTSTRAPTIMING
+    TimeVar t;
+    double timePowers(0.0);
+    TIC(t);
+#endif
+
+    auto powers = algo->EvalPowers(ctxtExp, coefficients);
+
+#ifdef BOOTSTRAPTIMING
+    timePowers = TOC(t);
+    std::cerr << "EvalPowers time: " << timePowers / 1000.0 << " s" << std::endl;
+#endif
+
+    return powers;
+}
+
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
+    const std::shared_ptr<seriesPowers<DCRTPoly>>& powers,
+    const std::vector<std::complex<double>>& coefficients) const {
+    if (powers == nullptr || powers->powersRe.empty() || powers->powers2Re.empty())
+        OPENFHE_THROW("The series powers were not produced by EvalFEFuncBootstrapPrecompute.");
+    if (coefficients.size() < 2)
+        OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
+
+    const uint32_t degree = Degree(coefficients);
+    auto shared           = powers;
+
+    if (degree < 5) {
+        // EvalPolyWithPrecomp evaluates a short series straight from the power basis, scaling the powers it
+        // is handed in place. Give it deep copies so the shared powers survive for the next function; the
+        // same guard is applied to the linear case of EvalMVB.
+        const uint32_t k = coefficients.size() - 1;
+        std::vector<Ciphertext<DCRTPoly>> copies;
+        copies.reserve(k);
+        for (uint32_t i = 0; i < k; ++i)
+            copies.emplace_back(powers->powersRe[i]->Clone());
+        shared = std::make_shared<seriesPowers<DCRTPoly>>(copies);
+    }
+    else {
+        // The Paterson-Stockmeyer shape (k, m) fixed at precomputation spans degrees up to k*(2^m - 1) - 1,
+        // the top coefficient of that range being reserved by the algorithm itself.
+        const uint32_t capacity = powers->k * ((1U << powers->m) - 1);
+        if (degree >= capacity)
+            OPENFHE_THROW("The Fourier series has degree " + std::to_string(degree) + ", above the maximum of " +
+                          std::to_string(capacity - 1) + " spanned by the precomputed complex-exponential powers.");
+    }
+
+#ifdef BOOTSTRAPTIMING
+    TimeVar t;
+    double timeSeries(0.0);
+    TIC(t);
+#endif
+
+    auto algo   = powers->powersRe.front()->GetCryptoContext()->GetScheme();
+    auto result = TwiceRealPart(algo->EvalPolyWithPrecomp(shared, coefficients));
+
+#ifdef BOOTSTRAPTIMING
+    timeSeries = TOC(t);
+    std::cerr << "EvalSeries time (precomputed powers): " << timeSeries / 1000.0 << " s" << std::endl;
 #endif
 
     return result;

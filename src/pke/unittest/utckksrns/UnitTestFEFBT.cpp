@@ -60,6 +60,7 @@ enum TEST_CASE_TYPE : int {
     FEFBT_POST_ROTATION,
     FEFBT_CS_VS_FA,
     FEFBT_COMPLEX_INPUT,
+    FEFBT_MULTI_VALUE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -76,6 +77,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FEFBT_COMPLEX_INPUT:
             typeName = "FEFBT_COMPLEX_INPUT";
+            break;
+        case FEFBT_MULTI_VALUE:
+            typeName = "FEFBT_MULTI_VALUE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -264,6 +268,11 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     MakeFEFBTCSvsFACase("23", RDIM / 2,     SPARSE_ENCAPSULATED, FEFBT_SIGMOID, {3, 2}, 1.0),
     MakeFEFBTComplexInputCase("24", RDIM / 2,     FEFBT_SIGMOID, {3, 2}),
     MakeFEFBTComplexInputCase("25", SPARSE_SLOTS, FEFBT_SIGMOID, {1, 1}),
+    // functionType names the series the powers are precomputed for; every function is then evaluated
+    // against those powers
+    MakeFEFBTCase(FEFBT_MULTI_VALUE, "26", RDIM / 2,     SPARSE_TERNARY, RDIM / 2,     FEFBT_GELU_TANH),
+    MakeFEFBTCase(FEFBT_MULTI_VALUE, "27", SPARSE_SLOTS, SPARSE_TERNARY, SPARSE_SLOTS, FEFBT_GELU_TANH,
+                  {1, 1}, FLEXIBLEAUTO),
 };
 // clang-format on
 #else
@@ -620,6 +629,76 @@ protected:
         }
     }
 
+    // One EvalFEFuncBootstrapPrecompute followed by one EvalFEFuncBootstrapWithPrecomp per function must
+    // agree, slot for slot, with running the single-shot EvalFEFuncBootstrap for each of them. The powers
+    // are precomputed for testData.functionType, the longest series of the family, and the shorter series
+    // are evaluated against those same powers.
+    void UnitTest_FEFBT_MultiValue(const TEST_CASE_UTCKKSRNS_FEFBT& testData,
+                                   const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            cc->EvalFEFuncBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto input = BuildNormalizedInput(testData.slots);
+            Plaintext plaintext =
+                cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+
+            auto powers = cc->EvalFEFuncBootstrapPrecompute(ciphertext, GetCoefficients(testData.functionType));
+
+            for (auto functionType : {FEFBT_GELU_TANH, FEFBT_SIGMOID, FEFBT_EXP}) {
+                const auto& coefficients = GetCoefficients(functionType);
+                auto expected            = BuildExpectedOutput(functionType, input);
+
+                Plaintext shared;
+                auto sharedCt = cc->EvalFEFuncBootstrapWithPrecomp(powers, coefficients);
+                cc->Decrypt(keyPair.secretKey, sharedCt, &shared);
+                shared->SetLength(expected.size());
+
+                checkEquality(shared->GetRealPackedValue(), expected, eps,
+                              failmsg + " FE functional bootstrapping with precomputed powers failed for " +
+                                  GetFunctionName(functionType) + ".");
+
+                // and the shared-powers result must match the single-shot path, not merely the target
+                Plaintext single;
+                auto singleCt = cc->EvalFEFuncBootstrap(ciphertext, coefficients);
+                cc->Decrypt(keyPair.secretKey, singleCt, &single);
+                single->SetLength(expected.size());
+
+                checkEquality(shared->GetRealPackedValue(), single->GetRealPackedValue(), eps,
+                              failmsg +
+                                  " precomputed-powers and single-shot FE functional bootstrapping "
+                                  "disagree for " +
+                                  GetFunctionName(functionType) + ".");
+            }
+
+            // A series short enough to be evaluated straight from the power basis scales the powers it is
+            // handed, so the shared ones must survive it: evaluate one, then check a real function again.
+            cc->EvalFEFuncBootstrapWithPrecomp(powers, std::vector<std::complex<double>>(4, {0.1, 0.0}));
+
+            auto expectedAfter = BuildExpectedOutput(FEFBT_SIGMOID, input);
+            Plaintext after;
+            cc->Decrypt(keyPair.secretKey, cc->EvalFEFuncBootstrapWithPrecomp(powers, GetCoefficients(FEFBT_SIGMOID)),
+                        &after);
+            after->SetLength(expectedAfter.size());
+
+            checkEquality(after->GetRealPackedValue(), expectedAfter, eps,
+                          failmsg + " the shared powers did not survive evaluating a short series.");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     // Under CKKSDataType COMPLEX the CoeffsToSlots output carries the imaginary half of the message in its
     // own channel, which FE functional bootstrapping drops (its result, twice the real part of a Fourier
     // series, is real-valued). This pins that contract down: the function is applied to the real part of
@@ -695,6 +774,9 @@ TEST_P(UTCKKSRNS_FEFBT, CKKSRNS) {
             break;
         case FEFBT_COMPLEX_INPUT:
             UnitTest_FEFBT_ComplexInput(test, test.buildTestName());
+            break;
+        case FEFBT_MULTI_VALUE:
+            UnitTest_FEFBT_MultiValue(test, test.buildTestName());
             break;
         default:
             break;

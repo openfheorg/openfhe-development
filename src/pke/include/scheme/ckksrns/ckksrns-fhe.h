@@ -170,6 +170,13 @@ public:
     Ciphertext<DCRTPoly> EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
                                              const std::vector<std::complex<double>>& coefficients) const override;
 
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalFEFuncBootstrapPrecompute(
+        ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<std::complex<double>>& coefficients) const override;
+
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrapWithPrecomp(
+        const std::shared_ptr<seriesPowers<DCRTPoly>>& powers,
+        const std::vector<std::complex<double>>& coefficients) const override;
+
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
@@ -457,6 +464,23 @@ private:
                          const std::shared_ptr<DCRTPoly::Params>& elementParamsRaisedPtr) const;
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
+
+    /**
+   * The function-independent part of FE functional bootstrapping: SlotsToCoeffs, modulus raise,
+   * CoeffsToSlots and the complex exponential.
+   *
+   * @param &ciphertext input ciphertext, with slot values in [-1/2, 1/2)
+   * @return a ciphertext of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message
+   */
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
+
+    /**
+   * Twice the real part of an evaluated Fourier series, obtained by adding its conjugate to it.
+   *
+   * @param &ctxtSeries the evaluated series
+   * @return the real-valued FE functional bootstrapping output
+   */
+    static Ciphertext<DCRTPoly> TwiceRealPart(const Ciphertext<DCRTPoly>& ctxtSeries);
 
     /**
    * Set modulus and recalculates the vector values to fit the modulus

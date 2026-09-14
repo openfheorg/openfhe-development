@@ -3678,7 +3678,44 @@ public:
     */
     Ciphertext<Element> EvalFEFuncBootstrap(ConstCiphertext<Element>& ciphertext,
                                             const std::vector<std::complex<double>>& coefficients) const {
+        ValidateCiphertext(ciphertext);
         return GetScheme()->EvalFEFuncBootstrap(ciphertext, coefficients);
+    }
+
+    /**
+    * @brief Runs the function-independent part of FE functional bootstrapping and returns the powers of the
+    *        complex exponential, so that several functions can be evaluated on one bootstrapped ciphertext.
+    *        Supported only in CKKS.
+    *
+    * The refresh itself - SlotsToCoeffs, modulus raise, CoeffsToSlots and the complex exponential - happens
+    * here and dominates the cost; each subsequent EvalFEFuncBootstrapWithPrecomp only evaluates a series.
+    * The Paterson-Stockmeyer shape is fixed by @p coefficients, so pass the longest series of the family:
+    * every series later evaluated against these powers must have degree at least 5 and at most the degree
+    * of @p coefficients rounded up to the shape's capacity (EvalFEFuncBootstrapWithPrecomp reports the
+    * exact bound if it is exceeded).
+    *
+    * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
+    * @param coefficients  Fourier coefficients of the longest series to be evaluated, c_0 first.
+    * @return Powers of the complex exponential, to be passed to EvalFEFuncBootstrapWithPrecomp.
+    */
+    std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
+        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+        ValidateCiphertext(ciphertext);
+        return GetScheme()->EvalFEFuncBootstrapPrecompute(ciphertext, coefficients);
+    }
+
+    /**
+    * @brief Evaluates one function's Fourier series against powers from EvalFEFuncBootstrapPrecompute.
+    *        Supported only in CKKS.
+    *
+    * @param powers        Powers returned by EvalFEFuncBootstrapPrecompute.
+    * @param coefficients  Fourier coefficients c_j of this function, c_0 first.
+    * @return Refreshed ciphertext holding the function values.
+    */
+    Ciphertext<Element> EvalFEFuncBootstrapWithPrecomp(const std::shared_ptr<seriesPowers<Element>>& powers,
+                                                       const std::vector<std::complex<double>>& coefficients) const {
+        ValidateSeriesPowers(powers);
+        return GetScheme()->EvalFEFuncBootstrapWithPrecomp(powers, coefficients);
     }
 
     template <typename VectorDataType>
