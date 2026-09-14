@@ -150,32 +150,34 @@ public:
     void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
 
     /**
-   * Gets the refresh key (used for serialization). When only the 32-bit internal form exists,
-   * an exact 64-bit copy is built into the returned handle; nothing is cached, so the copy
-   * lives only as long as the caller holds it.
+   * Gets the refresh key at the width the context holds it. Null when the 32-bit internal form
+   * is the resident one, so serialize GetBTKey() rather than this.
    *
    * @return a shared pointer to the refresh key
    */
-    RingGSWACCKey GetRefreshKey() const {
-#if NATIVEINT != 32
-        if (m_BTKey.BSkey == nullptr && m_BTKey.BSkey32 != nullptr)
-            return m_BTKey.BSkey32->Widen(m_params->GetRingGSWParams());
-#endif
+    const RingGSWACCKey& GetRefreshKey() const {
         return m_BTKey.BSkey;
     }
 
     /**
-   * Gets the switching key (used for serialization). Widens a 32-bit internal form into the
-   * returned handle, exactly as GetRefreshKey() does.
+   * Gets the switching key at the width the context holds it, with the same caveat as
+   * GetRefreshKey().
    *
    * @return a shared pointer to the switching key
    */
-    LWESwitchingKey GetSwitchKey() const {
-#if NATIVEINT != 32
-        if (m_BTKey.KSkey == nullptr && m_BTKey.KSkey32 != nullptr)
-            return m_BTKey.KSkey32->Widen(*m_params->GetLWEParams());
-#endif
+    const LWESwitchingKey& GetSwitchKey() const {
         return m_BTKey.KSkey;
+    }
+
+    /**
+   * Gets both bootstrapping keys and the public key, each at the width the context holds it.
+   * This is what serialization takes: the archive records whichever width was resident, and
+   * BTKeyLoad() restores it, narrowing or widening only if the caller asks for the other one.
+   *
+   * @return the bootstrapping keys
+   */
+    const RingGSWBTKey& GetBTKey() const {
+        return m_BTKey;
     }
 
     /**
@@ -211,24 +213,7 @@ public:
     * @return a shared pointer to the bootstrapping key map
     */
     const std::shared_ptr<std::map<uint32_t, RingGSWBTKey>> GetBTKeyMap() const {
-        auto keyMap = std::make_shared<std::map<uint32_t, RingGSWBTKey>>(m_BTKey_map);
-#if NATIVEINT != 32
-        // widen 32-bit internal forms into the returned copy only: the widened keys die with it
-        // once serialized, so AllocTrim() can reclaim the pages without an explicit release step
-        for (auto& [baseG, key] : *keyMap) {
-            if (key.BSkey == nullptr && key.BSkey32 != nullptr) {
-                key.BSkey = (key.BSkey32 == m_BTKey.BSkey32 && m_BTKey.BSkey != nullptr) ?
-                                m_BTKey.BSkey :
-                                key.BSkey32->Widen(m_params->GetRingGSWParams());
-            }
-            if (key.KSkey == nullptr && key.KSkey32 != nullptr) {
-                key.KSkey = (key.KSkey32 == m_BTKey.KSkey32 && m_BTKey.KSkey != nullptr) ?
-                                m_BTKey.KSkey :
-                                key.KSkey32->Widen(*m_params->GetLWEParams());
-            }
-        }
-#endif
-        return keyMap;
+        return std::make_shared<std::map<uint32_t, RingGSWBTKey>>(m_BTKey_map);
     }
 
     /**
@@ -335,18 +320,29 @@ public:
    *        to finish the release.
    */
     void BTKeyLoad(const RingGSWBTKey& key, bool internal32 = true) {
-        // an earlier all-32-bit key generation may have released the 64-bit monomials
-        if (key.BSkey != nullptr)
-            m_params->GetRingGSWParams()->EnsureMonomials();
         m_BTKey = key;
 #if NATIVEINT != 32
-        if (internal32 && CompressBTKeys()) {
-            ReleaseMonomialsIfAll32();
-            AllocTrim();
+        if (internal32) {
+            if (m_BTKey.BSkey != nullptr)
+                m_params->GetRingGSWParams()->EnsureMonomials();
+            if (CompressBTKeys()) {
+                ReleaseMonomialsIfAll32();
+                AllocTrim();
+            }
+            return;
         }
+        // the caller asked for the native width, so widen whatever arrived narrow
+        if (m_BTKey.BSkey == nullptr && m_BTKey.BSkey32 != nullptr)
+            m_BTKey.BSkey = m_BTKey.BSkey32->Widen(m_params->GetRingGSWParams());
+        if (m_BTKey.KSkey == nullptr && m_BTKey.KSkey32 != nullptr)
+            m_BTKey.KSkey = m_BTKey.KSkey32->Widen(*m_params->GetLWEParams());
+        m_BTKey.BSkey32 = nullptr;
+        m_BTKey.KSkey32 = nullptr;
 #else
         (void)internal32;
 #endif
+        if (m_BTKey.BSkey != nullptr)
+            m_params->GetRingGSWParams()->EnsureMonomials();
     }
 
     /**

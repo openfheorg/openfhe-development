@@ -1339,9 +1339,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
 
     /* FHEW computations */
     // Generate the bootstrapping keys (refresh and switching keys)
-    // the switching key qualifies for the 32-bit internal form on every scheme-switching
-    // config (the refreshing key stays 64-bit: Q here is ~2^54 by construction)
-    m_ccLWE->BTKeyGen(lwesk, SYM_ENCRYPT, true);
+    m_ccLWE->BTKeyGen(lwesk);
 
     return evalKeys;
 }

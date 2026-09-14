@@ -78,31 +78,18 @@ int main() {
 
     // Serializing refreshing and key switching keys (needed forbootstrapping)
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/refreshKey.txt", cc1.GetRefreshKey(), SerType::JSON)) {
-        std::cerr << "Error serializing the refreshing key" << std::endl;
+    if (!Serial::SerializeToFile(DATAFOLDER + "/btKey.txt", cc1.GetBTKey(), SerType::JSON)) {
+        std::cerr << "Error serializing the bootstrapping keys" << std::endl;
         return 1;
     }
-    std::cout << "The refreshing key has been serialized." << std::endl;
-
-    if (!Serial::SerializeToFile(DATAFOLDER + "/ksKey.txt", cc1.GetSwitchKey(), SerType::JSON)) {
-        std::cerr << "Error serializing the switching key" << std::endl;
-        return 1;
-    }
-    std::cout << "The key switching key has been serialized." << std::endl;
+    std::cout << "The bootstrapping keys have been serialized." << std::endl;
 
     auto BTKeyMap = cc1.GetBTKeyMap();
     for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++) {
         auto index  = it->first;
         auto thekey = it->second;
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey,
-                                     SerType::JSON)) {
-            std::cerr << "Error serializing the refreshing key" << std::endl;
-            return 1;
-        }
-
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey,
-                                     SerType::JSON)) {
-            std::cerr << "Error serializing the switching key" << std::endl;
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "btKey.txt", thekey, SerType::JSON)) {
+            std::cerr << "Error serializing the bootstrapping keys" << std::endl;
             return 1;
         }
 
@@ -138,43 +125,30 @@ int main() {
 
     // deserializing the refreshing and switching keys (forbootstrapping)
 
-    RingGSWACCKey refreshKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::JSON) == false) {
-        std::cerr << "Could not deserialize the refresh key" << std::endl;
+    RingGSWBTKey btKey;
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/btKey.txt", btKey, SerType::JSON) == false) {
+        std::cerr << "Could not deserialize the bootstrapping keys" << std::endl;
         return 1;
     }
-    std::cout << "The refresh key has been deserialized." << std::endl;
-
-    LWESwitchingKey ksKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::JSON) == false) {
-        std::cerr << "Could not deserialize the switching key" << std::endl;
-        return 1;
-    }
-    std::cout << "The switching key has been deserialized." << std::endl;
+    std::cout << "The bootstrapping keys have been deserialized." << std::endl;
 
     uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
 
     for (size_t i = 0; i < 3; i++) {
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey,
+        RingGSWBTKey mapKey;
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey,
                                         SerType::JSON) == false) {
-            std::cerr << "Could not deserialize the refresh key" << std::endl;
-            return 1;
-        }
-
-        LWESwitchingKey ksKey;
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey,
-                                        SerType::JSON) == false) {
-            std::cerr << "Could not deserialize the switching key" << std::endl;
+            std::cerr << "Could not deserialize the bootstrapping keys" << std::endl;
             return 1;
         }
         std::cout << "The BT map element for baseG = " << baseGlist[i] << " has been deserialized." << std::endl;
 
         // Loading the keys in the cryptocontext
-        cc.BTKeyMapLoadSingleElement(baseGlist[i], {refreshKey, ksKey});
+        cc.BTKeyMapLoadSingleElement(baseGlist[i], mapKey);
     }
 
     // Loading the keys in the cryptocontext
-    cc.BTKeyLoad({refreshKey, ksKey});
+    cc.BTKeyLoad(btKey);
 
     // Deserializing the secret key
 

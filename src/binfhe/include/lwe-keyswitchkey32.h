@@ -34,9 +34,12 @@
 
 #include "lwe-cryptoparameters.h"
 #include "lwe-keyswitchkey-fwd.h"
+#include "utils/serializable.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace lbcrypto {
@@ -59,8 +62,10 @@ using ConstLWESwitchingKey32 = const std::shared_ptr<const LWESwitchingKey32Impl
  * accumulates rows in uint64 and reduces once per output coefficient, which yields the same
  * residues as the 64-bit path, so results are bit-identical.
  */
-class LWESwitchingKey32Impl {
+class LWESwitchingKey32Impl : public Serializable {
 public:
+    LWESwitchingKey32Impl() = default;
+
     // generation runs on 32-bit kernels, exact up to MAX_MODULUS_SIZE32, and the key switch
     // accumulates N*digitCount unreduced rows in uint64
     static bool Fits(const LWECryptoParams& params) {
@@ -136,7 +141,61 @@ public:
         return (m_sizeA + m_sizeB) * sizeof(uint32_t);
     }
 
+    bool operator==(const LWESwitchingKey32Impl& other) const {
+        if (m_N != other.m_N || m_m != other.m_m || m_d != other.m_d || m_top != other.m_top || m_n != other.m_n)
+            return false;
+        return std::equal(m_keyA.get(), m_keyA.get() + m_sizeA, other.m_keyA.get()) &&
+               std::equal(m_keyB.get(), m_keyB.get() + m_sizeB, other.m_keyB.get());
+    }
+
+    bool operator!=(const LWESwitchingKey32Impl& other) const {
+        return !(*this == other);
+    }
+
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("N", m_N));
+        ar(::cereal::make_nvp("m", m_m));
+        ar(::cereal::make_nvp("d", m_d));
+        ar(::cereal::make_nvp("top", m_top));
+        ar(::cereal::make_nvp("n", m_n));
+        ar(::cereal::make_nvp("a", ::cereal::binary_data(m_keyA.get(), m_sizeA * sizeof(uint32_t))));
+        ar(::cereal::make_nvp("b", ::cereal::binary_data(m_keyB.get(), m_sizeB * sizeof(uint32_t))));
+    }
+
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("N", m_N));
+        ar(::cereal::make_nvp("m", m_m));
+        ar(::cereal::make_nvp("d", m_d));
+        ar(::cereal::make_nvp("top", m_top));
+        ar(::cereal::make_nvp("n", m_n));
+        Size();
+        m_keyA.reset(new uint32_t[m_sizeA]);
+        m_keyB.reset(new uint32_t[m_sizeB]);
+        ar(::cereal::make_nvp("a", ::cereal::binary_data(m_keyA.get(), m_sizeA * sizeof(uint32_t))));
+        ar(::cereal::make_nvp("b", ::cereal::binary_data(m_keyB.get(), m_sizeB * sizeof(uint32_t))));
+    }
+
+    std::string SerializedObjectName() const override {
+        return "LWESwitchingKey32";
+    }
+
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
+
 private:
+    void Size() {
+        m_rows  = static_cast<uint64_t>(m_d - 1) * (m_m - 1) + (m_top - 1);
+        m_sizeA = static_cast<uint64_t>(m_N) * m_rows * m_n;
+        m_sizeB = static_cast<uint64_t>(m_N) * m_rows;
+    }
+
     uint64_t Slot(uint32_t i, uint32_t val, uint32_t pos) const {
         return static_cast<uint64_t>(i) * m_rows + static_cast<uint64_t>(pos) * (m_m - 1) + (val - 1);
     }

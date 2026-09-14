@@ -36,6 +36,7 @@
 #include "rgsw-cryptoparameters.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -92,8 +93,10 @@ inline void WidenAcc32Into(const std::vector<NativePoly32>& acc32, std::vector<N
  * below 2^28, so the key holds in half the memory of the 64-bit form and evaluation at either
  * width produces bit-identical results.
  */
-class RingGSWACCKey32Impl {
+class RingGSWACCKey32Impl : public Serializable {
 public:
+    RingGSWACCKey32Impl() = default;
+
     // one RGSW eval key: [digit][column]
     using EvalKey32 = std::vector<std::vector<NativePoly32>>;
 
@@ -130,6 +133,40 @@ public:
 
     // resident bytes of key material, for the halved-key measurement
     uint64_t KeyBytes() const;
+
+    bool operator==(const RingGSWACCKey32Impl& other) const {
+        return m_N == other.m_N && m_key == other.m_key;
+    }
+
+    bool operator!=(const RingGSWACCKey32Impl& other) const {
+        return !(*this == other);
+    }
+
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("N", m_N));
+        ar(::cereal::make_nvp("p", m_polyParams));
+        ar(::cereal::make_nvp("k", m_key));
+    }
+
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("N", m_N));
+        ar(::cereal::make_nvp("p", m_polyParams));
+        ar(::cereal::make_nvp("k", m_key));
+    }
+
+    std::string SerializedObjectName() const override {
+        return "RingGSWACCKey32";
+    }
+
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 
 private:
     void Init(const std::shared_ptr<RingGSWCryptoParams>& params);

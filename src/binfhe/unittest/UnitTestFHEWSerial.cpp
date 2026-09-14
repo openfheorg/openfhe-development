@@ -56,30 +56,31 @@ void UnitTestFHEWSerial(const ST& sertype, const PS& secLevel, BINFHE_METHOD var
         EXPECT_EQ(*cc2.GetParams(), *cc1.GetParams()) << errMsg << " Context mismatch";
     }
 
-    RingGSWACCKey refreshKey;
+    RingGSWBTKey btKey;
     {
         std::stringstream s;
-        Serial::Serialize(cc1.GetRefreshKey(), s, sertype);
-        Serial::Deserialize(refreshKey, s, sertype);
-
-        // EXPECT_EQ( *refreshKey, *cc1.GetRefreshKey()) << errMsg << "Bootstrapping key mismatch: refresh key (1)";
-    }
-
-    LWESwitchingKey switchKey;
-    {
-        std::stringstream s;
-        Serial::Serialize(cc1.GetSwitchKey(), s, sertype);
-        Serial::Deserialize(switchKey, s, sertype);
-
-        // EXPECT_EQ( *switchKey, *cc1.GetSwitchKey()) << errMsg << "Bootstrapping key mismatch: switching key (1)";
+        Serial::Serialize(cc1.GetBTKey(), s, sertype);
+        Serial::Deserialize(btKey, s, sertype);
     }
 
     // Loading deserialized bootstrapping keys
-    cc2.BTKeyLoad({refreshKey, switchKey});
+    cc2.BTKeyLoad(btKey);
 
-    // Check the keys after adding them to cc2
-    EXPECT_EQ(*(cc2.GetRefreshKey()), *(cc1.GetRefreshKey())) << errMsg << "Bootstrapping key mismatch: refresh key";
-    EXPECT_EQ(*(cc2.GetSwitchKey()), *(cc1.GetSwitchKey())) << errMsg << "Bootstrapping key mismatch: switching key";
+    // Check the keys after adding them to cc2, at whichever width each context holds them
+    EXPECT_EQ(cc1.HasInternal32RefreshKey(), cc2.HasInternal32RefreshKey()) << errMsg << " refresh key width";
+    EXPECT_EQ(cc1.HasInternal32SwitchKey(), cc2.HasInternal32SwitchKey()) << errMsg << " switching key width";
+#if NATIVEINT != 32
+    if (cc1.HasInternal32RefreshKey())
+        EXPECT_EQ(*(cc2.GetBTKey().BSkey32), *(cc1.GetBTKey().BSkey32)) << errMsg << " refresh key";
+    else
+#endif
+        EXPECT_EQ(*(cc2.GetRefreshKey()), *(cc1.GetRefreshKey())) << errMsg << " refresh key";
+#if NATIVEINT != 32
+    if (cc1.HasInternal32SwitchKey())
+        EXPECT_EQ(*(cc2.GetBTKey().KSkey32), *(cc1.GetBTKey().KSkey32)) << errMsg << " switching key";
+    else
+#endif
+        EXPECT_EQ(*(cc2.GetSwitchKey()), *(cc1.GetSwitchKey())) << errMsg << " switching key";
 
     LWEPrivateKey sk2;
     {

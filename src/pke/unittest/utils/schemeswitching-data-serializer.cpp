@@ -172,13 +172,8 @@ void SchemeSwitchingDataSerializer::Serialize() {
         THROW_SERIALIZATION_ERROR;
     }
     //=============================================================================================================
-    outFile = dataDirectory + "/" + binFHEBootRefreshKeyFile;
-    if (!Serial::SerializeToFile(outFile, binFHECryptoContext->GetRefreshKey(), SERTYPE)) {
-        THROW_SERIALIZATION_ERROR;
-    }
-    //=============================================================================================================
-    outFile = dataDirectory + "/" + binFHEBootRotKeyFile;
-    if (!Serial::SerializeToFile(outFile, binFHECryptoContext->GetSwitchKey(), SERTYPE)) {
+    outFile = dataDirectory + "/" + binFHEBootKeyFile;
+    if (!Serial::SerializeToFile(outFile, binFHECryptoContext->GetBTKey(), SERTYPE)) {
         THROW_SERIALIZATION_ERROR;
     }
     //=============================================================================================================
@@ -188,13 +183,8 @@ void SchemeSwitchingDataSerializer::Serialize() {
         uint32_t index      = it->first;
         RingGSWBTKey thekey = it->second;
 
-        outFile = createMapFileName(index, baseRefreshKeyFile);
-        if (!Serial::SerializeToFile(outFile, thekey.BSkey, SERTYPE)) {
-            THROW_SERIALIZATION_ERROR;
-        }
-
-        outFile = createMapFileName(index, baseSwitchingKeyFile);
-        if (!Serial::SerializeToFile(outFile, thekey.KSkey, SERTYPE)) {
+        outFile = createMapFileName(index, baseBTKeyFile);
+        if (!Serial::SerializeToFile(outFile, thekey, SERTYPE)) {
             THROW_SERIALIZATION_ERROR;
         }
 
@@ -261,13 +251,8 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
     }
     //=============================================================================================================
     RingGSWBTKey BTKey;
-    outFile = dataDirectory + "/" + binFHEBootRefreshKeyFile;
-    if (!Serial::DeserializeFromFile(outFile, BTKey.BSkey, SERTYPE)) {
-        THROW_DESERIALIZATION_ERROR;
-    }
-    //=============================================================================================================
-    outFile = dataDirectory + "/" + binFHEBootRotKeyFile;
-    if (!Serial::DeserializeFromFile(outFile, BTKey.KSkey, SERTYPE)) {
+    outFile = dataDirectory + "/" + binFHEBootKeyFile;
+    if (!Serial::DeserializeFromFile(outFile, BTKey, SERTYPE)) {
         THROW_DESERIALIZATION_ERROR;
     }
     binFHECryptoContext->BTKeyLoad(BTKey);
@@ -283,13 +268,8 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
     }
     for (uint32_t index : indices) {
         RingGSWBTKey thekey;
-        outFile = createMapFileName(index, baseRefreshKeyFile);
-        if (!Serial::DeserializeFromFile(outFile, thekey.BSkey, SERTYPE)) {
-            THROW_DESERIALIZATION_ERROR;
-        }
-
-        outFile = createMapFileName(index, baseSwitchingKeyFile);
-        if (!Serial::DeserializeFromFile(outFile, thekey.KSkey, SERTYPE)) {
+        outFile = createMapFileName(index, baseBTKeyFile);
+        if (!Serial::DeserializeFromFile(outFile, thekey, SERTYPE)) {
             THROW_DESERIALIZATION_ERROR;
         }
 

@@ -99,7 +99,7 @@ void UnitTestInternal32BitIdentical(BINFHE_PARAMSET set, BINFHE_METHOD method, c
     }
 
     // narrow through the public route an application would use
-    cc.BTKeyLoad({cc.GetRefreshKey(), cc.GetSwitchKey()}, /*internal32=*/true);
+    cc.BTKeyLoad(cc.GetBTKey(), /*internal32=*/true);
     ASSERT_TRUE(cc.HasInternal32RefreshKey()) << msg << " refresh key did not convert";
     ASSERT_TRUE(cc.HasInternal32SwitchKey()) << msg << " switching key did not convert";
 
@@ -189,40 +189,47 @@ TEST(UnitTestFHEWNativeSize, KeyLoadNarrows) {
 
     BinFHEContext dst;
     dst.GenerateBinFHEContext(TOY, GINX);
-    dst.BTKeyLoad({src.GetRefreshKey(), src.GetSwitchKey()}, /*internal32=*/true);
+    dst.BTKeyLoad(src.GetBTKey(), /*internal32=*/true);
     EXPECT_TRUE(dst.HasInternal32RefreshKey()) << msg << " loaded refresh key did not narrow";
     EXPECT_TRUE(dst.HasInternal32SwitchKey()) << msg << " loaded switching key did not narrow";
     ExpectTruthTables(dst, sk, msg);
 }
 
-// The serialization getters widen a 32-bit key into the handle they return, without giving up
-// the context's own 32-bit form, and what they return must survive a round trip.
-TEST(UnitTestFHEWNativeSize, SerializationGettersWiden) {
-    const std::string msg("UnitTestFHEWNativeSize.SerializationGettersWiden:");
+// A 32-bit key serializes at its own width, and the archive records which width that was, so it
+// reloads narrow by default and widens only when the caller asks for the native form.
+TEST(UnitTestFHEWNativeSize, NarrowKeysSerializeNarrow) {
+    const std::string msg("UnitTestFHEWNativeSize.NarrowKeysSerializeNarrow:");
     BinFHEContext cc;
     cc.GenerateBinFHEContext(TOY, GINX);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk, SYM_ENCRYPT, /*internal32=*/true);
     ASSERT_TRUE(cc.HasInternal32RefreshKey()) << msg << " expected a 32-bit refresh key to start from";
+    ASSERT_EQ(nullptr, cc.GetRefreshKey()) << msg << " the 64-bit handle must be empty while the 32-bit one is held";
 
-    std::stringstream sb, ss;
-    Serial::Serialize(cc.GetRefreshKey(), sb, SerType::BINARY);
-    Serial::Serialize(cc.GetSwitchKey(), ss, SerType::BINARY);
-
-    // widening is for the caller's handle only; the context keeps its 32-bit keys
+    std::stringstream s;
+    Serial::Serialize(cc.GetBTKey(), s, SerType::BINARY);
     EXPECT_TRUE(cc.HasInternal32RefreshKey()) << msg << " the context lost its 32-bit refresh key";
     EXPECT_TRUE(cc.HasInternal32SwitchKey()) << msg << " the context lost its 32-bit switching key";
 
-    RingGSWACCKey refreshKey;
-    LWESwitchingKey switchKey;
-    Serial::Deserialize(refreshKey, sb, SerType::BINARY);
-    Serial::Deserialize(switchKey, ss, SerType::BINARY);
+    RingGSWBTKey key;
+    Serial::Deserialize(key, s, SerType::BINARY);
+    ASSERT_NE(nullptr, key.BSkey32) << msg << " the archive should carry the 32-bit refresh key";
+    ASSERT_NE(nullptr, key.KSkey32) << msg << " the archive should carry the 32-bit switching key";
+    EXPECT_EQ(nullptr, key.BSkey) << msg << " no 64-bit refresh key should have been written";
+    EXPECT_EQ(*key.BSkey32, *cc.GetBTKey().BSkey32) << msg << " refresh key differs after the round trip";
+    EXPECT_EQ(*key.KSkey32, *cc.GetBTKey().KSkey32) << msg << " switching key differs after the round trip";
 
-    BinFHEContext loaded;
-    loaded.GenerateBinFHEContext(TOY, GINX);
-    loaded.BTKeyLoad({refreshKey, switchKey}, /*internal32=*/false);
-    EXPECT_FALSE(loaded.HasInternal32RefreshKey()) << msg << " the wire form should load as a 64-bit key";
-    ExpectTruthTables(loaded, sk, msg);
+    BinFHEContext narrow;
+    narrow.GenerateBinFHEContext(TOY, GINX);
+    narrow.BTKeyLoad(key, /*internal32=*/true);
+    EXPECT_TRUE(narrow.HasInternal32RefreshKey()) << msg << " the narrow archive should load narrow";
+    ExpectTruthTables(narrow, sk, msg);
+
+    BinFHEContext wide;
+    wide.GenerateBinFHEContext(TOY, GINX);
+    wide.BTKeyLoad(key, /*internal32=*/false);
+    EXPECT_FALSE(wide.HasInternal32RefreshKey()) << msg << " asking for the native width should widen";
+    ExpectTruthTables(wide, sk, msg);
 }
 
 // The switching key holds rows for digit values 1..baseKS-1 only, and its top digit position only

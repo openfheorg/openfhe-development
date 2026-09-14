@@ -239,9 +239,8 @@ TEST(UNITTestFHEWExtended, RefreshKeyTopPositionCompact) {
     EXPECT_EQ(8u, rgsw->GetDigitExtentR(1)) << "q = 1024 in base 128 reaches 8 values at the top position";
 
     auto sk = cc.KeyGen();
-    cc.BTKeyGen(sk);
-    auto refreshKey = cc.GetRefreshKey();
-    const auto& key = refreshKey->GetElements();
+    cc.BTKeyGen(sk, SYM_ENCRYPT, /*internal32=*/false);
+    const auto& key = cc.GetRefreshKey()->GetElements();
     ASSERT_EQ(params.latticeParam, key.size());
     ASSERT_EQ(128u, key[0].size());
     ASSERT_EQ(2u, key[0][1].size());

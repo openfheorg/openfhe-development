@@ -45,6 +45,7 @@
 #include <cstdlib>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace lbcrypto {
@@ -61,7 +62,6 @@ struct RingGSWBTKey {
     // 32-bit internal forms, generated directly by KeyGen(internal32) or narrowed by
     // BTKeyGen or BTKeyLoad with internal32 requested. When set, the 64-bit member stays null (or is released)
     // and the 32-bit copy is the only resident one, so the key material is half size.
-    // Serialization requires the 64-bit forms, so the internal path is opt-in.
     RingGSWACCKey32 BSkey32;
     LWESwitchingKey32 KSkey32;
 #endif
@@ -73,6 +73,42 @@ struct RingGSWBTKey {
 #else
         return BSkey != nullptr;
 #endif
+    }
+
+    // Each key is written in whichever width the context holds it at, and the null members say
+    // which that was, so the archive needs no separate discriminator.
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("bs", BSkey));
+        ar(::cereal::make_nvp("ks", KSkey));
+        ar(::cereal::make_nvp("pk", Pkey));
+#if NATIVEINT != 32
+        ar(::cereal::make_nvp("bs32", BSkey32));
+        ar(::cereal::make_nvp("ks32", KSkey32));
+#endif
+    }
+
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("bs", BSkey));
+        ar(::cereal::make_nvp("ks", KSkey));
+        ar(::cereal::make_nvp("pk", Pkey));
+#if NATIVEINT != 32
+        ar(::cereal::make_nvp("bs32", BSkey32));
+        ar(::cereal::make_nvp("ks32", KSkey32));
+#endif
+    }
+
+    std::string SerializedObjectName() const {
+        return "RingGSWBTKey";
+    }
+
+    static uint32_t SerializedVersion() {
+        return 1;
     }
 };
 
