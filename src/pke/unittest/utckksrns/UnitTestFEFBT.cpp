@@ -59,6 +59,7 @@ enum TEST_CASE_TYPE : int {
     FEFBT_ACCURACY = 0,
     FEFBT_POST_ROTATION,
     FEFBT_CS_VS_FA,
+    FEFBT_COMPLEX_INPUT,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -72,6 +73,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FEFBT_CS_VS_FA:
             typeName = "FEFBT_CS_VS_FA";
+            break;
+        case FEFBT_COMPLEX_INPUT:
+            typeName = "FEFBT_COMPLEX_INPUT";
             break;
         default:
             typeName = "UNKNOWN";
@@ -201,6 +205,16 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCSvsFACase(const std::string& description, ui
     return testCase;
 }
 
+// A CKKSDataType COMPLEX case: the input carries nonzero imaginary parts, which FE functional
+// bootstrapping discards (its output is twice the real part of a Fourier series, hence always real).
+TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTComplexInputCase(const std::string& description, uint32_t slots,
+                                                    FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget) {
+    TEST_CASE_UTCKKSRNS_FEFBT testCase = MakeFEFBTCase(FEFBT_COMPLEX_INPUT, description, slots, SPARSE_TERNARY, slots,
+                                                       functionType, std::move(levelBudget));
+    testCase.params.ckksDataType       = COMPLEX;
+    return testCase;
+}
+
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     MakeFEFBTCase(FEFBT_ACCURACY,      "01", RDIM / 2,    SPARSE_TERNARY,      RDIM / 2,   FEFBT_SIGMOID),
@@ -248,6 +262,8 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     MakeFEFBTCSvsFACase("21", SPARSE_SLOTS, SPARSE_TERNARY,      FEFBT_SIGMOID, {1, 1}, 1.0),
     MakeFEFBTCSvsFACase("22", RDIM / 2,     UNIFORM_TERNARY,     FEFBT_SIGMOID, {3, 2}, 1.0),
     MakeFEFBTCSvsFACase("23", RDIM / 2,     SPARSE_ENCAPSULATED, FEFBT_SIGMOID, {3, 2}, 1.0),
+    MakeFEFBTComplexInputCase("24", RDIM / 2,     FEFBT_SIGMOID, {3, 2}),
+    MakeFEFBTComplexInputCase("25", SPARSE_SLOTS, FEFBT_SIGMOID, {1, 1}),
 };
 // clang-format on
 #else
@@ -603,6 +619,64 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+    // Under CKKSDataType COMPLEX the CoeffsToSlots output carries the imaginary half of the message in its
+    // own channel, which FE functional bootstrapping drops (its result, twice the real part of a Fourier
+    // series, is real-valued). This pins that contract down: the function is applied to the real part of
+    // every slot, and the imaginary part of the result is zero regardless of the input's imaginary part.
+    void UnitTest_FEFBT_ComplexInput(const TEST_CASE_UTCKKSRNS_FEFBT& testData,
+                                     const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            cc->EvalFEFuncBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto realPart = BuildNormalizedInput(testData.slots);
+            auto expected = BuildExpectedOutput(testData.functionType, realPart);
+
+            // imaginary parts large enough that leaking any of them into the result would break the
+            // comparison below by orders of magnitude more than eps
+            std::vector<std::complex<double>> input(testData.slots);
+            for (uint32_t i = 0; i < testData.slots; ++i)
+                input[i] = {realPart[i], 0.25 * std::sin(6.0 * M_PI * i / testData.slots)};
+
+            Plaintext plaintext =
+                cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+            auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, resultCt, &result);
+            result->SetLength(expected.size());
+
+            const auto packed = result->GetCKKSPackedValue();
+            std::vector<double> actualReal(packed.size());
+            std::vector<double> actualImag(packed.size());
+            for (size_t i = 0; i < packed.size(); ++i) {
+                actualReal[i] = packed[i].real();
+                actualImag[i] = packed[i].imag();
+            }
+
+            checkEquality(actualReal, expected, eps,
+                          failmsg + " FE functional bootstrapping of a complex input did not apply " +
+                              GetFunctionName(testData.functionType) + " to the real part.");
+            checkEquality(actualImag, std::vector<double>(packed.size(), 0.0), eps,
+                          failmsg +
+                              " FE functional bootstrapping of a complex input returned a nonzero "
+                              "imaginary part.");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 
 TEST_P(UTCKKSRNS_FEFBT, CKKSRNS) {
@@ -618,6 +692,9 @@ TEST_P(UTCKKSRNS_FEFBT, CKKSRNS) {
             break;
         case FEFBT_CS_VS_FA:
             UnitTest_FEFBT_CSvsFA(test, test.buildTestName());
+            break;
+        case FEFBT_COMPLEX_INPUT:
+            UnitTest_FEFBT_ComplexInput(test, test.buildTestName());
             break;
         default:
             break;

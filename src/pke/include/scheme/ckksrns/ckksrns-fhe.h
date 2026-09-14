@@ -795,7 +795,7 @@ private:
         -1.0214195366652095912e-15,  std::complex<double>(0, -3.0730398230793526048e-16),
         9.1259026151799038637e-17};
 
-    // Coefficients for the function std::exp(1i * Pi/4.0 * x) in [-25, 25] of degree 48
+    // Coefficients for the function std::exp(1i * Pi/4.0 * x) in [-28, 28] of degree 48
     // Need three double-angle iterations to get std::exp(1i * 2Pi * x)
     static const inline std::vector<std::complex<double>> coeff_exp_28_double_48{
         std::complex<double>(-0.23921872631172760859, 0),    std::complex<double>(0, 0.23657700115383345496),

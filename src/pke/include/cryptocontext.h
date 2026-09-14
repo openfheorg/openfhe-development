@@ -3646,11 +3646,36 @@ public:
         return m_scheme->EvalBootstrapStCFirst(ciphertext, numIterations, precision);
     }
 
+    /**
+    * @brief Precomputes the encoding/decoding plaintexts for FE functional bootstrapping. Supported only in
+    *        CKKS, with HYBRID key switching and FirstModSize == ScalingModSize + 1.
+    *
+    * Shares the bootstrapping precomputation slot for @p slots with EvalBootstrapSetup and EvalFBTSetup, so
+    * a context can hold the precomputation for only one of them per slot count.
+    *
+    * @param levelBudget  Levels spent on CoeffsToSlots and SlotsToCoeffs.
+    * @param dim1         Baby-step dimensions for the two linear transforms (0 = choose automatically).
+    * @param slots        Number of slots to be bootstrapped (0 = full packing).
+    */
     void EvalFEFuncBootstrapSetup(const std::vector<uint32_t>& levelBudget = {5, 4},
                                   const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) {
         GetScheme()->EvalFEFuncBootstrapSetup(*this, levelBudget, dim1, slots);
     }
 
+    /**
+    * @brief Refreshes a ciphertext and evaluates a function on it in one pass, by evaluating the function's
+    *        Fourier extension over the bootstrapped message. Supported only in CKKS.
+    *
+    * The message is embedded into half of the series period (t = m/2), so the input must lie in [-1/2, 1/2)
+    * and @p coefficients must be the Fourier extension of the target function over that domain. The result
+    * is 2*Re(c_0 + sum_{j>=1} c_j exp(2*Pi*i*j*t)) and is therefore always real-valued: with CKKSDataType
+    * COMPLEX the imaginary part of each input slot is discarded and the output slots have zero imaginary
+    * part. Use CKKSDataType REAL unless complex intermediates are needed elsewhere in the computation.
+    *
+    * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
+    * @param coefficients  Fourier coefficients c_j of the target function, c_0 first.
+    * @return Refreshed ciphertext holding the function values.
+    */
     Ciphertext<Element> EvalFEFuncBootstrap(ConstCiphertext<Element>& ciphertext,
                                             const std::vector<std::complex<double>>& coefficients) const {
         return GetScheme()->EvalFEFuncBootstrap(ciphertext, coefficients);

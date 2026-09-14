@@ -1482,7 +1482,7 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS FE functional bootstrapping is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     OPENFHE_THROW("128-bit CKKS FE functional bootstrapping is not supported.");
 #endif
 
@@ -1654,7 +1654,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS FE functional bootstrapping is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+#if NATIVEINT == 128
     OPENFHE_THROW("128-bit CKKS FE functional bootstrapping is not supported.");
 #endif
 
@@ -1819,6 +1819,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
     auto ctxtEnc =
         (isLTBootstrap) ? EvalLinearTransform(p.m_U0hatTPre, raised) : EvalCoeffsToSlots(p.m_U0hatTPreFFT, raised);
 
+    // Keep only the real channel: for CKKSDataType REAL the encoding matrices pack both coefficient halves
+    // into it (flagPack is false in EvalFEFuncBootstrapSetup), and for COMPLEX the imaginary half of the
+    // message is dropped, the Fourier series result being real-valued either way.
     auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
     auto conj        = Conjugate(ctxtEnc, evalKeyMap);
     cc->EvalAddInPlace(ctxtEnc, conj);
