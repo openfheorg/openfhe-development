@@ -130,6 +130,11 @@ public:
    * power-of-two n s.t. 2n|q-1. Bit reversing indexes. [Algorithm 1 in
    * https://eprint.iacr.org/2016/504.pdf]
    *
+   * Every coefficient of \p element must already be reduced to [0, modulus). The deferred
+   * reduction schedule lets values grow by twice the modulus per stage and folds them back in
+   * the peeled final stage, so an unreduced input exceeds the bound that schedule is derived
+   * from and the transform returns a wrong result.
+   *
    * @param &rootOfUnityTable is the table with the n-th root of unity powers in
    * bit reverse order.
    * @param &element[in,out] is the input/output of the transform of type VecType and length n.
@@ -163,6 +168,9 @@ public:
    * power-of-two n s.t. 2n|q-1. Bit reversing indexes. The method works for the
    * NativeInteger case based on NTL's modular multiplication. [Algorithm 1 in
    * https://eprint.iacr.org/2016/504.pdf]
+   *
+   * Every coefficient of \p element must already be reduced to [0, modulus), for the reason
+   * given on the two-argument overload above.
    *
    * @param &rootOfUnityTable is the table with the root of unity powers in bit
    * reverse order.
