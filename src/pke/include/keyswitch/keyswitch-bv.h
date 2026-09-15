@@ -65,14 +65,19 @@ public:
     virtual ~KeySwitchBV() = default;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey) const override;
+                                           const PrivateKey<DCRTPoly> newPrivateKey, uint32_t levels = 0) const override;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey,
-                                           const EvalKey<DCRTPoly> evalKey) const override;
+                                           const PrivateKey<DCRTPoly> newPrivateKey, const EvalKey<DCRTPoly> evalKey,
+                                           uint32_t levels = 0) const override;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PublicKey<DCRTPoly> newPublicKey) const override;
+
+    EvalKey<DCRTPoly> CompressEvalKey(const EvalKey<DCRTPoly> evalKey, uint32_t levels) const override;
+
+    uint32_t GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                 uint32_t levels) const override;
 
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 

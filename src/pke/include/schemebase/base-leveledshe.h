@@ -314,7 +314,7 @@ public:
    * the same secret key as that of ciphertext1 and ciphertext2.
    * @param *newCiphertext the new resulting ciphertext.
    */
-    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey) const;
+    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels = 0) const;
 
     /**
    * Virtual function to define the interface for generating a evaluation key
@@ -323,7 +323,8 @@ public:
    * @param &originalPrivateKey Original private key used for encryption.
    * @param *evalMultKeys the resulting evalution key vector list.
    */
-    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const;
+    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey,
+                                                          uint32_t levels = 0) const;
 
     //------------------------------------------------------------------------------
     // EVAL MULTIPLICATION CIPHERTEXT & CIPHERTEXT
@@ -567,7 +568,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels = 0) const;
 
     /**
    * Virtual function for evaluating automorphism of ciphertext at index i
@@ -640,7 +641,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList, uint32_t levels = 0) const;
 
     /**
    * Moves i-th slot to slot 0

@@ -207,50 +207,22 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             m_paramsQl.resize(1);
             m_paramsRl.resize(1);
             m_paramsQlRl.resize(1);
-            m_paramsQl[0] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
-            m_paramsRl[0] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliR, rootsR);
-            std::vector<NativeInteger> moduliQR(sizeQ + sizeR);
-            std::vector<NativeInteger> rootsQR(sizeQ + sizeR);
-            for (uint32_t i = 0; i < sizeQ; ++i) {
-                moduliQR[i] = moduliQ[i];
-                rootsQR[i]  = rootsQ[i];
-            }
-            for (uint32_t j = 0; j < sizeR; ++j) {
-                moduliQR[sizeQ + j] = moduliR[j];
-                rootsQR[sizeQ + j]  = rootsR[j];
-            }
-            m_paramsQlRl[0] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQR, rootsQR);
+            m_paramsQl[0]   = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQ);
+            m_paramsRl[0]   = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliR, rootsR);
+            m_paramsQlRl[0] =
+                std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQ, *m_paramsRl[0], sizeR);
         }
         else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
             m_paramsQl.resize(sizeQ);
             m_paramsRl.resize(sizeQ);
             m_paramsQlRl.resize(sizeQ);
 
-            std::vector<NativeInteger> moduliQl;
-            moduliQl.reserve(sizeQ);
-            std::vector<NativeInteger> rootsQl;
-            rootsQl.reserve(sizeQ);
-            std::vector<NativeInteger> moduliRl;
-            moduliRl.reserve(sizeQ);
-            std::vector<NativeInteger> rootsRl;
-            rootsRl.reserve(sizeQ);
-            std::vector<NativeInteger> moduliQlRl;
-            moduliQlRl.reserve(2 * sizeQ);
-            std::vector<NativeInteger> rootsQlRl;
-            rootsQlRl.reserve(2 * sizeQ);
-
+            auto paramsR = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliR, rootsR);
             for (uint32_t l = 0; l < sizeQ; ++l) {
-                moduliQl.push_back(moduliQ[l]);
-                rootsQl.push_back(rootsQ[l]);
-                m_paramsQl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQl, rootsQl);
-                moduliRl.push_back(moduliR[l]);
-                rootsRl.push_back(rootsR[l]);
-                m_paramsRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliRl, rootsRl);
-                moduliQlRl.insert(moduliQlRl.begin() + l, moduliQ[l]);
-                rootsQlRl.insert(rootsQlRl.begin() + l, rootsQ[l]);
-                moduliQlRl.push_back(moduliR[l]);
-                rootsQlRl.push_back(rootsR[l]);
-                m_paramsQlRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQlRl, rootsQlRl);
+                m_paramsQl[l] = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), l + 1);
+                m_paramsRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(*paramsR, l + 1);
+                m_paramsQlRl[l] =
+                    std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), l + 1, *paramsR, l + 1);
             }
         }
 

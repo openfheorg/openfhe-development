@@ -73,22 +73,51 @@ public:
    *
    * @param &originalPrivateKey Original private key used for encryption.
    * @param &newPrivateKey New private key to generate the keyswitch hint.
+   * @param levels number of RNS limbs to drop from the generated key relative to a full
+   * key; the key can only be applied to ciphertexts with at most (full - levels) limbs.
    * @param *KeySwitchHint is where the resulting keySwitchHint will be
    * placed.
    */
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
-                                                  const PrivateKey<Element> newPrivateKey) const {
+                                                  const PrivateKey<Element> newPrivateKey, uint32_t levels = 0) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
                                                   const PrivateKey<Element> newPrivateKey,
-                                                  const EvalKey<Element> evalKey) const {
+                                                  const EvalKey<Element> evalKey, uint32_t levels = 0) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
                                                   const PublicKey<Element> newPublicKey) const {
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
+    }
+
+    /**
+   * Creates a copy of an existing evaluation key with `levels` RNS limbs removed from its
+   * Q basis. The compressed key can only be applied to ciphertexts with at most as many
+   * limbs as the compressed key.
+   *
+   * @param evalKey the evaluation key to compress.
+   * @param levels number of RNS limbs to drop.
+   * @return the compressed evaluation key.
+   */
+    virtual EvalKey<Element> CompressEvalKey(const EvalKey<Element> evalKey, uint32_t levels) const {
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
+    }
+
+    /**
+   * Number of towers in each ring element of a key-switching key generated with `levels`
+   * RNS limbs dropped. Used to decide whether an existing evaluation key can serve in
+   * place of a newly requested one.
+   *
+   * @param cryptoParams the crypto parameters of the context.
+   * @param levels number of RNS limbs to drop.
+   * @return the number of towers of each element of such a key.
+   */
+    virtual uint32_t GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+                                         uint32_t levels) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
