@@ -41,6 +41,7 @@
 #include "math/hal/integer.h"
 #include "math/nbtheory.h"
 
+#include "utils/constanttime.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
@@ -732,6 +733,19 @@ public:
     }
 
     /**
+   * Constant-time variant of ModAddFastEq for secret-dependent operands (< modulus):
+   * the reduction is selected with a mask instead of a branch.
+   *
+   * @param &b is the scalar to add.
+   * @param &modulus is the modulus to perform operations with.
+   * @return is the result of the modulus addition operation.
+   */
+    NativeIntegerT& ModAddFastEqCT(const NativeIntegerT& b, const NativeIntegerT& modulus) {
+        m_value = lbcrypto::ct::SubIfGE<NativeInt>(m_value + b.m_value, modulus.m_value);
+        return *this;
+    }
+
+    /**
    * Barrett modulus addition operation.
    *
    * @param &b is the scalar to add.
@@ -1155,6 +1169,25 @@ public:
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
         m_value     = static_cast<NativeInt>(yprime >= 0 ? yprime : yprime + modulus.m_value);
         return *this;
+    }
+
+    /**
+   * Constant-time variant of ModMulFastConst for secret-dependent operands: the final correction
+   * is selected with a mask instead of a branch. Not constant-time where MultDHi falls back to
+   * MultDPortable, which branches on carries: 128-bit native integers, and 64-bit native integers
+   * without HAVE_INT128 outside x86-64 GCC/clang.
+   *
+   * @param &b is the NativeIntegerT to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param &bInv precomputation for b.
+   * @return is the result of the modulus multiplication operation.
+   */
+    NativeIntegerT ModMulFastConstCT(const NativeIntegerT& b, const NativeIntegerT& modulus,
+                                     const NativeIntegerT& bInv) const {
+        NativeInt q{MultDHi(m_value, bInv.m_value) + 1};
+        // yprime is in [-modulus, modulus) as a two's complement word; add modulus back if negative
+        NativeInt yprime{m_value * b.m_value - q * modulus.m_value};
+        return {yprime + (lbcrypto::ct::TopBitMask(yprime) & modulus.m_value)};
     }
 
     /**
