@@ -36,6 +36,8 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - All secret key distributions are supported for bootstrapping, including SPARSE_ENCAPSULATED. In this case, the auxiliary modulus of the sparse key switching (~66 bits) is split into three ~22-bit primes when the register word size is at most 33 bits; for first moduli larger than 60 bits (at most 121 bits), an auxiliary modulus of ~127 bits split into primes fitting the register word size is used, and the Hamming weight of the sparse secret is increased from 32 to 64.
 
+- For the UNIFORM_TERNARY secret key distribution, the same bound on the number of mod-raise overflows (K = 512) as for the other scaling techniques is used for all composite degrees and ring dimensions; the exact RNS basis extension performed when raising the modulus keeps the overflow statistics of composite scaling identical to those of the non-composite case.
+
 ## Current Constraints
 
 - This current CKKS composite scaling implementation does not yet support scheme switching or interactive bootstrapping.
