@@ -791,7 +791,7 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     }
 }
 
-Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const uint32_t index,
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const int32_t index,
                                                         const uint32_t m,
                                                         const std::shared_ptr<std::vector<DCRTPoly>> digits) const {
     if (index == 0)
@@ -848,7 +848,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     return result;
 }
 
-uint32_t LeveledSHEBFVRNS::FindAutomorphismIndex(uint32_t index, uint32_t m) const {
+uint32_t LeveledSHEBFVRNS::FindAutomorphismIndex(int32_t index, uint32_t m) const {
     return FindAutomorphismIndex2n(index, m);
 }
 

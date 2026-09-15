@@ -2475,25 +2475,31 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-     * @brief Computes the automorphism index for a given vector index.
-     *
-     * @param idx  Vector index.
-     * @return Corresponding automorphism index.
-     */
-    uint32_t FindAutomorphismIndex(const uint32_t idx) const {
-        const auto cryptoParams = m_params;
+    * @brief Computes the automorphism index for a given rotation index.
+    *
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
+    * @param idx  Rotation index (positive for left, negative for right).
+    * @return Corresponding automorphism index.
+    */
+    uint32_t FindAutomorphismIndex(const int32_t idx) const {
+        const auto cryptoParams  = m_params;
         const auto elementParams = cryptoParams->GetElementParams();
         uint32_t m = elementParams->GetCyclotomicOrder();
         return m_scheme->FindAutomorphismIndex(idx, m);
     }
 
     /**
-     * @brief Computes automorphism indices for a list of vector indices.
-     *
-     * @param idxList  List of vector indices.
-     * @return Vector of corresponding automorphism indices.
-     */
-    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<uint32_t>& idxList) const {
+    * @brief Computes automorphism indices for a list of rotation indices.
+    *
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
+    * @param idxList  List of rotation indices (positive for left, negative for right).
+    * @return Vector of corresponding automorphism indices.
+    */
+    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<int32_t>& idxList) const {
         std::vector<uint32_t> newIndices;
         newIndices.reserve(idxList.size());
         for (const auto idx : idxList) {
@@ -2503,12 +2509,51 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-     * @brief Rotates a ciphertext by the given index using a stored rotation key.
-     *
-     * @param ciphertext  Input ciphertext.
-     * @param index       Rotation index (positive for left, negative for right).
-     * @return Rotated ciphertext.
-     */
+    * @brief Computes automorphism indices for a list of rotation indices.
+    *
+    *        Retained so that callers holding a std::vector<uint32_t> keep compiling; each entry is
+    *        reinterpreted as a signed rotation index, exactly as this overload always behaved.
+    *
+    * @param idxList  List of rotation indices.
+    * @return Vector of corresponding automorphism indices.
+    */
+    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<uint32_t>& idxList) const {
+        std::vector<uint32_t> newIndices;
+        newIndices.reserve(idxList.size());
+        for (const auto idx : idxList) {
+            newIndices.emplace_back(FindAutomorphismIndex(static_cast<int32_t>(idx)));
+        }
+        return newIndices;
+    }
+
+    /**
+    * @brief Computes automorphism indices for a braced list of rotation indices.
+    *
+    *        Disambiguates FindAutomorphismIndices({...}) between the two vector overloads. The
+    *        element type is int64_t because both int32_t and uint32_t reach it without narrowing,
+    *        so a braced list of either signedness (or a mix) resolves here unambiguously.
+    *
+    * @param idxList  List of rotation indices (positive for left, negative for right).
+    * @return Vector of corresponding automorphism indices.
+    */
+    std::vector<uint32_t> FindAutomorphismIndices(std::initializer_list<int64_t> idxList) const {
+        std::vector<int32_t> signedIndices;
+        signedIndices.reserve(idxList.size());
+        for (const auto idx : idxList) {
+            // Values above INT32_MAX come from unsigned literals and denote the same rotation as
+            // the negative index with that bit pattern, matching how uint32_t lists always behaved.
+            signedIndices.emplace_back(static_cast<int32_t>(static_cast<uint32_t>(idx)));
+        }
+        return FindAutomorphismIndices(signedIndices);
+    }
+
+    /**
+    * @brief Rotates a ciphertext by the given index using a stored rotation key.
+    *
+    * @param ciphertext  Input ciphertext.
+    * @param index       Rotation index (positive for left, negative for right).
+    * @return Rotated ciphertext.
+    */
     Ciphertext<Element> EvalRotate(ConstCiphertext<Element>& ciphertext, int32_t index) const {
         ValidateCiphertext(ciphertext);
 
@@ -2543,80 +2588,80 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-     * @brief Implements the automorphism and key switching step of hoisted automorphisms.
-     *
-     * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
-     * for more details, link: https://eprint.iacr.org/2018/244.
-     *
-     * Generally, automorphisms are performed with three steps:
-     * (1) the automorphism is applied on the ciphertext
-     * (2) the automorphed values are decomposed into digits
-     * (3) key switching is applied to make it possible to further compute on the ciphertext.
-     *
-     * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
-     * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
-     * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
-     * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
-     * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
-     *
-     * This method assumes that all required rotation keys exist. This may not be true if we are
-     * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
-     * EvalPermuteBGStepHoisted to see how to deal with this issue.
-     *
-     * @param ciphertext  Input ciphertext.
-     * @param index       Rotation index (positive for left, negative for right).
-     * @param m           Cyclotomic order.
-     * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
-     * @return Rotated ciphertext.
-     */
-    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
+    * @brief Implements the automorphism and key switching step of hoisted automorphisms.
+    *
+    * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
+    * for more details, link: https://eprint.iacr.org/2018/244.
+    *
+    * Generally, automorphisms are performed with three steps:
+    * (1) the automorphism is applied on the ciphertext
+    * (2) the automorphed values are decomposed into digits
+    * (3) key switching is applied to make it possible to further compute on the ciphertext.
+    *
+    * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
+    * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
+    * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
+    * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
+    * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
+    *
+    * This method assumes that all required rotation keys exist. This may not be true if we are
+    * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
+    * EvalPermuteBGStepHoisted to see how to deal with this issue.
+    *
+    * @param ciphertext  Input ciphertext.
+    * @param index       Rotation index (positive for left, negative for right).
+    * @param m           Cyclotomic order.
+    * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
+    * @return Rotated ciphertext.
+    */
+    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const int32_t index, const uint32_t m,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
         return m_scheme->EvalFastRotation(ciphertext, index, m, digits);
     }
 
     /**
-     * @brief Implements the automorphism and key switching step of hoisted automorphisms.
-     *
-     * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
-     * for more details, link: https://eprint.iacr.org/2018/244.
-     *
-     * Generally, automorphisms are performed with three steps:
-     * (1) the automorphism is applied on the ciphertext
-     * (2) the automorphed values are decomposed into digits
-     * (3) key switching is applied to make it possible to further compute on the ciphertext.
-     *
-     * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
-     * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
-     * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
-     * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
-     * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
-     *
-     * This method assumes that all required rotation keys exist. This may not be true if we are
-     * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
-     * EvalPermuteBGStepHoisted to see how to deal with this issue.
-     *
-     * The cyclotomic order is computed from the CryptoContext.
-     *
-     * @param ciphertext  Input ciphertext.
-     * @param index       Rotation index (positive for left, negative for right).
-     * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
-     * @return Rotated ciphertext.
-     */
-    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index,
+    * @brief Implements the automorphism and key switching step of hoisted automorphisms.
+    *
+    * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
+    * for more details, link: https://eprint.iacr.org/2018/244.
+    *
+    * Generally, automorphisms are performed with three steps:
+    * (1) the automorphism is applied on the ciphertext
+    * (2) the automorphed values are decomposed into digits
+    * (3) key switching is applied to make it possible to further compute on the ciphertext.
+    *
+    * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
+    * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
+    * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
+    * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
+    * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
+    *
+    * This method assumes that all required rotation keys exist. This may not be true if we are
+    * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
+    * EvalPermuteBGStepHoisted to see how to deal with this issue.
+    *
+    * The cyclotomic order is computed from the CryptoContext.
+    *
+    * @param ciphertext  Input ciphertext.
+    * @param index       Rotation index (positive for left, negative for right).
+    * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
+    * @return Rotated ciphertext.
+    */
+    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const int32_t index,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
         return EvalFastRotation(ciphertext, index, GetRingDimension() * 2, digits);
     }
 
     /**
-     * @brief Performs fast (hoisted) rotation in the extended CRT basis P*Q. Only supported with hybrid key switching.
-     *
-     * @param ciphertext  Input ciphertext.
-     * @param index       Rotation index (positive for left, negative for right).
-     * @param digits      Precomputed digits for the ciphertext.
-     * @param addFirst    If true, the first element c0 is also computed.
-     * @return Rotated ciphertext in extended basis.
-     */
-    Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
+    * @brief Performs fast (hoisted) rotation in the extended CRT basis P*Q. Only supported with hybrid key switching.
+    *
+    * @param ciphertext  Input ciphertext.
+    * @param index       Rotation index (positive for left, negative for right).
+    * @param digits      Precomputed digits for the ciphertext.
+    * @param addFirst    If true, the first element c0 is also computed.
+    * @return Rotated ciphertext in extended basis.
+    */
+    Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, int32_t index,
                                             const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
         auto evalKeyMap = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
         return m_scheme->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeyMap);
@@ -2671,14 +2716,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-     * @brief Generates evaluation keys for a list of rotation indices.
-     *
-     * @param privateKey  Private key used for key generation.
-     * @param indexList   List of rotation indices.
-     * @param levels      Number of RNS limbs to drop from the generated keys relative to full
-     *                    keys (0 by default). The keys can only be applied to ciphertexts with
-     *                    at most (full - levels) limbs. Not supported for BFV.
-     */
+    * @brief Generates evaluation keys for a list of rotation indices.
+    *
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
+    * @param privateKey  Private key used for key generation.
+    * @param indexList   List of rotation indices.
+    * @param levels      Number of RNS limbs to drop from the generated keys relative to full
+    *                    keys (0 by default). The keys can only be applied to ciphertexts with
+    *                    at most (full - levels) limbs. Not supported for BFV.
+    */
     void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
                            uint32_t levels = 0);
 
@@ -2696,13 +2744,15 @@ class CryptoContextImpl : public Serializable {
     };
 
     /**
-     * @brief Rotates a ciphertext by the given index using stored rotation keys.
-     *        Positive index = left shift; negative index = right shift.
-     *
-     * @param ciphertext  Input ciphertext.
-     * @param index       Rotation index.
-     * @return Rotated ciphertext.
-     */
+    * @brief Rotates a ciphertext by the given index using stored rotation keys.
+    *        Positive index = left shift; negative index = right shift.
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
+    * @param ciphertext  Input ciphertext.
+    * @param index       Rotation index.
+    * @return Rotated ciphertext.
+    */
     Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element>& ciphertext, int32_t index) const;
 
     //------------------------------------------------------------------------------
