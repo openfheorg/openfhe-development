@@ -33,6 +33,7 @@
 #include "schemelet/rlwe-mp.h"
 #include "schemerns/rns-cryptoparameters.h"
 #include "cryptocontext.h"
+#include "utils/utilities.h"
 
 #include <memory>
 #include <stdint.h>
@@ -199,8 +200,7 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
     gap                  = (gap == 0) ? 1 : gap;
     const uint32_t limit = input.size() < mPoly.GetLength() ? input.size() : mPoly.GetLength();
     for (uint32_t i = 0; i < limit; ++i) {
-        auto entry     = (input[i] < 0) ? mPoly.GetModulus() - BigInteger(static_cast<uint64_t>(llabs(input[i]))) :
-                                          BigInteger{input[i]};
+        auto entry     = SignedToModular(input[i], mPoly.GetModulus());
         mPoly[i * gap] = delta * entry;
         if (gap > 1) {
             mPoly[(i + limit) * gap] = delta * entry;
