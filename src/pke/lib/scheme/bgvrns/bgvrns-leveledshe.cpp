@@ -256,7 +256,7 @@ void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPl
     }
 }
 
-uint32_t LeveledSHEBGVRNS::FindAutomorphismIndex(uint32_t index, uint32_t m) const {
+uint32_t LeveledSHEBGVRNS::FindAutomorphismIndex(int32_t index, uint32_t m) const {
     return FindAutomorphismIndex2n(index, m);
 }
 
