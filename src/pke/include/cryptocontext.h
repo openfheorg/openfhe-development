@@ -3689,10 +3689,11 @@ public:
     *
     * The refresh itself - SlotsToCoeffs, modulus raise, CoeffsToSlots and the complex exponential - happens
     * here and dominates the cost; each subsequent EvalFEFuncBootstrapWithPrecomp only evaluates a series.
-    * The Paterson-Stockmeyer shape is fixed by @p coefficients, so pass the longest series of the family:
-    * every series later evaluated against these powers must have degree at least 5 and at most the degree
-    * of @p coefficients rounded up to the shape's capacity (EvalFEFuncBootstrapWithPrecomp reports the
-    * exact bound if it is exceeded).
+    * The Paterson-Stockmeyer shape is fixed by @p coefficients, which must have degree at least 5, so pass
+    * the longest series of the family: every series later evaluated against these powers may have at most
+    * the degree of @p coefficients rounded up to the shape's capacity (EvalFEFuncBootstrapWithPrecomp
+    * reports the exact bound if it is exceeded). A series below degree 5 is evaluated straight from the
+    * power basis and is accepted as long as its degree does not exceed the number of powers the shape holds.
     *
     * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
     * @param coefficients  Fourier coefficients of the longest series to be evaluated, c_0 first.
