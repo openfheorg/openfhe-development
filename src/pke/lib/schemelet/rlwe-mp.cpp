@@ -200,7 +200,7 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
     gap                  = (gap == 0) ? 1 : gap;
     const uint32_t limit = input.size() < mPoly.GetLength() ? input.size() : mPoly.GetLength();
     for (uint32_t i = 0; i < limit; ++i) {
-        auto entry     = SignedToModular(input[i], mPoly.GetModulus());
+        auto entry     = SignedToResidue(input[i], mPoly.GetModulus());
         mPoly[i * gap] = delta * entry;
         if (gap > 1) {
             mPoly[(i + limit) * gap] = delta * entry;

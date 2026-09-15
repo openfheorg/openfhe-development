@@ -122,28 +122,34 @@ enum { MAX_DOUBLE_PRECISION = 52 };
 #endif
 
 /**
- * @brief Converts a signed integer to its representative in [0, modulus).
+ * @brief Converts a signed integer to its residue in [0, modulus) for a modulus that fits in 64 bits.
  *
- * The magnitude is taken through the unsigned type so that the signed minimum stays
- * representable - negating it as a signed value would overflow - and it is reduced before the
- * sign is applied so that operands at or above the modulus, including exact multiples of it
- * whose residue is zero, come out correct.
+ * @param value the signed integer to convert.
+ * @param modulus the modulus to reduce against, non-zero.
+ * @return value modulo modulus, in [0, modulus).
+ */
+inline uint64_t SignedToResidue(int64_t value, uint64_t modulus) {
+    const bool negative      = value < 0;
+    const uint64_t magnitude = negative ? uint64_t(0) - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
+    const uint64_t residue   = (magnitude < modulus) ? magnitude : magnitude % modulus;
+    return (negative && residue != 0) ? modulus - residue : residue;
+}
+
+/**
+ * @brief Converts a signed integer to its residue in [0, modulus) for a library integer type.
  *
  * @param value the signed integer to convert.
  * @param modulus the modulus to reduce against.
  * @return value modulo modulus, in [0, modulus).
  */
-template <typename IntType>
-IntType SignedToModular(int64_t value, const IntType& modulus) {
-    const uint64_t magnitude = (value < 0) ? uint64_t(0) - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
-    // A modulus that fits into 64 bits is applied while the magnitude still has all of its bits,
-    // because IntType can be narrower than uint64_t and converting first would discard the high
-    // ones. That reduction also leaves the value below the modulus, so no second one is needed.
-    // A modulus too wide to fit belongs to an IntType at least that wide, where the conversion is
-    // exact and the reduction is done on IntType instead.
-    const IntType residue{(modulus.GetMSB() <= 64) ? IntType(magnitude % modulus.template ConvertToInt<uint64_t>()) :
-                                                     IntType(magnitude).Mod(modulus)};
-    return (value < 0 && residue != IntType(0)) ? modulus - residue : residue;
+template <typename IntType, std::enable_if_t<!std::is_integral_v<IntType>, bool> = true>
+IntType SignedToResidue(int64_t value, const IntType& modulus) {
+    if (modulus.GetMSB() <= 64)
+        return IntType(SignedToResidue(value, modulus.template ConvertToInt<uint64_t>()));
+    if (value >= 0)
+        return IntType(static_cast<uint64_t>(value));
+    const uint64_t magnitude = uint64_t(0) - static_cast<uint64_t>(value);
+    return modulus - IntType(magnitude);
 }
 
 inline bool isConvertableToNativeInt(double d) {

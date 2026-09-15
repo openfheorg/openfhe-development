@@ -131,7 +131,7 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(const std::vector<int64_t>& rhs)
     }
     for (size_t j = 0; j < vlen; ++j) {
         if (j < llen)
-            (*m_values)[j] = SignedToModular(rhs[j], m);
+            (*m_values)[j] = SignedToResidue(rhs[j], m);
         else
             (*m_values)[j] = ZERO;
     }
@@ -152,7 +152,7 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(const std::vector<int32_t>& rhs)
     }
     for (size_t j = 0; j < vlen; ++j) {
         if (j < llen)
-            (*m_values)[j] = SignedToModular(rhs[j], m);
+            (*m_values)[j] = SignedToResidue(rhs[j], m);
         else
             (*m_values)[j] = ZERO;
     }

@@ -166,11 +166,13 @@ void SignedDCRTAssignment(const std::string& msg) {
     }
 }
 
-// SignedToModular backs the assignments above and is also instantiated for integer types narrower
+// SignedToResidue backs the assignments above and is also instantiated for integer types narrower
 // than its int64_t operand, where the reduction has to happen before the conversion: converting
-// first discards the high bits and yields a different residue.
+// first discards the high bits and yields a different residue. The uint64_t overload is the one
+// the assignments call per coefficient once they have checked the modulus width, so it is
+// checked alongside the IntType one.
 template <typename IntType>
-void CheckSignedToModular(uint64_t modulusValue, const std::string& msg) {
+void CheckSignedToResidue(uint64_t modulusValue, const std::string& msg) {
     SCOPED_TRACE(msg + ", modulus " + std::to_string(modulusValue));
     const IntType modulus{modulusValue};
     const int64_t signedModulus = static_cast<int64_t>(modulusValue);
@@ -180,25 +182,26 @@ void CheckSignedToModular(uint64_t modulusValue, const std::string& msg) {
     for (int64_t value : {lowest, lowest + 1, highest, int64_t(-4294967297), int64_t(4294967297), -signedModulus,
                           signedModulus, int64_t(-1), int64_t(0), int64_t(1), int64_t(42)}) {
         SCOPED_TRACE(value);
-        EXPECT_EQ(SignedToModular(value, modulus),
-                  IntType(static_cast<uint64_t>(ExpectedResidue(value, signedModulus))));
+        const uint64_t expected = static_cast<uint64_t>(ExpectedResidue(value, signedModulus));
+        EXPECT_EQ(SignedToResidue(value, modulusValue), expected);
+        EXPECT_EQ(SignedToResidue(value, modulus), IntType(expected));
     }
 }
 
-TEST(UTSignedToModular, ReducesBeforeNarrowing) {
+TEST(UTSignedToResidue, ReducesBeforeNarrowing) {
     using Native32 = intnat::NativeIntegerT<uint32_t>;
-    CheckSignedToModular<Native32>(73, "32-bit native");
-    CheckSignedToModular<Native32>((uint64_t(1) << 31) - 1, "32-bit native");
-    CheckSignedToModular<NativeInteger>(73, "native");
-    CheckSignedToModular<NativeInteger>((uint64_t(1) << 40) + 15, "native");
-    CheckSignedToModular<BigInteger>(73, "big");
-    CheckSignedToModular<BigInteger>((uint64_t(1) << 62) + 135, "big");
+    CheckSignedToResidue<Native32>(73, "32-bit native");
+    CheckSignedToResidue<Native32>((uint64_t(1) << 31) - 1, "32-bit native");
+    CheckSignedToResidue<NativeInteger>(73, "native");
+    CheckSignedToResidue<NativeInteger>((uint64_t(1) << 40) + 15, "native");
+    CheckSignedToResidue<BigInteger>(73, "big");
+    CheckSignedToResidue<BigInteger>((uint64_t(1) << 62) + 135, "big");
 
     // A modulus too wide for uint64_t skips the pre-reduction; the conversion is exact there.
     const BigInteger wide{(BigInteger(1) << 100) + BigInteger(3)};
-    EXPECT_EQ(SignedToModular(int64_t(42), wide), BigInteger(42));
-    EXPECT_EQ(SignedToModular(int64_t(-42), wide), wide - BigInteger(42));
-    EXPECT_EQ(SignedToModular(std::numeric_limits<int64_t>::min(), wide), wide - BigInteger("9223372036854775808"));
+    EXPECT_EQ(SignedToResidue(int64_t(42), wide), BigInteger(42));
+    EXPECT_EQ(SignedToResidue(int64_t(-42), wide), wide - BigInteger(42));
+    EXPECT_EQ(SignedToResidue(std::numeric_limits<int64_t>::min(), wide), wide - BigInteger("9223372036854775808"));
 }
 
 }  // namespace
