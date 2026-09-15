@@ -123,11 +123,11 @@ public:
     // AUTOMORPHISM
     /////////////////////////////////////
 
-    Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index,
+    Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly>& ciphertext, int32_t index,
                                              const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
                                              const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const override;
 
-    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
+    uint32_t FindAutomorphismIndex(int32_t index, uint32_t m) const override;
 
     /////////////////////////////////////
     // Mod Reduce

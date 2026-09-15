@@ -567,7 +567,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 #endif
 
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
-    ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
+    ConstCiphertext<DCRTPoly>& ciphertext, int32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
     bool addFirst, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const {
     //  if (index == 0) {
     //    Ciphertext<DCRTPoly> result = ciphertext->Clone();
@@ -818,7 +818,7 @@ void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, st
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * scFactor);
 }
 
-uint32_t LeveledSHECKKSRNS::FindAutomorphismIndex(uint32_t index, uint32_t m) const {
+uint32_t LeveledSHECKKSRNS::FindAutomorphismIndex(int32_t index, uint32_t m) const {
     return FindAutomorphismIndex2nComplex(index, m);
 }
 

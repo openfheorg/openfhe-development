@@ -464,7 +464,7 @@ std::shared_ptr<std::vector<Element>> LeveledSHEBase<Element>::EvalFastRotationP
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
-    ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
+    ConstCiphertext<Element>& ciphertext, const int32_t index, const uint32_t m,
     const std::shared_ptr<std::vector<Element>> digits) const {
     if (index == 0)
         return ciphertext->Clone();
