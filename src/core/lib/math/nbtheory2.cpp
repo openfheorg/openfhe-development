@@ -190,8 +190,12 @@ uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {
     if (i == 0) {
         return 1;
     }
+    // m < 4 leaves no slot to rotate, and would make the wrap below a division by zero.
+    if (m < 4 || !IsPowerOfTwo(m))
+        OPENFHE_THROW("m should be a power of two greater than 2.");
 
-    uint32_t n = GetTotient(m);
+    // GetTotient(m) for a power of two, without the prime factorization on every rotation.
+    uint32_t n = m >> 1;
     uint32_t f1, f2;
     if (i < 0) {
         f1 = NativeInteger(5).ModInverse(m).ConvertToInt();
@@ -202,24 +206,19 @@ uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {
         f2 = m - 1;
     }
 
-    uint32_t i_unsigned = (uint32_t)std::abs(i);
-
-    uint32_t g0 = f1;
-    uint32_t g;
-
-    if (i_unsigned < n / 2) {
-        g = f1;
-        for (size_t j = 1; j < i_unsigned; j++) {
-            g = (g * g0) % m;
-        }
-    }
-    else {
-        g = f2;
-        for (size_t j = n / 2; j < i_unsigned; j++) {
-            g = (g * g0) % m;
-        }
-    }
-    return g;
+    // Widen before negating so INT_MIN has a representable magnitude.
+    uint32_t magnitude = i < 0 ? static_cast<uint32_t>(-static_cast<int64_t>(i)) : static_cast<uint32_t>(i);
+    // The n automorphisms form <5> x <-1>, one per slot, so rotating by n slots is the identity
+    // and the index wraps into [0, n).
+    magnitude %= n;
+    // Indices in the upper half additionally swap the two rows, i.e. pick up the factor f2.
+    // ModExp keeps this logarithmic in the index instead of one step per rotation.
+    bool secondRow    = magnitude >= n / 2;
+    uint32_t exponent = secondRow ? magnitude - n / 2 : magnitude;
+    auto g            = NativeInteger(f1).ModExp(exponent, m);
+    if (secondRow)
+        g = g.ModMul(f2, m);
+    return g.ConvertToInt();
 }
 
 uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g) {
@@ -233,12 +232,9 @@ uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g) {
         i_signed += n;
     }
 
-    uint32_t i_unsigned = (uint32_t)i_signed;
-    uint32_t k          = g;
-    for (size_t ii = 2; ii < i_unsigned; ii++) {
-        k = (k * g) % m;
-    }
-    return k;
+    // The group is cyclic of order n, so the reduced index gives the same automorphism. ModExp also
+    // avoids the wraparound that (k * g) % m suffers from once k * g exceeds 32 bits.
+    return NativeInteger(g).ModExp(static_cast<uint32_t>(i_signed), m).ConvertToInt();
 }
 
 uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
@@ -248,18 +244,13 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     else if (i == (static_cast<int32_t>(m) - 1)) {  // could be true if (i > 0)
         return static_cast<uint32_t>(i);
     }
-    if (!IsPowerOfTwo(m))
-        OPENFHE_THROW("m should be a power of two.");
+    if (m < 4 || !IsPowerOfTwo(m))
+        OPENFHE_THROW("m should be a power of two greater than 2.");
 
-    // conjugation automorphism
-    // generator. the usage of uint64_t prevents occasional integer overflow if the result of (g*g0) is too high
-    const uint64_t g0   = (i < 0) ? NativeInteger(5).ModInverse(m).ConvertToInt() : 5;
-    uint64_t g          = g0;
-    uint32_t i_unsigned = static_cast<uint32_t>(std::abs(i));
-    for (size_t j = 1; j < i_unsigned; j++) {
-        g = (g * g0) & (m - 1);  // Modulus operation [ (g*g0)%m ] using bitwise AND
-    }
-    return static_cast<uint32_t>(g);
+    const NativeInteger g0 = (i < 0) ? NativeInteger(5).ModInverse(m) : NativeInteger(5);
+    // Avoid signed overflow for INT_MIN and linear work for large indices.
+    uint32_t magnitude = i < 0 ? static_cast<uint32_t>(-static_cast<int64_t>(i)) : static_cast<uint32_t>(i);
+    return g0.ModExp(magnitude, m).ConvertToInt();
 }
 
 void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {

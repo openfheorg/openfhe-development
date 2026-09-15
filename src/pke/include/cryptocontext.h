@@ -2354,12 +2354,15 @@ public:
     }
 
     /**
-    * @brief Computes the automorphism index for a given vector index.
+    * @brief Computes the automorphism index for a given rotation index.
     *
-    * @param idx  Vector index.
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
+    * @param idx  Rotation index (positive for left, negative for right).
     * @return Corresponding automorphism index.
     */
-    uint32_t FindAutomorphismIndex(const uint32_t idx) const {
+    uint32_t FindAutomorphismIndex(const int32_t idx) const {
         const auto cryptoParams  = m_params;
         const auto elementParams = cryptoParams->GetElementParams();
         uint32_t m               = elementParams->GetCyclotomicOrder();
@@ -2367,18 +2370,60 @@ public:
     }
 
     /**
-    * @brief Computes automorphism indices for a list of vector indices.
+    * @brief Computes automorphism indices for a list of rotation indices.
     *
-    * @param idxList  List of vector indices.
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
+    * @param idxList  List of rotation indices (positive for left, negative for right).
     * @return Vector of corresponding automorphism indices.
     */
-    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<uint32_t>& idxList) const {
+    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<int32_t>& idxList) const {
         std::vector<uint32_t> newIndices;
         newIndices.reserve(idxList.size());
         for (const auto idx : idxList) {
             newIndices.emplace_back(FindAutomorphismIndex(idx));
         }
         return newIndices;
+    }
+
+    /**
+    * @brief Computes automorphism indices for a list of rotation indices.
+    *
+    *        Retained so that callers holding a std::vector<uint32_t> keep compiling; each entry is
+    *        reinterpreted as a signed rotation index, exactly as this overload always behaved.
+    *
+    * @param idxList  List of rotation indices.
+    * @return Vector of corresponding automorphism indices.
+    */
+    std::vector<uint32_t> FindAutomorphismIndices(const std::vector<uint32_t>& idxList) const {
+        std::vector<uint32_t> newIndices;
+        newIndices.reserve(idxList.size());
+        for (const auto idx : idxList) {
+            newIndices.emplace_back(FindAutomorphismIndex(static_cast<int32_t>(idx)));
+        }
+        return newIndices;
+    }
+
+    /**
+    * @brief Computes automorphism indices for a braced list of rotation indices.
+    *
+    *        Disambiguates FindAutomorphismIndices({...}) between the two vector overloads. The
+    *        element type is int64_t because both int32_t and uint32_t reach it without narrowing,
+    *        so a braced list of either signedness (or a mix) resolves here unambiguously.
+    *
+    * @param idxList  List of rotation indices (positive for left, negative for right).
+    * @return Vector of corresponding automorphism indices.
+    */
+    std::vector<uint32_t> FindAutomorphismIndices(std::initializer_list<int64_t> idxList) const {
+        std::vector<int32_t> signedIndices;
+        signedIndices.reserve(idxList.size());
+        for (const auto idx : idxList) {
+            // Values above INT32_MAX come from unsigned literals and denote the same rotation as
+            // the negative index with that bit pattern, matching how uint32_t lists always behaved.
+            signedIndices.emplace_back(static_cast<int32_t>(static_cast<uint32_t>(idx)));
+        }
+        return FindAutomorphismIndices(signedIndices);
     }
 
     /**
@@ -2448,7 +2493,7 @@ public:
     * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
     * @return Rotated ciphertext.
     */
-    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
+    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const int32_t index, const uint32_t m,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
         return m_scheme->EvalFastRotation(ciphertext, index, m, digits);
     }
@@ -2481,7 +2526,7 @@ public:
     * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
     * @return Rotated ciphertext.
     */
-    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index,
+    Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const int32_t index,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
         return EvalFastRotation(ciphertext, index, GetRingDimension() * 2, digits);
     }
@@ -2495,7 +2540,7 @@ public:
     * @param addFirst    If true, the first element c0 is also computed.
     * @return Rotated ciphertext in extended basis.
     */
-    Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
+    Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, int32_t index,
                                             const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
         auto evalKeyMap = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
         return m_scheme->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeyMap);
@@ -2538,6 +2583,9 @@ public:
     /**
     * @brief Generates evaluation keys for a list of rotation indices.
     *
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
+    *
     * @param privateKey  Private key used for key generation.
     * @param indexList   List of rotation indices.
     */
@@ -2556,6 +2604,8 @@ public:
     /**
     * @brief Rotates a ciphertext by the given index using stored rotation keys.
     *        Positive index = left shift; negative index = right shift.
+    *        A rotation index is taken modulo the number of slots, so indices outside that range
+    *        wrap around rather than being rejected (e.g. rotating by the slot count is a no-op).
     *
     * @param ciphertext  Input ciphertext.
     * @param index       Rotation index.

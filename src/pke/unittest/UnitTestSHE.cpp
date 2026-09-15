@@ -34,12 +34,15 @@
  */
 
 #include "gtest/gtest.h"
+#include "openfhe.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
 
 #include <iostream>
+#include <limits>
+#include <type_traits>
 #include <vector>
 
 using namespace lbcrypto;
@@ -1439,3 +1442,165 @@ TEST_P(UTGENERAL_SHE, SHE) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_SHE, ::testing::ValuesIn(testCases), testName);
+
+//===========================================================================================================
+// Rotation indices near the ends of int32_t used to send the automorphism-index computation into a
+// ~2^31-iteration loop (issue #1254). They must terminate and, since an index is equivalent to
+// itself modulo the number of slots, rotate by the same amount as their in-range equivalent.
+class UTEXTREME_ROTATION_INDEX : public ::testing::Test {
+protected:
+    void SetUp() {
+        OpenFHEParallelControls.UnitTestStart();
+    }
+
+    void TearDown() {
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        OpenFHEParallelControls.UnitTestStop();
+    }
+
+    static constexpr uint32_t RING_DIM = 256;
+
+    template <typename Context>
+    void CheckExtremeRotationIndex() {
+        constexpr bool isCKKS  = std::is_same_v<Context, CryptoContextCKKSRNS>;
+        constexpr int32_t SLOT = isCKKS ? RING_DIM / 2 : RING_DIM;
+
+        CCParams<Context> parameters;
+        parameters.SetSecurityLevel(HEStd_NotSet);
+        parameters.SetRingDim(RING_DIM);
+        parameters.SetMultiplicativeDepth(1);
+        parameters.SetBatchSize(static_cast<uint32_t>(SLOT));
+        if constexpr (!isCKKS)
+            parameters.SetPlaintextModulus(65537);
+        auto cc = GenCryptoContext(parameters);
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
+        auto keys = cc->KeyGen();
+
+        constexpr int32_t min = std::numeric_limits<int32_t>::min();
+        constexpr int32_t max = std::numeric_limits<int32_t>::max();
+        // SLOT is a power of two, so min is a multiple of it and |min + 1| == max == SLOT - 1 (mod SLOT).
+        constexpr int32_t reduced = SLOT - 1;
+        ASSERT_NO_THROW(cc->EvalAtIndexKeyGen(keys.secretKey, {min, min + 1, max, -reduced, reduced}));
+
+        // min reduces to 0, i.e. the identity automorphism; the other two reuse the keys of their
+        // in-range equivalents rather than adding keys of their own.
+        const auto& keyMap = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag());
+        EXPECT_EQ(keyMap.count(1), 1u);
+        EXPECT_EQ(keyMap.size(), 3u);
+
+        std::vector<double> values(SLOT);
+        for (int32_t i = 0; i < SLOT; ++i)
+            values[i] = i + 1;
+        Plaintext plaintext;
+        if constexpr (isCKKS)
+            plaintext = cc->MakeCKKSPackedPlaintext(values);
+        else
+            plaintext = cc->MakePackedPlaintext(std::vector<int64_t>(values.begin(), values.end()));
+        auto ciphertext = cc->Encrypt(keys.publicKey, plaintext);
+
+        auto rotateAndDecode = [&](int32_t index) {
+            Plaintext result;
+            cc->Decrypt(keys.secretKey, cc->EvalAtIndex(ciphertext, index), &result);
+            result->SetLength(SLOT);
+            if constexpr (isCKKS) {
+                return result->GetRealPackedValue();
+            }
+            else {
+                const auto& packed = result->GetPackedValue();
+                return std::vector<double>(packed.begin(), packed.end());
+            }
+        };
+        const double eps = isCKKS ? EPSILON_HIGH : 0.0;
+
+        checkEquality(rotateAndDecode(min), values, eps, "rotation by INT_MIN is not the identity");
+        checkEquality(rotateAndDecode(min + 1), rotateAndDecode(-reduced), eps,
+                      "rotation by INT_MIN + 1 does not match its in-range equivalent");
+        checkEquality(rotateAndDecode(max), rotateAndDecode(reduced), eps,
+                      "rotation by INT_MAX does not match its in-range equivalent");
+    }
+};
+
+TEST_F(UTEXTREME_ROTATION_INDEX, BFVrns) {
+    CheckExtremeRotationIndex<CryptoContextBFVRNS>();
+}
+
+TEST_F(UTEXTREME_ROTATION_INDEX, BGVrns) {
+    CheckExtremeRotationIndex<CryptoContextBGVRNS>();
+}
+
+TEST_F(UTEXTREME_ROTATION_INDEX, CKKSrns) {
+    CheckExtremeRotationIndex<CryptoContextCKKSRNS>();
+}
+
+// Compilation coverage for the rotation-index entry points, whose index parameters became int32_t.
+// Every form below compiled before that change and must keep compiling; the signed vector and the
+// negative braced list are newly supported. The EXPECT_EQs pin the values so that a future overload
+// change cannot silently reroute a call to a different interpretation of the same literals.
+TEST_F(UTEXTREME_ROTATION_INDEX, RotationIndexApiCallForms) {
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(RING_DIM);
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetBatchSize(RING_DIM);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    const uint32_t unsignedIndex = 1;
+    const int32_t signedIndex    = -1;
+    EXPECT_EQ(cc->FindAutomorphismIndex(unsignedIndex), cc->FindAutomorphismIndex(1));
+    EXPECT_NE(cc->FindAutomorphismIndex(signedIndex), cc->FindAutomorphismIndex(1));
+
+    const std::vector<uint32_t> unsignedList{1, 2};
+    const std::vector<int32_t> signedList{1, 2};
+    const std::vector<uint32_t> expected{cc->FindAutomorphismIndex(1), cc->FindAutomorphismIndex(2)};
+    EXPECT_EQ(cc->FindAutomorphismIndices(unsignedList), expected);
+    EXPECT_EQ(cc->FindAutomorphismIndices(signedList), expected);
+    EXPECT_EQ(cc->FindAutomorphismIndices({1, 2}), expected);    // plain literals
+    EXPECT_EQ(cc->FindAutomorphismIndices({1u, 2u}), expected);  // unsigned literals
+    EXPECT_EQ(cc->FindAutomorphismIndices({1, 2u}), expected);   // mixed literals
+
+    // An unsigned literal above INT32_MAX denotes the rotation with that bit pattern, as it did
+    // when the parameter was std::vector<uint32_t>.
+    const std::vector<uint32_t> negated{cc->FindAutomorphismIndex(-1)};
+    EXPECT_EQ(cc->FindAutomorphismIndices({static_cast<uint32_t>(-1)}), negated);
+    EXPECT_EQ(cc->FindAutomorphismIndices({-1}), negated);
+
+    auto keys = cc->KeyGen();
+    cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
+    std::vector<int64_t> values(RING_DIM, 1);
+    auto ciphertext  = cc->Encrypt(keys.publicKey, cc->MakePackedPlaintext(values));
+    auto digits      = cc->EvalFastRotationPrecompute(ciphertext);
+    const uint32_t m = 2 * cc->GetRingDimension();
+    EXPECT_NO_THROW(cc->EvalFastRotation(ciphertext, unsignedIndex, m, digits));
+    EXPECT_NO_THROW(cc->EvalFastRotation(ciphertext, signedIndex, m, digits));
+    EXPECT_NO_THROW(cc->EvalFastRotation(ciphertext, unsignedIndex, digits));
+}
+
+// EvalFastRotationExt is implemented for CKKS only, so its index parameter is covered separately.
+TEST_F(UTEXTREME_ROTATION_INDEX, FastRotationExtCallForms) {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(RING_DIM);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetBatchSize(RING_DIM / 2);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    auto keys = cc->KeyGen();
+    cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
+    std::vector<double> values(RING_DIM / 2, 1.0);
+    auto ciphertext = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(values));
+    auto digits     = cc->EvalFastRotationPrecompute(ciphertext);
+
+    const uint32_t unsignedIndex = 1;
+    const int32_t signedIndex    = -1;
+    EXPECT_NO_THROW(cc->EvalFastRotationExt(ciphertext, unsignedIndex, digits, true));
+    EXPECT_NO_THROW(cc->EvalFastRotationExt(ciphertext, signedIndex, digits, true));
+}
