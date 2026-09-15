@@ -156,17 +156,21 @@ constexpr uint32_t REG_WORD_SIZE = 32;
 #if NATIVEINT != 128
 constexpr uint32_t SMODSIZE = 59;
 constexpr uint32_t FMODSIZE = 60;
+// composite degree 3 for the 32-bit register word size (three ~26-bit primes per level); FE functional
+// bootstrapping requires the first modulus to be exactly one bit larger than the scaling factor
+constexpr uint32_t SMODSIZED3 = 78;
+constexpr uint32_t FMODSIZED3 = 79;
 
-UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
-                                 ScalingTechnique scalingTechnique = FIXEDMANUAL) {
+UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd, ScalingTechnique scalingTechnique = FIXEDMANUAL,
+                                 uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
     UnitTestCCParams params;
     params.schemeId            = CKKSRNS_SCHEME;
     params.ringDimension       = RDIM;
     params.multiplicativeDepth = MULT_DEPTH;
-    params.scalingModSize      = SMODSIZE;
+    params.scalingModSize      = scalingModSize;
     params.batchSize           = batchSize;
     params.secretKeyDist       = skd;
-    params.firstModSize        = FMODSIZE;
+    params.firstModSize        = firstModSize;
     params.securityLevel       = HEStd_NotSet;
     params.ksTech              = HYBRID;
     params.scalTech            = scalingTechnique;
@@ -175,7 +179,7 @@ UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
     if (scalingTechnique == COMPOSITESCALINGAUTO || scalingTechnique == COMPOSITESCALINGMANUAL) {
         params.registerWordSize = REG_WORD_SIZE;
         if (scalingTechnique == COMPOSITESCALINGMANUAL)
-            params.compositeDegree = (SMODSIZE + REG_WORD_SIZE - 1) / REG_WORD_SIZE;
+            params.compositeDegree = (scalingModSize + REG_WORD_SIZE - 1) / REG_WORD_SIZE;
     }
 
     return params;
@@ -184,11 +188,12 @@ UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd,
 TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::string& description, uint32_t batchSize,
                                         SecretKeyDist skd, uint32_t slots, FEFBT_FUNCTION functionType,
                                         std::vector<uint32_t> levelBudget = {3, 2},
-                                        ScalingTechnique scalingTechnique = FIXEDMANUAL) {
+                                        ScalingTechnique scalingTechnique = FIXEDMANUAL,
+                                        uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase;
     testCase.testCaseType = testCaseType;
     testCase.description  = description;
-    testCase.params       = MakeFEFBTParams(batchSize, skd, scalingTechnique);
+    testCase.params       = MakeFEFBTParams(batchSize, skd, scalingTechnique, scalingModSize, firstModSize);
     testCase.levelBudget  = std::move(levelBudget);
     testCase.dim1         = {0, 0};
     testCase.slots        = slots;
@@ -273,6 +278,12 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     MakeFEFBTCase(FEFBT_MULTI_VALUE, "26", RDIM / 2,     SPARSE_TERNARY, RDIM / 2,     FEFBT_GELU_TANH),
     MakeFEFBTCase(FEFBT_MULTI_VALUE, "27", SPARSE_SLOTS, SPARSE_TERNARY, SPARSE_SLOTS, FEFBT_GELU_TANH,
                   {1, 1}, FLEXIBLEAUTO),
+    // composite degree 3 with UNIFORM_TERNARY: the K = 512 overflow bound of the lower composite degrees is
+    // used for every composite degree
+    MakeFEFBTCase(FEFBT_ACCURACY,      "28", RDIM / 2,    UNIFORM_TERNARY,     RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO, SMODSIZED3, FMODSIZED3),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "29", SPARSE_SLOTS, UNIFORM_TERNARY,    SPARSE_SLOTS, FEFBT_SIGMOID,
+                  {1, 1}, COMPOSITESCALINGMANUAL, SMODSIZED3, FMODSIZED3),
 };
 // clang-format on
 #else

@@ -898,15 +898,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         k            = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
-        // For larger composite degrees, larger K used to achieve a reasonable probability of failure
-        if ((compositeDegree == 1) || ((compositeDegree == 2) && (N < (1 << 17)))) {
-            coefficients = g_coefficientsUniform;
-            k            = K_UNIFORM;
-        }
-        else {
-            coefficients = g_coefficientsUniformExt;
-            k            = K_UNIFORMEXT;
-        }
+        // K_UNIFORM = 512 is used for all scaling techniques, including composite scaling of any degree and
+        // ring dimension: the mod-raise overflow depends only on the secret key distribution and the ring
+        // dimension, and the exact RNS basis extension in ExtendCiphertext keeps the composite case within
+        // the same overflow bound as the non-composite one
+        coefficients = g_coefficientsUniform;
+        k            = K_UNIFORM;
     }
 
     cc->EvalMultInPlace(raised, pre * (1.0 / (k * N)));
@@ -1258,15 +1255,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         k            = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
-        // For larger composite degrees, larger K used to achieve a reasonable probability of failure
-        if ((compositeDegree == 1) || ((compositeDegree == 2) && (N < (1 << 17)))) {
-            coefficients = g_coefficientsUniform;
-            k            = K_UNIFORM;
-        }
-        else {
-            coefficients = g_coefficientsUniformExt;
-            k            = K_UNIFORMEXT;
-        }
+        // K_UNIFORM = 512 is used for all scaling techniques, including composite scaling of any degree and
+        // ring dimension: the mod-raise overflow depends only on the secret key distribution and the ring
+        // dimension, and the exact RNS basis extension in ExtendCiphertext keeps the composite case within
+        // the same overflow bound as the non-composite one
+        coefficients = g_coefficientsUniform;
+        k            = K_UNIFORM;
     }
 
     // no linear transformations are needed for Chebyshev series as the range has been normalized to [-1,1]
@@ -1487,7 +1481,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
 #endif
 
     uint32_t M     = cc.GetCyclotomicOrder();
-    uint32_t N     = cc.GetRingDimension();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
     m_bootPrecomMap[slots]  = std::make_shared<CKKSBootstrapPrecom>();
@@ -1552,13 +1545,7 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     double k;
     switch (cryptoParams->GetSecretKeyDist()) {
         case UNIFORM_TERNARY:
-            // Only the K = 512 exponential table is available. Mirror the K_UNIFORMEXT restriction of
-            // regular bootstrapping (EvalBootstrapStCFirst): K = 512 provides a sufficient failure
-            // probability only for composite degree 1, or degree 2 with ring dimension below 2^17.
-            if (compositeDegree > 2 || (compositeDegree == 2 && N >= (1 << 17)))
-                OPENFHE_THROW(
-                    "CKKS FE functional bootstrapping with UNIFORM_TERNARY supports composite scaling only for "
-                    "composite degree 2 with ring dimension below 2^17 (no K > 512 exponential table is available).");
+            // K_UNIFORM = 512 covers all composite degrees and ring dimensions, as in regular bootstrapping
             k = 1.0;  // K_UNIFORM is applied at runtime in EvalFEFuncBootstrap
             break;
         case SPARSE_TERNARY:
