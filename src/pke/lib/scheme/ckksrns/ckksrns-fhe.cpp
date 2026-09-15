@@ -898,10 +898,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         k            = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
-        // K_UNIFORM = 512 is used for all scaling techniques, including composite scaling of any degree and
-        // ring dimension: the mod-raise overflow depends only on the secret key distribution and the ring
-        // dimension, and the exact RNS basis extension in ExtendCiphertext keeps the composite case within
-        // the same overflow bound as the non-composite one
         coefficients = g_coefficientsUniform;
         k            = K_UNIFORM;
     }
@@ -1255,10 +1251,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         k            = 1.0;  // do not divide by k as we already did it during precomputation
     }
     else {
-        // K_UNIFORM = 512 is used for all scaling techniques, including composite scaling of any degree and
-        // ring dimension: the mod-raise overflow depends only on the secret key distribution and the ring
-        // dimension, and the exact RNS basis extension in ExtendCiphertext keeps the composite case within
-        // the same overflow bound as the non-composite one
         coefficients = g_coefficientsUniform;
         k            = K_UNIFORM;
     }
