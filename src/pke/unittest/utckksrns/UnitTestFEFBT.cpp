@@ -677,6 +677,31 @@ protected:
                                   GetFunctionName(functionType) + ".");
             }
 
+            // A series padded with trailing zeros denotes the same polynomial, so it must give the same
+            // answer as the trimmed one rather than indexing past the end of the precomputed basis.
+            std::vector<std::complex<double>> shortPadded(10, {0.0, 0.0});
+            for (uint32_t i = 0; i < 4; ++i)
+                shortPadded[i] = {0.1 * (i + 1), 0.0};
+            const std::vector<std::complex<double>> shortTrimmed(shortPadded.cbegin(), shortPadded.cbegin() + 4);
+
+            Plaintext fromPadded, fromTrimmed;
+            cc->Decrypt(keyPair.secretKey, cc->EvalFEFuncBootstrapWithPrecomp(powers, shortPadded), &fromPadded);
+            cc->Decrypt(keyPair.secretKey, cc->EvalFEFuncBootstrapWithPrecomp(powers, shortTrimmed), &fromTrimmed);
+            fromPadded->SetLength(testData.slots);
+            fromTrimmed->SetLength(testData.slots);
+
+            checkEquality(fromPadded->GetRealPackedValue(), fromTrimmed->GetRealPackedValue(), eps,
+                          failmsg + " a trailing-zero padded series did not match the trimmed one.");
+
+            // A precomputation made for a short series leaves a correspondingly narrow power basis; a later
+            // series that would read past it must be rejected rather than overrun it.
+            auto narrowPowers =
+                cc->EvalFEFuncBootstrapPrecompute(ciphertext, std::vector<std::complex<double>>(7, {0.1, 0.0}));
+            EXPECT_THROW(
+                cc->EvalFEFuncBootstrapWithPrecomp(narrowPowers, std::vector<std::complex<double>>(5, {0.1, 0.0})),
+                OpenFHEException)
+                << failmsg << " a series wider than the precomputed basis was not rejected.";
+
             // A series short enough to be evaluated straight from the power basis scales the powers it is
             // handed, so the shared ones must survive it: evaluate one, then check a real function again.
             cc->EvalFEFuncBootstrapWithPrecomp(powers, std::vector<std::complex<double>>(4, {0.1, 0.0}));
