@@ -174,6 +174,45 @@ public:
         return r;
     }
 
+#if NATIVEINT == 128
+    /**
+   * Static utility method to scale a rounded mantissa by a power of two.
+   *
+   * The 128-bit encodings express a double as mantissa * 2^exponent and rescale the mantissa
+   * by 2^pRemaining to reach the plaintext scaling factor. Both ends of the range need care:
+   * a strongly negative pRemaining exceeds the width of the intermediate type, and a large
+   * positive one overflows it.
+   *
+   * @param mantissa is the rounded 52-bit mantissa, carrying the sign of the operand.
+   * @param pRemaining is the power of two to apply; a negative value shifts right.
+   * @return mantissa * 2^pRemaining, truncated toward zero when pRemaining is negative.
+   */
+    static int128_t ScaleByPowerOfTwo(int64_t mantissa, int32_t pRemaining) {
+        // Negating through uint64_t is defined even when std::llround returned the signed
+        // minimum, which it may for a non-finite input.
+        const uint64_t magnitude = (mantissa < 0) ? uint64_t(0) - uint64_t(mantissa) : uint64_t(mantissa);
+        if (magnitude == 0)
+            return 0;
+
+        if (pRemaining < 0) {
+            // Values below the integer precision truncate toward zero for either sign. Counts at
+            // or beyond the word width underflow without evaluating an out-of-range shift.
+            const uint64_t truncated = (pRemaining <= -64) ? 0 : (magnitude >> (-pRemaining));
+            return (mantissa < 0) ? -static_cast<int128_t>(truncated) : static_cast<int128_t>(truncated);
+        }
+
+        // FitToNativeVector reads anything above Max128BitValue() / 2 as a negative value, so
+        // that is the largest magnitude this representation carries. Testing before the shift
+        // keeps an oversized operand from wrapping into a wrong plaintext.
+        constexpr uint128_t maxMagnitude = static_cast<uint128_t>(Max128BitValue()) >> 1;
+        if (pRemaining > 126 || magnitude > (maxMagnitude >> pRemaining))
+            OPENFHE_THROW("Overflow, try to decrease scaling factor");
+
+        const int128_t scaled = static_cast<int128_t>(static_cast<uint128_t>(magnitude) << pRemaining);
+        return (mantissa < 0) ? -scaled : scaled;
+    }
+#endif
+
     /**
    * Get method to return the length of plaintext
    *
