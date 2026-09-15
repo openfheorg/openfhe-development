@@ -48,6 +48,7 @@
 #include "schemebase/base-scheme.h"
 #include "schemerns/rns-cryptoparameters.h"
 #include "utils/caller_info.h"
+#include "utils/diagnostic_output.h"
 #include "utils/type_name.h"
 
 #include <algorithm>
@@ -495,9 +496,9 @@ public:
     * The key can be used for decrypting any intermediate ciphertexts for debugging purposes.
     */
     void SetPrivateKey(const PrivateKey<Element> privateKey) {
-        std::cerr << "Warning - SetPrivateKey is only intended to be used for debugging "
-                     "purposes - not for production systems."
-                  << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Warning - SetPrivateKey is only intended to be used for debugging "
+                                  "purposes - not for production systems."
+                               << std::endl;
         m_privateKey = privateKey;
     }
 

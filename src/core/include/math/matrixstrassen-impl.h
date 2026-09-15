@@ -39,6 +39,7 @@
 #include "math/matrixstrassen.h"
 #include "math/matrix-utils.h"
 
+#include "utils/diagnostic_output.h"
 #include "utils/parallel.h"
 
 #include <assert.h>
@@ -1156,10 +1157,10 @@ void MatrixStrassen<Element>::collectTo1ProcCAPS(MatDescriptor desc, it_linearda
 template <class Element>
 void MatrixStrassen<Element>::getData(const data_t& Adata, const data_t& Bdata, const data_t& Cdata, int row, int inner,
                                       int col) const {
-    printf("Adata[3][0] = %d\n", static_cast<int>(*Adata[3][0]));
-    printf("Bdata[3][0] = %d\n", static_cast<int>(*Bdata[3][0]));
-    printf("Cdata[3][0] = %d\n", static_cast<int>(*Cdata[3][0]));
-    printf("row = %d inner = %d col = %d\n", row, inner, col);
+    OPENFHE_DIAGNOSTIC_OUT << "Adata[3][0] = " << static_cast<int>(*Adata[3][0]) << std::endl;
+    OPENFHE_DIAGNOSTIC_OUT << "Bdata[3][0] = " << static_cast<int>(*Bdata[3][0]) << std::endl;
+    OPENFHE_DIAGNOSTIC_OUT << "Cdata[3][0] = " << static_cast<int>(*Cdata[3][0]) << std::endl;
+    OPENFHE_DIAGNOSTIC_OUT << "row = " << row << " inner = " << inner << " col = " << col << std::endl;
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(row))
     for (int i = 0; i < row; i++) {

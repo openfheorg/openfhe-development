@@ -45,14 +45,20 @@ install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/core)
 
 add_custom_target(allcore)
 
+if(NOT WITH_DEFAULT_DIAGNOSTIC_SINK)
+    add_library(OPENFHEdiagnosticsink INTERFACE)
+    target_sources(OPENFHEdiagnosticsink INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/lib/utils/diagnostic_output.cpp)
+    target_compile_definitions(OPENFHEdiagnosticsink INTERFACE WITH_DEFAULT_DIAGNOSTIC_SINK)
+endif()
+
 if(BUILD_SHARED)
-    set(CORELIBS PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+    set(CORELIBS PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS} ${DIAGNOSTIC_SINK_LIB})
     target_link_libraries(OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS} ${ADDITIONAL_LIBS})
     add_dependencies(allcore OPENFHEcore)
 endif()
 
 if(BUILD_STATIC)
-    set(CORELIBS ${CORELIBS} PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+    set(CORELIBS ${CORELIBS} PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS} ${DIAGNOSTIC_SINK_LIB})
     target_link_libraries(OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS} ${ADDITIONAL_LIBS})
     add_dependencies(allcore OPENFHEcore_static)
 endif()
