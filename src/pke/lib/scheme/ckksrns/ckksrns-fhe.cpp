@@ -194,24 +194,20 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     // Perform some checks on the level budget and compute parameters
     uint32_t newBudget0 = levelBudget[0];
     if (newBudget0 > logSlots) {
-        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, the level budget for encoding is too large. Setting it to " << logSlots
-                               << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for encoding too large. Setting it to " << logSlots << "\n";
         newBudget0 = logSlots;
     }
     if (newBudget0 < 1) {
-        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, the level budget for encoding can not be zero. Setting it to 1"
-                               << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for encoding can not be zero. Setting it to 1\n";
         newBudget0 = 1;
     }
     uint32_t newBudget1 = levelBudget[1];
     if (newBudget1 > logSlots) {
-        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, the level budget for decoding is too large. Setting it to " << logSlots
-                               << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for decoding too large. Setting it to " << logSlots << "\n";
         newBudget1 = logSlots;
     }
     if (newBudget1 < 1) {
-        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, the level budget for decoding can not be zero. Setting it to 1"
-                               << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for decoding can not be zero. Setting it to 1\n";
         newBudget1 = 1;
     }
 
@@ -879,8 +875,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     ModRaiseInPlace(raised, elementParamsRaisedPtr);
 
 #ifdef BOOTSTRAPTIMING
-    OPENFHE_DIAGNOSTIC_ERR << "\nNumber of levels at the beginning of bootstrapping: "
-                           << raised->GetElements()[0].GetNumOfElements() - 1 << std::endl;
+    auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
+    OPENFHE_DIAGNOSTIC_ERR << "\nNumber of levels at the beginning of bootstrapping: " << numTowers << "\n";
 #endif
 
     //------------------------------------------------------------------------------
@@ -963,7 +959,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeEncode = TOC(t);
-        OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s\n";
         // Running Approximate Mod Reduction
         TIC(t);
 #endif
@@ -999,7 +995,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeModReduce = TOC(t);
-        OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s\n";
         // Running SlotToCoeff
         TIC(t);
 #endif
@@ -1056,7 +1052,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeEncode = TOC(t);
-        OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s\n";
         // Running Approximate Mod Reduction
         TIC(t);
 #endif
@@ -1081,7 +1077,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
         timeModReduce = TOC(t);
-        OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s\n";
         // Running SlotToCoeff
         TIC(t);
 #endif
@@ -1108,7 +1104,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 #ifdef BOOTSTRAPTIMING
     timeDecode = TOC(t);
-    OPENFHE_DIAGNOSTIC_ERR << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Decoding time: " << timeDecode / 1000.0 << " s\n";
 #endif
 
     // If we start with more towers, than we obtain from bootstrapping, return the original ciphertext.
@@ -1346,7 +1342,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
 #ifdef BOOTSTRAPTIMING
     timeDecode = TOC(t);
-    OPENFHE_DIAGNOSTIC_ERR << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Decoding time: " << timeDecode / 1000.0 << " s\n";
 #endif
 
     //------------------------------------------------------------------------------
@@ -1367,8 +1363,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     ModRaiseInPlace(raised, elementParamsRaisedPtr);
 
 #ifdef BOOTSTRAPTIMING
-    OPENFHE_DIAGNOSTIC_ERR << "\nNumber of levels after mod raise: " << raised->GetElements()[0].GetNumOfElements() - 1
-                           << std::endl;
+    auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
+    OPENFHE_DIAGNOSTIC_ERR << "\nNumber of levels after mod raise: " << numTowers << "\n";
 #endif
     double normalization = pre * (1.0 / (k * N));
     // Scaling adjustment before Coefficient to Slots
@@ -1424,7 +1420,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
 #ifdef BOOTSTRAPTIMING
     timeEncode = TOC(t);
-    OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Encoding time: " << timeEncode / 1000.0 << " s\n";
     // Running Approximate Mod Reduction
     TIC(t);
 #endif
@@ -1464,7 +1460,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
 #ifdef BOOTSTRAPTIMING
     timeModReduce = TOC(t);
-    OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "Approximate modular reduction time: " << timeModReduce / 1000.0 << " s\n";
 #endif
 
 #if NATIVEINT != 128
@@ -1506,20 +1502,20 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     // Perform some checks on the level budget and compute parameters
     uint32_t newBudget0 = levelBudget[0];
     if (newBudget0 > logSlots) {
-        std::cerr << "\nWarning, the level budget for encoding is too large. Setting it to " << logSlots << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for encoding too large. Setting it to " << logSlots << "\n";
         newBudget0 = logSlots;
     }
     if (newBudget0 < 1) {
-        std::cerr << "\nWarning, the level budget for encoding can not be zero. Setting it to 1" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for encoding can not be zero. Setting it to 1\n";
         newBudget0 = 1;
     }
     uint32_t newBudget1 = levelBudget[1];
     if (newBudget1 > logSlots) {
-        std::cerr << "\nWarning, the level budget for decoding is too large. Setting it to " << logSlots << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for decoding too large. Setting it to " << logSlots << "\n";
         newBudget1 = logSlots;
     }
     if (newBudget1 < 1) {
-        std::cerr << "\nWarning, the level budget for decoding can not be zero. Setting it to 1" << std::endl;
+        OPENFHE_DIAGNOSTIC_ERR << "\nWarning, level budget for decoding can not be zero. Setting it to 1\n";
         newBudget1 = 1;
     }
 
@@ -1790,7 +1786,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
 
 #ifdef BOOTSTRAPTIMING
     timeStC = TOC(t);
-    std::cerr << "\nSlotsToCoeffs time: " << timeStC / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "\nSlotsToCoeffs time: " << timeStC / 1000.0 << " s\n";
     TIC(t);
 #endif
 
@@ -1846,7 +1842,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
 
 #ifdef BOOTSTRAPTIMING
     timeCtS = TOC(t);
-    std::cerr << "CoeffsToSlots time: " << timeCtS / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "CoeffsToSlots time: " << timeCtS / 1000.0 << " s\n";
     TIC(t);
 #endif
 
@@ -1863,7 +1859,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
 
 #ifdef BOOTSTRAPTIMING
     timeExp = TOC(t);
-    std::cerr << "EvalExp time: " << timeExp / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "EvalExp time: " << timeExp / 1000.0 << " s\n";
 #endif
 
     return ctxtExp;
@@ -1894,7 +1890,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
-    std::cerr << "EvalSeries time: " << timeSeries / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "EvalSeries time: " << timeSeries / 1000.0 << " s\n";
 #endif
 
     return result;
@@ -1923,7 +1919,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapPrecomput
 
 #ifdef BOOTSTRAPTIMING
     timePowers = TOC(t);
-    std::cerr << "EvalPowers time: " << timePowers / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "EvalPowers time: " << timePowers / 1000.0 << " s\n";
 #endif
 
     return powers;
@@ -1979,7 +1975,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
-    std::cerr << "EvalSeries time (precomputed powers): " << timeSeries / 1000.0 << " s" << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "EvalSeries time (precomputed powers): " << timeSeries / 1000.0 << " s\n";
 #endif
 
     return result;
@@ -3914,8 +3910,8 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         raised->SetScalingFactor(cryptoParams->GetScalingFactorReal(raised->GetLevel()));
 
 #ifdef BOOTSTRAPTIMING
-    OPENFHE_DIAGNOSTIC_ERR << "\nNumber of levels at the beginning of bootstrapping: "
-                           << raised->GetElements()[0].GetNumOfElements() - 1 << std::endl;
+    auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
+    OPENFHE_DIAGNOSTIC_ERR << "\nNumber of levels at the beginning of bootstrapping: " << numTowers << "\n";
 #endif
 
     //------------------------------------------------------------------------------
