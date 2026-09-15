@@ -157,33 +157,8 @@ bool CKKSPackedEncoding::Encode() {
             OPENFHE_THROW("Overflow, try to decrease scaling factor");
         }
 
-        int64_t re64       = std::llround(dre);
-        int32_t pRemaining = pCurrent + n1;
-        int128_t re        = 0;
-        if (pRemaining < 0) {
-            re = re64 >> (-pRemaining);
-        }
-        else {
-            if (pRemaining > 126)
-                OPENFHE_THROW("Invalid CKKS scaling shift");
-
-            int128_t pPowRemaining = static_cast<int128_t>(1) << pRemaining;
-            re                     = pPowRemaining * re64;
-        }
-
-        int64_t im64 = std::llround(dim);
-        pRemaining   = pCurrent + n2;
-        int128_t im  = 0;
-        if (pRemaining < 0) {
-            im = im64 >> (-pRemaining);
-        }
-        else {
-            if (pRemaining > 126)
-                OPENFHE_THROW("Invalid CKKS scaling shift");
-
-            int128_t pPowRemaining = static_cast<int128_t>(1) << pRemaining;
-            im                     = pPowRemaining * im64;
-        }
+        int128_t re = CKKSPackedEncoding::ScaleByPowerOfTwo(std::llround(dre), pCurrent + n1);
+        int128_t im = CKKSPackedEncoding::ScaleByPowerOfTwo(std::llround(dim), pCurrent + n2);
 
         temp[i]         = (re < 0) ? MaxBitValue + re : re;
         temp[i + slots] = (im < 0) ? MaxBitValue + im : im;
