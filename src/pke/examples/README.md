@@ -26,6 +26,7 @@ File Listing
 - [depth-bfvrns.cpp](depth-bfvrns.cpp): demonstrates use of the BFVrns scheme for basic homomorphic encryption
 - [depth-bfvrns-behz.cpp](depth-bfvrns-behz.cpp): demonstrates use of the BEHZ BFV variant for basic homomorphic encryption
 - [depth-bgvrns.cpp](depth-bgvrns.cpp): demonstrates use of the BGVrns scheme for basic homomorphic encryption
+- [FE-functional-bootstrapping-ckks.cpp](FE-functional-bootstrapping-ckks.cpp): demonstrates CKKS functional bootstrapping from Fourier extension, evaluating several functions on one refreshed ciphertext
 - [function-evaluation.cpp](function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
 - [functional-bootstrapping-ckks.cpp](functional-bootstrapping-ckks.cpp): demonstrates the evaluation of a discrete lookup table over a RLWE ciphertext using CKKS
 - [inner-product.cpp](inner-product.cpp): demonstrates the evaluation of inner product using CKKS and BFV

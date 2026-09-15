@@ -1195,6 +1195,31 @@ public:
         return m_FHE->EvalBootstrapStCFirst(ciphertext, numIterations, precision);
     }
 
+    void EvalFEFuncBootstrapSetup(const CryptoContextImpl<Element>& cc,
+                                  const std::vector<uint32_t>& levelBudget = {5, 4},
+                                  const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) {
+        VerifyFHEEnabled(__func__);
+        m_FHE->EvalFEFuncBootstrapSetup(cc, levelBudget, dim1, slots);
+    }
+
+    Ciphertext<Element> EvalFEFuncBootstrap(ConstCiphertext<Element>& ciphertext,
+                                            const std::vector<std::complex<double>>& coefficients) const {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalFEFuncBootstrap(ciphertext, coefficients);
+    }
+
+    std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
+        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalFEFuncBootstrapPrecompute(ciphertext, coefficients);
+    }
+
+    Ciphertext<Element> EvalFEFuncBootstrapWithPrecomp(const std::shared_ptr<seriesPowers<Element>>& powers,
+                                                       const std::vector<std::complex<double>>& coefficients) const {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->EvalFEFuncBootstrapWithPrecomp(powers, coefficients);
+    }
+
     template <typename VectorDataType>
     void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<VectorDataType>& coeffs,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
