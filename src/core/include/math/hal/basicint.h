@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,16 +35,20 @@
 #include "config_core.h"
 #include <cstdint>
 
-// clang-format off
+#define MAX_MODULUS_SIZE32                28
+#define MAX_MODULUS_SIZE64                60
+#define MAX_MODULUS_SIZE128               121
 #define COMPOSITESCALING_MAX_MODULUS_SIZE 121
+
+// clang-format off
 #if NATIVEINT == 128
-    #define MAX_MODULUS_SIZE 121
+    #define MAX_MODULUS_SIZE MAX_MODULUS_SIZE128
     using BasicInteger    = unsigned __int128;
     using DoubleNativeInt = unsigned __int128;
     using uint128_t       = unsigned __int128;
     using int128_t        = __int128;
 #elif NATIVEINT == 64
-    #define MAX_MODULUS_SIZE 60
+    #define MAX_MODULUS_SIZE MAX_MODULUS_SIZE64
     #if defined(HAVE_INT128)
         using BasicInteger    = uint64_t;
         using DoubleNativeInt = unsigned __int128;
@@ -57,7 +61,7 @@
         using int128_t        = int64_t;
     #endif
 #elif NATIVEINT == 32
-    #define MAX_MODULUS_SIZE 28
+    #define MAX_MODULUS_SIZE MAX_MODULUS_SIZE32
     using BasicInteger    = uint32_t;
     using DoubleNativeInt = uint64_t;
     using uint128_t       = uint64_t;

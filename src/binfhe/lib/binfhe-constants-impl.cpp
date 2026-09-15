@@ -30,154 +30,42 @@
 //==================================================================================
 
 #include <ostream>
+#include <string>
 
 #include "binfhe-constants.h"
 #include "utils/exception.h"
 
 namespace lbcrypto {
 
+namespace {
+
+constexpr const char* const kParamSetNames[] = {
+#define BINFHE_PARAMSET_NAME(name, methods) #name,
+    BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_NAME)
+#undef BINFHE_PARAMSET_NAME
+};
+
+constexpr uint32_t kParamSetMethods[] = {
+#define BINFHE_PARAMSET_METHODS(name, methods) methods,
+    BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_METHODS)
+#undef BINFHE_PARAMSET_METHODS
+};
+
+constexpr size_t kParamSetCount = sizeof(kParamSetNames) / sizeof(kParamSetNames[0]);
+static_assert(kParamSetCount == sizeof(kParamSetMethods) / sizeof(kParamSetMethods[0]));
+
+}  // namespace
+
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
-    switch (f) {
-        case TOY:
-            s << "TOY";
-            break;
-        case TOY_MULTI_BASE:
-            s << "TOY_MULTI_BASE";
-            break;
-        case MEDIUM:
-            s << "MEDIUM";
-            break;
-        case STD128_AP:
-            s << "STD128_AP";
-            break;
-        case STD128:
-            s << "STD128";
-            break;
-        case STD128_3:
-            s << "STD128_3";
-            break;
-        case STD128_4:
-            s << "STD128_4";
-            break;
-        case STD128Q:
-            s << "STD128Q";
-            break;
-        case STD128Q_3:
-            s << "STD128Q_3";
-            break;
-        case STD128Q_4:
-            s << "STD128Q_4";
-            break;
-        case STD192:
-            s << "STD192";
-            break;
-        case STD192_3:
-            s << "STD192_3";
-            break;
-        case STD192_4:
-            s << "STD192_4";
-            break;
-        case STD192Q:
-            s << "STD192Q";
-            break;
-        case STD192Q_3:
-            s << "STD192Q_3";
-            break;
-        case STD192Q_4:
-            s << "STD192Q_4";
-            break;
-        case STD256:
-            s << "STD256";
-            break;
-        case STD256_3:
-            s << "STD256_3";
-            break;
-        case STD256_4:
-            s << "STD256_4";
-            break;
-        case STD256Q:
-            s << "STD256Q";
-            break;
-        case STD256Q_3:
-            s << "STD256Q_3";
-            break;
-        case STD256Q_4:
-            s << "STD256Q_4";
-            break;
-        case STD128_LMKCDEY:
-            s << "STD128_LMKCDEY";
-            break;
-        case STD128_3_LMKCDEY:
-            s << "STD128_3_LMKCDEY";
-            break;
-        case STD128_4_LMKCDEY:
-            s << "STD128_4_LMKCDEY";
-            break;
-        case STD128Q_LMKCDEY:
-            s << "STD128Q_LMKCDEY";
-            break;
-        case STD128Q_3_LMKCDEY:
-            s << "STD128Q_3_LMKCDEY";
-            break;
-        case STD128Q_4_LMKCDEY:
-            s << "STD128Q_4_LMKCDEY";
-            break;
-        case STD192_LMKCDEY:
-            s << "STD192_LMKCDEY";
-            break;
-        case STD192_3_LMKCDEY:
-            s << "STD192_3_LMKCDEY";
-            break;
-        case STD192_4_LMKCDEY:
-            s << "STD192_4_LMKCDEY";
-            break;
-        case STD192Q_LMKCDEY:
-            s << "STD192Q_LMKCDEY";
-            break;
-        case STD192Q_3_LMKCDEY:
-            s << "STD192Q_3_LMKCDEY";
-            break;
-        case STD192Q_4_LMKCDEY:
-            s << "STD192Q_4_LMKCDEY";
-            break;
-        case STD256_LMKCDEY:
-            s << "STD256_LMKCDEY";
-            break;
-        case STD256_3_LMKCDEY:
-            s << "STD256_3_LMKCDEY";
-            break;
-        case STD256_4_LMKCDEY:
-            s << "STD256_4_LMKCDEY";
-            break;
-        case STD256Q_LMKCDEY:
-            s << "STD256Q_LMKCDEY";
-            break;
-        case STD256Q_3_LMKCDEY:
-            s << "STD256Q_3_LMKCDEY";
-            break;
-        case STD256Q_4_LMKCDEY:
-            s << "STD256Q_4_LMKCDEY";
-            break;
-        case LPF_STD128:
-            s << "LPF_STD128";
-            break;
-        case LPF_STD128Q:
-            s << "LPF_STD128Q";
-            break;
-        case LPF_STD128_LMKCDEY:
-            s << "LPF_STD128_LMKCDEY";
-            break;
-        case LPF_STD128Q_LMKCDEY:
-            s << "LPF_STD128Q_LMKCDEY";
-            break;
-        case SIGNED_MOD_TEST:
-            s << "SIGNED_MOD_TEST";
-            break;
-        default:
-            s << "UNKNOWN";
-            break;
-    }
-    return s;
+    auto i = static_cast<size_t>(f);
+    return s << (i < kParamSetCount ? kParamSetNames[i] : "UNKNOWN");
+}
+
+BINFHE_PARAMSET convertToBINFHE_PARAMSET(const std::string& str) {
+    for (size_t i = 0; i < kParamSetCount; ++i)
+        if (str == kParamSetNames[i])
+            return static_cast<BINFHE_PARAMSET>(i);
+    OPENFHE_THROW(std::string("Unknown BINFHE_PARAMSET ") + str);
 }
 
 std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f) {
@@ -267,71 +155,11 @@ std::ostream& operator<<(std::ostream& s, BINGATE f) {
 }
 
 void isMethodCompatible(BINFHE_METHOD m, BINFHE_PARAMSET p) {
-    if (m == LMKCDEY) {
-        switch (p) {
-            case TOY:
-            case TOY_MULTI_BASE:
-            case MEDIUM:
-            case STD128_LMKCDEY:
-            case STD128_3_LMKCDEY:
-            case STD128_4_LMKCDEY:
-            case STD128Q_LMKCDEY:
-            case STD128Q_3_LMKCDEY:
-            case STD128Q_4_LMKCDEY:
-            case STD192_LMKCDEY:
-            case STD192_3_LMKCDEY:
-            case STD192_4_LMKCDEY:
-            case STD192Q_LMKCDEY:
-            case STD192Q_3_LMKCDEY:
-            case STD192Q_4_LMKCDEY:
-            case STD256_LMKCDEY:
-            case STD256_3_LMKCDEY:
-            case STD256_4_LMKCDEY:
-            case STD256Q_LMKCDEY:
-            case STD256Q_3_LMKCDEY:
-            case STD256Q_4_LMKCDEY:
-            case LPF_STD128_LMKCDEY:
-            case LPF_STD128Q_LMKCDEY:
-                break;
-            default:
-                OPENFHE_THROW("Specified BINFHE_METHOD and BINFHE_PARAMSET are incompatible");
-        }
-    }
-    else if (m == AP || m == GINX) {
-        switch (p) {
-            case TOY:
-            case TOY_MULTI_BASE:
-            case MEDIUM:
-            case STD128_AP:
-            case STD128:
-            case STD128_3:
-            case STD128_4:
-            case STD128Q:
-            case STD128Q_3:
-            case STD128Q_4:
-            case STD192:
-            case STD192_3:
-            case STD192_4:
-            case STD192Q:
-            case STD192Q_3:
-            case STD192Q_4:
-            case STD256:
-            case STD256_3:
-            case STD256_4:
-            case STD256Q:
-            case STD256Q_3:
-            case STD256Q_4:
-            case LPF_STD128:
-            case LPF_STD128Q:
-            case SIGNED_MOD_TEST:
-                break;
-            default:
-                OPENFHE_THROW("Specified BINFHE_METHOD and BINFHE_PARAMSET are incompatible");
-        }
-    }
-    else {
+    if (m != AP && m != GINX && m != LMKCDEY)
         OPENFHE_THROW("Invalid BINFHE_METHOD");
-    }
+    auto i = static_cast<size_t>(p);
+    if (i >= kParamSetCount || !(kParamSetMethods[i] & (1u << m)))
+        OPENFHE_THROW("Specified BINFHE_METHOD and BINFHE_PARAMSET are incompatible");
 }
 
 };  // namespace lbcrypto

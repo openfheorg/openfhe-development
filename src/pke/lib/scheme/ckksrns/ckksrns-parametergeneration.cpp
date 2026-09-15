@@ -229,7 +229,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         moduliQ[numPrimes - d] = q;
         rootsQ[numPrimes - d]  = RootOfUnity(cyclOrder, moduliQ[numPrimes - d]);
         moduliQRecord.emplace(q.ConvertToInt());
-        remBits -= std::ceil(std::log2(q.ConvertToDouble()));
+        remBits -= q.GetMSB();
     }
 
     const std::string compositeScalingErrMsg =

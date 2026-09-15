@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -31,6 +31,8 @@
 
 #include "rgsw-acc-cggi.h"
 
+#include "rgsw-acc-common.h"
+
 #include <memory>
 #include <vector>
 
@@ -43,6 +45,12 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
     auto neg   = sv.GetModulus().ConvertToInt() - 1;
     uint32_t n = sv.GetLength();
     params->VerifyBaseGCoverage(n);
+    for (uint32_t i = 0; i < n; ++i) {
+        auto s = sv[i].ConvertToInt();
+        if (s != 0 && s != 1 && s != neg)
+            OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key");
+    }
+
     auto ek    = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
     auto& ek00 = (*ek)[0][0];
     auto& ek01 = (*ek)[0][1];
@@ -58,8 +66,149 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
     return ek;
 }
 
+#if NATIVEINT != 32
+RingGSWACCKey32 RingGSWAccumulatorCGGI::KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                                    const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
+    auto sv    = LWEsk->GetElement();
+    auto neg   = sv.GetModulus().ConvertToInt() - 1;
+    uint32_t n = sv.GetLength();
+    params->VerifyBaseGCoverage(n);
+    for (uint32_t i = 0; i < n; ++i) {
+        auto s = sv[i].ConvertToInt();
+        if (s != 0 && s != 1 && s != neg)
+            OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key");
+    }
+
+    auto acc = std::make_shared<RingGSWACCKey32Impl>(params, 1, 2, n);
+
+    const auto& polyParams32 = params->GetPolyParams32();
+    const auto skNTT32       = NarrowPoly32(skNTT, polyParams32);
+    DiscreteGaussianGeneratorImpl<NativeVector32> dgg32(params->GetDgg().GetStd());
+
+    #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+    for (uint32_t i = 0; i < n; ++i) {
+        auto s = sv[i].ConvertToInt();
+        GadgetMonomial plus{0, s == 1 ? GadgetTerm::ADD : GadgetTerm::NONE};
+        GadgetMonomial minus{0, s == neg ? GadgetTerm::ADD : GadgetTerm::NONE};
+        acc->SetEvalKey(0, 0, i, RGSWEncrypt(params, polyParams32, skNTT32, dgg32, i, plus));
+        acc->SetEvalKey(0, 1, i, RGSWEncrypt(params, polyParams32, skNTT32, dgg32, i, minus));
+    }
+    return acc;
+}
+#endif
+
+#if NATIVEINT != 32
+namespace {
+
+void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_t Q, uint64_t mu, uint32_t M,
+                    const RingGSWCryptoParams::BaseGParams& bp, const RingGSWACCKey32Impl::EvalKey32& ek1,
+                    const RingGSWACCKey32Impl::EvalKey32& ek2, const std::vector<NativePoly32>& monomials,
+                    const std::vector<NativeVector32>& monomialsPrecon, const NativeInteger& a,
+                    std::vector<NativePoly32>& acc) {
+    thread_local std::vector<NativePoly32> ctScratch, dctScratch, tmpScratch;
+    auto& ct  = ctScratch;
+    auto& dct = dctScratch;
+    auto& tmp = tmpScratch;
+    ct        = acc;
+
+    uint32_t digitsG2{(bp.digitsG - 1) << 1};
+    if (dct.size() < digitsG2 || dct[0].GetParams() != polyParams) {
+        dct.assign(digitsG2, NativePoly32(polyParams, Format::COEFFICIENT, true));
+        tmp.assign(4, NativePoly32(polyParams, Format::EVALUATION, true));
+    }
+    else {
+        for (auto& d : dct)
+            d.OverrideFormat(Format::COEFFICIENT);
+    }
+
+    uint32_t N{static_cast<uint32_t>(polyParams->GetRingDimension())};
+    uint32_t indexPos{a.ConvertToInt<uint32_t>()};
+    if (indexPos == M)
+        indexPos = 0;
+    uint32_t indexNeg{NativeInteger(0).ModSubFast(a, NativeInteger(M)).ConvertToInt<uint32_t>()};
+    if (indexNeg == M)
+        indexNeg = 0;
+    const NativePoly32& monomial         = monomials[indexPos];
+    const NativePoly32& monomialNeg      = monomials[indexNeg];
+    const NativeVector32& monomialPre    = monomialsPrecon[indexPos];
+    const NativeVector32& monomialPreNeg = monomialsPrecon[indexNeg];
+
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
+
+    if (nthreads < 2) {
+        ct[0].SetFormat(Format::COEFFICIENT);
+        ct[1].SetFormat(Format::COEFFICIENT);
+        ExcessHDigitDecompose(Q, bp, ct, dct);
+        for (uint32_t i = 0; i < digitsG2; ++i)
+            dct[i].SetFormat(Format::EVALUATION);
+        for (uint32_t j = 0; j < 4; ++j) {
+            const auto& ev = (j < 2) ? ek1 : ek2;
+            uint32_t col{j & 0x1};
+            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, 0, N, N, Q, mu);
+            ShoupMulEq32(tmp[j], (j < 2) ? monomial : monomialNeg, (j < 2) ? monomialPre : monomialPreNeg, Q);
+            acc[col] += tmp[j];
+        }
+        return;
+    }
+
+    #pragma omp parallel num_threads(nthreads)
+    {
+    #pragma omp for schedule(static) nowait
+        for (uint32_t i = 0; i < 2; ++i)
+            ct[i].SetFormat(Format::COEFFICIENT);
+
+    #pragma omp barrier
+    #pragma omp single
+        ExcessHDigitDecompose(Q, bp, ct, dct);
+
+    #pragma omp for schedule(static)
+        for (uint32_t i = 0; i < digitsG2; ++i)
+            dct[i].SetFormat(Format::EVALUATION);
+
+    #pragma omp for schedule(static)
+        for (uint32_t j = 0; j < 4; ++j) {
+            const auto& ev = (j < 2) ? ek1 : ek2;
+            uint32_t col{j & 0x1};
+            LazyInnerProduct32(tmp[j], dct, ev, col, digitsG2, 0, N, N, Q, mu);
+            ShoupMulEq32(tmp[j], (j < 2) ? monomial : monomialNeg, (j < 2) ? monomialPre : monomialPreNeg, Q);
+        }
+    }
+
+    acc[0] += tmp[0];
+    acc[1] += tmp[1];
+    acc[0] += tmp[2];
+    acc[1] += tmp[3];
+}
+
+}  // namespace
+
+void RingGSWAccumulatorCGGI::EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek,
+                                       RLWECiphertext& acc, const NativeVector& a) const {
+    const auto& polyParams      = params->GetPolyParams32();
+    const auto& monomials       = *params->GetMonomials32();
+    const auto& monomialsPrecon = *params->GetMonomialsPrecon32();
+    uint32_t Q{static_cast<uint32_t>(params->GetQ().ConvertToInt())};
+    uint64_t mu{static_cast<uint64_t>(-1) / Q};  // == floor(2^64/Q); Q is odd so it never divides 2^64
+    uint32_t M{2 * params->GetN()};
+
+    auto acc32 = NarrowAcc32(polyParams, acc->GetElements());
+
+    uint32_t n{static_cast<uint32_t>(a.GetLength())};
+    auto mod{a.GetModulus()};
+    auto MbyMod{NativeInteger(M) / mod};
+    for (uint32_t i = 0; i < n; ++i) {
+        AddToAccCGGI32(polyParams, Q, mu, M, params->GetBaseGParams(i), (*ek)[0][0][i], (*ek)[0][1][i], monomials,
+                       monomialsPrecon, NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc32);
+    }
+
+    WidenAcc32Into(acc32, acc->GetElements());
+}
+#endif  // NATIVEINT != 32
+
 void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
                                      RLWECiphertext& acc, const NativeVector& a) const {
+    if (!params->HasMonomials())
+        OPENFHE_THROW("the 64-bit monomials were released; regenerate keys or reload them through the context");
     uint32_t n(a.GetLength());
     auto mod{a.GetModulus()};
     auto MbyMod{NativeInteger(2 * params->GetN()) / mod};
@@ -72,30 +221,9 @@ void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>&
 // Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/086
 RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                   const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
-    const auto& polyParams = params->GetPolyParams();
-
-    DiscreteUniformGeneratorImpl<NativeVector> dug;
-    NativeInteger Q{params->GetQ()};
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    const auto& bp = params->GetBaseGParams(index);
-    uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    const auto& Gpow{*bp.gpow};
-
-    RingGSWEvalKeyImpl result(digitsG2, 2);
-    NativePoly tmp;
-    for (uint32_t i = 0; i < digitsG2; ++i) {
-        result[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
-        tmp          = result[i][0];
-        tmp.SetFormat(Format::EVALUATION);
-        result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
-        if (m)
-            result[i][i & 0x1][0].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
-        result[i][0].SetFormat(Format::EVALUATION);
-        result[i][1].SetFormat(Format::EVALUATION);
-        result[i][1] += (tmp *= skNTT);
-    }
-    return std::make_shared<RingGSWEvalKeyImpl>(std::move(result));
+    GadgetMonomial mono{0, m ? GadgetTerm::ADD : GadgetTerm::NONE};
+    return std::make_shared<RingGSWEvalKeyImpl>(
+        RGSWEncrypt(params, params->GetPolyParams(), skNTT, params->GetDgg(), index, mono));
 }
 
 // CGGI Accumulation as described in https://eprint.iacr.org/2020/086
@@ -105,20 +233,25 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
                                           ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc,
                                           uint32_t index) const {
-    std::vector<NativePoly> ct(acc->GetElements());
-    ct[0].SetFormat(Format::COEFFICIENT);
-    ct[1].SetFormat(Format::COEFFICIENT);
+    thread_local std::vector<NativePoly> ctScratch, dctScratch, tmpScratch;
+    auto& ct  = ctScratch;
+    auto& dct = dctScratch;
+    auto& tmp = tmpScratch;
+    ct        = acc->GetElements();
 
     // approximate gadget decomposition is used; the first digit is ignored
     const auto& bp = params->GetBaseGParams(index);
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
-    std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
-
-    SignedDigitDecomposeImpl(params, ct, dct, bp);
-
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
-    for (uint32_t i = 0; i < digitsG2; ++i)
-        dct[i].SetFormat(Format::EVALUATION);
+    const auto& polyParams = params->GetPolyParams();
+    if (dct.size() < digitsG2 || dct[0].GetParams() != polyParams) {
+        dct.assign(digitsG2, NativePoly(polyParams, Format::COEFFICIENT, true));
+    }
+    else {
+        for (auto& d : dct)
+            d.OverrideFormat(Format::COEFFICIENT);
+    }
+    if (tmp.size() != 4)
+        tmp.resize(4);
 
     // obtain both monomial(index) for sk = 1 and monomial(-index) for sk = -1
     // index is in range [0,m] - so we need to adjust the edge case when index == m to index = 0
@@ -129,30 +262,61 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     uint32_t indexNeg{NativeInteger(0).ModSubFast(a, M).ConvertToInt<uint32_t>()};
     const NativePoly& monomialNeg = params->GetMonomial(indexNeg == MInt ? 0 : indexNeg);
 
-    // acc = acc + dct * ek1 * monomial + dct * ek2 * negative_monomial;
-    // uses in-place * operators for the last call to dct[i] to gain performance
-    // improvement. Needs to be done using two loops for ternary secrets.
-    // TODO (dsuponit): benchmark cases with operator*() and operator*=(). Make a copy of dct?
+    // acc = acc + dct * ek1 * monomial + dct * ek2 * negative_monomial
+    const auto& ev1(ek1->GetElements());
+    const auto& ev2(ek2->GetElements());
 
-    const std::vector<std::vector<NativePoly>>& ev1(ek1->GetElements());
-    NativePoly tmp(dct[0] * ev1[0][0]);
-    for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp.MultAccEqNoCheck(dct[i], ev1[i][0]);
-    acc->GetElements()[0] += (tmp *= monomial);
-    tmp = (dct[0] * ev1[0][1]);
-    for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp.MultAccEqNoCheck(dct[i], ev1[i][1]);
-    acc->GetElements()[1] += (tmp *= monomial);
+    int nthreads = OpenFHEParallelControls.GetThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
 
-    const std::vector<std::vector<NativePoly>>& ev2(ek2->GetElements());
-    tmp = (dct[0] * ev2[0][0]);
-    for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp.MultAccEqNoCheck(dct[i], ev2[i][0]);
-    acc->GetElements()[0] += (tmp *= monomialNeg);
-    tmp = (dct[0] * ev2[0][1]);
-    for (uint32_t i = 1; i < digitsG2; ++i)
-        tmp.MultAccEqNoCheck(dct[i], ev2[i][1]);
-    acc->GetElements()[1] += (tmp *= monomialNeg);
+    if (nthreads < 2) {
+        ct[0].SetFormat(Format::COEFFICIENT);
+        ct[1].SetFormat(Format::COEFFICIENT);
+        SignedDigitDecomposeImpl(params, ct, dct, bp);
+        for (uint32_t i = 0; i < digitsG2; ++i)
+            dct[i].SetFormat(Format::EVALUATION);
+        for (uint32_t j = 0; j < 4; ++j) {
+            const auto& ev = (j < 2) ? ev1 : ev2;
+            uint32_t col{j & 0x1};
+            NativePoly& t = tmp[j];
+            t             = dct[0];
+            t *= ev[0][col];
+            for (uint32_t i = 1; i < digitsG2; ++i)
+                t.MultAccEqNoCheck(dct[i], ev[i][col]);
+            acc->GetElements()[col] += (t *= (j < 2) ? monomial : monomialNeg);
+        }
+        return;
+    }
+
+#pragma omp parallel num_threads(nthreads)
+    {
+#pragma omp for schedule(static) nowait
+        for (uint32_t i = 0; i < 2; ++i)
+            ct[i].SetFormat(Format::COEFFICIENT);
+
+#pragma omp barrier
+#pragma omp single
+        SignedDigitDecomposeImpl(params, ct, dct, bp);
+
+#pragma omp for schedule(static)
+        for (uint32_t i = 0; i < digitsG2; ++i)
+            dct[i].SetFormat(Format::EVALUATION);
+
+#pragma omp for schedule(static)
+        for (uint32_t j = 0; j < 4; ++j) {
+            const auto& ev = (j < 2) ? ev1 : ev2;
+            uint32_t col{j & 0x1};
+            tmp[j] = dct[0];
+            tmp[j] *= ev[0][col];
+            for (uint32_t i = 1; i < digitsG2; ++i)
+                tmp[j].MultAccEqNoCheck(dct[i], ev[i][col]);
+            tmp[j] *= (j < 2) ? monomial : monomialNeg;
+        }
+    }
+
+    acc->GetElements()[0] += tmp[0];
+    acc->GetElements()[1] += tmp[1];
+    acc->GetElements()[0] += tmp[2];
+    acc->GetElements()[1] += tmp[3];
 }
 
 };  // namespace lbcrypto

@@ -329,8 +329,8 @@ template <typename IntType>
 IntType FirstPrime(uint32_t nBits, uint64_t m) {
     if constexpr (std::is_same_v<IntType, NativeInteger>) {
         if (nBits > MAX_MODULUS_SIZE)
-            OPENFHE_THROW("Requested bit length " + std::to_string(nBits) +
-                          " exceeds maximum allowed length " + std::to_string(MAX_MODULUS_SIZE));
+            OPENFHE_THROW("Requested bit length " + std::to_string(nBits) + " exceeds maximum allowed length " +
+                          std::to_string(MAX_MODULUS_SIZE));
     }
 
     IntType M(m);
@@ -350,8 +350,8 @@ template <typename IntType>
 IntType LastPrime(uint32_t nBits, uint64_t m) {
     if constexpr (std::is_same_v<IntType, NativeInteger>) {
         if (nBits > MAX_MODULUS_SIZE)
-            OPENFHE_THROW("Requested bit length " + std::to_string(nBits) +
-                          " exceeds maximum allowed length " + std::to_string(MAX_MODULUS_SIZE));
+            OPENFHE_THROW("Requested bit length " + std::to_string(nBits) + " exceeds maximum allowed length " +
+                          std::to_string(MAX_MODULUS_SIZE));
     }
 
     IntType M(m);
@@ -366,8 +366,8 @@ IntType LastPrime(uint32_t nBits, uint64_t m) {
     }
 
     if (qNew.GetMSB() != nBits)
-        OPENFHE_THROW("Requested " + std::to_string(nBits) + " bits, but returned " +
-                      std::to_string(qNew.GetMSB()) + ". Please adjust parameters.");
+        OPENFHE_THROW("Requested " + std::to_string(nBits) + " bits, but returned " + std::to_string(qNew.GetMSB()) +
+                      ". Please adjust parameters.");
 
     return qNew;
 }
@@ -394,7 +394,7 @@ IntType PreviousPrime(const IntType& q, uint64_t m) {
 
 template <typename IntType>
 IntType NextPowerOfTwo(IntType n) {
-    uint32_t result = std::ceil(std::log2(n));
+    uint32_t result = GetMSB(n - 1);
     return result;
 }
 

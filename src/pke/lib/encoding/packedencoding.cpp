@@ -258,12 +258,12 @@ void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
 
                 // Find a compatible big-modulus and root of unity for CRTArb
                 if (params->GetPlaintextBigModulus() == 0) {
-                    uint32_t nttDim = std::pow(2, std::ceil(std::log2(2 * m - 1)));
+                    uint32_t nttDim = uint32_t{1} << GetMSB(2 * m - 2);
                     if ((modulusNI.ConvertToInt() - 1) % nttDim == 0) {
                         m_bigModulus[modulusM] = modulusNI;
                     }
                     else {
-                        uint32_t bigModulusSize = std::ceil(std::log2(2 * m - 1)) + 2 * modulusNI.GetMSB() + 1;
+                        uint32_t bigModulusSize = GetMSB(2 * m - 2) + 2 * modulusNI.GetMSB() + 1;
                         m_bigModulus[modulusM]  = LastPrime<NativeInteger>(bigModulusSize, nttDim);
                     }
                     m_bigRoot[modulusM] = RootOfUnity<NativeInteger>(nttDim, m_bigModulus[modulusM]);

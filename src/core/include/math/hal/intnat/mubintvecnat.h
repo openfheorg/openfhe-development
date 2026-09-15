@@ -59,7 +59,9 @@ namespace intnat {
 
 template <typename IntType>
 class NativeVectorT;
-using NativeVector = NativeVectorT<NativeInteger>;
+using NativeVector    = NativeVectorT<NativeInteger>;
+using NativeInteger32 = NativeIntegerT<uint32_t>;
+using NativeVector32  = NativeVectorT<NativeInteger32>;
 
 /**
  * @brief The class for representing vectors of native integers.
@@ -251,11 +253,9 @@ public:
    * @param value is the modulus value to set.
    */
     void SetModulus(const IntegerType& value) {
-        if (value.GetMSB() > MAX_MODULUS_SIZE) {
-            std::string errMsg{"Requested modulus' size " + std::to_string(value.GetMSB()) + " is not supported."};
-            errMsg += " NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE);
-            OPENFHE_THROW(errMsg);
-        }
+        constexpr uint32_t maxBits{MaxModulusBits<typename IntegerType::Integer>::value};
+        if (value.GetMSB() > maxBits)
+            OPENFHE_THROW("Modulus too large for requested IntegerType");
         m_modulus.m_value = value.m_value;
     }
 
@@ -613,8 +613,7 @@ public:
    * @param &ptr_obj is the NativeVectorT object to be printed.
    * @return std ostream object which captures the vector values.
    */
-    template <class IntegerType_c>
-    friend std::ostream& operator<<(std::ostream& os, const NativeVectorT<IntegerType_c>& ptr_obj) {
+    friend std::ostream& operator<<(std::ostream& os, const NativeVectorT& ptr_obj) {
         auto len = ptr_obj.m_data.size();
         os << "[";
         for (uint32_t i = 0; i < len; i++) {

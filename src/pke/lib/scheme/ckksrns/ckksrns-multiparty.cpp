@@ -129,9 +129,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     // Compress ctxt and reduce it to numPrimesToKeep towers
     // 1 is for the message itself (assuming 1 tower (60-bit) for msg)
     size_t scalingFactorBits = cc->GetEncodingParams()->GetPlaintextModulus();
-    size_t firstModulusSize =
-        std::ceil(std::log2(ciphertext->GetElements()[0].GetAllElements()[0].GetParams()->GetModulus().ConvertToInt()));
-    size_t numTowersToKeep = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
+    size_t firstModulusSize  = ciphertext->GetElements()[0].GetAllElements()[0].GetParams()->GetModulus().GetMSB();
+    size_t numTowersToKeep   = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
     if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep)
         OPENFHE_THROW("Not enough towers in the input polynomial.");

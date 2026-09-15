@@ -67,7 +67,19 @@ public:
    */
     BinFHECryptoParams(const std::shared_ptr<LWECryptoParams>& lweparams,
                        const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
-        : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {}
+        : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {
+        auto keyDist = m_LWEParams->GetKeyDist();
+        if (keyDist != m_RGSWParams->GetKeyDist())
+            OPENFHE_THROW("LWE and RingGSW parameters disagree on the secret key distribution");
+        if (keyDist != UNIFORM_TERNARY && keyDist != GAUSSIAN)
+            OPENFHE_THROW("BinFHE implements UNIFORM_TERNARY and GAUSSIAN secret key distributions only");
+        if (m_RGSWParams->GetMethod() == GINX && keyDist == GAUSSIAN)
+            OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key; use AP or LMKCDEY for GAUSSIAN");
+        if (m_RGSWParams->GetMethod() == LMKCDEY && m_RGSWParams->GetNumAutoKeys() >= m_LWEParams->Getn())
+            OPENFHE_THROW("numAutoKeys must be less than the LWE dimension n");
+        if ((2 * static_cast<uint64_t>(m_LWEParams->GetN())) % m_LWEParams->Getq().ConvertToInt<uint64_t>() != 0)
+            OPENFHE_THROW("the LWE modulus q must divide 2N");
+    }
 
     /**
    * Getter for LWE params

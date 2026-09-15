@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -58,6 +58,9 @@ using ILParams       = ILParamsImpl<BigInteger>;
 using Poly           = PolyImpl<BigVector>;
 using NativePoly     = PolyImpl<NativeVector>;
 using DCRTPoly       = DCRTPolyImpl<BigVector>;
+
+using ILNativeParams32 = ILParamsImpl<NativeInteger32>;
+using NativePoly32     = PolyImpl<NativeVector32>;
 
 #ifdef WITH_BE2
 using M2Params     = ILParamsImpl<M2Integer>;

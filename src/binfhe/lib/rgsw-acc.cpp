@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -47,6 +47,8 @@
 #include "lattice/lat-hal.h"
 #include "rgsw-acc.h"
 
+#include "rgsw-acc-common.h"
+
 #include <memory>
 #include <vector>
 
@@ -67,80 +69,12 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
 void RingGSWAccumulator::SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
                                                   const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
                                                   const RingGSWCryptoParams::BaseGParams& bp) const {
-    auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
-    auto QHalf{Q >> 1};
-    auto gBits{bp.gBits};
-    auto gHalf{static_cast<BasicInteger>(bp.baseG >> 1)};
-    auto gMask{static_cast<BasicInteger>(bp.baseG - 1)};
-    auto QmHalf{Q - gHalf};
-    uint32_t digitsG{bp.digitsG};
-    // Biasing by H (gHalf in every digit position) turns balanced-digit extraction into
-    // independent unsigned windows: digit_k(x) = (((x + H) >> k*gBits) & gMask) - gHalf.
-    // Requires digitsG*gBits < MaxBits, which holds for all supported parameter sets.
-    BasicInteger H{0};
-    for (uint32_t i{0}; i < digitsG; ++i)
-        H += gHalf << (i * gBits);
-    // approximate gadget decomposition is used; the first digit is ignored
-    uint32_t digitsG2{(digitsG - 1) << 1};
-    uint32_t N{params->GetN()};
-
-    std::vector<BasicInteger> w0(N), w1(N);
-    for (uint32_t k{0}; k < N; ++k) {
-        auto t0{input[0][k].ConvertToInt<BasicInteger>()};
-        w0[k] = t0 + H - (t0 < QHalf ? 0 : Q);
-        auto t1{input[1][k].ConvertToInt<BasicInteger>()};
-        w1[k] = t1 + H - (t1 < QHalf ? 0 : Q);
-    }
-
-    for (uint32_t d{0}; d < digitsG2; d += 2) {
-        uint32_t shift{((d >> 1) + 1) * gBits};
-        // Q/2 + H can exceed baseG^digitsG, so the top window must keep the carry out of digitsG*gBits.
-        auto mask{(d + 2 < digitsG2) ? gMask : static_cast<BasicInteger>(-1)};
-        auto& out0{output[d + 0]};
-        auto& out1{output[d + 1]};
-        for (uint32_t k{0}; k < N; ++k) {
-            auto r0{(w0[k] >> shift) & mask};
-            out0[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
-            auto r1{(w1[k] >> shift) & mask};
-            out1[k] = (r1 < gHalf) ? r1 + QmHalf : r1 - gHalf;
-        }
-    }
+    ExcessHDigitDecompose(params->GetQ().ConvertToInt<BasicInteger>(), bp, input, output);
 }
 
-// Decompose a ring element, not ciphertext
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const NativePoly& input, std::vector<NativePoly>& output) const {
-    auto Q{params->GetQ().ConvertToInt<BasicInteger>()};
-    auto QHalf{Q >> 1};
-    auto baseG{params->GetBaseG()};
-    auto gBits{GetMSB(baseG) - 1};
-    auto gHalf{static_cast<BasicInteger>(baseG >> 1)};
-    auto gMask{static_cast<BasicInteger>(baseG - 1)};
-    auto QmHalf{Q - gHalf};
-    uint32_t digitsG{params->GetDigitsG()};
-    // see the ciphertext overload above for the excess-H digit-extraction identity
-    BasicInteger H{0};
-    for (uint32_t i{0}; i < digitsG; ++i)
-        H += gHalf << (i * gBits);
-    uint32_t N{params->GetN()};
-
-    std::vector<BasicInteger> w(N);
-    for (uint32_t k{0}; k < N; ++k) {
-        auto t0{input[k].ConvertToInt<BasicInteger>()};
-        w[k] = t0 + H - (t0 < QHalf ? 0 : Q);
-    }
-
-    // approximate gadget decomposition is used; the first digit is ignored
-    for (uint32_t d{0}; d < digitsG - 1; ++d) {
-        uint32_t shift{(d + 1) * gBits};
-        // Q/2 + H can exceed baseG^digitsG, so the top window must keep the carry out of digitsG*gBits.
-        auto mask{(d + 2 < digitsG) ? gMask : static_cast<BasicInteger>(-1)};
-        auto& out{output[d]};
-        for (uint32_t k{0}; k < N; ++k) {
-            auto r0{(w[k] >> shift) & mask};
-            out[k] = (r0 < gHalf) ? r0 + QmHalf : r0 - gHalf;
-        }
-    }
+    ExcessHDigitDecompose(params->GetQ().ConvertToInt<BasicInteger>(), params->GetDefaultBaseGParams(), input, output);
 }
 
 };  // namespace lbcrypto

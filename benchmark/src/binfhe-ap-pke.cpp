@@ -62,7 +62,6 @@ void FHEW_BTKEYGEN(benchmark::State& state, ParamSet param_set) {
 }
 
 BENCHMARK_CAPTURE(FHEW_BTKEYGEN, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
-BENCHMARK_CAPTURE(FHEW_BTKEYGEN, STD128, STD128)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(FHEW_BTKEYGEN, STD128_AP, STD128_AP)->Unit(benchmark::kMicrosecond);
 
 template <class ParamSet>
@@ -76,7 +75,6 @@ void FHEW_PUBKEYGEN(benchmark::State& state, ParamSet param_set) {
 }
 
 BENCHMARK_CAPTURE(FHEW_PUBKEYGEN, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
-BENCHMARK_CAPTURE(FHEW_PUBKEYGEN, STD128, STD128)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(FHEW_PUBKEYGEN, STD128_AP, STD128_AP)->Unit(benchmark::kMicrosecond);
 
 template <class ParamSet>
@@ -95,7 +93,6 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
 }
 
 BENCHMARK_CAPTURE(FHEW_ENCRYPT, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
-BENCHMARK_CAPTURE(FHEW_ENCRYPT, STD128, STD128)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(FHEW_ENCRYPT, STD128_AP, STD128_AP)->Unit(benchmark::kMicrosecond);
 
 template <class ParamSet>
@@ -116,7 +113,6 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
 }
 
 BENCHMARK_CAPTURE(FHEW_NOT, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
-BENCHMARK_CAPTURE(FHEW_NOT, STD128, STD128)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(FHEW_NOT, STD128_AP, STD128_AP)->Unit(benchmark::kMicrosecond);
 
 // benchmark for binary gates, such as AND, OR, NAND, NOR
@@ -152,18 +148,6 @@ BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NAND, MEDIUM, NAND)->Unit(benchmark::kMic
 BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR, MEDIUM, XOR)->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR, MEDIUM, XNOR)->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_OR, STD128, OR)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AND, STD128, AND)->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_NOR, STD128, NOR)->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_NAND, STD128, NAND)->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XOR, STD128, XOR)->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XNOR, STD128, XNOR)->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AP_OR, STD128_AP, OR)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 

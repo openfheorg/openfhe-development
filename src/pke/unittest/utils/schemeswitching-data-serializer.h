@@ -49,19 +49,17 @@ protected:
     Ciphertext<DCRTPoly> RAWCiphertext{nullptr};
 
     // Save-Load locations
-    std::string dataDirectory                  = "demoData";
-    const std::string cryptoContextFile        = "cryptocontext.txt";
-    const std::string pubKeyFile               = "key_pub.txt";
-    const std::string multKeyFile              = "key_mult.txt";
-    const std::string rotKeyFile               = "key_rot.txt";
-    const std::string FHEWtoCKKSSwitchKeyFile  = "key_switch_fhew_ckks.txt";
-    const std::string ciphertextFile           = "ciphertext.txt";  // RAW ciphertext
-    const std::string binFHECryptoContextFile  = "binfhe_cryptocontext.txt";
-    const std::string binFHEBootRefreshKeyFile = "key_binfhe_boot_refresh.txt";
-    const std::string binFHEBootRotKeyFile     = "key_binfhe_boot_rot.txt";
-    const std::string baseRefreshKeyFile       = "key_refresh.txt";
-    const std::string baseSwitchingKeyFile     = "key_switching.txt";
-    const std::string keyIndexFile             = "key_indices.txt";
+    std::string dataDirectory                 = "demoData";
+    const std::string cryptoContextFile       = "cryptocontext.txt";
+    const std::string pubKeyFile              = "key_pub.txt";
+    const std::string multKeyFile             = "key_mult.txt";
+    const std::string rotKeyFile              = "key_rot.txt";
+    const std::string FHEWtoCKKSSwitchKeyFile = "key_switch_fhew_ckks.txt";
+    const std::string ciphertextFile          = "ciphertext.txt";  // RAW ciphertext
+    const std::string binFHECryptoContextFile = "binfhe_cryptocontext.txt";
+    const std::string binFHEBootKeyFile       = "key_binfhe_boot.txt";
+    const std::string baseBTKeyFile           = "key_bt.txt";
+    const std::string keyIndexFile            = "key_indices.txt";
 
     std::string createMapFileName(uint32_t index, const std::string& baseFileName) {
         return std::string(dataDirectory) + "/" + std::to_string(index) + "_" + baseFileName;

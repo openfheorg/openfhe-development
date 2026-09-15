@@ -80,17 +80,11 @@ int main() {
 
     // Serializing refreshing and key switching keys (needed for bootstrapping)
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/refreshKey.txt", cc1.GetRefreshKey(), SerType::BINARY)) {
-        std::cerr << "Error serializing the refreshing key" << std::endl;
+    if (!Serial::SerializeToFile(DATAFOLDER + "/btKey.txt", cc1.GetBTKey(), SerType::BINARY)) {
+        std::cerr << "Error serializing the bootstrapping keys" << std::endl;
         return 1;
     }
-    std::cout << "The refreshing key has been serialized." << std::endl;
-
-    if (!Serial::SerializeToFile(DATAFOLDER + "/ksKey.txt", cc1.GetSwitchKey(), SerType::BINARY)) {
-        std::cerr << "Error serializing the switching key" << std::endl;
-        return 1;
-    }
-    std::cout << "The key switching key has been serialized." << std::endl;
+    std::cout << "The bootstrapping keys have been serialized." << std::endl;
 
     // Serializing secret key
 
@@ -129,22 +123,15 @@ int main() {
 
     // deserializing the refreshing and switching keys (for bootstrapping)
 
-    RingGSWACCKey refreshKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::BINARY) == false) {
-        std::cerr << "Could not deserialize the refresh key" << std::endl;
+    RingGSWBTKey btKey;
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/btKey.txt", btKey, SerType::BINARY) == false) {
+        std::cerr << "Could not deserialize the bootstrapping keys" << std::endl;
         return 1;
     }
-    std::cout << "The refresh key has been deserialized." << std::endl;
-
-    LWESwitchingKey ksKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::BINARY) == false) {
-        std::cerr << "Could not deserialize the switching key" << std::endl;
-        return 1;
-    }
-    std::cout << "The switching key has been deserialized." << std::endl;
+    std::cout << "The bootstrapping keys have been deserialized." << std::endl;
 
     // Loading the keys in the cryptocontext
-    cc.BTKeyLoad({refreshKey, ksKey});
+    cc.BTKeyLoad(btKey);
 
     // Deserializing the secret key
 

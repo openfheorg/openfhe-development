@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -80,9 +80,10 @@ private:
     typename VecType::Integer GenerateIntegerWith(PRNG& prng, std::uniform_int_distribution<uint32_t>& dist) const;
 
     typename VecType::Integer m_modulus{};
-    uint32_t m_chunksPerValue{};
-    uint32_t m_shiftChunk{};
-    std::uniform_int_distribution<uint32_t>::param_type m_bound{DUG_CHUNK_MIN, DUG_CHUNK_MAX};
+    // the largest multiple of the modulus in the draw domain 2^(32 * m_chunks): draws at or
+    // above it are the surplus representatives of their residues and are rejected
+    typename VecType::Integer m_limit{};
+    uint32_t m_chunks{};
 };
 
 }  // namespace lbcrypto
