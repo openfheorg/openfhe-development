@@ -106,14 +106,17 @@ public:
     using LeveledSHEBase<DCRTPoly>::EvalMult;
     using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
 
-    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand,
+                                  int32_t target_level = -1) const override;
 
-    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand, int32_t target_level = -1) const override;
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
-    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, std::complex<double> operand,
+                                  int32_t target_level = -1) const override;
 
-    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand,
+                         int32_t target_level = -1) const override;
 
     Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t integer) const override;
 
@@ -164,9 +167,10 @@ public:
     // CKKS Core
     /////////////////////////////////////
 
-    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand) const;
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double operand, int32_t target_level = -1) const;
 
-    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const;
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand,
+                             int32_t target_level = -1) const;
 
     void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                      Ciphertext<DCRTPoly>& ciphertext2) const override;
@@ -177,7 +181,8 @@ public:
     std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
                                                              double operand) const;
 
-    std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const;
+    std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand,
+                                                         double scaling_factor = -1.0) const;
 
     /////////////////////////////////////
     // SERIALIZATION

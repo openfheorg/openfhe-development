@@ -99,86 +99,195 @@ static Ciphertext<DCRTPoly> evalStreamedLinearWSum(const std::vector<CtType>& ci
 
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> internalEvalLinearWSum(const std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
-                                            const std::vector<VectorDataType>& constants) {
+                                            const std::vector<VectorDataType>& constants, int32_t target_level) {
     return evalStreamedLinearWSum(ciphertexts, constants.data(), static_cast<uint32_t>(ciphertexts.size()));
 }
 
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> internalEvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
-                                                   const std::vector<VectorDataType>& constants) {
+                                                   const std::vector<VectorDataType>& constants,
+                                                   int32_t target_level = -1) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
 
     auto cc = ciphertexts[0]->GetCryptoContext();
 
     const uint32_t limit = ciphertexts.size();
 
-    if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-        // Check to see if input ciphertexts are of same level
-        // and adjust if needed to the max level among them
-        uint32_t maxLevel = ciphertexts[0]->GetLevel();
-        uint32_t maxIdx   = 0;
-        for (uint32_t i = 1; i < limit; ++i) {
-            if ((ciphertexts[i]->GetLevel() > maxLevel) ||
-                ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetNoiseScaleDeg() == 2))) {
-                maxLevel = ciphertexts[i]->GetLevel();
-                maxIdx   = i;
+    if (target_level == -1) {
+        if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
+            // Check to see if input ciphertexts are of same level
+            // and adjust if needed to the max level among them
+            uint32_t maxLevel = ciphertexts[0]->GetLevel();
+            uint32_t maxIdx   = 0;
+            for (uint32_t i = 1; i < limit; ++i) {
+                if ((ciphertexts[i]->GetLevel() > maxLevel) ||
+                    ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetNoiseScaleDeg() == 2))) {
+                    maxLevel = ciphertexts[i]->GetLevel();
+                    maxIdx   = i;
+                    }
+            }
+
+            auto algo = cc->GetScheme();
+            for (uint32_t i = 0; i < maxIdx; ++i)
+                algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
+            for (uint32_t i = maxIdx + 1; i < limit; ++i)
+                algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
+
+            uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+            if (ciphertexts[maxIdx]->GetNoiseScaleDeg() == 2) {
+                for (uint32_t i = 0; i < limit; ++i)
+                    algo->ModReduceInternalInPlace(ciphertexts[i], compositeDegree);
             }
         }
 
-        auto algo = cc->GetScheme();
-        for (uint32_t i = 0; i < maxIdx; ++i)
-            algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
-        for (uint32_t i = maxIdx + 1; i < limit; ++i)
-            algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
-
-        uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-        if (ciphertexts[maxIdx]->GetNoiseScaleDeg() == 2) {
-            for (uint32_t i = 0; i < limit; ++i)
-                algo->ModReduceInternalInPlace(ciphertexts[i], compositeDegree);
+        cc->EvalMultInPlace(ciphertexts[0], constants[0]);
+        for (uint32_t i = 1; i < limit; ++i) {
+            cc->EvalMultInPlace(ciphertexts[i], constants[i]);
+            cc->EvalAddInPlaceNoCheck(ciphertexts[0], ciphertexts[i]);
         }
+        cc->ModReduceInPlace(ciphertexts[0]);
+        return ciphertexts[0];
+    } else {
+        OPENFHE_THROW("target_level parameter not implemented");
     }
 
-    cc->EvalMultInPlace(ciphertexts[0], constants[0]);
-    for (uint32_t i = 1; i < limit; ++i) {
-        cc->EvalMultInPlace(ciphertexts[i], constants[i]);
-        cc->EvalAddInPlaceNoCheck(ciphertexts[0], ciphertexts[i]);
-    }
-    cc->ModReduceInPlace(ciphertexts[0]);
-    return ciphertexts[0];
 }
 
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> EvalPartialLinearWSum(const std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
-                                           const std::vector<VectorDataType>& constants, uint32_t limit = 0) {
+                                           const std::vector<VectorDataType>& constants, uint32_t limit = 0,
+                                           int32_t target_level = -1, bool rescale = true) {
     if (0 == limit)
         limit = ciphertexts.size();
-    return evalStreamedLinearWSum(ciphertexts, constants.data() + 1, limit);
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
+
+    auto cc = ciphertexts[0]->GetCryptoContext();
+
+    if (target_level == -1) {
+        return evalStreamedLinearWSum(ciphertexts, constants.data() + 1, limit);
+    } else {
+        OPENFHE_THROW("target_level parameter not implemented");
+    }
 }
 
+/**
+ * carlos.a.d@um.es: This function has 2 improvements over the legacy wsum:
+ *  1. generate output at the desired level and correct scale by applying the formula:
+ *  (desired output) Delta_{target_level}^2 * ct * weight =  ( ct * Delta_{current_level} ) * ( weight * Delta_{target_level}^2 / Delta_{current_level})
+ *  on multiplications by constant, for each multiplicand individually:
+ *      Benefit: omision of adjustment calls or temporary ciphertext copies
+ *  2. apply bias term / constant term / degree zero term of the formula within PS BEFORE rescaling
+ *
+ *  Set INCLUDE_SMALL_TERMS = true to not skip small weights (to be tested for accuracy and correctness)
+ *      Comment: Weight skipping should (probably) depend on the magnitude of the parameter set's scaling factor and expected noise to only include productive
+ *      terms into the homomorphic computation.
+ */
+template <typename VectorDataType>
+Ciphertext<DCRTPoly> EvalPartialLinearWSumWithBias(const std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+                                                   const std::vector<VectorDataType>& constants, VectorDataType bias,
+                                                   uint32_t limit = 0, int32_t target_level = -1, bool rescale = true) {
+    constexpr bool INCLUDE_SMALL_TERMS = false;
+    if (0 == limit)
+        limit = ciphertexts.size();
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
+
+    auto cc = ciphertexts[0]->GetCryptoContext();
+
+    if (target_level == -1) {
+        OPENFHE_THROW("Not implemented for BASELINE cheby or other uses");
+    } else {
+        //std::cout << "new internalEvalLinearWSum" << std::endl;
+        size_t maxLevel = ciphertexts[0]->GetLevel();
+        if (ciphertexts[0]->GetNoiseScaleDeg() == 2)
+            OPENFHE_THROW("Not modulo reduced");
+        //uint32_t maxIdx   = 0;
+        for (uint32_t i = 1; i < limit; ++i) {
+            if ((ciphertexts[i]->GetLevel() > maxLevel) ||
+                ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetNoiseScaleDeg() == 2))) {
+                maxLevel = ciphertexts[i]->GetLevel();
+                //maxIdx   = i;
+                }
+
+            if (ciphertexts[i]->GetNoiseScaleDeg() == 2)
+                OPENFHE_THROW("Not modulo reduced");
+        }
+
+        auto out = cc->EvalMult(ciphertexts[0], constants[1], target_level);
+        if(!INCLUDE_SMALL_TERMS && !IsNotEqualZero(constants[1])){
+            // --- 2. Build zero DCRTPoly objects in the right format ---
+            // Get the parameters used for ciphertext polynomials
+            const auto cryptoParams = cc->GetCryptoParameters();
+            const auto paramsPK     = std::make_shared<lbcrypto::M4DCRTParams>(*(cryptoParams->GetElementParams()));
+            for(int i = 0; i < target_level; ++i) paramsPK->PopLastParam();
+
+            // Create two zero polynomials in EVALUATION format (standard for ciphertexts)
+            std::vector<DCRTPoly> zeroElems;
+            zeroElems.reserve(2);
+
+            for (size_t i = 0; i < 2; ++i) {
+                // DCRTPoly constructor with a zero initializer and params
+                DCRTPoly zeroPoly(
+                    paramsPK,         // parameters
+                    Format::EVALUATION,
+                    true
+                );
+
+                zeroElems.push_back(std::move(zeroPoly));
+            }
+
+            out->SetElements(std::move(zeroElems));
+        }
+        for (uint32_t i = 1; i < limit; ++i) {
+            if (INCLUDE_SMALL_TERMS || IsNotEqualZero(constants[i+1]))
+                cc->EvalAddInPlace(out, cc->EvalMult(ciphertexts[i], constants[i+1], target_level));
+        }
+        if(INCLUDE_SMALL_TERMS || IsNotEqualZero(bias))
+            cc->EvalAddInPlace(out, bias);
+        if (rescale) cc->ModReduceInPlace(out);
+        return out;
+    }
+}
+
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPartialLinearWSumWithBias_(const std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+    const std::vector<double>& constants, double bias,
+    uint32_t limit, int32_t target_level, bool rescale){
+    auto res = EvalPartialLinearWSumWithBias<double>(ciphertexts, constants, bias, limit, target_level, rescale);
+    return res;
+}
+
+
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
-                                                        const std::vector<int64_t>& constants) const {
-    return internalEvalLinearWSum(ciphertexts, constants);
+                                                        const std::vector<int64_t>& constants,
+                                                        int32_t target_level) const {
+    return internalEvalLinearWSum(ciphertexts, constants, target_level);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
-                                                        const std::vector<double>& constants) const {
-    return internalEvalLinearWSum(ciphertexts, constants);
+                                                        const std::vector<double>& constants,
+                                                        int32_t target_level) const {
+    return internalEvalLinearWSum(ciphertexts, constants, target_level);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
-                                                        const std::vector<std::complex<double>>& constants) const {
-    return internalEvalLinearWSum(ciphertexts, constants);
+                                                        const std::vector<std::complex<double>>& constants,
+                                                        int32_t target_level) const {
+    return internalEvalLinearWSum(ciphertexts, constants, target_level);
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
-                                                               const std::vector<int64_t>& constants) const {
-    return internalEvalLinearWSumMutable(ciphertexts, constants);
+                                                               const std::vector<int64_t>& constants,
+                                                               int32_t target_level) const {
+    return internalEvalLinearWSumMutable(ciphertexts, constants, target_level);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
-                                                               const std::vector<double>& constants) const {
-    return internalEvalLinearWSumMutable(ciphertexts, constants);
+                                                               const std::vector<double>& constants,
+                                                               int32_t target_level) const {
+    return internalEvalLinearWSumMutable(ciphertexts, constants, target_level);
 }
-Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
-    std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<std::complex<double>>& constants) const {
-    return internalEvalLinearWSumMutable(ciphertexts, constants);
+Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+                                                               const std::vector<std::complex<double>>& constants,
+                                                               int32_t target_level) const {
+    return internalEvalLinearWSumMutable(ciphertexts, constants, target_level);
 }
 
 //------------------------------------------------------------------------------
@@ -613,10 +722,20 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(std::vector<Ci
     return result;
 }
 
+/**
+ *  carlos.a.d@um.es changes:
+ *      Added PS alternative code (old behaviour enabled through BASELINE global flag) that leverages the new scalar-mult on CKKS with a target level to reduce
+ *      "adjustForMult/adjustForAdd" calls both on evalPartialWSum and on the recursive structure of PS. A new parameter is added to track the needed output level
+ *      of each recursive call "level_offset" (to reduce adjustForMult/adjustForAdd  and also the number of towers upon which the primitives run on).
+ *      Operation ordering is changed from Rescale(cu * qu) + su to Rescale(cu * qu + su) by carefully moving where rescale calls are placed within the
+ *      recursive structure.
+ *      See the new EvalPartialLinearWSumWithBias function that also reorders addition and rescale.
+ */
+
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const std::vector<VectorDataType>& coefficients,
                                           uint32_t k, uint32_t m, const std::vector<Ciphertext<DCRTPoly>>& T,
-                                          const std::vector<Ciphertext<DCRTPoly>>& T2) {
+                                          const std::vector<Ciphertext<DCRTPoly>>& T2, int32_t level_offset = 0) {
     // Compute k*2^{m-1}-k because we use it a lot
     uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
@@ -624,6 +743,9 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
     std::vector<VectorDataType> Tkm(k2m2k + k + 1);
     Tkm.back() = 1;
     auto divqr = LongDivisionChebyshev(coefficients, Tkm);
+
+    uint32_t compositeDegree =
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     auto& r2 = divqr->r;
@@ -646,27 +768,12 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
         // Evaluate q and s2 at u.
         // If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
         if (Degree(divqr->q) > k) {
-            qu = InnerEvalChebyshevPS(x, divqr->q, k, m - 1, T, T2);
+            qu = InnerEvalChebyshevPS(x, divqr->q, k, m - 1, T, T2, level_offset);
+            cc->ModReduceInPlace(qu);
         }
         else {
-            // dq = k from construction
-            // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
-
-            // the highest order coefficient will always be a power of two up to 2^{m-1} because q is "monic" but the Chebyshev rule adds a factor of 2
-            // we don't need to increase the depth by multiplying the highest order coefficient, but instead checking and summing, since we work with m <= 4.
-            qu                   = T[k - 1]->Clone();
-            const uint32_t limit = std::log2(ToReal(divqr->q.back()));
-            for (uint32_t i = 0; i < limit; ++i)
-                cc->EvalAddInPlaceNoCheck(qu, qu);
-
-            // adds the free term (at x^0)
-            cc->EvalAddInPlace(qu, divqr->q.front() / 2.0);
-            // The number of levels of qu is the same as the number of levels of T[k-1] + 1.
-            // Will only get here when m = 2, so the number of levels of qu and T2[m-1] will be the same.
-
-            divqr->q.resize(k);
-            if (uint32_t n = Degree(divqr->q); n > 0)
-                cc->EvalAddInPlace(qu, EvalPartialLinearWSum(T, divqr->q, n));
+            qu = EvalPartialLinearWSumWithBias(T, divqr->q, divqr->q.front()/(VectorDataType)2.0,
+                divqr->q.size()-1, (int)T2[m-1]->GetLevel() + compositeDegree*(level_offset - (T2[m-1]->GetNoiseScaleDeg() == 1)), true);
         }
     }
 
@@ -678,59 +785,34 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
         s2.back() = 1;
 
         if (Degree(s2) > k) {
-            su = InnerEvalChebyshevPS(x, s2, k, m - 1, T, T2);
+            su = InnerEvalChebyshevPS(x, s2, k, m - 1, T, T2, level_offset + 1);
         }
         else {
-            // the highest order coefficient will always be 1 because s2 is monic.
-            su = T[k - 1]->Clone();
-
-            // ds = k from construction
-            // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
-            s2.resize(k);
-            if (uint32_t n = Degree(s2); n > 0)
-                cc->EvalAddInPlace(su, EvalPartialLinearWSum(T, s2, n));
-
-            // adds the free term (at x^0)
-            cc->EvalAddInPlace(su, s2.front() / 2.0);
-
-            // The number of levels of su is the same as the number of levels of T[k-1] or T[k-1] + 1. Need to reduce it to T2[m-1] + 1.
-            cc->LevelReduceInPlace(su, nullptr);
+            su = EvalPartialLinearWSumWithBias(T, s2, s2.front() / (VectorDataType)2.0, (uint32_t) s2.size()-1,   (int)T2[m-1]->GetLevel() + compositeDegree*(level_offset + 1 - (T2[m-1]->GetNoiseScaleDeg() == 1)), false);
         }
     }
 
     if (uint32_t n = Degree(divcs->q); n >= 1) {
-        if (n == 1) {
-            if (IsNotEqualOne(divcs->q[1])) {
-                cu = cc->EvalMult(T.front(), divcs->q[1]);
-                cc->ModReduceInPlace(cu);
-            }
-            else {
-                cu = T.front()->Clone();
-            }
-        }
-        else {
-            cu = EvalPartialLinearWSum(T, divcs->q, n);
-        }
-
-        // adds the free term (at x^0)
-        cc->EvalAddInPlace(cu, divcs->q.front() / 2.0);
-
-        // Need to reduce levels up to the level of T2[m-1].
-        uint32_t cd =
-            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
-        cc->LevelReduceInPlace(cu, nullptr, (T2[m - 1]->GetLevel() - cu->GetLevel()) / cd);
+        cu = EvalPartialLinearWSumWithBias(T, divcs->q, divcs->q.front() / (VectorDataType)2.0,  divcs->q.size()-1, (int)T2[m-1]->GetLevel() + compositeDegree*(level_offset - (T2[m-1]->GetNoiseScaleDeg() == 1)), true);
     }
 
     cu = cu ? cc->EvalAdd(T2[m - 1], cu) : cc->EvalAdd(T2[m - 1], divcs->q.front() / 2.0);
-
-#pragma omp taskwait
-
-    auto result = cc->EvalMult(cu, qu);
-    cc->ModReduceInPlace(result);
-    cc->EvalAddInPlace(result, su);
-    return result;
+    #pragma omp taskwait
+    cc->EvalMultMutableInPlace(cu, qu);
+    cc->EvalAddInPlace(cu, su);
+    return cu;
 }
 
+/**
+ * carlos.a.d@um.es changes:
+ *  Change 1: Refactor input range adjustment preamble to handle special cases:
+ *      - Interval of size 2 -> only addition needed (1 mult and 1 level saved)
+ *      - Interval centered around 0 -> only mult needed (addittion ommited)
+ *  Change 2: Manual rescales in place to reduce number of adjustment calls:
+ *      - Ensure all T[i] ciphertexts are kept at noiseScaleDegree == 1 so that evalPartialLinearWSumWithBias works correctly
+ *          (no further need to keep all T[i] at the same level, evalPartialLinearWSumWithBias handles this transparently and at 0 cost)
+ *      - Optimize T2[i], T2km1 computation aswell
+ */
 std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext<DCRTPoly>& x, uint32_t degree,
                                                                  double a, double b) {
     auto degs  = ComputeDegreesPS(degree);
@@ -741,21 +823,31 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
     // consumes one level when a <> -1 && b <> 1
     auto cc = x->GetCryptoContext();
     std::vector<Ciphertext<DCRTPoly>> T(k);
-    if (!IsNotEqualNegOne(a) && !IsNotEqualOne(b)) {
-        // no linear transformation is needed if a = -1, b = 1
-        // T_1(y) = y
-        T[0] = x->Clone();
+    T[0] = x->Clone();
+    if(T[0]->GetNoiseScaleDeg() == 2) {
+                uint32_t compositeDegree =
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+                cc->GetScheme()->ModReduceInternalInPlace(T[0], compositeDegree);
     }
-    else {
+    if (IsNotEqualNegOne(a) || IsNotEqualOne(b)) {
         // linear transformation is needed
         double alpha = 2 / (b - a);
         double beta  = a * alpha;
+        T[0] = x->Clone();
 
-        T[0] = cc->EvalMult(x, alpha);
-        cc->ModReduceInPlace(T[0]);
-        cc->EvalAddInPlace(T[0], -1.0 - beta);
+        if (IsNotEqualOne(alpha)) {
+            cc->EvalMultInPlace(T[0], alpha);
+        }
+        if (IsNotEqualZero(-1.0-beta))
+            cc->EvalAddInPlace(T[0], -1.0 - beta);
+        if(T[0]->GetNoiseScaleDeg() == 2) {
+                uint32_t compositeDegree =
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+                cc->GetScheme()->ModReduceInternalInPlace(T[0], compositeDegree);
+        }
     }
 
+    std::vector<Ciphertext<DCRTPoly>> T2(m);
     // Computes Chebyshev polynomials up to degree k
     // for y: T_1(y) = y, T_2(y), ... , T_k(y)
     // uses binary tree multiplication
@@ -764,30 +856,23 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
             // compute T_{2i+1}(y) = 2*T_i(y)*T_{i+1}(y) - y
             T[i - 1] = cc->EvalMult(T[i / 2 - 1], T[i / 2]);
             cc->EvalAddInPlaceNoCheck(T[i - 1], T[i - 1]);
-            cc->ModReduceInPlace(T[i - 1]);
+            uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+                cc->GetScheme()->ModReduceInternalInPlace(T[i-1], compositeDegree);
             cc->EvalSubInPlace(T[i - 1], T[0]);
         }
         else {
             // compute T_{2i}(y) = 2*T_i(y)^2 - 1
             T[i - 1] = cc->EvalSquare(T[i / 2 - 1]);
             cc->EvalAddInPlaceNoCheck(T[i - 1], T[i - 1]);
-            cc->ModReduceInPlace(T[i - 1]);
             cc->EvalAddInPlace(T[i - 1], -1.0);
+                uint32_t compositeDegree =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+                cc->GetScheme()->ModReduceInternalInPlace(T[i-1], compositeDegree);
+
         }
     }
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(T[k - 1]->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-        // brings all powers of x to the same level
-        for (uint32_t i = 1; i < k; ++i)
-            cc->LevelReduceInPlace(T[i - 1], nullptr, T[k - 1]->GetLevel() - T[i - 1]->GetLevel());
-    }
-    else {
-        for (uint32_t i = 1; i < k; ++i)
-            cc->GetScheme()->AdjustLevelsAndDepthInPlace(T[i - 1], T[k - 1]);
-    }
-
-    std::vector<Ciphertext<DCRTPoly>> T2(m);
     // T2[0] is used as a placeholder
     T2[0] = T.back();
 
@@ -798,8 +883,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
         // Compute the Chebyshev polynomials T_k(y), T_{2k}(y), T_{4k}(y), ... , T_{2^{m-1}k}(y)
         T2[i] = cc->EvalSquare(T2[i - 1]);
         cc->EvalAddInPlaceNoCheck(T2[i], T2[i]);
-        cc->ModReduceInPlace(T2[i]);
         cc->EvalAddInPlace(T2[i], -1.0);
+            uint32_t compositeDegree =
+    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+            cc->GetScheme()->ModReduceInternalInPlace(T2[i], compositeDegree);
 
         // compute T_{k(2*m - 1)} = 2*T_{k(2^{m-1}-1)}(y)*T_{k*2^{m-1}}(y) - T_k(y)
         T2km1 = cc->EvalMult(T2km1, T2[i]);
@@ -830,16 +917,21 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPSWithPrecomp(const std::shared_
     f2.back() = 1;
 
     // Serialize tree if k*2^{m-1} < 128
-    if (k * (1U << (m - 1)) < 128)
-        return T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
-
-    Ciphertext<DCRTPoly> result;
+    if (k * (1U << (m - 1)) < 128) {
+        Ciphertext<DCRTPoly> aux = InnerEvalChebyshevPS(T[0], f2, k, m, T, T2);
+        T[0]->GetCryptoContext()->ModReduceInPlace(aux);
+        T[0]->GetCryptoContext()->EvalSubInPlace(aux, T2km1);
+        return aux;
+    }
+    Ciphertext<DCRTPoly> aux;
 #pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(6 * m + 2))
     {
 #pragma omp single
-        result = T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
+        aux = InnerEvalChebyshevPS(T[0], f2, k, m, T, T2);
     }
-    return result;
+    T[0]->GetCryptoContext()->ModReduceInPlace(aux);
+    T[0]->GetCryptoContext()->EvalSubInPlace(aux, T2km1);
+    return aux;
 }
 
 std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalChebyPolys(ConstCiphertext<DCRTPoly>& x,
