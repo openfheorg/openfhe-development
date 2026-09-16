@@ -657,7 +657,7 @@ public:
         OPENFHE_THROW(errorMsg);
     }
 
-    virtual Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index,
+    virtual Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const int32_t index,
                                                  const uint32_t m,
                                                  const std::shared_ptr<std::vector<Element>> digits) const {
         VerifyLeveledSHEEnabled(__func__);
@@ -694,7 +694,7 @@ public:
    * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
    * @return resulting ciphertext
    */
-    virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
+    virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, int32_t index,
                                                     const std::shared_ptr<std::vector<Element>> digits, bool addFirst,
                                                     const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
         VerifyLeveledSHEEnabled(__func__);
@@ -731,7 +731,7 @@ public:
         return m_LeveledSHE->EvalAtIndex(ciphertext, i, evalKeyMap);
     }
 
-    virtual uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) {
+    virtual uint32_t FindAutomorphismIndex(int32_t index, uint32_t m) {
         VerifyLeveledSHEEnabled(__func__);
         return m_LeveledSHE->FindAutomorphismIndex(index, m);
     }
