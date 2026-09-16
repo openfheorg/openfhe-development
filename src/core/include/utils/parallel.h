@@ -87,11 +87,20 @@ public:
 #endif
     }
 
-    // @Brief returns min of int n and the current thread limit
+    // @Brief true inside an active parallel region, where a nested region would get one thread
+    static bool InParallelRegion() {
+#ifdef PARALLEL
+        return omp_in_parallel() != 0;
+#else
+        return false;
+#endif
+    }
+
+    // @Brief returns int n clamped to [1, current thread limit]
     int GetThreadLimit(int n) const {
 #ifdef PARALLEL
         int lim = threadLimit.load(std::memory_order_relaxed);
-        return n > lim ? lim : n;
+        return n > lim ? lim : (n < 1 ? 1 : n);
 #else
         return 1;
 #endif

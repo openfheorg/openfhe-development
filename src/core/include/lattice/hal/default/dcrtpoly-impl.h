@@ -821,7 +821,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
 
     VecType V(r, qt);
 
-#pragma omp parallel for private(tmp1) num_threads(OpenFHEParallelControls.GetThreadLimit(16))
+#pragma omp parallel for private(tmp1) num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t j = 0; j < r; ++j) {
         for (uint32_t i = 0; i < t; ++i)
             V[j] += (tmp1 = m_vectors[i].GetValues()[j].ConvertToInt()) * multiplier[i];
@@ -934,7 +934,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     (defined(WITH_OPENMP) || (defined(__clang__) && !defined(WITH_NATIVEOPT)))
     uint32_t ringDim = m_params->GetRingDimension();
     std::vector<DoubleNativeInt> sum(sizeP);
-    #pragma omp parallel for firstprivate(sum) num_threads(OpenFHEParallelControls.GetThreadLimit(36))
+    #pragma omp parallel for firstprivate(sum) \
+        num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_APPROX_CRT_BASIS_SWITCH))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         std::fill(sum.begin(), sum.end(), 0);
         for (uint32_t i = 0; i < sizeQ; ++i) {
@@ -980,7 +981,7 @@ void DCRTPolyImpl<VecType>::ApproxModUp(const std::shared_ptr<Params>& paramsQ, 
     std::vector<DCRTPolyImpl::PolyType> polyInNTT;
     if (m_format == Format::EVALUATION) {
         polyInNTT = m_vectors;
-        this->SetFormat(Format::COEFFICIENT);
+        this->SetFormat(Format::COEFFICIENT, THREADS_APPROX_CRT_BASIS_SWITCH);
     }
 
     auto partP = this->ApproxSwitchCRTBasis(paramsQ, paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, modpBarrettMu);
@@ -1058,7 +1059,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
     uint32_t ringDim = m_params->GetRingDimension();
 
-#pragma omp parallel for firstprivate(xQHatInvModq) num_threads(OpenFHEParallelControls.GetThreadLimit(16))
+#pragma omp parallel for firstprivate(xQHatInvModq) \
+    num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         double nu{0.5};
         for (uint32_t i = 0; i < sizeQ; ++i) {
@@ -1101,7 +1103,7 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasis(
     std::vector<DCRTPolyImpl::PolyType> polyInNTT;
     if (m_format == Format::EVALUATION) {
         polyInNTT = m_vectors;
-        this->SetFormat(Format::COEFFICIENT);
+        this->SetFormat(Format::COEFFICIENT, THREADS_CRT_BASIS_SWITCH);
     }
 
     auto partP =
@@ -1132,7 +1134,7 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
     std::vector<DCRTPolyImpl::PolyType> polyInNTT;
     if (m_format == Format::EVALUATION) {
         polyInNTT = m_vectors;
-        this->SetFormat(Format::COEFFICIENT);
+        this->SetFormat(Format::COEFFICIENT, THREADS_CRT_BASIS_SWITCH);
     }
 
     auto partP =
@@ -1230,7 +1232,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // we fit in 63 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
                 // only once
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0, tmp;
@@ -1258,7 +1260,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // is bounded by 2^{-53}. Thus the floating point error is bounded by
                 // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
                 // error is bounded by 1/4, and the rounding will be correct.
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0, tmp;
@@ -1283,7 +1285,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // we fit in 62 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
                 // only once
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0;
@@ -1308,7 +1310,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 }
             }
             else {
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.5;
                     NativeInteger intSum = 0;
@@ -1349,7 +1351,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // we fit in 52 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
                 // only once using floating point techniques
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.0;
                     NativeInteger intSum = 0, tmp;
@@ -1380,7 +1382,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // is bounded by 2^{-53}. Thus the floating point error is bounded by
                 // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
                 // error is bounded by 1/4, and the rounding will be correct.
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum{0.0};
                     NativeInteger intSum{0};
@@ -1406,7 +1408,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // we fit in 52 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
                 // only once using floating point techniques
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.0;
                     NativeInteger intSum = 0;
@@ -1434,7 +1436,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 }
             }
             else {
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(8))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum      = 0.0;
                     NativeInteger intSum = 0;
@@ -1488,7 +1490,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
         mu.push_back(p->GetModulus().ComputeMu());
 
     uint32_t ringDim = m_params->GetRingDimension();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(16))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         for (uint32_t j = 0; j < sizeP; ++j) {
             const auto& pj                     = ans.m_vectors[j].GetModulus();
@@ -1545,7 +1547,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     for (const auto& p : paramsOutput->GetParams())
         mu.push_back(p->GetModulus().ComputeMu());
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(16))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         double nu = 0.5;
         for (uint32_t i = 0; i < sizeI; ++i) {
@@ -1646,7 +1648,7 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
     uint32_t sizeQ   = m_vectors.size();
     DCRTPolyImpl::PolyType::Vector coefficients(ringDim, t.ConvertToInt());
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(16))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t k = 0; k < ringDim; ++k) {
         // TODO: this accumulation is only correct when NativeInteger holds >= 64 bits:
         // it works mod tgamma = t*2^26 (intermediates < 2^58 per the note below), which does
@@ -1943,8 +1945,13 @@ template <typename VecType>
 void DCRTPolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
     m_format = (m_format == Format::COEFFICIENT) ? Format::EVALUATION : Format::COEFFICIENT;
 
-    const uint32_t size                   = m_vectors.size();
-    [[maybe_unused]] const uint32_t limit = thread_limit < size ? thread_limit : size;
+    const uint32_t size = m_vectors.size();
+    if (ParallelControls::InParallelRegion()) {
+        for (uint32_t i = 0; i < size; ++i)
+            m_vectors[i].SwitchFormat();
+        return;
+    }
+    [[maybe_unused]] const uint32_t limit = thread_limit ? thread_limit : size;
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
     for (uint32_t i = 0; i < size; ++i)
         m_vectors[i].SwitchFormat();

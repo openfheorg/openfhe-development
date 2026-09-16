@@ -436,7 +436,8 @@ public:
                                const IntType& rootOfUnityArb) = 0;
 
     /**
-   * @brief onvert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
+   * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
+   * @param thread_limit number of threads to request for the per-tower loop; 0 requests one per tower.
    */
     virtual void SwitchFormat(uint32_t thread_limit = 0) = 0;
 

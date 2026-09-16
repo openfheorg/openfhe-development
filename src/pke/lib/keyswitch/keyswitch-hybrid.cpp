@@ -339,14 +339,14 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
         for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; ++i, ++idx)
             partsCt.SetElementAtIndex(i, c.GetElementAtIndex(idx));
 
-        partsCt.SetFormat(Format::COEFFICIENT);
+        partsCt.SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_APPROX_CRT_BASIS_SWITCH);
         auto partsCtCompl = partsCt.ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(part),
                                                          cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
                                                          cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
                                                          cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
-        partsCtCompl.SetFormat(Format::EVALUATION);
+        partsCtCompl.SetFormat(Format::EVALUATION, DCRTPoly::THREADS_APPROX_CRT_BASIS_SWITCH);
 
         (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
 

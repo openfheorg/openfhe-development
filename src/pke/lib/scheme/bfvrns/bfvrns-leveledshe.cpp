@@ -254,10 +254,10 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
             cryptoParams->GetalphaRlModq(sizeQ - 1), cryptoParams->GetModqBarrettMu(), cryptoParams->GetrInv());
 
         for (uint32_t i = 0; i < cv2Size; ++i) {
-            cv2[i].SetFormat(Format::COEFFICIENT);
+            cv2[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Switch ciphertext2 from basis Q to P to PQ (from Q_l to P_l to P_l*Q_l if manual compress/lower-level-encode was called).
             cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
-            cv2[i].SetFormat(Format::EVALUATION);
+            cv2[i].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         }
     }
     else if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
@@ -272,7 +272,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
         l                      = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
 
         for (uint32_t i = 0; i < cv1Size; ++i) {
-            cv1[i].SetFormat(Format::COEFFICIENT);
+            cv1[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             if (l < sizeQ - 1) {
                 // Drop from basis Q to Q_l.
                 cv1[i] =
@@ -294,10 +294,10 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
             cryptoParams->GetModqBarrettMu(), cryptoParams->GetrInv());
 
         for (uint32_t i = 0; i < cv2Size; ++i) {
-            cv2[i].SetFormat(Format::COEFFICIENT);
+            cv2[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Switch ciphertext2 from basis Q to P_l to P_l*Q_l.
             cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
-            cv2[i].SetFormat(Format::EVALUATION);
+            cv2[i].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         }
     }
     else {
@@ -368,7 +368,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
     if (cryptoParams->GetMultiplicationTechnique() == HPS) {
         for (uint32_t i = 0; i < cvMultSize; ++i) {
             // converts to coefficient representation before rounding
-            cvMult[i].SetFormat(Format::COEFFICIENT);
+            cvMult[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Performs the scaling by t/Q followed by rounding; the result is in the
             // CRT basis P
             cvMult[i] =
@@ -386,7 +386,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
              ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ < sizeQM))) {
         l = sizeQ - 1;
         for (uint32_t i = 0; i < cvMultSize; ++i) {
-            cvMult[i].SetFormat(COEFFICIENT);
+            cvMult[i].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Performs the scaling by t/P followed by rounding; the result is in the
             // CRT basis Q (Q_l if compress/lower-level encode was used)
             cvMult[i] =
@@ -396,7 +396,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
     }
     else if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
         for (uint32_t i = 0; i < cvMultSize; ++i) {
-            cvMult[i].SetFormat(COEFFICIENT);
+            cvMult[i].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Performs the scaling by t/P followed by rounding; the result is in the
             // CRT basis Ql
             cvMult[i] =
@@ -484,10 +484,10 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
             cryptoParams->GetalphaRlModq(sizeQ - 1), cryptoParams->GetModqBarrettMu(), cryptoParams->GetrInv());
 
         for (size_t i = 0; i < cvSize; i++) {
-            cvPoverQ[i].SetFormat(Format::COEFFICIENT);
+            cvPoverQ[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Switch ciphertext2 from basis Q to P to PQ (from Q_l to P_l to P_l*Q_l if manual compress/lower-level-encode was called).
             cvPoverQ[i].FastExpandCRTBasisPloverQ(basisPQ);
-            cvPoverQ[i].SetFormat(Format::EVALUATION);
+            cvPoverQ[i].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         }
     }
     else if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
@@ -500,7 +500,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
         l                      = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
 
         for (size_t i = 0; i < cvSize; i++) {
-            cv[i].SetFormat(Format::COEFFICIENT);
+            cv[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         }
 
         cvPoverQ = cv;
@@ -528,7 +528,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
 
         for (size_t i = 0; i < cvSize; i++) {
             cvPoverQ[i].FastExpandCRTBasisPloverQ(basisPQ);
-            cvPoverQ[i].SetFormat(Format::EVALUATION);
+            cvPoverQ[i].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         }
     }
     else {
@@ -661,7 +661,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
     if (cryptoParams->GetMultiplicationTechnique() == HPS) {
         for (size_t i = 0; i < cvSqSize; i++) {
             // converts to coefficient representation before rounding
-            cvSquare[i].SetFormat(Format::COEFFICIENT);
+            cvSquare[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Performs the scaling by t/Q followed by rounding; the result is in the
             // CRT basis P
             cvSquare[i] =
@@ -679,7 +679,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
              ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ < sizeQM))) {
         l = sizeQ - 1;
         for (size_t i = 0; i < cvSqSize; i++) {
-            cvSquare[i].SetFormat(COEFFICIENT);
+            cvSquare[i].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Performs the scaling by t/P followed by rounding; the result is in the
             // CRT basis Q (Q_l if compress/lower-level encode was used)
             cvSquare[i] = cvSquare[i].ScaleAndRound(
@@ -689,7 +689,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
     }
     else if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
         for (size_t i = 0; i < cvSqSize; i++) {
-            cvSquare[i].SetFormat(COEFFICIENT);
+            cvSquare[i].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             // Performs the scaling by t/P followed by rounding; the result is in the
             // CRT basis Q
             cvSquare[i] = cvSquare[i].ScaleAndRound(
@@ -803,10 +803,10 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
         uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
         uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
-        c1.SetFormat(COEFFICIENT);
+        c1.SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                               cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
-        c1.SetFormat(EVALUATION);
+        c1.SetFormat(EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
 
         return algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
     }
@@ -897,12 +897,12 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
         // how many levels to drop
         l = sizeQ - 1 - FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
 
-        cv[sel].SetFormat(COEFFICIENT);
+        cv[sel].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
         cv[sel] = cv[sel].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                                         cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
     }
 
-    cv[sel].SetFormat(Format::EVALUATION);
+    cv[sel].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
     auto ab = algo->KeySwitchCore(cv[sel], evalKey);
 
     if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQM == sizeQ)) {
