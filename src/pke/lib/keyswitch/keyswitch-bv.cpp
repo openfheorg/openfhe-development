@@ -262,7 +262,9 @@ std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<s
     if (limit == 0 || (*digits)[0].GetNumOfElements() != sizeQl)
         OPENFHE_THROW("the digits and the ciphertext have different numbers of towers");
 
-    const uint32_t team   = OpenFHEParallelControls.GetThreadLimit(sizeQl * limit);
+    const uint64_t work   = static_cast<uint64_t>(paramsQl->GetRingDimension()) * sizeQl * limit;
+    const uint32_t team   = std::min<uint32_t>(OpenFHEParallelControls.GetThreadLimit(sizeQl * limit),
+                                               std::max<uint32_t>(sizeQl, static_cast<uint32_t>(work >> 15)));
     const uint32_t groups = std::max<uint32_t>(1, std::min<uint32_t>(limit, team / sizeQl));
     const uint32_t tasks  = sizeQl * groups;
 
