@@ -36,6 +36,7 @@
 #include "UnitTestUtils.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -63,6 +64,8 @@ enum TEST_CASE_TYPE : int {
     MULT_PACKED_PRECISION,
     EVALSQUARE,
     SMALL_SCALING_MOD_SIZE,
+    FIRST_MOD_SIZE,
+    FIRST_MOD_SIZE_REJECTED,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -116,6 +119,12 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case SMALL_SCALING_MOD_SIZE:
             typeName = "SMALL_SCALING_MOD_SIZE";
             break;
+        case FIRST_MOD_SIZE:
+            typeName = "FIRST_MOD_SIZE";
+            break;
+        case FIRST_MOD_SIZE_REJECTED:
+            typeName = "FIRST_MOD_SIZE_REJECTED";
+            break;
         default:
             typeName = "UNKNOWN";
             break;
@@ -166,6 +175,9 @@ constexpr uint32_t RING_DIM      = 512;
 constexpr uint32_t RING_DIM_HALF = 256;
 constexpr uint32_t DSIZE         = 10;
 constexpr uint32_t BATCH         = 8;
+// primes congruent to 1 mod 2*RING_DIM get scarce as the ring dimension grows, which is what makes the
+// first modulus hard to assemble out of primes of the requested size
+constexpr uint32_t RING_DIM_LARGE = 16384;
 // #if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
 // constexpr uint32_t RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 // #endif
@@ -340,6 +352,37 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVALSQUARE, "13", {CKKSRNS_SCHEME, RING_DIM, 7,         86,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 48, 2}, },
     { EVALSQUARE, "14", {CKKSRNS_SCHEME, RING_DIM, 7,         90,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 27, 4}, },
     { EVALSQUARE, "15", {CKKSRNS_SCHEME, RING_DIM, 7,         118,      DSIZE, BATCH,   DFLT,       DFLT,          120,      HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 64, 3}, },
+    // ==========================================
+    // The first modulus is assembled out of compositeDegree primes, and their product must stay close to
+    // firstModSize. These use a large ring dimension on purpose: primes of the requested size then run out,
+    // and the first modulus used to end up over 5 bits short of firstModSize (github.com/openfheorg/openfhe-development/issues/1327).
+    // TestType,      Descr, Scheme,              RDim,       MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,             LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, CompositeDegree
+    { FIRST_MOD_SIZE, "01", {CKKSRNS_SCHEME, RING_DIM_LARGE,  1,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE, "02", {CKKSRNS_SCHEME, RING_DIM_LARGE,  2,         62,       DSIZE, BATCH,   DFLT,       DFLT,          63,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE, "03", {CKKSRNS_SCHEME, RING_DIM_LARGE,  1,         83,       DSIZE, BATCH,   DFLT,       DFLT,          84,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE, "04", {CKKSRNS_SCHEME, RING_DIM_LARGE,  3,         86,       DSIZE, BATCH,   DFLT,       DFLT,          89,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    // at multiplicative depth 0 the first modulus is the whole chain, and the scaling primes sampled into
+    // those same slots are overwritten, yet they still hold their values back from it
+    { FIRST_MOD_SIZE, "05", {CKKSRNS_SCHEME, RING_DIM_LARGE,  0,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE, "06", {CKKSRNS_SCHEME, RING_DIM_LARGE,  0,         62,       DSIZE, BATCH,   DFLT,       DFLT,          63,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE, "07", {CKKSRNS_SCHEME, RING_DIM_LARGE,  0,         83,       DSIZE, BATCH,   DFLT,       DFLT,          84,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE, "08", {CKKSRNS_SCHEME, RING_DIM_LARGE,  0,         86,       DSIZE, BATCH,   DFLT,       DFLT,          89,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    // the primes the overwritten scaling moduli had taken are the only ones large enough here; with BV there
+    // are no auxiliary primes to sample afterwards, so this fails outright unless those are released first
+    { FIRST_MOD_SIZE, "09", {CKKSRNS_SCHEME, RING_DIM_LARGE,    0,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, BV,     COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 20, DFLT}, },
+    // the same requirement on the parameters the other test cases above run with
+    { FIRST_MOD_SIZE, "11", {CKKSRNS_SCHEME, RING_DIM,        7,         60,       DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE, "12", {CKKSRNS_SCHEME, RING_DIM,        7,         108,      DSIZE, BATCH,   DFLT,       DFLT,          118,      HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE, "13", {CKKSRNS_SCHEME, RING_DIM,        7,         118,      DSIZE, BATCH,   DFLT,       DFLT,          120,      HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,  DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 64, 3}, },
+    // ==========================================
+    // A first modulus out of reach has to be reported rather than silently built too small. "01" asks for one
+    // bit more than the two 60-bit primes a 64-bit register word allows (the primes are capped at
+    // MAX_MODULUS_SIZE), "02" for far more than two 27-bit primes hold, and "03" for a size whose primes the
+    // scaling moduli have used up.
+    // TestType,               Descr, Scheme,              RDim,       MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,               LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, CompositeDegree
+    { FIRST_MOD_SIZE_REJECTED, "01", {CKKSRNS_SCHEME, RING_DIM,        7,         119,      DSIZE, BATCH,   DFLT,       DFLT,          121,      HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,  DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 64, DFLT}, },
+    { FIRST_MOD_SIZE_REJECTED, "02", {CKKSRNS_SCHEME, RING_DIM,        7,         95,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,  DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 27, 2}, },
+    { FIRST_MOD_SIZE_REJECTED, "03", {CKKSRNS_SCHEME, RING_DIM_LARGE,  1,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,  DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 20, DFLT}, },
 };
 // clang-format on
 //===========================================================================================================
@@ -1886,6 +1929,52 @@ protected:
         }
     }
 
+    void UnitTest_FirstModSize(const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+        try {
+            // the checks below are meaningless without an explicit firstModSize, and DFLT is negative
+            ASSERT_FALSE(isDefaultValue(testData.params.firstModSize)) << failmsg;
+            const uint32_t firstModSize = static_cast<uint32_t>(testData.params.firstModSize);
+
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+            const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+            const auto& towers             = cryptoParams->GetElementParams()->GetParams();
+
+            // the first modulus is the product of the first compositeDegree primes of the chain
+            double firstModBits = 0.0;
+            BigInteger firstModulus(1);
+            for (uint32_t d = 0; d < compositeDegree; ++d) {
+                firstModBits += std::log2(towers[d]->GetModulus().ConvertToDouble());
+                firstModulus *= BigInteger(towers[d]->GetModulus());
+            }
+
+            // The first modulus has to stay below 2^firstModSize: the SPARSE_ENCAPSULATED key encapsulation
+            // rejects a bottom modulus of more than 121 bits, and a first modulus of exactly that size is a
+            // supported configuration. GetMSB() states the bound exactly, with no floating point in the way.
+            EXPECT_LE(firstModulus.GetMSB(), firstModSize) << failmsg;
+
+            // a prime is always smaller than the power of two it is sampled from, so firstModSize can only be
+            // approached, never met; primes taken above a share make up for the ones that come out short
+            EXPECT_GE(firstModBits, firstModSize - 2.0) << failmsg;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    void UnitTest_FirstModSize_Rejected(const TEST_CASE_UTCKKSRNS_CS& testData,
+                                        const std::string& failmsg = std::string()) {
+        // A first modulus that cannot be assembled out of compositeDegree primes of the register word size
+        // has to be reported. Returning a modulus below the requested firstModSize instead would quietly
+        // cost precision at the last level.
+        EXPECT_THROW(UnitTestGenerateContext(testData.params), OpenFHEException) << failmsg;
+    }
+
     void UnitTest_Small_ScalingModSize(const TEST_CASE_UTCKKSRNS_CS& testData,
                                        const std::string& failmsg = std::string()) {
         try {
@@ -1980,6 +2069,12 @@ TEST_P(UTCKKSRNSCS, CKKSRNS) {
             break;
         case SMALL_SCALING_MOD_SIZE:
             UnitTest_Small_ScalingModSize(test, test.buildTestName());
+            break;
+        case FIRST_MOD_SIZE:
+            UnitTest_FirstModSize(test, test.buildTestName());
+            break;
+        case FIRST_MOD_SIZE_REJECTED:
+            UnitTest_FirstModSize_Rejected(test, test.buildTestName());
             break;
         default:
             break;
