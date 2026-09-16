@@ -935,7 +935,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     uint32_t ringDim = m_params->GetRingDimension();
     std::vector<DoubleNativeInt> sum(sizeP);
     #pragma omp parallel for firstprivate(sum) \
-        num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_APPROX_CRT_BASIS_SWITCH))
+        num_threads(OpenFHEParallelControls.GetThreadLimit(ApproxSwitchCRTBasisThreads(ringDim, sizeQ, sizeP)))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         std::fill(sum.begin(), sum.end(), 0);
         for (uint32_t i = 0; i < sizeQ; ++i) {
@@ -981,7 +981,8 @@ void DCRTPolyImpl<VecType>::ApproxModUp(const std::shared_ptr<Params>& paramsQ, 
     std::vector<DCRTPolyImpl::PolyType> polyInNTT;
     if (m_format == Format::EVALUATION) {
         polyInNTT = m_vectors;
-        this->SetFormat(Format::COEFFICIENT, THREADS_APPROX_CRT_BASIS_SWITCH);
+        this->SetFormat(Format::COEFFICIENT, ApproxSwitchCRTBasisThreads(m_params->GetRingDimension(), m_vectors.size(),
+                                                                         paramsP->GetParams().size()));
     }
 
     auto partP = this->ApproxSwitchCRTBasis(paramsQ, paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, modpBarrettMu);

@@ -305,6 +305,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     const uint32_t sizeQl  = paramsQl->GetParams().size();
     const uint32_t sizeP   = paramsP->GetParams().size();
     const uint32_t sizeQlP = sizeQl + sizeP;
+    const uint32_t ringDim = paramsQl->GetRingDimension();
     const uint32_t alpha   = cryptoParams->GetNumPerPartQ();
     // The number of digits of the current ciphertext
     uint32_t numPartQl = std::ceil(static_cast<double>(sizeQl) / alpha);
@@ -339,14 +340,15 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
         for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; ++i, ++idx)
             partsCt.SetElementAtIndex(i, c.GetElementAtIndex(idx));
 
-        partsCt.SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_APPROX_CRT_BASIS_SWITCH);
+        const uint32_t threads = DCRTPoly::ApproxSwitchCRTBasisThreads(ringDim, sizePartQl, sizeQlP - sizePartQl);
+        partsCt.SetFormat(Format::COEFFICIENT, threads);
         auto partsCtCompl = partsCt.ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(part),
                                                          cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
                                                          cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
                                                          cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
-        partsCtCompl.SetFormat(Format::EVALUATION, DCRTPoly::THREADS_APPROX_CRT_BASIS_SWITCH);
+        partsCtCompl.SetFormat(Format::EVALUATION, threads);
 
         (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
 
