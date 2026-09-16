@@ -259,7 +259,9 @@ std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<s
     const std::vector<DCRTPoly>& aref = evalKey->GetAVector();
     const uint32_t sizeQl             = paramsQl->GetParams().size();
     const uint32_t limit              = digits->size();
-    if (limit == 0 || (*digits)[0].GetNumOfElements() != sizeQl)
+    if (limit == 0)
+        OPENFHE_THROW("no digits to key switch");
+    if ((*digits)[0].GetNumOfElements() != sizeQl)
         OPENFHE_THROW("the digits and the ciphertext have different numbers of towers");
 
     const uint64_t work   = static_cast<uint64_t>(paramsQl->GetRingDimension()) * sizeQl * limit;

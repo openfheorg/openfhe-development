@@ -45,6 +45,7 @@
 #include "utils/inttypes.h"
 #include "utils/exception.h"
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <string>
@@ -95,6 +96,21 @@ public:
     using DugType       = DiscreteUniformGeneratorImpl<LilVecType>;
     using TugType       = TernaryUniformGeneratorImpl<LilVecType>;
     using BugType       = BinaryUniformGeneratorImpl<LilVecType>;
+
+    // measured team widths for the loops over the ring dimension
+    static constexpr uint32_t THREADS_SCALE_TO_POLY{8};
+    static constexpr uint32_t THREADS_CRT_BASIS_SWITCH{16};
+    static constexpr uint32_t THREADS_APPROX_CRT_BASIS_SWITCH{36};
+    static constexpr uint32_t THREADS_APPROX_CRT_BASIS_SWITCH_MIN{8};
+    static constexpr uint64_t APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD{1u << 17};
+
+    // team width for ApproxSwitchCRTBasis and the format switches beside it, from the work in its loop
+    static uint32_t ApproxSwitchCRTBasisThreads(uint32_t ringDim, uint32_t sizeQ, uint32_t sizeP) {
+        const uint64_t threads =
+            static_cast<uint64_t>(ringDim) * sizeQ * sizeP / APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD;
+        return static_cast<uint32_t>(
+            std::clamp<uint64_t>(threads, THREADS_APPROX_CRT_BASIS_SWITCH_MIN, THREADS_APPROX_CRT_BASIS_SWITCH));
+    }
 
     /**
    * @brief Get the Derived object, this is apart of the CRTP software design pattern

@@ -980,9 +980,10 @@ void DCRTPolyImpl<VecType>::ApproxModUp(const std::shared_ptr<Params>& paramsQ, 
     // if input polynomial in evaluation representation, store for later use to reduce number of NTTs
     std::vector<DCRTPolyImpl::PolyType> polyInNTT;
     if (m_format == Format::EVALUATION) {
-        polyInNTT = m_vectors;
-        this->SetFormat(Format::COEFFICIENT, ApproxSwitchCRTBasisThreads(m_params->GetRingDimension(), m_vectors.size(),
-                                                                         paramsP->GetParams().size()));
+        polyInNTT            = m_vectors;
+        const uint32_t sizeQ = std::min<uint32_t>(m_vectors.size(), paramsQ->GetParams().size());
+        this->SetFormat(Format::COEFFICIENT,
+                        ApproxSwitchCRTBasisThreads(m_params->GetRingDimension(), sizeQ, paramsP->GetParams().size()));
     }
 
     auto partP = this->ApproxSwitchCRTBasis(paramsQ, paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, modpBarrettMu);
