@@ -81,7 +81,10 @@ The features that need to be enabled for CKKS functional bootstrapping are PKE, 
 When multiple functions need to be evaluated over the same input ciphertext, we can reuse the computations for functional
 bootstrapping up to (including) the powers of the complex exponential. This can be called by `EvalMVBPrecompute`. Using the
 ciphertexts obtained as such, one can then call `EvalMVB` once for every set of coefficients corresponding to a different
-function. As before, if intermediate CKKS leveled computations are required before converting back to RLWE, one
+function. All these functions must be interpolated with the same shape (same plaintext modulus and `order`, which dictate
+the size of the coefficient vector; for degree less than 5, the sparsity of the coefficients should also be identical) as
+the coefficients passed to `EvalMVBPrecompute`, since those determine which powers of the complex exponential are precomputed.
+As before, if intermediate CKKS leveled computations are required before converting back to RLWE, one
 should call `EvalMVBNoDecoding` and `EvalHomDecoding`.
 
 **Chain computations and Sign**

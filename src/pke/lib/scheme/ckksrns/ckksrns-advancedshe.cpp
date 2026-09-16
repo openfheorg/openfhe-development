@@ -342,8 +342,10 @@ static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(const std::
 
     // perform scalar multiplication for all other terms and sum them up
     for (uint32_t i = 1; i < k; ++i) {
-        if (IsNotEqualZero(coefficients[i]))
-            cc->EvalAddInPlace(result, cc->EvalMult(powers[i - 1], coefficients[i]));
+        if (IsNotEqualZero(coefficients[i])) {
+            auto term = cc->EvalMult(powers[i - 1], coefficients[i]);
+            cc->EvalAddMutableInPlace(result, term);
+        }
     }
 
     // Do rescaling after scalar multiplication
@@ -600,8 +602,10 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(const std::vec
 
     // perform scalar multiplication for all other terms and sum them up
     for (uint32_t i = 0; i < k; ++i) {
-        if (IsNotEqualZero(coefficients[i + 1]))
-            cc->EvalAddInPlace(result, cc->EvalMult(T[i], coefficients[i + 1]));
+        if (IsNotEqualZero(coefficients[i + 1])) {
+            auto term = cc->EvalMult(T[i], coefficients[i + 1]);
+            cc->EvalAddMutableInPlace(result, term);
+        }
     }
 
     // Do rescaling after scalar multiplication
