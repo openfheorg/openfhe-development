@@ -10,7 +10,7 @@ jobs:
   call:
     uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
     with:
-      runner: ${{ vars.RUNNER }}
+      runner: ${{ vars.RUNNER || 'ubuntu-24.04' }}
       compiler: "GCC-14"
       native_backend: "all"
       mb2_jobs: "mb2"
