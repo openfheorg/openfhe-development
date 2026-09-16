@@ -115,9 +115,10 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
-    uint32_t init_size   = 3;
-    uint32_t dcrtBits    = 24;
-    uint32_t dcrtBitsBig = 57;
+    uint32_t init_size = 3;
+    uint32_t dcrtBits  = 24;
+    // Bluestein needs bigModulus > m * q^2 (about 2^58.8 for 24-bit towers at m = 1811)
+    uint32_t dcrtBitsBig = 60;
 
     uint32_t m = 1811;
 
@@ -177,9 +178,10 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative) {
-    uint32_t init_size   = 3;
-    uint32_t dcrtBits    = 24;
-    uint32_t dcrtBitsBig = 57;
+    uint32_t init_size = 3;
+    uint32_t dcrtBits  = 24;
+    // Bluestein needs bigModulus > m * q^2 (about 2^58.8 for 24-bit towers at m = 1811)
+    uint32_t dcrtBitsBig = 60;
 
     uint32_t m = 1811;
 
