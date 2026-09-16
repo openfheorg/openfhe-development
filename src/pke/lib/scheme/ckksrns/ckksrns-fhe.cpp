@@ -3953,9 +3953,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
-                                                             coeff_cos_28_double;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double_92 :
+                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
+                                                             coeff_cos_28_double_68;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_cos, coeffLowerBound, coeffUpperBound);
@@ -3976,8 +3976,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         else {
             auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                              (digitBitSize > 10)          ? coeff_exp_28_double_69 :
-                                                             coeff_exp_28_double_64;
+                                                             coeff_exp_28_double_69;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -4041,9 +4040,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
-                                                             coeff_cos_28_double;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double_92 :
+                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
+                                                             coeff_cos_28_double_68;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
 
@@ -4061,8 +4060,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         else {
             auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                              (digitBitSize > 10)          ? coeff_exp_28_double_69 :
-                                                             coeff_exp_28_double_64;
+                                                             coeff_exp_28_double_69;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -4325,13 +4323,12 @@ uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& c
     // K = 28 approximations of SPARSE_TERNARY
     if (UsesLargeSparseKey(skd, sparseKSHammingWeight))
         skd = SPARSE_TERNARY;
-    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double :
-                      (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double :
-                                                     coeff_cos_28_double;
-    auto& coeff_exp = (skd == UNIFORM_TERNARY)       ? coeff_exp_512_double_92 :
-                      (skd == SPARSE_ENCAPSULATED)   ? coeff_exp_16_double_46 :
-                      (PInput.ConvertToInt() > 1024) ? coeff_exp_28_double_69 :
-                                                       coeff_exp_28_double_64;
+    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double_92 :
+                      (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
+                                                     coeff_cos_28_double_68;
+    auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
+                      (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
+                                                     coeff_exp_28_double_69;
     uint32_t depth  = 0;
     switch (PInput.ConvertToInt()) {
         case 2:
