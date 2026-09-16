@@ -41,6 +41,7 @@
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 #include <cmath>
 #include <limits>
@@ -130,8 +131,7 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(const std::vector<int64_t>& rhs)
     }
     for (size_t j = 0; j < vlen; ++j) {
         if (j < llen)
-            (*m_values)[j] =
-                (rhs[j] < 0) ? m - Integer(static_cast<uint64_t>(-rhs[j])) : Integer(static_cast<uint64_t>(rhs[j]));
+            (*m_values)[j] = SignedToResidue(rhs[j], m);
         else
             (*m_values)[j] = ZERO;
     }
@@ -152,8 +152,7 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(const std::vector<int32_t>& rhs)
     }
     for (size_t j = 0; j < vlen; ++j) {
         if (j < llen)
-            (*m_values)[j] =
-                (rhs[j] < 0) ? m - Integer(static_cast<uint64_t>(-rhs[j])) : Integer(static_cast<uint64_t>(rhs[j]));
+            (*m_values)[j] = SignedToResidue(rhs[j], m);
         else
             (*m_values)[j] = ZERO;
     }

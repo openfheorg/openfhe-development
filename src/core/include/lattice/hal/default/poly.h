@@ -145,6 +145,7 @@ public:
         m_values = std::move(rhs.m_values);
         return *this;
     }
+    // Assign signed coefficients reduced modulo the polynomial modulus, including signed minima.
     PolyType& operator=(const std::vector<int32_t>& rhs);
     PolyType& operator=(const std::vector<int64_t>& rhs);
     PolyType& operator=(std::initializer_list<uint64_t> rhs) override;

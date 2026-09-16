@@ -37,7 +37,8 @@
 
 #include <cmath>
 #include <climits>  // CHAR_BIT
-#include <limits>   // std::numeric_limits
+#include <cstdint>
+#include <limits>  // std::numeric_limits
 #include <string>
 #include <type_traits>  // std::is_integral
 
@@ -119,6 +120,37 @@ inline bool is128BitOverflow(double d) {
 
 enum { MAX_DOUBLE_PRECISION = 52 };
 #endif
+
+/**
+ * @brief Converts a signed integer to its residue in [0, modulus) for a modulus that fits in 64 bits.
+ *
+ * @param value the signed integer to convert.
+ * @param modulus the modulus to reduce against, non-zero.
+ * @return value modulo modulus, in [0, modulus).
+ */
+inline uint64_t SignedToResidue(int64_t value, uint64_t modulus) {
+    const bool negative      = value < 0;
+    const uint64_t magnitude = negative ? uint64_t(0) - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
+    const uint64_t residue   = (magnitude < modulus) ? magnitude : magnitude % modulus;
+    return (negative && residue != 0) ? modulus - residue : residue;
+}
+
+/**
+ * @brief Converts a signed integer to its residue in [0, modulus) for a library integer type.
+ *
+ * @param value the signed integer to convert.
+ * @param modulus the modulus to reduce against.
+ * @return value modulo modulus, in [0, modulus).
+ */
+template <typename IntType, std::enable_if_t<!std::is_integral_v<IntType>, bool> = true>
+IntType SignedToResidue(int64_t value, const IntType& modulus) {
+    if (modulus.GetMSB() <= 64)
+        return IntType(SignedToResidue(value, modulus.template ConvertToInt<uint64_t>()));
+    if (value >= 0)
+        return IntType(static_cast<uint64_t>(value));
+    const uint64_t magnitude = uint64_t(0) - static_cast<uint64_t>(value);
+    return modulus - IntType(magnitude);
+}
 
 inline bool isConvertableToNativeInt(double d) {
     if constexpr (NATIVEINT == 32)
