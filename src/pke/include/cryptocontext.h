@@ -2823,6 +2823,15 @@ public:
         return m_scheme->EvalPoly(ciphertext, coefficients);
     }
 
+    /**
+    * @brief Evaluates a polynomial (given as a power series) from the powers of a ciphertext precomputed
+    *        by EvalPowers (CKKS only). The powers are left unmodified, so the same precomputation can be
+    *        reused for further polynomials of degree at most the one it was computed for.
+    *
+    * @param powers        Powers of the input ciphertext, as returned by EvalPowers.
+    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+    * @return Resulting ciphertext.
+    */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
                                             const std::vector<VectorDataType>& coefficients) const {
@@ -2904,6 +2913,15 @@ public:
         return m_scheme->EvalChebyshevSeries(ciphertext, coefficients, a, b);
     }
 
+    /**
+    * @brief Evaluates a Chebyshev series from the Chebyshev polynomials of a ciphertext precomputed by
+    *        EvalChebyPolys (CKKS only). The polynomials are left unmodified, so the same precomputation
+    *        can be reused for further series of degree at most the one it was computed for.
+    *
+    * @param polys         Chebyshev polynomials of the input ciphertext, as returned by EvalChebyPolys.
+    * @param coefficients  Chebyshev series coefficients.
+    * @return Resulting ciphertext.
+    */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
                                                        const std::vector<VectorDataType>& coefficients) const {

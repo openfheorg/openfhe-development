@@ -333,6 +333,9 @@ static std::vector<TEST_CASE_FBT> testCases = {
     // corrupted in place) and rejection of invalid arguments.
     { FBT_MVB_REUSE, "701",      Q60,      2,       4, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
     { FBT_MVB_REUSE, "702",      Q60,      2,       4, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    { FBT_MVB_REUSE, "703",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "704",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "705",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
     {   FBT_INVALID, "801",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
     // UNIFORM_TERNARY: the uniform secret distribution uses six double-angle iterations instead of two
     // and a degree-92 Chebyshev interpolation instead of degree-58 (the mod-raise overflow bound is
@@ -399,6 +402,7 @@ static std::vector<TEST_CASE_FBT> testCases = {
     { FBT_CONSECLEV, "1006",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
     {       FBT_MVB, "1007",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
     { FBT_MVB_REUSE, "1008",      Q60,      2,       4, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_MVB_REUSE, "1067",      Q60,      4,       4, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "1009",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "1010",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "1011",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
@@ -1593,82 +1597,99 @@ protected:
         }
     }
 
-    // Evaluates the same binary LUT twice on the same precomputed powers and checks that both results
-    // are correct, so the second evaluation detects any in-place corruption of the shared precomputation.
-    // The LUT values f(0) = 2, f(1) = 1 give the coefficients {1, 1}, for which the evaluation performs
-    // an in-place multiplication and addition (coefficients {c, -1}, as in UnitTest_MVB, take a
-    // different, non-mutating path).
+    // Evaluates two LUTs on the same precomputed powers, in the order f1, f2, f1, and checks every result, so
+    // that the later evaluations detect any in-place corruption of the shared precomputation by the earlier
+    // ones. The binary rows (PInput = 2 at order 1) take the special-cased degree-1 path, with the
+    // coefficients {1, 1} for f1 and {1, -1} for f2 covering its two branches. The PInput = 4 rows have Hermite
+    // trigonometric coefficients of degree 3, which are evaluated straight from the shared powers rather than
+    // by Paterson-Stockmeyer (degree 5 and above).
     void UnitTest_MVBReuse(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
             bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
-            auto f = [](int64_t x) -> int64_t {
-                return 2 - (x % 2);
+            auto a  = t.PInput.ConvertToInt<int64_t>();
+            auto b  = t.POutput.ConvertToInt<int64_t>();
+            auto f1 = [a, b](int64_t x) -> int64_t {
+                return (a - x % a) % b;
             };
-            std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
+            auto f2 = [a, b](int64_t x) -> int64_t {
+                return (x % a) % b;
+            };
 
-            std::vector<int64_t> x = {1, 0, 1, 1, 0, 1, 0, 0};
-            if (x.size() < t.numSlots)
-                x = Fill<int64_t>(x, t.numSlots);
+            std::vector<int64_t> x(t.numSlots);
+            for (size_t i = 0; i < x.size(); ++i)
+                x[i] = static_cast<int64_t>(3 * i + 1) % a;
 
             const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            CCParams<CryptoContextCKKSRNS> parameters;
-            parameters.SetSecretKeyDist(t.skd);
-            parameters.SetSecurityLevel(HEStd_NotSet);
-            parameters.SetScalingModSize(dcrtBits);
-            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
-            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
-            parameters.SetNumLargeDigits(t.dnum);
-            parameters.SetBatchSize(numSlotsCKKS);
-            parameters.SetRingDim(t.ringDim);
-            uint32_t depth =
-                t.levelsAvailableAfterBootstrap +
-                FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd, FirstModSize(dcrtBits, t.scalTech));
-            parameters.SetMultiplicativeDepth(depth);
 
-            auto cc = GenCryptoContext(parameters);
-            cc->Enable(PKE);
-            cc->Enable(KEYSWITCH);
-            cc->Enable(LEVELEDSHE);
-            cc->Enable(ADVANCEDSHE);
-            cc->Enable(FHE);
+            // coefficients1 (of f1) fix the depth and the precomputation; coefficients2 belong to f2
+            auto run = [&](const auto& coefficients1, const auto& coefficients2) {
+                CCParams<CryptoContextCKKSRNS> parameters;
+                parameters.SetSecretKeyDist(t.skd);
+                parameters.SetSecurityLevel(HEStd_NotSet);
+                parameters.SetScalingModSize(dcrtBits);
+                SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
+                parameters.SetNumLargeDigits(t.dnum);
+                parameters.SetBatchSize(numSlotsCKKS);
+                parameters.SetRingDim(t.ringDim);
+                uint32_t depth = t.levelsAvailableAfterBootstrap +
+                                 FHECKKSRNS::GetFBTDepth(t.lvlb, coefficients1, t.PInput, t.order, t.skd,
+                                                         FirstModSize(dcrtBits, t.scalTech));
+                parameters.SetMultiplicativeDepth(depth);
 
-            auto keyPair = cc->KeyGen();
+                auto cc = GenCryptoContext(parameters);
+                cc->Enable(PKE);
+                cc->Enable(KEYSWITCH);
+                cc->Enable(LEVELEDSHE);
+                cc->Enable(ADVANCEDSHE);
+                cc->Enable(FHE);
 
-            cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                             t.levelsAvailableAfterBootstrap, 0, t.order);
-            cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
-            cc->EvalMultKeyGen(keyPair.secretKey);
+                auto keyPair = cc->KeyGen();
 
-            auto ep      = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
-            auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
-            SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
-            auto ctxt =
-                SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+                cc->EvalFBTSetup(coefficients1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
+                cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto powers = cc->EvalMVBPrecompute(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                auto ep      = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
+                auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
+                SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
+                auto ctxt =
+                    SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
 
-            auto exact(x);
-            std::transform(x.begin(), x.end(), exact.begin(), f);
+                auto powers =
+                    cc->EvalMVBPrecompute(ctxt, coefficients1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
 
-            for (uint32_t run = 1; run <= 2; ++run) {
-                auto ctxtAfterFBT = cc->EvalMVB(powers, coeffint, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
-                auto polys        = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
-                auto computed     = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
+                auto evalAndCheck = [&](const auto& coefficients, const auto& f, const std::string& label) {
+                    auto ctxtAfterFBT =
+                        cc->EvalMVB(powers, coefficients, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
+                    auto polys    = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
+                    auto computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
                                                                   numSlotsCKKS, t.numSlots);
 
-                std::vector<int64_t> err(exact.size());
-                std::transform(exact.begin(), exact.end(), computed.begin(), err.begin(), std::minus<int64_t>());
-                std::transform(err.begin(), err.end(), err.begin(),
-                               [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
-                auto max_error_it = std::max_element(err.begin(), err.end());
-                checkEquality(
-                    (*max_error_it), static_cast<int64_t>(0), 0.0001,
-                    failmsg + " LUT evaluation " + std::to_string(run) + " on the reused precomputation fails");
-            }
+                    std::vector<int64_t> err(x.size());
+                    std::transform(x.begin(), x.end(), computed.begin(), err.begin(),
+                                   [&](int64_t in, int64_t out) { return std::abs(f(in) - out) % b; });
+                    checkEquality(*std::max_element(err.begin(), err.end()), static_cast<int64_t>(0), 0.0001,
+                                  failmsg + " " + label + " on the reused precomputation fails");
+                };
 
-            cc->ClearStaticMapsAndVectors();
+                evalAndCheck(coefficients1, f1, "LUT evaluation 1 (first function)");
+                evalAndCheck(coefficients2, f2, "LUT evaluation 2 (second function)");
+                evalAndCheck(coefficients1, f1, "LUT evaluation 3 (first function again)");
+
+                cc->ClearStaticMapsAndVectors();
+            };
+
+            if ((a == 2) && (t.order == 1)) {
+                run(std::vector<int64_t>{f1(1), f1(0) - f1(1)}, std::vector<int64_t>{f2(1), f2(0) - f2(1)});
+            }
+            else {
+                run(GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI),
+                    GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI));
+            }
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

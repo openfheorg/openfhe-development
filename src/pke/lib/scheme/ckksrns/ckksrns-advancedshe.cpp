@@ -323,8 +323,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalPowers(
     return (d < 5) ? internalEvalPowersLinear(x, coefficients) : internalEvalPowersPS(x, d);
 }
 
+// The powers may be a precomputation shared across several polynomials (EvalPolyWithPrecomp), so every
+// term is scaled into a fresh ciphertext and the powers are left untouched.
 template <typename VectorDataType>
-static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& powers,
+static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(const std::vector<Ciphertext<DCRTPoly>>& powers,
                                                                      const std::vector<VectorDataType>& coefficients) {
     if (coefficients.size() < 2)
         OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
@@ -340,10 +342,8 @@ static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector
 
     // perform scalar multiplication for all other terms and sum them up
     for (uint32_t i = 1; i < k; ++i) {
-        if (IsNotEqualZero(coefficients[i])) {
-            cc->EvalMultInPlace(powers[i - 1], coefficients[i]);
-            cc->EvalAddInPlace(result, powers[i - 1]);
-        }
+        if (IsNotEqualZero(coefficients[i]))
+            cc->EvalAddInPlace(result, cc->EvalMult(powers[i - 1], coefficients[i]));
     }
 
     // Do rescaling after scalar multiplication
@@ -587,8 +587,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysLinear(ConstCipher
     return std::make_shared<seriesPowers<DCRTPoly>>(std::move(T));
 }
 
+// The Chebyshev polynomials may be a precomputation shared across several series
+// (EvalChebyshevSeriesWithPrecomp), so every term is scaled into a fresh ciphertext and T is left untouched.
 template <typename VectorDataType>
-Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& T,
+Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(const std::vector<Ciphertext<DCRTPoly>>& T,
                                                                   const std::vector<VectorDataType>& coefficients) {
     const uint32_t k = coefficients.size() - 2;
 
@@ -598,10 +600,8 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(std::vector<Ci
 
     // perform scalar multiplication for all other terms and sum them up
     for (uint32_t i = 0; i < k; ++i) {
-        if (IsNotEqualZero(coefficients[i + 1])) {
-            cc->EvalMultInPlace(T[i], coefficients[i + 1]);
-            cc->EvalAddInPlace(result, T[i]);
-        }
+        if (IsNotEqualZero(coefficients[i + 1]))
+            cc->EvalAddInPlace(result, cc->EvalMult(T[i], coefficients[i + 1]));
     }
 
     // Do rescaling after scalar multiplication
