@@ -56,6 +56,7 @@
         #include "utils/inttypes.h"
         #include "utils/memory.h"
         #include "utils/debug.h"
+        #include "utils/diagnostic_output.h"
 
         #include <exception>
         #include <fstream>
@@ -883,9 +884,9 @@ public:
             s >> result;
 
             if ((this->GetMSB() > (sizeof(T) * 8)) || (this->GetMSB() > NTL_ZZ_NBITS)) {
-                std::cerr << "Warning myZZ::ConvertToInt() Loss of precision. " << std::endl;
-                std::cerr << "input  " << *this << std::endl;
-                std::cerr << "result  " << result << std::endl;
+                OPENFHE_DIAGNOSTIC_ERR << "Warning myZZ::ConvertToInt() Loss of precision. " << std::endl;
+                OPENFHE_DIAGNOSTIC_ERR << "input  " << *this << std::endl;
+                OPENFHE_DIAGNOSTIC_ERR << "result  " << result << std::endl;
             }
             return result;
         }

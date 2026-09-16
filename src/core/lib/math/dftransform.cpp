@@ -135,16 +135,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
 #pragma omp critical
     {
         if (m != cachedM[l]) {
-            // if (m > maxMCached) {
-            //  // need to grow cachedM and the tables
-            //  cachedM.resize(l);
-            //  cosTable.resize(l);
-            //  cosTable.resize(l);
-            //  maxMCached = m;
-            // }
-            // std::cout<<"miss m "<<m<<" != M "<<cachedM[l]<<std::endl;
             cachedM[l] = m;
-
             sinTable[l].resize(m / 2);
             cosTable[l].resize(m / 2);
             for (uint32_t i = 0; i < m / 2; i++) {

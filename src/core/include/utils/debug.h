@@ -40,14 +40,15 @@
 /* defining NDEBUG in the compile line turns everything off.
    unless PROFILE is defined in the file before all includes,'
    in which case TIC/TOC will still work and PROFILELOG() can be
-   used for logging results to std::cout, and OPENFHE_DEBUG() will remain
-   silent. dbg_flag does not get used by PROFILELOG()
+   used for logging results to the diagnostic output channel, and
+   OPENFHE_DEBUG() will remain silent. dbg_flag does not get used by PROFILELOG()
  */
 
 #include <time.h>
 #include <chrono>  // for timing
 #include <utility>
 
+#include "utils/diagnostic_output.h"
 #include "utils/inttypes.h"
 
 #if !defined(NDEBUG)
@@ -57,60 +58,61 @@
     #define OPENFHE_DEBUG_FLAG(x) bool dbg_flag = x;
 
     // debugging macro prints value of x on cerr
-    #define OPENFHE_DEBUG(x)                 \
-        do {                                 \
-            if (dbg_flag) {                  \
-                std::cerr << x << std::endl; \
-            }                                \
-        } while (0)
-
-    // debugging macro prints typography of x and value of x on cerr
-    #define OPENFHE_DEBUGEXP(x)                           \
+    #define OPENFHE_DEBUG(x)                              \
         do {                                              \
             if (dbg_flag) {                               \
-                std::cerr << #x << ":" << x << std::endl; \
+                OPENFHE_DIAGNOSTIC_ERR << x << std::endl; \
             }                                             \
         } while (0)
 
+    // debugging macro prints typography of x and value of x on cerr
+    #define OPENFHE_DEBUGEXP(x)                                        \
+        do {                                                           \
+            if (dbg_flag) {                                            \
+                OPENFHE_DIAGNOSTIC_ERR << #x << ":" << x << std::endl; \
+            }                                                          \
+        } while (0)
+
     // debugging macro prints value of x and location in codex on cerr
-    #define OPENFHE_DEBUGWHERE(x)                                                                \
-        do {                                                                                     \
-            if (dbg_flag) {                                                                      \
-                std::cerr << __FILE__ << ":" << __LINE__ << ": " << #x << ":" << x << std::endl; \
-            }                                                                                    \
+    #define OPENFHE_DEBUGWHERE(x)                                                                             \
+        do {                                                                                                  \
+            if (dbg_flag) {                                                                                   \
+                OPENFHE_DIAGNOSTIC_ERR << __FILE__ << ":" << __LINE__ << ": " << #x << ":" << x << std::endl; \
+            }                                                                                                 \
         } while (0)
 
     // debugging macro prints location in codex on cerr
-    #define OPENFHE_DEBUGHERE()                                                \
-        do {                                                                   \
-            if (dbg_flag) {                                                    \
-                std::cerr << __FILE__ << ":" << __LINE__ << ": " << std::endl; \
-            }                                                                  \
+    #define OPENFHE_DEBUGHERE()                                                             \
+        do {                                                                                \
+            if (dbg_flag) {                                                                 \
+                OPENFHE_DIAGNOSTIC_ERR << __FILE__ << ":" << __LINE__ << ": " << std::endl; \
+            }                                                                               \
         } while (0)
 
     #if defined(PROFILE)  // Profiler works
 
-        #define PROFILELOG(x)                    \
-            do {                                 \
-                if (true) {                      \
-                    std::cout << x << std::endl; \
-                }                                \
-            } while (0)
-
-        // debugging macro prints typography of x and value of x on cerr
-        #define PROFILELOGEXP(x)                              \
+        #define PROFILELOG(x)                                 \
             do {                                              \
                 if (true) {                                   \
-                    std::cout << #x << ":" << x << std::endl; \
+                    OPENFHE_DIAGNOSTIC_OUT << x << std::endl; \
                 }                                             \
             } while (0)
 
+        // debugging macro prints typography of x and value of x on cerr
+        #define PROFILELOGEXP(x)                                           \
+            do {                                                           \
+                if (true) {                                                \
+                    OPENFHE_DIAGNOSTIC_OUT << #x << ":" << x << std::endl; \
+                }                                                          \
+            } while (0)
+
         // debugging macro prints value of x and location in codex on cerr
-        #define PROFILELOGWHERE(x)                                                                          \
-            do {                                                                                            \
-                if (true) {                                                                                 \
-                    std::cout << #x << ":" << x << " at " << __FILE__ << " line " << __LINE__ << std::endl; \
-                }                                                                                           \
+        #define PROFILELOGWHERE(x)                                                                         \
+            do {                                                                                           \
+                if (true) {                                                                                \
+                    OPENFHE_DIAGNOSTIC_OUT << #x << ":" << x << " at " << __FILE__ << " line " << __LINE__ \
+                                           << std::endl;                                                   \
+                }                                                                                          \
             } while (0)
 
     #else  // #if!defined(PROFILE) // profiling a noop
@@ -160,27 +162,28 @@
         #define OPENFHE_DEBUGWHERE(x)
         #define OPENFHE_DEBUGHERE()
 
-        #define PROFILELOG(x)                    \
-            do {                                 \
-                if (true) {                      \
-                    std::cerr << x << std::endl; \
-                }                                \
-            } while (0)
-
-        // debugging macro prints typography of x and value of x on cerr
-        #define PROFILELOGEXP(x)                              \
+        #define PROFILELOG(x)                                 \
             do {                                              \
                 if (true) {                                   \
-                    std::cout << #x << ":" << x << std::endl; \
+                    OPENFHE_DIAGNOSTIC_ERR << x << std::endl; \
                 }                                             \
             } while (0)
 
+        // debugging macro prints typography of x and value of x on cerr
+        #define PROFILELOGEXP(x)                                           \
+            do {                                                           \
+                if (true) {                                                \
+                    OPENFHE_DIAGNOSTIC_OUT << #x << ":" << x << std::endl; \
+                }                                                          \
+            } while (0)
+
         // debugging macro prints value of x and location in codex on cerr
-        #define PROFILELOGWHERE(x)                                                                          \
-            do {                                                                                            \
-                if (true) {                                                                                 \
-                    std::cout << #x << ":" << x << " at " << __FILE__ << " line " << __LINE__ << std::endl; \
-                }                                                                                           \
+        #define PROFILELOGWHERE(x)                                                                         \
+            do {                                                                                           \
+                if (true) {                                                                                \
+                    OPENFHE_DIAGNOSTIC_OUT << #x << ":" << x << " at " << __FILE__ << " line " << __LINE__ \
+                                           << std::endl;                                                   \
+                }                                                                                          \
             } while (0)
 
         #define TIC(t)    t = ::lbcrypto::timeNow()

@@ -30,6 +30,7 @@
 //==================================================================================
 #include "utils/prng/blake2engine.h"
 #include "utils/prng/blake2.h"
+#include "utils/diagnostic_output.h"
 #include "utils/exception.h"
 #include "utils/memory.h"
 
@@ -48,8 +49,9 @@ Blake2Engine::~Blake2Engine() {
 void Blake2Engine::Generate() {
     // m_counter is the input to the hash function
     // m_buffer is the output
-    if (blake2xb(static_cast<void*>(m_buffer.data()), m_buffer.size() * sizeof(PRNG::result_type), &m_counter, sizeof(m_counter),
-    static_cast<const void*>(m_seed.data()), m_seed.size() * sizeof(PRNG::result_type)) != 0) {
+    if (blake2xb(static_cast<void*>(m_buffer.data()), m_buffer.size() * sizeof(PRNG::result_type), &m_counter,
+                 sizeof(m_counter), static_cast<const void*>(m_seed.data()),
+                 m_seed.size() * sizeof(PRNG::result_type)) != 0) {
         OPENFHE_THROW("PRNG: blake2xb failed");
     }
     m_counter++;
@@ -67,9 +69,9 @@ extern "C" {
 static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
 #if defined(FIXED_SEED)
     // Only used for debugging in the single-threaded mode.
-    std::cerr << "**FOR DEBUGGING ONLY!!!!  Using fixed initializer for PRNG. "
-                 "Use a single thread only, e.g., OMP_NUM_THREADS=1!"
-              << std::endl;
+    OPENFHE_DIAGNOSTIC_ERR << "**FOR DEBUGGING ONLY!!!!  Using fixed initializer for PRNG. "
+                              "Use a single thread only, e.g., OMP_NUM_THREADS=1!"
+                           << std::endl;
 
     seed[0] = 1;
 #else
