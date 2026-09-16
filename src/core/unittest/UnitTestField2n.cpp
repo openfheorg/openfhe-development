@@ -32,7 +32,12 @@
 #include "gtest/gtest.h"
 #include "lattice/field2n.h"
 #include "math/dftransform.h"
+#include "math/nbtheory.h"
 #include "utils/debug.h"
+
+#include <cmath>
+#include <memory>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -423,4 +428,143 @@ TEST(UTField2n, EVALUATION_COEFFICIENT) {
         EXPECT_LE(std::fabs(a.at(i).real() - b.at(i).real()), std::fabs(a.at(i).real()) * 0.0001);
     }
     DiscreteFourierTransform::Reset();
+}
+
+TEST(UTField2n, poly_large_centered_coefficients) {
+    // Issue #1253: +2^63 is below q/2 and must not be narrowed to int64_t.
+    const BigInteger q("18446744073709551697");
+    auto params = std::make_shared<ILParams>(8, q, BigInteger("15713903524825792581"));
+    Poly poly(params, Format::COEFFICIENT, true);
+    const BigInteger magnitude("9223372036854775808");  // 2^63, one above INT64_MAX
+    poly[0] = magnitude;
+    poly[1] = q - magnitude;
+    // q / 2 is the largest positive centered representative; one more is the most negative one.
+    poly[2] = q / BigInteger(2);
+    poly[3] = poly[2] + BigInteger(1);
+    Field2n field(poly);
+    EXPECT_EQ(field.GetFormat(), Format::COEFFICIENT);
+    ASSERT_EQ(field.size(), 4u);
+
+    const double exact = std::ldexp(1.0, 63);
+    EXPECT_DOUBLE_EQ(field[0].real(), exact);
+    EXPECT_DOUBLE_EQ(field[1].real(), -exact);
+    // q / 2 is 2^63 + 40, and the ulp at this magnitude is 2048, so the nearest double is 2^63
+    // itself: only the sign of these two distinguishes the fixed code from the broken one.
+    EXPECT_DOUBLE_EQ(field[2].real(), exact);
+    EXPECT_DOUBLE_EQ(field[3].real(), -exact);
+    for (size_t i = 0; i < field.size(); ++i)
+        EXPECT_DOUBLE_EQ(field[i].imag(), 0.0);
+}
+
+TEST(UTField2n, poly_magnitudes_beyond_uint64) {
+    const BigInteger q = FirstPrime<BigInteger>(100, 8);
+    auto params        = std::make_shared<ILParams>(8, q, RootOfUnity<BigInteger>(8, q));
+    Poly poly(params, Format::COEFFICIENT, true);
+    const BigInteger magnitude = BigInteger(1) << 80;
+    poly[0]                    = magnitude;
+    poly[1]                    = q - magnitude;
+    poly[2]                    = BigInteger(1);
+    poly[3]                    = q - BigInteger(1);
+    Field2n field(poly);
+    EXPECT_DOUBLE_EQ(field[0].real(), std::ldexp(1.0, 80));
+    EXPECT_DOUBLE_EQ(field[1].real(), -std::ldexp(1.0, 80));
+    EXPECT_DOUBLE_EQ(field[2].real(), 1.0);
+    EXPECT_DOUBLE_EQ(field[3].real(), -1.0);
+}
+
+TEST(UTField2n, native_and_dcrt_centered_coefficients) {
+    // Also cover large native magnitudes when native integers are 128 bits wide.
+#if NATIVEINT == 128
+    const NativeInteger q         = FirstPrime<NativeInteger>(100, 8);
+    const NativeInteger magnitude = NativeInteger(1) << 80;
+    const double expected         = std::ldexp(1.0, 80);
+#else
+    const NativeInteger q(97);
+    const NativeInteger magnitude(48);
+    const double expected = 48.0;
+#endif
+    const NativeInteger root = RootOfUnity<NativeInteger>(8, q);
+    auto params              = std::make_shared<ILNativeParams>(8, q, root);
+    NativePoly poly(params, Format::COEFFICIENT, true);
+    poly[0] = magnitude;
+    poly[1] = q - magnitude;
+    poly[2] = NativeInteger(0);
+    poly[3] = q - NativeInteger(1);
+    Field2n nativeField(poly);
+    EXPECT_EQ(nativeField.GetFormat(), Format::COEFFICIENT);
+    ASSERT_EQ(nativeField.size(), 4u);
+    EXPECT_DOUBLE_EQ(nativeField[0].real(), expected);
+    EXPECT_DOUBLE_EQ(nativeField[1].real(), -expected);
+    EXPECT_DOUBLE_EQ(nativeField[2].real(), 0.0);
+    EXPECT_DOUBLE_EQ(nativeField[3].real(), -1.0);
+
+    auto crtParams =
+        std::make_shared<ILDCRTParams<BigInteger>>(8, std::vector<NativeInteger>{q}, std::vector<NativeInteger>{root});
+    DCRTPoly crt(crtParams, Format::COEFFICIENT, true);
+    crt.SetElementAtIndex(0, poly);
+    Field2n crtField(crt);
+    // Field2n has no operator== of its own, so this compares the std::vector base; check the
+    // format separately rather than assume it came along.
+    EXPECT_EQ(crtField.GetFormat(), Format::COEFFICIENT);
+    EXPECT_EQ(crtField, nativeField);
+}
+
+TEST(UTField2n, dcrt_coefficients_exceeding_first_tower) {
+    // A coefficient larger than the first tower cannot be recovered from that tower alone, so the
+    // constructor must fall back to CRT interpolation instead of reporting the tower-0 residue.
+    auto crtParams         = std::make_shared<ILDCRTParams<BigInteger>>(8, 2, 50);
+    const BigInteger Q     = crtParams->GetModulus();
+    const NativeInteger q0 = crtParams->GetParams()[0]->GetModulus();
+    ASSERT_GT(Q, BigInteger(q0));
+
+    // Well above q0 yet well below Q / 2, so the centered representative is this value itself.
+    const BigInteger magnitude = BigInteger(q0) * BigInteger(3) + BigInteger(7);
+    ASSERT_LT(magnitude, Q / BigInteger(2));
+
+    // Root of unity is set to ONE, as CRTInterpolate() itself does: this polynomial is never
+    // transformed, so computing a real root would be expensive and pointless.
+    auto params = std::make_shared<ILParams>(8, Q, BigInteger(1));
+    Poly big(params, Format::COEFFICIENT, true);
+    big[0] = magnitude;
+    big[1] = Q - magnitude;
+    big[2] = BigInteger(5);
+    big[3] = Q - BigInteger(5);
+
+    DCRTPoly crt(big, crtParams);
+    crt.SetFormat(Format::COEFFICIENT);
+    Field2n field(crt);
+
+    // The same polynomial through the (already correct) Poly path is the reference.
+    Field2n reference(big);
+    EXPECT_EQ(field.GetFormat(), Format::COEFFICIENT);
+    ASSERT_EQ(field.size(), reference.size());
+    for (size_t i = 0; i < field.size(); ++i)
+        EXPECT_DOUBLE_EQ(field[i].real(), reference[i].real()) << "coefficient " << i;
+    EXPECT_GT(field[0].real(), q0.ConvertToDouble());
+    EXPECT_LT(field[1].real(), -q0.ConvertToDouble());
+}
+
+TEST(UTField2n, poly_uint64_boundary_magnitudes) {
+    // Magnitudes straddling the 64-bit boundary, where the narrowing conversion of issue #1253
+    // used to lose the sign or the value.
+    const BigInteger q = FirstPrime<BigInteger>(100, 8);
+    auto params        = std::make_shared<ILParams>(8, q, RootOfUnity<BigInteger>(8, q));
+    Poly poly(params, Format::COEFFICIENT, true);
+    poly[0] = BigInteger(1) << 63;                    // one above INT64_MAX
+    poly[1] = (BigInteger(1) << 64) - BigInteger(1);  // largest value a uint64_t holds
+    poly[2] = BigInteger(1) << 64;                    // one above that
+    poly[3] = q - (BigInteger(1) << 64);
+    Field2n field(poly);
+    EXPECT_DOUBLE_EQ(field[0].real(), std::ldexp(1.0, 63));
+    EXPECT_DOUBLE_EQ(field[1].real(), std::ldexp(1.0, 64));  // 2^64 - 1 rounds to 2^64
+    EXPECT_DOUBLE_EQ(field[2].real(), std::ldexp(1.0, 64));
+    EXPECT_DOUBLE_EQ(field[3].real(), -std::ldexp(1.0, 64));
+}
+
+TEST(UTField2n, dcrt_without_towers_throws) {
+    // GetElementAtIndex(0) is unchecked, so an empty DCRTPoly must be rejected, not indexed.
+    DCRTPoly empty;
+    empty.SetFormat(Format::COEFFICIENT);
+    ASSERT_EQ(empty.GetNumOfElements(), 0u);
+    EXPECT_THROW(Field2n{empty}, OpenFHEException);
 }
