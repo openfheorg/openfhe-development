@@ -264,9 +264,9 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     //   22 full packing, UNIFORM_TERNARY, {3,2}      gap -0.219 +/- 0.165  (FA 29.1, CS 29.4)
     //   23 full packing, SPARSE_ENCAPSULATED, {3,2}  gap -0.102 +/- 0.017  (FA 31.5, CS 31.6)
     // The shared 1.0-bit tolerance sits more than 5 standard deviations above every measured mean, so a
-    // false failure is negligible while a real regression of even one bit is caught. Note that for
-    // SPARSE_ENCAPSULATED the CS run uses the K = 28 exponential table instead of K = 16 (see
-    // EvalFEFuncBootstrapSetup), so this case also guards the table switch.
+    // false failure is negligible while a real regression of even one bit is caught. The SPARSE_ENCAPSULATED case
+    // keeps the K = 16 exponential table under CS (its 60-bit first modulus keeps the Hamming weight of the sparse
+    // secret at 32); the K = 28 table of the denser sparse secret is covered by case 30.
     MakeFEFBTCSvsFACase("20", RDIM / 2,     SPARSE_TERNARY,      FEFBT_SIGMOID, {3, 2}, 1.0),
     MakeFEFBTCSvsFACase("21", SPARSE_SLOTS, SPARSE_TERNARY,      FEFBT_SIGMOID, {1, 1}, 1.0),
     MakeFEFBTCSvsFACase("22", RDIM / 2,     UNIFORM_TERNARY,     FEFBT_SIGMOID, {3, 2}, 1.0),
@@ -284,6 +284,10 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
                   {3, 2}, COMPOSITESCALINGAUTO, SMODSIZED3, FMODSIZED3),
     MakeFEFBTCase(FEFBT_ACCURACY,      "29", SPARSE_SLOTS, UNIFORM_TERNARY,    SPARSE_SLOTS, FEFBT_SIGMOID,
                   {1, 1}, COMPOSITESCALINGMANUAL, SMODSIZED3, FMODSIZED3),
+    // SPARSE_ENCAPSULATED with a first modulus above 60 bits: the sparse secret has Hamming weight 64 and the K = 28
+    // exponential table of SPARSE_TERNARY is used
+    MakeFEFBTCase(FEFBT_ACCURACY,      "30", RDIM / 2,    SPARSE_ENCAPSULATED, RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO, SMODSIZED3, FMODSIZED3),
 };
 // clang-format on
 #else

@@ -432,8 +432,9 @@ static std::vector<TEST_CASE_FBT> testCases = {
     {       FBT_MVB, "1045",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
     {    FBT_ARBLUT, "1046",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
     { FBT_NOISE_VS_FLEXIBLE, "1047", Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
-    // SPARSE_ENCAPSULATED with composite scaling (sparse key switching over the composite bottom basis; the
-    // K = 25 approximation is used in this case)
+    // SPARSE_ENCAPSULATED with composite scaling (sparse key switching over the composite bottom basis): the K = 16
+    // approximations for first moduli of at most 60 bits (Q40/Q54/Q55 rows, Hamming weight 32) and the K = 28
+    // approximations of SPARSE_TERNARY for larger first moduli (Q64/Q90 rows, Hamming weight 64)
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
     {    FBT_ARBLUT, "1051",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "1052",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
@@ -652,10 +653,10 @@ protected:
 
             if (binaryLUT)
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -826,10 +827,10 @@ protected:
 
             if (binaryLUT)
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1054,10 +1055,10 @@ protected:
 
             if (binaryLUT)
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1285,10 +1286,10 @@ protected:
 
             if (binaryLUT)
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
                 depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd,
-                                                 CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1479,10 +1480,10 @@ protected:
 
                 if (binaryLUT)
                     depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                     FirstModSize(dcrtBits, t.scalTech));
                 else
                     depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+                                                     FirstModSize(dcrtBits, t.scalTech));
 
                 parameters.SetMultiplicativeDepth(depth);
 
@@ -1621,9 +1622,9 @@ protected:
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
-            uint32_t depth = t.levelsAvailableAfterBootstrap +
-                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+            uint32_t depth =
+                t.levelsAvailableAfterBootstrap +
+                FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd, FirstModSize(dcrtBits, t.scalTech));
             parameters.SetMultiplicativeDepth(depth);
 
             auto cc = GenCryptoContext(parameters);
@@ -1695,9 +1696,9 @@ protected:
             std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
 
             const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t depth          = t.levelsAvailableAfterBootstrap +
-                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
-                                                     CompositeDegreeForTest(dcrtBits, t.scalTech, t.registerWordSize));
+            uint32_t depth =
+                t.levelsAvailableAfterBootstrap +
+                FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd, FirstModSize(dcrtBits, t.scalTech));
 
             auto makeParams = [&](ScalingTechnique st) {
                 CCParams<CryptoContextCKKSRNS> parameters;

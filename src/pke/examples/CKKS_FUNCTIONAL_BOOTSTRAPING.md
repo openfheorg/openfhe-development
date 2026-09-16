@@ -96,17 +96,19 @@ Functional bootstrapping is supported for sparse secret keys (SPARSE_TERNARY and
 uniform ternary secret keys (UNIFORM_TERNARY).
 
 The SPARSE_TERNARY distribution is the distribution used in the original CKKS paper [[CKKS17](https://eprint.iacr.org/2016/421.pdf)],
-where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 25, this
-distribution leads to a larger probability of failure. For LUT input bit-sizes of over 10 bits, choosing this distribution leads
-to requiring an extra level in the complex exponential approximation to achieve correctness. This is the distribution used for
-the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
+where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 28, this
+distribution leads to a larger probability of failure (about 2^-22 for 2^16 slots). Compared to SPARSE_ENCAPSULATED, choosing
+this distribution requires an extra level in the complex exponential approximation to achieve correctness. This is the
+distribution used for the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
 
 The SPARSE_ENCAPSULATED distribution (described in [[BTH22]](https://eprint.iacr.org/2022/024.pdf)) uses a Hamming weight of 32
 for the key used in (functional) bootstrapping and 192 for other operations. With the set number of overflows K = 16, this
 distribution leads to a negligible probability of failure. Moreover, for all supported LUT sizes (up to 14 bits), the number of
 levels for the complex exponential approximation is the same. The only caveat for the current implementation is that when the
 scaling factor is very close to the first modulus size in CKKS (which happens for LUT of input bit-size 14), the noise introduced
-by the extra key switching is larger.
+by the extra key switching is larger. For a first modulus larger than 60 bits (which requires composite scaling in the 64-bit
+build), the Hamming weight of the sparse key is 64 and the K = 28 approximation of SPARSE_TERNARY is used, which keeps the
+probability of failure negligible (below 2^-142 for 2^16 slots) at the cost of the extra level mentioned above.
 
 The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption standard. It is handled in the
 same manner as in regular CKKS bootstrapping: the number of overflows is bounded by K = 512, and the complex exponential (or
