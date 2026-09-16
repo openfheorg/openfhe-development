@@ -3976,7 +3976,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         else {
             auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                              (digitBitSize > 10)          ? coeff_exp_28_double_72 :
+                              (digitBitSize > 10)          ? coeff_exp_28_double_69 :
                                                              coeff_exp_28_double_64;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
@@ -4061,7 +4061,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         else {
             auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                              (digitBitSize > 10)          ? coeff_exp_28_double_72 :
+                              (digitBitSize > 10)          ? coeff_exp_28_double_69 :
                                                              coeff_exp_28_double_64;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
@@ -4330,7 +4330,7 @@ uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& c
                                                      coeff_cos_28_double;
     auto& coeff_exp = (skd == UNIFORM_TERNARY)       ? coeff_exp_512_double_92 :
                       (skd == SPARSE_ENCAPSULATED)   ? coeff_exp_16_double_46 :
-                      (PInput.ConvertToInt() > 1024) ? coeff_exp_28_double_72 :
+                      (PInput.ConvertToInt() > 1024) ? coeff_exp_28_double_69 :
                                                        coeff_exp_28_double_64;
     uint32_t depth  = 0;
     switch (PInput.ConvertToInt()) {
