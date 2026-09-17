@@ -298,11 +298,22 @@ public:
     }
 
     /**
-   * Gets the Hamming weight of the sparse secret used for sparse encapsulation: 32 for a bottom (first) modulus
-   * of at most 60 bits, and 64 for larger bottom moduli (composite scaling)
+   * Gets the Hamming weight of the sparse secret used for sparse encapsulation: 32 for a first (bottom) modulus
+   * of at most 60 bits, and 64 for larger first moduli; see SparseKSHammingWeight
    */
     uint32_t GetSparseKSHammingWeight() const {
         return m_sparseKSHammingWeight;
+    }
+
+    /**
+   * Hamming weight of the sparse secret used for sparse encapsulation, fully determined by the size of the first
+   * (bottom) modulus in bits: 32 for a first modulus of at most 60 bits, and 64 for larger first moduli (in the
+   * 64-bit build these require composite scaling). The denser secret selects the K = 28 approximations of
+   * SPARSE_TERNARY in bootstrapping (K = 16 otherwise). Static so that the bootstrapping depth estimates can
+   * apply the same rule before a cryptocontext exists.
+   */
+    static uint32_t SparseKSHammingWeight(uint32_t firstModSize) {
+        return (firstModSize > 60) ? 64 : 32;
     }
 
     /////////////////////////////////////
@@ -387,7 +398,7 @@ private:
     std::vector<std::vector<NativeInteger>> m_sparseKSAlphaQlModp;
     // Barrett modulo reduction precomputations for p'_j
     std::vector<DoubleNativeInt> m_sparseKSModpBarrettMu;
-    // Hamming weight of the sparse secret (32, or 64 for composite bottom moduli larger than 60 bits)
+    // Hamming weight of the sparse secret (32, or 64 for first moduli larger than 60 bits)
     uint32_t m_sparseKSHammingWeight = 32;
 };
 

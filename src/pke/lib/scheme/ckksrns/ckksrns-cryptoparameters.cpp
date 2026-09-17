@@ -277,17 +277,22 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 std::to_string(bitsQl) + " bits.");
 
         // total size of P' and the number/size of its primes: with composite scaling ~66 bits, or ~127 bits
-        // for a bottom modulus above 60 bits (whose sparse secret is denser as well); otherwise unchanged
-        constexpr uint32_t smallBottomModulusBits = 60;
-        constexpr uint32_t auxBitsPlain           = 2 * (MAX_MODULUS_SIZE / 2 + 3);
-        const bool isComposite                    = (compositeDegree > 1);
-        const bool largeBottom                    = isComposite && (bitsQl > smallBottomModulusBits);
-        const uint32_t auxBitsSparse              = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
-        m_sparseKSHammingWeight                   = (largeBottom) ? 64 : 32;
-        const uint32_t registerBits               = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
-        const uint32_t maxPrimeBits               = std::min<uint32_t>(registerBits, MAX_MODULUS_SIZE);
-        uint32_t sizePSparse                      = 2;
-        uint32_t bitsPSparse                      = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
+        // for a bottom modulus above 60 bits (whose sparse secret is denser as well); otherwise unchanged.
+        // The size of the bottom modulus is taken as the sum of the bit lengths of its primes, i.e., the
+        // firstModSize the primes were generated for (CompositePrimeModuliGen for composite scaling), so that
+        // the rule matches SparseKSHammingWeight(firstModSize) used by the depth estimates.
+        constexpr uint32_t auxBitsPlain = 2 * (MAX_MODULUS_SIZE / 2 + 3);
+        const bool isComposite          = (compositeDegree > 1);
+        uint32_t firstModSize           = 0;
+        for (uint32_t i = 0; i < sizeQl; ++i)
+            firstModSize += moduliQ[i].GetMSB();
+        m_sparseKSHammingWeight      = SparseKSHammingWeight(firstModSize);
+        const bool largeBottom       = (m_sparseKSHammingWeight > 32);
+        const uint32_t auxBitsSparse = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
+        const uint32_t registerBits  = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
+        const uint32_t maxPrimeBits  = std::min<uint32_t>(registerBits, MAX_MODULUS_SIZE);
+        uint32_t sizePSparse         = 2;
+        uint32_t bitsPSparse         = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
         // the primes have to fit (strictly) in the register word size and in a native integer
         while (bitsPSparse >= registerBits || bitsPSparse > MAX_MODULUS_SIZE) {
             ++sizePSparse;
