@@ -44,6 +44,8 @@
 #include "keyswitch/keyswitch-bv.h"
 #include "schemerns/rns-cryptoparameters.h"
 
+#include <algorithm>
+
 namespace lbcrypto {
 
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
@@ -255,25 +257,73 @@ std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<s
                                                          const std::shared_ptr<ParmType> paramsQl) const {
     const std::vector<DCRTPoly>& bref = evalKey->GetBVector();
     const std::vector<DCRTPoly>& aref = evalKey->GetAVector();
-    const uint32_t lastQl             = paramsQl->GetParams().size() - 1;
-    const uint32_t limit              = (*digits).size();
-    std::vector<DCRTPoly> bv(limit);
-    std::vector<DCRTPoly> av(limit);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))
-    for (uint32_t i = 0; i < limit; ++i) {
-        bv[i] = bref[i].CloneTowers(0, lastQl);
-        bv[i] *= (*digits)[i];
-        av[i] = aref[i].CloneTowers(0, lastQl);
-        av[i] *= (*digits)[i];
-    }
-    for (uint32_t i = 1; i < limit; ++i) {
-        bv[0] += bv[i];
-        av[0] += av[i];
-    }
+    const uint32_t sizeQl             = paramsQl->GetParams().size();
+    const uint32_t limit              = digits->size();
+    if (limit == 0)
+        OPENFHE_THROW("no digits to key switch");
+    if ((*digits)[0].GetNumOfElements() != sizeQl)
+        OPENFHE_THROW("the digits and the ciphertext have different numbers of towers");
+
+    const uint64_t work   = static_cast<uint64_t>(paramsQl->GetRingDimension()) * sizeQl * limit;
+    const uint32_t team   = std::min<uint32_t>(OpenFHEParallelControls.GetThreadLimit(sizeQl * limit),
+                                               std::max<uint32_t>(sizeQl, static_cast<uint32_t>(work >> 15)));
+    const uint32_t groups = std::max<uint32_t>(1, std::min<uint32_t>(limit, team / sizeQl));
+    const uint32_t tasks  = sizeQl * groups;
+
     std::vector<DCRTPoly> res;
     res.reserve(2);
-    res.emplace_back(std::move(bv[0]));
-    res.emplace_back(std::move(av[0]));
+    res.emplace_back(paramsQl, Format::EVALUATION, false);
+    res.emplace_back(paramsQl, Format::EVALUATION, false);
+    std::vector<DCRTPoly::PolyType> part0(groups > 1 ? tasks : 0);
+    std::vector<DCRTPoly::PolyType> part1(groups > 1 ? tasks : 0);
+
+#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(tasks))
+    {
+#pragma omp for
+        for (uint32_t t = 0; t < tasks; ++t) {
+            const uint32_t i  = t / groups;
+            const uint32_t g  = t % groups;
+            const uint32_t j0 = g * limit / groups;
+            const uint32_t j1 = (g + 1) * limit / groups;
+            auto& p0          = (groups > 1) ? part0[t] : res[0].GetAllElements()[i];
+            auto& p1          = (groups > 1) ? part1[t] : res[1].GetAllElements()[i];
+            const auto& d0    = (*digits)[j0].GetElementAtIndex(i);
+            p0                = d0.Times(bref[j0].GetElementAtIndex(i));
+            p1                = d0.Times(aref[j0].GetElementAtIndex(i));
+            for (uint32_t j = j0 + 1; j < j1; ++j) {
+                const auto& dji = (*digits)[j].GetElementAtIndex(i);
+                p0.MultAccEqNoCheck(dji, bref[j].GetElementAtIndex(i));
+                p1.MultAccEqNoCheck(dji, aref[j].GetElementAtIndex(i));
+            }
+        }
+        if (groups > 1) {
+            const uint32_t chunks = std::max<uint32_t>(1, team / sizeQl);
+            const uint32_t n      = paramsQl->GetRingDimension();
+#pragma omp for
+            for (uint32_t t = 0; t < sizeQl * chunks; ++t) {
+                const uint32_t i  = t / chunks;
+                const uint32_t k0 = (t % chunks) * n / chunks;
+                const uint32_t k1 = (t % chunks + 1) * n / chunks;
+                auto& r0          = part0[i * groups];
+                auto& r1          = part1[i * groups];
+                const auto& q     = r0.GetModulus();
+                for (uint32_t g = 1; g < groups; ++g) {
+                    const auto& s0 = part0[i * groups + g];
+                    const auto& s1 = part1[i * groups + g];
+                    for (uint32_t k = k0; k < k1; ++k) {
+                        r0[k].ModAddFastEq(s0[k], q);
+                        r1[k].ModAddFastEq(s1[k], q);
+                    }
+                }
+            }
+        }
+    }
+    if (groups > 1) {
+        for (uint32_t i = 0; i < sizeQl; ++i) {
+            res[0].GetAllElements()[i] = std::move(part0[i * groups]);
+            res[1].GetAllElements()[i] = std::move(part1[i * groups]);
+        }
+    }
     return res;
 }
 

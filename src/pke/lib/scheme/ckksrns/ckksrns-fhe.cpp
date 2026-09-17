@@ -4433,7 +4433,7 @@ DCRTPoly ExtendSparseKSToP(const DCRTPoly& xBottom, const std::shared_ptr<Crypto
     const size_t sizeP   = paramsP->GetParams().size();
 
     DCRTPoly xQl(xBottom);
-    xQl.SetFormat(Format::COEFFICIENT);
+    xQl.SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
 
     DCRTPoly xP;
     if (sizeQl == 1) {
@@ -4454,7 +4454,7 @@ DCRTPoly ExtendSparseKSToP(const DCRTPoly& xBottom, const std::shared_ptr<Crypto
                                 cryptoParams->GetSparseKSQlHatModp(), cryptoParams->GetSparseKSAlphaQlModp(),
                                 cryptoParams->GetSparseKSModpBarrettMu(), cryptoParams->GetModRaiseqInv());
     }
-    xP.SetFormat(Format::EVALUATION);
+    xP.SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
     return xP;
 }
 
@@ -4467,7 +4467,7 @@ DCRTPoly ExtendSparseKSToQP(const DCRTPoly& x, const std::shared_ptr<CryptoParam
 
     DCRTPoly xQl = x.CloneTowers(0, static_cast<uint32_t>(sizeQl) - 1);
     DCRTPoly xP  = ExtendSparseKSToP(xQl, cryptoParams);
-    xQl.SetFormat(Format::EVALUATION);
+    xQl.SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
 
     DCRTPoly xExt(paramsqp, Format::EVALUATION, false);
     auto& ext = xExt.GetAllElements();
@@ -4588,7 +4588,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
             paramsQl, cryptoParams->GetSparseKSPHatInvModp(), cryptoParams->GetSparseKSPHatInvModpPrecon(),
             cryptoParams->GetSparseKSPHatModq(), cryptoParams->GetSparseKSAlphaPModq(),
             cryptoParams->GetSparseKSModqBarrettMu(), cryptoParams->GetSparseKSpInv());
-        partPModq.SetFormat(Format::EVALUATION);
+        partPModq.SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
 
         cvRes[i].DropLastElements(sizeP);
         auto& res         = cvRes[i].GetAllElements();

@@ -71,6 +71,10 @@ public:
     using TugType               = typename DCRTPolyInterfaceType::TugType;
     using BugType               = typename DCRTPolyInterfaceType::BugType;
 
+    using DCRTPolyInterfaceType::ApproxSwitchCRTBasisThreads;
+    using DCRTPolyInterfaceType::THREADS_CRT_BASIS_SWITCH;
+    using DCRTPolyInterfaceType::THREADS_SCALE_TO_POLY;
+
     DCRTPolyImpl() = default;
 
     DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}
