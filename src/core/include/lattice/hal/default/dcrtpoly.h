@@ -72,7 +72,6 @@ public:
     using BugType               = typename DCRTPolyInterfaceType::BugType;
 
     using DCRTPolyInterfaceType::ApproxSwitchCRTBasisThreads;
-    using DCRTPolyInterfaceType::THREADS_APPROX_CRT_BASIS_SWITCH;
     using DCRTPolyInterfaceType::THREADS_CRT_BASIS_SWITCH;
     using DCRTPolyInterfaceType::THREADS_SCALE_TO_POLY;
 
