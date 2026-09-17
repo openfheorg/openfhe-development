@@ -706,10 +706,12 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
         }
         auto& lower  = (c1lvl < c2lvl) ? ciphertext1 : ciphertext2;
         auto& higher = (c1lvl < c2lvl) ? ciphertext2 : ciphertext1;
-        if (lower->GetNoiseScaleDeg() == 2)
-            ModReduceInternalInPlace(lower, BASE_NUM_LEVELS_TO_DROP);
-        if (higher->GetNoiseScaleDeg() == 2)
-            raiseDegree(lower, higher);
+        if (lower->GetNoiseScaleDeg() != higher->GetNoiseScaleDeg()) {
+            if (lower->GetNoiseScaleDeg() == 2)
+                ModReduceInternalInPlace(lower, BASE_NUM_LEVELS_TO_DROP);
+            else
+                raiseDegree(lower, higher);
+        }
         if (lower->GetLevel() < higher->GetLevel())
             LevelReduceInternalInPlace(lower, higher->GetLevel() - lower->GetLevel());
         return;

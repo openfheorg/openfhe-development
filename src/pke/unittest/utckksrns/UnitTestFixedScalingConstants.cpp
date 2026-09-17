@@ -54,6 +54,7 @@
 
 using namespace lbcrypto;
 
+#if NATIVEINT != 128
 namespace {
 // f(x) = c_0 / 2 + sum_{k >= 1} c_k T_k(x), the convention of EvalChebyshevCoefficients
 long double EvalChebyshevSeriesExact(const std::vector<double>& coefficients, long double x) {
@@ -67,6 +68,7 @@ long double EvalChebyshevSeriesExact(const std::vector<double>& coefficients, lo
     return x * b1 - b2 + coefficients[0] / 2;
 }
 }  // namespace
+#endif
 
 TEST(UTCKKSRNS_FIXED_SCALING, DegreeTwoConstantsChebyshev119) {
 #if NATIVEINT == 128
