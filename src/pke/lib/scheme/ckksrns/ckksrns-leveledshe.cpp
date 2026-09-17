@@ -676,14 +676,25 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
     const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
-    if (cryptoParams->GetScalingTechnique() == FIXEDAUTO) {
-        // FIXEDAUTO uses the scaling factor Delta at every level, so the operands only have to agree on the
-        // number of towers and on the noise scale degree. A degree-1 ciphertext is truncated to the towers
-        // of the other operand (as FIXEDMANUAL does), and a degree-2 ciphertext is rescaled when the other
-        // operand has degree 1. When the other operand has degree 2, the degree-1 ciphertext is multiplied
-        // by the modulus of the target's last tower, which the eventual rescale divides out exactly.
-        // Multiplying by Delta instead (the FLEXIBLE* maneuver below) leaves a Delta / q_l residual on the
-        // value, and the extra scalar multiplication and rescale of that maneuver are not needed here.
+    const auto scalTech = cryptoParams->GetScalingTechnique();
+    if ((scalTech == FIXEDMANUAL || scalTech == FIXEDAUTO) && c1depth == c2depth) {
+        // The FIXED techniques use the scaling factor Delta at every level, so operands of equal noise scale
+        // degree only have to agree on the number of towers: both carry the same power of Delta, and the
+        // eventual rescale divides both by the same dropped prime. Multiplying by Delta and rescaling instead
+        // (the FLEXIBLE* maneuver below) would leave a Delta / q_l residual on the value and spend a scalar
+        // multiplication and a rescale for nothing.
+        if (c1lvl < c2lvl)
+            LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl);
+        else if (c2lvl < c1lvl)
+            LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl);
+        return;
+    }
+
+    if (scalTech == FIXEDAUTO) {
+        // A noise scale degree mismatch under FIXEDAUTO (equal degrees were handled above). A degree-2
+        // ciphertext is rescaled when the other operand has degree 1 and more towers dropped; otherwise the
+        // degree-1 ciphertext is multiplied by the modulus of the target's last tower, which the eventual
+        // rescale divides out exactly. A degree mismatch under FIXEDMANUAL is left to the general path below.
         auto raiseDegree = [&](Ciphertext<DCRTPoly>& ciphertext, const Ciphertext<DCRTPoly>& target) {
             const auto& targetPoly = target->GetElements()[0];
             const auto q           = targetPoly.GetElementAtIndex(targetPoly.GetNumOfElements() - 1).GetModulus();
@@ -700,18 +711,16 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
         if (c1lvl == c2lvl) {
             if (c1depth < c2depth)
                 raiseDegree(ciphertext1, ciphertext2);
-            else if (c2depth < c1depth)
+            else
                 raiseDegree(ciphertext2, ciphertext1);
             return;
         }
         auto& lower  = (c1lvl < c2lvl) ? ciphertext1 : ciphertext2;
         auto& higher = (c1lvl < c2lvl) ? ciphertext2 : ciphertext1;
-        if (lower->GetNoiseScaleDeg() != higher->GetNoiseScaleDeg()) {
-            if (lower->GetNoiseScaleDeg() == 2)
-                ModReduceInternalInPlace(lower, BASE_NUM_LEVELS_TO_DROP);
-            else
-                raiseDegree(lower, higher);
-        }
+        if (lower->GetNoiseScaleDeg() == 2)
+            ModReduceInternalInPlace(lower, BASE_NUM_LEVELS_TO_DROP);
+        else
+            raiseDegree(lower, higher);
         if (lower->GetLevel() < higher->GetLevel())
             LevelReduceInternalInPlace(lower, higher->GetLevel() - lower->GetLevel());
         return;
