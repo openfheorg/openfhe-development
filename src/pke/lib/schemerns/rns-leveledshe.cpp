@@ -488,11 +488,18 @@ void LeveledSHERNS::AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1,
             // Find out how many levels to scale plaintext up.
             size_t diffDepth = ctxtDepth - ptxtDepth;
 
+            // Each extra degree of the ciphertext is removed by a rescale that divides by the modulus of the
+            // dropped tower, so the plaintext is scaled by those moduli rather than by powers of the scaling
+            // factor (which would leave a residual scFactor / q_l on it).
             DCRTPoly::Integer intSF = static_cast<NativeInteger::Integer>(scFactor + 0.5);
-            std::vector<DCRTPoly::Integer> crtSF(sizeQl, intSF);
-            auto crtPowSF = crtSF;
-            for (uint32_t j = 0; j < diffDepth - 1; j++) {
-                crtPowSF = CKKSPackedEncoding::CRTMult(crtPowSF, crtSF, moduli);
+            std::vector<DCRTPoly::Integer> crtPowSF(sizeQl, DCRTPoly::Integer(1));
+            for (uint32_t j = 1; j <= diffDepth; ++j) {
+                std::vector<DCRTPoly::Integer> crtQ(sizeQl, intSF);
+                if (j < sizeQl) {
+                    for (uint32_t i = 0; i < sizeQl; ++i)
+                        crtQ[i] = moduli[sizeQl - j].Mod(moduli[i]);
+                }
+                crtPowSF = CKKSPackedEncoding::CRTMult(crtPowSF, crtQ, moduli);
             }
 
             if (ptxtIndex == 1) {
