@@ -408,7 +408,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     /* 10. Apply the LUTs over the ciphertext.
      * First, compute the complex exponential and its powers to reuse.
-     * Second, apply multiple LUTs over these powers.
+     * Second, apply multiple LUTs over these powers. All LUTs which reuse the precomputations must be interpolated
+     * with the same shape (same PInput and order) as the coefficients used for the precomputation.
     */
     std::vector<Ciphertext<DCRTPoly>> complexExp;
     Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;

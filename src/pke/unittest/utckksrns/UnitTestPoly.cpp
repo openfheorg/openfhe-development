@@ -52,6 +52,7 @@ enum TEST_CASE_TYPE : int {
     EVAL_LOGISTIC,
     EVAL_SIN,
     EVAL_COS,
+    EVAL_PRECOMP_REUSE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -86,6 +87,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case EVAL_COS:
             typeName = "EVAL_COS";
+            break;
+        case EVAL_PRECOMP_REUSE:
+            typeName = "EVAL_PRECOMP_REUSE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -259,6 +263,14 @@ static std::vector<TEST_CASE_UTCKKSRNS_EVAL_POLY> testCases = {
     { EVAL_COS, "06", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
     { EVAL_COS, "07", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
     { EVAL_COS, "08", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+#endif
+    // ==========================================
+    // TestType,          Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits,    PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_PRECOMP_REUSE, "01", {CKKSRNS_SCHEME, RDIM, 5,          SMODSIZE,   20,    BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_PRECOMP_REUSE, "02", {CKKSRNS_SCHEME, RDIM, 5,          SMODSIZE,   20,    BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+#if NATIVEINT != 128
+    { EVAL_PRECOMP_REUSE, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_PRECOMP_REUSE, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
 #endif
     // ==========================================
 };
@@ -746,6 +758,105 @@ protected:
 
         checkEquality(expectedOutput, finalResult, eps, failmsg + " EvalCos Chebyshev approximation fails");
     }
+
+    // Evaluates two series of degree 3 against one precomputation, in the order A, B, A, and checks every
+    // result against a plaintext evaluation, so the later evaluations detect any in-place corruption of the
+    // shared basis by the earlier ones. Degree 3 is evaluated term by term straight from the power or
+    // Chebyshev basis rather than by Paterson-Stockmeyer, which is the path that touches the basis.
+    void UnitTest_EvalPrecompReuse(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData,
+                                   const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto decrypt = [&](ConstCiphertext<Element>& ciphertext, size_t length) {
+                Plaintext plaintext;
+                cc->Decrypt(keyPair.secretKey, ciphertext, &plaintext);
+                plaintext->SetLength(length);
+                return plaintext->GetCKKSPackedValue();
+            };
+
+            // power basis: 0.25 - 0.5 x + 2 x^2 + 1.5 x^3, then 0.15 + 0.75 x - 0.5 x^2 + 1.25 x^3
+            {
+                std::vector<std::complex<double>> input{0.5, 0.7, 0.9, 0.95, 0.93};
+                std::vector<double> coefficientsA{0.25, -0.5, 2, 1.5};
+                std::vector<double> coefficientsB{0.15, 0.75, -0.5, 1.25};
+
+                auto evalPlain = [&](const std::vector<double>& coefficients) {
+                    std::vector<std::complex<double>> values(input.size());
+                    for (size_t i = 0; i < input.size(); ++i) {
+                        double y = 0;
+                        for (auto it = coefficients.rbegin(); it != coefficients.rend(); ++it)
+                            y = y * input[i].real() + *it;
+                        values[i] = y;
+                    }
+                    return values;
+                };
+
+                auto ciphertext = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(input));
+                auto powers     = cc->EvalPowers(ciphertext, coefficientsA);
+
+                auto check = [&](const std::vector<double>& coefficients, const std::string& label) {
+                    auto result = cc->EvalPolyWithPrecomp(powers, coefficients);
+                    checkEquality(evalPlain(coefficients), decrypt(result, input.size()), eps,
+                                  failmsg + " EvalPolyWithPrecomp on the reused powers fails for the " + label);
+                };
+                check(coefficientsA, "first polynomial");
+                check(coefficientsB, "second polynomial");
+                check(coefficientsA, "first polynomial evaluated again");
+            }
+
+            // Chebyshev basis on [-3, 3]
+            {
+                std::vector<std::complex<double>> input{-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0};
+                const double a = -3;
+                const double b = 3;
+                std::vector<double> coefficientsA{9, -17.25, 4.5, -6.75};
+                std::vector<double> coefficientsB{2, 1.5, -3, 0.25};
+
+                auto evalPlain = [&](const std::vector<double>& coefficients) {
+                    std::vector<std::complex<double>> values(input.size());
+                    for (size_t i = 0; i < input.size(); ++i) {
+                        double y   = -1 + 2 * (input[i].real() - a) / (b - a);
+                        double t0  = 1;
+                        double t1  = y;
+                        double sum = coefficients[0] / 2;
+                        for (size_t j = 1; j < coefficients.size(); ++j) {
+                            sum += coefficients[j] * t1;
+                            double t2 = 2 * y * t1 - t0;
+                            t0        = t1;
+                            t1        = t2;
+                        }
+                        values[i] = sum;
+                    }
+                    return values;
+                };
+
+                auto ciphertext = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(input));
+                auto polys      = cc->EvalChebyPolys(ciphertext, coefficientsA, a, b);
+
+                auto check = [&](const std::vector<double>& coefficients, const std::string& label) {
+                    auto result = cc->EvalChebyshevSeriesWithPrecomp(polys, coefficients);
+                    checkEquality(
+                        evalPlain(coefficients), decrypt(result, input.size()), eps,
+                        failmsg + " EvalChebyshevSeriesWithPrecomp on the reused polynomials fails for the " + label);
+                };
+                check(coefficientsA, "first series");
+                check(coefficientsB, "second series");
+                check(coefficientsA, "first series evaluated again");
+            }
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 
 //===========================================================================================================
@@ -783,6 +894,9 @@ TEST_P(UTCKKSRNS_EVAL_POLY, CKKSRNS) {
             break;
         case EVAL_COS:
             UnitTest_EvalCos(test, test.buildTestName());
+            break;
+        case EVAL_PRECOMP_REUSE:
+            UnitTest_EvalPrecompReuse(test, test.buildTestName());
             break;
         default:
             break;

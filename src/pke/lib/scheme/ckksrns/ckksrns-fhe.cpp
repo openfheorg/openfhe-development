@@ -1931,22 +1931,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
         OPENFHE_THROW("The Fourier series has no nonzero coefficient above the constant term.");
     const std::vector<std::complex<double>> trimmed(coefficients.cbegin(), coefficients.cbegin() + degree + 1);
 
-    auto shared = powers;
-
     if (degree < 5) {
-        // EvalPolyWithPrecomp evaluates a short series straight from the power basis, scaling the powers it
-        // is handed in place. Give it deep copies so the shared powers survive for the next function; the
-        // same guard is applied to the linear case of EvalMVB. It reads the first "degree" powers, and the
-        // basis left behind by the precomputation is only as wide as that series' Paterson-Stockmeyer k.
+        // EvalPolyWithPrecomp evaluates a short series straight from the power basis, leaving the powers
+        // intact for the next function. It reads the first "degree" powers, and the basis left behind by
+        // the precomputation is only as wide as that series' Paterson-Stockmeyer k.
         if (degree > powers->powersRe.size())
             OPENFHE_THROW("The Fourier series has degree " + std::to_string(degree) + ", above the maximum of " +
                           std::to_string(powers->powersRe.size()) +
                           " spanned by the precomputed complex-exponential powers.");
-        std::vector<Ciphertext<DCRTPoly>> copies;
-        copies.reserve(degree);
-        for (uint32_t i = 0; i < degree; ++i)
-            copies.emplace_back(powers->powersRe[i]->Clone());
-        shared = std::make_shared<seriesPowers<DCRTPoly>>(copies);
     }
     else {
         // The Paterson-Stockmeyer shape (k, m) fixed at precomputation spans degrees up to k*(2^m - 1) - 1,
@@ -1964,7 +1956,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 #endif
 
     auto algo   = powers->powersRe.front()->GetCryptoContext()->GetScheme();
-    auto result = TwiceRealPart(algo->EvalPolyWithPrecomp(shared, trimmed));
+    auto result = TwiceRealPart(algo->EvalPolyWithPrecomp(powers, trimmed));
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
@@ -4142,6 +4134,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
         else {
             // Obtain the complex Hermite Trigonometric Interpolation via Power Basis Polynomial Interpolation
             // Coefficients are divided by 2
+            // The repackaging below shares the precomputed ciphertexts with the caller. EvalPolyWithPrecomp
+            // leaves them unmodified, so the same precomputation serves every function evaluated against it.
             std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowersRe, ctxtPowersIm;
             if (ciphertexts->powers2Re.size() == 0) {
                 ctxtPowersRe = std::make_shared<seriesPowers<DCRTPoly>>(ciphertexts->powersRe);

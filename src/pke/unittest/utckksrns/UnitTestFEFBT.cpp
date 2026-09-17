@@ -717,8 +717,8 @@ protected:
                 OpenFHEException)
                 << failmsg << " a series wider than the precomputed basis was not rejected.";
 
-            // A series short enough to be evaluated straight from the power basis scales the powers it is
-            // handed, so the shared ones must survive it: evaluate one, then check a real function again.
+            // A series short enough to be evaluated straight from the power basis must leave the shared
+            // powers intact: evaluate one, then check a real function again.
             cc->EvalFEFuncBootstrapWithPrecomp(powers, std::vector<std::complex<double>>(4, {0.1, 0.0}));
 
             auto expectedAfter = BuildExpectedOutput(FEFBT_SIGMOID, input);
