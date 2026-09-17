@@ -278,7 +278,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     MakeFEFBTCase(FEFBT_MULTI_VALUE, "26", RDIM / 2,     SPARSE_TERNARY, RDIM / 2,     FEFBT_GELU_TANH),
     MakeFEFBTCase(FEFBT_MULTI_VALUE, "27", SPARSE_SLOTS, SPARSE_TERNARY, SPARSE_SLOTS, FEFBT_GELU_TANH,
                   {1, 1}, FLEXIBLEAUTO),
-    // composite degree 3 with UNIFORM_TERNARY: the K = 512 overflow bound of the lower composite degrees is
+    // composite degree 3 with UNIFORM_TERNARY: the K = 696 overflow bound of the lower composite degrees is
     // used for every composite degree
     MakeFEFBTCase(FEFBT_ACCURACY,      "28", RDIM / 2,    UNIFORM_TERNARY,     RDIM / 2,   FEFBT_SIGMOID,
                   {3, 2}, COMPOSITESCALINGAUTO, SMODSIZED3, FMODSIZED3),
