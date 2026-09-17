@@ -236,11 +236,23 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
         }
     }
 
-    // brings all powers of x to the same level
-    for (uint32_t i = 1; i < k; ++i) {
-        if (indices[i - 1]) {
-            uint32_t diff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
-            cc->LevelReduceInPlace(powers[i - 1], nullptr, diff / compositeDegree);
+    // Bring all computed powers to the level and, outside FIXEDMANUAL, the noise-scale degree of the top power,
+    // so that the terms of every series later evaluated from this basis add without any adjustment. The
+    // rescaling modes leave LevelReduceInPlace a no-op, so there the powers are aligned through
+    // AdjustLevelsAndDepthInPlace, as in the Paterson-Stockmeyer basis.
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        for (uint32_t i = 1; i < k; ++i) {
+            if (indices[i - 1]) {
+                uint32_t diff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
+                cc->LevelReduceInPlace(powers[i - 1], nullptr, diff / compositeDegree);
+            }
+        }
+    }
+    else {
+        auto algo = cc->GetScheme();
+        for (uint32_t i = 1; i < k; ++i) {
+            if (indices[i - 1])
+                algo->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
         }
     }
 
@@ -581,10 +593,20 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysLinear(ConstCipher
         }
     }
 
-    uint32_t compositeDegree =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
-    for (uint32_t i = 1; i < k; ++i)
-        cc->LevelReduceInPlace(T[i - 1], nullptr, (T[k - 1]->GetLevel() - T[i - 1]->GetLevel()) / compositeDegree);
+    // Bring all polynomials to the level and, outside FIXEDMANUAL, the noise-scale degree of the top one, so
+    // that the terms of every series later evaluated from this basis add without any adjustment (see
+    // internalEvalPowersLinear).
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters());
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+        for (uint32_t i = 1; i < k; ++i)
+            cc->LevelReduceInPlace(T[i - 1], nullptr, (T[k - 1]->GetLevel() - T[i - 1]->GetLevel()) / compositeDegree);
+    }
+    else {
+        auto algo = cc->GetScheme();
+        for (uint32_t i = 1; i < k; ++i)
+            algo->AdjustLevelsAndDepthInPlace(T[i - 1], T[k - 1]);
+    }
 
     return std::make_shared<seriesPowers<DCRTPoly>>(std::move(T));
 }
