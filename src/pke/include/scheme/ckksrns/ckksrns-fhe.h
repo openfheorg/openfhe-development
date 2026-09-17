@@ -555,12 +555,13 @@ private:
     // ring dimension). Each value is the largest one for which the corresponding approximation below keeps its
     // precision without an additional level of multiplicative depth; the degree of the depth-8 tables is capped at
     // 104 because higher degrees fall into a noisier regime of the Paterson-Stockmeyer evaluation (8 baby-step
-    // pieces, or exactly 7 * 15 = 105), which costs about 3 bits of precision. Probabilities of failure for fully
-    // packed slots (N/2), with the overflow of a uniform ternary secret (Hamming weight ~2N/3) modeled as a normal
-    // distribution of variance (h + 1)/12:
-    //   K = 648 (regular bootstrapping):        2^{-71} for N = 2^16, 2^{-28} for N = 2^17
-    //   K = 672 (functional bootstrapping):     2^{-77} for N = 2^16, 2^{-31} for N = 2^17
-    //   K = 696 (FE functional bootstrapping):  2^{-84} for N = 2^16, 2^{-34} for N = 2^17
+    // pieces, or exactly 7 * 15 = 105), which costs about 3 bits of precision.
+    // Probabilities of failure for fully packed slots (N/2), computed with the estimator of the Security Guidelines for
+    // Implementing Homomorphic Encryption (https://cic.iacr.org/p/1/4/26, Appendix A: Irwin-Hall model of the overflow
+    // with the correction for the spread of the Hamming weight of the uniform ternary secret):
+    //   K = 648 (regular bootstrapping):        2^{-67} for N = 2^16, 2^{-27} for N = 2^17
+    //   K = 672 (functional bootstrapping):     2^{-73} for N = 2^16, 2^{-30} for N = 2^17
+    //   K = 696 (FE functional bootstrapping):  2^{-79} for N = 2^16, 2^{-33} for N = 2^17
     static constexpr uint32_t K_UNIFORM       = 648;
     static constexpr uint32_t K_UNIFORM_FBT   = 672;
     static constexpr uint32_t K_UNIFORM_FEFBT = 696;
