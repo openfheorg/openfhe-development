@@ -184,6 +184,14 @@ TEST_F(UTCKKSCacheClear, FullBootstrapClear) {
     auto cc           = MakeBootstrapCC();
     uint32_t numSlots = cc->GetRingDimension() / 2;
 
+    // The first EvalBootstrapSetup() grows per-thread allocator structures in
+    // proportion to the OpenMP thread count, and those are not returned to the
+    // heap. Running one setup and clear before the baseline is taken keeps that
+    // growth out of the comparison, so what is measured is the bootstrap
+    // precomputation alone rather than the thread count of the host.
+    cc->EvalBootstrapSetup({1, 1}, {0, 0}, numSlots);
+    cc->ClearBootstrapPrecom();
+
     size_t before = HeapInUseBytes();
     cc->EvalBootstrapSetup({1, 1}, {0, 0}, numSlots);
     // size_t after = HeapInUseBytes();
