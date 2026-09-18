@@ -29,6 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <utility>

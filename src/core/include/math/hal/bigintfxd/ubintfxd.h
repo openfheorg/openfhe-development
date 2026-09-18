@@ -41,6 +41,8 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
 
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 

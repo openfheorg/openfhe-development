@@ -37,6 +37,8 @@
 //            MUST be included in the end of math/bigintfxd/transformfxd.h ONLY
 //            and nowhere else
 
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <vector>
 

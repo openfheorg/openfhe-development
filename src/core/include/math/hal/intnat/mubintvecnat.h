@@ -37,9 +37,11 @@
 #define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_
 
 #include <algorithm>
+#include <cstdint>
 #include <initializer_list>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

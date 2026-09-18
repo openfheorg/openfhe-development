@@ -40,6 +40,7 @@
 // #define TEST3
 
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <fstream>
 #include <iostream>

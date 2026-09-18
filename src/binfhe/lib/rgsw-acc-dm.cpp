@@ -31,6 +31,7 @@
 
 #include "rgsw-acc-dm.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 

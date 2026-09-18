@@ -34,6 +34,8 @@
  */
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <utility>

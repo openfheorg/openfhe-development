@@ -36,6 +36,8 @@
 
 #define _USE_MATH_DEFINES
 
+#include <complex>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>

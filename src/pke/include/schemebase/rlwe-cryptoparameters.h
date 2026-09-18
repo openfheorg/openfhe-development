@@ -36,6 +36,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMEBASE_RLWE_CRYPTOPARAMETERS_H_
 #define SRC_PKE_INCLUDE_SCHEMEBASE_RLWE_CRYPTOPARAMETERS_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 

@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
 #define SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

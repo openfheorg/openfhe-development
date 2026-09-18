@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_UTILS_EXCEPTION_H_
 #define SRC_CORE_INCLUDE_UTILS_EXCEPTION_H_
 
+#include <cstddef>
 #include <exception>
 #include <mutex>
 #include <stdexcept>

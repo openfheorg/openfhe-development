@@ -42,8 +42,12 @@ double the precision of a single bootstrapping.
 
 */
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <ostream>
+#include <random>
 #include <vector>
 
 #include "openfhe.h"

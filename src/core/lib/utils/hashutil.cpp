@@ -35,6 +35,7 @@
 
 #include "utils/hashutil.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <sstream>
 #include <string>

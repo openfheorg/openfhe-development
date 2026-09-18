@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 #define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 

@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMELET_RLWE_MP_H_
 #define SRC_PKE_INCLUDE_SCHEMELET_RLWE_MP_H_
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 

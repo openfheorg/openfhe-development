@@ -37,6 +37,8 @@
 //            MUST be included in the end of math/bigintntl/transformntl.h ONLY
 //            and nowhere else
 
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <vector>
 

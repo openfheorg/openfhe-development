@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEME_H_
 #define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEME_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 

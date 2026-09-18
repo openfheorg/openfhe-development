@@ -38,10 +38,12 @@
 
 #include <algorithm>
 #include <complex>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>

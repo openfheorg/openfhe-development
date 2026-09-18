@@ -29,7 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <complex>
+#include <cstdint>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 

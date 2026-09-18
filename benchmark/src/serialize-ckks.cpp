@@ -35,11 +35,13 @@
 
 // #define PROFILE
 #define _USE_MATH_DEFINES
+#include <complex>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <limits>
 #include <random>
+#include <sstream>
 #include <vector>
 
 #include "benchmark/benchmark.h"

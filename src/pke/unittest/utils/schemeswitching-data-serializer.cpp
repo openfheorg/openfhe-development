@@ -31,7 +31,9 @@
 
 #include "schemeswitching-data-serializer.h"
 
+#include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 

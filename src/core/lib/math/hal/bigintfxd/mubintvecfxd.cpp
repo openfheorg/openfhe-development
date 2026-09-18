@@ -33,6 +33,8 @@
   This file contains the vector manipulation functionality
  */
 
+#include <cstdint>
+#include <initializer_list>
 #include <string>
 
 #include "config_core.h"

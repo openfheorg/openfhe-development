@@ -36,8 +36,11 @@
 //            declared in math/intnat/transformnat.h and
 //            MUST be included in the end of math/intnat/transformnat.h ONLY
 //            and nowhere else
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <utility>
 #include <vector>
 

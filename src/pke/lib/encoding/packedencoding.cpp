@@ -35,6 +35,8 @@
 
 #include "encoding/packedencoding.h"
 
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

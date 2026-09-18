@@ -33,11 +33,16 @@
 #define SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
+#include <iomanip>
 #include <memory>
 #include <numeric>
+#include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

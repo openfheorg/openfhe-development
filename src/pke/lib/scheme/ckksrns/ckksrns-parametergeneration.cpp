@@ -37,8 +37,11 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
 
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>

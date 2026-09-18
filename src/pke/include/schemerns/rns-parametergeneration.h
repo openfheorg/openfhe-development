@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
 #define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 

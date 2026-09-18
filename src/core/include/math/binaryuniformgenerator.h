@@ -37,6 +37,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_
 #define SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_
 
+#include <cstdint>
 #include <random>
 
 #include "math/distributiongenerator.h"

@@ -33,6 +33,7 @@
   Simple example for BFVrns (integer arithmetic)
  */
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

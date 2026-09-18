@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_
 #define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

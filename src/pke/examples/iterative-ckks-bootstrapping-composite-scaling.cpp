@@ -45,7 +45,11 @@ double the precision of a single bootstrapping.
 
 #define PROFILE
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
+#include <random>
 #include <vector>
 
 #include "openfhe.h"

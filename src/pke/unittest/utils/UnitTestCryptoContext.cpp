@@ -31,6 +31,10 @@
 
 #include "UnitTestCryptoContext.h"
 
+#include <cmath>
+#include <cstdint>
+#include <type_traits>
+
 #include "gen-cryptocontext.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"

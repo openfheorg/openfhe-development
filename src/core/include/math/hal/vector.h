@@ -36,6 +36,8 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_VECTOR_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_VECTOR_H_
 
+#include <cstdint>
+#include <initializer_list>
 #include <string>
 
 #include "utils/inttypes.h"

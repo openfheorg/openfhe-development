@@ -35,6 +35,7 @@
 
 #include "encoding/coefpackedencoding.h"
 
+#include <cstdint>
 #include <vector>
 
 #include "constants.h"

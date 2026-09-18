@@ -40,6 +40,8 @@
 #include "keyswitch/keyswitch-bv.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>

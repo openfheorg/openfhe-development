@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <complex>
 #include <csignal>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>

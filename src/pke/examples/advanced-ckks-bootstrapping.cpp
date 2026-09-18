@@ -37,7 +37,9 @@ Example for CKKS bootstrapping with sparse packing
 
 #define PROFILE
 
+#include <cstdint>
 #include <iostream>
+#include <random>
 #include <vector>
 
 #include "openfhe.h"

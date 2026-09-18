@@ -35,6 +35,7 @@
 
 #define PROFILE
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

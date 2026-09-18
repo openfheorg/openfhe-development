@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_INTEGER_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_INTEGER_H_
 
+#include <cstdint>
 #include <string>
 
 #include "utils/inttypes.h"

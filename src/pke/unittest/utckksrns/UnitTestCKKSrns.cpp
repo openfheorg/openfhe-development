@@ -30,9 +30,13 @@
 //==================================================================================
 
 #include <algorithm>
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 

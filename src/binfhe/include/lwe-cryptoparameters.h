@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
 #define SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>

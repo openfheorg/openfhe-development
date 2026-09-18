@@ -33,6 +33,8 @@
   This code exercises the encoding libraries of the OpenFHE lattice encryption library.
 */
 
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>

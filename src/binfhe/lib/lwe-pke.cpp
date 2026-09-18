@@ -32,6 +32,8 @@
 #include "lwe-pke.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <utility>

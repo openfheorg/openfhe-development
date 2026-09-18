@@ -35,6 +35,8 @@
 
 #include "math/hal/intnat/mubintvecnat.h"
 
+#include <cstdint>
+#include <initializer_list>
 #include <string>
 #include <utility>
 #include <vector>

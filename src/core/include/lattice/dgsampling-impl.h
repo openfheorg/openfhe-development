@@ -38,7 +38,10 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_IMPL_H_
 #define SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_IMPL_H_
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
+#include <random>
 #include <vector>
 
 #include "lattice/dgsampling.h"

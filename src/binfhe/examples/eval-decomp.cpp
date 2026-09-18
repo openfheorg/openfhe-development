@@ -34,6 +34,8 @@
  */
 
 #include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 
 #include "binfhecontext.h"

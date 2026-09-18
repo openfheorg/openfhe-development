@@ -37,6 +37,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bgvrns/bgvrns-pke.h"
 
+#include <cstdint>
 #include <vector>
 
 #include "ciphertext.h"

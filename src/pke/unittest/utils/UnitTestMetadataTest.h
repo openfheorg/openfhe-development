@@ -31,6 +31,7 @@
 #ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
 #define SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
 
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>

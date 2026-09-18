@@ -34,6 +34,7 @@
   unit tests for the utility to to find security parameters using the HomomorphicEncryption.org HE standard
  */
 
+#include <cstdint>
 #include <iostream>
 
 #include "gtest/gtest.h"

@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <cstdint>
 #include <map>
 #include <utility>
 #include <vector>

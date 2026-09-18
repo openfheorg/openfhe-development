@@ -38,6 +38,8 @@
 
 #include <assert.h>
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>

@@ -30,6 +30,7 @@
 //==================================================================================
 #include "schemerns/rns-multiparty.h"
 
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <string>

@@ -33,6 +33,7 @@
 #define SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

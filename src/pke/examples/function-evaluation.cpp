@@ -33,6 +33,9 @@
   Example of evaluating arbitrary smooth functions with the Chebyshev approximation using CKKS.
  */
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

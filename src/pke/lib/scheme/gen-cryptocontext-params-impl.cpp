@@ -33,6 +33,7 @@
   Definitions for scheme parameter default class
  */
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <vector>

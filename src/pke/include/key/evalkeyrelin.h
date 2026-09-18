@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
 #define SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

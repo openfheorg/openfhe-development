@@ -35,6 +35,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "scheme/ckksrns/ckksrns-multiparty.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

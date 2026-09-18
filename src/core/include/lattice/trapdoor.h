@@ -38,6 +38,8 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
 #define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <utility>
 

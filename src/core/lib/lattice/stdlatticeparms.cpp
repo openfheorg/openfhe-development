@@ -35,6 +35,7 @@
 
 #include "lattice/stdlatticeparms.h"
 
+#include <cstdint>
 #include <map>
 #include <ostream>
 #include <string>

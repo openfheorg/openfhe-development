@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
 #define SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
 
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>

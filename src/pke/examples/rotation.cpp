@@ -34,6 +34,8 @@
   This code shows how the EvalRotate and EvalMerge operations work
  */
 
+#include <complex>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>

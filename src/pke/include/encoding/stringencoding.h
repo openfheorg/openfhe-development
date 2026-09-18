@@ -38,6 +38,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "encoding/plaintext.h"
 

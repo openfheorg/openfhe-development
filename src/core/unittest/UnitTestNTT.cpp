@@ -38,6 +38,7 @@
   3. Math layer operations such as functions in nbtheory
   */
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>

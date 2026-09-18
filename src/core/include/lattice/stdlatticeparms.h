@@ -38,6 +38,7 @@
 
 //  #include "math/math-hal.h"
 
+#include <cstdint>
 #include <iosfwd>
 #include <map>
 #include <string>

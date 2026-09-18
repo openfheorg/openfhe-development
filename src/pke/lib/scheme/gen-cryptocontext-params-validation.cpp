@@ -30,6 +30,8 @@
 //==================================================================================
 #include "scheme/gen-cryptocontext-params-validation.h"
 
+#include <cmath>
+#include <cstdint>
 #include <string>
 
 #include "schemerns/rns-modulus-limits.h"

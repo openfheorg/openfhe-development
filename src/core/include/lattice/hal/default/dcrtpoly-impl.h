@@ -37,6 +37,9 @@
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_IMPL_H_
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <initializer_list>
 #include <memory>
 #include <ostream>
 #include <string>

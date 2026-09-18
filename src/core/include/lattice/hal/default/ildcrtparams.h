@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
 
+#include <cstdint>
 #include <iomanip>
 #include <memory>
 #include <string>

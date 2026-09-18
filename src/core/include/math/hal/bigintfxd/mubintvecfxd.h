@@ -36,6 +36,10 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_
 
+#include <cstdint>
+#include <initializer_list>
+#include <type_traits>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 

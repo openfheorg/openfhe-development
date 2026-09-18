@@ -35,6 +35,7 @@
   KeySwitchSparse must stay at the modulus switching (rounding) noise level.
 */
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>

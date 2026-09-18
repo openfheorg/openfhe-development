@@ -39,7 +39,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 

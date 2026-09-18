@@ -35,6 +35,7 @@
 
 #include "encoding/stringencoding.h"
 
+#include <cstdint>
 #include <string>
 
 namespace lbcrypto {

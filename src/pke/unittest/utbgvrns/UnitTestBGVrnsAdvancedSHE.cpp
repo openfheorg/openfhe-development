@@ -31,7 +31,9 @@
 
 #if !defined(_MSC_VER)
 
+    #include <cstdint>
     #include <iostream>
+    #include <sstream>
     #include <string>
     #include <vector>
 

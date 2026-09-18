@@ -38,6 +38,7 @@
 
 #include <utils/exception.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -33,6 +33,7 @@
   Example for the FHEW scheme homomorphic flooring function
  */
 
+#include <cstdint>
 #include <iostream>
 
 #include "binfhecontext.h"

@@ -31,6 +31,7 @@
 
 #include "rgsw-acc-cggi.h"
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 

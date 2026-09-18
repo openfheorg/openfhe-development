@@ -38,6 +38,8 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
 #define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
 
 #include "lattice/lat-hal.h"

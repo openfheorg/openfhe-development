@@ -31,6 +31,7 @@
 
 #include "rgsw-acc-lmkcdey.h"
 
+#include <cstdint>
 #include <memory>
 
 #include "rgsw-acc-common.h"

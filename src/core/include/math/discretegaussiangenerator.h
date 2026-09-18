@@ -68,6 +68,8 @@
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>

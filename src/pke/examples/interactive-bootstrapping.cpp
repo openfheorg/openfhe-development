@@ -32,6 +32,8 @@
  Examples for 2-party Interactive Bootstrapping
 */
 
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>

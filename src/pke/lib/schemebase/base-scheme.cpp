@@ -31,6 +31,7 @@
 
 #include "schemebase/base-scheme.h"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

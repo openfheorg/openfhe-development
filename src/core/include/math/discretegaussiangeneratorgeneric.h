@@ -102,6 +102,7 @@
 #define MAX_LEVELS 4
 
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>

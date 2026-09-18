@@ -40,6 +40,7 @@
   FIXEDMANUAL (2^-24 instead of 2^-28 at ring dimension 2^12 with 50-bit primes).
 */
 #include <cmath>
+#include <cstdint>
 #include <random>
 #include <string>
 #include <vector>

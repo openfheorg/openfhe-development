@@ -33,6 +33,7 @@
   Example for serializing and deserializing CKKS bootstrap evaluation keys.
  */
 
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>

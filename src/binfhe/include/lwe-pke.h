@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_LWE_PKE_H_
 #define SRC_BINFHE_INCLUDE_LWE_PKE_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "binfhe-constants.h"

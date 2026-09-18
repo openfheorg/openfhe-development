@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY_H_
 #define SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

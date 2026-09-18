@@ -36,6 +36,7 @@
 #ifndef SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_
 #define SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

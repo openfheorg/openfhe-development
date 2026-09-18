@@ -31,6 +31,7 @@
 
 #include "schemebase/base-pke.h"
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>

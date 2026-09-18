@@ -36,6 +36,7 @@
 #ifndef SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
 #define SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

@@ -44,10 +44,12 @@
 #ifndef SRC_CORE_INCLUDE_MATH_NBTHEORY_H_
 #define SRC_CORE_INCLUDE_MATH_NBTHEORY_H_
 
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <random>
 #include <set>
+#include <type_traits>
 #include <vector>
 
 #include "math/hal/basicint.h"

@@ -36,7 +36,9 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_
 #define SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_
 
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>

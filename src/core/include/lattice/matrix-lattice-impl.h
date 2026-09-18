@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
 #define SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "math/matrix-impl.h"

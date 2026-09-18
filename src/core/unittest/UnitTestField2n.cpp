@@ -30,6 +30,7 @@
 //==================================================================================
 
 #include <cmath>
+#include <complex>
 #include <memory>
 #include <vector>
 

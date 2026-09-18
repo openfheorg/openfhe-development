@@ -33,7 +33,10 @@
 
 #include "schemerns/rns-cryptoparameters.h"
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>

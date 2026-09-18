@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_LEVELEDSHE_H_
 #define SRC_PKE_INCLUDE_SCHEMERNS_RNS_LEVELEDSHE_H_
 
+#include <cstdint>
 #include <string>
 
 #include "lattice/lat-hal.h"

@@ -35,6 +35,7 @@ Example for CKKS bootstrapping with full packing
 
 */
 
+#include <cstdint>
 #include <iostream>
 #include <ostream>
 #include <vector>

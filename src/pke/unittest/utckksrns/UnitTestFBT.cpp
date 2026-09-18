@@ -31,13 +31,16 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <complex>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <iterator>
 #include <memory>
 #include <numeric>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

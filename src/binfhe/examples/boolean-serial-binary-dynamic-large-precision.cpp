@@ -33,6 +33,8 @@
   Example forFHEW with binary serialization
  */
 
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <string>
 

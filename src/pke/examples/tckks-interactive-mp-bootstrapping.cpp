@@ -41,6 +41,8 @@
 
 #define PROFILE
 
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>

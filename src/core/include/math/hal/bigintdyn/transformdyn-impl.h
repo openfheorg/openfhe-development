@@ -37,6 +37,8 @@
 //            MUST be included in the end of math/bigintdyn/transformdyn.h ONLY
 //            and nowhere else
 
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <vector>
 

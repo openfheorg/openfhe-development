@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
 #define SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

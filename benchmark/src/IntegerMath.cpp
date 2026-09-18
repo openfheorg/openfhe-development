@@ -34,6 +34,7 @@
   This code benchmarks integer operations.
 */
 #define _USE_MATH_DEFINES
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>

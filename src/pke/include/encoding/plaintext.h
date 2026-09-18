@@ -37,6 +37,8 @@
 #define SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
 #include <ostream>

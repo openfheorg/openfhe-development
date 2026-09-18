@@ -37,6 +37,9 @@ Example for CKKS bootstrapping
 
 #define PROFILE
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <vector>

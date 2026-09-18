@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
 #define SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <ostream>

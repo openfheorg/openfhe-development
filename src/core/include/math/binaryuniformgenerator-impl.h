@@ -37,6 +37,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_IMPL_H_
 #define SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_IMPL_H_
 
+#include <cstdint>
 #include <random>
 
 #include "math/binaryuniformgenerator.h"

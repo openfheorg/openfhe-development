@@ -33,6 +33,7 @@
  * This code benchmarks polynomial operations for ring dimension of 64k.
  */
 
+#include <cstdint>
 #include <iostream>
 
 #include "math/hal/basicint.h"

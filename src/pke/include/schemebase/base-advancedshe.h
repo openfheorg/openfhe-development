@@ -33,6 +33,7 @@
 #define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
 
 #include <complex>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>

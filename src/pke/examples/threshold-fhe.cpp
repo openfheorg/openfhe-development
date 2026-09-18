@@ -33,6 +33,8 @@
   Examples of threshold FHE for BGVrns, BFVrns and CKKS
  */
 
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>

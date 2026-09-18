@@ -32,6 +32,8 @@
 #ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_
 #define SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_
 
+#include <cstdint>
+
 #include "math/math-hal.h"
 #include "utils/utilities.h"
 

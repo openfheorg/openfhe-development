@@ -36,6 +36,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
 #define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
 
+#include <cstdint>
+
 #include "constants.h"
 #include "lattice/constants-lattice.h"  // SecretKeyDist
 #include "lattice/stdlatticeparms.h"    // SecurityLevel

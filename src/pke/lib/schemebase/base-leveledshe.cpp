@@ -32,6 +32,7 @@
 #include "schemebase/base-leveledshe.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>

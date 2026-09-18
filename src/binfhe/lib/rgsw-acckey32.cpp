@@ -31,6 +31,7 @@
 
 #include "rgsw-acckey32.h"
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>

@@ -34,6 +34,7 @@
 
 #define _USE_MATH_DEFINES
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>

@@ -33,6 +33,7 @@
   Simple example for BGVrns (integer arithmetic)
  */
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

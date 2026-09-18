@@ -35,6 +35,9 @@
 
 #define PROFILE  // turns on the reporting of timing results
 
+#include <complex>
+#include <cstdint>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 

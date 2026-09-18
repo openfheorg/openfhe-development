@@ -37,6 +37,8 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bgvrns/bgvrns-leveledshe.h"
 
+#include <cstdint>
+
 #include "ciphertext.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 

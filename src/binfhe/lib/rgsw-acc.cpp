@@ -46,6 +46,7 @@
 
 #include "rgsw-acc.h"
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 

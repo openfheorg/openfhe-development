@@ -35,6 +35,8 @@
   Currently implementation based on uint32_t and uint64_t is supported. a native double the base integer size is also needed.
  */
 
+#include <cmath>
+#include <cstdint>
 #include <utility>
 
 #include "config_core.h"

@@ -35,6 +35,7 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 

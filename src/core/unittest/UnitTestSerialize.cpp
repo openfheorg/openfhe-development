@@ -33,8 +33,10 @@
   This code exercises serialization in CORE for the OpenFHE lattice encryption library
  */
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include "gtest/gtest.h"

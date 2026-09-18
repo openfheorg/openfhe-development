@@ -36,6 +36,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_
 #define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_
 
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 #include <vector>

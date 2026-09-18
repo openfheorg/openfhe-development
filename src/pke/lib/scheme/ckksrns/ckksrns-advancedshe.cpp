@@ -35,7 +35,9 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
 
+#include <cmath>
 #include <complex>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>

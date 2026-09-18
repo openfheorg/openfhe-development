@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
 #define SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <utility>

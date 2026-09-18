@@ -33,8 +33,12 @@
 
 #include <cmath>
 #include <complex>
+#include <cstdint>
 #include <limits>
 #include <memory>
+#include <numeric>
+#include <random>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

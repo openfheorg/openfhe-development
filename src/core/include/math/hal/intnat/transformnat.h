@@ -36,6 +36,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>

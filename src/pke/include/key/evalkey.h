@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_KEY_EVALKEY_H_
 #define SRC_PKE_INCLUDE_KEY_EVALKEY_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

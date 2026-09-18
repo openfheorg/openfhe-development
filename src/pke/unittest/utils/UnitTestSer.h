@@ -37,6 +37,7 @@
 #define SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "UnitTestException.h"

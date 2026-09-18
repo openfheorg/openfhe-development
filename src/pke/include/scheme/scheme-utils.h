@@ -32,6 +32,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_SCHEME_UTILS_H_
 #define SRC_PKE_INCLUDE_SCHEME_SCHEME_UTILS_H_
 
+#include <cstdint>
+
 inline uint32_t ComputeNumLargeDigits(uint32_t numLargeDigits, uint32_t multDepth) {
     if (numLargeDigits > 0)
         return numLargeDigits;

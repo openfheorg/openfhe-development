@@ -33,6 +33,8 @@
   This class provides a class for big integers
  */
 
+#include <cmath>
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <string>

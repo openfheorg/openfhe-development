@@ -37,6 +37,7 @@
 #define SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
 
 #include <complex>
+#include <cstdint>
 #include <vector>
 
 #include "lattice/field2n.h"

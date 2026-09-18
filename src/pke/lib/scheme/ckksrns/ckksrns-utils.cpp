@@ -34,7 +34,10 @@
 #include <algorithm>
 #include <cmath>
 #include <complex>
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>

@@ -36,10 +36,13 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_
 
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

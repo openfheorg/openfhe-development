@@ -36,6 +36,7 @@
 #define PROFILE  // by defining this we activate the PROFILELOG() outputs
 
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <thread>

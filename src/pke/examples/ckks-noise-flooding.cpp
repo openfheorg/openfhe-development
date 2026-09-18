@@ -49,6 +49,8 @@
   bootstrapping. We plan to add support for bootstrapping in NOISE_FLOODING_DECRYPT mode in a future release.
  */
 
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

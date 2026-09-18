@@ -37,6 +37,7 @@
 #define PROFILE  // need to define in order to turn on timing reporting
 
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <fstream>
 #include <iostream>

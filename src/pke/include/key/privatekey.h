@@ -36,9 +36,12 @@
 #ifndef SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
 #define SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
 
+#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <memory>
+#include <random>
+#include <sstream>
 #include <string>
 #include <utility>
 

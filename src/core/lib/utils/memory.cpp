@@ -31,6 +31,8 @@
 
 #include "utils/memory.h"
 
+#include <cstdint>
+
 #include "config_core.h"
 
 #if defined(__APPLE__)

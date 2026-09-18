@@ -37,10 +37,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <complex>
+#include <cstdint>
+#include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>

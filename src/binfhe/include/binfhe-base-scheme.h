@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_
 #define SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_
 
+#include <cstdint>
 #include <cstdlib>
 #include <map>
 #include <memory>

@@ -32,6 +32,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_LEVELEDSHE_H_
 #define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_LEVELEDSHE_H_
 
+#include <complex>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

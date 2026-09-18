@@ -37,8 +37,12 @@ Specifically, we used this to choose the default correction factor for 64-bit FL
 */
 
 #include <algorithm>
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <ostream>
+#include <random>
 #include <vector>
 
 #include "openfhe.h"

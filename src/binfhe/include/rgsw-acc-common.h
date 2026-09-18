@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_
 #define SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_
 
+#include <cstdint>
 #include <memory>
 #include <type_traits>
 #include <unordered_map>

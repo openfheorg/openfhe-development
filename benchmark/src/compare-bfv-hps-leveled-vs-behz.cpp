@@ -36,6 +36,7 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>

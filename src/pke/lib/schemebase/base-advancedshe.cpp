@@ -31,8 +31,12 @@
 
 #include "schemebase/base-advancedshe.h"
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <map>
 #include <memory>
+#include <random>
 #include <set>
 #include <string>
 #include <utility>

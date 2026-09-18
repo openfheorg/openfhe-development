@@ -36,6 +36,8 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_
 
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 

@@ -36,11 +36,13 @@
 #ifndef SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_
 #define SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_
 
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <map>
 #include <memory>
 #include <numeric>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

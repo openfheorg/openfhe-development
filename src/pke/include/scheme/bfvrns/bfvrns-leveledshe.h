@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_LEVELEDSHE_H_
 #define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_LEVELEDSHE_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

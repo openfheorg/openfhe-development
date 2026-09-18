@@ -84,6 +84,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <vector>
 
 #include "gtest/gtest.h"

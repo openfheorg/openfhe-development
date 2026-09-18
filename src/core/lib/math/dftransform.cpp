@@ -35,7 +35,10 @@
 
 #include "math/dftransform.h"
 
+#include <cmath>
 #include <complex>
+#include <cstdint>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <utility>

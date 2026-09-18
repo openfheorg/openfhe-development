@@ -32,6 +32,7 @@
 #ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_
 #define SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "rgsw-acc.h"

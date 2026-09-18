@@ -36,6 +36,7 @@
 
 #define _USE_MATH_DEFINES
 
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>

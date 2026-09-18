@@ -33,6 +33,7 @@
 #define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_
 
 #include <complex>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

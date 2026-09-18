@@ -37,6 +37,7 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bfvrns/bfvrns-multiparty.h"
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>

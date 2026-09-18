@@ -29,7 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
 #include <iostream>
+#include <random>
 #include <string>
 
 #include "gtest/gtest.h"
@@ -37,7 +39,6 @@
 #include "math/distrgen.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
-#include "random"
 #include "testdefs.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"

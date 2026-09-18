@@ -33,6 +33,7 @@
  * Simple example for BFV and CKKS for inner product.
  */
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

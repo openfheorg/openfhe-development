@@ -36,6 +36,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H_
 #define SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_PARAMS_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

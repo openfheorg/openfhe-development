@@ -36,6 +36,7 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#include <cstdint>
 #include <string>
 #include <vector>
 

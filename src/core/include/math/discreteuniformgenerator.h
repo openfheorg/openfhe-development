@@ -37,6 +37,7 @@
 #ifndef SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_
 #define SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_
 
+#include <cstdint>
 #include <limits>
 #include <random>
 

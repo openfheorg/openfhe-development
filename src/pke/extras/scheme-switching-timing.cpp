@@ -38,6 +38,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
+#include <cstdint>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <vector>

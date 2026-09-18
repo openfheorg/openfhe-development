@@ -32,6 +32,7 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_
 #define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

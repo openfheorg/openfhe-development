@@ -31,6 +31,7 @@
 #ifndef SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_
 #define SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 

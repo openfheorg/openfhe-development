@@ -36,6 +36,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
 #define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
 
 #include "constants.h"

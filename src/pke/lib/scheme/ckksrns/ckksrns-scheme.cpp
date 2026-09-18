@@ -38,6 +38,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "scheme/ckksrns/ckksrns-scheme.h"
 
 #include <memory>
+#include <sstream>
 #include <string>
 
 namespace lbcrypto {

@@ -35,6 +35,11 @@
 
 #include "cryptocontext.h"
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <functional>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>

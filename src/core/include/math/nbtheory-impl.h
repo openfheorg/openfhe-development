@@ -39,7 +39,9 @@
 #define _USE_MATH_DEFINES
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
+#include <random>
 #include <set>
 #include <string>
 #include <type_traits>

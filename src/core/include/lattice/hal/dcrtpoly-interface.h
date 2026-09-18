@@ -37,7 +37,9 @@
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DCRTPOLY_INTERFACE_H_
 
 #include <algorithm>
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>

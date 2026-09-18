@@ -33,9 +33,13 @@
   Unit tests for the CKKS scheme
  */
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

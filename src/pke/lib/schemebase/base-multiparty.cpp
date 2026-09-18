@@ -31,6 +31,7 @@
 
 #include "schemebase/base-multiparty.h"
 
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>

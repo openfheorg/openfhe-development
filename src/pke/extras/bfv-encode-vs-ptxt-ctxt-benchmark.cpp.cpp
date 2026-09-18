@@ -37,6 +37,7 @@
 #define PROFILE
 
 #include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 

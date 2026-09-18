@@ -39,6 +39,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include <iosfwd>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include "scheme/bgvrns/bgvrns-advancedshe.h"

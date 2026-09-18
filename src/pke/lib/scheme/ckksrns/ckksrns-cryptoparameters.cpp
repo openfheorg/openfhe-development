@@ -38,6 +38,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

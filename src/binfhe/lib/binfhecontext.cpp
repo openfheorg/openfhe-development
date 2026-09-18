@@ -35,6 +35,7 @@
 
 #include "binfhecontext.h"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

@@ -33,6 +33,8 @@
   Simple examples for CKKS
  */
 
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <ostream>
 #include <vector>

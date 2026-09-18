@@ -37,6 +37,10 @@
 
 #include <unistd.h>
 
+#include <complex>
+#include <cstdint>
+#include <cstdlib>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>

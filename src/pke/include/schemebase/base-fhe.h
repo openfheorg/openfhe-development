@@ -32,6 +32,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_
 #define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_
 
+#include <complex>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <tuple>

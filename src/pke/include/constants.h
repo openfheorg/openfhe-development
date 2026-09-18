@@ -34,6 +34,7 @@
 #ifndef SRC_PKE_INCLUDE_CONSTANTS_H_
 #define SRC_PKE_INCLUDE_CONSTANTS_H_
 
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 

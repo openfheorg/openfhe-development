@@ -40,6 +40,8 @@ the number of participating parties.
 
 #define PROFILE
 
+#include <complex>
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>

@@ -31,6 +31,7 @@
 #include "utils/prng/blake2engine.h"
 
 #include <chrono>
+#include <cstdint>
 #include <random>
 #include <thread>
 

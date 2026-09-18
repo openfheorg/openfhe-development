@@ -36,6 +36,8 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_
 #define SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
 
 #include "lattice/trapdoor.h"

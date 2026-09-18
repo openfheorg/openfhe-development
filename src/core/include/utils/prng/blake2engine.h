@@ -38,6 +38,7 @@
 
 #include <cstddef>
 #include <array>
+#include <cstdint>
 
 #include "utils/prng/prng.h"
 

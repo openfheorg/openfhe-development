@@ -36,7 +36,9 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_
 
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>

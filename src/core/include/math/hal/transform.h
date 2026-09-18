@@ -37,6 +37,7 @@
 #define SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
 
 #include <complex>
+#include <cstdint>
 #include <map>
 #include <utility>
 #include <vector>

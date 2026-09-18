@@ -33,6 +33,7 @@
   This file contains template instantiations for all math classes & functions using math native
  */
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <vector>

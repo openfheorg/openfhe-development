@@ -36,8 +36,10 @@
 #ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_
 #define SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_
 
+#include <fstream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 

@@ -37,6 +37,7 @@
 #define SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_
 
 #include <complex>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>

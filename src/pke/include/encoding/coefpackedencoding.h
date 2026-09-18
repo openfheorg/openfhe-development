@@ -36,9 +36,11 @@
 #ifndef SRC_PKE_INCLUDE_ENCODING_COEFPACKEDENCODING_H_
 #define SRC_PKE_INCLUDE_ENCODING_COEFPACKEDENCODING_H_
 
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "encoding/plaintext.h"

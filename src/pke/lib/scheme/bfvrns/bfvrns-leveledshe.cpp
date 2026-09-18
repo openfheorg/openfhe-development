@@ -38,6 +38,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "scheme/bfvrns/bfvrns-leveledshe.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

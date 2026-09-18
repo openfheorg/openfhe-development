@@ -37,10 +37,13 @@
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
 
 #include <cmath>
+#include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

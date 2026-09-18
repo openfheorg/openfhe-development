@@ -33,6 +33,7 @@
   This file contains template instantiations for all math classes & functions using math be2
  */
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <vector>

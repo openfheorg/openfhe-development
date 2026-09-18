@@ -36,6 +36,8 @@
 #ifndef SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
 #define SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
 
+#include <cstdint>
+#include <initializer_list>
 #include <vector>
 
 #include "math/discretegaussiangenerator.h"
