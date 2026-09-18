@@ -1,17 +1,22 @@
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-# Manual run to reformat a file "foo.cpp": clang-format -i --style=file foo.cpp
+# The clang-format version is pinned in .pre-commit-config.yaml and downloaded
+# by pre-commit, so no system-wide install is needed. To reformat:
+#   pre-commit run clang-format --all-files          (whole tree)
+#   pre-commit run clang-format --files foo.cpp      (one file)
+# The pinned version is authoritative. An editor running its own clang-format
+# needs version 12 or newer to parse this file, and other versions format some
+# files differently; "pip3 install clang-format==18.1.8" gives an editor the
+# same binary the hook uses.
 #######################################################################
 BasedOnStyle: Google
 #######################################################################
 Language: Cpp
-# DisableFormat: true
+Standard: c++17
 AccessModifierOffset: -4
-# AlignArrayOfStructures: Right (enable this if clang-format-13 or newer is installed)
-AlignConsecutiveMacros: true
-AlignConsecutiveAssignments: true
-#AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveAssignments: Consecutive
 AlignEscapedNewlines: Left
-AlignOperands: true
+AlignOperands: Align
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
@@ -24,7 +29,7 @@ BreakBeforeTernaryOperators: false
 BreakStringLiterals: false
 ColumnLimit: 120
 DerivePointerAlignment: false
-#EmptyLineBeforeAccessModifier: true (enable this if clang-format-13 or newer is installed)
+EmptyLineBeforeAccessModifier: LogicalBlock
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
 PointerAlignment: Left

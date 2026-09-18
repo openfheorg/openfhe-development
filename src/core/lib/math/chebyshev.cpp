@@ -35,12 +35,13 @@
  */
 
 #include "math/chebyshev.h"
-#include "utils/exception.h"
 
 #include <cmath>
 #include <cstdint>
 #include <functional>
 #include <vector>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 

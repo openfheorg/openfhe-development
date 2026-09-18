@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
+
+#include <complex>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "encoding/plaintext-fwd.h"
@@ -39,13 +46,6 @@
 #include "key/publickey-fwd.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <complex>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -528,4 +528,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_

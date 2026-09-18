@@ -37,6 +37,10 @@
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
 
+#include <memory>
+#include <set>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 

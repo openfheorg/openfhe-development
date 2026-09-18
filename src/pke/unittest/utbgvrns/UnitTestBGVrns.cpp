@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -135,15 +135,15 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS& test
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM        = 512;
-constexpr uint32_t MULT_DEPTH      = 7;
-constexpr uint32_t MAX_RELIN_DEG   = 2;
-constexpr uint32_t DSIZE           = 0;
-constexpr uint32_t BV_DSIZE        = 4;
-constexpr uint32_t PTM             = 65537;
-constexpr uint32_t BATCH           = 16;
-constexpr uint32_t FIRST_MOD_SIZE  = 0;
-constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
+constexpr uint32_t RING_DIM       = 512;
+constexpr uint32_t MULT_DEPTH     = 7;
+constexpr uint32_t MAX_RELIN_DEG  = 2;
+constexpr uint32_t DSIZE          = 0;
+constexpr uint32_t BV_DSIZE       = 4;
+constexpr uint32_t PTM            = 65537;
+constexpr uint32_t BATCH          = 16;
+constexpr uint32_t FIRST_MOD_SIZE = 0;
+constexpr SecurityLevel SEC_LVL   = HEStd_NotSet;
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {

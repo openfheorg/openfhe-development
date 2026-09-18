@@ -36,6 +36,14 @@
 
 #define _USE_MATH_DEFINES
 
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <utility>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "math/hal/basicint.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
@@ -43,12 +51,6 @@
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 #include "cryptocontext.h"
-
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <limits>
-#include <random>
 
 using namespace lbcrypto;
 

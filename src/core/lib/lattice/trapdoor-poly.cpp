@@ -35,12 +35,13 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
+#include <memory>
+#include <utility>
+
+#include "lattice/trapdoor-impl.h"
 #include "lattice/dgsampling-impl.h"
 #include "lattice/lat-hal.h"
-#include "lattice/trapdoor-impl.h"
-
 #include "math/matrix-impl.h"
-
 #include "utils/debug.h"
 
 namespace lbcrypto {

@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __METADATA_SER_H__
-#define __METADATA_SER_H__
+#ifndef SRC_PKE_INCLUDE_METADATA_SER_H_
+#define SRC_PKE_INCLUDE_METADATA_SER_H_
 
 #include "metadata.h"
 #include "utils/serial.h"
@@ -38,4 +38,4 @@
 CEREAL_CLASS_VERSION(lbcrypto::Metadata, lbcrypto::Metadata::SerializedVersion());
 CEREAL_REGISTER_TYPE(lbcrypto::Metadata);
 
-#endif  // __METADATA_SER_H__
+#endif  // SRC_PKE_INCLUDE_METADATA_SER_H_

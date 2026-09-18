@@ -33,15 +33,16 @@
   unit tests for Proxy Re-Encryption. Demo software for multiparty proxy reencryption operations for various schemes
  */
 
-#include "cryptocontext.h"
-#include "gen-cryptocontext.h"
-#include "include/gtest/gtest.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
-
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <vector>
+
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "include/gtest/gtest.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
 using namespace lbcrypto;
 

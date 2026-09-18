@@ -33,15 +33,8 @@
   implementation of the integer lattice
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-
-#include "lattice/hal/default/poly.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
 
 #include <cmath>
 #include <limits>
@@ -50,6 +43,12 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/poly.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -601,4 +600,4 @@ inline PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_

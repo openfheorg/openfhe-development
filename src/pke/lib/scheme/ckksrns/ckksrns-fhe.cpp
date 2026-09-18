@@ -33,21 +33,7 @@
     #define PROFILE
 #endif
 
-#include "ciphertext.h"
-#include "cryptocontext.h"
-#include "key/evalkeyrelin.h"
-#include "key/privatekey.h"
-#include "lattice/lat-hal.h"
-#include "math/dftransform.h"
-#include "math/hal/basicint.h"
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
-#include "schemebase/base-scheme.h"
-#include "utils/diagnostic_output.h"
-#include "utils/exception.h"
-#include "utils/parallel.h"
-#include "utils/utilities.h"
 
 #include <algorithm>
 #include <cmath>
@@ -59,6 +45,21 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
+#include "ciphertext.h"
+#include "cryptocontext.h"
+#include "key/evalkeyrelin.h"
+#include "key/privatekey.h"
+#include "lattice/lat-hal.h"
+#include "math/dftransform.h"
+#include "math/hal/basicint.h"
+#include "schemebase/base-scheme.h"
+#include "utils/diagnostic_output.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
+#include "utils/utilities.h"
 
 namespace {
 // GetBigModulus() calculates the big modulus as the product of

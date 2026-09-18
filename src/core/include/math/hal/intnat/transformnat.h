@@ -33,13 +33,8 @@
  This file contains the linear transform interface functionality for the native math backend
 */
 
-#ifndef LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
-#define LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
-
-#include "math/hal/transform.h"
-#include "math/hal/intnat/mubintvecnat.h"
-
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_
 
 #include <map>
 #include <memory>
@@ -48,6 +43,10 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "math/hal/transform.h"
+#include "math/hal/intnat/mubintvecnat.h"
+#include "utils/inttypes.h"
 
 /**
  * @namespace intnat
@@ -698,4 +697,4 @@ EXTERN_TRANSFORM_TYPES
 EXTERN_TRANSFORM_TYPES32
 #endif
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_

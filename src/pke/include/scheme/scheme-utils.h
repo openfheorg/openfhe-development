@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _SCHEME_UTILS_H_
-#define _SCHEME_UTILS_H_
+#ifndef SRC_PKE_INCLUDE_SCHEME_SCHEME_UTILS_H_
+#define SRC_PKE_INCLUDE_SCHEME_SCHEME_UTILS_H_
 
 inline uint32_t ComputeNumLargeDigits(uint32_t numLargeDigits, uint32_t multDepth) {
     if (numLargeDigits > 0)
@@ -52,4 +52,4 @@ inline uint32_t ComputeNumLargeDigitsPRE(uint32_t numLargeDigits, uint32_t numHo
     return 1;
 }
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_SCHEME_UTILS_H_

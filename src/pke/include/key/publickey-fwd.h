@@ -32,8 +32,8 @@
  * It is a lightweight file to be included where we need the declaration of PublicKey only
  *
  */
-#ifndef __PUBLICKEY_FWD_H__
-#define __PUBLICKEY_FWD_H__
+#ifndef SRC_PKE_INCLUDE_KEY_PUBLICKEY_FWD_H_
+#define SRC_PKE_INCLUDE_KEY_PUBLICKEY_FWD_H_
 
 #include <memory>
 
@@ -47,4 +47,4 @@ using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
 
 }  // namespace lbcrypto
 
-#endif  // __PUBLICKEY_FWD_H__
+#endif  // SRC_PKE_INCLUDE_KEY_PUBLICKEY_FWD_H_

@@ -33,16 +33,16 @@
   Represents and defines parameters for plaintext encoding
  */
 
-#ifndef LBCRYPTO_ENCODING_ENCODINGPARAMS_H
-#define LBCRYPTO_ENCODING_ENCODINGPARAMS_H
-
-#include "lattice/lat-hal.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_
+#define SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_
 
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "lattice/lat-hal.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 class EncodingParamsImpl;
@@ -323,4 +323,4 @@ inline bool operator==(const std::shared_ptr<EncodingParamsImpl>& o1, const std:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_

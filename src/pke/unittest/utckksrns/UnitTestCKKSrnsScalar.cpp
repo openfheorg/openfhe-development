@@ -38,9 +38,6 @@
   more than the width of the intermediate type and large operands overflowed it silently.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -48,6 +45,9 @@
 #include <limits>
 #include <string>
 #include <vector>
+
+#include "openfhe.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 

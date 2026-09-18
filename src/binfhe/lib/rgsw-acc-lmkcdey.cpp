@@ -31,6 +31,8 @@
 
 #include "rgsw-acc-lmkcdey.h"
 
+#include <memory>
+
 #include "rgsw-acc-common.h"
 
 namespace lbcrypto {

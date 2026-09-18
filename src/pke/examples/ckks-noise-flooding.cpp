@@ -31,7 +31,7 @@
 
 /*
   Please see CKKS_NOISE_FLOODING.md for technical details on CKKS noise flooding for the INDCPA^D scenario.
-  
+
   Example for using CKKS with the experimental NOISE_FLOODING_DECRYPT mode. We do not recommend
   this mode for production yet. This experimental mode gives us equivalent security levels to
   BGV and BFV, but it requires the user to run all encrypted operations twice. The first iteration
@@ -48,6 +48,9 @@
   NOISE_FLOODING_DECRYPT mode, since the scaling mod size and first mod size affect the noise estimate for
   bootstrapping. We plan to add support for bootstrapping in NOISE_FLOODING_DECRYPT mode in a future release.
  */
+
+#include <iostream>
+#include <vector>
 
 #include "openfhe.h"
 
@@ -169,8 +172,8 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     parameters.SetRingDim(1 << 16);
 
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60;
 
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetScalingModSize(dcrtBits);

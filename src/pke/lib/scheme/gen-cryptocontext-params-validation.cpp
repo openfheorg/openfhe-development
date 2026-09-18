@@ -29,11 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "scheme/gen-cryptocontext-params-validation.h"
+
+#include <string>
+
 #include "schemerns/rns-modulus-limits.h"
 #include "utils/exception.h"
 #include "utils/utilities.h"
-
-#include <string>
 
 namespace lbcrypto {
 

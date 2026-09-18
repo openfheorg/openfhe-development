@@ -33,15 +33,14 @@
   matrix class implementations and type specific implementations
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
-#define LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
+
+#include <memory>
 
 #include "math/matrix-impl.h"
 #include "math/matrix-utils.h"
-
 #include "utils/parallel.h"
-
-#include <memory>
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations
@@ -169,4 +168,4 @@ Matrix<int32_t> ConvertToInt32(const Matrix<V>& input, const typename V::Integer
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_

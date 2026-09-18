@@ -33,13 +33,13 @@
   Represents and defines string-encoded plaintext objects in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
-#define SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
-
-#include "encoding/plaintext.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_STRINGENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_STRINGENCODING_H_
 
 #include <memory>
 #include <string>
+
+#include "encoding/plaintext.h"
 
 namespace lbcrypto {
 
@@ -131,4 +131,4 @@ protected:
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_ENCODING_STRINGENCODING_H_ */
+#endif  // SRC_PKE_INCLUDE_ENCODING_STRINGENCODING_H_

@@ -35,6 +35,10 @@
  */
 
 #include "math/distributiongenerator.h"
+
+#include <memory>
+#include <string>
+
 #include "utils/prng/blake2engine.h"
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"

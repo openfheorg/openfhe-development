@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
-#define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
-
-#include "cryptocontext-fwd.h"
-#include "encoding/encodingparams.h"
-#include "schemebase/base-cryptoparameters.h"
-#include "cryptocontextfactory.h"
+#ifndef SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
+#define SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
 
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "cryptocontext-fwd.h"
+#include "encoding/encodingparams.h"
+#include "schemebase/base-cryptoparameters.h"
+#include "cryptocontextfactory.h"
 
 namespace lbcrypto {
 
@@ -125,4 +125,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CRYPTOOBJECT_H_

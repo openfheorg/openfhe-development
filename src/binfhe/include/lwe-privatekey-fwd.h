@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __LWE_PRIVATEKEY_FWD_H__
-#define __LWE_PRIVATEKEY_FWD_H__
+#ifndef SRC_BINFHE_INCLUDE_LWE_PRIVATEKEY_FWD_H_
+#define SRC_BINFHE_INCLUDE_LWE_PRIVATEKEY_FWD_H_
 
 #include <memory>
 
@@ -42,4 +42,4 @@ using ConstLWEPrivateKey = const std::shared_ptr<const LWEPrivateKeyImpl>;
 
 }  // namespace lbcrypto
 
-#endif  // __LWE_PRIVATEKEY_FWD_H__
+#endif  // SRC_BINFHE_INCLUDE_LWE_PRIVATEKEY_FWD_H_

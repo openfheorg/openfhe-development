@@ -29,8 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "config_core.h"
 #include "utils/memory.h"
+
+#include "config_core.h"
 
 #if defined(__APPLE__)
     #include <malloc/malloc.h>
@@ -41,11 +42,12 @@
 #endif
 
 #if defined(WITH_NUMA_INTERLEAVE) && defined(__linux__) && defined(PARALLEL)
-    #include <cstdlib>
-    #include <cstring>
     #include <omp.h>
     #include <sys/syscall.h>
     #include <unistd.h>
+
+    #include <cstdlib>
+    #include <cstring>
 #endif
 
 namespace lbcrypto {

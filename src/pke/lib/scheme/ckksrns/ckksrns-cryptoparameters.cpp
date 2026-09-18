@@ -35,14 +35,14 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #define PROFILE
 
-#include "math/dftransform.h"
-
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 

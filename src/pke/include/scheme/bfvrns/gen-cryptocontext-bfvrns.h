@@ -33,14 +33,15 @@
  * API to generate BFVRNS crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BFVRNS_H__
-#define __GEN_CRYPTOCONTEXT_BFVRNS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_H_
 
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
+
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns-params.h"
+#include "scheme/gen-cryptocontext-params-validation.h"
 #include "scheme/bfvrns/bfvrns-scheme.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "scheme/gen-cryptocontext-params-validation.h"
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 
@@ -66,4 +67,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BFVRNS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_H_

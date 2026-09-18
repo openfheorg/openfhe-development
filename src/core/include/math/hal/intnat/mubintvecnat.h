@@ -33,16 +33,8 @@
  * This file contains the vector manipulation functionality for native integers
  */
 
-#ifndef LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
-#define LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
-
-#include "math/hal/basicint.h"
-#include "math/hal/intnat/ubintnat.h"
-#include "math/hal/vector.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_
 
 #include <algorithm>
 #include <initializer_list>
@@ -50,6 +42,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "math/hal/basicint.h"
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/vector.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 /**
  * @namespace intnat
@@ -792,4 +791,4 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
 #endif
 }  // namespace cereal
 
-#endif  // LBCRYPTO_MATH_HAL_INTNAT_MUBINTVECNAT_H
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_

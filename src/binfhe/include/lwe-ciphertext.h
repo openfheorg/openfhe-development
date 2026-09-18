@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CIPHERTEXT_H_
-#define _LWE_CIPHERTEXT_H_
-
-#include "lwe-ciphertext-fwd.h"
-#include "math/math-hal.h"
-#include "utils/serializable.h"
+#ifndef SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+#define SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
 
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lwe-ciphertext-fwd.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -158,4 +158,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CIPHERTEXT_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_

@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhecontext.h"
 #include "constants.h"
@@ -38,12 +44,6 @@
 #include "lwe-pke.h"
 #include "scheme/scheme-swch-params.h"
 #include "schemerns/rns-fhe.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -306,4 +306,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_

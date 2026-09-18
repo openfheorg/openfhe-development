@@ -29,6 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -39,8 +42,6 @@
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -151,7 +152,7 @@ void CRT_polynomial_mult_big_ring(const std::string& msg) {
     typename V::Integer bigModulus("1045889179649");
     typename V::Integer bigRoot("864331722621");
     typename V::Integer squareRootOfRoot("972");
-    uint32_t n        = GetTotient(m);
+    uint32_t n     = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
@@ -191,7 +192,7 @@ void CRT_polynomial_mult_big_ring_prime_cyclotomics(const std::string& msg) {
     typename V::Integer bigModulus("10889035741470030830827987437816582848513");
     typename V::Integer bigRoot("5879632101734955395039618227388702592012");
     typename V::Integer squareRootOfRoot("44343872016735288");
-    uint32_t n        = GetTotient(m);
+    uint32_t n     = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
@@ -268,7 +269,7 @@ void CRT_CHECK_big_ring(const std::string& msg) {
     typename V::Integer squareRootOfRoot("972");
     typename V::Integer bigModulus("1045889179649");
     typename V::Integer bigRoot("864331722621");
-    uint32_t n        = GetTotient(m);
+    uint32_t n     = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);

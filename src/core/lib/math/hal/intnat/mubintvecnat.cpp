@@ -33,10 +33,14 @@
   This code provides basic arithmetic functionality for vectors of native integers
  */
 
-#include "math/math-hal.h"
 #include "math/hal/intnat/mubintvecnat.h"
-#include "math/nbtheory-impl.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "math/math-hal.h"
+#include "math/nbtheory-impl.h"
 #include "utils/exception.h"
 
 namespace intnat {

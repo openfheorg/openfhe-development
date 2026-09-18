@@ -33,6 +33,11 @@
   Examples of threshold FHE for BGVrns, BFVrns and CKKS
  */
 
+#include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;

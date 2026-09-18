@@ -103,6 +103,13 @@ There are `.clang-format` files in the repository, the following setting will en
     "clang-format.language.cpp.enable": true,
     "clang-format.assumeFilename": ".clang-format",
 
+.. note:: ``clang-format`` output differs between versions, so the extension may
+   reformat code differently from the ``pre-commit`` hook, which uses a pinned
+   version. To make them agree, run ``pip3 install clang-format==18.1.8`` and
+   point the extension at that binary with ``"clang-format.executable"``. The
+   pinned version is the one recorded in ``.pre-commit-config.yaml``; the hook
+   is what decides whether a change is correctly formatted.
+
 
 .. _editor-vs-git:
 
@@ -282,4 +289,3 @@ CMAKE
 
 Developers that wish to use Eclipse for building OpenFHE can use the shell script ``configure/setup-eclipse-cmake.sh``.
 This script should be run in the users build tree. All command line arguments are passed to CMake. The shell configures the build tree so that it can be imported into Eclipse, and built directly from Eclipse.
-

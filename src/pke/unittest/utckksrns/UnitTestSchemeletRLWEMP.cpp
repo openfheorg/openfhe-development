@@ -36,13 +36,13 @@
   bootstrapping tests only feed non-negative coefficients, so the negative branch went untested.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-#include "schemelet/rlwe-mp.h"
-
 #include <cstdint>
 #include <limits>
 #include <vector>
+
+#include "openfhe.h"
+#include "gtest/gtest.h"
+#include "schemelet/rlwe-mp.h"
 
 using namespace lbcrypto;
 

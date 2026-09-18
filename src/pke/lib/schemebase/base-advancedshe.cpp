@@ -29,19 +29,21 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
-#include "key/privatekey.h"
-#include "math/nbtheory.h"
 #include "schemebase/base-advancedshe.h"
-#include "schemebase/base-scheme.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "utils/parallel.h"
 
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "schemebase/base-scheme.h"
+#include "cryptocontext.h"
+#include "key/privatekey.h"
+#include "math/nbtheory.h"
+#include "schemerns/rns-cryptoparameters.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 

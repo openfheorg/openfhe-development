@@ -29,6 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <string>
+
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 
@@ -145,8 +147,8 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
     cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
     uint32_t Q = 1 << 29;
 
-    int basic        = 4096;                                      // q
-    int factor       = 1 << int(std::log2(Q) - std::log2(basic)); // Q/q
+    int basic        = 4096;                                       // q
+    int factor       = 1 << int(std::log2(Q) - std::log2(basic));  // Q/q
     uint64_t p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
     uint64_t P       = p_basic * factor;
     auto st          = P / 2 - 3;
@@ -206,8 +208,8 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
     cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
     uint32_t Q = 1 << 29;
 
-    int basic        = 4096;                                      // q
-    int factor       = 1 << int(std::log2(Q) - std::log2(basic)); // Q/q
+    int basic        = 4096;                                       // q
+    int factor       = 1 << int(std::log2(Q) - std::log2(basic));  // Q/q
     uint64_t p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
     uint64_t P       = p_basic * factor;
     auto st          = P / 2 - 3;

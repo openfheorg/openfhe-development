@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
@@ -38,9 +42,6 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -220,7 +221,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::EVALUATION);
 
-    uint32_t m1               = 16;
+    uint32_t m1            = 16;
     NativeInteger modulus0 = 1152921504606846577;
     NativeInteger modulus1 = 1152921504606846097;
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -306,7 +307,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::COEFFICIENT);
 
-    uint32_t m1               = 16;
+    uint32_t m1            = 16;
     NativeInteger modulus0 = NativeInteger("1152921504606846577");
     NativeInteger modulus1 = NativeInteger("1152921504606846097");
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));

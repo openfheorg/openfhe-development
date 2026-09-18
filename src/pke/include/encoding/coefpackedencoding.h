@@ -33,15 +33,15 @@
   Represents and defines packing integers of plaintext objects into polynomial coefficients in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_
-#define SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_
-
-#include "encoding/plaintext.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_COEFPACKEDENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_COEFPACKEDENCODING_H_
 
 #include <initializer_list>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "encoding/plaintext.h"
 
 namespace lbcrypto {
 
@@ -156,4 +156,4 @@ public:
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_ */
+#endif  // SRC_PKE_INCLUDE_ENCODING_COEFPACKEDENCODING_H_

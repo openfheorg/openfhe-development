@@ -33,16 +33,15 @@
   This code provide a templated matrix implementation
  */
 
-#ifndef LBCRYPTO_INC_MATH_MATRIX_IMP_H
-#define LBCRYPTO_INC_MATH_MATRIX_IMP_H
-
-#include "math/matrix.h"
-
-#include "utils/exception.h"
-#include "utils/parallel.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_IMPL_H_
 
 #include <utility>
 #include <vector>
+
+#include "math/matrix.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -333,4 +332,4 @@ Matrix<Element> Matrix<Element>::MultByRandomVector(std::vector<int> ranvec) con
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_IMPL_H_

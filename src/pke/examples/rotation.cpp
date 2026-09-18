@@ -38,6 +38,7 @@
 #include <iostream>
 #include <iterator>
 #include <random>
+#include <vector>
 
 #include "openfhe.h"
 #include "math/math-hal.h"

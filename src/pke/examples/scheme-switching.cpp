@@ -33,10 +33,14 @@
   Examples for scheme switching between CKKS and FHEW and back, with intermediate computations
  */
 
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "binfhecontext.h"
 #include "openfhe.h"
-
-#include <algorithm>
 
 using namespace lbcrypto;
 

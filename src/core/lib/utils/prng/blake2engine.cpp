@@ -29,14 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "utils/prng/blake2engine.h"
-#include "utils/prng/blake2.h"
-#include "utils/diagnostic_output.h"
-#include "utils/exception.h"
-#include "utils/memory.h"
 
 #include <chrono>
 #include <random>
 #include <thread>
+
+#include "utils/prng/blake2.h"
+#include "utils/diagnostic_output.h"
+#include "utils/exception.h"
+#include "utils/memory.h"
 
 namespace default_prng {
 

@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_H
-
-#include "constants.h"
-#include "schemebase/base-cryptoparameters.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_
 
 #include <vector>
 #include <memory>
 #include <string>
+
+#include "schemebase/base-cryptoparameters.h"
+#include "constants.h"
 
 /**
  * @namespace lbcrypto
@@ -136,4 +136,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_

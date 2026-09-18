@@ -36,6 +36,8 @@
 #define PROFILE
 
 #include <iostream>
+#include <limits>
+#include <vector>
 
 #include "openfhe.h"
 #include "utils/parallel.h"

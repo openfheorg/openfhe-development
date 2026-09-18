@@ -30,16 +30,16 @@
 //==================================================================================
 #include "schemerns/rns-multiparty.h"
 
-#include "key/privatekey.h"
-#include "key/evalkeyrelin.h"
-#include "cryptocontext.h"
-#include "schemerns/rns-pke.h"
-
 #include <memory>
 #include <vector>
 #include <utility>
 #include <string>
 #include <cstring>
+
+#include "schemerns/rns-pke.h"
+#include "key/privatekey.h"
+#include "key/evalkeyrelin.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 

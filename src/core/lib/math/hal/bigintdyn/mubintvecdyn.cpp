@@ -33,21 +33,23 @@
   This file contains the cpp implementation of  mubintvec, a <vector> of ubint, with associated math operators
  */
 
+#include <algorithm>
+#include <initializer_list>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include "math/math-hal.h"
     #include "math/hal/bigintdyn/mubintvecdyn.h"
 
+    #include "math/math-hal.h"
     #include "utils/exception.h"
     #include "utils/inttypes.h"
     #include "utils/serializable.h"
 
 //    #include "time.h"
 //    #include <chrono>
-    #include <initializer_list>
-    #include <string>
-    #include <vector>
 
 namespace bigintdyn {
 

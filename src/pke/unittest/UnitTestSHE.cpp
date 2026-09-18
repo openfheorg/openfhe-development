@@ -33,14 +33,16 @@
   unit tests for the SHE capabilities
  */
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 

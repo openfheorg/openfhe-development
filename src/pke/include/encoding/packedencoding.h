@@ -33,12 +33,8 @@
   Represents and defines plaintext encodings in OpenFHE with packing capabilities
  */
 
-#ifndef LBCRYPTO_UTILS_PACKEDEXTENCODING_H
-#define LBCRYPTO_UTILS_PACKEDEXTENCODING_H
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-#include "utils/inttypes.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_
 
 #include <functional>
 #include <initializer_list>
@@ -47,6 +43,10 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -245,4 +245,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_

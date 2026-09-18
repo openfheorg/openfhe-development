@@ -33,19 +33,19 @@
   Operations for the representation of ciphertext in OpenFHE
  */
 
-#ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H
-#define LBCRYPTO_CRYPTO_CIPHERTEXT_H
-
-#include "ciphertext-fwd.h"
-#include "cryptoobject.h"
-#include "key/key.h"
-#include "metadata.h"
+#ifndef SRC_PKE_INCLUDE_CIPHERTEXT_H_
+#define SRC_PKE_INCLUDE_CIPHERTEXT_H_
 
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "ciphertext-fwd.h"
+#include "cryptoobject.h"
+#include "key/key.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 /**
@@ -632,4 +632,4 @@ Ciphertext<Element>& operator*=(Ciphertext<Element>& a, const Ciphertext<Element
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CIPHERTEXT_H_

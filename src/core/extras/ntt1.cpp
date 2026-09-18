@@ -43,7 +43,10 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <string>
 #include <vector>
+
 #include "openfhecore.h"
 #include "time.h"
 

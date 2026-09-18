@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <memory>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/field2n.h"
 #include "math/dftransform.h"
 #include "math/nbtheory.h"
 #include "utils/debug.h"
-
-#include <cmath>
-#include <memory>
-#include <vector>
 
 using namespace lbcrypto;
 

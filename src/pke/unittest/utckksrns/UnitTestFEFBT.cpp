@@ -34,13 +34,6 @@
   Unit tests for pure CKKS FE functional bootstrapping
  */
 
-#include "gtest/gtest.h"
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestUtils.h"
-
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -50,6 +43,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 

@@ -33,13 +33,8 @@
   Represents and defines plaintext objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_UTILS_PLAINTEXT_H
-#define LBCRYPTO_UTILS_PLAINTEXT_H
-
-#include "constants.h"
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext-fwd.h"
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
+#define SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
 
 #include <algorithm>
 #include <initializer_list>
@@ -48,6 +43,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "encoding/plaintext-fwd.h"
+#include "constants.h"
+#include "encoding/encodingparams.h"
+#include "scheme/scheme-id.h"
 
 namespace lbcrypto {
 
@@ -473,4 +473,4 @@ inline DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_

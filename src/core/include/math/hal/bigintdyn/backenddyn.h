@@ -35,23 +35,23 @@
   Configurable type of underlying integer (either 32 or 64 bit)
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
-        #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
-
-        #include "math/hal/bigintdyn/mubintvecdyn.h"  // rings of ubints
-        #include "math/hal/bigintdyn/ubintdyn.h"      // dynamically sized unsigned big integers or ubints
-        #include "math/hal/bigintdyn/transformdyn.h"  // transforms for dynamic
+    #include "math/hal/bigintdyn/mubintvecdyn.h"  // rings of ubints
+    #include "math/hal/bigintdyn/ubintdyn.h"      // dynamically sized unsigned big integers or ubints
+    #include "math/hal/bigintdyn/transformdyn.h"  // transforms for dynamic
 
 // Global alias for MATHBACKEND 4 Integer
 using M4Integer = bigintdyn::BigInteger;
 
 // Global alias for MATHBACKEND 4 Vector
 using M4Vector = bigintdyn::BigVector;
-
-    #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_ */
 #else
 using M4Integer = void;
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_

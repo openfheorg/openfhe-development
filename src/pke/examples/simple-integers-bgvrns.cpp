@@ -33,6 +33,9 @@
   Simple example for BGVrns (integer arithmetic)
  */
 
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;

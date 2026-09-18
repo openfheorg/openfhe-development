@@ -82,12 +82,12 @@
   failures were not CS precision losses but FA reference runs that happened to land high.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
+#include "openfhe.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 

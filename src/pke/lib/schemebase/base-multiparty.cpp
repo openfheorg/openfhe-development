@@ -29,15 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
-#include "key/evalkey.h"
-#include "key/evalkeyrelin.h"
-#include "key/privatekey.h"
-#include "key/publickey.h"
 #include "schemebase/base-multiparty.h"
-#include "schemebase/base-pke.h"
-#include "schemebase/base-scheme.h"
-#include "schemebase/rlwe-cryptoparameters.h"
 
 #include <iostream>
 #include <map>
@@ -45,6 +37,15 @@
 #include <set>
 #include <utility>
 #include <vector>
+
+#include "schemebase/base-pke.h"
+#include "schemebase/base-scheme.h"
+#include "cryptocontext.h"
+#include "key/evalkey.h"
+#include "key/evalkeyrelin.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "schemebase/rlwe-cryptoparameters.h"
 
 namespace lbcrypto {
 

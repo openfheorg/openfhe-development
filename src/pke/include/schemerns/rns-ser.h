@@ -33,8 +33,8 @@
   serialize ckks; include this in any app that needs to serialize this scheme
  */
 
-#ifndef __RNS_SER_H__
-#define __RNS_SER_H__
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_SER_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_SER_H_
 
 #include "schemerns/rns-scheme.h"
 #include "utils/serial.h"
@@ -46,4 +46,4 @@ CEREAL_REGISTER_TYPE(lbcrypto::FHERNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHEBase<DCRTPoly>, lbcrypto::FHERNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRLWE<DCRTPoly>, lbcrypto::CryptoParametersRNS);
 
-#endif  // __RNS_SER_H__
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_SER_H_

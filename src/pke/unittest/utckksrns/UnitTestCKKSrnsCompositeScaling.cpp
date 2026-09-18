@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestMetadataTest.h"
-#include "UnitTestUtils.h"
-
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestMetadataTest.h"
+#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 

@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PRE_H
-#define LBCRYPTO_CRYPTO_BASE_PRE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
+
+#include <vector>
+#include <memory>
 
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
 #include "key/evalkey-fwd.h"
 #include "utils/inttypes.h"
 #include "ciphertext-fwd.h"
-
-#include <vector>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -90,4 +90,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_

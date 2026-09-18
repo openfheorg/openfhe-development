@@ -29,10 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_PKE_H_
-#define _LWE_PKE_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_PKE_H_
+#define SRC_BINFHE_INCLUDE_LWE_PKE_H_
 
-#include "binfhe-constants.h"
+#include <memory>
+
 #include "lwe-ciphertext.h"
 #include "lwe-cryptoparameters.h"
 #include "lwe-keypair.h"
@@ -40,8 +41,7 @@
 #include "lwe-keyswitchkey32.h"
 #include "lwe-privatekey.h"
 #include "lwe-publickey.h"
-
-#include <memory>
+#include "binfhe-constants.h"
 
 namespace lbcrypto {
 
@@ -237,4 +237,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_LWE_PKE_H_

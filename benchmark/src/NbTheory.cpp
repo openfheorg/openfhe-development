@@ -34,11 +34,12 @@
  */
 
 #define _USE_MATH_DEFINES
-#include "lattice/lat-hal.h"
-
-#include "benchmark/benchmark.h"
-
 #include <iostream>
+#include <set>
+#include <string>
+
+#include "lattice/lat-hal.h"
+#include "benchmark/benchmark.h"
 
 using namespace lbcrypto;
 

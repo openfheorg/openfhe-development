@@ -36,18 +36,22 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
     #define _SECURE_SCL 0  // to speed up VS
 
-    #include "math/hal/basicint.h"
-    #include "math/math-hal.h"
     #include "math/hal/bigintntl/ubintntl.h"
 
     #include <fstream>
     #include <iostream>
     #include <sstream>
+
+    #include "math/hal/basicint.h"
+    #include "math/math-hal.h"
 
 namespace NTL {
 

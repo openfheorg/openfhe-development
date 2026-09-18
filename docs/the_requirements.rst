@@ -29,4 +29,3 @@
    sphinxcontrib-serializinghtml==1.1.5
    urllib3==1.26.9
    zipp==3.7.0
-

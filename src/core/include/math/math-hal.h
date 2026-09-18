@@ -33,8 +33,8 @@
   This file contains the functionality to switch between math backends
  */
 
-#ifndef LBCRYPTO_INC_MATH_HAL_H
-#define LBCRYPTO_INC_MATH_HAL_H
+#ifndef SRC_CORE_INCLUDE_MATH_MATH_HAL_H_
+#define SRC_CORE_INCLUDE_MATH_MATH_HAL_H_
 
 // use of MS VC is not permitted because of various incompatibilities
 #ifdef _MSC_VER
@@ -43,7 +43,6 @@
 
 #include "config_core.h"
 #include "version.h"
-
 #include "math/hal/vector.h"
 #include "math/hal/bigintbackend.h"
 #include "math/hal/nativeintbackend.h"
@@ -142,4 +141,4 @@ struct ArbTypedef<M6Vector> {
 template <typename VecType>
 using ChineseRemainderTransformArb = typename ArbTypedef<VecType>::type;
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_MATH_HAL_H_

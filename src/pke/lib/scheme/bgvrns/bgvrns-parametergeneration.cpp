@@ -35,13 +35,14 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
 
 #include <vector>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 
 namespace lbcrypto {
 
@@ -498,14 +499,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
             if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
                 newQBound += cryptoParamsBGVRNS->EstimateMultipartyFloodingLogQ();
             if (ksTech == HYBRID) {
-                double dcrtBitsEst    = (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0;
-                uint32_t numPrimesEst = (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size();
+                double dcrtBitsEst             = (moduliQ.size() > 1) ? std::log2(moduliQ[1].ConvertToDouble()) : 0;
+                uint32_t numPrimesEst          = (scalTech == FLEXIBLEAUTOEXT) ? moduliQ.size() - 1 : moduliQ.size();
                 bool isNoiseFloodingMultiparty = (multipartyMode == NOISE_FLOODING_MULTIPARTY);
                 if (isNoiseFloodingMultiparty)
                     numPrimesEst += NoiseFlooding::NUM_MODULI_MULTIPARTY;
                 auto hybridKSInfo = CryptoParametersRNS::EstimateLogP(
-                    numPartQ, std::log2(moduliQ[0].ConvertToDouble()),
-                    dcrtBitsEst,
+                    numPartQ, std::log2(moduliQ[0].ConvertToDouble()), dcrtBitsEst,
                     (scalTech == FLEXIBLEAUTOEXT) ? std::log2(moduliQ[moduliQ.size() - 1].ConvertToDouble()) : 0,
                     numPrimesEst, auxBits, scalTech, false, isNoiseFloodingMultiparty);
                 newQBound += std::get<0>(hybridKSInfo);

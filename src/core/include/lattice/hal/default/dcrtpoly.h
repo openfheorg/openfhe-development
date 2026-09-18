@@ -33,25 +33,23 @@
   Represents integer lattice elements with double-CRT
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_DCRTPOLY_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_DCRTPOLY_H
-
-#include "lattice/hal/default/ildcrtparams.h"
-#include "lattice/hal/default/poly.h"
-#include "lattice/hal/dcrtpoly-interface.h"
-
-#include "math/math-hal.h"
-#include "math/distrgen.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/parallel.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_
 
 #include <functional>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/dcrtpoly-interface.h"
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/hal/default/poly.h"
+#include "math/math-hal.h"
+#include "math/distrgen.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -473,4 +471,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_

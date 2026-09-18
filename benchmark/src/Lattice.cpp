@@ -36,14 +36,14 @@
 
 #define _USE_MATH_DEFINES
 
-#include "benchmark/benchmark.h"
-#include "lattice/lat-hal.h"
-#include "math/discreteuniformgenerator.h"
-
 #include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
+
+#include "benchmark/benchmark.h"
+#include "lattice/lat-hal.h"
+#include "math/discreteuniformgenerator.h"
 
 using namespace lbcrypto;
 

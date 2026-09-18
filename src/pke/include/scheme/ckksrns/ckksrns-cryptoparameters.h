@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_CRYPTOPARAMETERS_H
-
-#include "globals.h"
-#include "schemerns/rns-cryptoparameters.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_CRYPTOPARAMETERS_H_
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "globals.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -404,4 +404,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_CRYPTOPARAMETERS_H_

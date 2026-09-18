@@ -29,11 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_UTILITIES_H
-#define LBCRYPTO_UTILS_UTILITIES_H
-
-#include "config_core.h"
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
+#define SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
 
 #include <cmath>
 #include <climits>  // CHAR_BIT
@@ -41,6 +38,9 @@
 #include <limits>  // std::numeric_limits
 #include <string>
 #include <type_traits>  // std::is_integral
+
+#include "config_core.h"
+#include "utils/inttypes.h"
 
 /**
  * @namespace lbcrypto
@@ -165,4 +165,4 @@ inline bool isConvertableToNativeInt(double d) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_UTILITIES_H_

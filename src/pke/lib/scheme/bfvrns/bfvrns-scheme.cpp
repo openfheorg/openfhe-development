@@ -37,6 +37,9 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bfvrns/bfvrns-scheme.h"
 
+#include <memory>
+#include <string>
+
 namespace lbcrypto {
 
 void SchemeBFVRNS::Enable(PKESchemeFeature feature) {

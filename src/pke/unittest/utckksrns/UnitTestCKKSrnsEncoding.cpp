@@ -39,16 +39,16 @@
   wrapped into a different plaintext instead of being rejected.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
-
 #include <cmath>
 #include <complex>
 #include <cstddef>
 #include <limits>
 #include <string>
 #include <vector>
+
+#include "openfhe.h"
+#include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 
 using namespace lbcrypto;
 

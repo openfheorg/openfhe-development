@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
-
-#include "schemerns/rns-cryptoparameters.h"
-#include "globals.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 
 #include <string>
 #include <memory>
+
+#include "schemerns/rns-cryptoparameters.h"
+#include "globals.h"
 
 /**
  * @namespace lbcrypto
@@ -46,7 +46,7 @@ namespace lbcrypto {
 
 class CryptoParametersBGVRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
-    #define DISABLED_FOR_BGVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BGVRNS.");
+#define DISABLED_FOR_BGVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BGVRNS.");
 
 public:
     CryptoParametersBGVRNS() : CryptoParametersRNS() {}
@@ -124,4 +124,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_

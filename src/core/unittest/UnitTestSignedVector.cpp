@@ -36,17 +36,19 @@
   operand that is an exact multiple of the modulus was stored as the modulus itself.
 */
 
+#include <cstdint>
+#include <limits>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/nbtheory.h"
 #include "utils/utilities.h"
 #include "testdefs.h"
-
-#include <cstdint>
-#include <limits>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 

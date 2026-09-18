@@ -33,16 +33,17 @@
   framework for exceptions in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_UTILS_EXCEPTION_H_
-#define SRC_CORE_LIB_UTILS_EXCEPTION_H_
+#ifndef SRC_CORE_INCLUDE_UTILS_EXCEPTION_H_
+#define SRC_CORE_INCLUDE_UTILS_EXCEPTION_H_
 
-#include "utils/get-call-stack.h"
 #include <exception>
 #include <mutex>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "utils/get-call-stack.h"
 
 namespace lbcrypto {
 
@@ -102,7 +103,7 @@ public:
 // e.Rethrow();
 
 class OpenFHEException : public std::exception {
-// clang-format off
+    // clang-format off
     std::string m_errorDescription;
     std::string m_fileName;
     std::string m_funcName;
@@ -129,10 +130,10 @@ public:
           m_lineNumber(lineNumber),
           m_errorMessage(buildErrorMessage(m_fileName, m_funcName, m_lineNumber, m_errorDescription)),
           m_callStack(get_call_stack()) {}
-// clang-format on
+    // clang-format on
 
-    ~OpenFHEException() override = default;
-    OpenFHEException(const OpenFHEException&) = default;
+    ~OpenFHEException() override                         = default;
+    OpenFHEException(const OpenFHEException&)            = default;
     OpenFHEException& operator=(const OpenFHEException&) = default;
 
     const char* what() const noexcept override {
@@ -159,9 +160,8 @@ public:
     }
 };
 
-
 #define OPENFHE_THROW(desc) throw lbcrypto::OpenFHEException((desc), __FILE__, __func__, __LINE__)
 
 }  // namespace lbcrypto
 
-#endif /* SRC_CORE_LIB_UTILS_EXCEPTION_H_ */
+#endif  // SRC_CORE_INCLUDE_UTILS_EXCEPTION_H_

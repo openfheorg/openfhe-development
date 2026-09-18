@@ -33,15 +33,15 @@
   This file contains the interface for the transforms in each math backend
  */
 
-#ifndef LBCRYPTO_MATH_TRANSFORM_H
-#define LBCRYPTO_MATH_TRANSFORM_H
-
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
 
 #include <complex>
 #include <map>
 #include <utility>
 #include <vector>
+
+#include "utils/inttypes.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -280,4 +280,4 @@ private:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_

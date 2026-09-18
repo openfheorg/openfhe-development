@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEY_H
-#define LBCRYPTO_CRYPTO_KEY_EVALKEY_H
-
-#include "key/evalkey-fwd.h"
-#include "key/key.h"
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEY_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEY_H_
 
 #include <memory>
 #include <vector>
 #include <string>
+
+#include "key/evalkey-fwd.h"
+#include "key/key.h"
 
 /**
  * @namespace lbcrypto
@@ -164,4 +164,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEY_H_

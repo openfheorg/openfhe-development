@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CRYPTOPARAMETERS_H_
-#define _LWE_CRYPTOPARAMETERS_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+#define SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -237,4 +237,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CRYPTOPARAMETERS_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_

@@ -33,19 +33,8 @@
   Creates Represents integer lattice elements
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_H
-
-#include "lattice/hal/poly-interface.h"
-#include "lattice/hal/default/ildcrtparams.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/distrgen.h"
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_
 
 #include <functional>
 #include <limits>
@@ -53,6 +42,15 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/poly-interface.h"
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/hal/default/ilparams.h"
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -422,4 +420,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_

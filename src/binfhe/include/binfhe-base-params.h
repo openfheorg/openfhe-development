@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _BINFHE_BASE_PARAMS_H_
-#define _BINFHE_BASE_PARAMS_H_
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
@@ -42,12 +48,6 @@
 #include "rgsw-cryptoparameters.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -143,4 +143,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _BINFHE_BASE_PARAMS_H_
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_

@@ -33,6 +33,9 @@
   Example for FHEW with binary serialization
  */
 
+#include <iostream>
+#include <string>
+
 #include "binfhecontext-ser.h"
 
 using namespace lbcrypto;

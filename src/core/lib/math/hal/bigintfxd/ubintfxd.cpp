@@ -33,11 +33,16 @@
   This class provides a class for big integers
  */
 
+#include <functional>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
     #include "math/math-hal.h"
-
     #include "utils/exception.h"
     #include "utils/serializable.h"
 

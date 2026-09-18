@@ -37,19 +37,20 @@
   local CryptoContext handle alive.
 */
 
-#include "openfhe.h"
-#include "utils/memory.h"
-
-#include <iostream>
-
-using namespace lbcrypto;
-
 #include <cstddef>
+#include <iostream>
+#include <vector>
+
 #if defined(__GLIBC__)
     #include <malloc.h>
 #elif defined(__APPLE__)
     #include <malloc/malloc.h>
 #endif
+
+#include "openfhe.h"
+#include "utils/memory.h"
+
+using namespace lbcrypto;
 
 std::size_t HeapInUseBytes() {
 #if defined(__GLIBC__)

@@ -33,21 +33,21 @@
   This file contains the linear transform interface functionality for the fixed math backend
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H_
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H
-        #define LBCRYPTO_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H
+    #include <map>
+    #include <unordered_map>
+    #include <mutex>
+    #include <vector>
+    #include <utility>
 
-        #include <map>
-        #include <unordered_map>
-        #include <mutex>
-        #include <vector>
-        #include <utility>
-
-        #include "math/hal/transform.h"
-        #include "math/hal/bigintfxd/ubintfxd.h"
-        #include "math/hal/bigintfxd/mubintvecfxd.h"
+    #include "math/hal/transform.h"
+    #include "math/hal/bigintfxd/ubintfxd.h"
+    #include "math/hal/bigintfxd/mubintvecfxd.h"
 
 /**
  * @namespace bigintfxd
@@ -618,6 +618,6 @@ extern template class bigintfxd::ChineseRemainderTransformFTTFxd<bigintfxd::BigV
 extern template class bigintfxd::BluesteinFFTFxd<bigintfxd::BigVector>;
 extern template class bigintfxd::ChineseRemainderTransformArbFxd<bigintfxd::BigVector>;
 
-    #endif
-
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_TRANSFORMFXD_H_

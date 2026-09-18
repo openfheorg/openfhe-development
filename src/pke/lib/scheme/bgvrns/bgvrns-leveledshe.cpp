@@ -35,9 +35,10 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
-#include "ciphertext.h"
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "scheme/bgvrns/bgvrns-leveledshe.h"
+
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "ciphertext.h"
 
 namespace lbcrypto {
 

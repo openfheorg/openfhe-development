@@ -37,6 +37,10 @@ Example for CKKS bootstrapping
 
 #define PROFILE
 
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace std;
@@ -87,12 +91,12 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDMANUAL;
-    uint32_t dcrtBits               = 78;
-    uint32_t firstMod               = 89; /*firstMod*/
+    uint32_t dcrtBits            = 78;
+    uint32_t firstMod            = 89; /*firstMod*/
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60; /*firstMod*/
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60; /*firstMod*/
 #endif
 
     // computes how many levels are needed for
@@ -255,12 +259,12 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDMANUAL;
-    uint32_t dcrtBits               = 78;
-    uint32_t firstMod               = 89; /*firstMod*/
+    uint32_t dcrtBits            = 78;
+    uint32_t firstMod            = 89; /*firstMod*/
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60; /*firstMod*/
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60; /*firstMod*/
 #endif
 
     // computes how many levels are needed for

@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
@@ -38,8 +42,6 @@
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 

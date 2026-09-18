@@ -29,16 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_BGVRNS_SCHEME_H
-
-#include "schemerns/rns-scheme.h"
-
-#include "scheme/bgvrns/bgvrns-parametergeneration.h"
-#include "utils/serializable.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
 
 #include <string>
 #include <memory>
+
+#include "scheme/bgvrns/bgvrns-parametergeneration.h"
+#include "schemerns/rns-scheme.h"
+#include "utils/serializable.h"
 
 /**
  * @namespace lbcrypto
@@ -80,4 +79,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_

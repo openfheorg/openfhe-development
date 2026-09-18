@@ -33,19 +33,18 @@
   matrix strassen operations
  */
 
-#ifndef LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
-#define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
-
-#include "lattice/lat-hal.h"
-
-#include "utils/exception.h"
-#include "utils/parallel.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
 
 #include <functional>
 #include <memory>
 #include <ostream>
 #include <utility>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -641,4 +640,4 @@ inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(MatrixStrassen<int32_t
                                                           const std::shared_ptr<ILParams> params);
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_

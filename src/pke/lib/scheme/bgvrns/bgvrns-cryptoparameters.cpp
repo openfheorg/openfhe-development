@@ -37,6 +37,8 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 
+#include <vector>
+
 namespace lbcrypto {
 
 // Precomputation of CRT tables encryption, decryption, and  homomorphic
@@ -144,7 +146,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 }
 
 uint64_t CryptoParametersBGVRNS::FindAuxPrimeStep() const {
-    size_t n               = GetElementParams()->GetRingDimension();
+    size_t n                  = GetElementParams()->GetRingDimension();
     uint32_t plaintextModulus = GetPlaintextModulus();
     uint32_t cyclOrder        = 2 * n;
     uint32_t pow2ptm          = 1;

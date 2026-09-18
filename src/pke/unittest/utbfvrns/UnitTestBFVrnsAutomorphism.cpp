@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
@@ -36,10 +41,6 @@
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <algorithm>
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -63,7 +64,7 @@ const std::vector<int64_t> vector10{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
 const std::vector<uint32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
 const uint32_t invalidIndexAutomorphism = 4;
-const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
+const int64_t vector8Sum                = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 enum TEST_ESTIMATED_RESULT {
     SUCCESS,

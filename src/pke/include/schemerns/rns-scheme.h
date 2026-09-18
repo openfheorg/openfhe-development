@@ -29,14 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_RNS_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_SCHEME_H_
 
-#include "constants.h"
-#include "keyswitch/keyswitch-bv.h"
-#include "keyswitch/keyswitch-hybrid.h"
-#include "lattice/lat-hal.h"
-#include "schemebase/base-scheme.h"
+#include <memory>
+#include <string>
+
 #include "schemerns/rns-cryptoparameters.h"
 #include "schemerns/rns-parametergeneration.h"
 #include "schemerns/rns-pke.h"
@@ -44,10 +42,12 @@
 #include "schemerns/rns-leveledshe.h"
 #include "schemerns/rns-advancedshe.h"
 #include "schemerns/rns-multiparty.h"
+#include "constants.h"
+#include "keyswitch/keyswitch-bv.h"
+#include "keyswitch/keyswitch-hybrid.h"
+#include "lattice/lat-hal.h"
+#include "schemebase/base-scheme.h"
 #include "utils/exception.h"
-
-#include <memory>
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -97,4 +97,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_SCHEME_H_

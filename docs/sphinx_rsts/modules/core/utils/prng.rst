@@ -30,7 +30,7 @@ Building and testing an external PRNG engine (existing example)
       make
 
 4. Optionally install the shared object **libPRNGengine.so** you have just built.
-   
+
    * for the default install location, run:
      ::
         sudo make install
@@ -43,13 +43,13 @@ Building and testing an external PRNG engine (existing example)
      ::
         make
         make install
-   
+
 5. Run `the example <https://github.com/openfheorg/openfhe-development/tree/main/src/core/examples/external-prng.cpp>`_ to test the engine. It calls PseudoRandomNumberGenerator::InitPRNGEngine() which initializes PRNG either with the built-in engine or a custom one.
 
    * If executed without arguments, the example calls InitPRNGEngine() which initializes PRNG with the built-in engine:
      ::
         ./build/bin/examples/core/external-prng
-   
+
      and the output should be:
      ::
         ==== Using internal PRNG
@@ -65,7 +65,7 @@ Building and testing an external PRNG engine (existing example)
         ==== Using external PRNG
         InitPRNGEngine: using external PRNG
 
-.. note:: If PseudoRandomNumberGenerator::InitPRNGEngine() initializes PRNG with a custom engine, it always notifies the user by producing a trace **"InitPRNGEngine: using external PRNG"**. There is no trace for the built-in PRNG engine. InitPRNGEngine() always throws an exception if it fails. 
+.. note:: If PseudoRandomNumberGenerator::InitPRNGEngine() initializes PRNG with a custom engine, it always notifies the user by producing a trace **"InitPRNGEngine: using external PRNG"**. There is no trace for the built-in PRNG engine. InitPRNGEngine() always throws an exception if it fails.
 
 
 Creating custom external PRNG engine using the existing example
@@ -84,13 +84,13 @@ You can create your own PRNG engine and use it with OpenFHE by following the ste
       src/lib/blake2engine.cpp
 
 4. Create a new class similar to Blake2Engine (use the code in blake2engine.h/blake2engine.cpp as an example), following the requirements below:
-   
+
    * the class PRNG defined in prng.h must be used as the base class for the new class. The file prng.h is not allowed to be changed.
 
    * rename blake2engine.h and blake2engine.cpp with the name of your engine.
 
    * **only two public member functions** should be in the new class: a trivial **constructor with 2 input parameters** (seed array and counter) and **operator()** providing similar functionality as Blake2Engine does, which is generating numbers.
-   
+
    * create extern "C" function **createEngineInstance()** returning a dynamically allocated object of the new class. OpenFHE finds this function by name using dlsym(), so you may not change the name.
 
 5. Follow `the instructions above <#for_existing_example>`_ to build and test your new PRNG.

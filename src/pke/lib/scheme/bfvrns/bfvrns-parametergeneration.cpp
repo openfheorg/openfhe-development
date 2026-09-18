@@ -35,13 +35,14 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
-#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
-#include "scheme/scheme-utils.h"
 
 #include <vector>
 #include <memory>
 #include <string>
+
+#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 

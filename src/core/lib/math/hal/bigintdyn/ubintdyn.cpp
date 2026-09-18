@@ -35,18 +35,19 @@
   Currently implementation based on uint32_t and uint64_t is supported. a native double the base integer size is also needed.
  */
 
+#include <utility>
+
 #include "config_core.h"
 #ifdef WITH_BE4
-
-    #include "math/math-hal.h"
-
-    #include "utils/exception.h"
-    #include "utils/inttypes.h"
-    #include "utils/serializable.h"
 
     #include <iostream>
     #include <string>
     #include <vector>
+
+    #include "math/math-hal.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 namespace bigintdyn {
 

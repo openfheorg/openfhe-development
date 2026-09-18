@@ -29,10 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <random>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "binfhecontext.h"
-
-#include <random>
 
 using namespace lbcrypto;
 

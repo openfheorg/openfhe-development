@@ -39,15 +39,15 @@
                Cons : need to double dimension,N, or reduce size of ciphertext modulus, Q, by a factor of 2
 
 */
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_HYBRID_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_HYBRID_H
-
-#include "keyswitch/keyswitch-rns.h"
-#include "schemebase/rlwe-cryptoparameters.h"
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_
 
 #include <string>
 #include <vector>
 #include <memory>
+
+#include "keyswitch/keyswitch-rns.h"
+#include "schemebase/rlwe-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -128,4 +128,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_

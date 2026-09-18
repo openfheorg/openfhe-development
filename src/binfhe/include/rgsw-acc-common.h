@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACC_COMMON_H_
-#define _RGSW_ACC_COMMON_H_
-
-#include "rgsw-cryptoparameters.h"
-#include "utils/parallel.h"
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_
 
 #include <memory>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+#include "rgsw-cryptoparameters.h"
+#include "utils/parallel.h"
 
 // Accumulator and key-generation bodies shared between the 64-bit accumulators and the 32-bit
 // internal path, templated on the polynomial type so each algorithm exists exactly once. P's
@@ -621,4 +621,4 @@ void LMKCDEYAccSchedule(NativeInteger q, uint32_t N, uint32_t numAutoKeys, const
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACC_COMMON_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_

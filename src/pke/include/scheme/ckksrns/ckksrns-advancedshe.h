@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_ADVANCEDSHE_H
-
-#include "schemerns/rns-advancedshe.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_
 
 #include <complex>
 #include <string>
 #include <vector>
 #include <memory>
+
+#include "schemerns/rns-advancedshe.h"
 
 /**
  * @namespace lbcrypto
@@ -183,4 +183,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_

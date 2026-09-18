@@ -34,17 +34,17 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
-#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
-
-#include "math/discretegaussiangenerator.h"
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
 
 #include <algorithm>
 #include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "math/discretegaussiangenerator.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -355,4 +355,4 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmBDouble(PRNG& g, int32_t k
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_

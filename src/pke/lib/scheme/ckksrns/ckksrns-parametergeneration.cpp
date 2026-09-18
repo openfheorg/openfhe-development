@@ -35,7 +35,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #define PROFILE
 
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
 
 #include <vector>
@@ -43,6 +42,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <string>
 #include <unordered_set>
 #include <iostream>
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 namespace lbcrypto {
 

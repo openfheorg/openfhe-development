@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 

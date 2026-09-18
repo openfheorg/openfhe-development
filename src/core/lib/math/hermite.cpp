@@ -34,13 +34,14 @@
  */
 
 #include "math/hermite.h"
-#include "utils/exception.h"
 
 #include <cmath>
 #include <complex>
 #include <cstdint>
 #include <functional>
 #include <vector>
+
+#include "utils/exception.h"
 
 static bool IsNotEqualZero(std::complex<double> v) {
     // TODO: tune this delta value during the fbt refactor

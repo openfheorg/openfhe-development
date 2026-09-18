@@ -34,6 +34,10 @@
   an example of how to use. this in a "client-server" setup
  */
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 // header files needed for serialization

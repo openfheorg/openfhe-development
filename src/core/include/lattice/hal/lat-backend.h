@@ -33,8 +33,8 @@
   Defines aliases for the lattice default backend
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_LAT_BACKEND_H
-#define LBCRYPTO_INC_LATTICE_HAL_LAT_BACKEND_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_LAT_BACKEND_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_LAT_BACKEND_H_
 
 #define ILPARAMS_IMPLEMENTATION     "lattice/hal/default/ilparams.h"
 #define ILDCRTPARAMS_IMPLEMENTATION "lattice/hal/default/ildcrtparams.h"
@@ -100,4 +100,4 @@ using M6DCRTPoly   = void;
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_LAT_BACKEND_H_

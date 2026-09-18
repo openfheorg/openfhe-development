@@ -35,6 +35,8 @@
 
 #include "utils/utilities.h"
 
+#include <string>
+
 namespace lbcrypto {
 
 // auxiliary function to replace a specific character "in" with another character "out"

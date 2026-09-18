@@ -33,17 +33,10 @@
   This code provides number theory utilities
  */
 
-#ifndef LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
-#define LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
+#ifndef SRC_CORE_INCLUDE_MATH_NBTHEORY_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_NBTHEORY_IMPL_H_
 
 #define _USE_MATH_DEFINES
-
-#include "math/distributiongenerator.h"
-#include "math/nbtheory.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
 
 #include <cmath>
 #include <limits>
@@ -51,6 +44,12 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include "math/nbtheory.h"
+#include "math/distributiongenerator.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -512,4 +511,4 @@ IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename 
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_NBTHEORY_IMPL_H_

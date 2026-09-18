@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_EVAL_KEY_H_
-#define _RGSW_EVAL_KEY_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_
+#define SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
@@ -41,12 +47,6 @@
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -163,4 +163,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_EVAL_KEY_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_

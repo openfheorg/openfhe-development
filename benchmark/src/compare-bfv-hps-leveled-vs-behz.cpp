@@ -36,17 +36,17 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
+
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 #include "cryptocontext.h"
-
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
 
 using namespace lbcrypto;
 

@@ -33,10 +33,11 @@
   Hash utilities
  */
 
-#ifndef _SRC_LIB_UTILS_HASHUTIL_H
-#define _SRC_LIB_UTILS_HASHUTIL_H
+#ifndef SRC_CORE_INCLUDE_UTILS_HASHUTIL_H_
+#define SRC_CORE_INCLUDE_UTILS_HASHUTIL_H_
 
 #include <utils/exception.h>
+
 #include <string>
 #include <vector>
 
@@ -73,4 +74,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_HASHUTIL_H_

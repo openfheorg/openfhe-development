@@ -31,13 +31,14 @@
 
 #define PROFILE
 
-#include "math/dftransform.h"
 #include "schemerns/rns-cryptoparameters.h"
 
 #include <vector>
 #include <memory>
 #include <utility>
 #include <string>
+
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 namespace {

@@ -33,24 +33,22 @@
   Defines an interface that any DCRT Polynomial implmentation must implement in order to work in OpenFHE.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_POLYINTERFACE_H
-#define LBCRYPTO_INC_LATTICE_HAL_POLYINTERFACE_H
-
-#include "lattice/ilelement.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/math-hal.h"
-#include "math/distrgen.h"
-#include "math/nbtheory.h"
-
-#include "utils/inttypes.h"
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_
 
 #include <functional>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/ilelement.h"
+#include "lattice/hal/default/ilparams.h"
+#include "math/math-hal.h"
+#include "math/distrgen.h"
+#include "math/nbtheory.h"
+#include "utils/inttypes.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -707,4 +705,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_

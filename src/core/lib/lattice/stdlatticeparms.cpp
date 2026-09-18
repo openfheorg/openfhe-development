@@ -35,13 +35,13 @@
 
 #include "lattice/stdlatticeparms.h"
 
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
 #include <ostream>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 

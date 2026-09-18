@@ -33,8 +33,8 @@
   This code contains the discrete fourier transform definitions
  */
 
-#ifndef LBCRYPTO_INC_MATH_DFTRANSFORM_H
-#define LBCRYPTO_INC_MATH_DFTRANSFORM_H
+#ifndef SRC_CORE_INCLUDE_MATH_DFTRANSFORM_H_
+#define SRC_CORE_INCLUDE_MATH_DFTRANSFORM_H_
 
 #include <complex>
 #include <cstdint>
@@ -142,4 +142,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_DFTRANSFORM_H_

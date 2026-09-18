@@ -29,11 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
 #include "schemerns/rns-leveledshe.h"
 
 #include <memory>
 #include <vector>
+
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 

@@ -1,7 +1,7 @@
 #!/bin/bash
-# 
+#
 # This script can be used to install all of the requistes for the Linux Platform
-# 
+#
 
 # run update before installing every package
 

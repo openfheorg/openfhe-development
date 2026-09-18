@@ -40,8 +40,8 @@
   used by the application. This allows sinks without std::cerr / std::cout.
 */
 
-#ifndef __DIAGNOSTIC_OUTPUT_H__
-#define __DIAGNOSTIC_OUTPUT_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_DIAGNOSTIC_OUTPUT_H_
+#define SRC_CORE_INCLUDE_UTILS_DIAGNOSTIC_OUTPUT_H_
 
 #include <ostream>
 
@@ -68,4 +68,4 @@ std::ostream& OpenFHEOutStream();
 #define OPENFHE_DIAGNOSTIC_ERR (::lbcrypto::internal_diagnostics::OpenFHEErrStream())
 #define OPENFHE_DIAGNOSTIC_OUT (::lbcrypto::internal_diagnostics::OpenFHEOutStream())
 
-#endif  // __DIAGNOSTIC_OUTPUT_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_DIAGNOSTIC_OUTPUT_H_

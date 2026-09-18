@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _CKKSRNS_UTILS_H_
-#define _CKKSRNS_UTILS_H_
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_UTILS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_UTILS_H_
 
-#include "utils/exception.h"
+#include <stdint.h>
 
 #include <complex>
 #include <memory>
-#include <stdint.h>
 #include <vector>
+
+#include "utils/exception.h"
 
 /*
  * Subroutines used by the linear transformation homomorphic capability
@@ -306,4 +307,4 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_UTILS_H_

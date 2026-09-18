@@ -31,10 +31,10 @@
 
 #include "rgsw-acc-cggi.h"
 
-#include "rgsw-acc-common.h"
-
 #include <memory>
 #include <vector>
+
+#include "rgsw-acc-common.h"
 
 namespace lbcrypto {
 

@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_PUBLICKEY_H_
-#define _LWE_PUBLICKEY_H_
-
-#include "lwe-publickey-fwd.h"
-#include "math/math-hal.h"
-#include "utils/serializable.h"
+#ifndef SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_
+#define SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lwe-publickey-fwd.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -141,4 +141,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_PUBLICKEY_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_

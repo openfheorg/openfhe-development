@@ -35,6 +35,8 @@
 
 #include "encoding/stringencoding.h"
 
+#include <string>
+
 namespace lbcrypto {
 
 static const size_t charPtm      = (1 << 8);

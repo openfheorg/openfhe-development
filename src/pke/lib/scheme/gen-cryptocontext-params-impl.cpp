@@ -33,12 +33,13 @@
   Definitions for scheme parameter default class
  */
 
+#include <ostream>
+#include <string>
+#include <vector>
+
 #include "scheme/gen-cryptocontext-params.h"
 #include "scheme/gen-cryptocontext-params-defaults.h"
 #include "utils/exception.h"
-
-#include <string>
-#include <ostream>
 
 namespace lbcrypto {
 

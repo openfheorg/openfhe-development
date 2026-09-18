@@ -29,14 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemeswitching-data-serializer.h"
+
+#include <filesystem>
+#include <string>
+#include <vector>
+
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "schemeswitching-data-serializer.h"
-
-#include <filesystem>
-#include <vector>
 
 // includes for getProgramPath()
 #if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))

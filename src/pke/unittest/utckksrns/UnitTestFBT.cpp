@@ -29,6 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <chrono>
+#include <complex>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <numeric>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -42,19 +55,6 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <algorithm>
-#include <chrono>
-#include <complex>
-#include <functional>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <numeric>
-#include <ostream>
-#include <string>
-#include <utility>
-#include <vector>
 
 // Define BENCH below to enable more fine-grained benchmarking.
 // The benchmarks using SPARSE_TERNARY distribution correspond exactly to Tables 2 and A.3 in

@@ -33,18 +33,18 @@
   Scheme parameter default class
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_PARAMS_H__
-#define __GEN_CRYPTOCONTEXT_PARAMS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_
+#define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_
+
+#include <iosfwd>
+#include <string>
+#include <vector>
 
 #include "scheme/scheme-id.h"
 #include "utils/inttypes.h"
 #include "constants.h"
 #include "lattice/constants-lattice.h"
 #include "lattice/stdlatticeparms.h"
-
-#include <iosfwd>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -468,4 +468,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_PARAMS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_

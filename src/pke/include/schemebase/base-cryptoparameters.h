@@ -28,15 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_
+
+#include <memory>
+#include <string>
 
 #include "encoding/encodings.h"
 #include "encoding/plaintext.h"
 #include "utils/serializable.h"
-
-#include <memory>
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -232,4 +232,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_

@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __DECRYPT_RESULT_H__
-#define __DECRYPT_RESULT_H__
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_
 
 #include "utils/inttypes.h"
 #include "lattice/lat-hal.h"
@@ -86,4 +86,4 @@ struct DecryptResult {
 
 }  // namespace lbcrypto
 
-#endif  // __DECRYPT_RESULT_H__
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_

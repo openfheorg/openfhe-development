@@ -33,15 +33,15 @@
   Examples for functional bootstrapping for RLWE ciphertexts using CKKS.
  */
 
-#include "math/hermite.h"
-#include "openfhe.h"
-#include "schemelet/rlwe-mp.h"
-
 #include <algorithm>
 #include <functional>
 #include <iostream>
 #include <utility>
 #include <vector>
+
+#include "math/hermite.h"
+#include "openfhe.h"
+#include "schemelet/rlwe-mp.h"
 
 using namespace lbcrypto;
 

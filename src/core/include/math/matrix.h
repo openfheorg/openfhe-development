@@ -33,20 +33,8 @@
   This code provide a templated matrix implementation
  */
 
-#ifndef LBCRYPTO_MATH_MATRIX_H
-#define LBCRYPTO_MATH_MATRIX_H
-
-#include "lattice/lat-hal.h"
-
-#include "math/distrgen.h"
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/inttypes.h"
-#include "utils/memory.h"
-#include "utils/parallel.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_H_
 
 #include <cmath>
 #include <functional>
@@ -55,6 +43,16 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/inttypes.h"
+#include "utils/memory.h"
+#include "utils/parallel.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -878,4 +876,4 @@ Matrix<Element> SplitInt64AltIntoElements(Matrix<int64_t> const& other, size_t n
     }
 
 }  // namespace lbcrypto
-#endif  // LBCRYPTO_MATH_MATRIX_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_H_

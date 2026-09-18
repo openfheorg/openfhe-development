@@ -31,8 +31,8 @@
 /*
  * It is a lightweight file to be included where we need the declaration of Ciphertext only
  */
-#ifndef __CIPHERTEXT_FWD_H__
-#define __CIPHERTEXT_FWD_H__
+#ifndef SRC_PKE_INCLUDE_CIPHERTEXT_FWD_H_
+#define SRC_PKE_INCLUDE_CIPHERTEXT_FWD_H_
 
 #include <cstdint>
 #include <memory>
@@ -93,4 +93,4 @@ struct seriesPowers {
 
 }  // namespace lbcrypto
 
-#endif  // __CIPHERTEXT_FWD_H__
+#endif  // SRC_PKE_INCLUDE_CIPHERTEXT_FWD_H_

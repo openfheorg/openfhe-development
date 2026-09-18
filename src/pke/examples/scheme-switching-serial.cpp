@@ -35,6 +35,15 @@
   2 separate entities
  */
 
+#include <unistd.h>
+
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "openfhe.h"
 #include "binfhecontext.h"
 
@@ -44,14 +53,6 @@
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "schemeswitching-data-serializer.h"
-
-#include <iomanip>
-#include <tuple>
-#include <unistd.h>
-#include <string>
-#include <vector>
-#include <memory>
-#include <iostream>
 
 using namespace lbcrypto;
 

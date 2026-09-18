@@ -29,6 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "config_core.h"
 #include "cryptocontext.h"
@@ -37,8 +39,6 @@
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-
-#include <vector>
 
 using namespace lbcrypto;
 

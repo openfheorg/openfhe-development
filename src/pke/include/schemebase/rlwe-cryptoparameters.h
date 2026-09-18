@@ -33,8 +33,8 @@
   ring-learn-with-errors functionality
  */
 
-#ifndef LBCRYPTO_RLWE_CRYPTOPARAMETERS_H
-#define LBCRYPTO_RLWE_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_RLWE_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_RLWE_CRYPTOPARAMETERS_H_
 
 #include <memory>
 #include <string>
@@ -106,8 +106,8 @@ public:
    * @param noiseScale used in HRA-secure PRE
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
-                         float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, uint32_t digitSize,
-                         int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
+                         float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel,
+                         uint32_t digitSize, int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                          ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
                          ExecutionMode executionMode             = EXEC_EVALUATION,
                          DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
@@ -573,15 +573,13 @@ protected:
             return false;
 
         return CryptoParametersBase<Element>::CompareTo(rhs) &&
-               m_distributionParameter == el->m_distributionParameter &&
-               m_assuranceMeasure == el->m_assuranceMeasure && m_noiseScale == el->m_noiseScale &&
-               m_digitSize == el->m_digitSize && m_noiseEstimate == el->m_noiseEstimate &&
-               m_multiplicativeDepth == el->m_multiplicativeDepth && m_evalAddCount == el->m_evalAddCount &&
-               m_keySwitchCount == el->m_keySwitchCount && m_PRENumHops == el->m_PRENumHops &&
-               m_secretKeyDist == el->m_secretKeyDist &&
-               m_stdLevel == el->m_stdLevel && m_maxRelinSkDeg == el->m_maxRelinSkDeg &&
-               m_PREMode == el->m_PREMode && m_multipartyMode == el->m_multipartyMode &&
-               m_executionMode == el->m_executionMode &&
+               m_distributionParameter == el->m_distributionParameter && m_assuranceMeasure == el->m_assuranceMeasure &&
+               m_noiseScale == el->m_noiseScale && m_digitSize == el->m_digitSize &&
+               m_noiseEstimate == el->m_noiseEstimate && m_multiplicativeDepth == el->m_multiplicativeDepth &&
+               m_evalAddCount == el->m_evalAddCount && m_keySwitchCount == el->m_keySwitchCount &&
+               m_PRENumHops == el->m_PRENumHops && m_secretKeyDist == el->m_secretKeyDist &&
+               m_stdLevel == el->m_stdLevel && m_maxRelinSkDeg == el->m_maxRelinSkDeg && m_PREMode == el->m_PREMode &&
+               m_multipartyMode == el->m_multipartyMode && m_executionMode == el->m_executionMode &&
                m_floodingDistributionParameter == el->m_floodingDistributionParameter &&
                m_statisticalSecurity == el->m_statisticalSecurity &&
                m_numAdversarialQueries == el->m_numAdversarialQueries &&
@@ -599,4 +597,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_RLWE_CRYPTOPARAMETERS_H_

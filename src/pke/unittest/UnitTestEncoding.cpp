@@ -33,13 +33,16 @@
   This code exercises the encoding libraries of the OpenFHE lattice encryption library.
 */
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "encoding/encodings.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/math-hal.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 

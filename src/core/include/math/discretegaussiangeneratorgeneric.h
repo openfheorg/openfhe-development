@@ -96,17 +96,17 @@
  *
  * */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
-#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
 
 #define MAX_LEVELS 4
-
-#include "math/distributiongenerator.h"
 
 #include <cmath>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
 
@@ -308,7 +308,7 @@ public:
    */
     DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std, const int b, double N);
 
-    DiscreteGaussianGeneratorGeneric(const DiscreteGaussianGeneratorGeneric&) = delete;
+    DiscreteGaussianGeneratorGeneric(const DiscreteGaussianGeneratorGeneric&)            = delete;
     DiscreteGaussianGeneratorGeneric& operator=(const DiscreteGaussianGeneratorGeneric&) = delete;
 
     /**
@@ -359,4 +359,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_

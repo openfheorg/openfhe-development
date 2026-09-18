@@ -28,7 +28,6 @@
 
 #include "include/gtest/gtest.h"
 #include "src/gtest-all.cc"
-
 #include "lattice/lat-hal.h"
 #include "lattice/ilelement.h"
 #include "math/math-hal.h"

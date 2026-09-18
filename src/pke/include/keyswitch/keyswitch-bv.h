@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BV_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_BV_H
-
-#include "keyswitch/keyswitch-rns.h"
-#include "schemebase/rlwe-cryptoparameters.h"
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BV_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BV_H_
 
 #include <string>
 #include <vector>
 #include <memory>
+
+#include "keyswitch/keyswitch-rns.h"
+#include "schemebase/rlwe-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -110,4 +110,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BV_H_

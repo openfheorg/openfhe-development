@@ -33,20 +33,18 @@
   Wraps parameters for integer lattice operations. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILPARAMS_H
-#define LBCRYPTO_INC_LATTICE_ILPARAMS_H
-
-#include "lattice/hal/elemparams.h"
-
-#include "math/hal/basicint.h"
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_
 
 #include <string>
 #include <utility>
+
+#include "lattice/hal/elemparams.h"
+#include "math/hal/basicint.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -156,4 +154,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_

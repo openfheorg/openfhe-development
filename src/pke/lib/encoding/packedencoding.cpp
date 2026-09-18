@@ -34,6 +34,13 @@
  */
 
 #include "encoding/packedencoding.h"
+
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "math/math-hal.h"
 #include "utils/utilities.h"
 

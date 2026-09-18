@@ -37,6 +37,7 @@
 #define PROFILE
 
 #include <iostream>
+#include <vector>
 
 #include "openfhe.h"
 

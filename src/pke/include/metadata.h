@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_METADATA_H
-#define LBCRYPTO_CRYPTO_METADATA_H
-
-#include "utils/exception.h"
+#ifndef SRC_PKE_INCLUDE_METADATA_H_
+#define SRC_PKE_INCLUDE_METADATA_H_
 
 #include <map>
 #include <memory>
 #include <string>
 #include <ostream>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -143,4 +143,4 @@ protected:
 
 }  // end namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_METADATA_H_

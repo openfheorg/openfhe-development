@@ -29,15 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "schemebase/rlwe-cryptoparameters.h"
 #include "schemelet/rlwe-mp.h"
+
+#include <stdint.h>
+
+#include <memory>
+#include <vector>
+
+#include "schemebase/rlwe-cryptoparameters.h"
 #include "schemerns/rns-cryptoparameters.h"
 #include "cryptocontext.h"
 #include "utils/utilities.h"
-
-#include <memory>
-#include <stdint.h>
-#include <vector>
 
 template <typename typeT>
 static void BitReverse(typeT& vals) {

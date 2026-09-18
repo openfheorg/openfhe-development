@@ -37,25 +37,27 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
+    #include <NTL/SmartPtr.h>
+    #include <NTL/vec_ZZ.h>
+    #include <NTL/vector.h>
 
-        #include <NTL/SmartPtr.h>
-        #include <NTL/vec_ZZ.h>
-        #include <NTL/vector.h>
+    #include <initializer_list>
+    #include <ostream>
+    #include <string>
+    #include <vector>
 
-        #include "math/hal/bigintntl/ubintntl.h"
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
+    #include "math/hal/bigintntl/ubintntl.h"
 
-        #include <initializer_list>
-        #include <ostream>
-        #include <string>
-        #include <vector>
+    #include "math/hal/vector.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 // defining this forces modulo when you write to the vector (except with at())
 // this is becuase NTL required inputs to modmath to be < modulus but BU does
@@ -752,6 +754,6 @@ protected:
 
 }  // namespace NTL
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_

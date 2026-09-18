@@ -36,21 +36,21 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H_
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
+    #include <map>
+    #include <unordered_map>
+    #include <mutex>
+    #include <vector>
+    #include <utility>
 
-        #include <map>
-        #include <unordered_map>
-        #include <mutex>
-        #include <vector>
-        #include <utility>
-
-        #include "math/hal/bigintntl/ubintntl.h"
-        #include "math/hal/bigintntl/mubintvecntl.h"
-        #include "math/hal/transform.h"
+    #include "math/hal/bigintntl/ubintntl.h"
+    #include "math/hal/bigintntl/mubintvecntl.h"
+    #include "math/hal/transform.h"
 
 /**
  * @namespace NTL
@@ -619,6 +619,6 @@ extern template class NTL::ChineseRemainderTransformFTTNtl<NTL::BigVector>;
 extern template class NTL::BluesteinFFTNtl<NTL::BigVector>;
 extern template class NTL::ChineseRemainderTransformArbNtl<NTL::BigVector>;
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H_

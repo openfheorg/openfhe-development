@@ -36,28 +36,27 @@
   supported. a native double the base integer size is also needed.
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+    #include <functional>
+    #include <limits>
+    #include <ostream>
+    #include <string>
+    #include <type_traits>
+    #include <utility>
+    #include <vector>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-        #include "math/nbtheory.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-        #include "utils/utilities.h"
-
-        #include <functional>
-        #include <limits>
-        #include <ostream>
-        #include <string>
-        #include <type_traits>
-        #include <utility>
-        #include <vector>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "math/nbtheory.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
+    #include "utils/utilities.h"
 
     // clang-format off
         // TODO: fix shifting issue when limb_t == Dlimb_t
@@ -68,8 +67,8 @@
         #endif
     // clang-format on
 
-        #define _SECURE_SCL 0  // to speed up VS
-        #define NO_BARRETT     // currently barrett is slower than mod
+    #define _SECURE_SCL 0  // to speed up VS
+    #define NO_BARRETT     // currently barrett is slower than mod
 
 namespace bigintdyn {
 
@@ -118,22 +117,22 @@ struct DataTypes<uint32_t> {
 template <>
 struct DataTypes<uint64_t> {
     using SignedType = int64_t;
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     using DoubleType       = uint128_t;
     using SignedDoubleType = int128_t;
-        #else
+    #else
     using DoubleType       = uint64_t;
     using SignedDoubleType = int64_t;
-        #endif
+    #endif
 };
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 template <>
 struct DataTypes<uint128_t> {
     using SignedType       = int128_t;
     using DoubleType       = uint128_t;
     using SignedDoubleType = int128_t;
 };
-        #endif
+    #endif
 
 template <typename limb_t>
 class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
@@ -944,7 +943,7 @@ private:
     }
 };
 
-        #if 0
+    #if 0
 // stream helper function for vector of objects
 template <typename limb_t>
 std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
@@ -954,9 +953,9 @@ std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
   os << " ]";
   return os;
 }
-        #endif
+    #endif
 
 }  // namespace bigintdyn
-
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_

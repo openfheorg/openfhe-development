@@ -34,6 +34,8 @@
  * as possible
  */
 
+#include <vector>
+
 #include "include/gtest/gtest.h"
 #include "openfhe.h"
 #include "UnitTestUtils.h"

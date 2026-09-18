@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef BINFHE_FHEW_H
-#define BINFHE_FHEW_H
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_
+
+#include <cstdlib>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "binfhe-base-params.h"
 #include "lwe-pke.h"
@@ -41,12 +47,6 @@
 #include "rgsw-acckey32.h"
 #include "rgsw-acckey.h"
 #include "rlwe-ciphertext.h"
-
-#include <cstdlib>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -323,4 +323,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_

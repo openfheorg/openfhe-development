@@ -37,14 +37,18 @@
  *  see the Appendix of https://eprint.iacr.org/2021/204 for more details
  */
 
+#include "keyswitch/keyswitch-bv.h"
+
+#include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ciphertext.h"
 #include "key/evalkeyrelin.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "keyswitch/keyswitch-bv.h"
 #include "schemerns/rns-cryptoparameters.h"
-
-#include <algorithm>
 
 namespace lbcrypto {
 

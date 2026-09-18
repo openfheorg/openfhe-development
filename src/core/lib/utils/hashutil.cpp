@@ -33,9 +33,12 @@
   hash utilities
  */
 
+#include "utils/hashutil.h"
+
 #include <iomanip>
 #include <sstream>
-#include "utils/hashutil.h"
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 

@@ -33,15 +33,16 @@
 CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
-#include "ciphertext.h"
-#include "cryptocontext.h"
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-multiparty.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "ciphertext.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 

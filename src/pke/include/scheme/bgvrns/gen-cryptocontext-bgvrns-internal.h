@@ -33,14 +33,14 @@
   API to generate BGVRNS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
-#define __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_
+
+#include <memory>
 
 #include "encoding/encodingparams.h"
 #include "scheme/scheme-utils.h"
 #include "scheme/scheme-id.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -113,4 +113,4 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_

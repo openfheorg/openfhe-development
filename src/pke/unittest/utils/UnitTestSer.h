@@ -33,16 +33,16 @@
   helper function to test serialization
  */
 
-#ifndef __UNITTEST_SER_H__
-#define __UNITTEST_SER_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_
+
+#include <iostream>
+#include <string>
 
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "gtest/gtest.h"
 #include "UnitTestException.h"
-
-#include <iostream>
-#include <string>
 
 using namespace lbcrypto;
 
@@ -103,4 +103,4 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
     }
 }
 
-#endif  // __UNITTEST_SER_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_

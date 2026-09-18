@@ -33,6 +33,8 @@
   Example for the FHEW scheme homomorphic flooring function
  */
 
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;

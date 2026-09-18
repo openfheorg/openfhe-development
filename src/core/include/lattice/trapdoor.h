@@ -35,17 +35,15 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOOR_H
-
-#include "lattice/dgsampling.h"
-#include "lattice/field2n.h"
-
-#include "math/matrix.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
 
 #include <memory>
 #include <utility>
 
+#include "lattice/dgsampling.h"
+#include "lattice/field2n.h"
+#include "math/matrix.h"
 #include "utils/debug.h"
 
 namespace lbcrypto {
@@ -478,4 +476,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_

@@ -33,23 +33,8 @@
   Control for encryption operations
  */
 
-#ifndef __CRYPTOCONTEXT_H__
-#define __CRYPTOCONTEXT_H__
-
-#include "binfhecontext.h"
-#include "ciphertext.h"
-#include "cryptocontextfactory.h"
-#include "cryptocontext-fwd.h"
-#include "encoding/plaintextfactory.h"
-#include "key/evalkey.h"
-#include "key/keypair.h"
-#include "scheme/scheme-swch-params.h"
-#include "schemebase/base-pke.h"
-#include "schemebase/base-scheme.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "utils/caller_info.h"
-#include "utils/diagnostic_output.h"
-#include "utils/type_name.h"
+#ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_
+#define SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_
 
 #include <algorithm>
 #include <complex>
@@ -62,6 +47,21 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "cryptocontext-fwd.h"
+#include "binfhecontext.h"
+#include "ciphertext.h"
+#include "cryptocontextfactory.h"
+#include "encoding/plaintextfactory.h"
+#include "key/evalkey.h"
+#include "key/keypair.h"
+#include "scheme/scheme-swch-params.h"
+#include "schemebase/base-pke.h"
+#include "schemebase/base-scheme.h"
+#include "schemerns/rns-cryptoparameters.h"
+#include "utils/caller_info.h"
+#include "utils/diagnostic_output.h"
+#include "utils/type_name.h"
 
 #ifdef DEBUG_KEY
     #include <iostream>
@@ -4225,4 +4225,4 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                                                                               const std::string& shareType) const;
 }  // namespace lbcrypto
 
-#endif  // __CRYPTOCONTEXT_H__
+#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_

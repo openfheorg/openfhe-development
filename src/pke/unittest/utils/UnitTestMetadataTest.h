@@ -28,15 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __UNITTESTMETADATATEST_H__
-#define __UNITTESTMETADATATEST_H__
-
-#include "ciphertext.h"
-#include "metadata.h"
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
 
 #include <memory>
 #include <ostream>
 #include <string>
+
+#include "ciphertext.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 
@@ -206,4 +206,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif  // __UNITTESTMETADATATEST_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_

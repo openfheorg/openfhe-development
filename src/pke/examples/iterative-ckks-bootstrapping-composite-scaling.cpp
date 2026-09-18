@@ -45,10 +45,10 @@ double the precision of a single bootstrapping.
 
 #define PROFILE
 
-#include "openfhe.h"
-
 #include <vector>
 #include <iostream>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -88,9 +88,9 @@ void IterativeBootstrapExample() {
     // All modes are supported for 64-bit CKKS bootstrapping.
     // For this configuration, 3 words per level will be used
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits               = 61;
-    uint32_t firstMod               = 66;
-    uint32_t registerWordSize       = 27;
+    uint32_t dcrtBits            = 61;
+    uint32_t firstMod            = 66;
+    uint32_t registerWordSize    = 27;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);

@@ -29,13 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BGVRNS_MULTIPARTY_H
-
-#include "schemerns/rns-multiparty.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_
 
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
@@ -68,4 +68,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_

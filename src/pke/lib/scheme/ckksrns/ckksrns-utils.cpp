@@ -30,14 +30,17 @@
 //==================================================================================
 
 #include "scheme/ckksrns/ckksrns-utils.h"
-#include "utils/exception.h"
-#include "utils/utilities.h"
 
 #include <algorithm>
 #include <cmath>
 #include <complex>
 #include <functional>
+#include <memory>
+#include <utility>
 #include <vector>
+
+#include "utils/exception.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 

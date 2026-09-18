@@ -33,17 +33,8 @@
  This file contains the main class for native integers. It implements the same methods as other mathematical backends.
 */
 
-#ifndef LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
-#define LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
-
-#include "math/hal/basicint.h"
-#include "math/hal/bigintbackend.h"
-#include "math/hal/integer.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_UBINTNAT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_UBINTNAT_H_
 
 #include <cstdint>
 #include <limits>
@@ -52,6 +43,14 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "math/hal/basicint.h"
+#include "math/hal/bigintbackend.h"
+#include "math/hal/integer.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
@@ -1717,4 +1716,4 @@ template std::ostream& operator<< <uint64_t>(std::ostream& os, const std::vector
 
 }  // namespace intnat
 
-#endif  // LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_UBINTNAT_H_

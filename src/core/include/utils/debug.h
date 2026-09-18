@@ -34,8 +34,8 @@
   that can be quickly enabled and disabled. It also contains functions for timing code
  */
 
-#ifndef __dbg_h__
-#define __dbg_h__
+#ifndef SRC_CORE_INCLUDE_UTILS_DEBUG_H_
+#define SRC_CORE_INCLUDE_UTILS_DEBUG_H_
 
 /* defining NDEBUG in the compile line turns everything off.
    unless PROFILE is defined in the file before all includes,'
@@ -45,6 +45,7 @@
  */
 
 #include <time.h>
+
 #include <chrono>  // for timing
 #include <utility>
 
@@ -230,4 +231,4 @@ double funcTime(F func, Args&&... args) {
     return lbcrypto::duration_ms(lbcrypto::timeNow() - t1);
 }
 
-#endif  // #__dbg_h__
+#endif  // SRC_CORE_INCLUDE_UTILS_DEBUG_H_

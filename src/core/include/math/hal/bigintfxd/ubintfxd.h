@@ -38,52 +38,51 @@
  * is the maximum bitwidth for the big integer.
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
-        #define LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
+    #include <cstdlib>
+    #include <cstring>
+    #include <fstream>
+    #include <functional>
+    #include <limits>
+    #include <memory>
+    #include <ostream>
+    #include <string>
+    #include <type_traits>
+    #include <typeinfo>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/memory.h"
-        #include "utils/openfhebase64.h"
-        #include "utils/serializable.h"
-        #include "utils/utilities.h"
-
-        #include <cstdlib>
-        #include <cstring>
-        #include <fstream>
-        #include <functional>
-        #include <limits>
-        #include <memory>
-        #include <ostream>
-        #include <string>
-        #include <type_traits>
-        #include <typeinfo>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/memory.h"
+    #include "utils/openfhebase64.h"
+    #include "utils/serializable.h"
+    #include "utils/utilities.h"
 
 ////////// bigintfxd code
 typedef uint32_t integral_dtype;
 
-        /** Define the mapping for BigIntegerFixedT
+    /** Define the mapping for BigIntegerFixedT
     3500 is the maximum bit width supported by BigIntegers, large enough for
 most use cases The bitwidth can be decreased to the least value still supporting
 BigIntegerFixedT operations for a specific application - to achieve smaller runtimes
 **/
-        #ifndef BigIntegerBitLength
-            #if (NATIVEINT < 128)
-                #define BigIntegerBitLength 3500  // for 32-bit and 64-bit native backend
-            #else
-                #define BigIntegerBitLength 8000  // for 128-bit native backend
-            #endif
+    #ifndef BigIntegerBitLength
+        #if (NATIVEINT < 128)
+            #define BigIntegerBitLength 3500  // for 32-bit and 64-bit native backend
+        #else
+            #define BigIntegerBitLength 8000  // for 128-bit native backend
         #endif
+    #endif
 
-        #if BigIntegerBitLength < 600
-            #error "BigIntegerBitLength is too small"
-        #endif
+    #if BigIntegerBitLength < 600
+        #error "BigIntegerBitLength is too small"
+    #endif
 
 /**
  * @namespace bigintfxd
@@ -92,9 +91,9 @@ BigIntegerFixedT operations for a specific application - to achieve smaller runt
 namespace bigintfxd {
 
 using U64BITS = uint64_t;
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 using U128BITS = uint128_t;
-        #endif
+    #endif
 
 // forward declaration for aliases
 template <typename uint_type, uint32_t BITLENGTH>
@@ -242,11 +241,11 @@ struct DoubleDataType<uint32_t> {
  */
 template <>
 struct DoubleDataType<uint64_t> {
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     typedef uint128_t T;
-        #else
+    #else
     typedef uint64_t T;
-        #endif
+    #endif
 };
 
 constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log base 2 of 10.
@@ -296,9 +295,9 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     BigIntegerFixedT(uint64_t val);  // NOLINT
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     BigIntegerFixedT(U128BITS val);  // NOLINT
-        #endif
+    #endif
 
     /**
    * Constructors from smaller basic types
@@ -320,9 +319,9 @@ public:
                               !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
                                   !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
                                   !std::is_same<T, long long>::value &&                                  // NOLINT
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
                                   !std::is_same<T, U128BITS>::value &&
-        #endif
+    #endif
                                   !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&
                                   !std::is_same<T, const char>::value && !std::is_same<T, BigIntegerFixedT>::value &&
                                   !std::is_same<T, double>::value,
@@ -1210,6 +1209,6 @@ private:
 
 }  // namespace bigintfxd
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
-
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_

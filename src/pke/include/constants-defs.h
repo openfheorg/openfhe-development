@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __CONSTANTS_DEFS_H__
-#define __CONSTANTS_DEFS_H__
+#ifndef SRC_PKE_INCLUDE_CONSTANTS_DEFS_H_
+#define SRC_PKE_INCLUDE_CONSTANTS_DEFS_H_
 
 #include "math/hal/basicint.h"  // for MAX_MODULUS_SIZE
 
@@ -155,4 +155,4 @@ enum CompressionLevel {
 
 }  // namespace lbcrypto
 
-#endif  // __CONSTANTS_DEFS_H__
+#endif  // SRC_PKE_INCLUDE_CONSTANTS_DEFS_H_

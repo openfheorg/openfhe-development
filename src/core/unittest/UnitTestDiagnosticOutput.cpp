@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
-#include "utils/diagnostic_output.h"
-
 #include <ostream>
 #include <sstream>
 #include <string>
+
+#include "gtest/gtest.h"
+#include "utils/diagnostic_output.h"
 
 using namespace lbcrypto;
 

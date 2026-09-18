@@ -37,38 +37,37 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_UBINTNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_UBINTNTL_H_
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_UBINTNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_UBINTNTL_H
+    #include <NTL/ZZ.h>
+    #include <NTL/ZZ_limbs.h>
 
-        #include <NTL/ZZ.h>
-        #include <NTL/ZZ_limbs.h>
+    #include <exception>
+    #include <fstream>
+    #include <functional>
+    #include <limits>
+    #include <memory>
+    #include <ostream>
+    #include <sstream>
+    #include <string>
+    #include <type_traits>
+    #include <typeinfo>
+    #include <vector>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-
-        #include "utils/openfhebase64.h"
-        #include "utils/parallel.h"
-        #include "utils/serializable.h"
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/memory.h"
-        #include "utils/debug.h"
-        #include "utils/diagnostic_output.h"
-
-        #include <exception>
-        #include <fstream>
-        #include <functional>
-        #include <limits>
-        #include <memory>
-        #include <ostream>
-        #include <sstream>
-        #include <string>
-        #include <type_traits>
-        #include <typeinfo>
-        #include <vector>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "utils/openfhebase64.h"
+    #include "utils/parallel.h"
+    #include "utils/serializable.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/memory.h"
+    #include "utils/debug.h"
+    #include "utils/diagnostic_output.h"
 
 /**
  *@namespace NTL
@@ -144,9 +143,9 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     myZZ(uint64_t val);  // NOLINT
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     myZZ(uint128_t val);  // NOLINT
-        #endif
+    #endif
 
     /**
    * Constructors from smaller basic types
@@ -870,13 +869,13 @@ public:
     // OpenFHE conversion methods
     template <typename T = BasicInteger>
     T ConvertToInt() const {
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
         if constexpr (std::is_same_v<T, uint128_t>) {
             uint128_t tmp2 = (*this >> 64).ConvertToInt<uint64_t>();
             return (tmp2 << 64) | (*this % myZZ(1).LShiftEq(64)).ConvertToInt<uint64_t>();
         }
         else
-        #endif
+    #endif
         {
             std::stringstream s;  // slower
             s << *this;
@@ -1088,6 +1087,6 @@ private:
 NTL_DECLARE_RELOCATABLE((myZZ*))
 }  // namespace NTL
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_UBINTNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_UBINTNTL_H_

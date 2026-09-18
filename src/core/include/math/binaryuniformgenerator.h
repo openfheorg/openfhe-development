@@ -34,15 +34,14 @@
   relies on the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_
+
+#include <random>
 
 #include "math/distributiongenerator.h"
 #include "math/math-hal.h"
-
 #include "utils/inttypes.h"
-
-#include <random>
 
 namespace lbcrypto {
 
@@ -77,4 +76,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_

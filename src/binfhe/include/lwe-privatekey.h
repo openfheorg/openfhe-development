@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_PRIVATEKEY_H_
-#define _LWE_PRIVATEKEY_H_
-
-#include "lwe-privatekey-fwd.h"
-#include "math/math-hal.h"
-#include "utils/serializable.h"
+#ifndef SRC_BINFHE_INCLUDE_LWE_PRIVATEKEY_H_
+#define SRC_BINFHE_INCLUDE_LWE_PRIVATEKEY_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lwe-privatekey-fwd.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -50,9 +50,9 @@ class LWEPrivateKeyImpl : public Serializable {
 public:
     LWEPrivateKeyImpl() = default;
 
-    LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
+    explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
 
-    LWEPrivateKeyImpl(NativeVector&& s) noexcept : m_s(std::move(s)) {}
+    explicit LWEPrivateKeyImpl(NativeVector&& s) noexcept : m_s(std::move(s)) {}
 
     LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) : m_s(rhs.m_s) {}
 
@@ -124,4 +124,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_PRIVATEKEY_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_PRIVATEKEY_H_

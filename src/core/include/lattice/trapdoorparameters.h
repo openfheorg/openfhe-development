@@ -33,14 +33,13 @@
   Parameter definitions for trapdoor-related schemes (GPV signature, IBE, ABE)
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOORPARAMETERS_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOORPARAMETERS_H
-
-#include "lattice/trapdoor.h"
-
-#include "math/matrix.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_
 
 #include <memory>
+
+#include "lattice/trapdoor.h"
+#include "math/matrix.h"
 
 namespace lbcrypto {
 /*
@@ -240,7 +239,7 @@ public:
     /*
    *@brief Default constructor
    */
-    PerturbationVector() : m_pvector(nullptr){};
+    PerturbationVector() : m_pvector(nullptr) {};
     /*
    *@brief Constructor for perturbation vector
    *@param pvector Vector containing ring elements
@@ -267,4 +266,4 @@ private:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_

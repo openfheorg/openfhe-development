@@ -29,6 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
@@ -40,10 +46,6 @@
 #include "UnitTestSer.h"
 #include "UnitTestUtils.h"
 #include "utils/exception.h"
-
-#include <iostream>
-#include <sstream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -110,14 +112,14 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM        = 32;
-constexpr uint32_t MULT_DEPTH      = 3;
-constexpr uint32_t MAX_RELIN_DEG   = 2;
-constexpr uint32_t DSIZE           = 4;
-constexpr uint32_t PTM             = 65537;
-constexpr uint32_t BATCH           = 16;
-constexpr uint32_t FIRST_MOD_SIZE  = 0;
-constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
+constexpr uint32_t RING_DIM       = 32;
+constexpr uint32_t MULT_DEPTH     = 3;
+constexpr uint32_t MAX_RELIN_DEG  = 2;
+constexpr uint32_t DSIZE          = 4;
+constexpr uint32_t PTM            = 65537;
+constexpr uint32_t BATCH          = 16;
+constexpr uint32_t FIRST_MOD_SIZE = 0;
+constexpr SecurityLevel SEC_LVL   = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
 // clang-format off

@@ -29,8 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_H
-#define LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_LEVELEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_LEVELEDSHE_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "encoding/plaintext-fwd.h"
@@ -41,11 +46,6 @@
 #include "utils/caller_info.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -875,4 +875,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_LEVELEDSHE_H_

@@ -33,8 +33,8 @@
   Serialization utilities
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_SERIAL_H_
+#define SRC_CORE_INCLUDE_UTILS_SERIAL_H_
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -79,14 +79,14 @@
     #pragma clang diagnostic pop
 #endif
 
-#include "utils/sertype.h"
-
 #include <type_traits>
 #include <istream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <memory>
+
+#include "utils/sertype.h"
 
 namespace lbcrypto {
 
@@ -266,4 +266,4 @@ void DeserializeFromString(T& obj, const std::string& json) {
 
 }  // namespace lbcrypto
 
-#endif  // __SERIAL_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_SERIAL_H_

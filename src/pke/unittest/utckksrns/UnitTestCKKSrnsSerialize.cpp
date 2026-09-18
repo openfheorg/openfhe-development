@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
@@ -38,10 +42,6 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestSer.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 

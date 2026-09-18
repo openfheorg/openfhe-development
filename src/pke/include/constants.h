@@ -31,13 +31,13 @@
 // This is a collection of helper functions for the enum definitions in constants-defs.h.
 // constatns.h was split because of a request to provide a better compatability with
 // the Rust wrapper for OpenFHE.
-#ifndef _CONSTANTS_H_
-#define _CONSTANTS_H_
-
-#include "constants-defs.h"  // all enum definitions
+#ifndef SRC_PKE_INCLUDE_CONSTANTS_H_
+#define SRC_PKE_INCLUDE_CONSTANTS_H_
 
 #include <iosfwd>
 #include <string>
+
+#include "constants-defs.h"  // all enum definitions
 
 namespace lbcrypto {
 
@@ -89,4 +89,4 @@ std::ostream& operator<<(std::ostream& s, CKKSDataType t);
 
 }  // namespace lbcrypto
 
-#endif  // _CONSTANTS_H_
+#endif  // SRC_PKE_INCLUDE_CONSTANTS_H_

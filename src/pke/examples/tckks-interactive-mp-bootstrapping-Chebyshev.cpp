@@ -40,6 +40,12 @@ the number of participating parties.
 
 #define PROFILE
 
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace std;
@@ -252,7 +258,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     double a = -4;
     double b = 4;
 
-    Plaintext pt1       = cryptoContext->MakeCKKSPackedPlaintext(input);
+    Plaintext pt1          = cryptoContext->MakeCKKSPackedPlaintext(input);
     uint32_t encodedLength = input.size();
 
     auto ct1 = cryptoContext->Encrypt(kp3.publicKey, pt1);

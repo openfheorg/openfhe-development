@@ -34,8 +34,8 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_
-#define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_
 
 #include "math/discreteuniformgenerator.h"
 #include "math/distributiongenerator.h"
@@ -111,4 +111,4 @@ VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t siz
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_

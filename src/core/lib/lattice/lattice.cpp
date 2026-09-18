@@ -34,14 +34,11 @@
  */
 
 #include "config_core.h"
-
 #include "lattice/field2n-impl.h"
 #include "lattice/lat-hal.h"
 #include "lattice/matrix-lattice-impl.h"
-
 #include "math/matrix-impl.h"
 #include "math/nbtheory-impl.h"
-
 #include "math/ternaryuniformgenerator-impl.h"
 #include "math/discreteuniformgenerator-impl.h"
 #include "math/discretegaussiangenerator-impl.h"

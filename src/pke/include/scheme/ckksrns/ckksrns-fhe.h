@@ -29,15 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
-
-#include "constants.h"
-#include "encoding/plaintext-fwd.h"
-#include "math/hal/basicint.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
-#include "schemerns/rns-fhe.h"
-#include "utils/caller_info.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_FHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_FHE_H_
 
 #include <complex>
 #include <map>
@@ -46,6 +39,13 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "scheme/ckksrns/ckksrns-utils.h"
+#include "constants.h"
+#include "encoding/plaintext-fwd.h"
+#include "math/hal/basicint.h"
+#include "schemerns/rns-fhe.h"
+#include "utils/caller_info.h"
 
 /**
  * @namespace lbcrypto
@@ -917,4 +917,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_FHE_H_

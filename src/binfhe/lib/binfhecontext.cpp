@@ -36,8 +36,10 @@
 #include "binfhecontext.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 static constexpr double STD_DEV = 3.19;
 

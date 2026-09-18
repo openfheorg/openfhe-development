@@ -41,19 +41,18 @@
  *    - Generator algorithm
  */
 
-#ifndef LBCRYPTO_INC_MATH_NBTHEORY_H
-#define LBCRYPTO_INC_MATH_NBTHEORY_H
-
-#include "math/hal/basicint.h"
-
-#include "utils/inttypes.h"
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_MATH_NBTHEORY_H_
+#define SRC_CORE_INCLUDE_MATH_NBTHEORY_H_
 
 #include <limits>
 #include <memory>
 #include <random>
 #include <set>
 #include <vector>
+
+#include "math/hal/basicint.h"
+#include "utils/inttypes.h"
+#include "utils/exception.h"
 
 /**
  * @namespace lbcrypto
@@ -510,4 +509,4 @@ void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp);
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_NBTHEORY_H_

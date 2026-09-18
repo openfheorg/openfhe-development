@@ -40,6 +40,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "openfhe.h"
 

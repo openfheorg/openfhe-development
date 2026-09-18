@@ -36,10 +36,12 @@ Specifically, we used this to choose the default correction factor for 64-bit FL
 
 */
 
-#include "openfhe.h"
-
+#include <algorithm>
+#include <iostream>
 #include <ostream>
 #include <vector>
+
+#include "openfhe.h"
 
 #define DOUBLEITTR
 #define STCBOOT
@@ -81,38 +83,39 @@ int main(int argc, char* argv[]) {
     uint32_t maxCorrectionFactor   = 15;
     std::vector<uint32_t> slotsVec = {1 << 3, 1 << 7, 1 << 9, 1 << 11};
     for (uint32_t numSlots : slotsVec) {
-        for (uint32_t correctionFactor = minCorrectionFactor; correctionFactor <= maxCorrectionFactor; ++correctionFactor) {
+        for (uint32_t correctionFactor = minCorrectionFactor; correctionFactor <= maxCorrectionFactor;
+             ++correctionFactor) {
             std::cout << "`=======================================================================" << std::endl;
             std::cout << "Number of slots: " << numSlots << "\n";
             std::cout << "Correction Factor: " << correctionFactor << "\n";
 
-            double precision  = 0.0;
-#ifdef DOUBLEITTR
+            double precision = 0.0;
+    #ifdef DOUBLEITTR
             double precision2 = 0.0;
-#endif
+    #endif
             for (uint32_t i = 0; i < numIterations; ++i) {
-#ifdef DOUBLEITTR
-#ifdef STCBOOT
+    #ifdef DOUBLEITTR
+        #ifdef STCBOOT
                 auto precisionVec = MeasureStCFirstBootstrapDoubleIterPrecision(numSlots, correctionFactor);
-#else
+        #else
                 auto precisionVec = MeasureBootstrapDoubleIterPrecision(numSlots, correctionFactor);
-#endif
+        #endif
                 precision += precisionVec[0];
                 precision2 += precisionVec[1];
-#else
-#ifdef STCBOOT
+    #else
+        #ifdef STCBOOT
                 precision += MeasureStCFirstBootstrapPrecision(numSlots, correctionFactor);
-#else
+        #else
                 precision += MeasureBootstrapPrecision(numSlots, correctionFactor);
-#endif
-#endif
+        #endif
+    #endif
             }
             precision /= numIterations;
             std::cout << "Average initial precision over " << numIterations << " iterations: " << precision << "\n";
-#ifdef DOUBLEITTR
+    #ifdef DOUBLEITTR
             precision2 /= numIterations;
             std::cout << "Average META-BTS precision over " << numIterations << " iterations: " << precision2 << "\n";
-#endif
+    #endif
             std::cout << "`=======================================================================" << std::endl;
         }
     }
@@ -128,8 +131,8 @@ double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor) {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(ringdm);
 
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
@@ -192,8 +195,8 @@ double MeasureStCFirstBootstrapPrecision(uint32_t numSlots, uint32_t correctionF
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(ringdm);
 
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
@@ -254,8 +257,8 @@ std::vector<double> MeasureBootstrapDoubleIterPrecision(uint32_t numSlots, uint3
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(ringdm);
 
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
@@ -333,8 +336,8 @@ std::vector<double> MeasureStCFirstBootstrapDoubleIterPrecision(uint32_t numSlot
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(ringdm);
 
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);

@@ -29,8 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "cryptocontext-fwd.h"
@@ -39,11 +44,6 @@
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -433,4 +433,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_

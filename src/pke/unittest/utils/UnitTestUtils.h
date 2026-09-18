@@ -33,11 +33,8 @@
   Helper functions for unittests
  */
 
-#ifndef _UNIT_TEST_UTILS_H_
-#define _UNIT_TEST_UTILS_H_
-
-#include "gtest/gtest.h"
-#include "UnitTestException.h"
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTUTILS_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTUTILS_H_
 
 #include <algorithm>
 #include <complex>
@@ -45,6 +42,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "UnitTestException.h"
 
 // some functions are inlined in this files to avoid link errors
 //===========================================================================================================
@@ -210,4 +210,4 @@ inline void setupSignals() {
     std::signal(SIGTERM, sighandler);
 }
 
-#endif  // _UNIT_TEST_UTILS_H_
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTUTILS_H_

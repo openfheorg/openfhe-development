@@ -33,19 +33,19 @@
   matrix strassen operations
  */
 
-#ifndef LBCRYPTO_INC_MATH_MATRIXSTRASSEN_IMPL_H
-#define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_IMPL_H
-
-#include "math/matrixstrassen.h"
-#include "math/matrix-utils.h"
-
-#include "utils/diagnostic_output.h"
-#include "utils/parallel.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_IMPL_H_
 
 #include <assert.h>
+
 #include <memory>
 #include <utility>
 #include <vector>
+
+#include "math/matrixstrassen.h"
+#include "math/matrix-utils.h"
+#include "utils/diagnostic_output.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -1229,4 +1229,4 @@ long long MatrixStrassen<Element>::numEntriesPerProc(MatDescriptor desc) const {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_IMPL_H_

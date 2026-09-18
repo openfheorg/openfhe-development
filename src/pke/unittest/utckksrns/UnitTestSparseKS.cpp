@@ -35,6 +35,11 @@
   KeySwitchSparse must stay at the modulus switching (rounding) noise level.
 */
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -45,11 +50,6 @@
 #include "UnitTestException.h"
 #include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 

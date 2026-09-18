@@ -33,6 +33,10 @@
   This file contains template instantiations for all math classes & functions using math be2
  */
 
+#include <memory>
+#include <set>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 

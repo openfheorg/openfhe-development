@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 #include "openfhe.h"
@@ -36,9 +40,6 @@
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
 #include "scheme/scheme-swch-params.h"
 #include "utils/memory.h"
-
-#include <memory>
-#include <vector>
 
 #if defined(__GLIBC__)
     #include <malloc.h>
@@ -118,11 +119,11 @@ class UTCKKSCacheClear : public ::testing::Test {
 protected:
 #if defined(WITH_TCM) || defined(__EMSCRIPTEN__)
     void SetUp() override {
-#if defined(WITH_TCM)
+    #if defined(WITH_TCM)
         GTEST_SKIP() << "Heap usage checks are not stable with tcmalloc enabled";
-#else
+    #else
         GTEST_SKIP() << "Heap probe unavailable under Emscripten";
-#endif
+    #endif
     }
 #endif
 

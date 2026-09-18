@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestMetadataTest.h"
-#include "UnitTestUtils.h"
-
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestMetadataTest.h"
+#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 using namespace std::literals;
@@ -1028,13 +1028,13 @@ protected:
             std::vector<std::complex<double>> vectorOfIntsAddDiffLevels(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsAddMixedDegree(VECTOR_SIZE);
             for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
-                vectorOfIntsMult[i]          = i * VECTOR_SIZE - i * i - i;
-                vectorOfIntsAddAfterMult[i]  = vectorOfIntsMult[i] + std::complex<double>(10, 0);
-                vectorOfIntsSubAfterMult[i]  = vectorOfIntsMult[i] - std::complex<double>(10, 0);
-                vectorOfIntsMult2[i]         = vectorOfIntsMult[i] * vectorOfInts1[i];
-                vectorOfIntsAddAfterMult2[i] = vectorOfIntsMult2[i] + constantInts[i];  // complex<double>({11,0});
-                vectorOfIntsSubAfterMult2[i] = vectorOfIntsMult2[i] - constantInts[i];  // complex<double>({11,0});
-                vectorOfIntsAddDiffLevels[i] = vectorOfInts1[i] + vectorOfInts7_0[i];
+                vectorOfIntsMult[i]           = i * VECTOR_SIZE - i * i - i;
+                vectorOfIntsAddAfterMult[i]   = vectorOfIntsMult[i] + std::complex<double>(10, 0);
+                vectorOfIntsSubAfterMult[i]   = vectorOfIntsMult[i] - std::complex<double>(10, 0);
+                vectorOfIntsMult2[i]          = vectorOfIntsMult[i] * vectorOfInts1[i];
+                vectorOfIntsAddAfterMult2[i]  = vectorOfIntsMult2[i] + constantInts[i];  // complex<double>({11,0});
+                vectorOfIntsSubAfterMult2[i]  = vectorOfIntsMult2[i] - constantInts[i];  // complex<double>({11,0});
+                vectorOfIntsAddDiffLevels[i]  = vectorOfInts1[i] + vectorOfInts7_0[i];
                 vectorOfIntsAddMixedDegree[i] = vectorOfIntsMult[i] + vectorOfInts1[i];
             }
             // The vector values should be:

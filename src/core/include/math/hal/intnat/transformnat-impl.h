@@ -29,28 +29,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __TRANSFORMNAT_IMPL_H__
-#define __TRANSFORMNAT_IMPL_H__
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_IMPL_H_
 
 // ATTENTION: this file contains implementations of the functions
 //            declared in math/intnat/transformnat.h and
 //            MUST be included in the end of math/intnat/transformnat.h ONLY
 //            and nowhere else
-#include "math/hal/basicint.h"
-#include "math/hal/intnat/ubintnat.h"
-#include "math/hal/intnat/mubintvecnat.h"
-#include "math/hal/intnat/transformnat.h"
-#include "math/nbtheory.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
-
 #include <map>
 #include <memory>
 #include <utility>
 #include <vector>
+
+#include "math/hal/intnat/transformnat.h"
+#include "math/hal/basicint.h"
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/intnat/mubintvecnat.h"
+#include "math/nbtheory.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 namespace intnat {
 
@@ -1287,4 +1286,4 @@ void ChineseRemainderTransformArbNat<VecType>::Reset() {
 
 }  // namespace intnat
 
-#endif  // __TRANSFORMNAT_IMPL_H__
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_IMPL_H_

@@ -28,13 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __SCHEMESWITCHING_DATA_SERIALIZER_H__
-#define __SCHEMESWITCHING_DATA_SERIALIZER_H__
-
-#include "cryptocontext.h"
+#ifndef SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_
+#define SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_
 
 #include <memory>
 #include <string>
+
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 
@@ -116,4 +116,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __SCHEMESWITCHING_DATA_SERIALIZER_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_

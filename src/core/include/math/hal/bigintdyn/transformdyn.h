@@ -33,21 +33,21 @@
   This file contains the linear transform interface functionality for the dynamic math backend
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
+    #include <map>
+    #include <vector>
+    #include <unordered_map>
+    #include <mutex>
+    #include <utility>
 
-        #include <map>
-        #include <vector>
-        #include <unordered_map>
-        #include <mutex>
-        #include <utility>
-
-        #include "math/hal/transform.h"
-        #include "math/hal/bigintdyn/mubintvecdyn.h"
-        #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/transform.h"
+    #include "math/hal/bigintdyn/mubintvecdyn.h"
+    #include "math/hal/bigintdyn/ubintdyn.h"
 
 /**
  * @namespace bigintdyn
@@ -616,5 +616,6 @@ extern template class bigintdyn::NumberTheoreticTransformDyn<bigintdyn::BigVecto
 extern template class bigintdyn::ChineseRemainderTransformFTTDyn<bigintdyn::BigVector>;
 extern template class bigintdyn::BluesteinFFTDyn<bigintdyn::BigVector>;
 extern template class bigintdyn::ChineseRemainderTransformArbDyn<bigintdyn::BigVector>;
-    #endif
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_

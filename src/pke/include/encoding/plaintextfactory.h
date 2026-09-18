@@ -33,15 +33,15 @@
   Manufactures plaintext objects in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
-#define SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
-
-#include "encoding/encodings.h"
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_PLAINTEXTFACTORY_H_
+#define SRC_PKE_INCLUDE_ENCODING_PLAINTEXTFACTORY_H_
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "encoding/encodings.h"
+#include "scheme/scheme-id.h"
 
 // TODO: when the parms are polymorphic, reduce the tuple of methods to a
 // single one
@@ -133,4 +133,4 @@ public:
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_ */
+#endif  // SRC_PKE_INCLUDE_ENCODING_PLAINTEXTFACTORY_H_

@@ -27,16 +27,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_MATH_MATRIX_UTILS_H
-#define LBCRYPTO_MATH_MATRIX_UTILS_H
-
-#include "math/math-hal.h"
-
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_
 
 #include <cstdint>
 #include <limits>
 #include <string>
+
+#include "math/math-hal.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -112,4 +111,4 @@ using CenteredToInt32Converter = CenteredToInt32ConverterImpl<BigInteger>;
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_MATRIX_UTILS_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_

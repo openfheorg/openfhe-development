@@ -40,6 +40,9 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhecore.h"
 #include "time.h"
 

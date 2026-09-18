@@ -32,12 +32,12 @@
  Examples for 2-party Interactive Bootstrapping
 */
 
-#include "openfhe.h"
-
 #include <memory>
 #include <map>
 #include <vector>
 #include <iostream>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

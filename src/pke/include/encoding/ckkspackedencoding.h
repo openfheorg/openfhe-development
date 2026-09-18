@@ -29,15 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
-#define LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
-
-#include "constants.h"
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-
-#include "math/hal/basicint.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
 
 #include <algorithm>
 #include <functional>
@@ -47,6 +40,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "constants.h"
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+#include "math/hal/basicint.h"
 
 namespace lbcrypto {
 
@@ -342,4 +340,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_

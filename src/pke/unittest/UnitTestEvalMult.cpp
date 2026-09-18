@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -118,11 +119,11 @@ constexpr uint32_t SCALE = 78;
 #else
 constexpr uint32_t SCALE = 50;
 #endif
-constexpr uint32_t RING_DIM        = 16;
-constexpr uint32_t BATCH           = 8;
-constexpr uint32_t MULT_DEPTH      = 4;
+constexpr uint32_t RING_DIM     = 16;
+constexpr uint32_t BATCH        = 8;
+constexpr uint32_t MULT_DEPTH   = 4;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
-constexpr uint32_t PTM             = 65537;
+constexpr uint32_t PTM          = 65537;
 
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_EVALMULT> testCasesUTGENERAL_EVALMULT = {

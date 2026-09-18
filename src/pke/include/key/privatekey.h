@@ -33,17 +33,17 @@
   Private key type for lattice crypto operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
-#define LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
-
-#include "key/key.h"
-#include "key/privatekey-fwd.h"
+#ifndef SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
+#define SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
 
 #include <iomanip>
 #include <limits>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "key/privatekey-fwd.h"
+#include "key/key.h"
 
 /**
  * @namespace lbcrypto
@@ -183,4 +183,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_

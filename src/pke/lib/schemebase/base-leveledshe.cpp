@@ -29,17 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
-#include "key/privatekey.h"
 #include "schemebase/base-leveledshe.h"
-#include "schemebase/base-scheme.h"
 
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "schemebase/base-scheme.h"
+#include "cryptocontext.h"
+#include "key/privatekey.h"
 
 namespace lbcrypto {
 

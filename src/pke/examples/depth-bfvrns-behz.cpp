@@ -36,6 +36,7 @@
 #define PROFILE
 
 #include <iostream>
+#include <vector>
 
 #include "openfhe.h"
 #include "utils/debug.h"

@@ -31,10 +31,11 @@
 
 #include "rgsw-acckey32.h"
 
-#include "utils/exception.h"
-
+#include <memory>
 #include <utility>
 #include <vector>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 

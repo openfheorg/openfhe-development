@@ -31,15 +31,6 @@
 
 #include "encoding/ckkspackedencoding.h"
 
-#include "lattice/lat-hal.h"
-
-#include "math/hal/basicint.h"
-#include "math/dftransform.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
-
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -47,6 +38,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "math/hal/basicint.h"
+#include "math/dftransform.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 

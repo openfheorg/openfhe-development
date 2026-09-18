@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
 #include "gtest/gtest.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -114,10 +115,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_AUTO
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t SMODSIZE        = 50;
-constexpr uint32_t RING_DIM        = 16;
-constexpr uint32_t BATCH           = 8;
-constexpr uint32_t MULT_DEPTH      = 1;
+constexpr uint32_t SMODSIZE     = 50;
+constexpr uint32_t RING_DIM     = 16;
+constexpr uint32_t BATCH        = 8;
+constexpr uint32_t MULT_DEPTH   = 1;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 static const std::vector<int32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
 static const std::vector<int32_t> cornerCaseIndexList{0};

@@ -34,8 +34,9 @@
  */
 
 #include <iostream>
-#include "openfhe.h"
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

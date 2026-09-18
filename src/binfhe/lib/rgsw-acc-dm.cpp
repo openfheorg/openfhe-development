@@ -31,9 +31,10 @@
 
 #include "rgsw-acc-dm.h"
 
-#include "rgsw-acc-common.h"
-
+#include <memory>
 #include <string>
+
+#include "rgsw-acc-common.h"
 
 namespace lbcrypto {
 

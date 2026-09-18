@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H
-
-#include "lattice/lat-hal.h"
-#include "schemebase/rlwe-cryptoparameters.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_CRYPTOPARAMETERS_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "schemebase/rlwe-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -1875,4 +1875,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_CRYPTOPARAMETERS_H_

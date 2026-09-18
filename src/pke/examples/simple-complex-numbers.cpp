@@ -33,10 +33,11 @@
   Simple examples for CKKS
  */
 
-#include "openfhe.h"
-
+#include <iostream>
 #include <ostream>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 using namespace std::literals;
@@ -363,12 +364,12 @@ void SimpleBootstrappingComplex() {
     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits               = 78;
-    uint32_t firstMod               = 89;
+    uint32_t dcrtBits            = 78;
+    uint32_t firstMod            = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -457,7 +458,8 @@ void SimpleBootstrappingComplex() {
 }
 
 void SimpleBootstrappingStCFirstComplex() {
-    std::cout << "\n================= Bootstrapping Complex Numbers with StC Transformation First =====================\n";
+    std::cout
+        << "\n================= Bootstrapping Complex Numbers with StC Transformation First =====================\n";
 
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
@@ -490,12 +492,12 @@ void SimpleBootstrappingStCFirstComplex() {
     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits               = 78;
-    uint32_t firstMod               = 89;
+    uint32_t dcrtBits            = 78;
+    uint32_t firstMod            = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -546,7 +548,8 @@ void SimpleBootstrappingStCFirstComplex() {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(FHE);
 
-    std::cout << "CKKS scheme is using ring dimension " << ringDim << " and number of slots " << numSlots << " with depth " << depth << "\n\n";
+    std::cout << "CKKS scheme is using ring dimension " << ringDim << " and number of slots " << numSlots
+              << " with depth " << depth << "\n\n";
 
     cryptoContext->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots, 0, true, true);
 

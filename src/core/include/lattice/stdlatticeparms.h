@@ -33,18 +33,18 @@
   Header for the standard values for Lattice Parms, as determined by homomorphicencryption.org
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_STDLATTICEPARMS_H
-#define LBCRYPTO_INC_LATTICE_STDLATTICEPARMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_STDLATTICEPARMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_STDLATTICEPARMS_H_
 
 //  #include "math/math-hal.h"
-
-#include "utils/inttypes.h"
 
 #include <iosfwd>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -133,7 +133,7 @@ public:
 
         int distTypeIdx  = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
-        uint32_t n          = 0;
+        uint32_t n       = 0;
         for (std::pair<const unsigned int, StdLatticeParm*>& it : byLogQ[distTypeIdx][minSecLevIdx]) {
             if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
                 return it.second->getRingDim();
@@ -159,4 +159,4 @@ public:
 
 } /* namespace lbcrypto */
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_STDLATTICEPARMS_H_

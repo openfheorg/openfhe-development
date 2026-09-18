@@ -33,11 +33,7 @@
 CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
-#include "cryptocontext.h"
-#include "math/hal/basicint.h"
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-leveledshe.h"
-#include "schemebase/base-scheme.h"
 
 #include <algorithm>
 #include <map>
@@ -45,6 +41,11 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <utility>
 #include <limits>
 #include <vector>
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "cryptocontext.h"
+#include "math/hal/basicint.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 

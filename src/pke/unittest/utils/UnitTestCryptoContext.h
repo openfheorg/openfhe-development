@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __UNITTESTCRYPTOCONTEXT_H__
-#define __UNITTESTCRYPTOCONTEXT_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTCRYPTOCONTEXT_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTCRYPTOCONTEXT_H_
 
 #include "BaseTestCase.h"
 #include "cryptocontext.h"
@@ -42,4 +42,4 @@ using Element = lbcrypto::DCRTPoly;
 lbcrypto::CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& testData);
 lbcrypto::CryptoContext<Element> UnitTestGenerateContext(const BaseTestCase& testCase);
 
-#endif  // __UNITTESTCRYPTOCONTEXT_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTCRYPTOCONTEXT_H_

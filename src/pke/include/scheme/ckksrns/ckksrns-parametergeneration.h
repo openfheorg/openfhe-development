@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_PARAMETERGENERATION_H
-
-#include "schemerns/rns-parametergeneration.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PARAMETERGENERATION_H_
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-parametergeneration.h"
 
 /**
  * @namespace lbcrypto
@@ -78,4 +78,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PARAMETERGENERATION_H_

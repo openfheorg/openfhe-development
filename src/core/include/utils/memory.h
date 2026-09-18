@@ -33,8 +33,8 @@
   Memory utlities
  */
 
-#ifndef LBCRYPTO_UTILS_MEMORY_H
-#define LBCRYPTO_UTILS_MEMORY_H
+#ifndef SRC_CORE_INCLUDE_UTILS_MEMORY_H_
+#define SRC_CORE_INCLUDE_UTILS_MEMORY_H_
 
 #include <cstdint>
 #include <cstddef>
@@ -77,4 +77,4 @@ bool AllocTrim();
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_UTILS_MEMORY_H
+#endif  // SRC_CORE_INCLUDE_UTILS_MEMORY_H_

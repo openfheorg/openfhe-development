@@ -33,24 +33,22 @@
   Wraps parameters for integer lattice operations using double-CRT representation. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
-#define LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
-
-#include "lattice/hal/elemparams.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/hal/basicint.h"
-#include "math/math-hal.h"
-#include "math/nbtheory-impl.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
 
 #include <iomanip>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/elemparams.h"
+#include "lattice/hal/default/ilparams.h"
+#include "math/hal/basicint.h"
+#include "math/math-hal.h"
+#include "math/nbtheory-impl.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -367,4 +365,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_

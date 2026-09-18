@@ -29,16 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
-
-#include "lattice/lat-hal.h"
-
-#include "schemebase/base-parametergeneration.h"
-#include "schemerns/rns-modulus-limits.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
 
 #include <string>
 #include <memory>
+
+#include "schemerns/rns-modulus-limits.h"
+#include "lattice/lat-hal.h"
+#include "schemebase/base-parametergeneration.h"
 
 /**
  * @namespace lbcrypto
@@ -71,4 +70,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_

@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
-#define LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
-
-#include "key/evalkey.h"
-#include "key/evalkeyrelin-fwd.h"
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "key/evalkeyrelin-fwd.h"
+#include "key/evalkey.h"
 
 /**
  * @namespace lbcrypto
@@ -211,4 +211,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_

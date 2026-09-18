@@ -76,8 +76,8 @@
 * src/pke/unittest/UnitTestEvalMult.cpp.
 */
 
-#ifndef _GEN_CRYPTOCONTEXT_H_
-#define _GEN_CRYPTOCONTEXT_H_
+#ifndef SRC_PKE_INCLUDE_GEN_CRYPTOCONTEXT_H_
+#define SRC_PKE_INCLUDE_GEN_CRYPTOCONTEXT_H_
 
 namespace lbcrypto {
 
@@ -92,4 +92,4 @@ typename T::ContextType GenCryptoContext(const CCParams<T>& params) {
 
 }  // namespace lbcrypto
 
-#endif  // _GEN_CRYPTOCONTEXT_H_
+#endif  // SRC_PKE_INCLUDE_GEN_CRYPTOCONTEXT_H_

@@ -32,6 +32,9 @@
 #include "rgsw-cryptoparameters.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
 
 namespace lbcrypto {
 

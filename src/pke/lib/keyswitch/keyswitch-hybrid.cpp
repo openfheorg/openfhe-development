@@ -34,11 +34,16 @@
  * Appendix of https://eprint.iacr.org/2021/204 for details.
  */
 
+#include "keyswitch/keyswitch-hybrid.h"
+
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ciphertext.h"
 #include "key/evalkeyrelin.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "keyswitch/keyswitch-hybrid.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 namespace lbcrypto {

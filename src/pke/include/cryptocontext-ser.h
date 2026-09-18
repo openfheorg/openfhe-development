@@ -33,19 +33,19 @@
   serialize cryptocontext; include this in any app that needs to serialize them
  */
 
-#ifndef __CRYPTOCONTEXT_SER_H__
-#define __CRYPTOCONTEXT_SER_H__
+#ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_
+#define SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "cryptocontext.h"
 #include "utils/serial.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
                      lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
@@ -193,4 +193,4 @@ template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<SerTyp
 
 }  // namespace lbcrypto
 
-#endif  // __CRYPTOCONTEXT_SER_H__
+#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_

@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
-#include "key/keypair.h"
-#include "key/privatekey.h"
-#include "key/publickey.h"
 #include "schemebase/base-pke.h"
-#include "schemebase/rlwe-cryptoparameters.h"
 
 #include <memory>
 #include <utility>
 #include <vector>
+
+#include "cryptocontext.h"
+#include "key/keypair.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "schemebase/rlwe-cryptoparameters.h"
 
 namespace lbcrypto {
 

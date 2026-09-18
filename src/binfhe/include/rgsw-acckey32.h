@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACCKEY32_H_
-#define _RGSW_ACCKEY32_H_
-
-#include "rgsw-acckey.h"
-#include "rgsw-cryptoparameters.h"
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "rgsw-acckey.h"
+#include "rgsw-cryptoparameters.h"
 
 namespace lbcrypto {
 
@@ -180,4 +180,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACCKEY32_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_

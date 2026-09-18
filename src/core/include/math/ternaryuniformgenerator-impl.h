@@ -33,17 +33,16 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
-#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
-
-#include "math/binaryuniformgenerator.h"
-#include "math/ternaryuniformgenerator.h"
-
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
 
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/ternaryuniformgenerator.h"
+#include "math/binaryuniformgenerator.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -147,4 +146,4 @@ std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uin
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_

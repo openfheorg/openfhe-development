@@ -28,13 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __RNS_MODULUS_LIMITS_H__
-#define __RNS_MODULUS_LIMITS_H__
-
-#include "math/hal/basicint.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_MODULUS_LIMITS_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_MODULUS_LIMITS_H_
 
 #include <cstdint>
 #include <string_view>
+
+#include "math/hal/basicint.h"
 
 namespace lbcrypto {
 namespace DCRT_MODULUS {
@@ -46,4 +46,4 @@ inline constexpr std::uint32_t MAX_SIZE               = MAX_MODULUS_SIZE;
 }  // namespace DCRT_MODULUS
 }  // namespace lbcrypto
 
-#endif  // __RNS_MODULUS_LIMITS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_MODULUS_LIMITS_H_

@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_BE4
+
+    #include <fstream>
+    #include <iostream>
 
     #include "gtest/gtest.h"
     #include "lattice/lat-hal.h"
@@ -39,9 +45,6 @@
     #include "math/nbtheory.h"
     #include "utils/inttypes.h"
     #include "utils/utilities.h"
-
-    #include <fstream>
-    #include <iostream>
 
 using namespace lbcrypto;
 

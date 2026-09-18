@@ -29,9 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemebase/base-scheme.h"
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "key/evalkey.h"
 #include "key/keypair.h"
-#include "schemebase/base-scheme.h"
 
 // the code below is from base-scheme-impl.cpp
 namespace lbcrypto {

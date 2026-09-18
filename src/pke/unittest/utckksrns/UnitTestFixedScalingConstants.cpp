@@ -39,6 +39,11 @@
   recursion before the automatic rescale and lost about 4 bits of a degree-119 evaluation compared with
   FIXEDMANUAL (2^-24 instead of 2^-28 at ring dimension 2^12 with 50-bit primes).
 */
+#include <cmath>
+#include <random>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -46,11 +51,6 @@
 #include "math/chebyshev.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "UnitTestUtils.h"
-
-#include <cmath>
-#include <random>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 

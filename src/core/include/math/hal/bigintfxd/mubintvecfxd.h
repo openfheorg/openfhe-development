@@ -33,19 +33,20 @@
   This file contains the vector manipulation functionality
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
-        #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+    #include <ostream>
+    #include <string>
 
-        #include "math/hal/bigintfxd/ubintfxd.h"
+    #include "math/hal/bigintfxd/ubintfxd.h"
 
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <ostream>
-        #include <string>
+    #include "math/hal/vector.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 /**
  * @namespace bigintfxd
@@ -614,6 +615,6 @@ private:
 
 }  // namespace bigintfxd
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
-
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_

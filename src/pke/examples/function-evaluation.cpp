@@ -33,6 +33,9 @@
   Example of evaluating arbitrary smooth functions with the Chebyshev approximation using CKKS.
  */
 
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 #include "math/chebyshev.h"
 
@@ -172,9 +175,8 @@ void EvalFunctionExample() {
 
     // Compute the same approximation on cleartext data
     std::vector<double> inputDouble{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    auto ptxtApprox = EvalChebyshevFunctionPtxt(
-            [](double x) -> double { return std::sqrt(x); },
-            inputDouble, lowerBound, upperBound, polyDegree);
+    auto ptxtApprox = EvalChebyshevFunctionPtxt([](double x) -> double { return std::sqrt(x); }, inputDouble,
+                                                lowerBound, upperBound, polyDegree);
     std::cout << "Cleartext output\n\t" << ptxtApprox << std::endl;
 
     std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();

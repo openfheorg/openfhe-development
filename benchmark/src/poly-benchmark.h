@@ -29,20 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_BENCHMARK_SRC_POLY_BENCMARK_H
-#define LBCRYPTO_BENCHMARK_SRC_POLY_BENCMARK_H
+#ifndef BENCHMARK_SRC_POLY_BENCHMARK_H_
+#define BENCHMARK_SRC_POLY_BENCHMARK_H_
 
 #define _USE_MATH_DEFINES
-
-#include "benchmark/benchmark.h"
-#include "lattice/lat-hal.h"
-#include "math/discreteuniformgenerator.h"
 
 #include <map>
 #include <memory>
 #include <mutex>
 #include <utility>
 #include <vector>
+
+#include "benchmark/benchmark.h"
+#include "lattice/lat-hal.h"
+#include "math/discreteuniformgenerator.h"
 
 using namespace lbcrypto;
 
@@ -543,4 +543,4 @@ BENCHMARK(DCRT_AutomorphismTransform)->Unit(benchmark::kMicrosecond)->Apply(DCRT
 
 BENCHMARK(DCRT_DropLastElementAndScale)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments)->MinTime(5.0);
 
-#endif
+#endif  // BENCHMARK_SRC_POLY_BENCHMARK_H_

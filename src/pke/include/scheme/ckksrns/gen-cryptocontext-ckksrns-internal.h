@@ -33,8 +33,10 @@
   API to generate CKKS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
-#define __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+
+#include <memory>
 
 #include "constants.h"
 #include "cryptocontext-fwd.h"
@@ -42,8 +44,6 @@
 #include "scheme/scheme-id.h"
 #include "scheme/scheme-utils.h"
 #include "utils/exception.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -59,8 +59,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 
     auto ep = std::make_shared<ParmType>();
 
-    uint32_t scalingModSize    = parameters.GetScalingModSize();
-    uint32_t firstModSize      = parameters.GetFirstModSize();
+    uint32_t scalingModSize = parameters.GetScalingModSize();
+    uint32_t firstModSize   = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
@@ -136,4 +136,4 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 }
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_

@@ -37,15 +37,19 @@
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
 
+#include <string>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
     #define FASTNLOOSE
     #define FORCE_NORMALIZATION
 
-    #include <chrono>
-    #include "math/math-hal.h"
     #include "math/hal/bigintntl/mubintvecntl.h"
+
+    #include <chrono>
+
+    #include "math/math-hal.h"
     #include "utils/diagnostic_output.h"
     #include "time.h"
     #include "utils/debug.h"

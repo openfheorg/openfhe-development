@@ -33,18 +33,18 @@
   Header file for BinFHEContext class, which is used for Boolean circuit FHE schemes
  */
 
-#ifndef BINFHE_BINFHECONTEXT_H
-#define BINFHE_BINFHECONTEXT_H
-
-#include "binfhe-base-scheme.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/memory.h"
-#include "utils/serializable.h"
+#ifndef SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
+#define SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
 
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "binfhe-base-scheme.h"
+#include "lattice/stdlatticeparms.h"
+#include "utils/memory.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -610,4 +610,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_

@@ -33,8 +33,12 @@
 Base class for key switching algorithms.
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BASE_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BASE_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "key/publickey-fwd.h"
@@ -42,10 +46,6 @@ Base class for key switching algorithms.
 #include "key/evalkey-fwd.h"
 #include "utils/exception.h"
 #include "schemebase/base-cryptoparameters.h"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -137,4 +137,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BASE_H_

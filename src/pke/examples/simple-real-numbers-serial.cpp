@@ -35,9 +35,13 @@
   2 separate entities
  */
 
-#include <iomanip>
-#include <tuple>
 #include <unistd.h>
+
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "openfhe.h"
 
@@ -353,9 +357,9 @@ int main() {
               << "an error writing serializations." << std::endl;
 
     // Set main params
-    const int multDepth    = 5;
-    const int scaleModSize = 40;
-    const uint32_t batchSize  = 32;
+    const int multDepth      = 5;
+    const int scaleModSize   = 40;
+    const uint32_t batchSize = 32;
 
     const int cryptoContextIdx = 0;
     const int keyPairIdx       = 1;

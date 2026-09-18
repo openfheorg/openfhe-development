@@ -31,13 +31,14 @@
 
 #if !defined(_MSC_VER)
 
+    #include <iostream>
+    #include <string>
+    #include <vector>
+
     #include "gtest/gtest.h"
     #include "UnitTestCCParams.h"
     #include "UnitTestCryptoContext.h"
     #include "UnitTestUtils.h"
-
-    #include <iostream>
-    #include <vector>
 
 using namespace lbcrypto;
 
@@ -98,7 +99,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEAD
 constexpr uint32_t RING_DIM = 8192;
 constexpr uint32_t PTM      = 20;
 constexpr uint32_t DSIZE    = 4;
-constexpr double STD_DEV = 3.19;
+constexpr double STD_DEV    = 3.19;
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED = {

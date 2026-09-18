@@ -29,14 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_FHE_H
-#define LBCRYPTO_CRYPTO_RNS_FHE_H
-
-#include "lattice/lat-hal.h"
-
-#include "schemebase/base-fhe.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_FHE_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_FHE_H_
 
 #include <string>
+
+#include "lattice/lat-hal.h"
+#include "schemebase/base-fhe.h"
 
 /**
  * @namespace lbcrypto
@@ -73,4 +72,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_FHE_H_

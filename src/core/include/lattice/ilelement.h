@@ -33,17 +33,16 @@
   Represents and defines integer lattice element objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILELEMENT_H
-#define LBCRYPTO_INC_LATTICE_ILELEMENT_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
+#define SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
+
+#include <vector>
 
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
-
-#include <vector>
 
 namespace lbcrypto {
 
@@ -454,4 +453,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_

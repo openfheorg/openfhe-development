@@ -35,17 +35,16 @@
 
 #define _USE_MATH_DEFINES
 
-#include "config_core.h"
+#include <cmath>
+#include <set>
+#include <vector>
 
+#include "config_core.h"
 #include "math/nbtheory.h"
 #include "math/math-hal.h"
 #include "math/distributiongenerator.h"
-
 #include "utils/debug.h"
 #include "utils/utilities.h"
-
-#include <cmath>
-#include <vector>
 
 namespace lbcrypto {
 

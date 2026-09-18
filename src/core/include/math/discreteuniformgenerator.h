@@ -34,13 +34,13 @@
   relies on the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
-
-#include "math/distributiongenerator.h"
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_
 
 #include <limits>
 #include <random>
+
+#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
 
@@ -88,4 +88,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_

@@ -33,19 +33,18 @@
   base class for parameters for a lattice element
  */
 
-#ifndef LBCRYPTO_LATTICE_ELEMPARAMS_H
-#define LBCRYPTO_LATTICE_ELEMPARAMS_H
-
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
 
 #include <ostream>
 #include <string>
 #include <utility>
+
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -231,4 +230,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_

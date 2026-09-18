@@ -29,13 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_LEVELEDSHE_H
-#define LBCRYPTO_CRYPTO_RNS_LEVELEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_LEVELEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_LEVELEDSHE_H_
+
+#include <string>
 
 #include "lattice/lat-hal.h"
 #include "schemebase/base-leveledshe.h"
-
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -377,4 +377,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_LEVELEDSHE_H_

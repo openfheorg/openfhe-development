@@ -33,16 +33,16 @@
   Public key type for lattice crypto operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
-#define LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
-
-#include "key/key.h"
-#include "key/publickey-fwd.h"
+#ifndef SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_
+#define SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "key/publickey-fwd.h"
+#include "key/key.h"
 
 /**
  * @namespace lbcrypto
@@ -175,4 +175,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_

@@ -33,6 +33,12 @@
   Example for serializing and deserializing CKKS bootstrap evaluation keys.
  */
 
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 // Header files needed for serialization
@@ -40,12 +46,6 @@
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -159,8 +159,8 @@ int main() {
 
     std::ifstream bootstrapKeyIn(DATAFOLDER + bootstrapKeyLocation, std::ios::in | std::ios::binary);
     ErrorCheck(bootstrapKeyIn.is_open(), "Error opening bootstrap eval-key input file");
-    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(bootstrapKeyIn, SerType::BINARY, clientCC,
-                                                     secretKey->GetKeyTag(), numSlots),
+    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(bootstrapKeyIn, SerType::BINARY, clientCC, secretKey->GetKeyTag(),
+                                                     numSlots),
                "Error deserializing bootstrap eval keys");
     bootstrapKeyIn.close();
 

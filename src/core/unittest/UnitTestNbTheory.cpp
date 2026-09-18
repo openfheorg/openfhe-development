@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -37,8 +42,6 @@
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -204,9 +207,9 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
     {
         // TEST CASE TO ENSURE THE ROOTS OF UNITY THAT ARE FOUND ARE
         // CONSISTENTLY THE PRIMITIVE ROOTS OF UNTIY
-        const uint32_t n        = 256;
-        const uint32_t m        = 2 * n;
-        const uint32_t nBits    = 43;
+        const uint32_t n     = 256;
+        const uint32_t m     = 2 * n;
+        const uint32_t nBits = 43;
         const int ITERATIONS = m * 2;
 
         T M(std::to_string(m)), MbyTwo(M.DividedBy(2)), MbyFour(MbyTwo.DividedBy(2));

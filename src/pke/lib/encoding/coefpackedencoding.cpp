@@ -34,6 +34,9 @@
  */
 
 #include "encoding/coefpackedencoding.h"
+
+#include <vector>
+
 #include "constants.h"
 
 namespace lbcrypto {

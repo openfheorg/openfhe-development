@@ -33,13 +33,7 @@
 	CKKS to FHEW scheme switching implementation.
  */
 
-#include "cryptocontext.h"
-#include "gen-cryptocontext.h"
-#include "math/dftransform.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "utils/parallel.h"
 
 #include <algorithm>
 #include <cmath>
@@ -50,6 +44,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "scheme/ckksrns/ckksrns-fhe.h"
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "math/dftransform.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "utils/parallel.h"
 
 // K = 16
 // EvalChebyshevCoefficients([](double x) -> double {return std::pow(2.*M_PI, -1./8.) * std::cos(2.*M_PI/8. * (x - 0.25));}, -16, 16, 117)

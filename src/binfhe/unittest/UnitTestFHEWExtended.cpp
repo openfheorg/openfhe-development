@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "binfhecontext.h"
-#include "gtest/gtest.h"
-
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#include "binfhecontext.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 

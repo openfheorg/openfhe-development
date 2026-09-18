@@ -33,8 +33,8 @@
   serialize bgvrns; include this in any app that needs to serialize this scheme
  */
 
-#ifndef __BGVRNS_SER_H__
-#define __BGVRNS_SER_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SER_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SER_H_
 
 #include "scheme/bgvrns/bgvrns-scheme.h"
 #include "scheme/bgvrns/bgvrns-fhe.h"
@@ -48,4 +48,4 @@ CEREAL_REGISTER_TYPE(lbcrypto::FHEBGVRNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHERNS, lbcrypto::FHEBGVRNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRNS, lbcrypto::CryptoParametersBGVRNS);
 
-#endif  // __BGVRNS_SER_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SER_H_

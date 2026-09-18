@@ -33,17 +33,16 @@
  * This code benchmarks CKKS serialization.
  */
 
-
 // #define PROFILE
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
-
-#include <iostream>
 #include <fstream>
-#include <limits>
+#include <iostream>
 #include <iterator>
+#include <limits>
 #include <random>
+#include <vector>
 
+#include "benchmark/benchmark.h"
 #include "cryptocontext-ser.h"
 #include "ciphertext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"

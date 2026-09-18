@@ -34,6 +34,15 @@
  */
 
 #include "cryptocontext.h"
+
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "key/privatekey.h"
 #include "key/publickey.h"
 #include "math/chebyshev.h"

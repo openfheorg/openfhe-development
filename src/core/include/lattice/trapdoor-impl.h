@@ -35,17 +35,15 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
-
-#include "lattice/lat-hal.h"
-#include "lattice/trapdoor.h"
-
-#include "math/matrix-impl.h"
-
-#include "utils/debug.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
 
 #include <memory>
+
+#include "lattice/trapdoor.h"
+#include "lattice/lat-hal.h"
+#include "math/matrix-impl.h"
+#include "utils/debug.h"
 
 namespace lbcrypto {
 
@@ -254,4 +252,4 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_

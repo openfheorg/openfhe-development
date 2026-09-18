@@ -35,16 +35,15 @@
   https://eprint.iacr.org/2018/1222.pdf
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_DGSAMPLING_IMPL_H
-#define LBCRYPTO_INC_LATTICE_DGSAMPLING_IMPL_H
-
-#include "lattice/dgsampling.h"
-
-#include "utils/inttypes.h"
-#include "utils/parallel.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_IMPL_H_
 
 #include <memory>
 #include <vector>
+
+#include "lattice/dgsampling.h"
+#include "utils/inttypes.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -516,4 +515,4 @@ void LatticeGaussSampUtility<Element>::InversePermute(std::shared_ptr<Matrix<int
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_IMPL_H_

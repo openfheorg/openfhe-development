@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_FHE_H
-#define LBCRYPTO_CRYPTO_BASE_FHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_
+
+#include <map>
+#include <memory>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "binfhecontext.h"
 #include "ciphertext-fwd.h"
@@ -40,12 +46,6 @@
 #include "key/privatekey-fwd.h"
 #include "scheme/scheme-swch-params.h"
 #include "utils/exception.h"
-
-#include <map>
-#include <memory>
-#include <tuple>
-#include <utility>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -545,4 +545,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_

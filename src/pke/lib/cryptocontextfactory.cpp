@@ -28,8 +28,12 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "cryptocontext.h"
 #include "cryptocontextfactory.h"
+
+#include <memory>
+#include <vector>
+
+#include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 #include "scheme/scheme-id.h"
 

@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef SRC_PKE_CRYPTOCONTEXTFACTORY_H_
-#define SRC_PKE_CRYPTOCONTEXTFACTORY_H_
+#ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXTFACTORY_H_
+#define SRC_PKE_INCLUDE_CRYPTOCONTEXTFACTORY_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 #include "scheme/scheme-id.h"
 #include "utils/memory.h"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -97,4 +97,4 @@ std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXTFACTORY_H_

@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __UNITTESTCCPARAMS_H__
-#define __UNITTESTCCPARAMS_H__
-
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTCCPARAMS_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTCCPARAMS_H_
 
 #include <cmath>
 #include <iosfwd>
 #include <string>
+
+#include "scheme/scheme-id.h"
 
 enum { DFLT = -999 };  // enum for test cases if you want to use the default value for the parameter
 
@@ -82,4 +82,4 @@ inline bool isDefaultValue(double val) {
 }
 //===========================================================================================================
 
-#endif  // __UNITTESTCCPARAMS_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTCCPARAMS_H_

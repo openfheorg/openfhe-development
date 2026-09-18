@@ -34,16 +34,15 @@
   https://eprint.iacr.org/2018/946, and "Implementing Token-Based Obfuscation under (Ring) LWE" (not publicly available yet)
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_DGSAMPLING_H
-#define LBCRYPTO_INC_LATTICE_DGSAMPLING_H
-
-#include "lattice/field2n.h"
-
-#include "math/matrix.h"
-#include "math/nbtheory.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_H_
+#define SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_H_
 
 #include <memory>
 #include <vector>
+
+#include "lattice/field2n.h"
+#include "math/matrix.h"
+#include "math/nbtheory.h"
 
 namespace lbcrypto {
 
@@ -186,4 +185,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_H_
