@@ -83,6 +83,10 @@ Setup
 
 Now, ``pre-commit`` will run automatically on ``git commit``.
 
+The same hooks run in CI on every pull request. If they report a failure there,
+the log shows the exact changes they would make; ``pre-commit run --all-files``
+locally applies them.
+
 By default, ``pre-commit`` will only run on changed files. To run on all
 the files (recommended when adding new hooks), call
 
