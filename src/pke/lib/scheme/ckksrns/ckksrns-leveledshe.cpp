@@ -220,6 +220,33 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphert
 // CKKS Core
 /////////////////////////////////////
 
+namespace {
+// Brings the degree-1 encoding of a constant to the scale of a degree-d ciphertext by multiplying it
+// (d - 1) times by the per-degree factor. For FIXEDMANUAL and FIXEDAUTO that factor is the modulus of the
+// tower dropped by the corresponding rescale rather than the scaling factor Delta: the rescale divides by
+// the actual prime q_l, so a constant encoded as c * Delta^d would come out as c * Delta / q_l. The residual
+// (about 2^-33 for 50-bit primes) is a constant shift of T_2 = 2x^2 - 1 that the squaring chain of the
+// Paterson-Stockmeyer giant steps amplifies by roughly the square of the degree.
+std::vector<DCRTPoly::Integer> ScaleConstantToDegree(std::vector<DCRTPoly::Integer> constant,
+                                                     const std::vector<DCRTPoly::Integer>& crtScFactor,
+                                                     const std::vector<DCRTPoly::Integer>& moduli,
+                                                     uint32_t noiseScaleDeg, bool fixedScaling) {
+    const uint32_t numTowers = moduli.size();
+    for (uint32_t i = 1; i < noiseScaleDeg; ++i) {
+        if (fixedScaling && i < numTowers) {
+            std::vector<DCRTPoly::Integer> crtQ(numTowers);
+            for (uint32_t j = 0; j < numTowers; ++j)
+                crtQ[j] = moduli[numTowers - i].Mod(moduli[j]);
+            constant = CKKSPackedEncoding::CRTMult(constant, crtQ, moduli);
+        }
+        else {
+            constant = CKKSPackedEncoding::CRTMult(constant, crtScFactor, moduli);
+        }
+    }
+    return constant;
+}
+}  // namespace
+
 #if NATIVEINT == 128
 namespace {
 // Returns (value * 2^shift) mod modulus for any shift >= 0. Applying the power of two in
@@ -266,14 +293,15 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     std::vector<DCRTPoly::Integer> currPowP(numTowers);
     if (pRemaining < 0) {
         // Discard scalars below the integer precision without an out-of-range shift.
-        DCRTPoly::Integer scaledConstant(pRemaining <= -64 ? uint64_t(0) : uint64_t(scaled64) >> (-pRemaining));
+        DCRTPoly::Integer scaledConstant(pRemaining <= -64 ? static_cast<uint64_t>(0) :
+                                                             static_cast<uint64_t>(scaled64) >> (-pRemaining));
         currPowP.assign(numTowers, scaledConstant);
     }
     else {
         // scaled64 * 2^pRemaining needs more than 128 bits once the operand is large, so the
         // power of two is applied modulo each tower rather than to scaled64 itself.
         for (uint32_t i = 0; i < numTowers; ++i)
-            currPowP[i] = ModShiftLeft(DCRTPoly::Integer(uint64_t(scaled64)), pRemaining, moduli[i]);
+            currPowP[i] = ModShiftLeft(DCRTPoly::Integer(static_cast<uint64_t>(scaled64)), pRemaining, moduli[i]);
     }
 
     // 2^precision * 2^pCurrent, reduced per tower: CRTMult below uses ModMulFast, which assumes
@@ -291,10 +319,10 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
             crtPowP[i] = ModShiftLeft(DCRTPoly::Integer(powp64), pCurrent, moduli[i]);
     }
 
-    // multiply c*powP with powP a total of (depth-1) times to get c*powP^d
-    for (uint32_t i = 0; i < ciphertext->GetNoiseScaleDeg() - 1; ++i)
-        currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
-    return currPowP;
+    // multiply c*powP with the per-degree factor a total of (depth-1) times
+    const auto scalTech = cryptoParams->GetScalingTechnique();
+    return ScaleConstantToDegree(std::move(currPowP), crtPowP, moduli, ciphertext->GetNoiseScaleDeg(),
+                                 scalTech == FIXEDMANUAL || scalTech == FIXEDAUTO);
 }
 #else  // NATIVEINT == 64
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
@@ -418,8 +446,9 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     else {
         DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
         std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
-        for (uint32_t i = 1; i < ciphertext->GetNoiseScaleDeg(); ++i)
-            crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
+        const auto scalTech = cryptoParams->GetScalingTechnique();
+        crtConstant = ScaleConstantToDegree(std::move(crtConstant), crtScFactor, moduli, ciphertext->GetNoiseScaleDeg(),
+                                            scalTech == FIXEDMANUAL || scalTech == FIXEDAUTO);
     }
 
     return crtConstant;
@@ -450,7 +479,8 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     // unspecified value when the operand is non-finite or out of range, and negating the
     // signed minimum would be undefined behaviour.
     const bool isNegative = (scaled64 < 0);
-    uint64_t magnitude    = isNegative ? uint64_t(0) - uint64_t(scaled64) : uint64_t(scaled64);
+    uint64_t magnitude =
+        isNegative ? static_cast<uint64_t>(0) - static_cast<uint64_t>(scaled64) : static_cast<uint64_t>(scaled64);
 
     if (pRemaining < 0) {
         // Scalars below the integer precision truncate toward zero for either sign instead of
@@ -645,6 +675,56 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& cipher
     const uint32_t sizeQl2   = ciphertext2->GetElements()[0].GetNumOfElements();
     const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    const auto scalTech = cryptoParams->GetScalingTechnique();
+    if ((scalTech == FIXEDMANUAL || scalTech == FIXEDAUTO) && c1depth == c2depth) {
+        // The FIXED techniques use the scaling factor Delta at every level, so operands of equal noise scale
+        // degree only have to agree on the number of towers: both carry the same power of Delta, and the
+        // eventual rescale divides both by the same dropped prime. Multiplying by Delta and rescaling instead
+        // (the FLEXIBLE* maneuver below) would leave a Delta / q_l residual on the value and spend a scalar
+        // multiplication and a rescale for nothing.
+        if (c1lvl < c2lvl)
+            LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl);
+        else if (c2lvl < c1lvl)
+            LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl);
+        return;
+    }
+
+    if (scalTech == FIXEDAUTO) {
+        // A noise scale degree mismatch under FIXEDAUTO (equal degrees were handled above). A degree-2
+        // ciphertext is rescaled when the other operand has degree 1 and more towers dropped; otherwise the
+        // degree-1 ciphertext is multiplied by the modulus of the target's last tower, which the eventual
+        // rescale divides out exactly. A degree mismatch under FIXEDMANUAL is left to the general path below.
+        auto raiseDegree = [&](Ciphertext<DCRTPoly>& ciphertext, const Ciphertext<DCRTPoly>& target) {
+            const auto& targetPoly = target->GetElements()[0];
+            const auto q           = targetPoly.GetElementAtIndex(targetPoly.GetNumOfElements() - 1).GetModulus();
+            const auto& polys      = ciphertext->GetElements()[0].GetAllElements();
+            std::vector<DCRTPoly::Integer> crtQ(polys.size());
+            for (uint32_t i = 0; i < polys.size(); ++i)
+                crtQ[i] = q.Mod(polys[i].GetModulus());
+            for (auto& element : ciphertext->GetElements())
+                element = element.Times(crtQ);
+            ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
+            ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() *
+                                         cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
+        };
+        if (c1lvl == c2lvl) {
+            if (c1depth < c2depth)
+                raiseDegree(ciphertext1, ciphertext2);
+            else
+                raiseDegree(ciphertext2, ciphertext1);
+            return;
+        }
+        auto& lower  = (c1lvl < c2lvl) ? ciphertext1 : ciphertext2;
+        auto& higher = (c1lvl < c2lvl) ? ciphertext2 : ciphertext1;
+        if (lower->GetNoiseScaleDeg() == 2)
+            ModReduceInternalInPlace(lower, BASE_NUM_LEVELS_TO_DROP);
+        else
+            raiseDegree(lower, higher);
+        if (lower->GetLevel() < higher->GetLevel())
+            LevelReduceInternalInPlace(lower, higher->GetLevel() - lower->GetLevel());
+        return;
+    }
 
     if (c1lvl < c2lvl) {
         if (c1depth == 2) {

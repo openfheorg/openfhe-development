@@ -114,9 +114,10 @@ build), the Hamming weight of the sparse key is 64 and the K = 28 approximation 
 probability of failure negligible (below 2^-142 for 2^16 slots) at the cost of the extra level mentioned above.
 
 The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption standard. It is handled in the
-same manner as in regular CKKS bootstrapping: the number of overflows is bounded by K = 512, and the complex exponential (or
-cosine, for the binary case) is approximated by a degree-92 Chebyshev interpolation over [-512, 512] followed by six double-angle
-iterations (instead of degree 58/46 and two double-angle iterations for the sparse distributions). This increases the
+same manner as in regular CKKS bootstrapping: the number of overflows is bounded by K = 672 (probability of failure below 2^-73
+for N = 2^16 and 2^-30 for N = 2^17 with full packing), and the complex exponential (or cosine, for the binary case) is
+approximated by a degree-104 Chebyshev interpolation over [-672, 672] followed by six double-angle iterations (instead of degree
+64/46 and two double-angle iterations for the sparse distributions). This increases the
 multiplicative depth of functional bootstrapping by 5 levels. In addition, since the mod-raised message is scaled down by K
 before the homomorphic encoding, larger scaling factors (roughly 5-9 more bits, depending on the parameters) are needed to
 achieve the same output noise as for the sparse distributions.

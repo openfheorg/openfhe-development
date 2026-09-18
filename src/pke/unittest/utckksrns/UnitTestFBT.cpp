@@ -338,10 +338,10 @@ static std::vector<TEST_CASE_FBT> testCases = {
     { FBT_MVB_REUSE, "705",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
     {   FBT_INVALID, "801",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
     // UNIFORM_TERNARY: the uniform secret distribution uses six double-angle iterations instead of two
-    // and a degree-92 Chebyshev interpolation instead of degree-58 (the mod-raise overflow bound is
-    // K_UNIFORM = 512 vs 25/16 for the sparse distributions), which adds 5 levels of multiplicative
+    // and a degree-104 Chebyshev interpolation instead of degree 64/46 (the mod-raise overflow bound is
+    // K_UNIFORM_FBT = 672 vs 28/16 for the sparse distributions), which adds 5 levels of multiplicative
     // depth. Larger scaling factors are used as well, because the mod-raised message is scaled down by
-    // K_UNIFORM before CoeffsToSlots, which amplifies the (fixed-size) encoding noise relative to the
+    // K_UNIFORM_FBT before CoeffsToSlots, which amplifies the (fixed-size) encoding noise relative to the
     // message.
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
     {    FBT_ARBLUT, "901",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},

@@ -1550,8 +1550,8 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     double k;
     switch (cryptoParams->GetSecretKeyDist()) {
         case UNIFORM_TERNARY:
-            // K_UNIFORM = 512 covers all composite degrees and ring dimensions, as in regular bootstrapping
-            k = 1.0;  // K_UNIFORM is applied at runtime in EvalFEFuncBootstrap
+            // K_UNIFORM_FEFBT covers all composite degrees and ring dimensions, as in regular bootstrapping
+            k = 1.0;  // K_UNIFORM_FEFBT is applied at runtime in EvalFEFuncBootstrap
             break;
         case SPARSE_TERNARY:
             k = K_SPARSE;
@@ -1706,15 +1706,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
 
     // the runtime part of the overflow-bound normalization; for the sparse distributions K is folded
     // into the CoeffsToSlots matrix instead (see EvalFEFuncBootstrapSetup)
-    double k = (skd == UNIFORM_TERNARY) ? K_UNIFORM : 1.0;
+    double k = (skd == UNIFORM_TERNARY) ? K_UNIFORM_FEFBT : 1.0;
 
     // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup; the K = 28
     // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64)
     const bool smallSparseKey = (skd == SPARSE_ENCAPSULATED) && (cryptoParams->GetSparseKSHammingWeight() == 32);
-    const auto& coeffExp      = (skd == UNIFORM_TERNARY) ? coeff_exp_512_double_23 :
+    const auto& coeffExp      = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
                                 smallSparseKey           ? coeff_exp_16_double_23 :
                                                            coeff_exp_28_double_48;
-    const uint32_t rFunc      = (skd == UNIFORM_TERNARY) ? R_func_512_double_23 :
+    const uint32_t rFunc      = (skd == UNIFORM_TERNARY) ? R_func_696_double_27 :
                                 smallSparseKey           ? R_func_16_double_23 :
                                                            R_func_28_double_48;
 
@@ -3542,7 +3542,7 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     auto skd = cryptoParams->GetSecretKeyDist();
     switch (skd) {
         case UNIFORM_TERNARY:
-            k = K_UNIFORM;
+            k = K_UNIFORM_FBT;
             break;
         case SPARSE_TERNARY:
             k = K_SPARSE;
@@ -3946,7 +3946,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double_92 :
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
                                                              coeff_cos_28_double_68;
 
@@ -3967,7 +3967,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             }
         }
         else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
                                                              coeff_exp_28_double_69;
 
@@ -4033,7 +4033,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double_92 :
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
                                                              coeff_cos_28_double_68;
 
@@ -4051,7 +4051,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
         }
         else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
                               (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
                                                              coeff_exp_28_double_69;
 
@@ -4318,10 +4318,10 @@ uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& c
     // K = 28 approximations of SPARSE_TERNARY
     if (UsesLargeSparseKey(skd, sparseKSHammingWeight))
         skd = SPARSE_TERNARY;
-    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_512_double_92 :
+    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
                       (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
                                                      coeff_cos_28_double_68;
-    auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_512_double_92 :
+    auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
                       (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
                                                      coeff_exp_28_double_69;
     uint32_t depth  = 0;
@@ -4487,11 +4487,11 @@ uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
     // above 60 bits) uses the K = 28 exponential table of SPARSE_TERNARY (see EvalFEFuncBootstrapSetup)
     const bool sparseTable = (skd == SPARSE_TERNARY) ||
                              UsesLargeSparseKey(skd, CryptoParametersCKKSRNS::SparseKSHammingWeight(firstModSize));
-    const auto& coeff_exp   = (skd == UNIFORM_TERNARY) ? coeff_exp_512_double_23 :
+    const auto& coeff_exp   = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
                               sparseTable              ? coeff_exp_28_double_48 :
                                                          coeff_exp_16_double_23;
     const uint32_t expDepth = GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
-    const uint32_t rFunc    = (skd == UNIFORM_TERNARY) ? R_func_512_double_23 :
+    const uint32_t rFunc    = (skd == UNIFORM_TERNARY) ? R_func_696_double_27 :
                               sparseTable              ? R_func_28_double_48 :
                                                          R_func_16_double_23;
     return levelBudget[0] + levelBudget[1] + expDepth + rFunc + GetMultiplicativeDepthByCoeffVector(coefficients, true);
