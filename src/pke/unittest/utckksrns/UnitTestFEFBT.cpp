@@ -146,16 +146,16 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_FEFB
     return os << test.toString();
 }
 
-constexpr uint32_t MULT_DEPTH   = 26;
-constexpr uint32_t RDIM         = 1 << 12;
-constexpr uint32_t NUM_LRG_DIGS = 3;
-constexpr uint32_t SPARSE_SLOTS = 8;
+constexpr uint32_t MULT_DEPTH = 26;
 // register word size for the COMPOSITESCALING* techniques: composite degree 2 for the 59-bit scaling factor
 constexpr uint32_t REG_WORD_SIZE = 32;
 
 #if NATIVEINT != 128
-constexpr uint32_t SMODSIZE = 59;
-constexpr uint32_t FMODSIZE = 60;
+constexpr uint32_t RDIM         = 1 << 12;
+constexpr uint32_t NUM_LRG_DIGS = 3;
+constexpr uint32_t SPARSE_SLOTS = 8;
+constexpr uint32_t SMODSIZE     = 59;
+constexpr uint32_t FMODSIZE     = 60;
 // composite degree 3 for the 32-bit register word size (three ~26-bit primes per level); FE functional
 // bootstrapping requires the first modulus to be exactly one bit larger than the scaling factor
 constexpr uint32_t SMODSIZED3 = 78;
