@@ -17,8 +17,10 @@ concurrency:
 jobs:
   pre-commit:
     # A GitHub-hosted runner keeps this off the build machines. The job needs
-    # only Python and network access, and it takes about a minute.
-    runs-on: ubuntu-latest
+    # only Python and network access, and it takes about a minute. The image is
+    # pinned rather than tracking ubuntu-latest, so what that label points at
+    # cannot change this job underneath us.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
