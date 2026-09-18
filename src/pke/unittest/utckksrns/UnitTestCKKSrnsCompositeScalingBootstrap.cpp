@@ -145,6 +145,7 @@ constexpr uint32_t FMODSIZED3 = 89;
 constexpr uint32_t SMODSIZED2 = 59;
 constexpr uint32_t FMODSIZED2 = 60;
 
+#if MATHBACKEND != 2
 // edge cases of the largest scaling factors: 119 bits with a 120-bit first modulus is the maximum for a register
 // word size of 64 bits (composite degree 2 with two 60-bit primes; a 121-bit first modulus would need a 61-bit
 // prime), and 120 bits (the maximum scaling factor of composite scaling) with a 121-bit first modulus requires a
@@ -153,6 +154,7 @@ constexpr uint32_t SMODSIZEMAX64 = 119;
 constexpr uint32_t FMODSIZEMAX64 = 120;
 constexpr uint32_t SMODSIZEMAX32 = 120;
 constexpr uint32_t FMODSIZEMAX32 = 121;
+#endif
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSCS_BOOT> testCases = {
