@@ -124,10 +124,7 @@ Plaintext serverVerification(CryptoContext<DCRTPoly>& cc, KeyPair<DCRTPoly>& kp,
  * @return Tuple<cryptoContext, keyPair>
  */
 std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize,
-                                                                                uint32_t multDepth,
-                                                                                uint32_t scaleModSize,
-                                                                                uint32_t firstModSize,
-                                                                                uint32_t logQ_LWE, bool oneHot) {
+        uint32_t multDepth, uint32_t scaleModSize, uint32_t firstModSize, uint32_t logQ_LWE, bool oneHot) {
     SecurityLevel sl      = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
 
@@ -240,7 +237,7 @@ void clientProcess(uint32_t modulus_LWE) {
 
     // Compute on the ciphertext
     auto clientCiphertextArgmin =
-        clientCC->EvalMinSchemeSwitching(clientC, clientPublicKey, clientC->GetSlots(), clientC->GetSlots(), 0, 1);
+            clientCC->EvalMinSchemeSwitching(clientC, clientPublicKey, clientC->GetSlots(), clientC->GetSlots(), 0, 1);
 
     std::cout << "Done with argmin computation" << '\n' << std::endl;
 
@@ -271,11 +268,11 @@ int main() {
     const int vectorSizeIdx    = 2;
 
     demarcate(
-        "Scheme switching Part 1: Cryptocontext generation, key generation, data encryption "
-        "(server)");
+            "Scheme switching Part 1: Cryptocontext generation, key generation, data encryption "
+            "(server)");
 
     auto tupleCryptoContext_KeyPair =
-        serverSetupAndWrite(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
+            serverSetupAndWrite(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
 
     auto cc         = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);
     auto kp         = std::get<keyPairIdx>(tupleCryptoContext_KeyPair);

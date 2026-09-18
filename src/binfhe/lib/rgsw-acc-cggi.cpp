@@ -40,8 +40,8 @@
 namespace lbcrypto {
 
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
-RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
+RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(
+        const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
     auto sv    = LWEsk->GetElement();
     auto neg   = sv.GetModulus().ConvertToInt() - 1;
     uint32_t n = sv.GetLength();
@@ -68,8 +68,8 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
 }
 
 #if NATIVEINT != 32
-RingGSWACCKey32 RingGSWAccumulatorCGGI::KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                    const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
+RingGSWACCKey32 RingGSWAccumulatorCGGI::KeyGenAcc32(
+        const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
     auto sv    = LWEsk->GetElement();
     auto neg   = sv.GetModulus().ConvertToInt() - 1;
     uint32_t n = sv.GetLength();
@@ -102,10 +102,9 @@ RingGSWACCKey32 RingGSWAccumulatorCGGI::KeyGenAcc32(const std::shared_ptr<RingGS
 namespace {
 
 void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_t Q, uint64_t mu, uint32_t M,
-                    const RingGSWCryptoParams::BaseGParams& bp, const RingGSWACCKey32Impl::EvalKey32& ek1,
-                    const RingGSWACCKey32Impl::EvalKey32& ek2, const std::vector<NativePoly32>& monomials,
-                    const std::vector<NativeVector32>& monomialsPrecon, const NativeInteger& a,
-                    std::vector<NativePoly32>& acc) {
+        const RingGSWCryptoParams::BaseGParams& bp, const RingGSWACCKey32Impl::EvalKey32& ek1,
+        const RingGSWACCKey32Impl::EvalKey32& ek2, const std::vector<NativePoly32>& monomials,
+        const std::vector<NativeVector32>& monomialsPrecon, const NativeInteger& a, std::vector<NativePoly32>& acc) {
     thread_local std::vector<NativePoly32> ctScratch, dctScratch, tmpScratch;
     auto& ct  = ctScratch;
     auto& dct = dctScratch;
@@ -184,7 +183,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
 }  // namespace
 
 void RingGSWAccumulatorCGGI::EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek,
-                                       RLWECiphertext& acc, const NativeVector& a) const {
+        RLWECiphertext& acc, const NativeVector& a) const {
     const auto& polyParams      = params->GetPolyParams32();
     const auto& monomials       = *params->GetMonomials32();
     const auto& monomialsPrecon = *params->GetMonomialsPrecon32();
@@ -199,7 +198,7 @@ void RingGSWAccumulatorCGGI::EvalAcc32(const std::shared_ptr<RingGSWCryptoParams
     auto MbyMod{NativeInteger(M) / mod};
     for (uint32_t i = 0; i < n; ++i) {
         AddToAccCGGI32(polyParams, Q, mu, M, params->GetBaseGParams(i), (*ek)[0][0][i], (*ek)[0][1][i], monomials,
-                       monomialsPrecon, NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc32);
+                monomialsPrecon, NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc32);
     }
 
     WidenAcc32Into(acc32, acc->GetElements());
@@ -207,7 +206,7 @@ void RingGSWAccumulatorCGGI::EvalAcc32(const std::shared_ptr<RingGSWCryptoParams
 #endif  // NATIVEINT != 32
 
 void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
-                                     RLWECiphertext& acc, const NativeVector& a) const {
+        RLWECiphertext& acc, const NativeVector& a) const {
     if (!params->HasMonomials())
         OPENFHE_THROW("the 64-bit monomials were released; regenerate keys or reload them through the context");
     uint32_t n(a.GetLength());
@@ -221,10 +220,10 @@ void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>&
 
 // Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/086
 RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                  const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
+        const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
     GadgetMonomial mono{0, m ? GadgetTerm::ADD : GadgetTerm::NONE};
     return std::make_shared<RingGSWEvalKeyImpl>(
-        RGSWEncrypt(params, params->GetPolyParams(), skNTT, params->GetDgg(), index, mono));
+            RGSWEncrypt(params, params->GetPolyParams(), skNTT, params->GetDgg(), index, mono));
 }
 
 // CGGI Accumulation as described in https://eprint.iacr.org/2020/086
@@ -232,8 +231,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
 void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                                          ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc,
-                                          uint32_t index) const {
+        ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const {
     thread_local std::vector<NativePoly> ctScratch, dctScratch, tmpScratch;
     auto& ct  = ctScratch;
     auto& dct = dctScratch;

@@ -38,8 +38,8 @@
 using namespace lbcrypto;
 
 template <typename ST>
-void UnitTestFHEWPKESerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METHOD variant,
-                           const std::string& errMsg) {
+void UnitTestFHEWPKESerial(
+        const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METHOD variant, const std::string& errMsg) {
     const LWEPlaintext val(1);
     auto cc1 = BinFHEContext();
     cc1.GenerateBinFHEContext(secLevel, variant);

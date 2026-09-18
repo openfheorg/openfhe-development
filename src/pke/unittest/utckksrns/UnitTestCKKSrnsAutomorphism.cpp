@@ -210,8 +210,8 @@ class UTCKKSRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     const std::vector<std::complex<double>> vectorComplexFailure{1.0, 2.0, 3.0, 4.0};
     const std::vector<std::complex<double>> vector8Complex{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
     const std::complex<double> vector8ComplexSum =
-        std::accumulate(vector8Complex.begin(), vector8Complex.end(), std::complex<double>(0));  // 36.0;
-    const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));      // 36
+            std::accumulate(vector8Complex.begin(), vector8Complex.end(), std::complex<double>(0));  // 36.0;
+    const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));          // 36
 
 protected:
     void SetUp() {
@@ -223,8 +223,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
-                                         const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndexPackedArray(
+            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         for (auto index : testData.indexList) {
             try {
                 CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -233,7 +233,7 @@ protected:
                 KeyPair<Element> kp = cc->KeyGen();
 
                 std::vector<std::complex<double>> inputVec =
-                    (INVALID_INPUT_DATA == testData.error) ? vectorComplexFailure : vector8Complex;
+                        (INVALID_INPUT_DATA == testData.error) ? vectorComplexFailure : vector8Complex;
                 Plaintext intArray = cc->MakeCKKSPackedPlaintext(inputVec);
 
                 std::vector<int32_t> indices{index, -index};
@@ -247,8 +247,8 @@ protected:
                 }
 
                 Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?
-                                                     cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
-                                                     cc->Encrypt(kp.publicKey, intArray);
+                                                         cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                                         cc->Encrypt(kp.publicKey, intArray);
 
                 if (INVALID_INDEX == testData.error)
                     index = invalidIndexAutomorphism;
@@ -298,8 +298,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalSumPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
-                                     const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumPackedArray(
+            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -317,8 +317,8 @@ protected:
             }
 
             Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?
-                                                 cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
-                                                 cc->Encrypt(kp.publicKey, intArray);
+                                                     cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                                     cc->Encrypt(kp.publicKey, intArray);
 
             uint32_t batchSz       = (INVALID_BATCH_SIZE == testData.error) ? (BATCH * 2) : BATCH;
             Ciphertext<Element> p1 = cc->EvalSum(ciphertext, batchSz);
@@ -361,8 +361,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalSumRows(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
-                              const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumRows(
+            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -391,7 +391,7 @@ protected:
             result->SetLength(batchSize);
             // std::cout << "sum Rows: " << result;
             checkEquality(result->GetCKKSPackedValue(), outputSumRows, eps,
-                          failmsg + " EvalSumRowsKeyGen()/EvalSumRows fails - result is incorrect");
+                    failmsg + " EvalSumRowsKeyGen()/EvalSumRows fails - result is incorrect");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -403,8 +403,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalSumCols(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
-                              const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumCols(
+            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -433,7 +433,7 @@ protected:
             result->SetLength(batchSize);
             // std::cout << "sum Cols: " << result;
             checkEquality(result->GetCKKSPackedValue(), outputSumCols, eps,
-                          failmsg + " EvalSumColsKeyGen()/EvalSumCols fails - result is incorrect");
+                    failmsg + " EvalSumColsKeyGen()/EvalSumCols fails - result is incorrect");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -468,5 +468,5 @@ TEST_P(UTCKKSRNS_AUTOMORPHISM, Automorphism) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTCKKSRNS_AUTOMORPHISM),
-                         testName);
+INSTANTIATE_TEST_SUITE_P(
+        UnitTests, UTCKKSRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTCKKSRNS_AUTOMORPHISM), testName);

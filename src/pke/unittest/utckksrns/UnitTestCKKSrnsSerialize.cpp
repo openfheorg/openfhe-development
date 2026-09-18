@@ -196,8 +196,8 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype,
-                                const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(
+            const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -267,9 +267,9 @@ protected:
             plaintextShortNew->SetLength(plaintextShort->GetLength());
             plaintextShortNewL2D2->SetLength(plaintextShortL2D2->GetLength());
             checkEquality(plaintextShortNew->GetCKKSPackedValue(), plaintextShort->GetCKKSPackedValue(), eps,
-                          failmsg + " Decrypted serialization test fails");
+                    failmsg + " Decrypted serialization test fails");
             checkEquality(plaintextShortNewL2D2->GetCKKSPackedValue(), plaintextShortL2D2->GetCKKSPackedValue(), eps,
-                          failmsg + " Decrypted serialization test fails (level 2, depth 2)");
+                    failmsg + " Decrypted serialization test fails (level 2, depth 2)");
 
             OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
@@ -283,25 +283,25 @@ protected:
             // serialize a bunch of mult keys
             std::stringstream ser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser0, sertype, kp.secretKey->GetKeyTag()), true)
-                << "single eval mult key ser fails";
+                    << "single eval mult key ser fails";
             std::stringstream ser2a;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser2a, sertype, cc), true)
-                << "context 1 eval mult key ser fails";
+                    << "context 1 eval mult key ser fails";
             std::stringstream ser3;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser3, sertype), true)
-                << "all context eval mult key ser fails";
+                    << "all context eval mult key ser fails";
 
             OPENFHE_DEBUG("step 8");
             // serialize a bunch of sum keys
             std::stringstream aser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser0, sertype, kp.secretKey->GetKeyTag()), true)
-                << "single eval sum key ser fails";
+                    << "single eval sum key ser fails";
             std::stringstream aser2a;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser2a, sertype, cc), true)
-                << "single ctx eval sum key ser fails";
+                    << "single ctx eval sum key ser fails";
             std::stringstream aser3;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser3, sertype), true)
-                << "all eval sum key ser fails";
+                    << "all eval sum key ser fails";
 
             OPENFHE_DEBUG("step 9");
             cc.reset();
@@ -378,15 +378,15 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
-    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData,
-                                    const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(
+            const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
 
     template <typename ST>
-    void TestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype,
-                                      const std::string& failmsg = std::string()) {
+    void TestDecryptionSerNoCRTTables(
+            const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -437,7 +437,7 @@ protected:
             cc->Decrypt(kp.secretKey, newC, &result);
             result->SetLength(plaintextShort->GetLength());
             checkEquality(plaintextShort->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
-                          failmsg + " Decryption Failed");
+                    failmsg + " Decryption Failed");
 
             EnablePrecomputeCRTTablesAfterDeserializaton();
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
@@ -456,8 +456,8 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
-    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData,
-                                          const std::string& failmsg = std::string()) {
+    void UnitTestDecryptionSerNoCRTTables(
+            const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {
         TestDecryptionSerNoCRTTables(testData, SerType::JSON, "json");
         TestDecryptionSerNoCRTTables(testData, SerType::BINARY, "binary");
     }

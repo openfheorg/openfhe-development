@@ -69,7 +69,7 @@ void DiscreteUniformGeneratorImpl<VecType>::SetModulus(const typename VecType::I
 
 template <typename VecType>
 typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateIntegerWith(
-    PRNG& prng, std::uniform_int_distribution<uint32_t>& dist) const {
+        PRNG& prng, std::uniform_int_distribution<uint32_t>& dist) const {
     // Draw ceil(MSB/32) raw 32-bit words, reject draws at or above the largest contained
     // multiple of the modulus, and reduce: every residue then appears exactly
     // floor(2^(32c)/q) times, so the result is exactly uniform. The rejection probability
@@ -106,8 +106,8 @@ VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t siz
 }
 
 template <typename VecType>
-VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t size,
-                                                              const typename VecType::Integer& modulus) {
+VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(
+        const uint32_t size, const typename VecType::Integer& modulus) {
     SetModulus(modulus);
     return GenerateVector(size);
 }

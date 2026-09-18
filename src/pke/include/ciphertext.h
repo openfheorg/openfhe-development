@@ -70,8 +70,8 @@ public:
    *
    * @param cc
    */
-    explicit CiphertextImpl(const CryptoContext<Element>& cc, const std::string& id = "",
-                            PlaintextEncodings encType = INVALID_ENCODING)
+    explicit CiphertextImpl(
+            const CryptoContext<Element>& cc, const std::string& id = "", PlaintextEncodings encType = INVALID_ENCODING)
         : CryptoObject<Element>(cc, id), m_encodingType(encType) {}
 
     /**
@@ -486,8 +486,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         ar(cereal::base_class<CryptoObject<Element>>(this));
         ar(cereal::make_nvp("v", m_elements));
         ar(cereal::make_nvp("sl", m_slots));

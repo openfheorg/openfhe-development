@@ -110,8 +110,8 @@ inline bool is64BitOverflow(double d) {
 
 #if NATIVEINT == 128
 inline constexpr __int128 Max128BitValue() {
-    return static_cast<int128_t>((static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) -
-                                 static_cast<uint128_t>(1));
+    return static_cast<int128_t>(
+            (static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) - static_cast<uint128_t>(1));
 }
 
 inline bool is128BitOverflow(double d) {

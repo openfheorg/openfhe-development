@@ -52,8 +52,8 @@ void Blake2Engine::Generate() {
     // m_counter is the input to the hash function
     // m_buffer is the output
     if (blake2xb(static_cast<void*>(m_buffer.data()), m_buffer.size() * sizeof(PRNG::result_type), &m_counter,
-                 sizeof(m_counter), static_cast<const void*>(m_seed.data()),
-                 m_seed.size() * sizeof(PRNG::result_type)) != 0) {
+                sizeof(m_counter), static_cast<const void*>(m_seed.data()),
+                m_seed.size() * sizeof(PRNG::result_type)) != 0) {
         OPENFHE_THROW("PRNG: blake2xb failed");
     }
     m_counter++;

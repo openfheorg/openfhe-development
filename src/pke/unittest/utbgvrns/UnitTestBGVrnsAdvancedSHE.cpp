@@ -132,8 +132,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
-                                 const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultSingle(
+            const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -172,8 +172,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
-                                const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAddSingle(
+            const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 

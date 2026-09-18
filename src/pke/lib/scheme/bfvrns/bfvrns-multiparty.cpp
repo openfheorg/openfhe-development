@@ -51,13 +51,12 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme
-KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
-                                                     const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
-                                                     bool makeSparse) {
+KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
+        CryptoContext<DCRTPoly> cc, const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec, bool makeSparse) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
-    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
-                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(
+            std::make_shared<PublicKeyImpl<DCRTPoly>>(cc), std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
     auto elementParams = cryptoParams->GetElementParams();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -92,12 +91,12 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     return keyPair;
 }
 
-KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey,
-                                                     bool makeSparse, bool fresh) {
+KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
+        CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey, bool makeSparse, bool fresh) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
-    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
-                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(
+            std::make_shared<PublicKeyImpl<DCRTPoly>>(cc), std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
     auto elementParams = cryptoParams->GetElementParams();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -149,10 +148,10 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     return keyPair;
 }
 
-DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                                        NativePoly* plaintext) const {
+DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(
+        const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
@@ -171,19 +170,18 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
     if (sizeQl == sizeQ) {
         b.SetFormat(Format::COEFFICIENT);
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
-            cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
-            cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-            *plaintext =
-                b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
-                                cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
-                                cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
-                                cryptoParams->GettQHatInvModqBDivqFrac());
+                cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
+                cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+            *plaintext = b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
+                    cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
+                    cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
+                    cryptoParams->GettQHatInvModqBDivqFrac());
         }
         else {
-            *plaintext = b.ScaleAndRound(
-                cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
-                cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
-                cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
+            *plaintext = b.ScaleAndRound(cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(),
+                    cryptoParams->Gettgamma(), cryptoParams->GettgammaQHatInvModq(),
+                    cryptoParams->GettgammaQHatInvModqPrecon(), cryptoParams->GetNegInvqModtgamma(),
+                    cryptoParams->GetNegInvqModtgammaPrecon());
         }
     }
     else {

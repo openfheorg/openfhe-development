@@ -66,9 +66,8 @@ int main(int argc, char* argv[]) {
     size_t encodedLength = input.size();
 
     std::vector<double> coefficients1({0.15, 0.75, 0, 1.25, 0, 0, 1, 0, 1, 2, 0, 1, 0, 0, 0, 0, 1});
-    std::vector<double> coefficients2({1,   2,   3,   4,   5,   -1,   -2,   -3,   -4,   -5,
-                                       0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5,
-                                       0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
+    std::vector<double> coefficients2({1, 2, 3, 4, 5, -1, -2, -3, -4, -5, 0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3,
+            -0.4, -0.5, 0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
 
     auto keyPair = cc->KeyGen();

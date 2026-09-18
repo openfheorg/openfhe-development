@@ -111,7 +111,7 @@ CryptoContext<DCRTPoly> MakeContext(uint32_t multiplicativeDepth, uint32_t first
 }
 
 std::complex<double> FirstSlot(const CryptoContext<DCRTPoly>& cc, const PrivateKey<DCRTPoly>& secretKey,
-                               const Ciphertext<DCRTPoly>& ciphertext) {
+        const Ciphertext<DCRTPoly>& ciphertext) {
     Plaintext decoded;
     cc->Decrypt(secretKey, ciphertext, &decoded);
     return decoded->GetCKKSPackedValue()[0];
@@ -210,7 +210,7 @@ TEST_F(UTCKKSRNS_SCALAR, LargeOperands) {
 
     // 2^37 is the first magnitude that overflowed; the rest bracket it on both sides.
     for (double magnitude : {std::ldexp(1.0, 20), std::ldexp(1.0, 36), std::ldexp(1.0, 37), std::ldexp(1.0, 38),
-                             std::ldexp(1.0, 50), 1.0e12, 1.0e15}) {
+                 std::ldexp(1.0, 50), 1.0e12, 1.0e15}) {
         for (double sign : {1.0, -1.0}) {
             double operand = sign * magnitude;
             SCOPED_TRACE(operand);
@@ -235,10 +235,10 @@ TEST_F(UTCKKSRNS_SCALAR, LargeOperands) {
             cc->RescaleInPlace(complexProduct);
             ExpectSlotNear(FirstSlot(cc, keys.secretKey, complexProduct), complexOperand);
 
-            ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalAdd(ciphertext, complexOperand)),
-                           1.0 + complexOperand);
-            ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalSub(ciphertext, complexOperand)),
-                           1.0 - complexOperand);
+            ExpectSlotNear(
+                    FirstSlot(cc, keys.secretKey, cc->EvalAdd(ciphertext, complexOperand)), 1.0 + complexOperand);
+            ExpectSlotNear(
+                    FirstSlot(cc, keys.secretKey, cc->EvalSub(ciphertext, complexOperand)), 1.0 - complexOperand);
             ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalAdd(scaled, complexOperand)), 2.0 + complexOperand);
             ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalSub(scaled, complexOperand)), 2.0 - complexOperand);
         }

@@ -78,58 +78,50 @@ public:
 
     LWEPrivateKey EvalCKKStoFHEWSetup(const SchSwchParams& params) override;
 
-    std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                                ConstLWEPrivateKey& lwesk) override;
+    std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(
+            const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
 
     void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) override;
 
-    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
-                                                                   uint32_t numCtxts) override;
+    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(
+            ConstCiphertext<DCRTPoly> ciphertext, uint32_t numCtxts) override;
 
     void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const std::shared_ptr<BinFHEContext>& ccLWE,
-                             uint32_t numSlotsCKKS, uint32_t logQ) override;
+            uint32_t numSlotsCKKS, uint32_t logQ) override;
 
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                                ConstLWEPrivateKey& lwesk,
-                                                                                uint32_t numSlots, uint32_t numCtxts,
-                                                                                uint32_t dim1, uint32_t L) override;
+            ConstLWEPrivateKey& lwesk, uint32_t numSlots, uint32_t numCtxts, uint32_t dim1, uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                        uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax,
-                                        uint32_t dim1) const override;
+            uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin, double pmax, uint32_t dim1) const override;
 
     LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
+            const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
 
-    void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, double scaleSign,
-                                     bool unit) override;
+    void EvalCompareSwitchPrecompute(
+            const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, double scaleSign, bool unit) override;
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
-                                                    ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
-                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign,
-                                                    bool unit) override;
+            ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts, uint32_t numSlots, uint32_t pLWE,
+            double scaleSign, bool unit) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
-                                                             PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, uint32_t pLWE,
-                                                             double scaleSign) override;
+            PublicKey<DCRTPoly> publicKey, uint32_t numValues, uint32_t numSlots, uint32_t pLWE,
+            double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
-                                                                PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, uint32_t pLWE,
-                                                                double scaleSign) override;
+            PublicKey<DCRTPoly> publicKey, uint32_t numValues, uint32_t numSlots, uint32_t pLWE,
+            double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
-                                                             PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                             uint32_t numSlots, uint32_t pLWE,
-                                                             double scaleSign) override;
+            PublicKey<DCRTPoly> publicKey, uint32_t numValues, uint32_t numSlots, uint32_t pLWE,
+            double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
-                                                                PublicKey<DCRTPoly> publicKey, uint32_t numValues,
-                                                                uint32_t numSlots, uint32_t pLWE,
-                                                                double scaleSign) override;
+            PublicKey<DCRTPoly> publicKey, uint32_t numValues, uint32_t numSlots, uint32_t pLWE,
+            double scaleSign) override;
 
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
         return m_ccLWE;
@@ -200,39 +192,33 @@ public:
 
 private:
     std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                          const std::vector<std::vector<std::complex<double>>>& A,
-                                                          uint32_t dim1, uint32_t L, double scale) const;
+            const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, uint32_t L, double scale) const;
 
     std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                          const std::vector<std::vector<std::complex<double>>>& A,
-                                                          const std::vector<std::vector<std::complex<double>>>& B,
-                                                          uint32_t dim1, uint32_t L, double scale) const;
+            const std::vector<std::vector<std::complex<double>>>& A,
+            const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale) const;
 
     Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                    ConstCiphertext<DCRTPoly> ctxt,
-                                                    const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1,
-                                                    bool ext = false) const;
+            ConstCiphertext<DCRTPoly> ctxt, const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1,
+            bool ext = false) const;
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                        const std::vector<std::vector<std::complex<double>>>& A,
-                                                        ConstCiphertext<DCRTPoly> ct, bool wide, uint32_t dim1,
-                                                        uint32_t L) const;
+            const std::vector<std::vector<std::complex<double>>>& A, ConstCiphertext<DCRTPoly> ct, bool wide,
+            uint32_t dim1, uint32_t L) const;
 
-    Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
-                                                 ConstCiphertext<DCRTPoly> ciphertext) const;
+    Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(
+            const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ciphertext) const;
 
     Ciphertext<DCRTPoly> EvalPartialHomDecryption(const CryptoContextImpl<DCRTPoly>& cc,
-                                                  const std::vector<std::vector<std::complex<double>>>& A,
-                                                  ConstCiphertext<DCRTPoly> ct, uint32_t dim1, double scale,
-                                                  uint32_t L) const;
+            const std::vector<std::vector<std::complex<double>>>& A, ConstCiphertext<DCRTPoly> ct, uint32_t dim1,
+            double scale, uint32_t L) const;
 
     //------------------------------------------------------------------------------
     // Complex Plaintext Functions, copied from ckksrns-fhe. TODO: fix this
     //------------------------------------------------------------------------------
 
     Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                               const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level,
-                               uint32_t slots) const;
+            const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level, uint32_t slots) const;
 
     Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const;
 
@@ -242,8 +228,8 @@ private:
 
     EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const;
 
-    Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
-                                   const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const;
+    Ciphertext<DCRTPoly> Conjugate(
+            ConstCiphertext<DCRTPoly> ciphertext, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const;
 
 #if NATIVEINT == 128
     /**
@@ -253,8 +239,8 @@ private:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
-                           NativeVector* nativeVec) const;
+    void FitToNativeVector(
+            uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound, NativeVector* nativeVec) const;
 
 #else  // NATIVEINT == 64
     /**
@@ -264,8 +250,8 @@ private:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
-                           NativeVector* nativeVec) const;
+    void FitToNativeVector(
+            uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound, NativeVector* nativeVec) const;
 #endif
 
     //------------------------------------------------------------------------------

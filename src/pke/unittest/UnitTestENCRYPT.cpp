@@ -151,8 +151,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void EncryptionString(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData,
-                          const std::string& failmsg = std::string()) {
+    void EncryptionString(
+            const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -177,8 +177,8 @@ protected:
         }
     }
 
-    void EncryptionCoefPacked(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData,
-                              const std::string& failmsg = std::string()) {
+    void EncryptionCoefPacked(
+            const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -207,13 +207,13 @@ protected:
             Plaintext plaintextIntNew;
             cc->Decrypt(kp.secretKey, ciphertext4, &plaintextIntNew);
             EXPECT_EQ(*plaintextIntNew, *plaintextInt)
-                << failmsg << "coef packed encrypt/decrypt failed for integer plaintext";
+                    << failmsg << "coef packed encrypt/decrypt failed for integer plaintext";
 
             Ciphertext<Element> ciphertext5 = cc->Encrypt(kp.publicKey, plaintextSInt);
             Plaintext plaintextSIntNew;
             cc->Decrypt(kp.secretKey, ciphertext5, &plaintextSIntNew);
             EXPECT_EQ(*plaintextSIntNew, *plaintextSInt)
-                << failmsg << "coef packed encrypt/decrypt failed for signed integer plaintext";
+                    << failmsg << "coef packed encrypt/decrypt failed for signed integer plaintext";
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

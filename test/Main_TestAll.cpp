@@ -157,7 +157,7 @@ inline const std::string& GetMathBackendParameters() {
     static std::string id = std::to_string(MATHBACKEND) +
 #ifdef WITH_BE2
                             (MATHBACKEND == 2 ? " (Internal Int Size " + std::to_string(sizeof(integral_dtype) * 8) +
-                                                    ", Bit Length " + std::to_string(BigIntegerBitLength) + ")" :
+                                                        ", Bit Length " + std::to_string(BigIntegerBitLength) + ")" :
                                                 "") +
 #endif
                             "";

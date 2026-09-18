@@ -174,9 +174,8 @@ void SwitchCKKSToFHEW() {
               << std::endl;
 
     std::vector<int32_t> x1Int(encodedLength1);
-    std::transform(x1.begin(), x1.end(), x1Int.begin(), [&](const double& elem) {
-        return static_cast<int32_t>(static_cast<int32_t>(std::round(elem)) % pLWE1);
-    });
+    std::transform(x1.begin(), x1.end(), x1Int.begin(),
+            [&](const double& elem) { return static_cast<int32_t>(static_cast<int32_t>(std::round(elem)) % pLWE1); });
     ptxt1->SetLength(encodedLength1);
     std::cout << "Input x1: " << ptxt1->GetRealPackedValue() << "; which rounds to: " << x1Int << std::endl;
     std::cout << "FHEW decryption: ";
@@ -579,7 +578,7 @@ void FuncViaSchemeSwitching() {
 
     // Set the scaling factor to be able to decrypt; under the hood, the LWE mod switch will be performed on the ciphertext at the last level
     auto pLWE =
-        ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision because GenerateLUTviaFunction needs p < q
+            ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision because GenerateLUTviaFunction needs p < q
     double scaleCF = 1.0 / pLWE;
 
     cc->EvalCKKStoFHEWPrecompute(scaleCF);
@@ -837,8 +836,8 @@ void ComparisonViaSchemeSwitching() {
 
     // Step 2'': Recompute the scaled matrix using other parameters
     std::cout
-        << "\nFor very small LWE plaintext modulus and initial fractional inputs, the sign does not always behave properly close to the boundaries at 0 and p/2."
-        << std::endl;
+            << "\nFor very small LWE plaintext modulus and initial fractional inputs, the sign does not always behave properly close to the boundaries at 0 and p/2."
+            << std::endl;
     scaleSignFHEW = 1.0;
     cc->EvalCompareSwitchPrecompute(pLWE1, scaleSignFHEW);
 
@@ -951,8 +950,8 @@ void ArgminViaSchemeSwitching() {
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
-    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < numValues) {
         std::vector<int> zeros(numValues - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1085,8 +1084,8 @@ void ArgminViaSchemeSwitchingAlt() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < numValues) {
         std::vector<int> zeros(numValues - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1212,8 +1211,8 @@ void ArgminViaSchemeSwitchingUnit() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < slots) {
         std::vector<int> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1349,8 +1348,8 @@ void ArgminViaSchemeSwitchingAltUnit() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < slots) {
         std::vector<int> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());

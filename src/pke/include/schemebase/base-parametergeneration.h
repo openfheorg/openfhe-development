@@ -79,8 +79,8 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
     virtual bool ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-                                         uint32_t evalAddCount, uint32_t multiplicativeDepth, uint32_t keySwitchCount,
-                                         size_t dcrtBits, uint32_t n, uint32_t numPartQ) const {
+            uint32_t evalAddCount, uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
+            uint32_t numPartQ) const {
         OPENFHE_THROW("Not supported for this scheme.");
     }
 
@@ -97,9 +97,8 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
     virtual bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-                                          uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
-                                          uint32_t firstModSize, uint32_t numPartQ,
-                                          CompressionLevel mPIntBootCiphertextCompressionLevel) const {
+            uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t numPartQ,
+            CompressionLevel mPIntBootCiphertextCompressionLevel) const {
         OPENFHE_THROW("Not supported for this scheme.");
     }
 
@@ -118,9 +117,8 @@ public:
    * @param PRENumHops bound for the HRA-secure mode of PRE
    */
     virtual bool ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                         uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder,
-                                         uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
-                                         uint32_t numPartQ, uint32_t PRENumHops) const {
+            uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes,
+            uint32_t firstModSize, uint32_t dcrtBits, uint32_t numPartQ, uint32_t PRENumHops) const {
         OPENFHE_THROW("Not supported for this scheme.");
     }
 

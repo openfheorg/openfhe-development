@@ -71,8 +71,8 @@ public:
    * @param newPublicKey public key for the new secret key.
    * @return the re-encryption key.
    */
-    virtual EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey,
-                                      const PublicKey<Element> newPublicKey) const;
+    virtual EvalKey<Element> ReKeyGen(
+            const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const;
 
     /**
    * Virtual function to define the interface for re-encypting ciphertext
@@ -85,7 +85,7 @@ public:
    * @return the ciphertext
    */
     virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                          const PublicKey<Element> publicKey) const;
+            const PublicKey<Element> publicKey) const;
 };
 
 }  // namespace lbcrypto

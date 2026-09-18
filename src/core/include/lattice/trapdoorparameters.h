@@ -146,8 +146,8 @@ public:
    *@param base Base for the gadget matrix
    *@param bal Flag for balanced generation in trapdoor
    */
-    RLWETrapdoorParams(std::shared_ptr<ParmType>& elemparams, DggType& dgg, double stddev, int64_t base,
-                       bool bal = false)
+    RLWETrapdoorParams(
+            std::shared_ptr<ParmType>& elemparams, DggType& dgg, double stddev, int64_t base, bool bal = false)
         : TrapdoorParams<Element>(elemparams, dgg, stddev),
           m_base(base),
           m_k(0),

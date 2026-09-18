@@ -107,8 +107,8 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext1,
-                                        ConstCiphertext<Element>& ciphertext2) const;
+    virtual Ciphertext<Element> EvalAdd(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const;
 
     /**
    * Virtual function to define the interface for in-place homomorphic addition
@@ -128,8 +128,8 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext1,
-                                               Ciphertext<Element>& ciphertext2) const {
+    virtual Ciphertext<Element> EvalAddMutable(
+            Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -218,8 +218,8 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext1,
-                                        ConstCiphertext<Element>& ciphertext2) const;
+    virtual Ciphertext<Element> EvalSub(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const;
 
     /**
    * Virtual function to define the interface for homomorphic subtraction of
@@ -239,8 +239,8 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext1,
-                                               Ciphertext<Element>& ciphertext2) const {
+    virtual Ciphertext<Element> EvalSubMutable(
+            Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -339,8 +339,8 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1,
-                                         ConstCiphertext<Element>& ciphertext2) const {
+    virtual Ciphertext<Element> EvalMult(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -353,8 +353,8 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1,
-                                                Ciphertext<Element>& ciphertext2) const {
+    virtual Ciphertext<Element> EvalMultMutable(
+            Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -476,10 +476,10 @@ public:
    * @return the new ciphertext.
    */
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2,
-                                         const EvalKey<Element> evalKey) const;
+            const EvalKey<Element> evalKey) const;
 
     virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2,
-                                 const EvalKey<Element> evalKey) const;
+            const EvalKey<Element> evalKey) const;
 
     /**
    * Virtual function to define the interface for multiplicative homomorphic
@@ -493,8 +493,8 @@ public:
    * the same secret key as that of ciphertext1 and ciphertext2.
    * @return the new ciphertext.
    */
-    virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2,
-                                                const EvalKey<Element> evalKey) const;
+    virtual Ciphertext<Element> EvalMultMutable(
+            Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const;
 
     /**
    * Virtual function to define the interface for multiplicative homomorphic
@@ -508,15 +508,15 @@ public:
    * the same secret key as that of ciphertext1 and ciphertext2.
    * @return the new ciphertext.
    */
-    virtual void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2,
-                                        const EvalKey<Element> evalKey) const;
+    virtual void EvalMultMutableInPlace(
+            Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const;
 
     virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const;
 
     virtual void EvalSquareInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey) const;
 
-    virtual Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext,
-                                                  const EvalKey<Element> evalKey) const;
+    virtual Ciphertext<Element> EvalSquareMutable(
+            Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const;
     /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext using the evaluation key.
@@ -529,8 +529,7 @@ public:
    * @param *newCiphertext the new resulting ciphertext.
    */
     virtual Ciphertext<Element> EvalMultAndRelinearize(ConstCiphertext<Element>& ciphertext1,
-                                                       ConstCiphertext<Element>& ciphertext2,
-                                                       const std::vector<EvalKey<Element>>& evalKeyVec) const;
+            ConstCiphertext<Element>& ciphertext2, const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
     /**
    * Virtual function to do relinearization
@@ -541,8 +540,8 @@ public:
    * ciphertext2.
    * @return the new resulting ciphertext.
    */
-    virtual Ciphertext<Element> Relinearize(ConstCiphertext<Element>& ciphertext,
-                                            const std::vector<EvalKey<Element>>& evalKeyVec) const;
+    virtual Ciphertext<Element> Relinearize(
+            ConstCiphertext<Element>& ciphertext, const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
     /**
    * Virtual function to do relinearization
@@ -553,8 +552,8 @@ public:
    * ciphertext2.
    * @return the new resulting ciphertext.
    */
-    virtual void RelinearizeInPlace(Ciphertext<Element>& ciphertext,
-                                    const std::vector<EvalKey<Element>>& evalKeyVec) const;
+    virtual void RelinearizeInPlace(
+            Ciphertext<Element>& ciphertext, const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
     //------------------------------------------------------------------------------
     // SHE AUTOMORPHISM
@@ -569,7 +568,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
     /**
    * Virtual function for evaluating automorphism of ciphertext at index i
@@ -580,8 +579,7 @@ public:
    * @return resulting ciphertext
    */
     virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
-                                                 const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
-                                                 CALLER_INFO_ARGS_HDR) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap, CALLER_INFO_ARGS_HDR) const;
 
     /**
    * Shared core for evaluating an automorphism from precomputed key-switch digits.
@@ -597,8 +595,7 @@ public:
    * @return resulting ciphertext
    */
     virtual Ciphertext<Element> EvalAutomorphismCore(ConstCiphertext<Element>& ciphertext, uint32_t autoIndex,
-                                                     const std::shared_ptr<std::vector<Element>>& digits,
-                                                     const EvalKey<Element>& evalKey) const;
+            const std::shared_ptr<std::vector<Element>>& digits, const EvalKey<Element>& evalKey) const;
 
     /**
    * Virtual function for the automorphism and key switching step of
@@ -612,8 +609,7 @@ public:
    * EvalFastRotationPrecompute at the precomputation step.
    */
     virtual Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index,
-                                                 const uint32_t m,
-                                                 const std::shared_ptr<std::vector<Element>> digits) const;
+            const uint32_t m, const std::shared_ptr<std::vector<Element>> digits) const;
 
     /**
    * Virtual function for the precomputation step of hoisted
@@ -623,12 +619,11 @@ public:
    * decomposition)
    */
     virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(
-        ConstCiphertext<Element>& ciphertext) const;
+            ConstCiphertext<Element>& ciphertext) const;
 
     virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
-                                                    const std::shared_ptr<std::vector<Element>> expandedCiphertext,
-                                                    bool addFirst,
-                                                    const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
+            const std::shared_ptr<std::vector<Element>> expandedCiphertext, bool addFirst,
+            const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -642,7 +637,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     /**
    * Moves i-th slot to slot 0
@@ -654,7 +649,7 @@ public:
    * @return resulting ciphertext
    */
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element>& ciphertext, int32_t index,
-                                            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     virtual uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
@@ -697,8 +692,7 @@ public:
    * decrypted with the secret key of the particular level.
    */
     virtual Ciphertext<Element> ComposedEvalMult(ConstCiphertext<Element>& ciphertext1,
-                                                 ConstCiphertext<Element>& ciphertext2,
-                                                 const EvalKey<Element> evalKey) const;
+            ConstCiphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const;
 
     /**
    * Method for Level Reduction from sk -> sk1. This method peforms a
@@ -710,8 +704,8 @@ public:
    * key switch operation.
    * @param &cipherTextResult is the resulting ciphertext.
    */
-    virtual Ciphertext<Element> LevelReduce(ConstCiphertext<Element>& ciphertext1, const EvalKey<Element> evalKey,
-                                            size_t levels) const;
+    virtual Ciphertext<Element> LevelReduce(
+            ConstCiphertext<Element>& ciphertext1, const EvalKey<Element> evalKey, size_t levels) const;
 
     /**
    * Method for Level Reduction from sk -> sk1. This method peforms a
@@ -723,13 +717,13 @@ public:
    * key switch operation.
    * @param &cipherTextResult is the resulting ciphertext.
    */
-    virtual void LevelReduceInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey,
-                                    size_t levels) const {
+    virtual void LevelReduceInPlace(
+            Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey, size_t levels) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
-    virtual Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, size_t towersLeft,
-                                         size_t noiseScaleDeg) const {
+    virtual Ciphertext<Element> Compress(
+            ConstCiphertext<Element>& ciphertext, size_t towersLeft, size_t noiseScaleDeg) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -788,8 +782,8 @@ public:
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
-    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<Element>& ciphertext1,
-                                                  Ciphertext<Element>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthToOneInPlace(
+            Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -808,8 +802,8 @@ protected:
     /////////////////////////////////////////
     // CORE OPERATIONS
     /////////////////////////////////////////
-    void VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext,
-                           CALLER_INFO_ARGS_HDR) const;
+    void VerifyNumOfTowers(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const;
     void VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext, const Element& plaintext, CALLER_INFO_ARGS_HDR) const;
 
     /**
@@ -822,8 +816,8 @@ protected:
    * @return \p ciphertext1 contains the result of the homomorphic addition of
    * input ciphertexts.
    */
-    virtual Ciphertext<Element> EvalAddCore(ConstCiphertext<Element>& ciphertext1,
-                                            ConstCiphertext<Element>& ciphertext2) const;
+    virtual Ciphertext<Element> EvalAddCore(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const;
 
     /**
    * Internal function for in-place homomorphic addition of ciphertexts.
@@ -837,8 +831,8 @@ protected:
    */
     void EvalAddCoreInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const;
 
-    virtual Ciphertext<Element> EvalSubCore(ConstCiphertext<Element>& ciphertext1,
-                                            ConstCiphertext<Element>& ciphertext2) const;
+    virtual Ciphertext<Element> EvalSubCore(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const;
 
     /**
    * Internal function for in-place homomorphic addition of ciphertexts.
@@ -861,8 +855,8 @@ protected:
    * @param ciphertext2 second input ciphertext.
    * @return result of homomorphic multiplication of input ciphertexts.
    */
-    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element>& ciphertext1,
-                                     ConstCiphertext<Element>& ciphertext2) const;
+    Ciphertext<Element> EvalMultCore(
+            ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const;
     Ciphertext<Element> EvalMultCore(ConstCiphertext<Element>& ciphertext, const Element& plaintext) const;
     void EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element& plaintext) const;
 

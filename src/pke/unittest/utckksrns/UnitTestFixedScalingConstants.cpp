@@ -39,6 +39,7 @@
   recursion before the automatic rescale and lost about 4 bits of a degree-119 evaluation compared with
   FIXEDMANUAL (2^-24 instead of 2^-28 at ring dimension 2^12 with 50-bit primes).
 */
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <random>
@@ -82,8 +83,8 @@ TEST(UTCKKSRNS_FIXED_SCALING, DegreeTwoConstantsChebyshev119) {
 
     // the interpolant of the uniform-secret bootstrapping table before the double-angle iterations
     std::vector<double> coefficients = EvalChebyshevCoefficients(
-        [K](double x) { return std::pow(2 * M_PI, -1.0 / 64) * std::cos(2 * M_PI * K * x / 64 - M_PI / 128); }, -1, 1,
-        degree);
+            [K](double x) { return std::pow(2 * M_PI, -1.0 / 64) * std::cos(2 * M_PI * K * x / 64 - M_PI / 128); }, -1,
+            1, degree);
 
     std::mt19937_64 gen(12345);
     std::uniform_real_distribution<double> uniform(-1.0, 1.0);
@@ -119,8 +120,8 @@ TEST(UTCKKSRNS_FIXED_SCALING, DegreeTwoConstantsChebyshev119) {
 
         double maxError = 0;
         for (uint32_t i = 0; i < slots; ++i)
-            maxError = std::max(
-                maxError, static_cast<double>(std::fabs(values[i] - EvalChebyshevSeriesExact(coefficients, input[i]))));
+            maxError = std::max(maxError,
+                    static_cast<double>(std::fabs(values[i] - EvalChebyshevSeriesExact(coefficients, input[i]))));
         const double precisionBits = -std::log2(maxError);
 
         // both techniques reach about 28 bits; FIXEDAUTO gave about 24 bits before the constants were fixed

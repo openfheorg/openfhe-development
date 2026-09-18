@@ -75,8 +75,8 @@ void CRT_polynomial_mult(const std::string& msg) {
     V AB = A * B;
 
     V InverseFFTAB(cycloOrder / 2);
-    ChineseRemainderTransformFTT<V>().InverseTransformFromBitReverse(AB, primitiveRootOfUnity, cycloOrder,
-                                                                     &InverseFFTAB);
+    ChineseRemainderTransformFTT<V>().InverseTransformFromBitReverse(
+            AB, primitiveRootOfUnity, cycloOrder, &InverseFFTAB);
 
     V expectedResult(n, primeModulus);
     expectedResult.at(0) = typename V::Integer("94");
@@ -247,7 +247,7 @@ void CRT_CHECK_small_ring(const std::string& msg) {
     auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(input, squareRootOfRoot, bigModulus, bigRoot, m);
 
     auto inputCheck =
-        ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, bigModulus, bigRoot, m);
+            ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, bigModulus, bigRoot, m);
 
     for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), inputCheck.at(i)) << msg;
@@ -317,7 +317,7 @@ void CRT_CHECK_small_ring_precomputed(const std::string& msg) {
     auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(input, squareRootOfRoot, nttmodulus, nttroot, m);
 
     auto inputCheck =
-        ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
+            ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
 
     for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), inputCheck.at(i)) << msg;
@@ -341,11 +341,11 @@ void CRT_CHECK_very_big_ring_precomputed(const std::string& msg) {
 
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
     typename V::Integer nttmodulus(
-        "185267342779705912677713576013900652565231975465024902463132134412661007"
-        "6631041");
+            "185267342779705912677713576013900652565231975465024902463132134412661007"
+            "6631041");
     typename V::Integer nttroot(
-        "101185740842230903903955690719590885956153523464987081415401983436274640"
-        "8101010");
+            "101185740842230903903955690719590885956153523464987081415401983436274640"
+            "8101010");
 
     // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
     // ChineseRemainderTransformArb<V>::SetPreComputedNTTModulus(m, modulus,
@@ -360,7 +360,7 @@ void CRT_CHECK_very_big_ring_precomputed(const std::string& msg) {
     auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(input, squareRootOfRoot, nttmodulus, nttroot, m);
     OPENFHE_DEBUG("5");
     auto inputCheck =
-        ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
+            ChineseRemainderTransformArb<V>().InverseTransform(INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
     OPENFHE_DEBUG("6");
     for (uint32_t i = 0; i < n; i++) {
         EXPECT_EQ(input.at(i), inputCheck.at(i)) << msg;

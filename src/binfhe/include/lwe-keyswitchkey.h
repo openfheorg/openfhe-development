@@ -52,11 +52,11 @@ public:
     LWESwitchingKeyImpl() = default;
 
     LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
-                        const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
+            const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
         : m_keyA(keyA), m_keyB(keyB) {}
 
     LWESwitchingKeyImpl(std::vector<std::vector<std::vector<NativeVector>>>&& keyA,
-                        std::vector<std::vector<std::vector<NativeInteger>>>&& keyB) noexcept
+            std::vector<std::vector<std::vector<NativeInteger>>>&& keyB) noexcept
         : m_keyA(std::move(keyA)), m_keyB(std::move(keyB)) {}
 
     LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) : m_keyA(rhs.m_keyA), m_keyB(rhs.m_keyB) {}
@@ -117,8 +117,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("a", m_keyA));
         ar(::cereal::make_nvp("b", m_keyB));

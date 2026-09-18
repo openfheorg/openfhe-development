@@ -105,8 +105,8 @@ void demarcate(const std::string& msg) {
  * @param batchSize - batch size to use
  * @return Tuple<cryptoContext, keyPair>
  */
-std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(int multDepth, int scaleModSize,
-                                                                                int batchSize) {
+std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
+        int multDepth, int scaleModSize, int batchSize) {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
@@ -317,9 +317,8 @@ void clientProcess() {
  *  5-tuple of the plaintexts of various operations
  */
 
-std::tuple<Plaintext, Plaintext, Plaintext, Plaintext, Plaintext> serverVerification(CryptoContext<DCRTPoly>& cc,
-                                                                                     KeyPair<DCRTPoly>& kp,
-                                                                                     int vectorSize) {
+std::tuple<Plaintext, Plaintext, Plaintext, Plaintext, Plaintext> serverVerification(
+        CryptoContext<DCRTPoly>& cc, KeyPair<DCRTPoly>& kp, int vectorSize) {
     Ciphertext<DCRTPoly> serverCiphertextFromClient_Mult;
     Ciphertext<DCRTPoly> serverCiphertextFromClient_Add;
     Ciphertext<DCRTPoly> serverCiphertextFromClient_Rot;
@@ -354,7 +353,7 @@ std::tuple<Plaintext, Plaintext, Plaintext, Plaintext, Plaintext> serverVerifica
     serverPlaintextFromClient_RotNeg->SetLength(vectorSize + 1);
 
     return std::make_tuple(serverPlaintextFromClient_Mult, serverPlaintextFromClient_Add, serverPlaintextFromClient_Vec,
-                           serverPlaintextFromClient_Rot, serverPlaintextFromClient_RotNeg);
+            serverPlaintextFromClient_Rot, serverPlaintextFromClient_RotNeg);
 }
 int main() {
     std::cout << "This program requres the subdirectory `" << DATAFOLDER << "' to exist, otherwise you will get "
@@ -376,8 +375,8 @@ int main() {
     const int cipherRotNegResIdx = 4;
 
     demarcate(
-        "Part 1: Cryptocontext generation, key generation, data encryption "
-        "(server)");
+            "Part 1: Cryptocontext generation, key generation, data encryption "
+            "(server)");
 
     auto tupleCryptoContext_KeyPair = serverSetupAndWrite(multDepth, scaleModSize, batchSize);
     auto cc                         = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);

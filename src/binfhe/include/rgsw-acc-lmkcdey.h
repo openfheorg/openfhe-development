@@ -56,14 +56,14 @@ public:
    * @return a shared pointer to the resulting keys
    */
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                            ConstLWEPrivateKey& LWEsk) const override;
+            ConstLWEPrivateKey& LWEsk) const override;
 
 #if NATIVEINT != 32
     RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                                ConstLWEPrivateKey& LWEsk) const override;
+            ConstLWEPrivateKey& LWEsk) const override;
 
     void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
-                   const NativeVector& a) const override;
+            const NativeVector& a) const override;
 #endif
 
     /**
@@ -75,7 +75,7 @@ public:
    * @param a value to update the accumulator with
    */
     void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
-                 const NativeVector& a) const override;
+            const NativeVector& a) const override;
 
 private:
     /**
@@ -88,7 +88,7 @@ private:
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                                 LWEPlaintext m, uint32_t index) const;
+            LWEPlaintext m, uint32_t index) const;
 
     /**
    * Automorphism keys generation for internal Ring GSW as described in https://eprint.iacr.org/2022/198
@@ -98,8 +98,8 @@ private:
    * @param k a plaintext
    * @return a shared pointer to the resulting keys
    */
-    RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                              LWEPlaintext k) const;
+    RingGSWEvalKey KeyGenAuto(
+            const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT, LWEPlaintext k) const;
 
     /**
    * LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198
@@ -111,7 +111,7 @@ private:
    * @return
    */
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
-                         RLWECiphertext& acc, uint32_t index) const;
+            RLWECiphertext& acc, uint32_t index) const;
 
     /**
    * LMKCDEY Accumulation automorphism evaluation as described in https://eprint.iacr.org/2022/198
@@ -123,7 +123,7 @@ private:
    * @return
    */
     void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a, ConstRingGSWEvalKey& ak,
-                      RLWECiphertext& acc) const;
+            RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

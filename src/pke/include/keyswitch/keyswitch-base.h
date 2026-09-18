@@ -76,19 +76,18 @@ public:
    * @param *KeySwitchHint is where the resulting keySwitchHint will be
    * placed.
    */
-    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
-                                                  const PrivateKey<Element> newPrivateKey) const {
+    virtual EvalKey<Element> KeySwitchGenInternal(
+            const PrivateKey<Element> oldPrivateKey, const PrivateKey<Element> newPrivateKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
-                                                  const PrivateKey<Element> newPrivateKey,
-                                                  const EvalKey<Element> evalKey) const {
+            const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
-    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
-                                                  const PublicKey<Element> newPublicKey) const {
+    virtual EvalKey<Element> KeySwitchGenInternal(
+            const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -118,19 +117,17 @@ public:
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-        const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+            const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual std::vector<Element> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<Element>> digits,
-                                                       const EvalKey<Element> evalKey,
-                                                       const std::shared_ptr<ParmType> paramsQl) const {
+            const EvalKey<Element> evalKey, const std::shared_ptr<ParmType> paramsQl) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     virtual std::vector<Element> EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<Element>> digits,
-                                                          const EvalKey<Element> evalKey,
-                                                          const std::shared_ptr<ParmType> paramsQl) const {
+            const EvalKey<Element> evalKey, const std::shared_ptr<ParmType> paramsQl) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 };

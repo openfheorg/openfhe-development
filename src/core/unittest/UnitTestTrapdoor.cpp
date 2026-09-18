@@ -82,7 +82,7 @@ TEST(UTTrapdoor, sizes) {
 
     auto fastParams = std::make_shared<ILParams>(m, modulus, rootOfUnity);
     std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> trapPair =
-        RLWETrapdoorUtility<Poly>::TrapdoorGen(fastParams, stddev);
+            RLWETrapdoorUtility<Poly>::TrapdoorGen(fastParams, stddev);
 
     EXPECT_EQ(1U, trapPair.first.GetRows()) << "Failure testing number of rows";
     EXPECT_EQ(k + 2, trapPair.first.GetCols()) << "Failure testing number of colums";
@@ -149,7 +149,7 @@ TEST(UTTrapdoor, TrapDoorPairTestSquareMat) {
     size_t d = 5;
 
     std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> trapPair =
-        RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(params, stddev, d);
+            RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(params, stddev, d);
 
     Matrix<Poly> eHat  = trapPair.second.m_e;
     Matrix<Poly> rHat  = trapPair.second.m_r;
@@ -240,7 +240,7 @@ TEST(UTTrapdoor, TrapDoorMultTestSquareMat) {
     auto zero_alloc = Poly::Allocator(params, Format::EVALUATION);
 
     std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> trapPair =
-        RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(params, stddev, d);
+            RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(params, stddev, d);
 
     Matrix<Poly> eHat  = trapPair.second.m_e;
     Matrix<Poly> rHat  = trapPair.second.m_r;
@@ -325,10 +325,10 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
 
     auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, size, kRes);
     int64_t digitCount =
-        static_cast<int64_t>(std::ceil(std::log2((*params)[0]->GetModulus().ConvertToDouble()) / std::log2(base)));
+            static_cast<int64_t>(std::ceil(std::log2((*params)[0]->GetModulus().ConvertToDouble()) / std::log2(base)));
 
     std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> trapPair =
-        RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(params, sigma, base);
+            RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(params, sigma, base);
 
     Matrix<DCRTPoly> eHat = trapPair.second.m_e;
     Matrix<DCRTPoly> rHat = trapPair.second.m_r;
@@ -345,8 +345,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
 
     u.SwitchFormat();
 
-    Matrix<DCRTPoly> z =
-        RLWETrapdoorUtility<DCRTPoly>::GaussSamp(n, k, trapPair.first, trapPair.second, u, dgg, dggLargeSigma, base);
+    Matrix<DCRTPoly> z = RLWETrapdoorUtility<DCRTPoly>::GaussSamp(
+            n, k, trapPair.first, trapPair.second, u, dgg, dggLargeSigma, base);
 
     // Matrix<Poly> uEst = trapPair.first * z;
 
@@ -489,7 +489,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
     OPENFHE_DEBUG("u " << u);
 
     Matrix<Poly> z =
-        RLWETrapdoorUtility<Poly>::GaussSamp(m / 2, k, trapPair.first, trapPair.second, u, dgg, dggLargeSigma);
+            RLWETrapdoorUtility<Poly>::GaussSamp(m / 2, k, trapPair.first, trapPair.second, u, dgg, dggLargeSigma);
 
     // Matrix<Poly> uEst = trapPair.first * z;
 
@@ -535,7 +535,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatrices) {
 
     for (size_t d = 2; d < 6; d++) {
         std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> trapPair =
-            RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(params, sigma, d);
+                RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(params, sigma, d);
 
         Matrix<Poly> R = trapPair.second.m_r;
         Matrix<Poly> E = trapPair.second.m_e;
@@ -549,8 +549,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatrices) {
 
         Matrix<Poly> U(zero_alloc, d, d, uniform_alloc);
 
-        Matrix<Poly> z = RLWETrapdoorUtility<Poly>::GaussSampSquareMat(m / 2, k, trapPair.first, trapPair.second, U,
-                                                                       dgg, dggLargeSigma);
+        Matrix<Poly> z = RLWETrapdoorUtility<Poly>::GaussSampSquareMat(
+                m / 2, k, trapPair.first, trapPair.second, U, dgg, dggLargeSigma);
 
         EXPECT_EQ(trapPair.first.GetCols(), z.GetRows()) << "Failure testing number of rows";
         EXPECT_EQ(m / 2, z(0, 0).GetLength()) << "Failure testing ring dimension for the first ring element";
@@ -586,7 +586,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
 
     for (size_t d = 2; d < 6; d++) {
         std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> trapPair =
-            RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(params, sigma, d);
+                RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(params, sigma, d);
 
         Matrix<DCRTPoly> R = trapPair.second.m_r;
         Matrix<DCRTPoly> E = trapPair.second.m_e;
@@ -600,8 +600,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
 
         Matrix<DCRTPoly> U(zero_alloc, d, d, uniform_alloc);
 
-        Matrix<DCRTPoly> z = RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(m / 2, k, trapPair.first,
-                                                                               trapPair.second, U, dgg, dggLargeSigma);
+        Matrix<DCRTPoly> z = RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(
+                m / 2, k, trapPair.first, trapPair.second, U, dgg, dggLargeSigma);
 
         EXPECT_EQ(trapPair.first.GetCols(), z.GetRows()) << "Failure testing number of rows";
         EXPECT_EQ(m / 2, z(0, 0).GetLength()) << "Failure testing ring dimension for the first ring element";

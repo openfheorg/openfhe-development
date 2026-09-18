@@ -60,8 +60,8 @@ protected:
 public:
 };
 
-void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplicationTechnique,
-                                              uint32_t multiplicativeDepth) {
+void BFVrns_TestMultiplicativeDepthLimitation(
+        MultiplicationTechnique multiplicationTechnique, uint32_t multiplicativeDepth) {
     CCParams<CryptoContextBFVRNS> parameters;
     const uint64_t ptm = 786433;
 
@@ -98,7 +98,7 @@ void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplica
     Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
     size_t expectedResultSize =
-        (vectorOfInts1.size() < vectorOfInts2.size()) ? vectorOfInts1.size() : vectorOfInts2.size();
+            (vectorOfInts1.size() < vectorOfInts2.size()) ? vectorOfInts1.size() : vectorOfInts2.size();
     std::vector<int64_t> expectedResult(expectedResultSize);
     for (size_t i = 0; i < expectedResultSize; ++i) {
         expectedResult[i] = vectorOfInts1[i] * vectorOfInts2[i];
@@ -235,20 +235,19 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
 
     NativePoly poly0(x0p, Format::EVALUATION);
     NativePoly poly1(x1p, Format::EVALUATION);
-    poly0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588,
-             647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
-    poly1 = {846754661443099927,  602279558317502186, 342175723088143584, 904036735987820179,
-             1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
+    poly0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588, 647651536262422014,
+            322042217691169971, 138609670727909932, 793736138075446811};
+    poly1 = {846754661443099927, 602279558317502186, 342175723088143584, 904036735987820179, 1124341799555345257,
+            885339199454111253, 417243638107713607, 548811148460128084};
 
     a.SetElementAtIndex(0, poly0);
     a.SetElementAtIndex(1, poly1);
 
-    a.FastBaseConvqToBskMontgomery(
-        cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
-        cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
-        cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetQHatModmtilde(),
-        cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(), cryptoParams->GetNegQInvModmtilde(),
-        cryptoParams->GetmtildeInvModbsk(), cryptoParams->GetmtildeInvModbskPrecon());
+    a.FastBaseConvqToBskMontgomery(cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(),
+            cryptoParams->GetModuliBsk(), cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
+            cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetQHatModmtilde(),
+            cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(), cryptoParams->GetNegQInvModmtilde(),
+            cryptoParams->GetmtildeInvModbsk(), cryptoParams->GetmtildeInvModbskPrecon());
 
     NativeInteger modulus2 = 1152921504606845777;
     NativeInteger modulus3 = 1152921504606845473;
@@ -268,16 +267,16 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     NativePoly ans2(x2p, Format::EVALUATION);
     NativePoly ans3(x3p, Format::EVALUATION);
     NativePoly ans4(x4p, Format::EVALUATION);
-    ans0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588,
-            647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
-    ans1 = {846754661443099927,  602279558317502186, 342175723088143584, 904036735987820179,
-            1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
-    ans2 = {524228833460429474, 692928367413813885, 465662343623521646, 107498520099165490,
-            81602760285107383,  482417615916109741, 249076385001962496, 719980682178715834};
-    ans3 = {474506930637362424, 723790960760608304, 7991172453764409,   738286918217632692,
-            933904287195446155, 98490114749039532,  293617451261147895, 1050780276990075548};
-    ans4 = {612459830520599999, 273948808875966259, 276211279884817131,  805184382328000673,
-            605603488049806384, 756318612975583592, 1014214483788531002, 480836070509458175};
+    ans0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588, 647651536262422014,
+            322042217691169971, 138609670727909932, 793736138075446811};
+    ans1 = {846754661443099927, 602279558317502186, 342175723088143584, 904036735987820179, 1124341799555345257,
+            885339199454111253, 417243638107713607, 548811148460128084};
+    ans2 = {524228833460429474, 692928367413813885, 465662343623521646, 107498520099165490, 81602760285107383,
+            482417615916109741, 249076385001962496, 719980682178715834};
+    ans3 = {474506930637362424, 723790960760608304, 7991172453764409, 738286918217632692, 933904287195446155,
+            98490114749039532, 293617451261147895, 1050780276990075548};
+    ans4 = {612459830520599999, 273948808875966259, 276211279884817131, 805184382328000673, 605603488049806384,
+            756318612975583592, 1014214483788531002, 480836070509458175};
 
     EXPECT_EQ(a.GetElementAtIndex(0), ans0);
     EXPECT_EQ(a.GetElementAtIndex(1), ans1);
@@ -321,10 +320,10 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     NativePoly poly0(x0p, Format::COEFFICIENT);
     NativePoly poly1(x1p, Format::COEFFICIENT);
-    poly0 = {242947838436205858, 458804958636264704, 813208723994158017, 738376275125875131,
-             269337450701982501, 633721177525656427, 406635995163024073, 763204304316606329};
-    poly1 = {1024863409567898083, 845721255474383902,  537504300724180111, 1018489837930110795,
-             112800627588840746,  1119710169440476902, 77894506676832730,  34149187620514595};
+    poly0 = {242947838436205858, 458804958636264704, 813208723994158017, 738376275125875131, 269337450701982501,
+            633721177525656427, 406635995163024073, 763204304316606329};
+    poly1 = {1024863409567898083, 845721255474383902, 537504300724180111, 1018489837930110795, 112800627588840746,
+            1119710169440476902, 77894506676832730, 34149187620514595};
 
     a.SetElementAtIndex(0, poly0);
     a.SetElementAtIndex(1, poly1);
@@ -342,8 +341,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     auto param11 = cryptoParamsBFVrns->GetalphaRlModq(sizeQ - 1);
     auto param12 = cryptoParamsBFVrns->GetModqBarrettMu();
     auto param13 = cryptoParamsBFVrns->GetrInv();
-    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(param1, param2, param3, param4, param5, param6, param7, param8,
-                                                       param9, param10, param11, param12, param13);
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+            param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13);
 
     a.FastExpandCRTBasisPloverQ(basisPQ);
 
@@ -362,23 +361,23 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     NativePoly ans3(x3p, Format::COEFFICIENT);
 
 #if defined(WITH_REDUCED_NOISE)
-    ans0 = {805568738929329615, 1078766251747424581, 785656076316475931, 599125608237504783,
-            541576441836927289, 152721755350883625,  574857357780891059, 1081393409810468824};
-    ans1 = {434562805454153183, 312761043978375122, 509951653046700585, 879239171041671807,
-            385039618723450974, 638710747265582660, 246115869294473636, 352338293114574370};
-    ans2 = {955839852875274613,  186398073668078475, 710455872402389880, 1065981546244475423,
-            1049296073052489282, 578396240339812091, 26954876970280154,  1019223053257416911};
-    ans3 = {874592295621923163, 585167928946466636, 612704504638527026, 551633899923050544,
-            758002500979691773, 694035684451390661, 625796987487151014, 96319544173820806};
+    ans0 = {805568738929329615, 1078766251747424581, 785656076316475931, 599125608237504783, 541576441836927289,
+            152721755350883625, 574857357780891059, 1081393409810468824};
+    ans1 = {434562805454153183, 312761043978375122, 509951653046700585, 879239171041671807, 385039618723450974,
+            638710747265582660, 246115869294473636, 352338293114574370};
+    ans2 = {955839852875274613, 186398073668078475, 710455872402389880, 1065981546244475423, 1049296073052489282,
+            578396240339812091, 26954876970280154, 1019223053257416911};
+    ans3 = {874592295621923163, 585167928946466636, 612704504638527026, 551633899923050544, 758002500979691773,
+            694035684451390661, 625796987487151014, 96319544173820806};
 #else
-    ans0 = {805568738929329616, 1078766251747424582, 785656076316475932, 599125608237504784,
-            541576441836927290, 152721755350883626,  574857357780891061, 1081393409810468825};
-    ans1 = {434562805454153184, 312761043978375123, 509951653046700586, 879239171041671808,
-            385039618723450975, 638710747265582661, 246115869294473638, 352338293114574371};
-    ans2 = {955839852875274614,  186398073668078476, 710455872402389881, 1065981546244475424,
-            1049296073052489283, 578396240339812092, 26954876970280156,  1019223053257416912};
-    ans3 = {874592295621923164, 585167928946466637, 612704504638527027, 551633899923050545,
-            758002500979691774, 694035684451390662, 625796987487151016, 96319544173820807};
+    ans0 = {805568738929329616, 1078766251747424582, 785656076316475932, 599125608237504784, 541576441836927290,
+            152721755350883626, 574857357780891061, 1081393409810468825};
+    ans1 = {434562805454153184, 312761043978375123, 509951653046700586, 879239171041671808, 385039618723450975,
+            638710747265582661, 246115869294473638, 352338293114574371};
+    ans2 = {955839852875274614, 186398073668078476, 710455872402389881, 1065981546244475424, 1049296073052489283,
+            578396240339812092, 26954876970280156, 1019223053257416912};
+    ans3 = {874592295621923164, 585167928946466637, 612704504638527027, 551633899923050545, 758002500979691774,
+            694035684451390662, 625796987487151016, 96319544173820807};
 #endif
 
     EXPECT_EQ(a.GetElementAtIndex(0), ans0);
@@ -401,7 +400,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> params = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -412,10 +411,10 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 
     Poly resultA = a.CRTInterpolate();
 
-    const DCRTPoly b =
-        a.SwitchCRTBasis(paramsR, cryptoParamsBFVrns->GetQlHatInvModq(), cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-                         cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-                         cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+    const DCRTPoly b = a.SwitchCRTBasis(paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+            cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+            cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
+            cryptoParamsBFVrns->GetqInv());
 
     Poly resultB = b.CRTInterpolate();
 
@@ -445,7 +444,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -466,14 +465,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     Poly bPoly = b.CRTInterpolate();
 
     a.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
-                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
-                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+            cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+            cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(),
+            Format::EVALUATION);
 
     b.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
-                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
-                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+            cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+            cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(),
+            Format::EVALUATION);
 
     auto tmp{b};
     tmp.SetFormat(Format::COEFFICIENT);
@@ -533,14 +532,13 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
     EXPECT_EQ(A0, B0) << "Results of multiprecision and CRT multiplication do not match";
 
-    DCRTPoly rounded =
-        c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
+    DCRTPoly rounded = c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
+            cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
 
     DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
-                                               cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
-                                               cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
-                                               cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
+            cryptoParamsBFVrns->GetRlHatInvModrPrecon(), cryptoParamsBFVrns->GetRlHatModq(),
+            cryptoParamsBFVrns->GetalphaRlModq(), cryptoParamsBFVrns->GetModqBarrettMu(),
+            cryptoParamsBFVrns->GetrInv());
 
     Poly resultRoundedQ = roundedQ.CRTInterpolate();
 
@@ -575,7 +573,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -597,14 +595,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     Poly bPoly = b.CRTInterpolate();
 
     a.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
-                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
-                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+            cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+            cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(),
+            Format::EVALUATION);
 
     b.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
-                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
-                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+            cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+            cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(),
+            Format::EVALUATION);
 
     auto tmp{b};
     tmp.SetFormat(Format::COEFFICIENT);
@@ -666,14 +664,13 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     //  EXPECT_EQ(A0, B0)
     //      << "Results of multiprecision and CRT multiplication do not match";
 
-    DCRTPoly rounded =
-        c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
+    DCRTPoly rounded = c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
+            cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
 
     DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
-                                               cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
-                                               cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
-                                               cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
+            cryptoParamsBFVrns->GetRlHatInvModrPrecon(), cryptoParamsBFVrns->GetRlHatModq(),
+            cryptoParamsBFVrns->GetalphaRlModq(), cryptoParamsBFVrns->GetModqBarrettMu(),
+            cryptoParamsBFVrns->GetrInv());
 
     Poly resultRoundedQ = roundedQ.CRTInterpolate();
 

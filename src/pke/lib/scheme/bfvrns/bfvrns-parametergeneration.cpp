@@ -50,9 +50,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                        uint32_t evalAddCount, uint32_t multiplicativeDepth,
-                                                        uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
-                                                        uint32_t numDigits) const {
+        uint32_t evalAddCount, uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
+        uint32_t numDigits) const {
     if (!cryptoParams)
         OPENFHE_THROW("No crypto parameters are supplied to BFVrns ParamsGen");
 
@@ -138,11 +137,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
                 // set the number of digits
                 uint32_t numPartQ = ComputeNumLargeDigits(numDigits, k - 1);
                 auto hybridKSInfo =
-                    CryptoParametersRNS::EstimateLogP(numPartQ, dcrtBits, dcrtBits, 0, k, auxBits, scalTech);
+                        CryptoParametersRNS::EstimateLogP(numPartQ, dcrtBits, dcrtBits, 0, k, auxBits, scalTech);
                 logq += std::get<0>(hybridKSInfo);
             }
             return static_cast<double>(
-                StdLatticeParm::FindRingDim(distType, stdLevel, static_cast<uint32_t>(std::ceil(logq))));
+                    StdLatticeParm::FindRingDim(distType, stdLevel, static_cast<uint32_t>(std::ceil(logq))));
         }
     };
 
@@ -327,8 +326,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     if (numInitialModuli < 1)
         OPENFHE_THROW("numInitialModuli must be greater than 0.");
     const size_t sizeQ = multipartyMode == NOISE_FLOODING_MULTIPARTY ?
-                             numInitialModuli + NoiseFlooding::NUM_MODULI_MULTIPARTY :
-                             numInitialModuli;
+                                 numInitialModuli + NoiseFlooding::NUM_MODULI_MULTIPARTY :
+                                 numInitialModuli;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
@@ -382,7 +381,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     if (encodingParams->GetBatchSize() == 0) {
         uint32_t batchSize = n;
         EncodingParams encodingParamsNew(
-            std::make_shared<EncodingParamsImpl>(encodingParams->GetPlaintextModulus(), batchSize));
+                std::make_shared<EncodingParamsImpl>(encodingParams->GetPlaintextModulus(), batchSize));
         cryptoParamsBFVRNS->SetEncodingParams(encodingParamsNew);
     }
 

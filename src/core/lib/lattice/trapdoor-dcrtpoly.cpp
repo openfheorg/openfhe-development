@@ -52,7 +52,7 @@ namespace lbcrypto {
 // "Implementing Token-Based Obfuscation under (Ring) LWE"
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(
-    std::shared_ptr<ParmType> params, double stddev, int64_t base, bool bal) {
+        std::shared_ptr<ParmType> params, double stddev, int64_t base, bool bal) {
     auto zero_alloc     = DCRTPoly::Allocator(params, Format::EVALUATION);
     auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, Format::COEFFICIENT, stddev);
     auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
@@ -64,8 +64,8 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
     size_t k = params->GetParams().size() * digitCount;
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     auto a = uniform_alloc();
@@ -92,7 +92,7 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
 
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(
-    std::shared_ptr<ParmType> params, double stddev, size_t d, int64_t base, bool bal) {
+        std::shared_ptr<ParmType> params, double stddev, size_t d, int64_t base, bool bal) {
     auto zero_alloc     = DCRTPoly::Allocator(params, Format::EVALUATION);
     auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, Format::COEFFICIENT, stddev);
     auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
@@ -104,8 +104,8 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
     size_t k = params->GetParams().size() * digitCount;
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     Matrix<DCRTPoly> R(zero_alloc, d, d * k, gaussian_alloc);
@@ -143,8 +143,7 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
 
 template <>
 Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, const Matrix<DCRTPoly>& A,
-                                                          const RLWETrapdoorPair<DCRTPoly>& T, const DCRTPoly& u,
-                                                          DggType& dgg, DggType& dggLargeSigma, int64_t base) {
+        const RLWETrapdoorPair<DCRTPoly>& T, const DCRTPoly& u, DggType& dgg, DggType& dggLargeSigma, int64_t base) {
     OPENFHE_DEBUG_FLAG(false);
     TimeVar t1, t1_tot, t2, t2_tot;
     TIC(t1);
@@ -189,8 +188,8 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
         NativeInteger qu = params->GetParams()[u]->GetModulus();
 
         Matrix<int64_t> digits([]() { return 0; }, kRes, n);
-        LatticeGaussSampUtility<NativePoly>::GaussSampGqArbBase(perturbedSyndrome.GetElementAtIndex(u), c, kRes, qu,
-                                                                base, dgg, &digits);
+        LatticeGaussSampUtility<NativePoly>::GaussSampGqArbBase(
+                perturbedSyndrome.GetElementAtIndex(u), c, kRes, qu, base, dgg, &digits);
         for (size_t p = 0; p < kRes; p++) {
             for (size_t j = 0; j < n; j++) {
                 zHatBBI(p + u * kRes, j) = digits(p, j);
@@ -226,9 +225,8 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
 
 template <>
 Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(size_t n, size_t k, const Matrix<DCRTPoly>& A,
-                                                                   const RLWETrapdoorPair<DCRTPoly>& T,
-                                                                   const Matrix<DCRTPoly>& U, DggType& dgg,
-                                                                   DggType& dggLargeSigma, int64_t base) {
+        const RLWETrapdoorPair<DCRTPoly>& T, const Matrix<DCRTPoly>& U, DggType& dgg, DggType& dggLargeSigma,
+        int64_t base) {
     const std::shared_ptr<ParmType> params = U(0, 0).GetParams();
     auto zero_alloc                        = DCRTPoly::Allocator(params, Format::EVALUATION);
 
@@ -265,8 +263,8 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(size_t n, siz
 
                 Matrix<int64_t> digits([]() { return 0; }, kRes, n);
 
-                LatticeGaussSampUtility<NativePoly>::GaussSampGqArbBase(perturbedSyndrome(i, j).GetElementAtIndex(u), c,
-                                                                        kRes, qu, base, dgg, &digits);
+                LatticeGaussSampUtility<NativePoly>::GaussSampGqArbBase(
+                        perturbedSyndrome(i, j).GetElementAtIndex(u), c, kRes, qu, base, dgg, &digits);
 
                 for (size_t p = 0; p < kRes; p++) {
                     for (size_t jj = 0; jj < n; jj++) {

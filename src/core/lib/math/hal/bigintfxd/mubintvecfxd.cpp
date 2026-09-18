@@ -85,8 +85,8 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(BigVectorFixedT&& bigVector) {
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus,
-                                              std::initializer_list<std::string> rhs) {
+BigVectorFixedT<IntegerType>::BigVectorFixedT(
+        uint32_t length, const IntegerType& modulus, std::initializer_list<std::string> rhs) {
     this->m_length  = length;
     this->m_modulus = modulus;
     this->m_data    = new IntegerType[m_length]();
@@ -102,8 +102,8 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus,
-                                              std::initializer_list<uint64_t> rhs) {
+BigVectorFixedT<IntegerType>::BigVectorFixedT(
+        uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs) {
     this->m_length  = length;
     this->m_modulus = modulus;
     this->m_data    = new IntegerType[m_length]();
@@ -523,16 +523,16 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultWithOutModEq(con
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultiplyAndRound(const IntegerType& p,
-                                                                            const IntegerType& q) const {
+BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultiplyAndRound(
+        const IntegerType& p, const IntegerType& q) const {
     BigVectorFixedT ans(*this);
     ans.MultiplyAndRoundEq(p, q);
     return ans;
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(const IntegerType& p,
-                                                                               const IntegerType& q) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(
+        const IntegerType& p, const IntegerType& q) {
     IntegerType halfQ(this->m_modulus >> 1);
     IntegerType temp;
     for (uint32_t i = 0; i < this->m_length; i++) {

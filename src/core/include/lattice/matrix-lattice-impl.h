@@ -62,12 +62,12 @@ Matrix<typename Element::Integer> Rotate(Matrix<Element> const& inMat) {
             for (size_t rotRow = 0; rotRow < n; ++rotRow) {
                 for (size_t rotCol = 0; rotCol < n; ++rotCol) {
                     result(row * n + rotRow, col * n + rotCol) =
-                        mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
+                            mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
                     //  negate (mod q) upper-right triangle to account for
                     //  (mod x^n + 1)
                     if (rotRow < rotCol) {
                         result(row * n + rotRow, col * n + rotCol) =
-                            modulus.ModSub(result(row * n + rotRow, col * n + rotCol), modulus);
+                                modulus.ModSub(result(row * n + rotRow, col * n + rotCol), modulus);
                     }
                 }
             }

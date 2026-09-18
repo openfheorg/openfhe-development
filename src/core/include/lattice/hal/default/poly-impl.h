@@ -78,8 +78,8 @@ PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::
 }
 
 template <typename VecType>
-PolyImpl<VecType>::PolyImpl(const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format,
-                            uint32_t h)
+PolyImpl<VecType>::PolyImpl(
+        const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format, uint32_t h)
     : m_format{Format::COEFFICIENT},
       m_params{params},
       m_values{std::make_unique<VecType>(tug.GenerateVector(params->GetRingDimension(), params->GetModulus(), h))} {
@@ -259,8 +259,8 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& rhs) const {
 }
 
 template <typename VecType>
-PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(const typename VecType::Integer& p,
-                                                      const typename VecType::Integer& q) const {
+PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(
+        const typename VecType::Integer& p, const typename VecType::Integer& q) const {
     PolyImpl<VecType> tmp(m_params, m_format);
     tmp.SetValues((*m_values).MultiplyAndRound(p, q), m_format);
     return tmp;
@@ -398,8 +398,8 @@ PolyImpl<VecType> PolyImpl<VecType>::Mod(const Integer& modulus) const {
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                                      const Integer& rootOfUnityArb) {
+void PolyImpl<VecType>::SwitchModulus(
+        const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb, const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->SwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
@@ -408,8 +408,8 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                                          const Integer& rootOfUnityArb) {
+void PolyImpl<VecType>::LazySwitchModulus(
+        const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb, const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->LazySwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};

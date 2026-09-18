@@ -100,7 +100,7 @@ protected:
 
 public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+            SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
@@ -108,7 +108,7 @@ public:
           schemeID(schemeTag) {}
 
     PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+            SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsNativePoly),
           encodingParams(std::move(ep)),
           encodedNativeVector(vp, Format::COEFFICIENT),
@@ -117,7 +117,7 @@ public:
 
     // TODO: eliminate use of encodedVector in coefpackedencoding to remove encodedVector init here
     PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+            SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsDCRTPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),

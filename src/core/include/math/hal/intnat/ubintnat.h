@@ -187,13 +187,13 @@ public:
     }
 
     template <typename T,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+            std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                    bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
-                                               std::is_same_v<T, M6Integer>,
-                                           bool> = true>
+                                                   std::is_same_v<T, M6Integer>,
+                                  bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value{val.template ConvertToInt<NativeInt>()} {}
 
     template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
@@ -220,16 +220,16 @@ public:
     }
 
     template <typename T,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+            std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                    bool> = true>
     constexpr NativeIntegerT& operator=(T val) noexcept {
         m_value = val;
         return *this;
     }
 
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
-                                               std::is_same_v<T, M6Integer>,
-                                           bool> = true>
+                                                   std::is_same_v<T, M6Integer>,
+                                  bool> = true>
     constexpr NativeIntegerT& operator=(T val) noexcept {
         m_value = val.template ConvertToInt<NativeInt>();
         return *this;
@@ -554,8 +554,8 @@ public:
     NativeIntegerT& MultiplyAndRoundEq(const NativeIntegerT& p, const NativeIntegerT& q) {
         if (q.m_value == 0)
             OPENFHE_THROW("NativeIntegerT MultiplyAndRoundEq: Divide by zero");
-        return *this =
-                   static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
+        return *this = static_cast<NativeInt>(
+                       p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
     }
 
     /**
@@ -1132,8 +1132,8 @@ public:
    * @param &bInv precomputation for b.
    * @return is the result of the modulus multiplication operation.
    */
-    NativeIntegerT ModMulFastConst(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                                   const NativeIntegerT& bInv) const {
+    NativeIntegerT ModMulFastConst(
+            const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& bInv) const {
         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
         return {yprime >= 0 ? yprime : yprime + modulus.m_value};
@@ -1148,8 +1148,8 @@ public:
    * @param &bInv precomputation for b.
    * @return is the result of the modulus multiplication operation.
    */
-    NativeIntegerT& ModMulFastConstEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
-                                      const NativeIntegerT& bInv) {
+    NativeIntegerT& ModMulFastConstEq(
+            const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& bInv) {
         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
         m_value     = static_cast<NativeInt>(yprime >= 0 ? yprime : yprime + modulus.m_value);
@@ -1303,9 +1303,9 @@ public:
    *
    * @return the int representation of the value as uint32_t.
    */
-    template <typename T             = NativeInt,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+    template <typename T  = NativeInt,
+            std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                    bool> = true>
     constexpr T ConvertToInt() const noexcept {
         return static_cast<T>(m_value);
     }
@@ -1432,10 +1432,10 @@ public:
 
     template <class Archive, typename T = void>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
     }
@@ -1443,11 +1443,11 @@ public:
 #if defined(HAVE_INT128)
     template <class Archive>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
-                              void>
+            void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         // get an array with 2 uint64_t values for m_value
         uint64_t vec[2];
@@ -1459,11 +1459,11 @@ public:
 
     template <class Archive>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
-                              void>
+            void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         // get an array with 2 uint64_t values for m_value
         uint64_t vec[2];
@@ -1476,14 +1476,14 @@ public:
 
     template <class Archive, typename T = void>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
 
 #if defined(HAVE_INT128)
     template <class Archive>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && !cereal::traits::is_text_archive<Archive>::value,
-                              void>
+            void>
     save(Archive& ar, std::uint32_t const version) const {
         // save 2 uint64_t values instead of uint128_t
         constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
@@ -1495,7 +1495,7 @@ public:
 
     template <class Archive>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint128_t> && cereal::traits::is_text_archive<Archive>::value,
-                              void>
+            void>
     save(Archive& ar, std::uint32_t const version) const {
         // save 2 uint64_t values instead of uint128_t
         constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;

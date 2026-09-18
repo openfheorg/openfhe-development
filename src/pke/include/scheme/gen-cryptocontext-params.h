@@ -228,39 +228,13 @@ public:
      * @return a vector with names of all data members of Params
      */
     static const std::vector<std::string> getAllParamsDataMembers() {
-        return {"scheme",
-                "ptModulus",
-                "digitSize",
-                "standardDeviation",
-                "secretKeyDist",
-                "maxRelinSkDeg",
-                "ksTech",
-                "scalTech",
-                "firstModSize",
-                "batchSize",
-                "numLargeDigits",
-                "multiplicativeDepth",
-                "scalingModSize",
-                "securityLevel",
-                "ringDim",
-                "evalAddCount",
-                "keySwitchCount",
-                "encryptionTechnique",
-                "multiplicationTechnique",
-                "PRENumHops",
-                "PREMode",
-                "multipartyMode",
-                "executionMode",
-                "decryptionNoiseMode",
-                "noiseEstimate",
-                "desiredPrecision",
-                "statisticalSecurity",
-                "numAdversarialQueries",
-                "thresholdNumOfParties",
-                "interactiveBootCompressionLevel",
-                "compositeDegree",
-                "registerWordSize",
-                "ckksDataType"};
+        return {"scheme", "ptModulus", "digitSize", "standardDeviation", "secretKeyDist", "maxRelinSkDeg", "ksTech",
+                "scalTech", "firstModSize", "batchSize", "numLargeDigits", "multiplicativeDepth", "scalingModSize",
+                "securityLevel", "ringDim", "evalAddCount", "keySwitchCount", "encryptionTechnique",
+                "multiplicationTechnique", "PRENumHops", "PREMode", "multipartyMode", "executionMode",
+                "decryptionNoiseMode", "noiseEstimate", "desiredPrecision", "statisticalSecurity",
+                "numAdversarialQueries", "thresholdNumOfParties", "interactiveBootCompressionLevel", "compositeDegree",
+                "registerWordSize", "ckksDataType"};
     }
 
     // getters

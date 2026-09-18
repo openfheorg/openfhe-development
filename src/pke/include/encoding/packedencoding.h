@@ -69,22 +69,22 @@ class PackedEncoding : public PlaintextImpl {
 public:
     // these two constructors are used inside of Decrypt
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::initializer_list<int64_t> coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
@@ -152,7 +152,7 @@ public:
    * @params modulus is the plaintext modulus
    */
     static void SetParams(uint32_t m, const PlaintextModulus& modulus)
-        __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
+            __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
 
     /**
    * SetLength of the plaintext to the given size

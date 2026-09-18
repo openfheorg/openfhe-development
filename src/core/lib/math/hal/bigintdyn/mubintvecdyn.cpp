@@ -54,8 +54,8 @@
 namespace bigintdyn {
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
-                                 std::initializer_list<std::string> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(
+        uint32_t length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
@@ -63,8 +63,8 @@ mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
 }
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
-                                 std::initializer_list<uint64_t> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(
+        uint32_t length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)

@@ -112,7 +112,7 @@ void DCRT_constructors(const std::string& msg) {
         OPENFHE_DEBUG("2.1");
         std::vector<NativePoly> ilvector2nVectorInconsistent(towersize);
         auto ilparamsNegativeTestCase =
-            std::make_shared<ILNativeParams>(128, NativeInteger("1231"), NativeInteger("213"));
+                std::make_shared<ILNativeParams>(128, NativeInteger("1231"), NativeInteger("213"));
         NativePoly ilvNegative(ilparamsNegativeTestCase);
         ilvector2nVectorInconsistent[0] = ilvNegative;
         ilvector2nVectorInconsistent[1] = ilv1;
@@ -123,7 +123,7 @@ void DCRT_constructors(const std::string& msg) {
             OPENFHE_DEBUG(ii << " item " << ilvector2nVectorInconsistent.at(ii).GetParams().use_count());
         }
         EXPECT_THROW(testDCRTPolyConstructorNegative(ilvector2nVectorInconsistent), OpenFHEException)
-            << msg << " Failure: ilvector2nVectorInconsistent";
+                << msg << " Failure: ilvector2nVectorInconsistent";
     }
 
     OPENFHE_DEBUG("4");
@@ -143,20 +143,20 @@ void DCRT_constructors(const std::string& msg) {
 
         for (uint32_t i = 0; i < 3; ++i) {
             EXPECT_EQ(ilvaVector[i].GetFormat(), ilvaCopyVector[i].GetFormat())
-                << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetFormat()";
+                    << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetFormat()";
             EXPECT_EQ(ilvaVector[i].GetModulus(), ilvaCopyVector[i].GetModulus())
-                << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetModulus()";
+                    << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetModulus()";
             EXPECT_EQ(ilvaVector[i].GetCyclotomicOrder(), ilvaCopyVector[i].GetCyclotomicOrder())
-                << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetCyclotomicOrder()";
+                    << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetCyclotomicOrder()";
             EXPECT_EQ(ilvaVector[i].GetNumOfElements(), ilvaCopyVector[i].GetNumOfElements())
-                << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetNumOfElements()";
+                    << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetNumOfElements()";
             // to ensure that GetElementAtIndex is not called
             // on uninitialized DCRTPoly objects.
             if (i == 0 || i == 1)
                 continue;
             for (uint32_t j = 0; j < towersize; ++j) {
                 EXPECT_EQ(ilvaVector[i].GetElementAtIndex(j), ilvaCopyVector[i].GetElementAtIndex(j))
-                    << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetElementAtIndex(" << j << ")";
+                        << msg << " Failure: ctor ilvaCopyVector[" << i << "].GetElementAtIndex(" << j << ")";
             }
         }
     }
@@ -170,7 +170,7 @@ void DCRT_constructors(const std::string& msg) {
         EXPECT_EQ(modulus, ilva.GetModulus()) << msg << " Failure: ctor(dgg, ildcrtparams) ilva.GetModulus()";
         EXPECT_EQ(m, ilva.GetCyclotomicOrder()) << msg << " Failure: ctor(dgg, ildcrtparams) ilva.GetCyclotomicOrder()";
         EXPECT_EQ(towersize, ilva.GetNumOfElements())
-            << msg << " Failure: ctor(dgg, ildcrtparams) ilva.GetNumOfElements()";
+                << msg << " Failure: ctor(dgg, ildcrtparams) ilva.GetNumOfElements()";
     }
 
     OPENFHE_DEBUG("6");
@@ -183,7 +183,7 @@ void DCRT_constructors(const std::string& msg) {
         EXPECT_EQ(Format::EVALUATION, ilva.GetFormat()) << msg << "Failure: clone parameters format mismatch";
         EXPECT_EQ(ilva.GetParams(), ilvaClone.GetParams()) << msg << "Failure: clone parameters parameter mismatch";
         EXPECT_EQ(towersInClone.size(), ilva.GetAllElements().size())
-            << msg << "Failure: clone parameters towers size mismatch";
+                << msg << "Failure: clone parameters towers size mismatch";
     }
 }
 
@@ -425,27 +425,27 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         expected0 = {"4177", "6265", "5569", "4177"};
         EXPECT_EQ(expected0, ilvectInv0.GetValues()) << msg << " Failure: ilvectInv0 MultiplicativeInverse()";
         EXPECT_EQ(NativeInteger("8353"), ilvectInv0.GetModulus())
-            << msg << " Failure: ilvectInv0 MultiplicativeInverse() modulus";
+                << msg << " Failure: ilvectInv0 MultiplicativeInverse() modulus";
         EXPECT_EQ(NativeInteger("8163"), ilvectInv0.GetRootOfUnity())
-            << msg << " Failure: ilvectInv0 MultiplicativeInverse() rootOfUnity";
+                << msg << " Failure: ilvectInv0 MultiplicativeInverse() rootOfUnity";
 
         NativeVector expected1(4, ilvectInv1.GetModulus());
         expected1 = {"4185", "6277", "2790", "4185"};
         EXPECT_EQ(expected1, ilvectInv1.GetValues()) << msg << " Failure: ilvectInv1 MultiplicativeInverse()";
         EXPECT_EQ(NativeInteger("8369"), ilvectInv1.GetModulus())
-            << msg << " Failure: ilvectInv1 MultiplicativeInverse() modulus";
+                << msg << " Failure: ilvectInv1 MultiplicativeInverse() modulus";
         EXPECT_EQ(NativeInteger("6677"), ilvectInv1.GetRootOfUnity())
-            << msg << " Failure: ilvectInv1 MultiplicativeInverse() rootOfUnity";
+                << msg << " Failure: ilvectInv1 MultiplicativeInverse() rootOfUnity";
 
         NativeVector expected2(4, ilvectInv2.GetModulus());
         expected2 = {"4257", "6385", "2838", "4257"};
         EXPECT_EQ(expected2, ilvectInv2.GetValues()) << msg << " Failure: ilvectInv2 MultiplicativeInverse()";
         EXPECT_EQ(NativeInteger("8513"), ilvectInv2.GetModulus())
-            << msg << " Failure: ilvectInv2 MultiplicativeInverse() modulus";
+                << msg << " Failure: ilvectInv2 MultiplicativeInverse() modulus";
         EXPECT_EQ(NativeInteger("156"), ilvectInv2.GetRootOfUnity())
-            << msg << " Failure: ilvectInv2 MultiplicativeInverse() rootOfUnity";
+                << msg << " Failure: ilvectInv2 MultiplicativeInverse() rootOfUnity";
         EXPECT_THROW(ilva1.MultiplicativeInverse(), OpenFHEException)
-            << msg << " Failure: throw MultiplicativeInverse()";
+                << msg << " Failure: throw MultiplicativeInverse()";
     }
 
     // DCRTPoly::MakeSparse() Only used by RingSwitching, which is no longer supported
@@ -533,9 +533,9 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
 
             if (i == 0) {
                 EXPECT_EQ(modulus2.ConvertToInt(), ilv.GetModulus().ConvertToInt())
-                    << msg << " Failure: SwitchModulusAtIndex modulus";
+                        << msg << " Failure: SwitchModulusAtIndex modulus";
                 EXPECT_EQ(rootOfUnity2.ConvertToInt(), ilv.GetRootOfUnity().ConvertToInt())
-                    << msg << " Failure: SwitchModulusAtIndex rootOfUnity";
+                        << msg << " Failure: SwitchModulusAtIndex rootOfUnity";
             }
         }
     }
@@ -565,9 +565,9 @@ void DCRT_mod_ops_on_two_elements(const std::string& msg) {
             for (uint32_t j = 0; j < ildcrtparams->GetRingDimension(); j++) {
                 NativeInteger actualResult(sum.GetElementAtIndex(i).at(j));
                 NativeInteger expectedResult((op1.GetElementAtIndex(i).at(j) + op2.GetElementAtIndex(i).at(j))
-                                                 .Mod(ildcrtparams->GetParams()[i]->GetModulus()));
+                                                     .Mod(ildcrtparams->GetParams()[i]->GetModulus()));
                 EXPECT_EQ(actualResult, expectedResult)
-                    << msg << " Failure: DCRTPoly + operation tower " << i << " index " << j;
+                        << msg << " Failure: DCRTPoly + operation tower " << i << " index " << j;
             }
         }
     }
@@ -579,9 +579,9 @@ void DCRT_mod_ops_on_two_elements(const std::string& msg) {
             for (uint32_t j = 0; j < ildcrtparams->GetRingDimension(); j++) {
                 NativeInteger actualResult(prod.GetElementAtIndex(i).at(j));
                 NativeInteger expectedResult((op1.GetElementAtIndex(i).at(j) * op2.GetElementAtIndex(i).at(j))
-                                                 .Mod(ildcrtparams->GetParams()[i]->GetModulus()));
+                                                     .Mod(ildcrtparams->GetParams()[i]->GetModulus()));
                 EXPECT_EQ(actualResult, expectedResult)
-                    << msg << " Failure: DCRTPoly * operation tower " << i << " index " << j;
+                        << msg << " Failure: DCRTPoly * operation tower " << i << " index " << j;
             }
         }
     }

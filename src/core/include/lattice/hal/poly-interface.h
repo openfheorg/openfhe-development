@@ -105,7 +105,7 @@ public:
    * @return the resulting vector.
    */
     inline static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(
-        const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
+            const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
             return DerivedType(dgg, params, resultFormat);
@@ -119,8 +119,8 @@ public:
    * @param format format for the polynomials generated.
    * @return the resulting vector.
    */
-    inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
-                                                                            Format format) {
+    inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(
+            const std::shared_ptr<Params>& params, Format format) {
         return [=]() {
             DugType dug;
             return DerivedType(dug, params, format);
@@ -413,7 +413,7 @@ public:
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
             OPENFHE_THROW(
-                "PolyInterface element transposition is currently implemented only in the Evaluation representation.");
+                    "PolyInterface element transposition is currently implemented only in the Evaluation representation.");
         }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
@@ -453,9 +453,9 @@ public:
    * rootOfUnity for the modulus
    */
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                       const Integer& rootOfUnityArb) override    = 0;
+            const Integer& rootOfUnityArb) override = 0;
     virtual void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                                   const Integer& rootOfUnityArb) = 0;
+            const Integer& rootOfUnityArb)          = 0;
 
     virtual DerivedType& MultAccEqNoCheck(const DerivedType& V, const Integer& I) = 0;
 

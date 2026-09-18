@@ -103,7 +103,7 @@ public:
     explicit DCRTPolyImpl(const std::vector<PolyType>& elements);
 
     DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-                 bool initializeElementToZero = false) noexcept
+            bool initializeElementToZero = false) noexcept
         : m_params{params}, m_format{format} {
         m_vectors.reserve(m_params->GetParams().size());
         for (const auto& p : m_params->GetParams())
@@ -284,9 +284,8 @@ public:
     void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) override;
 
     void ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
-                   const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,
-                   const std::vector<NativeInteger>& qlInvModq,
-                   const std::vector<NativeInteger>& qlInvModqPrecon) override;
+            const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,
+            const std::vector<NativeInteger>& qlInvModq, const std::vector<NativeInteger>& qlInvModqPrecon) override;
 
     PolyLargeType CRTInterpolate() const override;
     PolyType DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
@@ -299,109 +298,97 @@ public:
     std::shared_ptr<Params> GetExtendedCRTBasis(const std::shared_ptr<Params>& paramsP) const override;
 
     void TimesQovert(const std::shared_ptr<Params>& paramsQ, const std::vector<NativeInteger>& tInvModq,
-                     const NativeInteger& t, const NativeInteger& NegQModt,
-                     const NativeInteger& NegQModtPrecon) override;
+            const NativeInteger& t, const NativeInteger& NegQModt, const NativeInteger& NegQModtPrecon) override;
 
     DCRTPolyType ApproxSwitchCRTBasis(const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
-                                      const std::vector<NativeInteger>& QHatInvModq,
-                                      const std::vector<NativeInteger>& QHatInvModqPrecon,
-                                      const std::vector<std::vector<NativeInteger>>& QHatModp,
-                                      const std::vector<DoubleNativeInt>& modpBarrettMu) const override;
+            const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModp,
+            const std::vector<DoubleNativeInt>& modpBarrettMu) const override;
 
     void ApproxModUp(const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
-                     const std::shared_ptr<Params>& paramsQP, const std::vector<NativeInteger>& QHatInvModq,
-                     const std::vector<NativeInteger>& QHatInvModqPrecon,
-                     const std::vector<std::vector<NativeInteger>>& QHatModp,
-                     const std::vector<DoubleNativeInt>& modpBarrettMu) override;
+            const std::shared_ptr<Params>& paramsQP, const std::vector<NativeInteger>& QHatInvModq,
+            const std::vector<NativeInteger>& QHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModp,
+            const std::vector<DoubleNativeInt>& modpBarrettMu) override;
 
-    DCRTPolyType ApproxModDown(
-        const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
-        const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
-        const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
-        const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
-        const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
-        const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
+    DCRTPolyType ApproxModDown(const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
+            const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
+            const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
+            const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
+            const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
+            const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
 
     DCRTPolyType SwitchCRTBasis(const std::shared_ptr<Params>& paramsP, const std::vector<NativeInteger>& QHatInvModq,
-                                const std::vector<NativeInteger>& QHatInvModqPrecon,
-                                const std::vector<std::vector<NativeInteger>>& QHatModp,
-                                const std::vector<std::vector<NativeInteger>>& alphaQModp,
-                                const std::vector<DoubleNativeInt>& modpBarrettMu,
-                                const std::vector<double>& qInv) const override;
+            const std::vector<NativeInteger>& QHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModp,
+            const std::vector<std::vector<NativeInteger>>& alphaQModp,
+            const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv) const override;
 
     void ExpandCRTBasis(const std::shared_ptr<Params>& paramsQP, const std::shared_ptr<Params>& paramsP,
-                        const std::vector<NativeInteger>& QHatInvModq,
-                        const std::vector<NativeInteger>& QHatInvModqPrecon,
-                        const std::vector<std::vector<NativeInteger>>& QHatModp,
-                        const std::vector<std::vector<NativeInteger>>& alphaQModp,
-                        const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
-                        Format resultFormat) override;
+            const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModp,
+            const std::vector<std::vector<NativeInteger>>& alphaQModp,
+            const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
+            Format resultFormat) override;
 
     void ExpandCRTBasisReverseOrder(const std::shared_ptr<Params>& paramsQP, const std::shared_ptr<Params>& paramsP,
-                                    const std::vector<NativeInteger>& QHatInvModq,
-                                    const std::vector<NativeInteger>& QHatInvModqPrecon,
-                                    const std::vector<std::vector<NativeInteger>>& QHatModp,
-                                    const std::vector<std::vector<NativeInteger>>& alphaQModp,
-                                    const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
-                                    Format resultFormat) override;
+            const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModp,
+            const std::vector<std::vector<NativeInteger>>& alphaQModp,
+            const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
+            Format resultFormat) override;
 
     void FastExpandCRTBasisPloverQ(const Precomputations& precomputed) override;
 
     void ExpandCRTBasisQlHat(const std::shared_ptr<Params>& paramsQ, const std::vector<NativeInteger>& QlHatModq,
-                             const std::vector<NativeInteger>& QlHatModqPrecon, const uint32_t sizeQ) override;
+            const std::vector<NativeInteger>& QlHatModqPrecon, const uint32_t sizeQ) override;
 
     PolyType ScaleAndRound(const NativeInteger& t, const std::vector<NativeInteger>& tQHatInvModqDivqModt,
-                           const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
-                           const std::vector<NativeInteger>& tQHatInvModqBDivqModt,
-                           const std::vector<NativeInteger>& tQHatInvModqBDivqModtPrecon,
-                           const std::vector<double>& tQHatInvModqDivqFrac,
-                           const std::vector<double>& tQHatInvModqBDivqFrac) const override;
+            const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
+            const std::vector<NativeInteger>& tQHatInvModqBDivqModt,
+            const std::vector<NativeInteger>& tQHatInvModqBDivqModtPrecon,
+            const std::vector<double>& tQHatInvModqDivqFrac,
+            const std::vector<double>& tQHatInvModqBDivqFrac) const override;
 
     DCRTPolyType ApproxScaleAndRound(const std::shared_ptr<Params>& paramsP,
-                                     const std::vector<std::vector<NativeInteger>>& tPSHatInvModsDivsModp,
-                                     const std::vector<DoubleNativeInt>& modpBarretMu) const override;
+            const std::vector<std::vector<NativeInteger>>& tPSHatInvModsDivsModp,
+            const std::vector<DoubleNativeInt>& modpBarretMu) const override;
 
     DCRTPolyType ScaleAndRound(const std::shared_ptr<Params>& paramsOutput,
-                               const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
-                               const std::vector<double>& tOSHatInvModsDivsFrac,
-                               const std::vector<DoubleNativeInt>& modoBarretMu) const override;
+            const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
+            const std::vector<double>& tOSHatInvModsDivsFrac,
+            const std::vector<DoubleNativeInt>& modoBarretMu) const override;
 
     PolyType ScaleAndRound(const std::vector<NativeInteger>& moduliQ, const NativeInteger& t,
-                           const NativeInteger& tgamma, const std::vector<NativeInteger>& tgammaQHatModq,
-                           const std::vector<NativeInteger>& tgammaQHatModqPrecon,
-                           const std::vector<NativeInteger>& negInvqModtgamma,
-                           const std::vector<NativeInteger>& negInvqModtgammaPrecon) const override;
+            const NativeInteger& tgamma, const std::vector<NativeInteger>& tgammaQHatModq,
+            const std::vector<NativeInteger>& tgammaQHatModqPrecon, const std::vector<NativeInteger>& negInvqModtgamma,
+            const std::vector<NativeInteger>& negInvqModtgammaPrecon) const override;
 
-    void ScaleAndRoundPOverQ(const std::shared_ptr<Params>& paramsQ,
-                             const std::vector<NativeInteger>& pInvModq) override;
+    void ScaleAndRoundPOverQ(
+            const std::shared_ptr<Params>& paramsQ, const std::vector<NativeInteger>& pInvModq) override;
 
-    void FastBaseConvqToBskMontgomery(
-        const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
-        const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
-        const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
-        const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
-        const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-        uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
-        const std::vector<NativeInteger>& mtildeInvModbskPrecon) override;
+    void FastBaseConvqToBskMontgomery(const std::shared_ptr<Params>& paramsQBsk,
+            const std::vector<NativeInteger>& moduliQ, const std::vector<NativeInteger>& moduliBsk,
+            const std::vector<DoubleNativeInt>& modbskBarrettMu, const std::vector<NativeInteger>& mtildeQHatInvModq,
+            const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
+            const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
+            uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+            const std::vector<NativeInteger>& mtildeInvModbskPrecon) override;
 
     void FastRNSFloorq(const NativeInteger& t, const std::vector<NativeInteger>& moduliQ,
-                       const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
-                       const std::vector<NativeInteger>& tQHatInvModq,
-                       const std::vector<NativeInteger>& tQHatInvModqPrecon,
-                       const std::vector<std::vector<NativeInteger>>& QHatModbsk,
-                       const std::vector<std::vector<NativeInteger>>& qInvModbsk,
-                       const std::vector<NativeInteger>& tQInvModbsk,
-                       const std::vector<NativeInteger>& tQInvModbskPrecon) override;
+            const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
+            const std::vector<NativeInteger>& tQHatInvModq, const std::vector<NativeInteger>& tQHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModbsk,
+            const std::vector<std::vector<NativeInteger>>& qInvModbsk, const std::vector<NativeInteger>& tQInvModbsk,
+            const std::vector<NativeInteger>& tQInvModbskPrecon) override;
 
     void FastBaseConvSK(const std::shared_ptr<Params>& paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
-                        const std::vector<NativeInteger>& moduliBsk,
-                        const std::vector<DoubleNativeInt>& modbskBarrettMu,
-                        const std::vector<NativeInteger>& BHatInvModb,
-                        const std::vector<NativeInteger>& BHatInvModbPrecon,
-                        const std::vector<NativeInteger>& BHatModmsk, const NativeInteger& BInvModmsk,
-                        const NativeInteger& BInvModmskPrecon, const std::vector<std::vector<NativeInteger>>& BHatModq,
-                        const std::vector<NativeInteger>& BModq,
-                        const std::vector<NativeInteger>& BModqPrecon) override;
+            const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
+            const std::vector<NativeInteger>& BHatInvModb, const std::vector<NativeInteger>& BHatInvModbPrecon,
+            const std::vector<NativeInteger>& BHatModmsk, const NativeInteger& BInvModmsk,
+            const NativeInteger& BInvModmskPrecon, const std::vector<std::vector<NativeInteger>>& BHatModq,
+            const std::vector<NativeInteger>& BModq, const std::vector<NativeInteger>& BModqPrecon) override;
 
     void SwitchFormat(uint32_t thread_limit = 0) override;
 
@@ -417,8 +404,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_vectors));
         ar(::cereal::make_nvp("f", m_format));

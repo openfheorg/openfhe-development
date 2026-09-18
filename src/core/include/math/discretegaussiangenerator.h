@@ -160,8 +160,8 @@ public:
    * param modulus modulus
    * @return A random value within this Discrete Gaussian Distribution.
    */
-    typename VecType::Integer GenerateInteger(double mean, double stddev, size_t n,
-                                              const typename VecType::Integer& modulus) const;
+    typename VecType::Integer GenerateInteger(
+            double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const;
 
     /**
    * @brief  Returns a generated integer. Uses rejection method.

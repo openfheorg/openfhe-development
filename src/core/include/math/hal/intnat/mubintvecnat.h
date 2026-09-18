@@ -626,8 +626,8 @@ public:
     }
 
     template <class Archive>
-    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
-                                                                                  std::uint32_t const version) const {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> save(
+            Archive& ar, std::uint32_t const version) const {
         ::cereal::size_type size = m_data.size();
         ar(size);
         if (size > 0) {
@@ -637,18 +637,18 @@ public:
     }
 
     template <class Archive>
-    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
-                                                                                 std::uint32_t const version) const {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> save(
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
     }
 
     template <class Archive>
-    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
-                                                                                  std::uint32_t const version) {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> load(
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ::cereal::size_type size;
         ar(size);
@@ -660,11 +660,11 @@ public:
     }
 
     template <class Archive>
-    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
-                                                                                 std::uint32_t const version) {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> load(
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
@@ -693,8 +693,8 @@ private:
    */
     static void BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
 
-    static void BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
-                                  const IntegerType& modulus);
+    static void BarrettModMulLoop(
+            IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
 
     /**
    * General-shrink loop shared by SwitchModulus, ModEq and the copy-with-switch ctor:
@@ -729,8 +729,8 @@ private:
    * @param size is the number of elements.
    * @param &modulus is the modulus to perform operations with.
    */
-    static void BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size,
-                                   const IntegerType& modulus);
+    static void BarrettMultAccLoop(
+            IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
 };
 
 }  // namespace intnat

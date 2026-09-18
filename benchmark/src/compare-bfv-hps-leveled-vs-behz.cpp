@@ -216,7 +216,7 @@ BENCHMARK(BEHZ_EvalMultMany)->Unit(benchmark::kMicrosecond)->Apply(MultBFVArgume
 
 void BFVrns_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBFVrnsContext(state.range(0), state.range(1), 1 << state.range(2));
+            GenerateFlatBFVrnsContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
@@ -239,7 +239,7 @@ BENCHMARK(BFVrns_Decrypt)->Unit(benchmark::kMicrosecond)->Apply(DecBFVArguments)
 
 void BEHZ_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
+            GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 

@@ -95,13 +95,13 @@ bool PackedEncoding::Encode() {
             PlaintextModulus q = this->GetElementModulus().ConvertToInt();
             if (q < mod) {
                 OPENFHE_THROW(
-                    "the plaintext modulus size is larger than the size of "
-                    "NativePoly modulus; increase the NativePoly modulus.");
+                        "the plaintext modulus size is larger than the size of "
+                        "NativePoly modulus; increase the NativePoly modulus.");
             }
 
             // Calls the inverse NTT mod plaintext modulus
             this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                                   this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
+                    this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
             tempVector.SetModulus(q);
             this->encodedNativeVector.SetValues(std::move(tempVector), Format::COEFFICIENT);
         }
@@ -109,14 +109,14 @@ bool PackedEncoding::Encode() {
             PlaintextModulus q = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
             if (q < mod) {
                 OPENFHE_THROW(
-                    "the plaintext modulus size is larger than the size of "
-                    "CRT moduli; either decrease the plaintext modulus or "
-                    "increase the CRT moduli.");
+                        "the plaintext modulus size is larger than the size of "
+                        "CRT moduli; either decrease the plaintext modulus or "
+                        "increase the CRT moduli.");
             }
 
             // Calls the inverse NTT mod plaintext modulus
             this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                                   this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
+                    this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
             // Switches from plaintext modulus to the modulus of the first RNS limb
             tempVector.SetModulus(q);
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
@@ -128,8 +128,8 @@ bool PackedEncoding::Encode() {
             // Sets the values for all other RNS limbs
             for (size_t j = 1; j < nativeParams.size(); j++) {
                 NativePoly tempPoly(nativeParams[j], Format::COEFFICIENT);
-                tempPoly.SetValues(NativeVector(firstElement.GetValues(), nativeParams[j]->GetModulus()),
-                                   Format::COEFFICIENT);
+                tempPoly.SetValues(
+                        NativeVector(firstElement.GetValues(), nativeParams[j]->GetModulus()), Format::COEFFICIENT);
                 this->encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
             }
             // Setting the first limb at the end make sure firstElement is available during the main loop
@@ -363,11 +363,11 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
                 permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
-                permutedSlots, m_initRoot[modulusM], m, &slotValues);
+                    permutedSlots, m_initRoot[modulusM], m, &slotValues);
         }
         else {
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
-                slotValues, m_initRoot[modulusM], m, &slotValues);
+                    slotValues, m_initRoot[modulusM], m, &slotValues);
         }
     }
     else {  // Arbitrary cyclotomic
@@ -383,7 +383,7 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
         OPENFHE_DEBUG("m_bigRoot[modulusM] " << m_bigRoot[modulusM]);
 
         slotValues = ChineseRemainderTransformArb<NativeVector>().InverseTransform(
-            permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
+                permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
     }
 
     OPENFHE_DEBUG("slotvalues now " << slotValues);
@@ -420,11 +420,11 @@ void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t 
                 permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
-                permutedSlots, m_initRoot[modulusM], m, &slotValues);
+                    permutedSlots, m_initRoot[modulusM], m, &slotValues);
         }
         else {
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
-                slotValues, m_initRoot[modulusM], m, &slotValues);
+                    slotValues, m_initRoot[modulusM], m, &slotValues);
         }
     }
     else {  // Arbitrary cyclotomic
@@ -435,7 +435,7 @@ void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t 
         }
 
         slotValues = ChineseRemainderTransformArb<NativeVector>().InverseTransform(
-            permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
+                permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
     }
 }
 
@@ -468,12 +468,12 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
     // Transform Coeff to Eval
     NativeVector permutedSlots(phim, modulusNI);
     if (IsPowerOfTwo(m)) {
-        ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(packedVector, m_initRoot[modulusM], m,
-                                                                                  &permutedSlots);
+        ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
+                packedVector, m_initRoot[modulusM], m, &permutedSlots);
     }
     else {  // Arbitrary cyclotomic
         permutedSlots = ChineseRemainderTransformArb<NativeVector>().ForwardTransform(
-            packedVector, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
+                packedVector, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
     }
 
     if (m_fromCRTPerm[m].size() > 0) {

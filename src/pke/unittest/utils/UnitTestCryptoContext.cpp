@@ -97,7 +97,7 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {
         if (!isDefaultValue(params.multiplicationTechnique)) {
             parameters.SetMultiplicationTechnique(
-                static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
+                    static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
         }
     }
     if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {

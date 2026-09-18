@@ -441,11 +441,10 @@ void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
     cc->Decrypt(keyPair.secretKey, ciphertextPo2, &plaintextDec);
     plaintextDec->SetLength(plaintext->GetLength());
     bool equal = std::equal(plaintext->GetCKKSPackedValue().begin(), plaintext->GetCKKSPackedValue().end(),
-                            plaintextDec->GetCKKSPackedValue().begin(),
-                            [](std::complex<double> value1, std::complex<double> value2) {
-                                constexpr double epsilon = 0.0001;
-                                return std::fabs(value1.real() - value2.real()) < epsilon;
-                            });
+            plaintextDec->GetCKKSPackedValue().begin(), [](std::complex<double> value1, std::complex<double> value2) {
+                constexpr double epsilon = 0.0001;
+                return std::fabs(value1.real() - value2.real()) < epsilon;
+            });
     if (!equal) {
         std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
@@ -483,11 +482,10 @@ void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
     cc->Decrypt(keyPair.secretKey, ciphertextPo2, &plaintextDec);
     plaintextDec->SetLength(plaintext->GetLength());
     bool equal = std::equal(plaintext->GetCKKSPackedValue().begin(), plaintext->GetCKKSPackedValue().end(),
-                            plaintextDec->GetCKKSPackedValue().begin(),
-                            [](std::complex<double> value1, std::complex<double> value2) {
-                                constexpr double epsilon = 0.0001;
-                                return std::fabs(value1.real() - value2.real()) < epsilon;
-                            });
+            plaintextDec->GetCKKSPackedValue().begin(), [](std::complex<double> value1, std::complex<double> value2) {
+                constexpr double epsilon = 0.0001;
+                return std::fabs(value1.real() - value2.real()) < epsilon;
+            });
     if (!equal) {
         std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;

@@ -105,14 +105,14 @@ std::vector<int64_t> BFVrnsAutomorphismPackedArray(uint32_t i, TEST_ESTIMATED_RE
     Plaintext intArray            = cc->MakePackedPlaintext(inputVec);
 
     Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testResult) ?
-                                         cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
-                                         cc->Encrypt(kp.publicKey, intArray);
+                                             cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                             cc->Encrypt(kp.publicKey, intArray);
 
     std::vector<uint32_t> indexList(initIndexList);
 
     auto evalKeys = (INVALID_PRIVATE_KEY == testResult) ?
-                        cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) :
-                        cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
+                            cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) :
+                            cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
 
     std::map<uint32_t, EvalKey<Element>> emptyEvalKeys;
     Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testResult) ? cc->EvalAutomorphism(ciphertext, i, emptyEvalKeys) :

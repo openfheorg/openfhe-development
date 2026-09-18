@@ -386,13 +386,13 @@ public:
    */
     template <typename T = limb_t>
     ubint Mod(const ubint& modulus, const ubint& mu,
-              typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return this->ubint::Mod(modulus);
     }
 
     template <typename T = limb_t>
     ubint Mod(const ubint& modulus, const ubint& mu,
-              typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         if (*this < modulus)
             return *this;
         int n(modulus.m_MSB);
@@ -408,13 +408,13 @@ public:
 
     template <typename T = limb_t>
     ubint& ModEq(const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         return this->ubint::ModEq(modulus);
     }
 
     template <typename T = limb_t>
-    ubint& ModEq(const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+    ubint& ModEq(
+            const ubint& modulus, const ubint& mu, typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         if (*this < modulus)
             return *this;
         int n(modulus.m_MSB);
@@ -458,25 +458,25 @@ public:
    */
     template <typename T = limb_t>
     ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return b.ModAdd(*this, modulus);
     }
 
     template <typename T = limb_t>
     ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return b.Add(*this).Mod(modulus, mu);
     }
 
     template <typename T = limb_t>
     ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         return this->ubint::ModAddEq(b, modulus);
     }
 
     template <typename T = limb_t>
     ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         return *this = b.Add(*this).Mod(modulus, mu);
     }
 
@@ -510,13 +510,13 @@ public:
    */
     template <typename T = limb_t>
     ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return this->ubint::ModSub(b, modulus);
     }
 
     template <typename T = limb_t>
     ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         auto bv(b);
         auto av(*this);
         if (bv >= modulus)
@@ -530,13 +530,13 @@ public:
 
     template <typename T = limb_t>
     ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         return this->ubint::ModSubEq(b, modulus);
     }
 
     template <typename T = limb_t>
     ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         auto bv(b);
         if (bv >= modulus)
             bv.ModEq(modulus, mu);
@@ -556,7 +556,7 @@ public:
    */
     template <typename T = limb_t>
     ubint ModMul(const ubint& b, const ubint& modulus,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         auto bv(b);
         auto av(*this);
         if (bv >= modulus)
@@ -568,13 +568,13 @@ public:
 
     template <typename T = limb_t>
     ubint ModMul(const ubint& b, const ubint& modulus,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return b.ModMul(*this, modulus, modulus.ComputeMu());
     }
 
     template <typename T = limb_t>
-    ubint& ModMulEq(const ubint& b, const ubint& modulus,
-                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+    ubint& ModMulEq(
+            const ubint& b, const ubint& modulus, typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         auto bv(b);
         if (bv >= modulus)
             bv.ModEq(modulus);
@@ -584,8 +584,8 @@ public:
     }
 
     template <typename T = limb_t>
-    ubint& ModMulEq(const ubint& b, const ubint& modulus,
-                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+    ubint& ModMulEq(
+            const ubint& b, const ubint& modulus, typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         return *this = b.ModMul(*this, modulus, modulus.ComputeMu());
     }
 
@@ -883,8 +883,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));

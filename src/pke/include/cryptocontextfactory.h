@@ -58,8 +58,8 @@ class CryptoContextFactory {
     static std::vector<CryptoContext<Element>> AllContexts;
 
 protected:
-    static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-                                              std::shared_ptr<SchemeBase<Element>> scheme);
+    static CryptoContext<Element> FindContext(
+            std::shared_ptr<CryptoParametersBase<Element>> params, std::shared_ptr<SchemeBase<Element>> scheme);
     static void AddContext(CryptoContext<Element>);
 
 public:
@@ -79,8 +79,7 @@ public:
     }
 
     static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-                                             std::shared_ptr<SchemeBase<Element>> scheme,
-                                             SCHEME schemeId = SCHEME::INVALID_SCHEME);
+            std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME);
 
     // GetFullContextByDeserializedContext() is to get the full cryptocontext based on partial information
     // we usually get from a de-serialized cryptocontext object. Using this function instead of GetContext()

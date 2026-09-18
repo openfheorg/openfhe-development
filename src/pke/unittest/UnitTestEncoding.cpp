@@ -159,8 +159,8 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
     }
 
-    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(m, init_moduli, init_rootsOfUnity, init_moduli_NTT,
-                                                                 init_rootsOfUnity_NTT);
+    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(
+            m, init_moduli, init_rootsOfUnity, init_moduli_NTT, init_rootsOfUnity_NTT);
 
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(p));
 
@@ -221,8 +221,8 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
     }
 
-    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(m, init_moduli, init_rootsOfUnity, init_moduli_NTT,
-                                                                 init_rootsOfUnity_NTT);
+    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(
+            m, init_moduli, init_rootsOfUnity, init_moduli_NTT, init_rootsOfUnity_NTT);
 
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(p));
 

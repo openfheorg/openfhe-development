@@ -34,6 +34,7 @@
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "gtest/gtest.h"
@@ -53,8 +54,8 @@ static std::function<Element()> secureIL2nAlloc() {
     uint32_t m = 2048;
     typename Element::Integer secureModulus("8590983169");
     typename Element::Integer secureRootOfUnity("4810681236");
-    return Element::Allocator(std::make_shared<typename Element::Params>(m, secureModulus, secureRootOfUnity),
-                              Format::EVALUATION);
+    return Element::Allocator(
+            std::make_shared<typename Element::Params>(m, secureModulus, secureRootOfUnity), Format::EVALUATION);
 }
 
 template <typename Element>
@@ -70,8 +71,8 @@ static std::function<Element()> fastUniformIL2nAlloc() {
     uint32_t m = 16;
     typename Element::Integer modulus("67108913");
     typename Element::Integer rootOfUnity("61564");
-    return Element::MakeDiscreteUniformAllocator(std::make_shared<typename Element::Params>(m, modulus, rootOfUnity),
-                                                 Format::EVALUATION);
+    return Element::MakeDiscreteUniformAllocator(
+            std::make_shared<typename Element::Params>(m, modulus, rootOfUnity), Format::EVALUATION);
 }
 
 TEST(UTMatrix, serializer) {
@@ -352,18 +353,18 @@ void Poly_mult_square_matrix(const std::string& msg) {
     int32_t dimension = 8;
 
     Matrix<Element> A =
-        Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     Matrix<Element> B =
-        Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     Matrix<Element> C =
-        Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     Matrix<Element> I = Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension).Identity();
 
     EXPECT_EQ(A, A * I) << msg << " Matrix multiplication of two Poly2Ns: A = AI - failed.\n";
     EXPECT_EQ(A, I * A) << msg << " Matrix multiplication of two Poly2Ns: A = IA - failed.\n";
 
     EXPECT_EQ((A * B).Transpose(), B.Transpose() * A.Transpose())
-        << "Matrix multiplication of two Poly2Ns: (A*B)^T = B^T*A^T - failed.\n";
+            << "Matrix multiplication of two Poly2Ns: (A*B)^T = B^T*A^T - failed.\n";
 
     EXPECT_EQ(A * B * C, A * (B * C)) << msg << " Matrix multiplication of two Poly2Ns: A*B*C = A*(B*C) - failed.\n";
     EXPECT_EQ(A * B * C, (A * B) * C) << msg << " Matrix multiplication of two Poly2Ns: A*B*C = (A*B)*C - failed.\n";
@@ -378,11 +379,11 @@ void Poly_mult_square_matrix_caps(const std::string& msg) {
     int32_t dimension = 16;
 
     MatrixStrassen<Element> A =
-        MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     MatrixStrassen<Element> B =
-        MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     MatrixStrassen<Element> C =
-        MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     MatrixStrassen<Element> I = MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension).Identity();
 
     // EXPECT_EQ((A.Mult(B))(0, 0), (A.MultiplyCAPS(B, 2))(0, 0)) << "CAPS matrix
@@ -392,21 +393,21 @@ void Poly_mult_square_matrix_caps(const std::string& msg) {
     EXPECT_EQ(A, I.Mult(A, 2)) << msg << " Matrix multiplication of two Poly2Ns: A = IA - failed.\n";
 
     EXPECT_EQ((A.Mult(B, 2)).Transpose(), B.Transpose().Mult(A.Transpose(), 2))
-        << msg
-        << " Matrix multiplication of two Poly2Ns: "
-           "(A.MultiplyCAPS(B,2)).Transpose(), "
-           "B.Transpose().MultiplyCAPS(A.Transpose(),2) - failed.\n";
+            << msg
+            << " Matrix multiplication of two Poly2Ns: "
+               "(A.MultiplyCAPS(B,2)).Transpose(), "
+               "B.Transpose().MultiplyCAPS(A.Transpose(),2) - failed.\n";
 
     EXPECT_EQ(A.Mult(B, 2).Mult(C, 2), A.Mult((B.Mult(C, 2)), 2))
-        << msg
-        << " Matrix multiplication of two Poly2Ns: "
-           "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
-           "A.MultiplyCAPS((B.MultiplyCAPS(C,2)),2) - failed.\n";
+            << msg
+            << " Matrix multiplication of two Poly2Ns: "
+               "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
+               "A.MultiplyCAPS((B.MultiplyCAPS(C,2)),2) - failed.\n";
     EXPECT_EQ(A.Mult(B, 2).Mult(C, 2), (A.Mult(B, 2)).Mult(C, 2))
-        << msg
-        << " Matrix multiplication of two Poly2Ns: "
-           "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
-           "(A.MultiplyCAPS(B,2)).MultiplyCAPS(C,2) - failed.\n";
+            << msg
+            << " Matrix multiplication of two Poly2Ns: "
+               "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
+               "(A.MultiplyCAPS(B,2)).MultiplyCAPS(C,2) - failed.\n";
 }
 
 TEST(UTMatrix, Poly_mult_square_matrix_caps) {

@@ -141,8 +141,8 @@ int main() {
 
     for (size_t i = 0; i < 3; i++) {
         RingGSWBTKey mapKey;
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey,
-                                        SerType::BINARY) == false) {
+        if (Serial::DeserializeFromFile(
+                    DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey, SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the bootstrapping keys" << std::endl;
             return 1;
         }

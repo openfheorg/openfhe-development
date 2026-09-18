@@ -43,7 +43,7 @@ void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
 
     // check if the multiplication depth value is sufficient in SetLevel() as it always gets called
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
-        CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
+            CryptoObject<DCRTPoly>::GetCryptoContext()->GetCryptoParameters());
     // the multDepth check applies only to CKKS, when cryptoParams is of type CryptoParametersCKKSRNS.
     if (cryptoParams) {
         uint32_t limbNum = m_elements[0].GetNumOfElements();

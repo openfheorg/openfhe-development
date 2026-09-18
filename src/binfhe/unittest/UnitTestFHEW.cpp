@@ -448,8 +448,8 @@ protected:
         }
     }
 
-    void UnitTest_FHEW_MULTIINPUT(const TEST_CASE_UTGENERAL_FHEW& testData,
-                                  const std::string& failmsg = std::string()) {
+    void UnitTest_FHEW_MULTIINPUT(
+            const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
         try {
             auto cc = BinFHEContext();
             cc.GenerateBinFHEContext(testData.securityLevel, testData.method);

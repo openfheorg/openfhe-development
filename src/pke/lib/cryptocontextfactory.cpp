@@ -43,8 +43,8 @@ template <>
 std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts = {};
 
 template <typename Element>
-CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-                                                                  std::shared_ptr<SchemeBase<Element>> scheme) {
+CryptoContext<Element> CryptoContextFactory<Element>::FindContext(
+        std::shared_ptr<CryptoParametersBase<Element>> params, std::shared_ptr<SchemeBase<Element>> scheme) {
     for (CryptoContext<Element> cc : CryptoContextFactory<Element>::AllContexts) {
         if (*cc->GetScheme().get() == *scheme.get() && *cc->GetCryptoParameters().get() == *params.get()) {
             if (cc->GetEncodingParams()->GetPlaintextRootOfUnity() != 0) {
@@ -68,8 +68,7 @@ void CryptoContextFactory<Element>::AddContext(CryptoContext<Element> cc) {
 
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-                                                                 std::shared_ptr<SchemeBase<Element>> scheme,
-                                                                 SCHEME schemeId) {
+        std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId) {
     CryptoContext<Element> cc = FindContext(params, scheme);
     // if the context is not found we should create one
     if (nullptr == cc) {
@@ -82,9 +81,9 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr
 
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetFullContextByDeserializedContext(
-    const CryptoContext<Element> context) {
-    return CryptoContextFactory<Element>::GetContext(context->GetCryptoParameters(), context->GetScheme(),
-                                                     context->getSchemeId());
+        const CryptoContext<Element> context) {
+    return CryptoContextFactory<Element>::GetContext(
+            context->GetCryptoParameters(), context->GetScheme(), context->getSchemeId());
 }
 
 }  // namespace lbcrypto

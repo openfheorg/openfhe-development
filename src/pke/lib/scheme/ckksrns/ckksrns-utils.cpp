@@ -115,8 +115,8 @@ uint32_t GetDepthByDegree(size_t d) {
 
     if (d >= LOWER_BOUND_DEGREE && d <= UPPER_BOUND_DEGREE)
         return std::upper_bound(rangemap.begin(), rangemap.end(), d,
-                                [](uint32_t v, const std::pair<uint32_t, uint32_t>& r) { return v <= r.first; })
-            ->second;
+                [](uint32_t v, const std::pair<uint32_t, uint32_t>& r) { return v <= r.first; })
+                ->second;
     OPENFHE_THROW("degree " + std::to_string(d) + " not in range [" + std::to_string(LOWER_BOUND_DEGREE) + ", " +
                   std::to_string(UPPER_BOUND_DEGREE) + "].");
 }
@@ -129,8 +129,8 @@ coefficient is not zero. LongDivisionPoly returns the vector of coefficients for
 quotient and remainder of the division f/g. longDiv is a struct that contains the
 vectors of coefficients for the quotient and rest. */
 template <typename VectorDataType>
-std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<VectorDataType>& f,
-                                                          const std::vector<VectorDataType>& g) {
+std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(
+        const std::vector<VectorDataType>& f, const std::vector<VectorDataType>& g) {
     auto n = Degree(f);
     if (n != f.size() - 1)
         OPENFHE_THROW("The dominant coefficient of the divident is zero");
@@ -163,7 +163,7 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
 
         // d *= q[n - k]
         std::transform(d.begin(), d.end(), d.begin(),
-                       std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, q[n - k]));
+                std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, q[n - k]));
         // f-=d
         std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<VectorDataType>());
         if (r.size() > 1) {
@@ -173,11 +173,11 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
     }
     return res;
 }
-template std::shared_ptr<longDiv<int64_t>> LongDivisionPoly(const std::vector<int64_t>& f,
-                                                            const std::vector<int64_t>& g);
+template std::shared_ptr<longDiv<int64_t>> LongDivisionPoly(
+        const std::vector<int64_t>& f, const std::vector<int64_t>& g);
 template std::shared_ptr<longDiv<double>> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
-template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionPoly(const std::vector<std::complex<double>>& f,
-                                                                         const std::vector<std::complex<double>>& g);
+template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionPoly(
+        const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
 
 /* f and g are vectors of Chebyshev interpolation coefficients of the two polynomials.
 We assume their dominant coefficient is not zero. LongDivisionChebyshev returns the
@@ -186,8 +186,8 @@ division f/g. longDiv is a struct that contains the vectors of coefficients for 
 quotient and rest. We assume that the zero-th coefficient is c0, not c0/2 and returns
 the same format.*/
 template <typename VectorDataType>
-std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector<VectorDataType>& f,
-                                                               const std::vector<VectorDataType>& g) {
+std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(
+        const std::vector<VectorDataType>& f, const std::vector<VectorDataType>& g) {
     auto n = Degree(f);
     if (n != f.size() - 1)
         OPENFHE_THROW("The dominant coefficient of the divident is zero");
@@ -244,12 +244,12 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
         if (IsNotEqualOne(r.back())) {
             // d *= f[n]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, r.back()));
+                    std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, r.back()));
         }
         if (IsNotEqualOne(g.back())) {
             // d /= g[k]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::divides<VectorDataType>(), std::placeholders::_1, g.back()));
+                    std::bind(std::divides<VectorDataType>(), std::placeholders::_1, g.back()));
         }
         // f-=d
         std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<VectorDataType>());
@@ -269,12 +269,12 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
         if (IsNotEqualOne(r.back())) {
             // d *= f[n]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, r.back()));
+                    std::bind(std::multiplies<VectorDataType>(), std::placeholders::_1, r.back()));
         }
         if (IsNotEqualOne(g.back())) {
             // d /= g[k]
             std::transform(d.begin(), d.end(), d.begin(),
-                           std::bind(std::divides<VectorDataType>(), std::placeholders::_1, g.back()));
+                    std::bind(std::divides<VectorDataType>(), std::placeholders::_1, g.back()));
         }
         // f-=d
         std::transform(r.begin(), r.end(), d.begin(), r.begin(), std::minus<VectorDataType>());
@@ -286,12 +286,12 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
     q.front() *= 2.0;  // Because we want to have [c0] in the last spot, not [c0/2]
     return res;
 }
-template std::shared_ptr<longDiv<int64_t>> LongDivisionChebyshev(const std::vector<int64_t>& f,
-                                                                 const std::vector<int64_t>& g);
-template std::shared_ptr<longDiv<double>> LongDivisionChebyshev(const std::vector<double>& f,
-                                                                const std::vector<double>& g);
+template std::shared_ptr<longDiv<int64_t>> LongDivisionChebyshev(
+        const std::vector<int64_t>& f, const std::vector<int64_t>& g);
+template std::shared_ptr<longDiv<double>> LongDivisionChebyshev(
+        const std::vector<double>& f, const std::vector<double>& g);
 template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionChebyshev(
-    const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
+        const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
 
 /**
  * Compute positive integers k,m such that n < k(2^m-1), k is close to sqrt(n/2)
@@ -329,9 +329,10 @@ std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
     // clang-format on
 
     if (n <= UPPER_BOUND_PS) {
-        auto m = std::upper_bound(rangemap.begin(), rangemap.end(), n,
-                                  [](uint32_t v, const std::pair<uint32_t, uint32_t>& r) { return v <= r.first; })
-                     ->second;
+        auto m = std::upper_bound(
+                rangemap.begin(), rangemap.end(), n, [](uint32_t v, const std::pair<uint32_t, uint32_t>& r) {
+                    return v <= r.first;
+                })->second;
         auto k = static_cast<uint32_t>(std::floor(n / ((1U << m) - 1)) + 1);
         return std::vector<uint32_t>{k, m};
     }
@@ -355,8 +356,8 @@ std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
     return std::vector<uint32_t>{klist[minIndex], mlist[minIndex]};
 }
 
-std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
-                                                         int index) {
+std::vector<std::complex<double>> ExtractShiftedDiagonal(
+        const std::vector<std::vector<std::complex<double>>>& A, int index) {
     uint32_t cols = A[0].size();
     uint32_t rows = A.size();
     std::vector<std::complex<double>> result(cols);
@@ -440,9 +441,8 @@ template std::vector<std::complex<double>> Fill(std::initializer_list<std::compl
 template std::vector<double> Fill(std::initializer_list<double> a, uint32_t slots);
 template std::vector<int64_t> Fill(std::initializer_list<int64_t> a, uint32_t slots);
 
-std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::vector<std::complex<double>>& pows,
-                                                                     const std::vector<uint32_t>& rotGroup,
-                                                                     bool flag_i) {
+std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, bool flag_i) {
     constexpr std::complex<double> I(0.0, 1.0);
     static const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
 
@@ -482,9 +482,8 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
     return coeff;
 }
 
-std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::vector<std::complex<double>>& pows,
-                                                                     const std::vector<uint32_t>& rotGroup,
-                                                                     bool flag_i) {
+std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, bool flag_i) {
     constexpr std::complex<double> I(0.0, 1.0);
     static const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
 
@@ -525,8 +524,8 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
 }
 
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollapse(
-    const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
-    bool flag_i) {
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
+        bool flag_i) {
     const uint32_t slots = rotGroup.size();
     if (!slots)
         OPENFHE_THROW("rotGroup can not be empty");
@@ -551,18 +550,17 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     std::vector<std::vector<std::complex<double>>> coeff1 = CoeffEncodingOneLevel(pows, rotGroup, flag_i);
 
     // Coeff stores the coefficients for the given budget of levels
-    std::vector<std::vector<std::vector<std::complex<double>>>> coeff(
-        dimCollapse,
-        std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
+    std::vector<std::vector<std::vector<std::complex<double>>>> coeff(dimCollapse,
+            std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
     if (flagRem) {
         // this one corresponds to the first index in encoding (same applies to the last index in decoding too)
-        coeff[0] =
-            std::vector<std::vector<std::complex<double>>>(numRotationsRem, std::vector<std::complex<double>>(slots));
+        coeff[0] = std::vector<std::vector<std::complex<double>>>(
+                numRotationsRem, std::vector<std::complex<double>>(slots));
     }
 
     if (layersCollapse) {  // this condition is necessary for the code executed before the inner loop
-        std::vector<std::vector<std::complex<double>>> zeros(numRotations,
-                                                             std::vector<std::complex<double>>(slots, 0.0));
+        std::vector<std::vector<std::complex<double>>> zeros(
+                numRotations, std::vector<std::complex<double>>(slots, 0.0));
         for (int32_t s = dimCollapse - 1; s >= static_cast<int32_t>(flagRem); --s) {
             // top is an index, so it can't be negative. let's check that
             if (log2slots < (dimCollapse - 1 - s) * layersCollapse + 1)
@@ -579,10 +577,10 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
                 for (uint32_t u = 0; u < (1U << (l + 1)) - 1; ++u) {
                     for (uint32_t k = 0; k < slots; ++k) {
                         coeff[s][2 * u][k] +=
-                            coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
+                                coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
                         coeff[s][2 * u + 1][k] += coeff1[top - l + log2slots][k] * temp[u][k];
-                        coeff[s][2 * u + 2][k] +=
-                            coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
+                        coeff[s][2 * u + 2][k] += coeff1[top - l + 2 * log2slots][k] *
+                                                  temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
                     }
                 }
             }
@@ -590,8 +588,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     }
 
     if (flagRem && remCollapse) {
-        std::vector<std::vector<std::complex<double>>> zeros(numRotationsRem,
-                                                             std::vector<std::complex<double>>(slots, 0.0));
+        std::vector<std::vector<std::complex<double>>> zeros(
+                numRotationsRem, std::vector<std::complex<double>>(slots, 0.0));
         uint32_t s = 0;
         // top is an index, so it can't be negative. let's check that
         if (log2slots < (dimCollapse - 1 - s) * layersCollapse - 1)
@@ -610,7 +608,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
                     coeff[s][2 * u][k] += coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
                     coeff[s][2 * u + 1][k] += coeff1[top - l + log2slots][k] * temp[u][k];
                     coeff[s][2 * u + 2][k] +=
-                        coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
+                            coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
                 }
             }
         }
@@ -620,8 +618,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 }
 
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
-    const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
-    bool flag_i) {
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
+        bool flag_i) {
     const uint32_t slots = rotGroup.size();
     if (!slots)
         OPENFHE_THROW("rotGroup can not be empty");
@@ -648,18 +646,17 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     std::vector<std::vector<std::complex<double>>> coeff1 = CoeffDecodingOneLevel(pows, rotGroup, flag_i);
 
     // Coeff stores the coefficients for the given budget of levels
-    std::vector<std::vector<std::vector<std::complex<double>>>> coeff(
-        dimCollapse,
-        std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
+    std::vector<std::vector<std::vector<std::complex<double>>>> coeff(dimCollapse,
+            std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
     if (flagRem) {
         // this one corresponds to the last index in decoding (same applies to the first index in encoding too)
-        coeff[dimCollapse - 1] =
-            std::vector<std::vector<std::complex<double>>>(numRotationsRem, std::vector<std::complex<double>>(slots));
+        coeff[dimCollapse - 1] = std::vector<std::vector<std::complex<double>>>(
+                numRotationsRem, std::vector<std::complex<double>>(slots));
     }
 
     if (layersCollapse) {  // this condition is necessary for the code executed before the inner loop
-        std::vector<std::vector<std::complex<double>>> zeros(numRotations,
-                                                             std::vector<std::complex<double>>(slots, 0.0));
+        std::vector<std::vector<std::complex<double>>> zeros(
+                numRotations, std::vector<std::complex<double>>(slots, 0.0));
         for (uint32_t s = 0; s < rowsCollapse; ++s) {
             coeff[s][0] = coeff1[s * layersCollapse];
             coeff[s][1] = coeff1[log2slots + s * layersCollapse];
@@ -687,8 +684,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
         coeff[s][1] = coeff1[log2slots + s * layersCollapse];
         coeff[s][2] = coeff1[2 * log2slots + s * layersCollapse];
 
-        std::vector<std::vector<std::complex<double>>> zeros(numRotationsRem,
-                                                             std::vector<std::complex<double>>(slots, 0.0));
+        std::vector<std::vector<std::complex<double>>> zeros(
+                numRotationsRem, std::vector<std::complex<double>>(slots, 0.0));
         for (uint32_t l = 1; l < remCollapse; ++l) {
             auto temp = coeff[s];
             coeff[s]  = zeros;

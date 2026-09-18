@@ -63,8 +63,8 @@ public:
  * @param vectorSize The length of the two vectors.
  * @param failmsg Debug message to display upon failure.
  */
-static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64_t>& b, int vectorSize,
-                          const std::string& failmsg) {
+static void checkEquality(
+        const std::vector<int64_t>& a, const std::vector<int64_t>& b, int vectorSize, const std::string& failmsg) {
     std::vector<uint32_t> allTrue(vectorSize);
     std::vector<uint32_t> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {

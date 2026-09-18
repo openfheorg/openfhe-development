@@ -42,7 +42,7 @@ namespace lbcrypto {
 
 // wrapper for KeyGen methods
 RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
-                                  KEYGEN_MODE keygenMode, bool internal32) const {
+        KEYGEN_MODE keygenMode, bool internal32) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (LWEsk == nullptr)
@@ -95,8 +95,8 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
     return ek;
 }
 
-LWECiphertext BinFHEScheme::SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
-                                         ConstLWECiphertext& ct) const {
+LWECiphertext BinFHEScheme::SwitchCTtoqn(
+        const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK, ConstLWECiphertext& ct) const {
 #if NATIVEINT != 32
     if (EK.KSkey32 != nullptr)
         return LWEscheme->SwitchCTtoqn(params, EK.KSkey32, ct);
@@ -104,8 +104,8 @@ LWECiphertext BinFHEScheme::SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>&
     return LWEscheme->SwitchCTtoqn(params, EK.KSkey, ct);
 }
 
-LWECiphertext BinFHEScheme::KeySwitch(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext& ct) const {
+LWECiphertext BinFHEScheme::KeySwitch(
+        const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK, ConstLWECiphertext& ct) const {
 #if NATIVEINT != 32
     if (EK.KSkey32 != nullptr)
         return LWEscheme->KeySwitch(params, EK.KSkey32, ct);
@@ -115,8 +115,7 @@ LWECiphertext BinFHEScheme::KeySwitch(const std::shared_ptr<LWECryptoParams>& pa
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                        const RingGSWBTKey& EK, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
-                                        bool extended) const {
+        const RingGSWBTKey& EK, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct1 == nullptr)
@@ -169,8 +168,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                        const RingGSWBTKey& EK, const std::vector<LWECiphertext>& ctvector,
-                                        bool extended) const {
+        const RingGSWBTKey& EK, const std::vector<LWECiphertext>& ctvector, bool extended) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
 
@@ -215,7 +213,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
                                                      std::make_shared<LWECiphertextImpl>(*ctvector[0]);
         for (uint32_t i = 1; i < expectedSize; ++i) {
             LWEscheme->EvalAddEq(
-                ct, (Q == ctvector[i]->GetModulus()) ? SwitchCTtoqn(LWEParams, EK, ctvector[i]) : ctvector[i]);
+                    ct, (Q == ctvector[i]->GetModulus()) ? SwitchCTtoqn(LWEParams, EK, ctvector[i]) : ctvector[i]);
         }
 
         auto p = ctvector[0]->GetptModulus();
@@ -252,7 +250,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext& ct, bool extended) const {
+        ConstLWECiphertext& ct, bool extended) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -304,8 +302,7 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams>& p
 // Evaluate Arbitrary Function homomorphically
 // Modulus of ct is q | 2N
 LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                     ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT,
-                                     NativeInteger beta) const {
+        ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT, NativeInteger beta) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -395,7 +392,7 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams>& 
 
 // Evaluate Homomorphic Flooring
 LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext& ct, NativeInteger beta, uint32_t roundbits) const {
+        ConstLWECiphertext& ct, NativeInteger beta, uint32_t roundbits) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -440,8 +437,8 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams>&
 
 // Evaluate large-precision sign
 LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
-                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                                     NativeInteger beta, bool schemeSwitch) const {
+        const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta,
+        bool schemeSwitch) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -509,8 +506,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
 
 // Evaluate Ciphertext Decomposition
 std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHECryptoParams>& params,
-                                                    const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                                                    NativeInteger beta) const {
+        const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -569,7 +565,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 // private:
 
 RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                               const RingGSWBTKey& EK, ConstLWECiphertext& ct) const {
+        const RingGSWBTKey& EK, ConstLWECiphertext& ct) const {
     if (params == nullptr)
         OPENFHE_THROW("BinFHECryptoParams is empty");
     if (ct == nullptr)
@@ -646,8 +642,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
 // funciton evaluation, from https://eprint.iacr.org/2021/1337
 template <typename Func>
 RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params,
-                                               const RingGSWBTKey& EK, ConstLWECiphertext& ct, const Func f,
-                                               NativeInteger fmod) const {
+        const RingGSWBTKey& EK, ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const {
     if (!EK.HasRefreshKey())
         OPENFHE_THROW("Bootstrapping keys not generated. Please call BTKeyGen before bootstrapping.");
 
@@ -689,7 +684,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 template <typename Func>
 LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-                                          ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const {
+        ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const {
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
     auto acc{BootstrapFuncCore(params, EK, ct, f, fmod)};

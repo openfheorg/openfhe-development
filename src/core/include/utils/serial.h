@@ -117,13 +117,13 @@ struct is_crypto_context_impl : is_crypto_context_like<std::decay_t<T>> {};
 
 // Helper macro: ensure that CryptoContext serialization is only used
 // when cryptocontext-ser.h has been included and the type has been enabled.
-#define CHECK_CC_SERIALIZATION_ENABLED(T)                                                             \
-    do {                                                                                              \
-        if constexpr (::lbcrypto::internal_cc_traits::is_crypto_context_impl<T>::value) {             \
-            using DecayedT = std::decay_t<T>;                                                         \
-            static_assert(::lbcrypto::internal_cc_traits::cc_ser_enabled<DecayedT>::value,            \
-                          "CryptoContext serialization is disabled. Include <cryptocontext-ser.h>."); \
-        }                                                                                             \
+#define CHECK_CC_SERIALIZATION_ENABLED(T)                                                       \
+    do {                                                                                        \
+        if constexpr (::lbcrypto::internal_cc_traits::is_crypto_context_impl<T>::value) {       \
+            using DecayedT = std::decay_t<T>;                                                   \
+            static_assert(::lbcrypto::internal_cc_traits::cc_ser_enabled<DecayedT>::value,      \
+                    "CryptoContext serialization is disabled. Include <cryptocontext-ser.h>."); \
+        }                                                                                       \
     } while (0)
 
 namespace Serial {

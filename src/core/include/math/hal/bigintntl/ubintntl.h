@@ -165,13 +165,14 @@ public:
    * @param &val is the initial integer represented as a native integer.
    */
     template <typename T,
-              typename std::enable_if<
-                  !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
-                      !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&                // NOLINT
-                      !std::is_same<T, long long>::value && !std::is_same<T, const std::string>::value &&  // NOLINT
-                      !std::is_same<T, const char*>::value && !std::is_same<T, const char>::value &&
-                      !std::is_same<T, myZZ>::value && !std::is_same<T, double>::value,
-                  bool>::type = true>
+            typename std::enable_if<
+                    !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
+                            !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
+                            !std::is_same<T, long long>::value &&                                  // NOLINT
+                            !std::is_same<T, const std::string>::value &&                          // NOLINT
+                            !std::is_same<T, const char*>::value && !std::is_same<T, const char>::value &&
+                            !std::is_same<T, myZZ>::value && !std::is_same<T, double>::value,
+                    bool>::type = true>
     myZZ(const T& val) : myZZ(val.ConvertToInt()) {}  // NOLINT
 
     /**
@@ -1003,7 +1004,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         void* data              = this->rep.rep;
         ::cereal::size_type len = 0;
         if (data == nullptr) {
@@ -1020,16 +1021,16 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", ToString()));
     }
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ::cereal::size_type len;
         ar(::cereal::binary_data(&len, sizeof(len)));
@@ -1049,10 +1050,10 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         std::string s;
         ar(::cereal::make_nvp("v", s));

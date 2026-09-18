@@ -83,9 +83,9 @@ static void checkColumnNamesForCryptocontextParameters(std::ifstream& testData) 
             s += n + ',';
         }
         std::string errMsg(
-            std::string(
-                "Check the number and names of the columns for cryptoparameters as they do not match the expected: ") +
-            s);
+                std::string(
+                        "Check the number and names of the columns for cryptoparameters as they do not match the expected: ") +
+                s);
         OPENFHE_THROW(errMsg);
     }
 }

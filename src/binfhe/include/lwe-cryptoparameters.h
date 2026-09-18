@@ -65,7 +65,7 @@ public:
    * @param keyDist the key distribution
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, NativeInteger q_KS, double std,
-                             uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
+            uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_n == 0)
             OPENFHE_THROW("m_n (lattice parameter) can not be zero");
@@ -188,8 +188,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("n", m_n));

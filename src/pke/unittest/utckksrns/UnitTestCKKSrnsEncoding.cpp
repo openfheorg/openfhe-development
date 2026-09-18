@@ -78,12 +78,12 @@ CryptoContext<DCRTPoly> MakeContext() {
     return cc;
 }
 
-Plaintext EncodeConstant(const CryptoContext<DCRTPoly>& cc, bool auxiliary, std::complex<double> value,
-                         uint32_t depth) {
+Plaintext EncodeConstant(
+        const CryptoContext<DCRTPoly>& cc, bool auxiliary, std::complex<double> value, uint32_t depth) {
     std::vector<std::complex<double>> values(SLOTS, value);
     if (auxiliary)
-        return FHECKKSRNS::MakeAuxPlaintext(*cc, cc->GetCryptoParameters()->GetElementParams(), values, depth, 0,
-                                            SLOTS);
+        return FHECKKSRNS::MakeAuxPlaintext(
+                *cc, cc->GetCryptoParameters()->GetElementParams(), values, depth, 0, SLOTS);
     return cc->MakeCKKSPackedPlaintext(values, depth);
 }
 
@@ -107,8 +107,8 @@ NativeInteger ExpectedUnits(double magnitude) {
 // every case be checked independently without printing every coefficient.
 // `units` is the unsigned expected magnitude; `realSign` and `imagSign` are -1, 0 or 1. The sign is
 // applied per tower because the negation depends on that tower's modulus.
-::testing::AssertionResult CoefficientsEqual(const Plaintext& plaintext, const NativeInteger& units, int realSign,
-                                             int imagSign, uint32_t depth) {
+::testing::AssertionResult CoefficientsEqual(
+        const Plaintext& plaintext, const NativeInteger& units, int realSign, int imagSign, uint32_t depth) {
     auto poly = plaintext->GetElement<DCRTPoly>();
     poly.SetFormat(Format::COEFFICIENT);
     for (const auto& tower : poly.GetAllElements()) {
@@ -184,8 +184,8 @@ TEST_P(UTCKKSRNS_ENCODING, TinyInputs) {
         // rather than evaluate a count at or beyond the width of the intermediate type.
         int32_t exponent = 0;
         std::frexp(magnitude, &exponent);
-        SCOPED_TRACE("right shift of " + std::to_string(52 - static_cast<int32_t>(SCALING_MOD_SIZE) - exponent) +
-                     " bits");
+        SCOPED_TRACE(
+                "right shift of " + std::to_string(52 - static_cast<int32_t>(SCALING_MOD_SIZE) - exponent) + " bits");
         SCOPED_TRACE(magnitude);
         CheckExactEncoding(cc, GetParam(), magnitude);
     }
@@ -222,7 +222,7 @@ TEST_P(UTCKKSRNS_ENCODING, OverflowBoundary) {
     // pRemaining reaches 127 at 2^88 and grows from there, so the shift guard is covered as well as
     // the magnitude guard.
     for (double magnitude : {oneUlpRejected, firstRejected, std::ldexp(1.0, 88), std::ldexp(1.0, 89),
-                             std::ldexp(1.0, 100), 1.0e12, 1.0e15, 1.0e300}) {
+                 std::ldexp(1.0, 100), 1.0e12, 1.0e15, 1.0e300}) {
         for (double sign : {1.0, -1.0}) {
             SCOPED_TRACE(sign * magnitude);
             EXPECT_THROW(EncodeConstant(cc, GetParam(), {sign * magnitude, 0.0}, 1), OpenFHEException);
@@ -233,8 +233,6 @@ TEST_P(UTCKKSRNS_ENCODING, OverflowBoundary) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_ENCODING, ::testing::Bool(),
-                         [](const ::testing::TestParamInfo<bool>& info) {
-                             return info.param ? "Auxiliary" : "Packed";
-                         });
+        [](const ::testing::TestParamInfo<bool>& info) { return info.param ? "Auxiliary" : "Packed"; });
 }  // namespace
 #endif

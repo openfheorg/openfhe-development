@@ -48,19 +48,19 @@ namespace lbcrypto {
 class ParameterGenerationCKKSRNS : public ParameterGenerationRNS {
 protected:
     void CompositePrimeModuliGen(std::vector<NativeInteger>& moduliQ, std::vector<NativeInteger>& rootsQ,
-                                 uint32_t compositeDegree, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
-                                 uint32_t cyclOrder, uint32_t registerWordSize) const;
+            uint32_t compositeDegree, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits, uint32_t cyclOrder,
+            uint32_t registerWordSize) const;
 
     void SinglePrimeModuliGen(std::vector<NativeInteger>& moduliQ, std::vector<NativeInteger>& rootsQ,
-                              ScalingTechnique scalTech, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
-                              uint32_t cyclOrder, uint32_t extraModsize) const;
+            ScalingTechnique scalTech, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits, uint32_t cyclOrder,
+            uint32_t extraModsize) const;
 
 public:
     virtual ~ParameterGenerationCKKSRNS() = default;
 
     bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t cyclOrder,
-                                  uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t mulPartQ,
-                                  CompressionLevel mPIntBootCiphertextCompressionLevel) const override;
+            uint32_t numPrimes, uint32_t scalingModSize, uint32_t firstModSize, uint32_t mulPartQ,
+            CompressionLevel mPIntBootCiphertextCompressionLevel) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

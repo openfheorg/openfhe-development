@@ -191,8 +191,8 @@ protected:
             checkEquality(results2, expectedResults2, eps, failmsg + " EvalFastRotation(-1) failed");
 
             // EvalFastRotate +2 (left rotation)
-            std::vector<int64_t> expectedResults3 = {-14912, -16,   15300, -29119, 3875, 16,
-                                                     -2298,  15428, -8061, 5916,   0,    0};
+            std::vector<int64_t> expectedResults3 = {
+                    -14912, -16, 15300, -29119, 3875, 16, -2298, 15428, -8061, 5916, 0, 0};
             Plaintext plaintextRot3;
             cc->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
             plaintextRot3->SetLength(vectorOfInts1.size());
@@ -200,8 +200,8 @@ protected:
             checkEquality(results3, expectedResults3, eps, failmsg + " EvalFastRotation(+2) failed");
 
             // EvalFastRotate -2 (right rotation)
-            std::vector<int64_t> expectedResults4 = {0,     0,      81,   4096, -14912, -16,
-                                                     15300, -29119, 3875, 16,   -2298,  15428};
+            std::vector<int64_t> expectedResults4 = {
+                    0, 0, 81, 4096, -14912, -16, 15300, -29119, 3875, 16, -2298, 15428};
             Plaintext plaintextRot4;
             cc->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
             plaintextRot4->SetLength(vectorOfInts1.size());

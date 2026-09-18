@@ -68,8 +68,8 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
 }
 
 // A cleartext version of CryptoContext<...>::EvalChebyshevFunction(...)
-std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double>& ptxt,
-                                              double a, double b, size_t degree) {
+std::vector<double> EvalChebyshevFunctionPtxt(
+        std::function<double(double)> func, const std::vector<double>& ptxt, double a, double b, size_t degree) {
     auto coeffs = EvalChebyshevCoefficients(func, a, b, degree);
 
     // The standard practice is to halve the 1st coefficient.

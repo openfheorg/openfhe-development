@@ -69,8 +69,8 @@ public:
    * EvalSum
    */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
-                       NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
-                       NativeInteger plaintextBigRootOfUnity = 0)
+            NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
+            NativeInteger plaintextBigRootOfUnity = 0)
         : m_plaintextModulus(plaintextModulus),
           m_plaintextRootOfUnity(plaintextRootOfUnity),
           m_plaintextBigModulus(plaintextBigModulus),
@@ -267,8 +267,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_plaintextModulus));
         ar(::cereal::make_nvp("ru", m_plaintextRootOfUnity));

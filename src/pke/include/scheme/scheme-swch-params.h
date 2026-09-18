@@ -81,7 +81,7 @@ class SchSwchParams {
     void VerifyObjectData() const {
         if (!setParamsFromCKKSCryptocontextCalled) {
             OPENFHE_THROW(
-                "Objects of class SchSwchParams may be used only after having called SetParamsFromCKKSCryptocontext()");
+                    "Objects of class SchSwchParams may be used only after having called SetParamsFromCKKSCryptocontext()");
         }
     }
 

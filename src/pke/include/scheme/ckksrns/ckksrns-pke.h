@@ -61,7 +61,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          NativePoly* plaintext) const override;
+            NativePoly* plaintext) const override;
 
     /**
    * Method for decrypting plaintext with noise flooding
@@ -72,7 +72,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          Poly* plaintext) const override;
+            Poly* plaintext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

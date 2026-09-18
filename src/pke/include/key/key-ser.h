@@ -42,7 +42,7 @@
 CEREAL_REGISTER_TYPE(lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>);
 CEREAL_REGISTER_TYPE(lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);
 
-CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>,
-                                     lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(
+        lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>, lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);
 
 #endif  // SRC_PKE_INCLUDE_KEY_KEY_SER_H_

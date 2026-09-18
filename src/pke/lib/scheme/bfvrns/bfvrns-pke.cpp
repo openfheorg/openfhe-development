@@ -50,8 +50,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) const {
-    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
-                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(
+            std::make_shared<PublicKeyImpl<DCRTPoly>>(cc), std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
@@ -222,8 +222,8 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     return ciphertext;
 }
 
-DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                                 NativePoly* plaintext) const {
+DecryptResult PKEBFVRNS::Decrypt(
+        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, NativePoly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
@@ -238,19 +238,18 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
     if (sizeQl == sizeQ) {
         b.SetFormat(Format::COEFFICIENT);
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
-            cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
-            cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-            *plaintext =
-                b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
-                                cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
-                                cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
-                                cryptoParams->GettQHatInvModqBDivqFrac());
+                cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
+                cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+            *plaintext = b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
+                    cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
+                    cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
+                    cryptoParams->GettQHatInvModqBDivqFrac());
         }
         else {
-            *plaintext = b.ScaleAndRound(
-                cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
-                cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
-                cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
+            *plaintext = b.ScaleAndRound(cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(),
+                    cryptoParams->Gettgamma(), cryptoParams->GettgammaQHatInvModq(),
+                    cryptoParams->GettgammaQHatInvModqPrecon(), cryptoParams->GetNegInvqModtgamma(),
+                    cryptoParams->GetNegInvqModtgammaPrecon());
         }
     }
     else {

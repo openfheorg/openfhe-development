@@ -69,8 +69,8 @@ int main(int argc, char* argv[]) {
 // (https://cic.iacr.org/p/1/4/26/pdf), precision bits are evaluated as the negative
 // base 2 logarithm of the average L1 norm between results from standard (cleartext) calculation
 // and those computed homomorphically.
-double CalculateApproximationError(const std::vector<std::complex<double>>& result,
-                                   const std::vector<std::complex<double>>& expectedResult) {
+double CalculateApproximationError(
+        const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
         OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -110,8 +110,8 @@ void IterativeBootstrapExample() {
 
     uint32_t levelsAvailableAfterBootstrap = 10;
     // Each extra iteration on top of 1 requires an extra level to be consumed.
-    uint32_t depth =
-        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
+    uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) +
+                     (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.
@@ -128,7 +128,7 @@ void IterativeBootstrapExample() {
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
     const auto cryptoParamsCKKSRNS =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParamsCKKSRNS->GetCompositeDegree();
     std::cout << "compositeDegree=" << cryptoParamsCKKSRNS->GetCompositeDegree()
               << " modBitWidth=" << static_cast<float>(dcrtBits) / compositeDegree
@@ -178,7 +178,7 @@ void IterativeBootstrapExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
     uint32_t precision =
-        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+            std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << std::endl;
 
     // Set precision equal to empirically measured value after many test runs.
@@ -200,7 +200,7 @@ void IterativeBootstrapExample() {
     std::cout << "\nBootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
     std::cout << "Number of levels remaining after 2 bootstrappings: "
               << depth - ciphertextTwoIterations->GetLevel() / compositeDegree -
-                     (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
+                         (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
               << std::endl
               << std::endl;
 }

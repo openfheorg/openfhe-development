@@ -186,9 +186,8 @@ void SwitchCKKSToFHEW(uint32_t depth, uint32_t slots, uint32_t numValues) {
     std::cout << "Time to evaluate the scheme switching from CKKS to FHEW: " << timeEval / 1000 << " s" << std::endl;
 
     std::vector<int32_t> xInt(slots);
-    std::transform(x.begin(), x.end(), xInt.begin(), [&](const double& elem) {
-        return static_cast<int32_t>(static_cast<int32_t>(std::round(elem)) % pLWE);
-    });
+    std::transform(x.begin(), x.end(), xInt.begin(),
+            [&](const double& elem) { return static_cast<int32_t>(static_cast<int32_t>(std::round(elem)) % pLWE); });
     ptxt->SetLength(slots);
     if (slots < 64) {
         std::cout << "Input: " << ptxt->GetRealPackedValue() << "; which rounds to: " << xInt << std::endl;
@@ -551,8 +550,8 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
-    std::vector<double> x = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                             9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x.size() < slots) {
         std::vector<int> zeros(slots - x.size(), 0);
         x.insert(x.end(), zeros.begin(), zeros.end());
@@ -703,8 +702,8 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                             9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x.size() < slots) {
         std::vector<int> zeros(slots - x.size(), 0);
         x.insert(x.end(), zeros.begin(), zeros.end());
@@ -855,8 +854,8 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
-    std::vector<double> x = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                             9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x.size() < slots) {
         std::vector<int> zeros(slots - x.size(), 0);
         x.insert(x.end(), zeros.begin(), zeros.end());
@@ -1013,8 +1012,8 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
-    std::vector<double> x = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                             9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x = {
+            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x.size() < slots) {
         std::vector<int> zeros(slots - x.size(), 0);
         x.insert(x.end(), zeros.begin(), zeros.end());

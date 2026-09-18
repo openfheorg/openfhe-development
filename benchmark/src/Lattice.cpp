@@ -75,8 +75,8 @@ static void GenerateDCRTParms(std::map<uint32_t, std::shared_ptr<P>>& parmArray)
 }
 
 template <typename P, typename E>
-static void GeneratePolys(std::map<uint32_t, std::shared_ptr<P>>& parmArray,
-                          std::map<uint32_t, std::vector<E>>& polyArray) {
+static void GeneratePolys(
+        std::map<uint32_t, std::shared_ptr<P>>& parmArray, std::map<uint32_t, std::vector<E>>& polyArray) {
     for (auto& pair : parmArray) {
         for (int i = 0; i < 16; i++)
             polyArray[pair.first].push_back(makeElement<E>(parmArray[pair.first]));

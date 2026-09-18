@@ -92,15 +92,15 @@ namespace lbcrypto {
 namespace {
 
 static std::vector<DCRTPoly> ModSwitchUp(const std::vector<Poly>& input, const BigInteger& Qfrom, const BigInteger& Qto,
-                                         const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
+        const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
     Poly bPoly = input[0];
     bPoly.SwitchModulus(Qto, 1, 0, 0);
 
     Poly aPoly = input[1];
     aPoly.SwitchModulus(Qto, 1, 0, 0);
 
-    std::vector<DCRTPoly> output{DCRTPoly(bPoly.MultiplyAndRound(Qto, Qfrom), ep),
-                                 DCRTPoly(aPoly.MultiplyAndRound(Qto, Qfrom), ep)};
+    std::vector<DCRTPoly> output{
+            DCRTPoly(bPoly.MultiplyAndRound(Qto, Qfrom), ep), DCRTPoly(aPoly.MultiplyAndRound(Qto, Qfrom), ep)};
     output[0].SetFormat(Format::EVALUATION);
     output[1].SetFormat(Format::EVALUATION);
 
@@ -108,8 +108,7 @@ static std::vector<DCRTPoly> ModSwitchUp(const std::vector<Poly>& input, const B
 }
 
 static std::vector<DCRTPoly> ModSwitchDown(const std::vector<Poly>& input, const BigInteger& Qfrom,
-                                           const BigInteger& Qto,
-                                           const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
+        const BigInteger& Qto, const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep) {
     Poly bPoly = input[0].MultiplyAndRound(Qto, Qfrom);
     bPoly.SwitchModulus(Qto, 1, 0, 0);
 
@@ -126,9 +125,9 @@ static std::vector<DCRTPoly> ModSwitchDown(const std::vector<Poly>& input, const
 }  // namespace
 
 std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> SchemeletRLWEMP::GetElementParams(
-    const PrivateKey<DCRTPoly>& privateKey, uint32_t level) {
+        const PrivateKey<DCRTPoly>& privateKey, uint32_t level) {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
 
     const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
     if (cryptoParamsRNS != nullptr) {
@@ -148,11 +147,10 @@ std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> SchemeletRLWEMP::GetElementPara
 }
 
 std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, const BigInteger& Q, const BigInteger& p,
-                                                const PrivateKey<DCRTPoly>& privateKey,
-                                                const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
-                                                bool bitReverse) {
+        const PrivateKey<DCRTPoly>& privateKey, const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
+        bool bitReverse) {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
 
     DugType dug;
     DCRTPoly a(dug, ep, Format::EVALUATION);
@@ -215,9 +213,9 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
 }
 
 std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& input, const BigInteger& Q,
-                                                   const BigInteger& p, const PrivateKey<DCRTPoly>& privateKey,
-                                                   const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
-                                                   uint32_t numSlots, uint32_t length, bool bitReverse) {
+        const BigInteger& p, const PrivateKey<DCRTPoly>& privateKey,
+        const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep, uint32_t numSlots, uint32_t length,
+        bool bitReverse) {
     const auto& bigQPrime = ep->GetModulus();
 
     auto ba = (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
@@ -250,7 +248,7 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
     std::vector<int64_t> output(length);
     for (uint32_t i = 0, idx = 0; i < length; ++i, idx += gap)
         output[i] =
-            (mPoly[idx] > half) ? -(p - mPoly[idx]).ConvertToInt<int64_t>() : mPoly[idx].ConvertToInt<int64_t>();
+                (mPoly[idx] > half) ? -(p - mPoly[idx]).ConvertToInt<int64_t>() : mPoly[idx].ConvertToInt<int64_t>();
 
     if (bitReverse) {
         if (numSlots < length) {
@@ -272,9 +270,8 @@ void SchemeletRLWEMP::ModSwitch(std::vector<Poly>& input, const BigInteger& Q1, 
 }
 
 Ciphertext<DCRTPoly> SchemeletRLWEMP::ConvertRLWEToCKKS(const CryptoContextImpl<DCRTPoly>& cc,
-                                                        const std::vector<Poly>& coeffs,
-                                                        const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq,
-                                                        uint32_t slots, uint32_t level) {
+        const std::vector<Poly>& coeffs, const PublicKey<DCRTPoly>& pubKey, const BigInteger& Bigq, uint32_t slots,
+        uint32_t level) {
     const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(cc.GetCryptoParameters());
     if (cryptoParamsRNS != nullptr) {
         auto st = cryptoParamsRNS->GetScalingTechnique();
@@ -295,8 +292,8 @@ Ciphertext<DCRTPoly> SchemeletRLWEMP::ConvertRLWEToCKKS(const CryptoContextImpl<
 
     auto& qPrimeCKKS = ep->GetModulus();
 
-    auto elementsCKKS =
-        (qPrimeCKKS > Bigq) ? ModSwitchUp(coeffs, Bigq, qPrimeCKKS, ep) : ModSwitchDown(coeffs, Bigq, qPrimeCKKS, ep);
+    auto elementsCKKS = (qPrimeCKKS > Bigq) ? ModSwitchUp(coeffs, Bigq, qPrimeCKKS, ep) :
+                                              ModSwitchDown(coeffs, Bigq, qPrimeCKKS, ep);
     ctxt->SetElements(elementsCKKS);
     return ctxt;
 }

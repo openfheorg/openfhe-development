@@ -56,8 +56,8 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
         for (auto& c : cv) {
             for (size_t i = sizeQl - 1; i >= sizeQl - levels; --i) {
                 c.ModReduce(t, cryptoParams->GettModqPrecon(), cryptoParams->GetNegtInvModq(i),
-                            cryptoParams->GetNegtInvModqPrecon(i), cryptoParams->GetqlInvModq(i),
-                            cryptoParams->GetqlInvModqPrecon(i));
+                        cryptoParams->GetNegtInvModqPrecon(i), cryptoParams->GetqlInvModq(i),
+                        cryptoParams->GetqlInvModqPrecon(i));
             }
         }
     }
@@ -83,8 +83,8 @@ void LeveledSHEBGVRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& cipherte
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 }
 
-void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                                   Ciphertext<DCRTPoly>& ciphertext2) const {
+void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(
+        Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext1->GetCryptoParameters());
 
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
@@ -226,8 +226,8 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
     }
 }
 
-void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                                        Ciphertext<DCRTPoly>& ciphertext2) const {
+void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(
+        Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
     AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
     if (ciphertext1->GetNoiseScaleDeg() == 2) {
         ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
@@ -255,7 +255,7 @@ void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPl
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
         ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
+                ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
     }
 }
 

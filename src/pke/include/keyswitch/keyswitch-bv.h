@@ -64,15 +64,14 @@ public:
 
     virtual ~KeySwitchBV() = default;
 
-    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(
+            const PrivateKey<DCRTPoly> oldPrivateKey, const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey,
-                                           const EvalKey<DCRTPoly> evalKey) const override;
+            const PrivateKey<DCRTPoly> newPrivateKey, const EvalKey<DCRTPoly> evalKey) const override;
 
-    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PublicKey<DCRTPoly> newPublicKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(
+            const PrivateKey<DCRTPoly> oldPrivateKey, const PublicKey<DCRTPoly> newPublicKey) const override;
 
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 
@@ -83,11 +82,10 @@ public:
     std::vector<DCRTPoly> KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
-        const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
+            const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
     std::vector<DCRTPoly> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
-                                                const EvalKey<DCRTPoly> evalKey,
-                                                const std::shared_ptr<ParmType> paramsQl) const override;
+            const EvalKey<DCRTPoly> evalKey, const std::shared_ptr<ParmType> paramsQl) const override;
 
     /////////////////////////////////////////
     // SERIALIZATION

@@ -67,8 +67,8 @@ protected:
     }
 
     DataAndLocation() = default;
-    DataAndLocation(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
-                    Ciphertext<DCRTPoly> RAWCiphertext0)
+    DataAndLocation(
+            CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
         : cryptoContext(cryptoContext0),
           publicKey(publicKey0),
           binFHECryptoContext(cryptoContext0->GetBinCCForSchemeSwitch()),
@@ -91,8 +91,8 @@ public:
 
 class SchemeSwitchingDataSerializer : public DataAndLocation {
 public:
-    SchemeSwitchingDataSerializer(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
-                                  Ciphertext<DCRTPoly> RAWCiphertext0)
+    SchemeSwitchingDataSerializer(
+            CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
         : DataAndLocation(cryptoContext0, publicKey0, RAWCiphertext0) {}
 
     void Serialize();

@@ -75,8 +75,8 @@ public:
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, SecretKeyDist keyDist = UNIFORM_TERNARY,
-                                 bool signEval = false, uint32_t numAutoKeys = 10)
+            BINFHE_METHOD method, double std, SecretKeyDist keyDist = UNIFORM_TERNARY, bool signEval = false,
+            uint32_t numAutoKeys = 10)
         : m_Q(Q),
           m_q(q),
           m_N(N),
@@ -112,9 +112,8 @@ public:
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG,
-                                 const std::map<uint32_t, uint32_t>& baseGMap, uint32_t baseR, BINFHE_METHOD method,
-                                 double std, SecretKeyDist keyDist = UNIFORM_TERNARY, bool signEval = false,
-                                 uint32_t numAutoKeys = 10)
+            const std::map<uint32_t, uint32_t>& baseGMap, uint32_t baseR, BINFHE_METHOD method, double std,
+            SecretKeyDist keyDist = UNIFORM_TERNARY, bool signEval = false, uint32_t numAutoKeys = 10)
         : m_Q(Q),
           m_q(q),
           m_N(N),
@@ -340,8 +339,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("bN", m_N));
         ar(::cereal::make_nvp("bQ", m_Q));

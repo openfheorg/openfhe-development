@@ -80,13 +80,13 @@ public:
     constexpr PolyImpl() = default;
 
     PolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-             bool initializeElementToZero = false)
+            bool initializeElementToZero = false)
         : m_format{format}, m_params{params} {
         if (initializeElementToZero)
             PolyImpl::SetValuesToZero();
     }
     PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>>& params, Format format = Format::EVALUATION,
-             bool initializeElementToZero = false)
+            bool initializeElementToZero = false)
         : m_format(format), m_params(std::make_shared<Params>(params->GetCyclotomicOrder(), params->GetModulus(), 1)) {
         if (initializeElementToZero)
             this->SetValuesToZero();
@@ -101,11 +101,11 @@ public:
     PolyImpl(DugType& dug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     PolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     PolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-             uint32_t h = 0);
+            uint32_t h = 0);
 
     template <typename T = VecType>
     PolyImpl(const PolyNative& rhs, Format format,
-             typename std::enable_if_t<std::is_same_v<T, NativeVector>, bool> = true)
+            typename std::enable_if_t<std::is_same_v<T, NativeVector>, bool> = true)
         : m_format{rhs.m_format},
           m_params{rhs.m_params},
           m_values{rhs.m_values ? std::make_unique<VecType>(*rhs.m_values) : nullptr} {
@@ -114,7 +114,7 @@ public:
 
     template <typename T = VecType>
     PolyImpl(const PolyNative& rhs, Format format,
-             typename std::enable_if_t<!std::is_same_v<T, NativeVector>, bool> = true)
+            typename std::enable_if_t<!std::is_same_v<T, NativeVector>, bool> = true)
         : m_format{rhs.GetFormat()} {
         auto c{rhs.GetParams()->GetCyclotomicOrder()};
         auto m{rhs.GetParams()->GetModulus().ConvertToInt()};
@@ -364,9 +364,9 @@ public:
     PolyImpl Mod(const Integer& modulus) const override;
 
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                       const Integer& rootOfUnityArb) override;
+            const Integer& rootOfUnityArb) override;
     void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                           const Integer& rootOfUnityArb) override;
+            const Integer& rootOfUnityArb) override;
 
     PolyImpl& MultAccEqNoCheck(const PolyImpl& a, const PolyImpl& b) {
         m_values->MultAccEqNoCheck(*a.m_values, *b.m_values);
@@ -394,8 +394,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_values));
         ar(::cereal::make_nvp("f", m_format));

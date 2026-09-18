@@ -89,7 +89,7 @@ public:
                 return static_cast<int32_t>(value.template ConvertToInt<uint64_t>());
             if (value >= m_minNegative && value < m_modulus)
                 return static_cast<int32_t>(
-                    -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
+                        -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
         }
         OPENFHE_THROW("The centered representative of " + value.ToString() + " mod " + m_modulus.ToString() +
                       " cannot be represented as int32_t");

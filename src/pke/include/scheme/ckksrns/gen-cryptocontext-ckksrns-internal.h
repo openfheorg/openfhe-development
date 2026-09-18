@@ -55,7 +55,7 @@ class CCParams;
 
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
-    const CCParams<ContextGeneratorType>& parameters) {
+        const CCParams<ContextGeneratorType>& parameters) {
     using ParmType                   = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
@@ -65,9 +65,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     uint32_t firstModSize   = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-        parameters.GetExecutionMode() == EXEC_EVALUATION) {
-        double logstd =
-            parameters.GetStatisticalSecurity() / 2 + std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
+            parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        double logstd = parameters.GetStatisticalSecurity() / 2 +
+                        std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = std::pow(2, logstd + parameters.GetNoiseEstimate());
 #if NATIVEINT == 128
         scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +

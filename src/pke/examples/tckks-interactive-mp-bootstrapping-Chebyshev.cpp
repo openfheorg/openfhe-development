@@ -54,7 +54,7 @@ using namespace std;
 using namespace lbcrypto;
 
 static void checkApproximateEquality(const std::vector<std::complex<double>>& a,
-                                     const std::vector<std::complex<double>>& b, int vectorSize, double epsilon) {
+        const std::vector<std::complex<double>>& b, int vectorSize, double epsilon) {
     std::vector<std::complex<double>> allTrue(vectorSize);
     std::vector<std::complex<double>> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
 void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
-        scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
+            scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
         std::string errMsg = "ERROR: Scaling technique is not supported!";
         OPENFHE_THROW(errMsg);
     }
@@ -205,7 +205,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     // Generate evalsum key part for A
     cryptoContext->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(
-        cryptoContext->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            cryptoContext->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     // Round 2 (party B)
     kp2                  = cryptoContext->MultipartyKeyGen(kp1.publicKey);
@@ -233,7 +233,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     auto evalSumKeysC = cryptoContext->MultiEvalSumKeyGen(kp3.secretKey, evalSumKeys, kp3.publicKey->GetKeyTag());
     auto evalSumKeysJoin2 =
-        cryptoContext->MultiAddEvalSumKeys(evalSumKeysJoin, evalSumKeysC, kp3.publicKey->GetKeyTag());
+            cryptoContext->MultiAddEvalSumKeys(evalSumKeysJoin, evalSumKeysC, kp3.publicKey->GetKeyTag());
     cryptoContext->InsertEvalSumKey(evalSumKeysJoin2);
 
     if (!kp1.good()) {
@@ -255,7 +255,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Chebyshev coefficients
     std::vector<double> coefficients({1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348, 0.0, 0.00119324,
-                                      0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
+            0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
     // Input range
     double a = -4;
     double b = 4;
@@ -316,14 +316,14 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Ground truth result
     std::vector<std::complex<double>> result(
-        {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
+            {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
     Plaintext plaintextResult = cryptoContext->MakeCKKSPackedPlaintext(result);
 
     std::cout << "Ground Truth: \n\t" << plaintextResult->GetCKKSPackedValue() << std::endl;
     std::cout << "Computed Res: \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
 
-    checkApproximateEquality(plaintextResult->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(),
-                             encodedLength, eps);
+    checkApproximateEquality(
+            plaintextResult->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), encodedLength, eps);
 
     std::cout << "\n============================ INTERACTIVE DECRYPTION ENDED ============================\n";
 

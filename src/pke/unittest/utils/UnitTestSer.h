@@ -48,8 +48,8 @@
 using namespace lbcrypto;
 
 template <typename Element, typename ST>
-void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
-                                const std::string& failmsg = std::string()) {
+void UnitTestContextWithSertype(
+        CryptoContext<Element> cc, const ST& sertype, const std::string& failmsg = std::string()) {
     try {
         KeyPair<Element> kp = cc->KeyGen();
         cc->EvalMultKeyGen(kp.secretKey);
@@ -70,11 +70,11 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
 
         EXPECT_EQ(*cc->GetScheme(), *newcc->GetScheme()) << failmsg << " Scheme mismatch after ser/deser";
         EXPECT_EQ(*cc->GetCryptoParameters(), *newcc->GetCryptoParameters())
-            << failmsg << " Crypto parms mismatch after ser/deser";
+                << failmsg << " Crypto parms mismatch after ser/deser";
         EXPECT_EQ(*cc->GetEncodingParams(), *newcc->GetEncodingParams())
-            << failmsg << " Encoding parms mismatch after ser/deser";
+                << failmsg << " Encoding parms mismatch after ser/deser";
         EXPECT_EQ(cc->GetScheme()->GetEnabled(), newcc->GetScheme()->GetEnabled())
-            << failmsg << " Enabled features mismatch after ser/deser";
+                << failmsg << " Enabled features mismatch after ser/deser";
 
         s.str("");
         s.clear();

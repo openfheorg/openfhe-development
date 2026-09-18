@@ -185,10 +185,10 @@ IntType RootOfUnity(uint32_t m, const IntType& modulo) {
     IntType M(m);
     if ((modulo - IntType(1)).Mod(M) != IntType(0)) {
         std::string errMsg =
-            "Please provide a primeModulus(q) and a cyclotomic number(m) "
-            "satisfying the condition: (q-1)/m is an integer. The values of "
-            "primeModulus = " +
-            modulo.ToString() + " and m = " + std::to_string(m) + " do not satisfy this condition";
+                "Please provide a primeModulus(q) and a cyclotomic number(m) "
+                "satisfying the condition: (q-1)/m is an integer. The values of "
+                "primeModulus = " +
+                modulo.ToString() + " and m = " + std::to_string(m) + " do not satisfy this condition";
         OPENFHE_THROW(errMsg);
     }
 
@@ -469,8 +469,8 @@ IntVector GetCyclotomicPolynomial(uint32_t m, const typename IntVector::Integer&
 }
 
 template <typename IntVector>
-typename IntVector::Integer SyntheticRemainder(const IntVector& dividend, const typename IntVector::Integer& a,
-                                               const typename IntVector::Integer& modulus) {
+typename IntVector::Integer SyntheticRemainder(
+        const IntVector& dividend, const typename IntVector::Integer& a, const typename IntVector::Integer& modulus) {
     auto mu  = modulus.ComputeMu();
     auto val = dividend[dividend.GetLength() - 1];
     for (int i = dividend.GetLength() - 2; i >= 0; --i)
@@ -479,8 +479,8 @@ typename IntVector::Integer SyntheticRemainder(const IntVector& dividend, const 
 }
 
 template <typename IntVector>
-IntVector SyntheticPolyRemainder(const IntVector& dividend, const IntVector& aList,
-                                 const typename IntVector::Integer& modulus) {
+IntVector SyntheticPolyRemainder(
+        const IntVector& dividend, const IntVector& aList, const typename IntVector::Integer& modulus) {
     IntVector result(aList.GetLength(), modulus);
     for (uint32_t i = 0; i < aList.GetLength(); ++i)
         result[i] = SyntheticRemainder(dividend, aList[i], modulus);
@@ -497,8 +497,8 @@ IntVector PolynomialPower(const IntVector& input, uint32_t power) {
 }
 
 template <typename IntVector>
-IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename IntVector::Integer& a,
-                                      const typename IntVector::Integer& modulus) {
+IntVector SyntheticPolynomialDivision(
+        const IntVector& dividend, const typename IntVector::Integer& a, const typename IntVector::Integer& modulus) {
     auto mu(modulus.ComputeMu());
     uint32_t n(dividend.GetLength() - 1);
     IntVector result(n, modulus);

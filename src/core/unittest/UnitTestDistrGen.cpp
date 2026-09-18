@@ -89,7 +89,7 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
         V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size)
-            << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
+                << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
         // test content
         for (size_t i = 0; i < size; i++) {
             EXPECT_LT(uniRandVector.at(i), modulus) << msg
@@ -212,7 +212,7 @@ void testDiscreteUniformGenerator(typename V::Integer& modulus, std::string test
     double diffInStdDev     = std::abs(computedStdDev - expectedStdDevInDouble);
 
     EXPECT_LT(diffInStdDev, 0.01 * expectedStdDevInDouble)
-        << "Failure testing second_moment_test_convertToDouble " << test_name;
+            << "Failure testing second_moment_test_convertToDouble " << test_name;
 }
 
 #ifdef PARALLEL
@@ -289,11 +289,11 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
 
     // within 1% of expected mean
     EXPECT_LT(diffInMeans, 0.01 * modulusInDouble)
-        << "Failure testing parallel_first_central_moment_test " << test_name;
+            << "Failure testing parallel_first_central_moment_test " << test_name;
 
     // TEST CASE ON SECOND CENTRAL MOMENT SMALL MODULUS
     double expectedVarianceInDouble =
-        ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
+            ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
     double expectedStdDevInDouble = std::sqrt(expectedVarianceInDouble);
 
     sum = 0;

@@ -74,7 +74,7 @@ static void DCRTArguments(benchmark::internal::Benchmark* b) {
 }
 
 static void GeneratePolys(uint32_t order, uint32_t bits, std::shared_ptr<std::vector<NativePoly>>& polyArrayEval,
-                          std::shared_ptr<std::vector<NativePoly>>& polyArrayCoef) {
+        std::shared_ptr<std::vector<NativePoly>>& polyArrayCoef) {
     auto p    = std::make_shared<ILNativeParams>(order, bits);
     auto eval = std::make_shared<std::vector<NativePoly>>(POLY_NUM);
     auto coef = std::make_shared<std::vector<NativePoly>>(POLY_NUM);
@@ -91,8 +91,7 @@ static void GeneratePolys(uint32_t order, uint32_t bits, std::shared_ptr<std::ve
 }
 
 static void GenerateDCRTPolys(uint32_t order, uint32_t bits, uint32_t towers,
-                              std::shared_ptr<std::vector<DCRTPoly>>& polyArrayEval,
-                              std::shared_ptr<std::vector<DCRTPoly>>& polyArrayCoef) {
+        std::shared_ptr<std::vector<DCRTPoly>>& polyArrayEval, std::shared_ptr<std::vector<DCRTPoly>>& polyArrayCoef) {
     auto p    = std::make_shared<ILDCRTParams<BigInteger>>(order, towers, bits);
     auto eval = std::make_shared<std::vector<DCRTPoly>>(POLY_NUM);
     auto coef = std::make_shared<std::vector<DCRTPoly>>(POLY_NUM);

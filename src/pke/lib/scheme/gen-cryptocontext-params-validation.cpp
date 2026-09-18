@@ -45,10 +45,10 @@ void validateParametersForCryptocontext(const Params& parameters) {
     if (isCKKS(scheme)) {
 #if NATIVEINT == 128
         if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
-            parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-            parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+                parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+                parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
             OPENFHE_THROW(
-                "128-bit CKKS is not supported with the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL scaling technique.");
+                    "128-bit CKKS is not supported with the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL scaling technique.");
         }
 #endif
         if (NORESCALE == parameters.GetScalingTechnique()) {
@@ -69,23 +69,23 @@ void validateParametersForCryptocontext(const Params& parameters) {
         }
         if (NOISE_FLOODING_MULTIPARTY == parameters.GetMultipartyMode()) {
             OPENFHE_THROW(
-                "NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS. Use NOISE_FLOODING_DECRYPT and EXEC_EVALUATION instead.");
+                    "NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS. Use NOISE_FLOODING_DECRYPT and EXEC_EVALUATION instead.");
         }
         if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
-            COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
+                COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
             if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
-                DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+                    DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
             }
             if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist() && parameters.GetFirstModSize() > 121) {
                 OPENFHE_THROW(
-                    "SPARSE_ENCAPSULATED with COMPOSITESCALING* supports a first modulus of at most 121 bits");
+                        "SPARSE_ENCAPSULATED with COMPOSITESCALING* supports a first modulus of at most 121 bits");
             }
         }
         else {
             if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
-                DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+                    DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(MAX_MODULUS_SIZE));
             }
@@ -107,10 +107,10 @@ void validateParametersForCryptocontext(const Params& parameters) {
             OPENFHE_THROW("firstModSize cannot be less than scalingModSize");
         }
         if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-            parameters.GetExecutionMode() == EXEC_EVALUATION) {
+                parameters.GetExecutionMode() == EXEC_EVALUATION) {
             if (parameters.GetNoiseEstimate() == 0) {
                 OPENFHE_THROW(
-                    "Noise estimate must be set for the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
+                        "Noise estimate must be set for the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
             }
         }
     }

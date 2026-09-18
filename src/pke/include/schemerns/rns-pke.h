@@ -92,7 +92,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          NativePoly* plaintext) const override;
+            NativePoly* plaintext) const override;
 
     /**
    * Method for decrypting plaintext using LBC
@@ -103,17 +103,17 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          Poly* plaintext) const override;
+            Poly* plaintext) const override;
 
     /////////////////////////////////////
     // CORE OPERATIONS
     /////////////////////////////////////
 
-    std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PrivateKey<DCRTPoly> privateKey,
-                                                           const std::shared_ptr<ParmType> params) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
+            const PrivateKey<DCRTPoly> privateKey, const std::shared_ptr<ParmType> params) const override;
 
-    std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
-                                                           const std::shared_ptr<ParmType> params) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
+            const PublicKey<DCRTPoly> publicKey, const std::shared_ptr<ParmType> params) const override;
 
     DCRTPoly DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const override;
 

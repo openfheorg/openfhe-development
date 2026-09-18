@@ -45,8 +45,8 @@ namespace lbcrypto {
 // Precomputation of CRT tables encryption, decryption, and  homomorphic
 // multiplication
 void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
-                                                 EncryptionTechnique encTech, MultiplicationTechnique multTech,
-                                                 uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
+        EncryptionTechnique encTech, MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
+        uint32_t extraBits) {
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
     size_t sizeQ = GetElementParams()->GetParams().size();

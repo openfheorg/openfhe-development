@@ -61,7 +61,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          NativePoly* plaintext) const override;
+            NativePoly* plaintext) const override;
 
     /**
    * Method for decrypting plaintext using LBC
@@ -72,11 +72,11 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          Poly* plaintext) const override {
+            Poly* plaintext) const override {
         std::string errMsg =
-            "PKEBGVRNS: Decryption to Poly from DCRTPoly is not supported as it "
-            "may "
-            "lead to incorrect results.";
+                "PKEBGVRNS: Decryption to Poly from DCRTPoly is not supported as it "
+                "may "
+                "lead to incorrect results.";
         OPENFHE_THROW(errMsg);
     }
 

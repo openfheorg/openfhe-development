@@ -79,8 +79,8 @@ inline GadgetMonomial MonomialOf(const std::shared_ptr<RingGSWCryptoParams>& par
 // index `index`: 2(digitsG - 1) rows, the first digit being dropped by the approximate decomposition
 template <typename P, typename PP>
 std::vector<std::vector<P>> RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParams>& params, const PP& polyParams,
-                                        const P& skNTT, const DiscreteGaussianGeneratorImpl<typename P::Vector>& dgg,
-                                        uint32_t index, GadgetMonomial mono) {
+        const P& skNTT, const DiscreteGaussianGeneratorImpl<typename P::Vector>& dgg, uint32_t index,
+        GadgetMonomial mono) {
     using Int = typename P::Integer;
     DiscreteUniformGeneratorImpl<typename P::Vector> dug;
     const Int Q{AtWidth<Int>(params->GetQ())};
@@ -113,9 +113,8 @@ std::vector<std::vector<P>> RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParam
 // keys: digitsG - 1 rows, sampled directly in evaluation form
 template <typename P, typename PP>
 std::vector<std::vector<P>> RGSWEncryptAutomorphism(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                                    const PP& polyParams, const P& skNTT,
-                                                    const DiscreteGaussianGeneratorImpl<typename P::Vector>& dgg,
-                                                    LWEPlaintext k) {
+        const PP& polyParams, const P& skNTT, const DiscreteGaussianGeneratorImpl<typename P::Vector>& dgg,
+        LWEPlaintext k) {
     using Int = typename P::Integer;
     const auto& Gpow{params->GetGPower()};
     auto skAuto{skNTT.AutomorphismTransform(k)};
@@ -139,7 +138,7 @@ std::vector<std::vector<P>> RGSWEncryptAutomorphism(const std::shared_ptr<RingGS
 // Requires digitsG*gBits + 1 <= word bits, which holds for all supported parameter sets.
 template <typename P>
 void ExcessHDigitDecompose(typename P::Integer::Integer Q, const RingGSWCryptoParams::BaseGParams& bp,
-                           const std::vector<P>& input, std::vector<P>& output) {
+        const std::vector<P>& input, std::vector<P>& output) {
     using I = typename P::Integer::Integer;
     I QHalf{Q >> 1};
     uint32_t gBits{bp.gBits};
@@ -180,7 +179,7 @@ void ExcessHDigitDecompose(typename P::Integer::Integer Q, const RingGSWCryptoPa
 // Single-ring-element overload producing digitsG - 1 digits (for LMKCDEY automorphism key switch)
 template <typename P>
 void ExcessHDigitDecompose(typename P::Integer::Integer Q, const RingGSWCryptoParams::BaseGParams& bp, const P& input,
-                           std::vector<P>& output) {
+        std::vector<P>& output) {
     using I = typename P::Integer::Integer;
     I QHalf{Q >> 1};
     uint32_t gBits{bp.gBits};
@@ -214,8 +213,8 @@ void ExcessHDigitDecompose(typename P::Integer::Integer Q, const RingGSWCryptoPa
 
 // acc = dct * ev (matrix product over the gadget digits);
 template <typename P>
-void GadgetMatrixProduct(std::vector<P>& acc, std::vector<P>& dct, const std::vector<std::vector<P>>& ev,
-                         uint32_t rows) {
+void GadgetMatrixProduct(
+        std::vector<P>& acc, std::vector<P>& dct, const std::vector<std::vector<P>>& ev, uint32_t rows) {
     acc[0] = (dct[0] * ev[0][0]);
     for (uint32_t d = 1; d < rows; ++d)
         acc[0].MultAccEqNoCheck(dct[d], ev[d][0]);
@@ -227,8 +226,7 @@ void GadgetMatrixProduct(std::vector<P>& acc, std::vector<P>& dct, const std::ve
 // DM/LMKCDEY acc (no monomial): decompose, NTT the digits, external product with one RGSW key.
 template <typename P, typename PP>
 void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
-                        const RingGSWCryptoParams::BaseGParams& bp, const std::vector<std::vector<P>>& ev,
-                        std::vector<P>& acc) {
+        const RingGSWCryptoParams::BaseGParams& bp, const std::vector<std::vector<P>>& ev, std::vector<P>& acc) {
     using I = typename P::Integer::Integer;
     thread_local std::vector<P> ctScratch, dctScratch;
     thread_local std::vector<I> w0Scratch, w1Scratch;
@@ -304,9 +302,8 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
 // this body and each fills part of the one shared pair.
 template <typename P>
 void ExcessHDigitDecomposeShared(typename P::Integer::Integer Q, const RingGSWCryptoParams::BaseGParams& bp,
-                                 const std::vector<P>& input, std::vector<P>& output,
-                                 std::vector<typename P::Integer::Integer>& w0,
-                                 std::vector<typename P::Integer::Integer>& w1) {
+        const std::vector<P>& input, std::vector<P>& output, std::vector<typename P::Integer::Integer>& w0,
+        std::vector<typename P::Integer::Integer>& w1) {
     using I = typename P::Integer::Integer;
     I QHalf{Q >> 1};
     uint32_t gBits{bp.gBits};
@@ -347,8 +344,8 @@ void ExcessHDigitDecomposeShared(typename P::Integer::Integer Q, const RingGSWCr
 // a-component back with automorphism key ak. Uses default gadget base and digitsG - 1 digits.
 template <typename P, typename PP>
 void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, const PP& polyParams,
-                           typename P::Integer::Integer Q, const RingGSWCryptoParams::BaseGParams& bp,
-                           const std::vector<std::vector<P>>& ev, std::vector<P>& acc) {
+        typename P::Integer::Integer Q, const RingGSWCryptoParams::BaseGParams& bp,
+        const std::vector<std::vector<P>>& ev, std::vector<P>& acc) {
     acc[1] = acc[1].AutomorphismTransform(a, autoMap);
 
     P cta(acc[0].AutomorphismTransform(a, autoMap));
@@ -408,8 +405,8 @@ inline void ShoupMulEq32(NativePoly32& a, const NativePoly32& b, const NativeVec
 
 // Inner product over the gadget digits with ONE modular reduction instead of one per digit.
 inline void LazyInnerProduct32(NativePoly32& out, const std::vector<NativePoly32>& dct,
-                               const std::vector<std::vector<NativePoly32>>& ev, uint32_t col, uint32_t rows,
-                               uint32_t kBegin, uint32_t kEnd, uint32_t N, uint32_t q, uint64_t mu) {
+        const std::vector<std::vector<NativePoly32>>& ev, uint32_t col, uint32_t rows, uint32_t kBegin, uint32_t kEnd,
+        uint32_t N, uint32_t q, uint64_t mu) {
     thread_local std::vector<uint64_t> acc;
     if (acc.size() < N)
         acc.resize(N);
@@ -451,8 +448,8 @@ inline void LazyInnerProduct32(NativePoly32& out, const std::vector<NativePoly32
 // switch stays on the generic poly-op body: its row count (digitsG - 1) is too small for the
 // lazy kernel to pay.
 inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_t Q,
-                               const RingGSWCryptoParams::BaseGParams& bp,
-                               const std::vector<std::vector<NativePoly32>>& ev, std::vector<NativePoly32>& acc) {
+        const RingGSWCryptoParams::BaseGParams& bp, const std::vector<std::vector<NativePoly32>>& ev,
+        std::vector<NativePoly32>& acc) {
     thread_local std::vector<NativePoly32> ctScratch, dctScratch;
     thread_local std::vector<uint32_t> w0Scratch, w1Scratch;
     auto& ct  = ctScratch;
@@ -545,7 +542,7 @@ void DMAccSchedule(NativeInteger q, uint32_t baseR, size_t digitsRCount, const N
 // automorphism(power, k) applies X -> X^power using automorphism key k.
 template <typename AddFn, typename AutoFn>
 void LMKCDEYAccSchedule(NativeInteger q, uint32_t N, uint32_t numAutoKeys, const std::vector<int32_t>& logGen,
-                        const NativeVector& a, AddFn&& addToAcc, AutoFn&& automorphism) {
+        const NativeVector& a, AddFn&& addToAcc, AutoFn&& automorphism) {
     if (a.GetModulus() != q)
         OPENFHE_THROW("Ciphertext modulus must equal the LWE modulus q");
     // assume a is all-odd ciphertext (using round-to-odd technique)

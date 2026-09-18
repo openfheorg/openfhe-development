@@ -91,7 +91,7 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
 
         auto keyPair = cc->KeyGen();
         auto cryptoParams =
-            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
 
         // encode at the last level so the ciphertext has a single tower (q0), as at the
         // modulus raise step of bootstrapping
@@ -129,7 +129,7 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
         }
 
         EXPECT_LE(maxNoise.ConvertToInt<uint64_t>(), 32u)
-            << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
+                << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
     }
     catch (std::exception& e) {
         std::cerr << "Exception thrown from KeySwitchSparseAddedNoise: " << e.what() << std::endl;

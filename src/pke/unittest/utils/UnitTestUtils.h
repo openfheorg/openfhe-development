@@ -101,8 +101,8 @@ bool checkEquality(const std::vector<V>& a, const std::vector<V>& b, const doubl
     if (a.size() != b.size())
         return false;
 
-    return std::equal(a.begin(), a.end(), b.begin(),
-                      [&eps](const V& a, const V& b) { return checkEquality(a, b, eps); });
+    return std::equal(
+            a.begin(), a.end(), b.begin(), [&eps](const V& a, const V& b) { return checkEquality(a, b, eps); });
 }
 
 /**
@@ -151,9 +151,9 @@ inline bool CheckAutomorphism(const std::vector<int64_t>& result, const std::vec
 inline std::string RandomString(uint64_t outStringLength) {
     auto getRandomChar = []() -> char {
         const char charset[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
+                "0123456789"
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                "abcdefghijklmnopqrstuvwxyz";
         const size_t max_index = (sizeof(charset) - 1);
         return charset[rand() % max_index];
     };

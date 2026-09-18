@@ -107,13 +107,11 @@ public:
    * @param noiseScale used in HRA-secure PRE
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
-                         float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel,
-                         uint32_t digitSize, int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
-                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
-                         ExecutionMode executionMode             = EXEC_EVALUATION,
-                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                         uint32_t thresholdNumOfParties = 1)
+            float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, uint32_t digitSize,
+            int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, ProxyReEncryptionMode PREMode = INDCPA,
+            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY, ExecutionMode executionMode = EXEC_EVALUATION,
+            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
+            uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;

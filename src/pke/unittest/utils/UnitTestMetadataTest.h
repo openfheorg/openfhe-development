@@ -124,8 +124,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(cereal::base_class<Metadata>(this));
         ar(cereal::make_nvp("str", m_s));
@@ -140,7 +140,7 @@ public:
    */
     template <class Element>
     static const std::shared_ptr<MetadataTest> CloneMetadata(
-        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+            const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
         auto it = ciphertext->FindMetadataByKey("test");
 
         if (ciphertext->MetadataFound(it)) {
@@ -161,7 +161,7 @@ public:
    */
     template <class Element>
     static const std::shared_ptr<MetadataTest> GetMetadata(
-        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+            const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
         auto it = ciphertext->FindMetadataByKey("test");
 
         if (ciphertext->MetadataFound(it)) {
@@ -188,8 +188,8 @@ public:
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
     template <class Element>
-    static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
-                              std::shared_ptr<MetadataTest> mdata) {
+    static void StoreMetadata(
+            std::shared_ptr<CiphertextImpl<Element>> ciphertext, std::shared_ptr<MetadataTest> mdata) {
         ciphertext->SetMetadataByKey("test", mdata);
     }
 

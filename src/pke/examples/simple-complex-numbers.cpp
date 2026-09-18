@@ -206,10 +206,10 @@ void SimpleComplexNumbers() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<std::complex<double>> x1 = {0.25 + 0.25i, 0.5 + 0.5i, 0.75 + 0.75i, 1.0 + 1.i,
-                                            2.0 + 2.i,    3.0 + 3.i,  4.0 + 4.i,    5.0 + 5.i};
-    std::vector<std::complex<double>> x2 = {5.0 - 5.0i, 4.0 - 4.i,    3.0 - 3.i,  2.0 - 2.i,
-                                            1.0 - 1.i,  0.75 - 0.75i, 0.5 - 0.5i, 0.25 - 0.25i};
+    std::vector<std::complex<double>> x1 = {
+            0.25 + 0.25i, 0.5 + 0.5i, 0.75 + 0.75i, 1.0 + 1.i, 2.0 + 2.i, 3.0 + 3.i, 4.0 + 4.i, 5.0 + 5.i};
+    std::vector<std::complex<double>> x2 = {
+            5.0 - 5.0i, 4.0 - 4.i, 3.0 - 3.i, 2.0 - 2.i, 1.0 - 1.i, 0.75 - 0.75i, 0.5 - 0.5i, 0.25 - 0.25i};
 
     std::complex<double> constComplex(1.0 - 2.0i);
     std::complex<double> constComplex2(1.0 + 0.5i);
@@ -430,8 +430,8 @@ void SimpleBootstrappingComplex() {
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
-    std::vector<std::complex<double>> x = {0.25 + 0.25i, 0.5 - 0.5i, 0.75 + 0.75i, 1.0 - 1.i,
-                                           2.0 + 2.i,    3.0 - 3.i,  4.0 + 4.i,    5.0 - 5.i};
+    std::vector<std::complex<double>> x = {
+            0.25 + 0.25i, 0.5 - 0.5i, 0.75 + 0.75i, 1.0 - 1.i, 2.0 + 2.i, 3.0 - 3.i, 4.0 + 4.i, 5.0 - 5.i};
     if (x.size() < numSlots)
         x = Fill<std::complex<double>>(x, numSlots);
     size_t encodedLength = x.size();
@@ -461,7 +461,7 @@ void SimpleBootstrappingComplex() {
 
 void SimpleBootstrappingStCFirstComplex() {
     std::cout
-        << "\n================= Bootstrapping Complex Numbers with StC Transformation First =====================\n";
+            << "\n================= Bootstrapping Complex Numbers with StC Transformation First =====================\n";
 
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
@@ -559,8 +559,8 @@ void SimpleBootstrappingStCFirstComplex() {
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
-    std::vector<std::complex<double>> x = {0.25 + 0.25i, 0.5 - 0.5i, 0.75 + 0.75i, 1.0 - 1.i,
-                                           2.0 + 2.i,    3.0 - 3.i,  4.0 + 4.i,    5.0 - 5.i};
+    std::vector<std::complex<double>> x = {
+            0.25 + 0.25i, 0.5 - 0.5i, 0.75 + 0.75i, 1.0 - 1.i, 2.0 + 2.i, 3.0 - 3.i, 4.0 + 4.i, 5.0 - 5.i};
     if (x.size() < numSlots)
         x = Fill<std::complex<double>>(x, numSlots);
     size_t encodedLength = x.size();

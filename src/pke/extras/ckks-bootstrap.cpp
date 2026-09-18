@@ -147,7 +147,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
     cc->Enable(FHE);
 
     const shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
     std::cerr << "SecretKeyDist: " << secretKeyDist << std::endl;
 
@@ -200,7 +200,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
         timeKeyGen = TOC(t);
         std::cout << "\nAutomorphism key generation time: " << timeKeyGen / 1000.0 << " s" << std::endl;
         std::vector<std::complex<double>> a(
-            {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
+                {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
 
         size_t encodedLength = a.size();
 
@@ -240,9 +240,9 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
         double error = 0;
         for (size_t i = 0; i < encodedLength; i++) {
-            error =
-                error + std::fabs((result->GetCKKSPackedValue()[i].real() - plaintext->GetCKKSPackedValue()[i].real()) /
-                                  plaintext->GetCKKSPackedValue()[i].real());
+            error = error +
+                    std::fabs((result->GetCKKSPackedValue()[i].real() - plaintext->GetCKKSPackedValue()[i].real()) /
+                              plaintext->GetCKKSPackedValue()[i].real());
         }
 
         std::cout << "\nAverage error: " << error / static_cast<double>(encodedLength) << std::endl;
@@ -326,7 +326,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<std::complex<double>> a(
-        {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
+            {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
 
     size_t encodedLength = a.size();
 

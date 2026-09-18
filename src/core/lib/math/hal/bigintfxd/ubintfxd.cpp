@@ -69,7 +69,7 @@ const uint8_t BigIntegerFixedT<uint_type, BITLENGTH>::m_logUintBitLength = LogDt
 // the array of unit data type
 template <typename uint_type, uint32_t BITLENGTH>
 const uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::m_nSize =
-    BITLENGTH % m_uintBitLength == 0 ? BITLENGTH / m_uintBitLength : BITLENGTH / m_uintBitLength + 1;
+        BITLENGTH % m_uintBitLength == 0 ? BITLENGTH / m_uintBitLength : BITLENGTH / m_uintBitLength + 1;
 
 // constant static member variable initialization of m_uintMax which is maximum
 // value of unit data type
@@ -478,7 +478,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
  */
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::DividedBy(
-    const BigIntegerFixedT& b) const {
+        const BigIntegerFixedT& b) const {
     // check for trivial conditions
     if (b == 0) {
         OPENFHE_THROW("Division by zero");
@@ -495,19 +495,19 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     BigIntegerFixedT normalised_dividend(this->Sub(this->Mod(b)));  // normalised_dividend = result*quotient
     uint_type ncharInDivisor = ceilIntByUInt(b.m_MSB);              // Number of array elements in Divisor
     uint_type ncharInNormalised_dividend =
-        ceilIntByUInt(normalised_dividend.m_MSB);  // Number of array elements in Normalised_dividend
-    BigIntegerFixedT running_dividend;             // variable to store the running dividend
-    BigIntegerFixedT runningRemainder;             // variable to store the running remainder
+            ceilIntByUInt(normalised_dividend.m_MSB);  // Number of array elements in Normalised_dividend
+    BigIntegerFixedT running_dividend;                 // variable to store the running dividend
+    BigIntegerFixedT runningRemainder;                 // variable to store the running remainder
     BigIntegerFixedT expectedProd;
     BigIntegerFixedT estimateFinder;
 
     // Initialize the running dividend
     for (uint32_t i = 0; i < ncharInDivisor; i++) {
         running_dividend.m_value[m_nSize - ncharInDivisor + i] =
-            normalised_dividend.m_value[m_nSize - ncharInNormalised_dividend + i];
+                normalised_dividend.m_value[m_nSize - ncharInNormalised_dividend + i];
     }
-    running_dividend.m_MSB =
-        GetMSBUint_type(running_dividend.m_value[m_nSize - ncharInDivisor]) + (ncharInDivisor - 1) * m_uintBitLength;
+    running_dividend.m_MSB = GetMSBUint_type(running_dividend.m_value[m_nSize - ncharInDivisor]) +
+                             (ncharInDivisor - 1) * m_uintBitLength;
 
     uint_type estimate = 0;
     uint_type maskBit  = 0;
@@ -574,8 +574,8 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     while (ans.m_value[ansCtr] == 0) {
         ansCtr++;
     }
-    ans.m_MSB =
-        GetMSBUint_type(ans.m_value[ansCtr]) + (m_nSize - 1 - ansCtr) * m_uintBitLength;  // Computation of MSB value
+    ans.m_MSB = GetMSBUint_type(ans.m_value[ansCtr]) +
+                (m_nSize - 1 - ansCtr) * m_uintBitLength;  // Computation of MSB value
     return ans;
 }
 
@@ -625,7 +625,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::MultiplyAndRound(
-    const BigIntegerFixedT& p, const BigIntegerFixedT& q) const {
+        const BigIntegerFixedT& p, const BigIntegerFixedT& q) const {
     BigIntegerFixedT ans(*this);
     ans.MulEq(p);
     ans.DivideAndRoundEq(q);
@@ -634,7 +634,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::MultiplyAndRoundEq(
-    const BigIntegerFixedT& p, const BigIntegerFixedT& q) {
+        const BigIntegerFixedT& p, const BigIntegerFixedT& q) {
     this->MulEq(p);
     this->DivideAndRoundEq(q);
     return *this;
@@ -642,7 +642,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::DivideAndRound(
-    const BigIntegerFixedT& q) const {
+        const BigIntegerFixedT& q) const {
     // check for garbage initialization and 0 condition
     if (q == 0) {
         OPENFHE_THROW("Division by zero");
@@ -660,19 +660,19 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     BigIntegerFixedT normalised_dividend(*this);        // normalised_dividend = result*quotient
     uint_type ncharInDivisor = ceilIntByUInt(q.m_MSB);  // Number of array elements in Divisor
     uint_type ncharInNormalised_dividend =
-        ceilIntByUInt(normalised_dividend.m_MSB);  // Number of array elements in Normalised_dividend
-    BigIntegerFixedT running_dividend;             // variable to store the running dividend
-    BigIntegerFixedT runningRemainder;             // variable to store the running remainder
+            ceilIntByUInt(normalised_dividend.m_MSB);  // Number of array elements in Normalised_dividend
+    BigIntegerFixedT running_dividend;                 // variable to store the running dividend
+    BigIntegerFixedT runningRemainder;                 // variable to store the running remainder
     BigIntegerFixedT expectedProd;
     BigIntegerFixedT estimateFinder;
 
     // Initialize the running dividend
     for (uint32_t i = 0; i < ncharInDivisor; i++) {
         running_dividend.m_value[m_nSize - ncharInDivisor + i] =
-            normalised_dividend.m_value[m_nSize - ncharInNormalised_dividend + i];
+                normalised_dividend.m_value[m_nSize - ncharInNormalised_dividend + i];
     }
-    running_dividend.m_MSB =
-        GetMSBUint_type(running_dividend.m_value[m_nSize - ncharInDivisor]) + (ncharInDivisor - 1) * m_uintBitLength;
+    running_dividend.m_MSB = GetMSBUint_type(running_dividend.m_value[m_nSize - ncharInDivisor]) +
+                             (ncharInDivisor - 1) * m_uintBitLength;
 
     uint_type estimate = 0;
     uint_type maskBit  = 0;
@@ -740,8 +740,8 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     while (ans.m_value[ansCtr] == 0) {
         ansCtr++;
     }
-    ans.m_MSB =
-        GetMSBUint_type(ans.m_value[ansCtr]) + (m_nSize - 1 - ansCtr) * m_uintBitLength;  // Computation of MSB value
+    ans.m_MSB = GetMSBUint_type(ans.m_value[ansCtr]) +
+                (m_nSize - 1 - ansCtr) * m_uintBitLength;  // Computation of MSB value
     // Rounding operation from running remainder
     if (!(runningRemainder <= halfQ)) {
         ans += 1;
@@ -752,7 +752,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
 // TODO reconsider the method
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::DivideAndRoundEq(
-    const BigIntegerFixedT& q) {
+        const BigIntegerFixedT& q) {
     return *this = this->DivideAndRound(q);
 }
 
@@ -763,7 +763,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 // O(log(*this)-log(modulus))
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::Mod(
-    const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& modulus) const {
     // return the same value if value is less than modulus
     if (*this < modulus) {
         return BigIntegerFixedT(*this);
@@ -886,8 +886,8 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::C
  The value of \mu is computed by BigVector::ModMult.
  */
 template <typename uint_type, uint32_t BITLENGTH>
-BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::Mod(const BigIntegerFixedT& modulus,
-                                                                                   const BigIntegerFixedT& mu) const {
+BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::Mod(
+        const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
     if (*this < modulus) {
         return BigIntegerFixedT(*this);
     }
@@ -911,8 +911,8 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 }
 
 template <typename uint_type, uint32_t BITLENGTH>
-BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModEq(const BigIntegerFixedT& modulus,
-                                                                                      const BigIntegerFixedT& mu) {
+BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModEq(
+        const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
     if (*this < modulus) {
         return *this;
     }
@@ -936,7 +936,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModAdd(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT a(*this);
     BigIntegerFixedT bb(b);
     if (a >= modulus) {
@@ -952,7 +952,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModAddEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     BigIntegerFixedT bb(b);
     if (*this >= modulus) {
         this->ModEq(modulus);
@@ -967,7 +967,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModAddFast(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT a(*this);
     a.AddEq(b);
     a.ModEq(modulus);
@@ -976,7 +976,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModAddFastEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     this->AddEq(b);
     this->ModEq(modulus);
     return *this;
@@ -984,7 +984,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModAdd(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
     BigIntegerFixedT a(*this);
     a.AddEq(b);
     a.ModEq(modulus, mu);
@@ -993,7 +993,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModAddEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
     this->AddEq(b);
     this->ModEq(modulus, mu);
     return *this;
@@ -1001,7 +1001,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModSub(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT a(*this);
     BigIntegerFixedT b_op(b);
     if (a >= modulus) {
@@ -1023,7 +1023,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModSubEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     BigIntegerFixedT b_op(b);
     if (*this >= modulus) {
         this->ModEq(modulus);
@@ -1044,7 +1044,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModSubFast(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT a(*this);
     if (a >= b) {
         a.SubEq(b);
@@ -1059,7 +1059,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModSubFastEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     if (*this >= b) {
         this->SubEq(b);
         this->ModEq(modulus);
@@ -1073,7 +1073,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModSub(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
     BigIntegerFixedT a(*this);
     BigIntegerFixedT b_op(b);
     // reduce this to a value lower than modulus
@@ -1097,7 +1097,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModSubEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
     BigIntegerFixedT b_op(b);
     // reduce this to a value lower than modulus
     if (*this >= modulus) {
@@ -1120,7 +1120,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModMul(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT a(*this);
     BigIntegerFixedT bb(b);
     if (a >= modulus) {
@@ -1135,7 +1135,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModMulEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     BigIntegerFixedT bb(b);
     if (*this >= modulus) {
         this->ModEq(modulus);
@@ -1150,7 +1150,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModMul(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
     BigIntegerFixedT a(*this);
     BigIntegerFixedT bb(b);
     if (a >= modulus) {
@@ -1166,7 +1166,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModMulEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
     BigIntegerFixedT bb(b);
     if (*this >= modulus) {
         this->ModEq(modulus, mu);
@@ -1181,7 +1181,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModMulFast(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT a(*this);
     a.MulEq(b);
     a.ModEq(modulus);
@@ -1190,7 +1190,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModMulFastEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     this->MulEq(b);
     this->ModEq(modulus);
     return *this;
@@ -1223,7 +1223,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
  */
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModMulFast(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const {
     BigIntegerFixedT a(*this);
     a.MulEq(b);
     a.ModEq(modulus, mu);
@@ -1232,7 +1232,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModMulFastEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) {
     this->MulEq(b);
     this->ModEq(modulus, mu);
     return *this;
@@ -1242,7 +1242,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
 // reference:http://guan.cse.nsysu.edu.tw/note/expn.pdf
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModExp(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT mid = this->Mod(modulus);  // mid is intermidiate value that calculates mid^2%q
     BigIntegerFixedT product(1);                // product calculates the running product of mod
                                                 // values
@@ -1275,14 +1275,14 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 // TODO method should be reconsidered
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModExpEq(
-    const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) {
     return *this = this->ModExp(b, modulus);
 }
 
 // Extended Euclid algorithm used to find the multiplicative inverse
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::ModInverse(
-    const BigIntegerFixedT& modulus) const {
+        const BigIntegerFixedT& modulus) const {
     BigIntegerFixedT second;
     if (*this > modulus) {
         second = Mod(modulus);
@@ -1335,7 +1335,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
 // Extended Euclid algorithm used to find the multiplicative inverse
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::ModInverseEq(
-    const BigIntegerFixedT& modulus) {
+        const BigIntegerFixedT& modulus) {
     *this = ModInverse(modulus);
     return *this;
 }
@@ -1570,7 +1570,7 @@ inline double BigIntegerFixedT<uint_type, BITLENGTH>::ConvertToDouble() const {
 
 template <typename uint_type, uint32_t BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::FromBinaryString(
-    const std::string& bitString) {
+        const std::string& bitString) {
     BigIntegerFixedT value;
     uint32_t len  = bitString.length();
     uint32_t cntr = ceilIntByUInt(len);
@@ -1731,8 +1731,8 @@ void BigIntegerFixedT<uint_type, BITLENGTH>::AssignVal(const std::string& v) {
 
             cnt = m_uintBitLength - 1;
             m_value[bitValPtr--] =
-                UintInBinaryToDecimal(bitArr);  // UintInBinaryToDecimal converts bitArr to decimal and
-                                                // resets the content of bitArr.
+                    UintInBinaryToDecimal(bitArr);  // UintInBinaryToDecimal converts bitArr to decimal and
+                                                    // resets the content of bitArr.
         }
 
         if (DecValue[zptr] == 0) {

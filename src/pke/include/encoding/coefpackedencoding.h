@@ -94,18 +94,18 @@ protected:
 
 public:
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)
         : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs,
-                       SCHEME schemeId = SCHEME::INVALID_SCHEME)
+            SCHEME schemeId = SCHEME::INVALID_SCHEME)
         : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId), value(coeffs) {}
 
     ~CoefPackedEncoding() override = default;

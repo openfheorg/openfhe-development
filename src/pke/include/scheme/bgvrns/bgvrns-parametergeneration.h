@@ -67,7 +67,7 @@ struct BGVNoiseEstimates {
     double noisePerLevel;
 
     BGVNoiseEstimates(double Berr0, double Bkey0, double expansionFactor0, double freshEncryptionNoise0,
-                      double keySwitchingNoise0, double modSwitchingNoise0, double noisePerLevel0)
+            double keySwitchingNoise0, double modSwitchingNoise0, double noisePerLevel0)
         : Berr(Berr0),
           Bkey(Bkey0),
           expansionFactor(expansionFactor0),
@@ -96,8 +96,8 @@ public:
    * @return A boolean.
    */
     bool ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                                 uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
-                                 uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const override;
+            uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
+            uint32_t numPartQ, uint32_t numHops) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -123,14 +123,14 @@ private:
    * @return The ring dimension.
    */
     uint32_t computeRingDimension(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t qBound,
-                                  uint32_t cyclOrder) const;
+            uint32_t cyclOrder) const;
 
     BGVNoiseEstimates computeNoiseEstimates(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams,
-                                            uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
-                                            uint32_t auxTowers, uint32_t numPrimes) const;
+            uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers,
+            uint32_t numPrimes) const;
 
-    uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
-                            const ScalingTechnique scalTech) const;
+    uint64_t getCyclicOrder(
+            const uint32_t ringDimension, const int plainModulus, const ScalingTechnique scalTech) const;
 
     /*
    * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
@@ -144,8 +144,8 @@ private:
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
-        const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
-        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
+            const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
+            uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
 
     /*
    * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
@@ -155,7 +155,7 @@ private:
    * @param ringDimension ring dimension.
    */
     void InitializeFloodingDgg(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t numPrimes,
-                               uint32_t ringDimension) const;
+            uint32_t ringDimension) const;
 };
 
 }  // namespace lbcrypto

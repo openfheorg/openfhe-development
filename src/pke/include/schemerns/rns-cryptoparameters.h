@@ -99,18 +99,17 @@ protected:
    * @param mPIntBootCiphertextCompressionLevel compression level
    */
     CryptoParametersRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
-                        float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
-                        uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
-                        KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
-                        EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode                        = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode                          = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
-                        CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
-        : CryptoParametersRLWE<DCRTPoly>(
-              std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
-              distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,
-              multipartyMode, executionMode, decryptionNoiseMode) {
+            float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
+            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
+            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
+            MultiplicationTechnique multTech = HPS, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+            ExecutionMode executionMode                          = EXEC_EVALUATION,
+            DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
+            CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
+        : CryptoParametersRLWE<DCRTPoly>(std::move(params),
+                  EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)), distributionParameter,
+                  assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA, multipartyMode,
+                  executionMode, decryptionNoiseMode) {
         m_ksTechnique                         = ksTech;
         m_scalTechnique                       = scalTech;
         m_encTechnique                        = encTech;
@@ -119,22 +118,20 @@ protected:
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
-                        float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
-                        SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
-                        ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
-                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
-                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode             = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties                       = 1,
-                        CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK,
-                        uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
-                        CKKSDataType ckksDataType = REAL)
+            float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize, SecretKeyDist secretKeyDist,
+            int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
+            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+            ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+            ExecutionMode executionMode             = EXEC_EVALUATION,
+            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
+            uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
+            CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK,
+            uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
+            CKKSDataType ckksDataType = REAL)
         : CryptoParametersRLWE<DCRTPoly>(std::move(params), std::move(encodingParams), distributionParameter,
-                                         assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
-                                         PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
-                                         statisticalSecurity, numAdversarialQueries, thresholdNumOfParties) {
+                  assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
+                  executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity, numAdversarialQueries,
+                  thresholdNumOfParties) {
         m_ksTechnique                         = ksTech;
         m_scalTechnique                       = scalTech;
         m_encTechnique                        = encTech;
@@ -181,8 +178,7 @@ public:
    * @param scalTech the technique to use for scaling (e.g., FLEXIBLEAUTO or FIXEDMANUAL).
    */
     virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
-                                     MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
-                                     uint32_t extraBits) = 0;
+            MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) = 0;
 
     virtual uint64_t FindAuxPrimeStep() const;
 
@@ -203,10 +199,8 @@ public:
    * @return log2 of the modulus and number of RNS limbs.
    */
     static std::pair<double, uint32_t> EstimateLogP(uint32_t numPartQ, double firstModulusSize, double dcrtBits,
-                                                    double extraModulusSize, uint32_t numPrimes, uint32_t auxBits,
-                                                    ScalingTechnique scalTech, bool addOne = false,
-                                                    bool isNoiseFloodingMultiparty = false,
-                                                    uint32_t compositeDegree       = 1);
+            double extraModulusSize, uint32_t numPrimes, uint32_t auxBits, ScalingTechnique scalTech,
+            bool addOne = false, bool isNoiseFloodingMultiparty = false, uint32_t compositeDegree = 1);
 
     /*
    * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)
@@ -601,7 +595,7 @@ public:
    */
     double GetScalingFactorReal(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsReal.size()) {
                 // TODO: Return an error here.
                 return m_approxSF;
@@ -615,7 +609,7 @@ public:
 
     double GetScalingFactorRealBig(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsRealBig.size()) {
                 // TODO: Return an error here.
                 return m_approxSF;
@@ -635,7 +629,7 @@ public:
    */
     double GetModReduceFactor(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_dmoduliQ[l];
         }
 
@@ -960,7 +954,7 @@ public:
 
     NativeInteger GetScalingFactorInt(uint32_t l) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsInt.size()) {
                 // TODO: Return an error here.
                 return m_fixedSF;
@@ -972,7 +966,7 @@ public:
 
     NativeInteger GetScalingFactorIntBig(uint32_t l) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             if (l >= m_scalingFactorsIntBig.size()) {
                 // TODO: Return an error here.
                 return m_fixedSF;
@@ -984,7 +978,7 @@ public:
 
     NativeInteger GetModReduceFactorInt(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
-            m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
+                m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
             return m_qModt[l];
         }
         return m_fixedSF;
@@ -1840,8 +1834,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            std::string errMsg("serialized object version " + std::to_string(version) +
-                               " is from a later version of the library");
+            std::string errMsg(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
             OPENFHE_THROW(errMsg);
         }
         ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));

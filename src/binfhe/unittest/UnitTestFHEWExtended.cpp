@@ -172,7 +172,7 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKey) {
             LWEPlaintext result;
             cc.Decrypt(sk, ct, &result);
             EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
-                << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
+                    << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
         }
     }
 }
@@ -194,7 +194,7 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKeyTimeOptimization) {
             LWEPlaintext result;
             cc.Decrypt(sk, ct, &result);
             EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
-                << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
+                    << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
         }
     }
 }
@@ -294,11 +294,8 @@ TEST(UNITTestFHEWExtended, ArbitraryFunctionContextUnaffected) {
 #endif
 
 TEST(UNITTestFHEWExtended, MethodKeyDistCrossProduct) {
-    const std::vector<std::pair<BINFHE_METHOD, SecretKeyDist>> supported{{GINX, UNIFORM_TERNARY},
-                                                                         {AP, UNIFORM_TERNARY},
-                                                                         {LMKCDEY, UNIFORM_TERNARY},
-                                                                         {AP, GAUSSIAN},
-                                                                         {LMKCDEY, GAUSSIAN}};
+    const std::vector<std::pair<BINFHE_METHOD, SecretKeyDist>> supported{{GINX, UNIFORM_TERNARY}, {AP, UNIFORM_TERNARY},
+            {LMKCDEY, UNIFORM_TERNARY}, {AP, GAUSSIAN}, {LMKCDEY, GAUSSIAN}};
 
     for (const auto& [method, keyDist] : supported) {
         auto cc = BinFHEContext();
@@ -311,7 +308,7 @@ TEST(UNITTestFHEWExtended, MethodKeyDistCrossProduct) {
             LWEPlaintext result;
             cc.Decrypt(sk, ct, &result);
             EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
-                << "NAND(" << b0 << "," << b1 << ") wrong for " << method << " / " << keyDist;
+                    << "NAND(" << b0 << "," << b1 << ") wrong for " << method << " / " << keyDist;
         }
     }
 }
@@ -360,7 +357,7 @@ TEST(UNITTestFHEWExtended, RejectsUnsupportedKeyDist) {
         for (auto method : {GINX, AP, LMKCDEY}) {
             auto cc = BinFHEContext();
             EXPECT_THROW(cc.GenerateBinFHEContext(ToyParams(dist), method), OpenFHEException)
-                << "keyDist " << dist << ", method " << method;
+                    << "keyDist " << dist << ", method " << method;
         }
     }
 }

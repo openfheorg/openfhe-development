@@ -74,13 +74,13 @@ struct seriesPowers {
         : powersRe(powers0), powersIm(powers1) {}
 
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
-                 const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
+            const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
         : powersRe(powers0), powers2Re(powers20), power2km1Re(power2km10), k(k0), m(m0) {}
 
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
-                 const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
-                 const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,
-                 const Ciphertext<Element>& power2km11)
+            const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
+            const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,
+            const Ciphertext<Element>& power2km11)
         : powersRe(powers0),
           powers2Re(powers20),
           power2km1Re(power2km10),
