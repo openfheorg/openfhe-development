@@ -45,10 +45,10 @@
 
 #include "lattice/hal/default/ildcrtparams.h"
 #include "lattice/ilelement.h"
-#include "math/math-hal.h"
 #include "math/distrgen.h"
-#include "utils/inttypes.h"
+#include "math/math-hal.h"
 #include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 

@@ -32,9 +32,9 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_
 #define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "ckksrns-cryptoparameters.h"
 #include "schemerns/rns-multiparty.h"

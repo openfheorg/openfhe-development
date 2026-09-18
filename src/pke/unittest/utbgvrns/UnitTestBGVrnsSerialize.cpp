@@ -35,16 +35,16 @@
 #include <string>
 #include <vector>
 
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestSer.h"
+#include "UnitTestUtils.h"
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "include/gtest/gtest.h"
 #include "key/key-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestSer.h"
-#include "UnitTestUtils.h"
 #include "utils/exception.h"
 
 using namespace lbcrypto;

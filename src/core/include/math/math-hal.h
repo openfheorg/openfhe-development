@@ -42,10 +42,10 @@
 #endif
 
 #include "config_core.h"
-#include "version.h"
-#include "math/hal/vector.h"
 #include "math/hal/bigintbackend.h"
 #include "math/hal/nativeintbackend.h"
+#include "math/hal/vector.h"
+#include "version.h"
 
 namespace lbcrypto {
 // Promote BigInteger and BigVector to lbcrypto namespace

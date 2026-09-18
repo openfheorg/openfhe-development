@@ -46,8 +46,6 @@
 #include <utility>
 #include <vector>
 
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-utils.h"
 #include "ciphertext.h"
 #include "cryptocontext.h"
 #include "key/evalkeyrelin.h"
@@ -55,6 +53,8 @@
 #include "lattice/lat-hal.h"
 #include "math/dftransform.h"
 #include "math/hal/basicint.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
 #include "schemebase/base-scheme.h"
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"

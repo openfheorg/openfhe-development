@@ -37,8 +37,8 @@
 #include <utility>
 #include <vector>
 
-#include "key/evalkeyrelin-fwd.h"
 #include "key/evalkey.h"
+#include "key/evalkeyrelin-fwd.h"
 
 /**
  * @namespace lbcrypto

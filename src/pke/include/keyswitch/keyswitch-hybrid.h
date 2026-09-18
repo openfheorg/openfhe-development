@@ -42,9 +42,9 @@
 #ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_
 #define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "keyswitch/keyswitch-rns.h"
 #include "schemebase/rlwe-cryptoparameters.h"

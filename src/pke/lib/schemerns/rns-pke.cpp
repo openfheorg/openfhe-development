@@ -34,10 +34,10 @@
 #include <utility>
 #include <vector>
 
-#include "schemerns/rns-cryptoparameters.h"
 #include "ciphertext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 namespace lbcrypto {
 

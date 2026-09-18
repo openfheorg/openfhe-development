@@ -27,12 +27,12 @@
 #include <iostream>
 
 #include "include/gtest/gtest.h"
-#include "src/gtest-all.cc"
-#include "lattice/lat-hal.h"
 #include "lattice/ilelement.h"
-#include "math/math-hal.h"
+#include "lattice/lat-hal.h"
 #include "math/distrgen.h"
+#include "math/math-hal.h"
 #include "math/nbtheory.h"
+#include "src/gtest-all.cc"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 

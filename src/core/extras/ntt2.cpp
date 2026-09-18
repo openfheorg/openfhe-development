@@ -44,9 +44,9 @@
 #include <string>
 #include <vector>
 
+#include "math/math-hal.h"
 #include "openfhecore.h"
 #include "time.h"
-#include "math/math-hal.h"
 
 using namespace lbcrypto;
 

@@ -44,12 +44,12 @@
 #include <utility>
 #include <vector>
 
-#include "gtest/gtest.h"
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
+#include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 
 using namespace lbcrypto;
 

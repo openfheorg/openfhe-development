@@ -37,8 +37,8 @@
 #include <string>
 #include <vector>
 
-#include "scheme/gen-cryptocontext-params.h"
 #include "scheme/gen-cryptocontext-params-defaults.h"
+#include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
 
 namespace lbcrypto {

@@ -45,8 +45,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "math/nbtheory.h"
 #include "math/distributiongenerator.h"
+#include "math/nbtheory.h"
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"

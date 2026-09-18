@@ -40,8 +40,8 @@
 #include <random>
 #include <vector>
 
-#include "math/ternaryuniformgenerator.h"
 #include "math/binaryuniformgenerator.h"
+#include "math/ternaryuniformgenerator.h"
 #include "utils/inttypes.h"
 
 namespace lbcrypto {

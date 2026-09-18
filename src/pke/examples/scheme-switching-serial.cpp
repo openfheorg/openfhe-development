@@ -44,8 +44,8 @@
 #include <tuple>
 #include <vector>
 
-#include "openfhe.h"
 #include "binfhecontext.h"
+#include "openfhe.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"

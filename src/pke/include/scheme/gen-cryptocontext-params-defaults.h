@@ -36,10 +36,11 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
 #define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
 
-#include "lattice/stdlatticeparms.h"  // SecurityLevel
-#include "scheme/scheme-id.h"         // SCHEME
-#include "utils/inttypes.h"
 #include "constants.h"
+#include "lattice/constants-lattice.h"  // SecretKeyDist
+#include "lattice/stdlatticeparms.h"    // SecurityLevel
+#include "scheme/scheme-id.h"           // SCHEME
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 

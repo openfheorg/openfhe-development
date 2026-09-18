@@ -40,6 +40,8 @@
 #include <string>
 #include <vector>
 
+#include "UnitTestException.h"
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -47,8 +49,6 @@
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestException.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
 
 using namespace lbcrypto;

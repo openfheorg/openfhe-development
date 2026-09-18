@@ -49,8 +49,8 @@
 #include <memory>
 #include <vector>
 
-#include "rgsw-acc-common.h"
 #include "lattice/lat-hal.h"
+#include "rgsw-acc-common.h"
 
 namespace lbcrypto {
 

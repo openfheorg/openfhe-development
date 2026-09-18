@@ -40,8 +40,8 @@
 #include <limits>
 #include <vector>
 
-#include "openfhe.h"
 #include "gtest/gtest.h"
+#include "openfhe.h"
 #include "schemelet/rlwe-mp.h"
 
 using namespace lbcrypto;

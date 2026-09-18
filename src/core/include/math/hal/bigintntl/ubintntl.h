@@ -60,14 +60,14 @@
 
     #include "math/hal/basicint.h"
     #include "math/hal/integer.h"
-    #include "utils/openfhebase64.h"
-    #include "utils/parallel.h"
-    #include "utils/serializable.h"
+    #include "utils/debug.h"
+    #include "utils/diagnostic_output.h"
     #include "utils/exception.h"
     #include "utils/inttypes.h"
     #include "utils/memory.h"
-    #include "utils/debug.h"
-    #include "utils/diagnostic_output.h"
+    #include "utils/openfhebase64.h"
+    #include "utils/parallel.h"
+    #include "utils/serializable.h"
 
 /**
  *@namespace NTL

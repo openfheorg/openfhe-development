@@ -42,8 +42,8 @@
 #include <utility>
 #include <vector>
 
-#include "lattice/hal/elemparams.h"
 #include "lattice/hal/default/ilparams.h"
+#include "lattice/hal/elemparams.h"
 #include "math/hal/basicint.h"
 #include "math/math-hal.h"
 #include "math/nbtheory-impl.h"

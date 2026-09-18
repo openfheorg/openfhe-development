@@ -33,10 +33,10 @@
 
 #include "schemerns/rns-cryptoparameters.h"
 
-#include <vector>
 #include <memory>
-#include <utility>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "math/dftransform.h"
 

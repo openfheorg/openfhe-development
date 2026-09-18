@@ -39,10 +39,10 @@
 #include <iostream>
 #include <string>
 
+#include "UnitTestException.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "gtest/gtest.h"
-#include "UnitTestException.h"
 
 using namespace lbcrypto;
 

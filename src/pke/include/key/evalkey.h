@@ -33,8 +33,8 @@
 #define SRC_PKE_INCLUDE_KEY_EVALKEY_H_
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "key/evalkey-fwd.h"
 #include "key/key.h"

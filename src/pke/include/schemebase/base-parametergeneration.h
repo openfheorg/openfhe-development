@@ -32,12 +32,12 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_
 #define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_
 
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "schemebase/base-cryptoparameters.h"
 #include "constants.h"
+#include "schemebase/base-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto

@@ -62,8 +62,8 @@
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-#include "cereal/archives/portable_binary.hpp"
 #include "cereal/archives/json.hpp"
+#include "cereal/archives/portable_binary.hpp"
 #include "cereal/cereal.hpp"
 #include "cereal/types/map.hpp"
 #include "cereal/types/memory.hpp"
@@ -79,12 +79,12 @@
     #pragma clang diagnostic pop
 #endif
 
-#include <type_traits>
-#include <istream>
 #include <fstream>
+#include <istream>
+#include <memory>
 #include <sstream>
 #include <string>
-#include <memory>
+#include <type_traits>
 
 #include "utils/sertype.h"
 

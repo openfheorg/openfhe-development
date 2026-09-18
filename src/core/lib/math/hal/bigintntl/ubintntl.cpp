@@ -44,13 +44,12 @@
 
     #define _SECURE_SCL 0  // to speed up VS
 
-    #include "math/hal/bigintntl/ubintntl.h"
-
     #include <fstream>
     #include <iostream>
     #include <sstream>
 
     #include "math/hal/basicint.h"
+    #include "math/hal/bigintntl/ubintntl.h"
     #include "math/math-hal.h"
 
 namespace NTL {

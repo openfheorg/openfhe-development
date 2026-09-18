@@ -37,8 +37,8 @@
 #include <utility>
 #include <vector>
 
-#include "scheme/gen-cryptocontext-params.h"
 #include "UnitTestException.h"
+#include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
 
 //===========================================================================================================

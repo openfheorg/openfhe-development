@@ -40,14 +40,14 @@
 #ifdef WITH_BE2
 
     #include <map>
-    #include <unordered_map>
     #include <mutex>
-    #include <vector>
+    #include <unordered_map>
     #include <utility>
+    #include <vector>
 
-    #include "math/hal/transform.h"
-    #include "math/hal/bigintfxd/ubintfxd.h"
     #include "math/hal/bigintfxd/mubintvecfxd.h"
+    #include "math/hal/bigintfxd/ubintfxd.h"
+    #include "math/hal/transform.h"
 
 /**
  * @namespace bigintfxd

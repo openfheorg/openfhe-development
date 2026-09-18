@@ -33,11 +33,11 @@
 #include <memory>
 #include <vector>
 
-#include "schemebase/base-pke.h"
-#include "schemebase/base-scheme.h"
+#include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "cryptocontext.h"
+#include "schemebase/base-pke.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 

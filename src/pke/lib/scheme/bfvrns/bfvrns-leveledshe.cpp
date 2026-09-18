@@ -39,15 +39,15 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include <algorithm>
 #include <map>
-#include <utility>
 #include <memory>
-#include <vector>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "ciphertext.h"
+#include "cryptocontext.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "schemebase/base-scheme.h"
-#include "cryptocontext.h"
-#include "ciphertext.h"
 
 namespace lbcrypto {
 

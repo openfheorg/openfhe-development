@@ -32,11 +32,11 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 #define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "schemerns/rns-cryptoparameters.h"
 #include "globals.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto

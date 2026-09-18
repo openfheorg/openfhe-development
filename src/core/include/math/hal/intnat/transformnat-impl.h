@@ -41,10 +41,10 @@
 #include <utility>
 #include <vector>
 
-#include "math/hal/intnat/transformnat.h"
 #include "math/hal/basicint.h"
-#include "math/hal/intnat/ubintnat.h"
 #include "math/hal/intnat/mubintvecnat.h"
+#include "math/hal/intnat/transformnat.h"
+#include "math/hal/intnat/ubintnat.h"
 #include "math/nbtheory.h"
 #include "utils/debug.h"
 #include "utils/exception.h"

@@ -51,8 +51,8 @@
 #include <vector>
 
 #include "math/hal/basicint.h"
-#include "utils/inttypes.h"
 #include "utils/exception.h"
+#include "utils/inttypes.h"
 
 /**
  * @namespace lbcrypto

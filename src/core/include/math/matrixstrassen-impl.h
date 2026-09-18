@@ -42,8 +42,8 @@
 #include <utility>
 #include <vector>
 
-#include "math/matrixstrassen.h"
 #include "math/matrix-utils.h"
+#include "math/matrixstrassen.h"
 #include "utils/diagnostic_output.h"
 #include "utils/parallel.h"
 

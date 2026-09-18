@@ -32,10 +32,10 @@
  Examples for 2-party Interactive Bootstrapping
 */
 
-#include <memory>
-#include <map>
-#include <vector>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
 
 #include "openfhe.h"
 

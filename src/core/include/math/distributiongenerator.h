@@ -40,8 +40,8 @@
 #include <memory>
 #include <string>
 
-#include "utils/prng/prng.h"
 #include "config_core.h"
+#include "utils/prng/prng.h"
 
 namespace lbcrypto {
 

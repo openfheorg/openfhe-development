@@ -39,9 +39,9 @@
 #include <utility>
 #include <vector>
 
-#include "schemebase/base-scheme.h"
 #include "cryptocontext.h"
 #include "key/privatekey.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 

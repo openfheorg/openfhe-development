@@ -42,7 +42,6 @@
 #ifdef WITH_BE4
 
     #include "math/hal/bigintdyn/mubintvecdyn.h"
-
     #include "math/math-hal.h"
     #include "utils/exception.h"
     #include "utils/inttypes.h"

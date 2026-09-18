@@ -35,8 +35,8 @@
 
 #include "lattice/stdlatticeparms.h"
 
-#include <ostream>
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 

@@ -36,8 +36,8 @@
 #ifndef SRC_CORE_INCLUDE_UTILS_MEMORY_H_
 #define SRC_CORE_INCLUDE_UTILS_MEMORY_H_
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <utility>
 #include <vector>

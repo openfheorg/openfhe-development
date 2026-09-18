@@ -41,11 +41,11 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include <utility>
 #include <vector>
 
-#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+#include "ciphertext.h"
+#include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "cryptocontext.h"
-#include "ciphertext.h"
+#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 
 namespace lbcrypto {
 

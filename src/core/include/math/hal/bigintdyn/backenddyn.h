@@ -42,8 +42,8 @@
 #ifdef WITH_BE4
 
     #include "math/hal/bigintdyn/mubintvecdyn.h"  // rings of ubints
-    #include "math/hal/bigintdyn/ubintdyn.h"      // dynamically sized unsigned big integers or ubints
     #include "math/hal/bigintdyn/transformdyn.h"  // transforms for dynamic
+    #include "math/hal/bigintdyn/ubintdyn.h"      // dynamically sized unsigned big integers or ubints
 
 // Global alias for MATHBACKEND 4 Integer
 using M4Integer = bigintdyn::BigInteger;

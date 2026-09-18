@@ -35,8 +35,8 @@
 
 #define PROFILE  // turns on the reporting of timing results
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include "openfhe.h"
 

@@ -43,7 +43,6 @@
     #include <string>
 
     #include "math/hal/bigintfxd/ubintfxd.h"
-
     #include "math/hal/vector.h"
     #include "utils/inttypes.h"
     #include "utils/serializable.h"

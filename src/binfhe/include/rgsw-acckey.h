@@ -38,7 +38,6 @@
 #include <utility>
 #include <vector>
 
-#include "rgsw-evalkey.h"
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
 #include "lwe-cryptoparameters.h"
@@ -46,6 +45,7 @@
 #include "lwe-privatekey.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
+#include "rgsw-evalkey.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 

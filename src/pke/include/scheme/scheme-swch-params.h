@@ -34,8 +34,8 @@
 #include <cstdint>
 #include <iosfwd>
 
-#include "lattice/stdlatticeparms.h"
 #include "binfhe-constants.h"
+#include "lattice/stdlatticeparms.h"
 #include "math/math-hal.h"
 #include "utils/exception.h"
 

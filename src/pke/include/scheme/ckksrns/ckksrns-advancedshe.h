@@ -33,9 +33,9 @@
 #define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_
 
 #include <complex>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "schemerns/rns-advancedshe.h"
 

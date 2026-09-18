@@ -44,13 +44,13 @@
 #include <string>
 #include <vector>
 
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "math/chebyshev.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 

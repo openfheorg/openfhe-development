@@ -47,8 +47,8 @@
 #include "lattice/lat-hal.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/nbtheory.h"
-#include "utils/utilities.h"
 #include "testdefs.h"
+#include "utils/utilities.h"
 
 using namespace lbcrypto;
 

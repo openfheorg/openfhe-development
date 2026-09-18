@@ -33,10 +33,10 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 

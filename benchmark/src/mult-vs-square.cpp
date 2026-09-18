@@ -41,12 +41,12 @@
 #include <random>
 #include <vector>
 
+#include "benchmark/benchmark.h"
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
-#include "benchmark/benchmark.h"
 
 using namespace lbcrypto;
 

@@ -42,8 +42,8 @@
 #include <memory>
 #include <vector>
 
-#include "openfhe.h"
 #include "binfhecontext.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

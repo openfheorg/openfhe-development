@@ -45,8 +45,8 @@
     #include <utility>
     #include <vector>
 
-    #include "math/hal/vector.h"
     #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/vector.h"
     #include "utils/exception.h"
     #include "utils/inttypes.h"
     #include "utils/serializable.h"

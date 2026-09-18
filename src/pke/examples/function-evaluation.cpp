@@ -36,8 +36,8 @@
 #include <iostream>
 #include <vector>
 
-#include "openfhe.h"
 #include "math/chebyshev.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

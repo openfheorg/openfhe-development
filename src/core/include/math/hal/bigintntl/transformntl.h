@@ -43,13 +43,13 @@
 #ifdef WITH_NTL
 
     #include <map>
-    #include <unordered_map>
     #include <mutex>
-    #include <vector>
+    #include <unordered_map>
     #include <utility>
+    #include <vector>
 
-    #include "math/hal/bigintntl/ubintntl.h"
     #include "math/hal/bigintntl/mubintvecntl.h"
+    #include "math/hal/bigintntl/ubintntl.h"
     #include "math/hal/transform.h"
 
 /**

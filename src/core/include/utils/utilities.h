@@ -32,8 +32,8 @@
 #ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
 #define SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
 
-#include <cmath>
 #include <climits>  // CHAR_BIT
+#include <cmath>
 #include <cstdint>
 #include <limits>  // std::numeric_limits
 #include <string>

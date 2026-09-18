@@ -35,8 +35,8 @@
 #include <memory>
 #include <string>
 
-#include "schemerns/rns-cryptoparameters.h"
 #include "globals.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto

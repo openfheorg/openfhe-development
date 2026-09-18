@@ -40,12 +40,12 @@
 
 #include "binfhe-base-params.h"
 #include "lwe-pke.h"
-#include "rgsw-acc.h"
 #include "rgsw-acc-cggi.h"
 #include "rgsw-acc-dm.h"
 #include "rgsw-acc-lmkcdey.h"
-#include "rgsw-acckey32.h"
+#include "rgsw-acc.h"
 #include "rgsw-acckey.h"
+#include "rgsw-acckey32.h"
 #include "rlwe-ciphertext.h"
 
 namespace lbcrypto {

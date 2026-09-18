@@ -46,10 +46,10 @@
 #define MAKE_POLY_TYPE(T)         template class PolyImpl<T>;
 #define MAKE_DCRTPOLY_TYPE(T)     template class DCRTPolyImpl<T>;
 
-#include "lattice/hal/default/ilparams.h"
-#include "lattice/hal/default/ildcrtparams.h"
-#include "lattice/hal/default/poly.h"
 #include "lattice/hal/default/dcrtpoly.h"
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/hal/default/ilparams.h"
+#include "lattice/hal/default/poly.h"
 
 namespace lbcrypto {
 

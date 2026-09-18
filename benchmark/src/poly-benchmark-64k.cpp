@@ -35,8 +35,8 @@
 
 #include <iostream>
 
-#include "poly-benchmark.h"
 #include "math/hal/basicint.h"
+#include "poly-benchmark.h"
 
 constexpr uint32_t RING_DIM_LOG = 16;
 constexpr uint32_t DCRTBITS     = MAX_MODULUS_SIZE;

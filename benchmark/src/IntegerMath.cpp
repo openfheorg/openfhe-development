@@ -38,8 +38,8 @@
 #include <string>
 #include <vector>
 
-#include "lattice/lat-hal.h"
 #include "benchmark/benchmark.h"
+#include "lattice/lat-hal.h"
 
 using namespace lbcrypto;
 

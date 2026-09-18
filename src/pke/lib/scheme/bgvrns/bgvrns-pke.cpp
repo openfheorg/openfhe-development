@@ -39,8 +39,8 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include <vector>
 
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "ciphertext.h"
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 
 namespace lbcrypto {
 

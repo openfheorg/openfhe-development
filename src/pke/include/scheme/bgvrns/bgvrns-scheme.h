@@ -32,8 +32,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
 #define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
 #include "schemerns/rns-scheme.h"

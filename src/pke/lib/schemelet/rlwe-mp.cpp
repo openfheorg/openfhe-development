@@ -36,9 +36,9 @@
 #include <memory>
 #include <vector>
 
+#include "cryptocontext.h"
 #include "schemebase/rlwe-cryptoparameters.h"
 #include "schemerns/rns-cryptoparameters.h"
-#include "cryptocontext.h"
 #include "utils/utilities.h"
 
 template <typename typeT>

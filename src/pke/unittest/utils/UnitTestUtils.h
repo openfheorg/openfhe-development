@@ -43,8 +43,8 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "UnitTestException.h"
+#include "gtest/gtest.h"
 
 // some functions are inlined in this files to avoid link errors
 //===========================================================================================================

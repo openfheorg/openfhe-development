@@ -48,9 +48,9 @@
 #include <utility>
 #include <vector>
 
-#include "cryptocontext-fwd.h"
 #include "binfhecontext.h"
 #include "ciphertext.h"
+#include "cryptocontext-fwd.h"
 #include "cryptocontextfactory.h"
 #include "encoding/plaintextfactory.h"
 #include "key/evalkey.h"

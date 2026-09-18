@@ -31,8 +31,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_
 #define SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_
 
-#include "utils/inttypes.h"
 #include "lattice/lat-hal.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 

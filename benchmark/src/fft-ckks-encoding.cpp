@@ -32,9 +32,9 @@
 #include <random>
 #include <vector>
 
-#include "math/distributiongenerator.h"
-#include "math/dftransform.h"
 #include "benchmark/benchmark.h"
+#include "math/dftransform.h"
+#include "math/distributiongenerator.h"
 
 using namespace lbcrypto;
 

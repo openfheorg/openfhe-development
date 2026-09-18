@@ -39,7 +39,6 @@
 #ifdef WITH_BE2
 
     #include "math/hal/bigintfxd/mubintvecfxd.h"
-
     #include "math/math-hal.h"
     #include "math/nbtheory.h"
     #include "utils/debug.h"

@@ -32,17 +32,17 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_
 #define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_
 
-#include <string>
 #include <memory>
+#include <string>
 
+#include "scheme/bfvrns/bfvrns-advancedshe.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/bfvrns/bfvrns-fhe.h"
+#include "scheme/bfvrns/bfvrns-leveledshe.h"
+#include "scheme/bfvrns/bfvrns-multiparty.h"
+#include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 #include "scheme/bfvrns/bfvrns-pre.h"
-#include "scheme/bfvrns/bfvrns-leveledshe.h"
-#include "scheme/bfvrns/bfvrns-advancedshe.h"
-#include "scheme/bfvrns/bfvrns-multiparty.h"
 #include "schemerns/rns-scheme.h"
 
 /**

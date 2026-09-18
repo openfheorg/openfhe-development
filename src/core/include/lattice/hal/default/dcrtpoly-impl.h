@@ -37,20 +37,20 @@
 #define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_IMPL_H_
 
 #include <algorithm>
-#include <ostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "lattice/hal/default/dcrtpoly.h"
 #include "config_core.h"
+#include "lattice/hal/default/dcrtpoly.h"
 #include "lattice/hal/default/poly-impl.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/parallel.h"
-#include "utils/utilities.h"
 #include "utils/utilities-int.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 

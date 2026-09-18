@@ -33,9 +33,9 @@
 #define SRC_CORE_INCLUDE_MATH_HAL_NATIVEINTBACKEND_H_
 
 #include "math/hal/basicint.h"
-#include "math/hal/intnat/ubintnat.h"
 #include "math/hal/intnat/mubintvecnat.h"
 #include "math/hal/intnat/transformnat.h"
+#include "math/hal/intnat/ubintnat.h"
 
 template <typename VecType>
 using NatChineseRemainderTransformFTT = intnat::ChineseRemainderTransformFTTNat<VecType>;

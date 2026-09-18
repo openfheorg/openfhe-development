@@ -33,15 +33,15 @@
 #include <string>
 #include <vector>
 
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestSer.h"
+#include "UnitTestUtils.h"
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "gtest/gtest.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestSer.h"
-#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 

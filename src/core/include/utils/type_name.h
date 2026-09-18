@@ -31,9 +31,9 @@
 #ifndef SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_
 #define SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_
 
-#include <typeinfo>
 #include <memory>
 #include <string>
+#include <typeinfo>
 
 #include "utils/demangle.h"
 

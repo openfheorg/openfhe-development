@@ -36,9 +36,9 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SER_H_
 #define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SER_H_
 
-#include "scheme/bgvrns/bgvrns-scheme.h"
-#include "scheme/bgvrns/bgvrns-fhe.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "scheme/bgvrns/bgvrns-fhe.h"
+#include "scheme/bgvrns/bgvrns-scheme.h"
 #include "utils/serial.h"
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersBGVRNS);

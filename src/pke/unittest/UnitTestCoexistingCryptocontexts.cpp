@@ -36,9 +36,9 @@
 
 #include <vector>
 
+#include "UnitTestUtils.h"
 #include "include/gtest/gtest.h"
 #include "openfhe.h"
-#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 

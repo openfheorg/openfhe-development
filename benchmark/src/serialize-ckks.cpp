@@ -43,11 +43,11 @@
 #include <vector>
 
 #include "benchmark/benchmark.h"
-#include "cryptocontext-ser.h"
 #include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "gen-cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 

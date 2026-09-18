@@ -32,12 +32,12 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
 #define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "schemerns/rns-modulus-limits.h"
 #include "lattice/lat-hal.h"
 #include "schemebase/base-parametergeneration.h"
+#include "schemerns/rns-modulus-limits.h"
 
 /**
  * @namespace lbcrypto

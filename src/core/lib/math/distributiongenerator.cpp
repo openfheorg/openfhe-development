@@ -39,9 +39,9 @@
 #include <memory>
 #include <string>
 
-#include "utils/prng/blake2engine.h"
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"
+#include "utils/prng/blake2engine.h"
 
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
     #include <dlfcn.h>

@@ -33,11 +33,11 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
-#include "utils/exception.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
+#include "gtest/gtest.h"
+#include "utils/exception.h"
 
 using namespace lbcrypto;
 

@@ -40,14 +40,14 @@
 #ifdef WITH_BE4
 
     #include <map>
-    #include <vector>
-    #include <unordered_map>
     #include <mutex>
+    #include <unordered_map>
     #include <utility>
+    #include <vector>
 
-    #include "math/hal/transform.h"
     #include "math/hal/bigintdyn/mubintvecdyn.h"
     #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/transform.h"
 
 /**
  * @namespace bigintdyn

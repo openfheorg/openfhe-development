@@ -32,9 +32,9 @@
 #include <vector>
 
 #include "cryptocontext.h"
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "utils/debug.h"
 
 using namespace lbcrypto;

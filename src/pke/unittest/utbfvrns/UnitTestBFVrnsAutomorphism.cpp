@@ -34,12 +34,12 @@
 #include <map>
 #include <vector>
 
+#include "UnitTestUtils.h"
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
 
 using namespace lbcrypto;

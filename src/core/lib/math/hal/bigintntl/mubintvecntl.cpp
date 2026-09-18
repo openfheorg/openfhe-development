@@ -45,14 +45,13 @@
     #define FASTNLOOSE
     #define FORCE_NORMALIZATION
 
-    #include "math/hal/bigintntl/mubintvecntl.h"
-
     #include <chrono>
 
+    #include "math/hal/bigintntl/mubintvecntl.h"
     #include "math/math-hal.h"
-    #include "utils/diagnostic_output.h"
     #include "time.h"
     #include "utils/debug.h"
+    #include "utils/diagnostic_output.h"
     #include "utils/serializable.h"
 
 namespace NTL {

@@ -30,8 +30,8 @@
 //==================================================================================
 #include <memory>
 
-#include "cryptoobject.h"
 #include "cryptocontext.h"
+#include "cryptoobject.h"
 
 namespace lbcrypto {
 

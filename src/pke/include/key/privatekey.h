@@ -42,8 +42,8 @@
 #include <string>
 #include <utility>
 
-#include "key/privatekey-fwd.h"
 #include "key/key.h"
+#include "key/privatekey-fwd.h"
 
 /**
  * @namespace lbcrypto

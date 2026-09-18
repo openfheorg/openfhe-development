@@ -39,10 +39,10 @@
 #include <memory>
 #include <string>
 
-#include "lattice/lat-hal.h"
-#include "schemebase/base-cryptoparameters.h"
 #include "constants.h"
 #include "lattice/constants-lattice.h"
+#include "lattice/lat-hal.h"
+#include "schemebase/base-cryptoparameters.h"
 
 // TODO - temp include for the SecurityLevel
 #include "lattice/stdlatticeparms.h"

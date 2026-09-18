@@ -40,14 +40,14 @@
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include "math/math-hal.h"
     #include "math/binaryuniformgenerator-impl.h"
     #include "math/discretegaussiangenerator-impl.h"
     #include "math/discreteuniformgenerator-impl.h"
+    #include "math/hal/bigintdyn/transformdyn-impl.h"
+    #include "math/math-hal.h"
     #include "math/matrix-impl.h"
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
-    #include "math/hal/bigintdyn/transformdyn-impl.h"
 
 template class bigintdyn::NumberTheoreticTransformDyn<bigintdyn::BigVector>;
 template class bigintdyn::ChineseRemainderTransformFTTDyn<bigintdyn::BigVector>;

@@ -40,8 +40,8 @@
 
 #include <memory>
 
-#include "lattice/trapdoor.h"
 #include "lattice/lat-hal.h"
+#include "lattice/trapdoor.h"
 #include "math/matrix-impl.h"
 #include "utils/debug.h"
 

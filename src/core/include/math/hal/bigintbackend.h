@@ -33,8 +33,8 @@
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_
 
 #include "config_core.h"
-#include "math/hal/bigintfxd/backendfxd.h"
 #include "math/hal/bigintdyn/backenddyn.h"
+#include "math/hal/bigintfxd/backendfxd.h"
 #include "math/hal/bigintntl/backendntl.h"
 
 /**

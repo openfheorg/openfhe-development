@@ -34,11 +34,11 @@
 #include <string>
 #include <vector>
 
-#include "include/gtest/gtest.h"
-#include "utils/exception.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
+#include "include/gtest/gtest.h"
+#include "utils/exception.h"
 
 using namespace lbcrypto;
 

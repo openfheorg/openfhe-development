@@ -37,9 +37,9 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
 
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/scheme-utils.h"

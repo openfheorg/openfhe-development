@@ -39,8 +39,8 @@
 #include <memory>
 
 #include "encoding/encodingparams.h"
-#include "scheme/scheme-utils.h"
 #include "scheme/scheme-id.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 

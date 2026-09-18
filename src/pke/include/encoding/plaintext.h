@@ -44,9 +44,9 @@
 #include <utility>
 #include <vector>
 
-#include "encoding/plaintext-fwd.h"
 #include "constants.h"
 #include "encoding/encodingparams.h"
+#include "encoding/plaintext-fwd.h"
 #include "scheme/scheme-id.h"
 
 namespace lbcrypto {

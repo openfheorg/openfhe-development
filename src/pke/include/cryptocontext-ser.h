@@ -42,10 +42,10 @@
 #include <vector>
 
 #include "cryptocontext.h"
-#include "utils/serial.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
-#include "scheme/bgvrns/bgvrns-ser.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
+#include "scheme/bgvrns/bgvrns-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
+#include "utils/serial.h"
 
 CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
                      lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>::SerializedVersion());

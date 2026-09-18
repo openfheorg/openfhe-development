@@ -38,10 +38,10 @@
 #include <utility>
 #include <vector>
 
-#include "schemebase/base-scheme.h"
 #include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "math/nbtheory.h"
+#include "schemebase/base-scheme.h"
 #include "schemerns/rns-cryptoparameters.h"
 #include "utils/parallel.h"
 

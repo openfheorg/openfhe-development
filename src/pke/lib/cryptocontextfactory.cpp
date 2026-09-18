@@ -34,8 +34,8 @@
 #include <vector>
 
 #include "cryptocontext.h"
-#include "schemebase/base-scheme.h"
 #include "scheme/scheme-id.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 

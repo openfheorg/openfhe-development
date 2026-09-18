@@ -32,10 +32,10 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PARAMETERGENERATION_H_
 #define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PARAMETERGENERATION_H_
 
-#include <string>
-#include <vector>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "schemerns/rns-parametergeneration.h"
 

@@ -39,6 +39,11 @@
 #include <utility>
 #include <vector>
 
+#include "ciphertext.h"
+#include "key/evalkey-fwd.h"
+#include "key/keypair.h"
+#include "keyswitch/keyswitch-base.h"
+#include "scheme/scheme-swch-params.h"
 #include "schemebase/base-advancedshe.h"
 #include "schemebase/base-fhe.h"
 #include "schemebase/base-leveledshe.h"
@@ -46,11 +51,6 @@
 #include "schemebase/base-parametergeneration.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-pre.h"
-#include "ciphertext.h"
-#include "key/evalkey-fwd.h"
-#include "key/keypair.h"
-#include "keyswitch/keyswitch-base.h"
-#include "scheme/scheme-swch-params.h"
 #include "utils/caller_info.h"
 #include "utils/exception.h"
 

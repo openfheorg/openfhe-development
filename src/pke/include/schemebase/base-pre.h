@@ -32,14 +32,14 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
 #define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
 
-#include <vector>
 #include <memory>
+#include <vector>
 
+#include "ciphertext-fwd.h"
+#include "key/evalkey-fwd.h"
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
-#include "key/evalkey-fwd.h"
 #include "utils/inttypes.h"
-#include "ciphertext-fwd.h"
 
 /**
  * @namespace lbcrypto

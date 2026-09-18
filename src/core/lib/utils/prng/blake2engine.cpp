@@ -34,10 +34,10 @@
 #include <random>
 #include <thread>
 
-#include "utils/prng/blake2.h"
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"
 #include "utils/memory.h"
+#include "utils/prng/blake2.h"
 
 namespace default_prng {
 

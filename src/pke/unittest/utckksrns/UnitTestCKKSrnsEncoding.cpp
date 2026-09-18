@@ -46,8 +46,8 @@
 #include <string>
 #include <vector>
 
-#include "openfhe.h"
 #include "gtest/gtest.h"
+#include "openfhe.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 
 using namespace lbcrypto;

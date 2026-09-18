@@ -32,8 +32,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PARAMETERGENERATION_H_
 #define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PARAMETERGENERATION_H_
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "schemerns/rns-parametergeneration.h"
 

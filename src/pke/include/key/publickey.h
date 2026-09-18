@@ -41,8 +41,8 @@
 #include <utility>
 #include <vector>
 
-#include "key/publickey-fwd.h"
 #include "key/key.h"
+#include "key/publickey-fwd.h"
 
 /**
  * @namespace lbcrypto

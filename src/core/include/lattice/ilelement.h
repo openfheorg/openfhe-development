@@ -39,6 +39,7 @@
 #include <vector>
 
 #include "math/discretegaussiangenerator.h"
+#include "math/hal/nativeintbackend.h"  // NativeInteger
 #include "math/nbtheory.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"

@@ -32,8 +32,8 @@
 #ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PKE_H_
 #define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PKE_H_
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "lattice/lat-hal.h"

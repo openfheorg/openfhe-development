@@ -34,6 +34,7 @@
 
 #include <memory>
 
+#include "binfhe-constants.h"
 #include "lwe-ciphertext.h"
 #include "lwe-cryptoparameters.h"
 #include "lwe-keypair.h"
@@ -41,7 +42,6 @@
 #include "lwe-keyswitchkey32.h"
 #include "lwe-privatekey.h"
 #include "lwe-publickey.h"
-#include "binfhe-constants.h"
 
 namespace lbcrypto {
 

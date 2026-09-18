@@ -53,7 +53,6 @@
     #include <vector>
 
     #include "math/hal/bigintntl/ubintntl.h"
-
     #include "math/hal/vector.h"
     #include "utils/exception.h"
     #include "utils/inttypes.h"

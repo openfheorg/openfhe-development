@@ -44,9 +44,9 @@
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
     #include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
     #include "math/hal/bigintntl/transformntl.h"  // transforms for NTL
+    #include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
 
 // Global alias for MATHBACKEND 6 Integer
 using M6Integer = NTL::BigInteger;

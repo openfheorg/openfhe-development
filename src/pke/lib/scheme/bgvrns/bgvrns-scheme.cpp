@@ -42,9 +42,9 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include <string>
 
 #include "scheme/bgvrns/bgvrns-advancedshe.h"
+#include "scheme/bgvrns/bgvrns-fhe.h"
 #include "scheme/bgvrns/bgvrns-leveledshe.h"
 #include "scheme/bgvrns/bgvrns-multiparty.h"
-#include "scheme/bgvrns/bgvrns-fhe.h"
 #include "scheme/bgvrns/bgvrns-pke.h"
 #include "scheme/bgvrns/bgvrns-pre.h"
 

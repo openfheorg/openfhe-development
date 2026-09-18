@@ -38,9 +38,9 @@
 #include <utility>
 
 #include "cryptocontext-fwd.h"
+#include "cryptocontextfactory.h"
 #include "encoding/encodingparams.h"
 #include "schemebase/base-cryptoparameters.h"
-#include "cryptocontextfactory.h"
 
 namespace lbcrypto {
 

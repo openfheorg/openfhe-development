@@ -36,14 +36,13 @@
 #ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_H_
 #define SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_H_
 
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
-
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns-params.h"
-#include "scheme/gen-cryptocontext-params-validation.h"
-#include "scheme/bfvrns/bfvrns-scheme.h"
-#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
+#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+#include "scheme/bfvrns/bfvrns-scheme.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns-params.h"
+#include "scheme/gen-cryptocontext-params-validation.h"
 
 namespace lbcrypto {
 

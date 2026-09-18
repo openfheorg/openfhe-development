@@ -37,11 +37,11 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
 
-#include <vector>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_set>
-#include <iostream>
+#include <vector>
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 

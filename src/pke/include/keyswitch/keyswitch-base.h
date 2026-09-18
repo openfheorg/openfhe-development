@@ -41,11 +41,11 @@ Base class for key switching algorithms.
 #include <vector>
 
 #include "ciphertext-fwd.h"
-#include "key/publickey-fwd.h"
-#include "key/privatekey-fwd.h"
 #include "key/evalkey-fwd.h"
-#include "utils/exception.h"
+#include "key/privatekey-fwd.h"
+#include "key/publickey-fwd.h"
 #include "schemebase/base-cryptoparameters.h"
+#include "utils/exception.h"
 
 /**
  * @namespace lbcrypto

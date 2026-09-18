@@ -42,9 +42,9 @@
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #include "math/hal/bigintfxd/ubintfxd.h"
     #include "math/hal/bigintfxd/mubintvecfxd.h"
     #include "math/hal/bigintfxd/transformfxd.h"
+    #include "math/hal/bigintfxd/ubintfxd.h"
 
 static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value, "Data type provided is not supported in BigInteger");
 

@@ -40,9 +40,9 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <utility>
 #include <vector>
 
+#include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
-#include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
