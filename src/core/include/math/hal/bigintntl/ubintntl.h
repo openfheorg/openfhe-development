@@ -1005,16 +1005,12 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
             Archive& ar, std::uint32_t const version) const {
-        void* data              = this->rep.rep;
-        ::cereal::size_type len = 0;
-        if (data == nullptr) {
-            ar(::cereal::binary_data(&len, sizeof(len)));
-        }
-        else {
-            len = _ntl_ALLOC(this->rep.rep);
-
-            ar(::cereal::binary_data(&len, sizeof(len)));
-            ar(::cereal::binary_data(data, len * sizeof(_ntl_gbigint)));
+        ::cereal::size_type len = static_cast<::cereal::size_type>(NTL::NumBytes(*this));
+        ar(::cereal::binary_data(&len, sizeof(len)));
+        if (len != 0) {
+            std::vector<unsigned char> bytes(len);
+            NTL::BytesFromZZ(bytes.data(), *this, static_cast<long>(len));  // NOLINT: NTL takes long
+            ar(::cereal::binary_data(bytes.data(), len));
             ar(::cereal::make_nvp("mb", m_MSB));
         }
     }
@@ -1039,11 +1035,9 @@ public:
             return;
         }
 
-        void* mem = malloc(len * sizeof(_ntl_gbigint));
-        ar(::cereal::binary_data(mem, len * sizeof(_ntl_gbigint)));
-        WrappedPtr<_ntl_gbigint_body, Deleter> newrep;
-        newrep.rep = reinterpret_cast<_ntl_gbigint_body*>(mem);
-        _ntl_gswap(&this->rep, &newrep);
+        std::vector<unsigned char> bytes(len);
+        ar(::cereal::binary_data(bytes.data(), len));
+        NTL::ZZFromBytes(*this, bytes.data(), static_cast<long>(len));  // NOLINT: NTL takes long
 
         ar(::cereal::make_nvp("mb", m_MSB));
     }
