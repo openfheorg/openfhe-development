@@ -45,8 +45,8 @@
  * Abstract base class for any PRNG engine.
  */
 
-#ifndef __PRNG_H__
-#define __PRNG_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_PRNG_PRNG_H_
+#define SRC_CORE_INCLUDE_UTILS_PRNG_PRNG_H_
 
 #include <cstdint>
 #include <limits>
@@ -82,4 +82,4 @@ public:
 protected:
     PRNG() = default;
 };
-#endif  // __PRNG_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_PRNG_PRNG_H_

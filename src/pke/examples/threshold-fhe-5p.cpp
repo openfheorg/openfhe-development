@@ -33,13 +33,20 @@
   Examples of threshold FHE for BGVrns, BFVrns and CKKS
  */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
 
 void RunBFVrns();
 void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, uint32_t ptm,
-                  double& noise, double& logQ, EncryptionTechnique encMethod);
+        double& noise, double& logQ, EncryptionTechnique encMethod);
 
 int main(int argc, char* argv[]) {
     std::cout << "\n=================RUNNING FOR BFVrns=====================" << std::endl;
@@ -154,7 +161,7 @@ void RunBFVrns() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     auto evalSumKeysB = cc->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
 

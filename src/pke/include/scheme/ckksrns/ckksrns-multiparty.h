@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_
 
-#include "schemerns/rns-multiparty.h"
-#include "ckksrns-cryptoparameters.h"
-
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
+#include "ckksrns-cryptoparameters.h"
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
@@ -48,33 +49,31 @@ class MultipartyCKKSRNS : public MultipartyRNS {
 public:
     virtual ~MultipartyCKKSRNS() = default;
 
-    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                          Poly* plaintext) const override;
+    DecryptResult MultipartyDecryptFusion(
+            const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, Poly* plaintext) const override;
 
-    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                          NativePoly* plaintext) const override;
+    DecryptResult MultipartyDecryptFusion(
+            const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const override;
 
     Ciphertext<DCRTPoly> IntBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
     Ciphertext<DCRTPoly> IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
-                                                   const PublicKey<DCRTPoly> publicKey) const override;
+    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(
+            std::shared_ptr<CryptoParametersCKKSRNS> params, const PublicKey<DCRTPoly> publicKey) const override;
 
-    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
-                                                   ConstCiphertext<DCRTPoly>& ciphertext) const override;
+    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(
+            std::shared_ptr<CryptoParametersCKKSRNS> params, ConstCiphertext<DCRTPoly>& ciphertext) const override;
 
     std::vector<Ciphertext<DCRTPoly>> IntMPBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
-                                                       ConstCiphertext<DCRTPoly> ciphertext,
-                                                       ConstCiphertext<DCRTPoly> a) const override;
+            ConstCiphertext<DCRTPoly> ciphertext, ConstCiphertext<DCRTPoly> a) const override;
 
     std::vector<Ciphertext<DCRTPoly>> IntMPBootAdd(
-        std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const override;
+            std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const override;
 
     Ciphertext<DCRTPoly> IntMPBootEncrypt(const PublicKey<DCRTPoly> publicKey,
-                                          const std::vector<Ciphertext<DCRTPoly>>& sharesPair,
-                                          ConstCiphertext<DCRTPoly> a,
-                                          ConstCiphertext<DCRTPoly> ciphertext) const override;
+            const std::vector<Ciphertext<DCRTPoly>>& sharesPair, ConstCiphertext<DCRTPoly> a,
+            ConstCiphertext<DCRTPoly> ciphertext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -93,4 +92,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_

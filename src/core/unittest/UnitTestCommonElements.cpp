@@ -29,14 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -109,7 +113,7 @@ static void common_basic_ops(const std::string& msg) {
 
 // instantiate ops for various backend combos
 TEST(UTPoly,  // NOLINTNEXTLINE
-     common_basic_ops){RUN_ALL_POLYS(common_basic_ops, "Poly basic_ops")}
+        common_basic_ops){RUN_ALL_POLYS(common_basic_ops, "Poly basic_ops")}
 
 TEST(UTDCRTPoly, common_basic_ops) {
     RUN_BIG_DCRTPOLYS(common_basic_ops, "DCRT basic_ops")
@@ -311,10 +315,10 @@ void common_clone_ops(const std::string& msg) {
         Element ilvClone = ilv.CloneParametersOnly();
 
         EXPECT_EQ(ilv.GetCyclotomicOrder(), ilvClone.GetCyclotomicOrder())
-            << msg << " Failure: CloneParametersOnly GetCyclotomicOrder()";
+                << msg << " Failure: CloneParametersOnly GetCyclotomicOrder()";
         EXPECT_EQ(ilv.GetModulus(), ilvClone.GetModulus()) << msg << " Failure: CloneParametersOnly GetModulus()";
         EXPECT_EQ(ilv.GetRootOfUnity(), ilvClone.GetRootOfUnity())
-            << msg << " Failure: CloneParametersOnly GetRootOfUnity()";
+                << msg << " Failure: CloneParametersOnly GetRootOfUnity()";
         EXPECT_EQ(ilv.GetFormat(), ilvClone.GetFormat()) << msg << " Failure: CloneParametersOnly GetFormat()";
     }
     {
@@ -323,10 +327,10 @@ void common_clone_ops(const std::string& msg) {
         Element ilvClone = ilv.CloneWithNoise(dgg, ilv.GetFormat());
 
         EXPECT_EQ(ilv.GetCyclotomicOrder(), ilvClone.GetCyclotomicOrder())
-            << msg << " Failure: CloneWithNoise GetCyclotomicOrder()";
+                << msg << " Failure: CloneWithNoise GetCyclotomicOrder()";
         EXPECT_EQ(ilv.GetModulus(), ilvClone.GetModulus()) << msg << " Failure: CloneWithNoise GetModulus()";
         EXPECT_EQ(ilv.GetRootOfUnity(), ilvClone.GetRootOfUnity())
-            << msg << " Failure: CloneWithNoise GetRootOfUnity()";
+                << msg << " Failure: CloneWithNoise GetRootOfUnity()";
         EXPECT_EQ(ilv.GetFormat(), ilvClone.GetFormat()) << msg << " Failure: CloneWithNoise GetFormat()";
     }
 }
@@ -496,7 +500,7 @@ void common_cyclotomicOrder(const std::string& msg) {
 
     uint32_t m = 8;
     auto ilparams0 =
-        std::make_shared<ParmType>(m, typename VecType::Integer("1234"), typename VecType::Integer("5678"));
+            std::make_shared<ParmType>(m, typename VecType::Integer("1234"), typename VecType::Integer("5678"));
     Element ilv0(ilparams0);
     EXPECT_EQ(ilparams0->GetCyclotomicOrder(), ilv0.GetCyclotomicOrder()) << msg << " Failure: GetCyclotomicOrder()";
 }

@@ -29,24 +29,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
-#define LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
-
-#include "constants.h"
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-
-#include "math/hal/basicint.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
+#include <iomanip>
 #include <memory>
 #include <numeric>
+#include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "constants.h"
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+#include "math/hal/basicint.h"
 
 namespace lbcrypto {
 
@@ -66,9 +69,9 @@ private:
 public:
     // these two constructors are used inside of Decrypt
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         ckksDataType = ckksdt;
@@ -82,11 +85,11 @@ public:
    *
    */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& v,
-                       size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL)
+            size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
         ckksDataType  = ckksdt;
         scalingFactor = scFact;
@@ -164,8 +167,7 @@ public:
    * @return the product of the two numbers in CRT representation.
    */
     static std::vector<DCRTPoly::Integer> CRTMult(const std::vector<DCRTPoly::Integer>& a,
-                                                  const std::vector<DCRTPoly::Integer>& b,
-                                                  const std::vector<DCRTPoly::Integer>& m) {
+            const std::vector<DCRTPoly::Integer>& b, const std::vector<DCRTPoly::Integer>& m) {
         // TODO: add check that vector lengths match?
         std::vector<DCRTPoly::Integer> r;
         r.reserve(m.size());
@@ -342,4 +344,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_

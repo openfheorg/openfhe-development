@@ -28,15 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __UNITTESTMETADATATEST_H__
-#define __UNITTESTMETADATATEST_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
 
-#include "ciphertext.h"
-#include "metadata.h"
-
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
+
+#include "ciphertext.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 
@@ -123,8 +124,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(cereal::base_class<Metadata>(this));
         ar(cereal::make_nvp("str", m_s));
@@ -139,7 +140,7 @@ public:
    */
     template <class Element>
     static const std::shared_ptr<MetadataTest> CloneMetadata(
-        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+            const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
         auto it = ciphertext->FindMetadataByKey("test");
 
         if (ciphertext->MetadataFound(it)) {
@@ -160,7 +161,7 @@ public:
    */
     template <class Element>
     static const std::shared_ptr<MetadataTest> GetMetadata(
-        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+            const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
         auto it = ciphertext->FindMetadataByKey("test");
 
         if (ciphertext->MetadataFound(it)) {
@@ -187,8 +188,8 @@ public:
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
     template <class Element>
-    static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
-                              std::shared_ptr<MetadataTest> mdata) {
+    static void StoreMetadata(
+            std::shared_ptr<CiphertextImpl<Element>> ciphertext, std::shared_ptr<MetadataTest> mdata) {
         ciphertext->SetMetadataByKey("test", mdata);
     }
 
@@ -206,4 +207,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif  // __UNITTESTMETADATATEST_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_

@@ -37,38 +37,39 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_UBINTNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_UBINTNTL_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_UBINTNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_UBINTNTL_H
+    #include <NTL/ZZ.h>
+    #include <NTL/ZZ_limbs.h>
 
-        #include <NTL/ZZ.h>
-        #include <NTL/ZZ_limbs.h>
+    #include <exception>
+    #include <fstream>
+    #include <functional>
+    #include <limits>
+    #include <memory>
+    #include <ostream>
+    #include <sstream>
+    #include <string>
+    #include <type_traits>
+    #include <typeinfo>
+    #include <vector>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-
-        #include "utils/openfhebase64.h"
-        #include "utils/parallel.h"
-        #include "utils/serializable.h"
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/memory.h"
-        #include "utils/debug.h"
-        #include "utils/diagnostic_output.h"
-
-        #include <exception>
-        #include <fstream>
-        #include <functional>
-        #include <limits>
-        #include <memory>
-        #include <ostream>
-        #include <sstream>
-        #include <string>
-        #include <type_traits>
-        #include <typeinfo>
-        #include <vector>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "utils/debug.h"
+    #include "utils/diagnostic_output.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/memory.h"
+    #include "utils/openfhebase64.h"
+    #include "utils/parallel.h"
+    #include "utils/serializable.h"
 
 /**
  *@namespace NTL
@@ -144,9 +145,9 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     myZZ(uint64_t val);  // NOLINT
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     myZZ(uint128_t val);  // NOLINT
-        #endif
+    #endif
 
     /**
    * Constructors from smaller basic types
@@ -164,13 +165,14 @@ public:
    * @param &val is the initial integer represented as a native integer.
    */
     template <typename T,
-              typename std::enable_if<
-                  !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
-                      !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&                // NOLINT
-                      !std::is_same<T, long long>::value && !std::is_same<T, const std::string>::value &&  // NOLINT
-                      !std::is_same<T, const char*>::value && !std::is_same<T, const char>::value &&
-                      !std::is_same<T, myZZ>::value && !std::is_same<T, double>::value,
-                  bool>::type = true>
+            typename std::enable_if<
+                    !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
+                            !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
+                            !std::is_same<T, long long>::value &&                                  // NOLINT
+                            !std::is_same<T, const std::string>::value &&                          // NOLINT
+                            !std::is_same<T, const char*>::value && !std::is_same<T, const char>::value &&
+                            !std::is_same<T, myZZ>::value && !std::is_same<T, double>::value,
+                    bool>::type = true>
     myZZ(const T& val) : myZZ(val.ConvertToInt()) {}  // NOLINT
 
     /**
@@ -870,13 +872,13 @@ public:
     // OpenFHE conversion methods
     template <typename T = BasicInteger>
     T ConvertToInt() const {
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
         if constexpr (std::is_same_v<T, uint128_t>) {
             uint128_t tmp2 = (*this >> 64).ConvertToInt<uint64_t>();
             return (tmp2 << 64) | (*this % myZZ(1).LShiftEq(64)).ConvertToInt<uint64_t>();
         }
         else
-        #endif
+    #endif
         {
             std::stringstream s;  // slower
             s << *this;
@@ -1002,33 +1004,29 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
-        void* data              = this->rep.rep;
-        ::cereal::size_type len = 0;
-        if (data == nullptr) {
-            ar(::cereal::binary_data(&len, sizeof(len)));
-        }
-        else {
-            len = _ntl_ALLOC(this->rep.rep);
-
-            ar(::cereal::binary_data(&len, sizeof(len)));
-            ar(::cereal::binary_data(data, len * sizeof(_ntl_gbigint)));
+            Archive& ar, std::uint32_t const version) const {
+        ::cereal::size_type len = static_cast<::cereal::size_type>(NTL::NumBytes(*this));
+        ar(::cereal::binary_data(&len, sizeof(len)));
+        if (len != 0) {
+            std::vector<unsigned char> bytes(len);
+            NTL::BytesFromZZ(bytes.data(), *this, static_cast<long>(len));  // NOLINT: NTL takes long
+            ar(::cereal::binary_data(bytes.data(), len));
             ar(::cereal::make_nvp("mb", m_MSB));
         }
     }
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", ToString()));
     }
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ::cereal::size_type len;
         ar(::cereal::binary_data(&len, sizeof(len)));
@@ -1037,21 +1035,19 @@ public:
             return;
         }
 
-        void* mem = malloc(len * sizeof(_ntl_gbigint));
-        ar(::cereal::binary_data(mem, len * sizeof(_ntl_gbigint)));
-        WrappedPtr<_ntl_gbigint_body, Deleter> newrep;
-        newrep.rep = reinterpret_cast<_ntl_gbigint_body*>(mem);
-        _ntl_gswap(&this->rep, &newrep);
+        std::vector<unsigned char> bytes(len);
+        ar(::cereal::binary_data(bytes.data(), len));
+        NTL::ZZFromBytes(*this, bytes.data(), static_cast<long>(len));  // NOLINT: NTL takes long
 
         ar(::cereal::make_nvp("mb", m_MSB));
     }
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         std::string s;
         ar(::cereal::make_nvp("v", s));
@@ -1088,6 +1084,6 @@ private:
 NTL_DECLARE_RELOCATABLE((myZZ*))
 }  // namespace NTL
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_UBINTNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_UBINTNTL_H_

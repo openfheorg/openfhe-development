@@ -32,8 +32,8 @@
  * It is a lightweight file to be included where we need the declaration of Plaintext only
  *
  */
-#ifndef __PLAINTEXT_FWD_H__
-#define __PLAINTEXT_FWD_H__
+#ifndef SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_FWD_H_
+#define SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_FWD_H_
 
 #include <memory>
 
@@ -48,4 +48,4 @@ using ReadOnlyPlaintext = std::shared_ptr<const PlaintextImpl>;
 
 }  // namespace lbcrypto
 
-#endif  // __PLAINTEXT_FWD_H__
+#endif  // SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_FWD_H_

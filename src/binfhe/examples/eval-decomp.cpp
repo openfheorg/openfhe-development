@@ -33,8 +33,12 @@
   Example for the FHEW scheme homomorphic digit decomposition
  */
 
-#include "binfhecontext.h"
 #include <chrono>
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+
+#include "binfhecontext.h"
 
 using namespace lbcrypto;
 

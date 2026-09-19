@@ -33,15 +33,15 @@
   matrix class implementations and type specific implementations
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
-#define LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
+
+#include <cstdint>
+#include <memory>
 
 #include "math/matrix-impl.h"
 #include "math/matrix-utils.h"
-
 #include "utils/parallel.h"
-
-#include <memory>
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations
@@ -62,12 +62,12 @@ Matrix<typename Element::Integer> Rotate(Matrix<Element> const& inMat) {
             for (size_t rotRow = 0; rotRow < n; ++rotRow) {
                 for (size_t rotCol = 0; rotCol < n; ++rotCol) {
                     result(row * n + rotRow, col * n + rotCol) =
-                        mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
+                            mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
                     //  negate (mod q) upper-right triangle to account for
                     //  (mod x^n + 1)
                     if (rotRow < rotCol) {
                         result(row * n + rotRow, col * n + rotCol) =
-                            modulus.ModSub(result(row * n + rotRow, col * n + rotCol), modulus);
+                                modulus.ModSub(result(row * n + rotRow, col * n + rotCol), modulus);
                     }
                 }
             }
@@ -169,4 +169,4 @@ Matrix<int32_t> ConvertToInt32(const Matrix<V>& input, const typename V::Integer
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_

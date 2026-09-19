@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <memory>
+
 #include "include/gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -36,9 +41,6 @@
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <fstream>
-#include <iostream>
 
 using namespace lbcrypto;
 

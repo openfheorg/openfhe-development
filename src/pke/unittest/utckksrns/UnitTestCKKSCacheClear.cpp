@@ -29,6 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 #include "openfhe.h"
@@ -36,9 +42,6 @@
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
 #include "scheme/scheme-swch-params.h"
 #include "utils/memory.h"
-
-#include <memory>
-#include <vector>
 
 #if defined(__GLIBC__)
     #include <malloc.h>
@@ -118,11 +121,11 @@ class UTCKKSCacheClear : public ::testing::Test {
 protected:
 #if defined(WITH_TCM) || defined(__EMSCRIPTEN__)
     void SetUp() override {
-#if defined(WITH_TCM)
+    #if defined(WITH_TCM)
         GTEST_SKIP() << "Heap usage checks are not stable with tcmalloc enabled";
-#else
+    #else
         GTEST_SKIP() << "Heap probe unavailable under Emscripten";
-#endif
+    #endif
     }
 #endif
 
@@ -182,6 +185,14 @@ TEST_F(UTCKKSReleaseAllContexts, ClearsSchemeSwitchPrecomWithLiveContext) {
 TEST_F(UTCKKSCacheClear, FullBootstrapClear) {
     auto cc           = MakeBootstrapCC();
     uint32_t numSlots = cc->GetRingDimension() / 2;
+
+    // The first EvalBootstrapSetup() grows per-thread allocator structures in
+    // proportion to the OpenMP thread count, and those are not returned to the
+    // heap. Running one setup and clear before the baseline is taken keeps that
+    // growth out of the comparison, so what is measured is the bootstrap
+    // precomputation alone rather than the thread count of the host.
+    cc->EvalBootstrapSetup({1, 1}, {0, 0}, numSlots);
+    cc->ClearBootstrapPrecom();
 
     size_t before = HeapInUseBytes();
     cc->EvalBootstrapSetup({1, 1}, {0, 0}, numSlots);

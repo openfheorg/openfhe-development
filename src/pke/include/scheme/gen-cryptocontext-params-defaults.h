@@ -33,13 +33,16 @@
   Collection of parameter default values for different schemes
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
-#define __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
+#define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
 
-#include "lattice/stdlatticeparms.h"  // SecurityLevel
-#include "scheme/scheme-id.h"         // SCHEME
-#include "utils/inttypes.h"
+#include <cstdint>
+
 #include "constants.h"
+#include "lattice/constants-lattice.h"  // SecretKeyDist
+#include "lattice/stdlatticeparms.h"    // SecurityLevel
+#include "scheme/scheme-id.h"           // SCHEME
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -162,4 +165,4 @@ constexpr CKKSDataType ckksDataType                        = REAL;
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_

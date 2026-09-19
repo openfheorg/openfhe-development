@@ -35,9 +35,11 @@
 
 #define PROFILE
 
-#include "openfhe.h"
-#include <vector>
+#include <cstdint>
 #include <iostream>
+#include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

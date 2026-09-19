@@ -44,14 +44,15 @@
 
 #include "math/discretegaussiangeneratorgeneric.h"
 
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -269,8 +270,8 @@ uint32_t BaseSampler::FindInVector(const std::vector<double>& S, double search) 
     OPENFHE_THROW("DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
-DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std,
-                                                                   const int b, double N) {
+DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(
+        BaseSampler** samplers, const double std, const int b, double N) {
     // Precomputations for sigma bar
     int x1, x2;
     base_samplers        = samplers;

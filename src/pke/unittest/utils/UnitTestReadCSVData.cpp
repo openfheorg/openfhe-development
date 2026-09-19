@@ -29,14 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "scheme/gen-cryptocontext-params.h"
 #include "UnitTestReadCSVData.h"
-#include "UnitTestException.h"
-#include "utils/exception.h"
 
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <utility>
+#include <vector>
+
+#include "UnitTestException.h"
+#include "scheme/gen-cryptocontext-params.h"
+#include "utils/exception.h"
 
 //===========================================================================================================
 constexpr char DELIMITER   = ',';
@@ -80,9 +83,9 @@ static void checkColumnNamesForCryptocontextParameters(std::ifstream& testData) 
             s += n + ',';
         }
         std::string errMsg(
-            std::string(
-                "Check the number and names of the columns for cryptoparameters as they do not match the expected: ") +
-            s);
+                std::string(
+                        "Check the number and names of the columns for cryptoparameters as they do not match the expected: ") +
+                s);
         OPENFHE_THROW(errMsg);
     }
 }

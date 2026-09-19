@@ -34,11 +34,13 @@
   quickly enabled and disabled. It also contains functions for timing code
  */
 
+#include "utils/debug.h"
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
+
 #include "time.h"
-#include "utils/debug.h"
 
 double currentDateTime() {
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();

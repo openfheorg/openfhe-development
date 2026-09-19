@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _BINFHE_BASE_PARAMS_H_
-#define _BINFHE_BASE_PARAMS_H_
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
@@ -42,12 +49,6 @@
 #include "rgsw-cryptoparameters.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -65,8 +66,8 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param rgswparams a shared poiter to an instance of RingGSWCryptoParams
    */
-    BinFHECryptoParams(const std::shared_ptr<LWECryptoParams>& lweparams,
-                       const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
+    BinFHECryptoParams(
+            const std::shared_ptr<LWECryptoParams>& lweparams, const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
         : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {
         auto keyDist = m_LWEParams->GetKeyDist();
         if (keyDist != m_RGSWParams->GetKeyDist())
@@ -118,8 +119,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("lweparams", m_LWEParams));
         ar(::cereal::make_nvp("rgswparams", m_RGSWParams));
@@ -143,4 +144,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _BINFHE_BASE_PARAMS_H_
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_

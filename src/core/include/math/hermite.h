@@ -30,8 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_INC_MATH_HERMITE_H
-#define LBCRYPTO_INC_MATH_HERMITE_H
+#ifndef SRC_CORE_INCLUDE_MATH_HERMITE_H_
+#define SRC_CORE_INCLUDE_MATH_HERMITE_H_
 
 #include <complex>
 #include <cstdint>
@@ -55,9 +55,9 @@ namespace lbcrypto {
  */
 
 // TODO: templatize this
-std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                             size_t order, double scale);
+std::vector<std::complex<double>> GetHermiteTrigCoefficients(
+        std::function<int64_t(int64_t)> func, uint32_t p, size_t order, double scale);
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HERMITE_H_

@@ -29,16 +29,23 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "BaseTestCase.h"
-#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestReadCSVData.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <unordered_map>
-#include <vector>
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 class Params;
@@ -54,12 +61,12 @@ enum TEST_CASE_TYPE : int {
 };
 static TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
     const std::unordered_map<std::string, TEST_CASE_TYPE> stringToCaseType = {
-        {"INTERACTIVE_MP_BOOT", INTERACTIVE_MP_BOOT},
-        {"INTERACTIVE_MP_BOOT_CHEBYSHEV", INTERACTIVE_MP_BOOT_CHEBYSHEV},
-        {"INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY", INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY},
-        {"INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY", INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY},
-        {"INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY", INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY},
-        {"INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY", INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY}};
+            {"INTERACTIVE_MP_BOOT", INTERACTIVE_MP_BOOT},
+            {"INTERACTIVE_MP_BOOT_CHEBYSHEV", INTERACTIVE_MP_BOOT_CHEBYSHEV},
+            {"INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY", INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY},
+            {"INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY", INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY},
+            {"INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY", INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY},
+            {"INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY", INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY}};
     auto search = stringToCaseType.find(str);
     if (stringToCaseType.end() != search) {
         return search->second;
@@ -68,12 +75,12 @@ static TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
 }
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     const std::unordered_map<TEST_CASE_TYPE, std::string> caseTypeToString = {
-        {INTERACTIVE_MP_BOOT, "INTERACTIVE_MP_BOOT"},
-        {INTERACTIVE_MP_BOOT_CHEBYSHEV, "INTERACTIVE_MP_BOOT_CHEBYSHEV"},
-        {INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY"},
-        {INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY"},
-        {INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY"},
-        {INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY"}};
+            {INTERACTIVE_MP_BOOT, "INTERACTIVE_MP_BOOT"},
+            {INTERACTIVE_MP_BOOT_CHEBYSHEV, "INTERACTIVE_MP_BOOT_CHEBYSHEV"},
+            {INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY"},
+            {INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY"},
+            {INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY"},
+            {INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY"}};
     auto search = caseTypeToString.find(type);
     if (caseTypeToString.end() != search) {
         return os << search->second;
@@ -175,8 +182,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_MultiPartyBoot(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
-                                 const std::string& failmsg = std::string()) {
+    void UnitTest_MultiPartyBoot(
+            const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData));
 
@@ -202,7 +209,7 @@ protected:
 
             // Joint public key
             KeyPair<Element> kpMultiparty =
-                cc->MultipartyKeyGen(secretKeys);  // This is the same core key generation operation.
+                    cc->MultipartyKeyGen(secretKeys);  // This is the same core key generation operation.
 
             // Prepare input vector
             const std::vector<std::complex<double>> inVec{-0.9, -0.8, 0.2, 0.4};
@@ -251,7 +258,7 @@ protected:
             cc->MultipartyDecryptFusion(partialCiphertextVec, &resultPtxt);
             resultPtxt->SetLength(inVec.size());
             checkEquality(ptxt->GetCKKSPackedValue(), resultPtxt->GetCKKSPackedValue(), eps,
-                          failmsg + " Interactive multiparty bootstrapping fails");
+                    failmsg + " Interactive multiparty bootstrapping fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -263,8 +270,8 @@ protected:
         }
     }
 
-    void UnitTest_MultiPartyBootChebyshev(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
-                                          const std::string& failmsg = std::string()) {
+    void UnitTest_MultiPartyBootChebyshev(
+            const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData));
 
@@ -285,7 +292,7 @@ protected:
             // Generate evalsum key
             cc->EvalSumKeyGen(kp1.secretKey);
             auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(
-                cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+                    cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
             kp2 = cc->MultipartyKeyGen(kp1.publicKey);
             if (!kp2.good())
@@ -317,9 +324,8 @@ protected:
             cc->InsertEvalSumKey(evalSumKeysJoin2);
 
             const std::vector<std::complex<double>> input{-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
-            const std::vector<double> coefficients{1.0, 0.558971,     0.0, -0.0943712,   0.0, 0.0215023,
-                                                   0.0, -0.00505348,  0.0, 0.00119324,   0.0, -0.000281928,
-                                                   0.0, 0.0000664347, 0.0, -0.0000148709};
+            const std::vector<double> coefficients{1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348,
+                    0.0, 0.00119324, 0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709};
 
             Plaintext pt1 = cc->MakeCKKSPackedPlaintext(input);
             auto ct1      = cc->Encrypt(kp3.publicKey, pt1);
@@ -357,18 +363,18 @@ protected:
             auto ciphertextPartial1 = cc->MultipartyDecryptMain({ciphertextOutput}, kp1.secretKey);
             auto ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextOutput}, kp2.secretKey);
             auto ciphertextPartial3 = cc->MultipartyDecryptLead({ciphertextOutput}, kp3.secretKey);
-            std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec{ciphertextPartial1[0], ciphertextPartial2[0],
-                                                                   ciphertextPartial3[0]};
+            std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec{
+                    ciphertextPartial1[0], ciphertextPartial2[0], ciphertextPartial3[0]};
 
             Plaintext plaintextMultiparty;
             cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultiparty);
             plaintextMultiparty->SetLength(input.size());
 
-            const std::vector<std::complex<double>> result1{0.0179885, 0.0474289, 0.119205, 0.268936, 0.5,
-                                                            0.731064,  0.880795,  0.952571, 0.982011};
+            const std::vector<std::complex<double>> result1{
+                    0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011};
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(result1);
             checkEquality(plaintextResult1->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), eps,
-                          failmsg + " Interactive multiparty bootstrapping Chebyshev fails");
+                    failmsg + " Interactive multiparty bootstrapping Chebyshev fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -380,8 +386,8 @@ protected:
         }
     }
 
-    void UnitTest_MultiPartyBootEncrypt2(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
-                                         const std::string& failmsg = std::string()) {
+    void UnitTest_MultiPartyBootEncrypt2(
+            const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData));
 
@@ -410,7 +416,7 @@ protected:
             resultPtxt->SetLength(inVec.size());
 
             checkEquality(ptxt->GetCKKSPackedValue(), resultPtxt->GetCKKSPackedValue(), eps,
-                          failmsg + " Interactive multiparty bootstrapping (encrypt) fails");
+                    failmsg + " Interactive multiparty bootstrapping (encrypt) fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -422,8 +428,8 @@ protected:
         }
     }
 
-    void UnitTest_MultiPartyBootDecrypt2(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
-                                         const std::string& failmsg = std::string()) {
+    void UnitTest_MultiPartyBootDecrypt2(
+            const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             constexpr uint32_t NUM_PARTIES = 2;
 
@@ -464,7 +470,7 @@ protected:
             }
 
             EXPECT_TRUE(cPoly == cPolyRNSInterpolated)
-                << failmsg + " Interactive multiparty bootstrapping (decrypt) fails";
+                    << failmsg + " Interactive multiparty bootstrapping (decrypt) fails";
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -476,8 +482,8 @@ protected:
         }
     }
 
-    void UnitTest_MultiPartyBootThresholdFHE2(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
-                                              const std::string& failmsg = std::string()) {
+    void UnitTest_MultiPartyBootThresholdFHE2(
+            const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData));
 
@@ -521,7 +527,7 @@ protected:
             plaintextMultiparty->SetLength(inVec.size());
 
             checkEquality(ptxt->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), eps,
-                          failmsg + " Interactive multiparty bootstrapping (ThresholdFHE2) fails");
+                    failmsg + " Interactive multiparty bootstrapping (ThresholdFHE2) fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -533,8 +539,8 @@ protected:
         }
     }
 
-    void UnitTest_MultiPartyBootChebyshev2(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
-                                           const std::string& failmsg = std::string()) {
+    void UnitTest_MultiPartyBootChebyshev2(
+            const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData));
 
@@ -548,7 +554,7 @@ protected:
             auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
             cc->EvalSumKeyGen(kp1.secretKey);
             auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(
-                cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+                    cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
             // joint evaluation multiplication key for (s_a + s_b)
             auto evalMultKey2 = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
@@ -571,9 +577,9 @@ protected:
 
             std::vector<std::complex<double>> input({-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0});
             std::vector<double> coefficients({1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348, 0.0,
-                                              0.00119324, 0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
-            std::vector<double> result{0.504497, 0.511855, 0.529766, 0.566832, 0.622459,
-                                       0.675039, 0.706987, 0.721632, 0.727508};
+                    0.00119324, 0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
+            std::vector<double> result{
+                    0.504497, 0.511855, 0.529766, 0.566832, 0.622459, 0.675039, 0.706987, 0.721632, 0.727508};
             double a = -4;
             double b = 4;
 
@@ -624,7 +630,7 @@ protected:
             plaintextMultiparty->SetLength(input.size());
 
             checkEquality(plaintextMultiparty->GetRealPackedValue(), result, eps,
-                          failmsg + " Interactive multiparty bootstrapping (Chebyshev2) fails");
+                    failmsg + " Interactive multiparty bootstrapping (Chebyshev2) fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -670,5 +676,5 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_INTERACTIVE_BOOT,
-                         ::testing::ValuesIn(testCasesUTCKKSRNS_INTERACTIVE_BOOT), testName);
+INSTANTIATE_TEST_SUITE_P(
+        UnitTests, UTCKKSRNS_INTERACTIVE_BOOT, ::testing::ValuesIn(testCasesUTCKKSRNS_INTERACTIVE_BOOT), testName);

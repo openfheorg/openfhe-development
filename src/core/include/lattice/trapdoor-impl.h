@@ -35,17 +35,17 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
+
+#include <cmath>
+#include <cstdint>
+#include <memory>
 
 #include "lattice/lat-hal.h"
 #include "lattice/trapdoor.h"
-
 #include "math/matrix-impl.h"
-
 #include "utils/debug.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -53,9 +53,8 @@ namespace lbcrypto {
 
 template <class Element>
 Matrix<Element> RLWETrapdoorUtility<Element>::GaussSampOnline(size_t n, size_t k, const Matrix<Element>& A,
-                                                              const RLWETrapdoorPair<Element>& T, const Element& u,
-                                                              DggType& dgg, const std::shared_ptr<Matrix<Element>> pHat,
-                                                              int64_t base) {
+        const RLWETrapdoorPair<Element>& T, const Element& u, DggType& dgg, const std::shared_ptr<Matrix<Element>> pHat,
+        int64_t base) {
     const std::shared_ptr<ParmType> params = u.GetParams();
     auto zero_alloc                        = Element::Allocator(params, Format::EVALUATION);
 
@@ -95,10 +94,8 @@ Matrix<Element> RLWETrapdoorUtility<Element>::GaussSampOnline(size_t n, size_t k
 // Offline stage of pre-image sampling (perturbation sampling)
 
 template <class Element>
-std::shared_ptr<Matrix<Element>> RLWETrapdoorUtility<Element>::GaussSampOffline(size_t n, size_t k,
-                                                                                const RLWETrapdoorPair<Element>& T,
-                                                                                DggType& dgg, DggType& dggLargeSigma,
-                                                                                int64_t base) {
+std::shared_ptr<Matrix<Element>> RLWETrapdoorUtility<Element>::GaussSampOffline(
+        size_t n, size_t k, const RLWETrapdoorPair<Element>& T, DggType& dgg, DggType& dggLargeSigma, int64_t base) {
     const std::shared_ptr<ParmType> params = T.m_e(0, 0).GetParams();
     auto zero_alloc                        = Element::Allocator(params, Format::EVALUATION);
 
@@ -116,10 +113,8 @@ std::shared_ptr<Matrix<Element>> RLWETrapdoorUtility<Element>::GaussSampOffline(
 
 template <>
 inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, double sigma,
-                                                         const RLWETrapdoorPair<DCRTPoly>& Tprime,
-                                                         const DCRTPoly::DggType& dgg,
-                                                         const DCRTPoly::DggType& dggLargeSigma,
-                                                         std::shared_ptr<Matrix<DCRTPoly>> perturbationVector) {
+        const RLWETrapdoorPair<DCRTPoly>& Tprime, const DCRTPoly::DggType& dgg, const DCRTPoly::DggType& dggLargeSigma,
+        std::shared_ptr<Matrix<DCRTPoly>> perturbationVector) {
     OPENFHE_DEBUG_FLAG(false);
     TimeVar t1, t1_tot;
 
@@ -254,4 +249,4 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_

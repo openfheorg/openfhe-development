@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PRE_H
-#define LBCRYPTO_CRYPTO_BASE_PRE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
 
+#include <memory>
+#include <vector>
+
+#include "ciphertext-fwd.h"
+#include "key/evalkey-fwd.h"
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
-#include "key/evalkey-fwd.h"
 #include "utils/inttypes.h"
-#include "ciphertext-fwd.h"
-
-#include <vector>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -71,8 +71,8 @@ public:
    * @param newPublicKey public key for the new secret key.
    * @return the re-encryption key.
    */
-    virtual EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey,
-                                      const PublicKey<Element> newPublicKey) const;
+    virtual EvalKey<Element> ReKeyGen(
+            const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const;
 
     /**
    * Virtual function to define the interface for re-encypting ciphertext
@@ -85,9 +85,9 @@ public:
    * @return the ciphertext
    */
     virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                          const PublicKey<Element> publicKey) const;
+            const PublicKey<Element> publicKey) const;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_

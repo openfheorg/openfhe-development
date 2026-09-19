@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACCKEY32_H_
-#define _RGSW_ACCKEY32_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
 
-#include "rgsw-acckey.h"
-#include "rgsw-cryptoparameters.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "rgsw-acckey.h"
+#include "rgsw-cryptoparameters.h"
 
 namespace lbcrypto {
 
@@ -68,8 +69,8 @@ inline void WidenPoly32Into(const NativePoly32& src, NativePoly& dst) {
         dst[i] = NativeInteger(static_cast<uint64_t>(v[i].ConvertToInt()));
 }
 
-inline std::vector<NativePoly32> NarrowAcc32(const std::shared_ptr<ILNativeParams32>& params,
-                                             const std::vector<NativePoly>& acc) {
+inline std::vector<NativePoly32> NarrowAcc32(
+        const std::shared_ptr<ILNativeParams32>& params, const std::vector<NativePoly>& acc) {
     std::vector<NativePoly32> out;
     out.reserve(acc.size());
     for (const auto& p : acc)
@@ -152,8 +153,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("N", m_N));
         ar(::cereal::make_nvp("p", m_polyParams));
@@ -180,4 +181,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACCKEY32_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_

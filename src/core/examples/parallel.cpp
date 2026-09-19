@@ -36,9 +36,11 @@
 #define PROFILE  // by defining this we activate the PROFILELOG() outputs
 
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <thread>
+
 #include "openfhecore.h"
 #include "time.h"
 
@@ -152,8 +154,7 @@ int main(int argc, char* argv[]) {
     // look at debug.h to find other timers you can use
 
     timeTotal = TOC_MS(t_total);
-    PROFILELOG("Total time with internal delay: "
-               << "\t" << timeTotal << " ms");
+    PROFILELOG("Total time with internal delay: " << "\t" << timeTotal << " ms");
     verify(foo, array_size);
     std::cout << std::endl;
 
@@ -174,8 +175,7 @@ int main(int argc, char* argv[]) {
 
     // read the timer to get the computation time in micro seconds
     timeTotal = TOC_US(t_total);
-    PROFILELOG("Total time without internal delay: "
-               << "\t" << timeTotal << " us");
+    PROFILELOG("Total time without internal delay: " << "\t" << timeTotal << " us");
     verify(foo, array_size);
 
     return 0;

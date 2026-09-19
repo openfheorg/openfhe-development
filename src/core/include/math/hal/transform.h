@@ -33,15 +33,16 @@
   This file contains the interface for the transforms in each math backend
  */
 
-#ifndef LBCRYPTO_MATH_TRANSFORM_H
-#define LBCRYPTO_MATH_TRANSFORM_H
-
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
 
 #include <complex>
+#include <cstdint>
 #include <map>
 #include <utility>
 #include <vector>
+
+#include "utils/inttypes.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -77,8 +78,8 @@ public:
    * size as input or a throw of error occurs.
    * @see NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    */
-    virtual void ForwardTransformToBitReverse(const VecType& element, const IntType& rootOfUnity,
-                                              const uint32_t CycloOrder, VecType* result) = 0;
+    virtual void ForwardTransformToBitReverse(
+            const VecType& element, const IntType& rootOfUnity, const uint32_t CycloOrder, VecType* result) = 0;
 
     /**
    * In-place Forward Transform in the ring Z_q[X]/(X^n+1) with prime q and
@@ -93,8 +94,8 @@ public:
    * @return none
    * @see NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    */
-    virtual void ForwardTransformToBitReverseInPlace(const IntType& rootOfUnity, const uint32_t CycloOrder,
-                                                     VecType* element) = 0;
+    virtual void ForwardTransformToBitReverseInPlace(
+            const IntType& rootOfUnity, const uint32_t CycloOrder, VecType* element) = 0;
 
     /**
    * Copies \p element into \p result and calls NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
@@ -113,8 +114,8 @@ public:
    * @return none
    * @see NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
    */
-    virtual void InverseTransformFromBitReverse(const VecType& element, const IntType& rootOfUnity,
-                                                const uint32_t CycloOrder, VecType* result) = 0;
+    virtual void InverseTransformFromBitReverse(
+            const VecType& element, const IntType& rootOfUnity, const uint32_t CycloOrder, VecType* result) = 0;
 
     /**
    * In-place Inverse Transform in the ring Z_q[X]/(X^n+1) with prime q and
@@ -129,8 +130,8 @@ public:
    * @return none
    * @see NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
    */
-    virtual void InverseTransformFromBitReverseInPlace(const IntType& rootOfUnity, const uint32_t CycloOrder,
-                                                       VecType* element) = 0;
+    virtual void InverseTransformFromBitReverseInPlace(
+            const IntType& rootOfUnity, const uint32_t CycloOrder, VecType* element) = 0;
 
     /**
    * Precomputation of root of unity tables for transforms in the ring
@@ -154,8 +155,8 @@ public:
    * @param CycloOrder is a power-of-two, equal to 2n.
    * @param &moduliChain is the vector of prime moduli qi such that 2n|qi-1
    */
-    virtual void PreCompute(std::vector<IntType>& rootOfUnity, const uint32_t CycloOrder,
-                            std::vector<IntType>& moduliChain) = 0;
+    virtual void PreCompute(
+            std::vector<IntType>& rootOfUnity, const uint32_t CycloOrder, std::vector<IntType>& moduliChain) = 0;
 
     /**
    * Reset cached values for the root of unity tables to empty.
@@ -189,7 +190,7 @@ public:
    * @return is the output result of the transform.
    */
     virtual VecType ForwardTransform(const VecType& element, const IntType& root, const IntType& bigMod,
-                                     const IntType& bigRoot, const uint32_t cycloOrder) = 0;
+            const IntType& bigRoot, const uint32_t cycloOrder) = 0;
 
     /**
    * Inverse transform.
@@ -203,7 +204,7 @@ public:
    * @return is the output result of the transform.
    */
     virtual VecType InverseTransform(const VecType& element, const IntType& root, const IntType& bigMod,
-                                     const IntType& bigRoot, const uint32_t cycloOrder) = 0;
+            const IntType& bigRoot, const uint32_t cycloOrder) = 0;
 
     /**
    * Reset cached values for the transform to empty.
@@ -228,8 +229,8 @@ public:
    * @param nttRoot is the root of unity needed for the NTT operation in forward
    * Bluestein transform.
    */
-    virtual void SetPreComputedNTTModulus(uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod,
-                                          const IntType& nttRoot) = 0;
+    virtual void SetPreComputedNTTModulus(
+            uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod, const IntType& nttRoot) = 0;
 
     /**
    * @brief Sets the precomputed root of unity and modulus needed for NTT
@@ -242,8 +243,8 @@ public:
    * @param nttRoot is the root of unity needed for the NTT operation in forward
    * Bluestein transform.
    */
-    virtual void SetPreComputedNTTDivisionModulus(uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod,
-                                                  const IntType& nttRoot) = 0;
+    virtual void SetPreComputedNTTDivisionModulus(
+            uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod, const IntType& nttRoot) = 0;
 
     /**
    * @brief Computes the inverse of the cyclotomic polynomial using
@@ -276,8 +277,8 @@ private:
    * @return is result vector with &element values with dropped elements from it
    */
     virtual VecType Drop(const VecType& element, const uint32_t cycloOrder, bool forward, const IntType& bigMod,
-                         const IntType& bigRoot) = 0;
+            const IntType& bigRoot) = 0;
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_

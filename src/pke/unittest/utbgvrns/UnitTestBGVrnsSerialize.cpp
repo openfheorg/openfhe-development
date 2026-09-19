@@ -29,21 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestSer.h"
+#include "UnitTestUtils.h"
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "include/gtest/gtest.h"
 #include "key/key-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestSer.h"
-#include "UnitTestUtils.h"
 #include "utils/exception.h"
-
-#include <iostream>
-#include <sstream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -110,14 +113,14 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM        = 32;
-constexpr uint32_t MULT_DEPTH      = 3;
-constexpr uint32_t MAX_RELIN_DEG   = 2;
-constexpr uint32_t DSIZE           = 4;
-constexpr uint32_t PTM             = 65537;
-constexpr uint32_t BATCH           = 16;
-constexpr uint32_t FIRST_MOD_SIZE  = 0;
-constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
+constexpr uint32_t RING_DIM       = 32;
+constexpr uint32_t MULT_DEPTH     = 3;
+constexpr uint32_t MAX_RELIN_DEG  = 2;
+constexpr uint32_t DSIZE          = 4;
+constexpr uint32_t PTM            = 65537;
+constexpr uint32_t BATCH          = 16;
+constexpr uint32_t FIRST_MOD_SIZE = 0;
+constexpr SecurityLevel SEC_LVL   = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
 // clang-format off
@@ -175,8 +178,8 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype,
-                                const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(
+            const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -208,10 +211,10 @@ protected:
 
             // Update the batchSize from the default value
             const auto cryptoParamsBGVrns =
-                std::dynamic_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
+                    std::dynamic_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
 
             EncodingParams encodingParamsNew(
-                std::make_shared<EncodingParamsImpl>(cc->GetEncodingParams()->GetPlaintextModulus(), vecSize));
+                    std::make_shared<EncodingParamsImpl>(cc->GetEncodingParams()->GetPlaintextModulus(), vecSize));
             cryptoParamsBGVrns->SetEncodingParams(encodingParamsNew);
 
             OPENFHE_DEBUG("step 1");
@@ -251,7 +254,7 @@ protected:
             bufferShort << "should be: " << plaintextShortNew->GetPackedValue()
                         << " - we get: " << plaintextShort->GetPackedValue();
             checkEquality(plaintextShortNew->GetPackedValue(), plaintextShort->GetPackedValue(), eps,
-                          failmsg + " Decrypted serialization test fails" + bufferShort.str());
+                    failmsg + " Decrypted serialization test fails" + bufferShort.str());
 
             OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
@@ -265,25 +268,25 @@ protected:
             // serialize a bunch of mult keys
             std::stringstream ser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser0, sertype, kp.secretKey->GetKeyTag()), true)
-                << "single eval mult key ser fails";
+                    << "single eval mult key ser fails";
             std::stringstream ser2a;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser2a, sertype, cc), true)
-                << "context 1 eval mult key ser fails";
+                    << "context 1 eval mult key ser fails";
             std::stringstream ser3;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser3, sertype), true)
-                << "all context eval mult key ser fails";
+                    << "all context eval mult key ser fails";
 
             OPENFHE_DEBUG("step 8");
             // serialize a bunch of sum keys
             std::stringstream aser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser0, sertype, kp.secretKey->GetKeyTag()), true)
-                << "single eval sum key ser fails";
+                    << "single eval sum key ser fails";
             std::stringstream aser2a;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser2a, sertype, cc), true)
-                << "single ctx eval sum key ser fails";
+                    << "single ctx eval sum key ser fails";
             std::stringstream aser3;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser3, sertype), true)
-                << "all eval sum key ser fails";
+                    << "all eval sum key ser fails";
 
             OPENFHE_DEBUG("step 9");
             cc.reset();
@@ -361,8 +364,8 @@ protected:
         }
     }
 
-    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData,
-                                    const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(
+            const TEST_CASE_UTBGVRNS_SER& testData, const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }

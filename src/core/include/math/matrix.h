@@ -33,28 +33,28 @@
   This code provide a templated matrix implementation
  */
 
-#ifndef LBCRYPTO_MATH_MATRIX_H
-#define LBCRYPTO_MATH_MATRIX_H
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_H_
+
+#include <cmath>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
-
 #include "math/distrgen.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
-
 #include "utils/inttypes.h"
 #include "utils/memory.h"
 #include "utils/parallel.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include <cmath>
-#include <functional>
-#include <memory>
-#include <ostream>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -223,10 +223,10 @@ public:
    * @param base is the base the digits of the matrix are represented in
    * @return the resulting matrix
    */
-    template <typename T                          = Element,
-              typename std::enable_if<!std::is_same<T, M2DCRTPoly>::value && !std::is_same<T, M4DCRTPoly>::value &&
-                                          !std::is_same<T, M6DCRTPoly>::value,
-                                      bool>::type = true>
+    template <typename T        = Element,
+            typename std::enable_if<!std::is_same<T, M2DCRTPoly>::value && !std::is_same<T, M4DCRTPoly>::value &&
+                                            !std::is_same<T, M6DCRTPoly>::value,
+                    bool>::type = true>
     Matrix<T> GadgetVector(int64_t base = 2) const {
         Matrix<T> g(allocZero, rows, cols);
         auto base_matrix = allocZero();
@@ -244,10 +244,10 @@ public:
         return g;
     }
 
-    template <typename T                          = Element,
-              typename std::enable_if<std::is_same<T, M2DCRTPoly>::value || std::is_same<T, M4DCRTPoly>::value ||
-                                          std::is_same<T, M6DCRTPoly>::value,
-                                      bool>::type = true>
+    template <typename T        = Element,
+            typename std::enable_if<std::is_same<T, M2DCRTPoly>::value || std::is_same<T, M4DCRTPoly>::value ||
+                                            std::is_same<T, M6DCRTPoly>::value,
+                    bool>::type = true>
     Matrix<T> GadgetVector(int64_t base = 2) const {
         Matrix<T> g(allocZero, rows, cols);
         auto base_matrix = allocZero();
@@ -281,18 +281,18 @@ public:
    *
    * @return the norm in double format
    */
-    template <typename T                          = Element,
-              typename std::enable_if<std::is_same<T, double>::value || std::is_same<T, int>::value ||
-                                          std::is_same<T, int64_t>::value || std::is_same<T, Field2n>::value,
-                                      bool>::type = true>
+    template <typename T        = Element,
+            typename std::enable_if<std::is_same<T, double>::value || std::is_same<T, int>::value ||
+                                            std::is_same<T, int64_t>::value || std::is_same<T, Field2n>::value,
+                    bool>::type = true>
     double Norm() const {
         OPENFHE_THROW("Norm not defined for this type");
     }
 
-    template <typename T                          = Element,
-              typename std::enable_if<!std::is_same<T, double>::value && !std::is_same<T, int>::value &&
-                                          !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
-                                      bool>::type = true>
+    template <typename T        = Element,
+            typename std::enable_if<!std::is_same<T, double>::value && !std::is_same<T, int>::value &&
+                                            !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
+                    bool>::type = true>
     double Norm() const {
         double retVal = 0.0;
         double locVal = 0.0;
@@ -680,8 +680,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", data));
         ar(::cereal::make_nvp("r", rows));
@@ -800,23 +800,23 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger&
  * @return the resulting matrix of Poly
  */
 template <typename Element>
-Matrix<Element> SplitInt64IntoElements(Matrix<int64_t> const& other, size_t n,
-                                       const std::shared_ptr<typename Element::Params> params);
+Matrix<Element> SplitInt64IntoElements(
+        Matrix<int64_t> const& other, size_t n, const std::shared_ptr<typename Element::Params> params);
 
-#define SPLIT64_FOR_TYPE(T)                                                              \
-    template <>                                                                          \
-    Matrix<T> SplitInt64IntoElements(Matrix<int64_t> const& other, size_t n,             \
-                                     const std::shared_ptr<typename T::Params> params) { \
-        auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                     \
-        size_t rows     = other.GetRows() / n;                                           \
-        Matrix<T> result(zero_alloc, rows, 1);                                           \
-        for (size_t row = 0; row < rows; ++row) {                                        \
-            std::vector<int64_t> values(n);                                              \
-            for (size_t i = 0; i < n; ++i)                                               \
-                values[i] = other(row * n + i, 0);                                       \
-            result(row, 0) = values;                                                     \
-        }                                                                                \
-        return result;                                                                   \
+#define SPLIT64_FOR_TYPE(T)                                                                             \
+    template <>                                                                                         \
+    Matrix<T> SplitInt64IntoElements(                                                                   \
+            Matrix<int64_t> const& other, size_t n, const std::shared_ptr<typename T::Params> params) { \
+        auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                                    \
+        size_t rows     = other.GetRows() / n;                                                          \
+        Matrix<T> result(zero_alloc, rows, 1);                                                          \
+        for (size_t row = 0; row < rows; ++row) {                                                       \
+            std::vector<int64_t> values(n);                                                             \
+            for (size_t i = 0; i < n; ++i)                                                              \
+                values[i] = other(row * n + i, 0);                                                      \
+            result(row, 0) = values;                                                                    \
+        }                                                                                               \
+        return result;                                                                                  \
     }
 
 /**
@@ -829,23 +829,23 @@ Matrix<Element> SplitInt64IntoElements(Matrix<int64_t> const& other, size_t n,
  * @return the resulting matrix of Poly
  */
 template <typename Element>
-Matrix<Element> SplitInt32AltIntoElements(Matrix<int32_t> const& other, size_t n,
-                                          const std::shared_ptr<typename Element::Params> params);
+Matrix<Element> SplitInt32AltIntoElements(
+        Matrix<int32_t> const& other, size_t n, const std::shared_ptr<typename Element::Params> params);
 
-#define SPLIT32ALT_FOR_TYPE(T)                                                              \
-    template <>                                                                             \
-    Matrix<T> SplitInt32AltIntoElements(Matrix<int32_t> const& other, size_t n,             \
-                                        const std::shared_ptr<typename T::Params> params) { \
-        auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                        \
-        size_t rows     = other.GetRows();                                                  \
-        Matrix<T> result(zero_alloc, rows, 1);                                              \
-        for (size_t row = 0; row < rows; ++row) {                                           \
-            std::vector<int32_t> values(n);                                                 \
-            for (size_t i = 0; i < n; ++i)                                                  \
-                values[i] = other(row, i);                                                  \
-            result(row, 0) = values;                                                        \
-        }                                                                                   \
-        return result;                                                                      \
+#define SPLIT32ALT_FOR_TYPE(T)                                                                          \
+    template <>                                                                                         \
+    Matrix<T> SplitInt32AltIntoElements(                                                                \
+            Matrix<int32_t> const& other, size_t n, const std::shared_ptr<typename T::Params> params) { \
+        auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                                    \
+        size_t rows     = other.GetRows();                                                              \
+        Matrix<T> result(zero_alloc, rows, 1);                                                          \
+        for (size_t row = 0; row < rows; ++row) {                                                       \
+            std::vector<int32_t> values(n);                                                             \
+            for (size_t i = 0; i < n; ++i)                                                              \
+                values[i] = other(row, i);                                                              \
+            result(row, 0) = values;                                                                    \
+        }                                                                                               \
+        return result;                                                                                  \
     }
 
 /**
@@ -858,24 +858,24 @@ Matrix<Element> SplitInt32AltIntoElements(Matrix<int32_t> const& other, size_t n
  * @return the resulting matrix of Poly
  */
 template <typename Element>
-Matrix<Element> SplitInt64AltIntoElements(Matrix<int64_t> const& other, size_t n,
-                                          const std::shared_ptr<typename Element::Params> params);
+Matrix<Element> SplitInt64AltIntoElements(
+        Matrix<int64_t> const& other, size_t n, const std::shared_ptr<typename Element::Params> params);
 
-#define SPLIT64ALT_FOR_TYPE(T)                                                              \
-    template <>                                                                             \
-    Matrix<T> SplitInt64AltIntoElements(Matrix<int64_t> const& other, size_t n,             \
-                                        const std::shared_ptr<typename T::Params> params) { \
-        auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                        \
-        size_t rows     = other.GetRows();                                                  \
-        Matrix<T> result(zero_alloc, rows, 1);                                              \
-        for (size_t row = 0; row < rows; ++row) {                                           \
-            std::vector<int64_t> values(n);                                                 \
-            for (size_t i = 0; i < n; ++i)                                                  \
-                values[i] = other(row, i);                                                  \
-            result(row, 0) = values;                                                        \
-        }                                                                                   \
-        return result;                                                                      \
+#define SPLIT64ALT_FOR_TYPE(T)                                                                          \
+    template <>                                                                                         \
+    Matrix<T> SplitInt64AltIntoElements(                                                                \
+            Matrix<int64_t> const& other, size_t n, const std::shared_ptr<typename T::Params> params) { \
+        auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                                    \
+        size_t rows     = other.GetRows();                                                              \
+        Matrix<T> result(zero_alloc, rows, 1);                                                          \
+        for (size_t row = 0; row < rows; ++row) {                                                       \
+            std::vector<int64_t> values(n);                                                             \
+            for (size_t i = 0; i < n; ++i)                                                              \
+                values[i] = other(row, i);                                                              \
+            result(row, 0) = values;                                                                    \
+        }                                                                                               \
+        return result;                                                                                  \
     }
 
 }  // namespace lbcrypto
-#endif  // LBCRYPTO_MATH_MATRIX_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_H_

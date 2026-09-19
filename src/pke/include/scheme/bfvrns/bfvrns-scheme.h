@@ -29,22 +29,22 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_BFVRNS_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_
 
-#include "schemerns/rns-scheme.h"
+#include <cstdint>
+#include <memory>
+#include <string>
 
+#include "scheme/bfvrns/bfvrns-advancedshe.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/bfvrns/bfvrns-fhe.h"
+#include "scheme/bfvrns/bfvrns-leveledshe.h"
+#include "scheme/bfvrns/bfvrns-multiparty.h"
+#include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 #include "scheme/bfvrns/bfvrns-pre.h"
-#include "scheme/bfvrns/bfvrns-leveledshe.h"
-#include "scheme/bfvrns/bfvrns-advancedshe.h"
-#include "scheme/bfvrns/bfvrns-multiparty.h"
-
-#include <string>
-#include <memory>
+#include "schemerns/rns-scheme.h"
 
 /**
  * @namespace lbcrypto
@@ -86,4 +86,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_

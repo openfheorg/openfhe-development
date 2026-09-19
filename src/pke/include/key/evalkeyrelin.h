@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
-#define LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
 
-#include "key/evalkey.h"
-#include "key/evalkeyrelin-fwd.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "key/evalkey.h"
+#include "key/evalkeyrelin-fwd.h"
 
 /**
  * @namespace lbcrypto
@@ -192,8 +193,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
         ar(::cereal::make_nvp("ak", m_AKey));
@@ -211,4 +212,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_

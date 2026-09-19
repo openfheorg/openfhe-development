@@ -28,13 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __TYPE_NAME_H__
-#define __TYPE_NAME_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_
+#define SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_
 
-#include "utils/demangle.h"
-#include <typeinfo>
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
+
+#include "utils/demangle.h"
 
 // define my own "is_shared_pointer"
 template <typename T>
@@ -54,14 +56,14 @@ bool sharedPtr(const T& t) {
 // I did decide to have 2 functions (for pointers and for objects) for now
 // typeName() for objects
 template <typename T,
-          typename std::enable_if<!std::is_pointer<T>::value && !is_shared_pointer<T>::value, bool>::type = true>
+        typename std::enable_if<!std::is_pointer<T>::value && !is_shared_pointer<T>::value, bool>::type = true>
 std::string typeName(const T& obj) {
     return demangle(typeid(obj).name());
 }
 //=============================================================================
 // typeName() for pointers
 template <typename T,
-          typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
+        typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
 std::string typeName(const T& ptr) {
     return demangle(typeid(ptr).name());
 }
@@ -69,10 +71,10 @@ std::string typeName(const T& ptr) {
 // getObjectType() takes either a regular pointer or a shared_ptr as the argument and
 // returns the actual type of the object ptr points to.
 template <typename T,
-          typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
+        typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
 std::string objectTypeName(const T& ptr) {
     return demangle(typeid(*ptr).name());
 }
 //=============================================================================
 
-#endif  // __TYPE_NAME_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_

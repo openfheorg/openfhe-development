@@ -36,28 +36,29 @@
   supported. a native double the base integer size is also needed.
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+    #include <functional>
+    #include <limits>
+    #include <ostream>
+    #include <string>
+    #include <type_traits>
+    #include <utility>
+    #include <vector>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-        #include "math/nbtheory.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-        #include "utils/utilities.h"
-
-        #include <functional>
-        #include <limits>
-        #include <ostream>
-        #include <string>
-        #include <type_traits>
-        #include <utility>
-        #include <vector>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "math/nbtheory.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
+    #include "utils/utilities.h"
 
     // clang-format off
         // TODO: fix shifting issue when limb_t == Dlimb_t
@@ -68,8 +69,8 @@
         #endif
     // clang-format on
 
-        #define _SECURE_SCL 0  // to speed up VS
-        #define NO_BARRETT     // currently barrett is slower than mod
+    #define _SECURE_SCL 0  // to speed up VS
+    #define NO_BARRETT     // currently barrett is slower than mod
 
 namespace bigintdyn {
 
@@ -118,22 +119,22 @@ struct DataTypes<uint32_t> {
 template <>
 struct DataTypes<uint64_t> {
     using SignedType = int64_t;
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     using DoubleType       = uint128_t;
     using SignedDoubleType = int128_t;
-        #else
+    #else
     using DoubleType       = uint64_t;
     using SignedDoubleType = int64_t;
-        #endif
+    #endif
 };
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 template <>
 struct DataTypes<uint128_t> {
     using SignedType       = int128_t;
     using DoubleType       = uint128_t;
     using SignedDoubleType = int128_t;
 };
-        #endif
+    #endif
 
 template <typename limb_t>
 class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
@@ -385,13 +386,13 @@ public:
    */
     template <typename T = limb_t>
     ubint Mod(const ubint& modulus, const ubint& mu,
-              typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return this->ubint::Mod(modulus);
     }
 
     template <typename T = limb_t>
     ubint Mod(const ubint& modulus, const ubint& mu,
-              typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         if (*this < modulus)
             return *this;
         int n(modulus.m_MSB);
@@ -407,13 +408,13 @@ public:
 
     template <typename T = limb_t>
     ubint& ModEq(const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         return this->ubint::ModEq(modulus);
     }
 
     template <typename T = limb_t>
-    ubint& ModEq(const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+    ubint& ModEq(
+            const ubint& modulus, const ubint& mu, typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         if (*this < modulus)
             return *this;
         int n(modulus.m_MSB);
@@ -457,25 +458,25 @@ public:
    */
     template <typename T = limb_t>
     ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return b.ModAdd(*this, modulus);
     }
 
     template <typename T = limb_t>
     ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return b.Add(*this).Mod(modulus, mu);
     }
 
     template <typename T = limb_t>
     ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         return this->ubint::ModAddEq(b, modulus);
     }
 
     template <typename T = limb_t>
     ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         return *this = b.Add(*this).Mod(modulus, mu);
     }
 
@@ -509,13 +510,13 @@ public:
    */
     template <typename T = limb_t>
     ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return this->ubint::ModSub(b, modulus);
     }
 
     template <typename T = limb_t>
     ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         auto bv(b);
         auto av(*this);
         if (bv >= modulus)
@@ -529,13 +530,13 @@ public:
 
     template <typename T = limb_t>
     ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         return this->ubint::ModSubEq(b, modulus);
     }
 
     template <typename T = limb_t>
     ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu,
-                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         auto bv(b);
         if (bv >= modulus)
             bv.ModEq(modulus, mu);
@@ -555,7 +556,7 @@ public:
    */
     template <typename T = limb_t>
     ubint ModMul(const ubint& b, const ubint& modulus,
-                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
         auto bv(b);
         auto av(*this);
         if (bv >= modulus)
@@ -567,13 +568,13 @@ public:
 
     template <typename T = limb_t>
     ubint ModMul(const ubint& b, const ubint& modulus,
-                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+            typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
         return b.ModMul(*this, modulus, modulus.ComputeMu());
     }
 
     template <typename T = limb_t>
-    ubint& ModMulEq(const ubint& b, const ubint& modulus,
-                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+    ubint& ModMulEq(
+            const ubint& b, const ubint& modulus, typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
         auto bv(b);
         if (bv >= modulus)
             bv.ModEq(modulus);
@@ -583,8 +584,8 @@ public:
     }
 
     template <typename T = limb_t>
-    ubint& ModMulEq(const ubint& b, const ubint& modulus,
-                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+    ubint& ModMulEq(
+            const ubint& b, const ubint& modulus, typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
         return *this = b.ModMul(*this, modulus, modulus.ComputeMu());
     }
 
@@ -882,8 +883,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
@@ -944,7 +945,7 @@ private:
     }
 };
 
-        #if 0
+    #if 0
 // stream helper function for vector of objects
 template <typename limb_t>
 std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
@@ -954,9 +955,9 @@ std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
   os << " ]";
   return os;
 }
-        #endif
+    #endif
 
 }  // namespace bigintdyn
-
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_

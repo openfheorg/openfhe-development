@@ -37,6 +37,10 @@
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
 
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
@@ -44,11 +48,12 @@
     #define FORCE_NORMALIZATION
 
     #include <chrono>
-    #include "math/math-hal.h"
+
     #include "math/hal/bigintntl/mubintvecntl.h"
-    #include "utils/diagnostic_output.h"
+    #include "math/math-hal.h"
     #include "time.h"
     #include "utils/debug.h"
+    #include "utils/diagnostic_output.h"
     #include "utils/serializable.h"
 
 namespace NTL {

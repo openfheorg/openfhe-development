@@ -33,8 +33,8 @@
  * It is a lightweight file to be included where we need the declaration of CryptoContext only
  *
  */
-#ifndef __CRYPTOCONTEXT_FWD_H__
-#define __CRYPTOCONTEXT_FWD_H__
+#ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXT_FWD_H_
+#define SRC_PKE_INCLUDE_CRYPTOCONTEXT_FWD_H_
 
 #include <memory>
 
@@ -46,7 +46,6 @@ class CryptoContextImpl;
 template <typename Element>
 using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 
-} // namespace lbcrypto
+}  // namespace lbcrypto
 
-#endif // __CRYPTOCONTEXT_FWD_H__
-
+#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_FWD_H_

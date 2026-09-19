@@ -28,8 +28,12 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __BASETESTCASE_H__
-#define __BASETESTCASE_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_BASETESTCASE_H_
+#define SRC_PKE_UNITTEST_UTILS_BASETESTCASE_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "config_core.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
@@ -37,10 +41,6 @@
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 struct BaseTestCase {
 private:
@@ -133,4 +133,4 @@ public:
     }
 };
 
-#endif  // __BASETESTCASE_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_BASETESTCASE_H_

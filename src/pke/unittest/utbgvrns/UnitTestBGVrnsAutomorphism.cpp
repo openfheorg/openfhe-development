@@ -29,16 +29,22 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "BaseTestCase.h"
-#include "gtest/gtest.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestReadCSVData.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <unordered_map>
-#include <vector>
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 class Params;
@@ -51,9 +57,8 @@ enum TEST_CASE_TYPE : int {
 };
 TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
     const std::unordered_map<std::string, TEST_CASE_TYPE> stringToCaseType = {
-        {"BGVRNS_AUTOMORPHISM", BGVRNS_AUTOMORPHISM},
-        {"EVAL_AT_INDX_PACKED_ARRAY", EVAL_AT_INDX_PACKED_ARRAY},
-        {"EVAL_SUM_PACKED_ARRAY", EVAL_SUM_PACKED_ARRAY}};
+            {"BGVRNS_AUTOMORPHISM", BGVRNS_AUTOMORPHISM}, {"EVAL_AT_INDX_PACKED_ARRAY", EVAL_AT_INDX_PACKED_ARRAY},
+            {"EVAL_SUM_PACKED_ARRAY", EVAL_SUM_PACKED_ARRAY}};
     auto search = stringToCaseType.find(str);
     if (stringToCaseType.end() != search) {
         return search->second;
@@ -62,9 +67,8 @@ TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
 }
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     const std::unordered_map<TEST_CASE_TYPE, std::string> caseTypeToString = {
-        {BGVRNS_AUTOMORPHISM, "BGVRNS_AUTOMORPHISM"},
-        {EVAL_AT_INDX_PACKED_ARRAY, "EVAL_AT_INDX_PACKED_ARRAY"},
-        {EVAL_SUM_PACKED_ARRAY, "EVAL_SUM_PACKED_ARRAY"}};
+            {BGVRNS_AUTOMORPHISM, "BGVRNS_AUTOMORPHISM"}, {EVAL_AT_INDX_PACKED_ARRAY, "EVAL_AT_INDX_PACKED_ARRAY"},
+            {EVAL_SUM_PACKED_ARRAY, "EVAL_SUM_PACKED_ARRAY"}};
     auto search = caseTypeToString.find(type);
     if (caseTypeToString.end() != search) {
         return os << search->second;
@@ -85,15 +89,15 @@ enum TEST_CASE_ERROR {
 };
 TEST_CASE_ERROR convertStringToCaseError(const std::string& str) {
     std::unordered_map<std::string, TEST_CASE_ERROR> stringToError = {
-        {"SUCCESS", SUCCESS},
-        {"CORNER_CASES", CORNER_CASES},
-        {"INVALID_INPUT_DATA", INVALID_INPUT_DATA},
-        {"INVALID_PRIVATE_KEY", INVALID_PRIVATE_KEY},
-        {"INVALID_PUBLIC_KEY", INVALID_PUBLIC_KEY},
-        {"INVALID_EVAL_KEY", INVALID_EVAL_KEY},
-        {"INVALID_INDEX", INVALID_INDEX},
-        {"INVALID_BATCH_SIZE", INVALID_BATCH_SIZE},
-        {"NO_KEY_GEN_CALL", NO_KEY_GEN_CALL},
+            {"SUCCESS", SUCCESS},
+            {"CORNER_CASES", CORNER_CASES},
+            {"INVALID_INPUT_DATA", INVALID_INPUT_DATA},
+            {"INVALID_PRIVATE_KEY", INVALID_PRIVATE_KEY},
+            {"INVALID_PUBLIC_KEY", INVALID_PUBLIC_KEY},
+            {"INVALID_EVAL_KEY", INVALID_EVAL_KEY},
+            {"INVALID_INDEX", INVALID_INDEX},
+            {"INVALID_BATCH_SIZE", INVALID_BATCH_SIZE},
+            {"NO_KEY_GEN_CALL", NO_KEY_GEN_CALL},
     };
     auto search = stringToError.find(str);
     if (stringToError.end() != search) {
@@ -197,8 +201,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_AutomorphismPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData,
-                                          const std::string& failmsg = std::string()) {
+    void UnitTest_AutomorphismPackedArray(
+            const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         for (auto index : testData.indexList) {
             try {
                 CryptoContext<Element> cc(UnitTestGenerateContext(testData));
@@ -211,21 +215,21 @@ protected:
                 Plaintext intArray            = cc->MakePackedPlaintext(inputVec);
 
                 Ciphertext<Element> ciphertext =
-                    (INVALID_PUBLIC_KEY == testData.error) ?
-                        cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
-                        cc->Encrypt(kp.publicKey, intArray);
+                        (INVALID_PUBLIC_KEY == testData.error) ?
+                                cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
+                                cc->Encrypt(kp.publicKey, intArray);
 
                 std::vector<uint32_t> indexList(testData.indexList);
 
                 auto evalKeys =
-                    (INVALID_PRIVATE_KEY == testData.error) ?
-                        cc->EvalAutomorphismKeyGen(static_cast<const PrivateKey<Element>>(nullptr), indexList) :
-                        cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
+                        (INVALID_PRIVATE_KEY == testData.error) ?
+                                cc->EvalAutomorphismKeyGen(static_cast<const PrivateKey<Element>>(nullptr), indexList) :
+                                cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
 
                 std::map<uint32_t, EvalKey<Element>> emptyEvalKeys;
                 Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testData.error) ?
-                                             cc->EvalAutomorphism(ciphertext, index, emptyEvalKeys) :
-                                             cc->EvalAutomorphism(ciphertext, index, *evalKeys);
+                                                 cc->EvalAutomorphism(ciphertext, index, emptyEvalKeys) :
+                                                 cc->EvalAutomorphism(ciphertext, index, *evalKeys);
 
                 Plaintext intArrayNew;
                 cc->Decrypt(kp.secretKey, p1, &intArrayNew);
@@ -266,8 +270,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData,
-                                         const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndexPackedArray(
+            const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         for (auto index : testData.indexList) {
             try {
                 CryptoContext<Element> cc(UnitTestGenerateContext(testData));
@@ -287,9 +291,9 @@ protected:
                 }
 
                 Ciphertext<Element> ciphertext =
-                    (INVALID_PUBLIC_KEY == testData.error) ?
-                        cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
-                        cc->Encrypt(kp.publicKey, intArray);
+                        (INVALID_PUBLIC_KEY == testData.error) ?
+                                cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
+                                cc->Encrypt(kp.publicKey, intArray);
 
                 if (INVALID_INDEX == testData.error)
                     index = invalidIndexAutomorphism;
@@ -338,8 +342,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalSumPackedArray(const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData,
-                                     const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumPackedArray(
+            const TEST_CASE_UTBGVRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData));
 
@@ -356,9 +360,10 @@ protected:
                     cc->EvalSumKeyGen(kp.secretKey);
             }
 
-            Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?
-                                                 cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
-                                                 cc->Encrypt(kp.publicKey, intArray);
+            Ciphertext<Element> ciphertext =
+                    (INVALID_PUBLIC_KEY == testData.error) ?
+                            cc->Encrypt(static_cast<const PublicKey<Element>>(nullptr), intArray) :
+                            cc->Encrypt(kp.publicKey, intArray);
 
             uint32_t batchSize     = 8;
             uint32_t batchSz       = (INVALID_BATCH_SIZE == testData.error) ? (batchSize * 1000) : batchSize;
@@ -414,5 +419,5 @@ TEST_P(UTBGVRNS_AUTOMORPHISM, Automorphism) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTBGVRNS_AUTOMORPHISM),
-                         testName);
+INSTANTIATE_TEST_SUITE_P(
+        UnitTests, UTBGVRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTBGVRNS_AUTOMORPHISM), testName);

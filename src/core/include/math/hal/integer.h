@@ -33,12 +33,13 @@
   This file contains the interfaces for the math integer data types
  */
 
-#ifndef LBCRYPTO_MATH_INTEGER_INTERFACE_H
-#define LBCRYPTO_MATH_INTEGER_INTERFACE_H
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTEGER_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTEGER_H_
+
+#include <cstdint>
+#include <string>
 
 #include "utils/inttypes.h"
-
-#include <string>
 
 namespace lbcrypto {
 
@@ -466,4 +467,4 @@ protected:
 class BigMatrixInterface {};
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTEGER_H_

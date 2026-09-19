@@ -29,11 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "UnitTestSer.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "UnitTestSer.h"
 
 using namespace lbcrypto;
 

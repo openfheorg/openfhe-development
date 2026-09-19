@@ -38,6 +38,11 @@
   3. Math layer operations such as functions in nbtheory
   */
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -45,8 +50,6 @@
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 

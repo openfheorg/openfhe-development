@@ -33,12 +33,16 @@
   This file contains template instantiations for all math classes & functions using math native
  */
 
-#include "math/math-hal.h"
-#include "math/hal/transform.h"
+#include <cstdint>
+#include <memory>
+#include <set>
+#include <vector>
 
 #include "math/binaryuniformgenerator-impl.h"
 #include "math/discretegaussiangenerator-impl.h"
 #include "math/discreteuniformgenerator-impl.h"
+#include "math/hal/transform.h"
+#include "math/math-hal.h"
 #include "math/matrix-impl.h"
 #include "math/nbtheory-impl.h"
 #include "math/ternaryuniformgenerator-impl.h"
@@ -77,13 +81,13 @@ template std::vector<uint32_t> GetTotientList(const uint32_t& n);
 template NativeVector PolyMod(const NativeVector& dividend, const NativeVector& divisor, const NativeInteger& modulus);
 template NativeVector PolynomialMultiplication(const NativeVector& a, const NativeVector& b);
 template NativeVector GetCyclotomicPolynomial(uint32_t m, const NativeInteger& modulus);
-template NativeInteger SyntheticRemainder(const NativeVector& dividend, const NativeInteger& a,
-                                          const NativeInteger& modulus);
-template NativeVector SyntheticPolyRemainder(const NativeVector& dividend, const NativeVector& aList,
-                                             const NativeInteger& modulus);
+template NativeInteger SyntheticRemainder(
+        const NativeVector& dividend, const NativeInteger& a, const NativeInteger& modulus);
+template NativeVector SyntheticPolyRemainder(
+        const NativeVector& dividend, const NativeVector& aList, const NativeInteger& modulus);
 template NativeVector PolynomialPower<NativeVector>(const NativeVector& input, uint32_t power);
-template NativeVector SyntheticPolynomialDivision(const NativeVector& dividend, const NativeInteger& a,
-                                                  const NativeInteger& modulus);
+template NativeVector SyntheticPolynomialDivision(
+        const NativeVector& dividend, const NativeInteger& a, const NativeInteger& modulus);
 template NativeInteger FindGeneratorCyclic(const NativeInteger& modulo);
 template bool IsGenerator(const NativeInteger& g, const NativeInteger& modulo);
 template std::shared_ptr<std::vector<int64_t>> GetDigits(const NativeInteger& u, uint64_t base, uint32_t k);

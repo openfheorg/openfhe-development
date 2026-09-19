@@ -35,7 +35,10 @@
 
 #define PROFILE
 
+#include <cstdint>
 #include <iostream>
+#include <limits>
+#include <vector>
 
 #include "openfhe.h"
 #include "utils/parallel.h"

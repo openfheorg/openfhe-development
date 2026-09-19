@@ -30,24 +30,27 @@
 //==================================================================================
 #include "schemebase/base-pre.h"
 
+#include <memory>
+#include <vector>
+
+#include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "cryptocontext.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 
 template <class Element>
-EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivateKey,
-                                            const PublicKey<Element> newPublicKey) const {
+EvalKey<Element> PREBase<Element>::ReKeyGen(
+        const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
     auto algo = oldPrivateKey->GetCryptoContext()->GetScheme();
     return algo->KeySwitchGen(oldPrivateKey, newPublicKey);
 }
 
 template <class Element>
-Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                                const PublicKey<Element> publicKey) const {
+Ciphertext<Element> PREBase<Element>::ReEncrypt(
+        ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey, const PublicKey<Element> publicKey) const {
     auto algo               = ciphertext->GetCryptoContext()->GetScheme();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
@@ -63,7 +66,7 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphert
     if ((cryptoParams->GetPREMode() == FIXED_NOISE_HRA) || (cryptoParams->GetPREMode() == NOISE_FLOODING_HRA)) {
         // noiseflooding
         Element enf(cryptoParams->GetFloodingDiscreteGaussianGenerator(), cryptoParams->GetElementParams(),
-                    Format::EVALUATION);
+                Format::EVALUATION);
 
         auto noise_scale = cryptoParams->GetNoiseScale();
         cv[0] += noise_scale * enf;

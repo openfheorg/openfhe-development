@@ -33,16 +33,17 @@
   Represents and defines parameters for plaintext encoding
  */
 
-#ifndef LBCRYPTO_ENCODING_ENCODINGPARAMS_H
-#define LBCRYPTO_ENCODING_ENCODINGPARAMS_H
+#ifndef SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_
+#define SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "lattice/lat-hal.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
-
-#include <memory>
-#include <string>
-#include <utility>
 
 namespace lbcrypto {
 class EncodingParamsImpl;
@@ -68,8 +69,8 @@ public:
    * EvalSum
    */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
-                       NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
-                       NativeInteger plaintextBigRootOfUnity = 0)
+            NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
+            NativeInteger plaintextBigRootOfUnity = 0)
         : m_plaintextModulus(plaintextModulus),
           m_plaintextRootOfUnity(plaintextRootOfUnity),
           m_plaintextBigModulus(plaintextBigModulus),
@@ -266,8 +267,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_plaintextModulus));
         ar(::cereal::make_nvp("ru", m_plaintextRootOfUnity));
@@ -323,4 +324,4 @@ inline bool operator==(const std::shared_ptr<EncodingParamsImpl>& o1, const std:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_ENCODINGPARAMS_H_

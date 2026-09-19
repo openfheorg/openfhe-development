@@ -35,10 +35,12 @@ Example for CKKS bootstrapping with full packing
 
 */
 
-#include "openfhe.h"
-
+#include <cstdint>
+#include <iostream>
 #include <ostream>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -209,12 +211,12 @@ void SimpleBootstrapStCExample() {
     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits               = 78;
-    uint32_t firstMod               = 89;
+    uint32_t dcrtBits            = 78;
+    uint32_t firstMod            = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits               = 59;
-    uint32_t firstMod               = 60;
+    uint32_t dcrtBits            = 59;
+    uint32_t firstMod            = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);

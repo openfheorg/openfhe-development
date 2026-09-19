@@ -29,13 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __BIGINTBACKEND_H__
-#define __BIGINTBACKEND_H__
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_
 
 #include "config_core.h"
-
-#include "math/hal/bigintfxd/backendfxd.h"
 #include "math/hal/bigintdyn/backenddyn.h"
+#include "math/hal/bigintfxd/backendfxd.h"
 #include "math/hal/bigintntl/backendntl.h"
 
 /**
@@ -85,4 +84,4 @@ using BigVector  = M6Vector;
 
 }  // namespace bigintbackend
 
-#endif  // __BIGINTBACKEND_H__
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_

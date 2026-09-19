@@ -29,12 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_LEVELEDSHE_H
-#define LBCRYPTO_CRYPTO_BGVRNS_LEVELEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_LEVELEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_LEVELEDSHE_H_
+
+#include <cstdint>
+#include <string>
 
 #include "schemerns/rns-leveledshe.h"
-
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -71,11 +72,11 @@ public:
 
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
-    void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                     Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthInPlace(
+            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthToOneInPlace(
+            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -98,4 +99,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_LEVELEDSHE_H_

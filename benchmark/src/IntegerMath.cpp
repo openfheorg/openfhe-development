@@ -34,12 +34,13 @@
   This code benchmarks integer operations.
 */
 #define _USE_MATH_DEFINES
-#include "lattice/lat-hal.h"
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <vector>
+#include "lattice/lat-hal.h"
 
 using namespace lbcrypto;
 

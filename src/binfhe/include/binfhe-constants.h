@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _BINFHE_CONSTANTS_H_
-#define _BINFHE_CONSTANTS_H_
-
-#include "lattice/constants-lattice.h"
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_CONSTANTS_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_CONSTANTS_H_
 
 #include <cstdint>
 #include <iosfwd>
 #include <string>
+
+#include "lattice/constants-lattice.h"
 
 namespace lbcrypto {
 
@@ -227,4 +227,4 @@ void isMethodCompatible(BINFHE_METHOD m, BINFHE_PARAMSET p);
 
 }  // namespace lbcrypto
 
-#endif  // _BINFHE_CONSTANTS_H_
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_CONSTANTS_H_

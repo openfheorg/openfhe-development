@@ -33,24 +33,25 @@
   This file contains mubintvecdyn, a <vector> of buintdyn, with associated modulus and modulo math operators
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
+    #include <initializer_list>
+    #include <ostream>
+    #include <string>
+    #include <utility>
+    #include <vector>
 
-        #include "math/hal/vector.h"
-        #include "math/hal/bigintdyn/ubintdyn.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <initializer_list>
-        #include <ostream>
-        #include <string>
-        #include <utility>
-        #include <vector>
+    #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/vector.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 /**
  * @namespace bigintdyn
@@ -586,14 +587,14 @@ public:
    * @return is the ostream object.
    */
     friend std::ostream& operator<<(std::ostream& os, const mubintvec& ptr_obj) {
-        #if 0  // old way
+    #if 0  // old way
     os << std::endl;
     for (uint32_t i = 0; i < ptr_obj.m_data.size(); i++) {
       os << ptr_obj.m_data[i] << std::endl;
     }
     os << "modulus: " << ptr_obj.m_modulus;
     os << std::endl;
-        #else
+    #else
         auto len = ptr_obj.m_data.size();
         os << "[";
         for (uint32_t i = 0; i < len; i++) {
@@ -601,7 +602,7 @@ public:
             os << ((i == (len - 1)) ? "]" : " ");
         }
         os << " modulus: " << ptr_obj.m_modulus;
-        #endif
+    #endif
         return os;
     }
 
@@ -617,8 +618,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
@@ -649,6 +650,6 @@ private:
 };
 
 }  // namespace bigintdyn
-
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H_

@@ -29,11 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 #include "utils/demangle.h"
-
-#include <sstream>
 
 using namespace lbcrypto;
 
@@ -443,8 +448,8 @@ protected:
         }
     }
 
-    void UnitTest_FHEW_MULTIINPUT(const TEST_CASE_UTGENERAL_FHEW& testData,
-                                  const std::string& failmsg = std::string()) {
+    void UnitTest_FHEW_MULTIINPUT(
+            const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
         try {
             auto cc = BinFHEContext();
             cc.GenerateBinFHEContext(testData.securityLevel, testData.method);

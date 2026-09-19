@@ -33,20 +33,19 @@
   Wraps parameters for integer lattice operations. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILPARAMS_H
-#define LBCRYPTO_INC_LATTICE_ILPARAMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
 
 #include "lattice/hal/elemparams.h"
-
 #include "math/hal/basicint.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <string>
-#include <utility>
 
 namespace lbcrypto {
 
@@ -78,7 +77,7 @@ public:
         : ElemParams<IntType>(order, modulus, rootOfUnity) {}
 
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity, const IntType& bigModulus,
-                 const IntType& bigRootOfUnity)
+            const IntType& bigRootOfUnity)
         : ElemParams<IntType>(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}
 
     /**
@@ -133,8 +132,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         ar(::cereal::base_class<ElemParams<IntType>>(this));
     }
 
@@ -156,4 +155,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_

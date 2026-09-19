@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CIPHERTEXT_H_
-#define _LWE_CIPHERTEXT_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+#define SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lwe-ciphertext-fwd.h"
 #include "math/math-hal.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -135,8 +136,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
@@ -158,4 +159,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CIPHERTEXT_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_

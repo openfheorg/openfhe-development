@@ -32,8 +32,8 @@
  * It is a lightweight file to be included where we need the declaration of PrivateKey only
  *
  */
-#ifndef __PRIVATEKEY_FWD_H__
-#define __PRIVATEKEY_FWD_H__
+#ifndef SRC_PKE_INCLUDE_KEY_PRIVATEKEY_FWD_H_
+#define SRC_PKE_INCLUDE_KEY_PRIVATEKEY_FWD_H_
 
 #include <memory>
 
@@ -47,4 +47,4 @@ using PrivateKey = std::shared_ptr<PrivateKeyImpl<Element>>;
 
 }  // namespace lbcrypto
 
-#endif  // __PRIVATEKEY_FWD_H__
+#endif  // SRC_PKE_INCLUDE_KEY_PRIVATEKEY_FWD_H_

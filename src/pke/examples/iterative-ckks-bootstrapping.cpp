@@ -42,10 +42,15 @@ double the precision of a single bootstrapping.
 
 */
 
-#include "openfhe.h"
-
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <iostream>
 #include <ostream>
+#include <random>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -64,8 +69,8 @@ int main(int argc, char* argv[]) {
 // (https://cic.iacr.org/p/1/4/26/pdf), precision bits are evaluated as the negative
 // base 2 logarithm of the average L1 norm between results from standard (cleartext) calculation
 // and those computed homomorphically.
-double CalculateApproximationError(const std::vector<std::complex<double>>& result,
-                                   const std::vector<std::complex<double>>& expectedResult) {
+double CalculateApproximationError(
+        const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
         OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -109,8 +114,8 @@ void IterativeBootstrapExample() {
     std::vector<uint32_t> bsgsDim     = {0, 0};
 
     uint32_t levelsAvailableAfterBootstrap = 10;
-    uint32_t depth =
-        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
+    uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) +
+                     (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.
@@ -168,7 +173,7 @@ void IterativeBootstrapExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
     uint32_t precision =
-        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+            std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << "\n\n";
     // Set precision equal to empirically measured value after many test runs. One could add a buffer to reduce this value as below.
     precision -= 5;
@@ -285,7 +290,7 @@ void IterativeBootstrapStcExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
     uint32_t precision =
-        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+            std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << "\n\n";
 
     // Set precision equal to empirically measured value after many test runs. One could add a buffer to reduce this value as below.

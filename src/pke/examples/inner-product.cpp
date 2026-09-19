@@ -33,9 +33,11 @@
  * Simple example for BFV and CKKS for inner product.
  */
 
+#include <cstdint>
 #include <iostream>
-#include "openfhe.h"
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

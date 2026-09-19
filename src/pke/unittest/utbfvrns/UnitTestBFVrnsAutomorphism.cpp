@@ -29,17 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <vector>
+
+#include "UnitTestUtils.h"
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <algorithm>
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -63,7 +66,7 @@ const std::vector<int64_t> vector10{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
 const std::vector<uint32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
 const uint32_t invalidIndexAutomorphism = 4;
-const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
+const int64_t vector8Sum                = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 enum TEST_ESTIMATED_RESULT {
     SUCCESS,
@@ -102,14 +105,14 @@ std::vector<int64_t> BFVrnsAutomorphismPackedArray(uint32_t i, TEST_ESTIMATED_RE
     Plaintext intArray            = cc->MakePackedPlaintext(inputVec);
 
     Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testResult) ?
-                                         cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
-                                         cc->Encrypt(kp.publicKey, intArray);
+                                             cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                             cc->Encrypt(kp.publicKey, intArray);
 
     std::vector<uint32_t> indexList(initIndexList);
 
     auto evalKeys = (INVALID_PRIVATE_KEY == testResult) ?
-                        cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) :
-                        cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
+                            cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) :
+                            cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
 
     std::map<uint32_t, EvalKey<Element>> emptyEvalKeys;
     Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testResult) ? cc->EvalAutomorphism(ciphertext, i, emptyEvalKeys) :

@@ -33,22 +33,24 @@
   serialize cryptocontext; include this in any app that needs to serialize them
  */
 
-#ifndef __CRYPTOCONTEXT_SER_H__
-#define __CRYPTOCONTEXT_SER_H__
+#ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_
+#define SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_
 
-#include "cryptocontext.h"
-#include "utils/serial.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
-#include "scheme/bgvrns/bgvrns-ser.h"
-#include "scheme/bfvrns/bfvrns-ser.h"
-
+#include <fstream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
+#include "cryptocontext.h"
+#include "scheme/bfvrns/bfvrns-ser.h"
+#include "scheme/bgvrns/bgvrns-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
+#include "utils/serial.h"
+
 CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
-                     lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
+        lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
 
 // the routines below are only instantiated if the user includes the appropriate
 // serialize-*.h file
@@ -99,31 +101,26 @@ bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, con
     return false;
 }
 }  // namespace Serial
-template void Serial::Deserialize(std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream,
-                                  const SerType::SERJSON&);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERJSON>(std::ostream& ser,
-                                                                                  const SerType::SERJSON&,
-                                                                                  const std::string& keyTag);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERJSON>(std::ostream& ser,
-                                                                                  const SerType::SERJSON&,
-                                                                                  const CryptoContext<DCRTPoly> cc);
-template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey<SerType::SERJSON>(std::istream& ser,
-                                                                                    const SerType::SERJSON&);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERJSON>(std::ostream& ser,
-                                                                                 const SerType::SERJSON&,
-                                                                                 const std::string& keyTag);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERJSON>(std::ostream& ser,
-                                                                                 const SerType::SERJSON&,
-                                                                                 const CryptoContext<DCRTPoly> cc);
-template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalSumKey<SerType::SERJSON>(std::istream& ser,
-                                                                                   const SerType::SERJSON&);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERJSON>(std::ostream& ser,
-                                                                                          const SerType::SERJSON&,
-                                                                                          const std::string& keyTag);
+template void Serial::Deserialize(
+        std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream, const SerType::SERJSON&);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERJSON>(
+        std::ostream& ser, const SerType::SERJSON&, const std::string& keyTag);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERJSON>(
+        std::ostream& ser, const SerType::SERJSON&, const CryptoContext<DCRTPoly> cc);
+template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey<SerType::SERJSON>(
+        std::istream& ser, const SerType::SERJSON&);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERJSON>(
+        std::ostream& ser, const SerType::SERJSON&, const std::string& keyTag);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERJSON>(
+        std::ostream& ser, const SerType::SERJSON&, const CryptoContext<DCRTPoly> cc);
+template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalSumKey<SerType::SERJSON>(
+        std::istream& ser, const SerType::SERJSON&);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERJSON>(
-    std::ostream& ser, const SerType::SERJSON&, const CryptoContext<DCRTPoly> cc);
-template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<SerType::SERJSON>(std::istream& ser,
-                                                                                            const SerType::SERJSON&);
+        std::ostream& ser, const SerType::SERJSON&, const std::string& keyTag);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERJSON>(
+        std::ostream& ser, const SerType::SERJSON&, const CryptoContext<DCRTPoly> cc);
+template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<SerType::SERJSON>(
+        std::istream& ser, const SerType::SERJSON&);
 
 // ================================= BINARY serialization/deserialization
 namespace Serial {
@@ -165,32 +162,27 @@ void DeserializeFromString(CryptoContext<T>& obj, const std::string& json) {
 }
 }  // namespace Serial
 
-template void Serial::Deserialize(std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream,
-                                  const SerType::SERBINARY&);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERBINARY>(std::ostream& ser,
-                                                                                    const SerType::SERBINARY&,
-                                                                                    const std::string& keyTag);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERBINARY>(std::ostream& ser,
-                                                                                    const SerType::SERBINARY&,
-                                                                                    const CryptoContext<DCRTPoly> cc);
-template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey<SerType::SERBINARY>(std::istream& ser,
-                                                                                      const SerType::SERBINARY&);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERBINARY>(std::ostream& ser,
-                                                                                   const SerType::SERBINARY&,
-                                                                                   const std::string& keyTag);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERBINARY>(std::ostream& ser,
-                                                                                   const SerType::SERBINARY&,
-                                                                                   const CryptoContext<DCRTPoly> cc);
-template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalSumKey<SerType::SERBINARY>(std::istream& ser,
-                                                                                     const SerType::SERBINARY&);
-template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(std::ostream& ser,
-                                                                                            const SerType::SERBINARY&,
-                                                                                            const std::string& keyTag);
+template void Serial::Deserialize(
+        std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream, const SerType::SERBINARY&);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERBINARY>(
+        std::ostream& ser, const SerType::SERBINARY&, const std::string& keyTag);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERBINARY>(
+        std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<DCRTPoly> cc);
+template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey<SerType::SERBINARY>(
+        std::istream& ser, const SerType::SERBINARY&);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERBINARY>(
+        std::ostream& ser, const SerType::SERBINARY&, const std::string& keyTag);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERBINARY>(
+        std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<DCRTPoly> cc);
+template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalSumKey<SerType::SERBINARY>(
+        std::istream& ser, const SerType::SERBINARY&);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<DCRTPoly> cc);
+        std::ostream& ser, const SerType::SERBINARY&, const std::string& keyTag);
+template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(
+        std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<DCRTPoly> cc);
 template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<SerType::SERBINARY>(
-    std::istream& ser, const SerType::SERBINARY&);
+        std::istream& ser, const SerType::SERBINARY&);
 
 }  // namespace lbcrypto
 
-#endif  // __CRYPTOCONTEXT_SER_H__
+#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_SER_H_

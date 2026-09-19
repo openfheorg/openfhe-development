@@ -33,21 +33,23 @@
   Represents and defines plaintext objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_UTILS_PLAINTEXT_H
-#define LBCRYPTO_UTILS_PLAINTEXT_H
-
-#include "constants.h"
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext-fwd.h"
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
+#define SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "constants.h"
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext-fwd.h"
+#include "scheme/scheme-id.h"
 
 namespace lbcrypto {
 
@@ -98,7 +100,7 @@ protected:
 
 public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+            SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
@@ -106,7 +108,7 @@ public:
           schemeID(schemeTag) {}
 
     PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+            SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsNativePoly),
           encodingParams(std::move(ep)),
           encodedNativeVector(vp, Format::COEFFICIENT),
@@ -115,7 +117,7 @@ public:
 
     // TODO: eliminate use of encodedVector in coefpackedencoding to remove encodedVector init here
     PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
-                  SCHEME schemeTag = SCHEME::INVALID_SCHEME)
+            SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsDCRTPoly),
           encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
@@ -473,4 +475,4 @@ inline DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_

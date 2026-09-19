@@ -33,6 +33,11 @@
   Example forFHEW with binary serialization
  */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <string>
+
 #include "binfhecontext-ser.h"
 
 using namespace lbcrypto;
@@ -136,8 +141,8 @@ int main() {
 
     for (size_t i = 0; i < 3; i++) {
         RingGSWBTKey mapKey;
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey,
-                                        SerType::BINARY) == false) {
+        if (Serial::DeserializeFromFile(
+                    DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey, SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the bootstrapping keys" << std::endl;
             return 1;
         }

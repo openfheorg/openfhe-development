@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <complex>
+#include <memory>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/field2n.h"
 #include "math/dftransform.h"
 #include "math/nbtheory.h"
 #include "utils/debug.h"
-
-#include <cmath>
-#include <memory>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -498,8 +499,8 @@ TEST(UTField2n, native_and_dcrt_centered_coefficients) {
     EXPECT_DOUBLE_EQ(nativeField[2].real(), 0.0);
     EXPECT_DOUBLE_EQ(nativeField[3].real(), -1.0);
 
-    auto crtParams =
-        std::make_shared<ILDCRTParams<BigInteger>>(8, std::vector<NativeInteger>{q}, std::vector<NativeInteger>{root});
+    auto crtParams = std::make_shared<ILDCRTParams<BigInteger>>(
+            8, std::vector<NativeInteger>{q}, std::vector<NativeInteger>{root});
     DCRTPoly crt(crtParams, Format::COEFFICIENT, true);
     crt.SetElementAtIndex(0, poly);
     Field2n crtField(crt);

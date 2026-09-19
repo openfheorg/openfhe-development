@@ -29,11 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "UnitTestCryptoContext.h"
+
+#include <cmath>
+#include <cstdint>
+#include <type_traits>
+
 #include "gen-cryptocontext.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestCryptoContext.h"
 
 using namespace lbcrypto;
 
@@ -92,7 +97,7 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {
         if (!isDefaultValue(params.multiplicationTechnique)) {
             parameters.SetMultiplicationTechnique(
-                static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
+                    static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
         }
     }
     if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {

@@ -29,14 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <sstream>
+#include <string>
+
 #include "binfhecontext-ser.h"
 #include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
 template <typename ST, typename PS>
-void UnitTestFHEWSerial(const ST& sertype, const PS& secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType,
-                        const std::string& errMsg) {
+void UnitTestFHEWSerial(
+        const ST& sertype, const PS& secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType, const std::string& errMsg) {
     const LWEPlaintext val(1);
     auto cc1 = BinFHEContext();
     cc1.GenerateBinFHEContext(secLevel, variant);

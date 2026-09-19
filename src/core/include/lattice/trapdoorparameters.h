@@ -33,14 +33,15 @@
   Parameter definitions for trapdoor-related schemes (GPV signature, IBE, ABE)
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOORPARAMETERS_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOORPARAMETERS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_
+
+#include <cmath>
+#include <cstdint>
+#include <memory>
 
 #include "lattice/trapdoor.h"
-
 #include "math/matrix.h"
-
-#include <memory>
 
 namespace lbcrypto {
 /*
@@ -145,8 +146,8 @@ public:
    *@param base Base for the gadget matrix
    *@param bal Flag for balanced generation in trapdoor
    */
-    RLWETrapdoorParams(std::shared_ptr<ParmType>& elemparams, DggType& dgg, double stddev, int64_t base,
-                       bool bal = false)
+    RLWETrapdoorParams(
+            std::shared_ptr<ParmType>& elemparams, DggType& dgg, double stddev, int64_t base, bool bal = false)
         : TrapdoorParams<Element>(elemparams, dgg, stddev),
           m_base(base),
           m_k(0),
@@ -240,7 +241,7 @@ public:
     /*
    *@brief Default constructor
    */
-    PerturbationVector() : m_pvector(nullptr){};
+    PerturbationVector() : m_pvector(nullptr) {};
     /*
    *@brief Constructor for perturbation vector
    *@param pvector Vector containing ring elements
@@ -267,4 +268,4 @@ private:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOORPARAMETERS_H_

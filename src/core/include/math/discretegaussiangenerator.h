@@ -63,16 +63,18 @@
  * It should be also noted that the memory requirement grows with the standard
  * deviation, therefore it is advised to use it with smaller deviations.   */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
-#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_H_
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include "math/distributiongenerator.h"
-
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
 
@@ -158,8 +160,8 @@ public:
    * param modulus modulus
    * @return A random value within this Discrete Gaussian Distribution.
    */
-    typename VecType::Integer GenerateInteger(double mean, double stddev, size_t n,
-                                              const typename VecType::Integer& modulus) const;
+    typename VecType::Integer GenerateInteger(
+            double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const;
 
     /**
    * @brief  Returns a generated integer. Uses rejection method.
@@ -258,4 +260,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_H_

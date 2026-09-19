@@ -28,17 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __SCHEME_SWCH_PARAMS_H__
-#define __SCHEME_SWCH_PARAMS_H__
-
-#include "lattice/stdlatticeparms.h"
-#include "binfhe-constants.h"
-#include "math/math-hal.h"
-
-#include "utils/exception.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_SCHEME_SWCH_PARAMS_H_
+#define SRC_PKE_INCLUDE_SCHEME_SCHEME_SWCH_PARAMS_H_
 
 #include <cstdint>
 #include <iosfwd>
+
+#include "binfhe-constants.h"
+#include "lattice/stdlatticeparms.h"
+#include "math/math-hal.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -82,7 +81,7 @@ class SchSwchParams {
     void VerifyObjectData() const {
         if (!setParamsFromCKKSCryptocontextCalled) {
             OPENFHE_THROW(
-                "Objects of class SchSwchParams may be used only after having called SetParamsFromCKKSCryptocontext()");
+                    "Objects of class SchSwchParams may be used only after having called SetParamsFromCKKSCryptocontext()");
         }
     }
 
@@ -230,4 +229,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __SCHEME_SWCH_PARAMS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_SCHEME_SWCH_PARAMS_H_

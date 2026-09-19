@@ -36,6 +36,10 @@
 // Define PROFILE to enable TIC-TOC timing measurements
 #define PROFILE
 
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;

@@ -46,5 +46,3 @@ Make sure both of branches build properly before going any further.  Correct any
 You can then create a merge request here:
 
 `OpenFHE Development Pull Requests <https://github.com/openfheorg/openfhe-development/pulls>`_
-
-

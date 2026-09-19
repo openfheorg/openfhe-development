@@ -37,13 +37,17 @@
 #define PROFILE  // need to define in order to turn on timing
 
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <string>
 #include <vector>
+
+#include "math/math-hal.h"
 #include "openfhecore.h"
 #include "time.h"
-#include "math/math-hal.h"
 
 using namespace lbcrypto;
 
@@ -177,14 +181,14 @@ void test_NTT(const uint32_t level, const uint32_t nloop) {
     // note computation of root of unity for big numbers takes forever
     // hardwire this case
     BigInteger q3(
-        "130935624315845674800527587873103966088665681841722591579331654723845351"
-        "856186982195330803693036166286035467365102402840368690261835415722133141"
-        "10873601");
+            "130935624315845674800527587873103966088665681841722591579331654723845351"
+            "856186982195330803693036166286035467365102402840368690261835415722133141"
+            "10873601");
 
     BigInteger rootOfUnity3(
-        "120238484638556494666603774400695561444642670309493651659937259422204414"
-        "126327993119899739382548230714053366233156689615011395926730002978876828"
-        "95033094");
+            "120238484638556494666603774400695561444642670309493651659937259422204414"
+            "126327993119899739382548230714053366233156689615011395926730002978876828"
+            "95033094");
 
     std::cout << "q3 : " << q3.ToString() << std::endl;
     std::cout << "rootOfUnity3 : " << rootOfUnity3.ToString() << std::endl;

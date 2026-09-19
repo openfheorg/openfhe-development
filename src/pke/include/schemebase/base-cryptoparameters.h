@@ -28,15 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "encoding/encodings.h"
 #include "encoding/plaintext.h"
 #include "utils/serializable.h"
-
-#include <memory>
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -174,8 +175,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("elp", m_params));
         ar(::cereal::make_nvp("enp", m_encodingParams));
@@ -232,4 +233,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_

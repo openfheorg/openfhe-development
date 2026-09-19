@@ -29,17 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
-#include "key/privatekey.h"
 #include "schemebase/base-leveledshe.h"
-#include "schemebase/base-scheme.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "cryptocontext.h"
+#include "key/privatekey.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 
@@ -65,22 +68,22 @@ void LeveledSHEBase<Element>::EvalNegateInPlace(Ciphertext<Element>& ciphertext)
 /////////////////////////////////////////
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalAdd(ConstCiphertext<Element>& ciphertext1,
-                                                     ConstCiphertext<Element>& ciphertext2) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAdd(
+        ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     auto result = ciphertext1->Clone();
     EvalAddInPlace(result, ciphertext2);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalAddInPlace(Ciphertext<Element>& ciphertext1,
-                                             ConstCiphertext<Element>& ciphertext2) const {
+void LeveledSHEBase<Element>::EvalAddInPlace(
+        Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     EvalAddCoreInPlace(ciphertext1, ciphertext2);
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalAdd(ConstCiphertext<Element>& ciphertext,
-                                                     ConstPlaintext& plaintext) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAdd(
+        ConstCiphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
     auto result = ciphertext->Clone();
     EvalAddInPlace(result, plaintext);
     return result;
@@ -104,22 +107,22 @@ void LeveledSHEBase<Element>::EvalAddInPlace(Ciphertext<Element>& ciphertext, Co
 /////////////////////////////////////////
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSub(ConstCiphertext<Element>& ciphertext1,
-                                                     ConstCiphertext<Element>& ciphertext2) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSub(
+        ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     auto result = ciphertext1->Clone();
     EvalSubInPlace(result, ciphertext2);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalSubInPlace(Ciphertext<Element>& ciphertext1,
-                                             ConstCiphertext<Element>& ciphertext2) const {
+void LeveledSHEBase<Element>::EvalSubInPlace(
+        Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     EvalSubCoreInPlace(ciphertext1, ciphertext2);
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSub(ConstCiphertext<Element>& ciphertext,
-                                                     ConstPlaintext& plaintext) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSub(
+        ConstCiphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
     auto result = ciphertext->Clone();
     EvalSubInPlace(result, plaintext);
     return result;
@@ -173,8 +176,8 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const Pri
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(ConstCiphertext<Element>& ciphertext,
-                                                      ConstPlaintext& plaintext) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(
+        ConstCiphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
     auto result = ciphertext->Clone();
     EvalMultInPlace(result, plaintext);
     return result;
@@ -200,8 +203,7 @@ void LeveledSHEBase<Element>::EvalMultInPlace(Ciphertext<Element>& ciphertext, C
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(ConstCiphertext<Element>& ciphertext1,
-                                                      ConstCiphertext<Element>& ciphertext2,
-                                                      const EvalKey<Element> evalKey) const {
+        ConstCiphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const {
     auto ciphertext = EvalMult(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext->GetElements();
@@ -214,8 +216,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(ConstCiphertext<Element>& 
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalMultInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2,
-                                              const EvalKey<Element> evalKey) const {
+void LeveledSHEBase<Element>::EvalMultInPlace(
+        Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const {
     ciphertext1 = EvalMult(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext1->GetElements();
@@ -227,9 +229,8 @@ void LeveledSHEBase<Element>::EvalMultInPlace(Ciphertext<Element>& ciphertext1, 
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(Ciphertext<Element>& ciphertext1,
-                                                             Ciphertext<Element>& ciphertext2,
-                                                             const EvalKey<Element> evalKey) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(
+        Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const {
     auto ciphertext = EvalMultMutable(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext->GetElements();
@@ -242,8 +243,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(Ciphertext<Element>
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSquare(ConstCiphertext<Element>& ciphertext,
-                                                        const EvalKey<Element> evalKey) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSquare(
+        ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
     auto csquare = EvalSquare(ciphertext);
 
     auto& cv = csquare->GetElements();
@@ -268,8 +269,8 @@ void LeveledSHEBase<Element>::EvalSquareInPlace(Ciphertext<Element>& ciphertext,
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareMutable(Ciphertext<Element>& ciphertext,
-                                                               const EvalKey<Element> evalKey) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareMutable(
+        Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
     auto csquare = EvalSquareMutable(ciphertext);
 
     auto& cv = csquare->GetElements();
@@ -282,8 +283,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareMutable(Ciphertext<Elemen
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2,
-                                                     const EvalKey<Element> evalKey) const {
+void LeveledSHEBase<Element>::EvalMultMutableInPlace(
+        Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const {
     ciphertext1 = EvalMultMutable(ciphertext1, ciphertext2);
 
     auto& cv = ciphertext1->GetElements();
@@ -295,25 +296,24 @@ void LeveledSHEBase<Element>::EvalMultMutableInPlace(Ciphertext<Element>& cipher
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMultAndRelinearize(
-    ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2,
-    const std::vector<EvalKey<Element>>& evalKeyVec) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMultAndRelinearize(ConstCiphertext<Element>& ciphertext1,
+        ConstCiphertext<Element>& ciphertext2, const std::vector<EvalKey<Element>>& evalKeyVec) const {
     auto result = EvalMult(ciphertext1, ciphertext2);
     RelinearizeInPlace(result, evalKeyVec);
     return result;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::Relinearize(ConstCiphertext<Element>& ciphertext,
-                                                         const std::vector<EvalKey<Element>>& evalKeyVec) const {
+Ciphertext<Element> LeveledSHEBase<Element>::Relinearize(
+        ConstCiphertext<Element>& ciphertext, const std::vector<EvalKey<Element>>& evalKeyVec) const {
     auto result = ciphertext->Clone();
     RelinearizeInPlace(result, evalKeyVec);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext,
-                                                 const std::vector<EvalKey<Element>>& evalKeyVec) const {
+void LeveledSHEBase<Element>::RelinearizeInPlace(
+        Ciphertext<Element>& ciphertext, const std::vector<EvalKey<Element>>& evalKeyVec) const {
     auto& cv = ciphertext->GetElements();
     for (auto& c : cv)
         c.SetFormat(Format::EVALUATION);
@@ -334,11 +334,11 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     // Do not generate duplicate keys that have been already generated and added to the static storage (map)
     std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
     std::set<uint32_t> indicesToGenerate{
-        CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
+            CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
     std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
 
     // we already have checks on higher level?
@@ -380,8 +380,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
-                                                              const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
-                                                              CALLER_INFO_ARGS_CPP) const {
+        const std::map<uint32_t, EvalKey<Element>>& evalKeyMap, CALLER_INFO_ARGS_CPP) const {
     // this operation can be performed on 2-element ciphertexts only
     if (ciphertext->NumberCiphertextElements() != 2)
         OPENFHE_THROW("Ciphertext should be relinearized before.");
@@ -398,9 +397,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphismCore(ConstCiphertext<Element>& ciphertext,
-                                                                  uint32_t autoIndex,
-                                                                  const std::shared_ptr<std::vector<Element>>& digits,
-                                                                  const EvalKey<Element>& evalKey) const {
+        uint32_t autoIndex, const std::shared_ptr<std::vector<Element>>& digits,
+        const EvalKey<Element>& evalKey) const {
     const auto cc    = ciphertext->GetCryptoContext();
     const uint32_t N = cc->GetRingDimension();
     std::vector<uint32_t> vec(N);
@@ -423,20 +421,18 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphismCore(ConstCiphertex
         for (uint32_t i = 0; i < sizeQ; ++i)
             ba[0].GetAllElements()[i].MultAccEqNoCheck(cv0.GetAllElements()[i], cryptoParams->GetPModq()[i]);
 
-        ba[0] = ba[0]
-                    .AutomorphismTransform(autoIndex, vec)
-                    .ApproxModDown(cv0.GetParams(), cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                   cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                   cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                   cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                   cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
-        ba[1] = ba[1]
-                    .AutomorphismTransform(autoIndex, vec)
-                    .ApproxModDown(cv0.GetParams(), cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                   cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                   cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                   cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                   cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+        ba[0] = ba[0].AutomorphismTransform(autoIndex, vec)
+                        .ApproxModDown(cv0.GetParams(), cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+        ba[1] = ba[1].AutomorphismTransform(autoIndex, vec)
+                        .ApproxModDown(cv0.GetParams(), cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
 
         auto result = ciphertext->CloneEmpty();
         result->SetElements(std::move(ba));
@@ -456,16 +452,15 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphismCore(ConstCiphertex
 
 template <class Element>
 std::shared_ptr<std::vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
-    ConstCiphertext<Element>& ciphertext) const {
+        ConstCiphertext<Element>& ciphertext) const {
     const auto& cv = ciphertext->GetElements();
     auto& algo     = ciphertext->GetCryptoContext()->GetScheme();
     return algo->EvalKeySwitchPrecomputeCore(cv[1], ciphertext->GetCryptoParameters());
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
-    ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
-    const std::shared_ptr<std::vector<Element>> digits) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(ConstCiphertext<Element>& ciphertext,
+        const uint32_t index, const uint32_t m, const std::shared_ptr<std::vector<Element>> digits) const {
     if (index == 0)
         return ciphertext->Clone();
 
@@ -480,7 +475,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++)
@@ -490,7 +485,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAtIndex(ConstCiphertext<Element>& ciphertext, int32_t index,
-                                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
+        const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
     uint32_t M = ciphertext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     return EvalAutomorphism(ciphertext, FindAutomorphismIndex(index, M), evalKeyMap);
 }
@@ -501,8 +496,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAtIndex(ConstCiphertext<Element
 
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::ComposedEvalMult(ConstCiphertext<Element>& ciphertext1,
-                                                              ConstCiphertext<Element>& ciphertext2,
-                                                              const EvalKey<Element> evalKey) const {
+        ConstCiphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const {
     auto ciphertext = EvalMult(ciphertext1, ciphertext2);
     ciphertext->GetCryptoContext()->GetScheme()->KeySwitchInPlace(ciphertext, evalKey);
     ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
@@ -514,16 +508,16 @@ Ciphertext<Element> LeveledSHEBase<Element>::ComposedEvalMult(ConstCiphertext<El
 /////////////////////////////////////////
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::LevelReduce(ConstCiphertext<Element>& ciphertext,
-                                                         const EvalKey<Element> evalKey, size_t levels) const {
+Ciphertext<Element> LeveledSHEBase<Element>::LevelReduce(
+        ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey, size_t levels) const {
     auto result = ciphertext->Clone();
     LevelReduceInPlace(result, evalKey, levels);
     return result;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext& plaintext,
-                                                            ConstCiphertext<Element>& ciphertext) const {
+Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(
+        ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext) const {
     auto elem = plaintext->GetElement<Element>();
     elem.SetFormat(EVALUATION);
 
@@ -542,8 +536,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext& plai
 /////////////////////////////////////////
 
 template <class Element>
-void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext1,
-                                                ConstCiphertext<Element>& ciphertext2, CALLER_INFO_ARGS_CPP) const {
+void LeveledSHEBase<Element>::VerifyNumOfTowers(
+        ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2, CALLER_INFO_ARGS_CPP) const {
     uint32_t numTowers1 = ciphertext1->GetElements()[0].GetNumOfElements();
     uint32_t numTowers2 = ciphertext2->GetElements()[0].GetNumOfElements();
     if (numTowers1 != numTowers2) {
@@ -554,8 +548,8 @@ void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& cipher
     }
 }
 template <class Element>
-void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& ciphertext, const Element& plaintext,
-                                                CALLER_INFO_ARGS_CPP) const {
+void LeveledSHEBase<Element>::VerifyNumOfTowers(
+        ConstCiphertext<Element>& ciphertext, const Element& plaintext, CALLER_INFO_ARGS_CPP) const {
     uint32_t numTowersCtxt = ciphertext->GetElements()[0].GetNumOfElements();
     uint32_t numTowersPtxt = plaintext.GetNumOfElements();
     if (numTowersCtxt != numTowersPtxt) {
@@ -567,16 +561,16 @@ void LeveledSHEBase<Element>::VerifyNumOfTowers(ConstCiphertext<Element>& cipher
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element>& ciphertext1,
-                                                         ConstCiphertext<Element>& ciphertext2) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(
+        ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     auto result = ciphertext1->Clone();
     EvalAddCoreInPlace(result, ciphertext2);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext1,
-                                                 ConstCiphertext<Element>& ciphertext2) const {
+void LeveledSHEBase<Element>::EvalAddCoreInPlace(
+        Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     VerifyNumOfTowers(ciphertext1, ciphertext2);
     auto& cv1 = ciphertext1->GetElements();
     auto& cv2 = ciphertext2->GetElements();
@@ -594,16 +588,16 @@ void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element>& ciphertext1,
-                                                         ConstCiphertext<Element>& ciphertext2) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(
+        ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     auto result = ciphertext1->Clone();
     EvalSubCoreInPlace(result, ciphertext2);
     return result;
 }
 
 template <class Element>
-void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1,
-                                                 ConstCiphertext<Element>& ciphertext2) const {
+void LeveledSHEBase<Element>::EvalSubCoreInPlace(
+        Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
     VerifyNumOfTowers(ciphertext1, ciphertext2);
     auto& cv1 = ciphertext1->GetElements();
     auto& cv2 = ciphertext2->GetElements();
@@ -621,8 +615,8 @@ void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element>& ctxt1,
-                                                          ConstCiphertext<Element>& ctxt2) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(
+        ConstCiphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
     VerifyNumOfTowers(ctxt1, ctxt2);
     auto& cv1 = ctxt1->GetElements();
     auto& cv2 = ctxt2->GetElements();
@@ -660,7 +654,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Elemen
     result->SetNoiseScaleDeg(ctxt1->GetNoiseScaleDeg() + ctxt2->GetNoiseScaleDeg());
     result->SetScalingFactor(ctxt1->GetScalingFactor() * ctxt2->GetScalingFactor());
     result->SetScalingFactorInt(ctxt1->GetScalingFactorInt().ModMul(
-        ctxt2->GetScalingFactorInt(), ctxt1->GetCryptoParameters()->GetPlaintextModulus()));
+            ctxt2->GetScalingFactorInt(), ctxt1->GetCryptoParameters()->GetPlaintextModulus()));
     return result;
 }
 
@@ -713,14 +707,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Elem
     result->SetElements(std::move(cvr));
     result->SetNoiseScaleDeg(2 * ctxt->GetNoiseScaleDeg());
     result->SetScalingFactor(ctxt->GetScalingFactor() * ctxt->GetScalingFactor());
-    result->SetScalingFactorInt(ctxt->GetScalingFactorInt().ModMul(ctxt->GetScalingFactorInt(),
-                                                                   ctxt->GetCryptoParameters()->GetPlaintextModulus()));
+    result->SetScalingFactorInt(ctxt->GetScalingFactorInt().ModMul(
+            ctxt->GetScalingFactorInt(), ctxt->GetCryptoParameters()->GetPlaintextModulus()));
     return result;
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(ConstCiphertext<Element>& ciphertext,
-                                                         const Element& pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalAddCore(
+        ConstCiphertext<Element>& ciphertext, const Element& pt) const {
     auto result = ciphertext->Clone();
     EvalAddCoreInPlace(result, pt);
     return result;
@@ -733,8 +727,8 @@ void LeveledSHEBase<Element>::EvalAddCoreInPlace(Ciphertext<Element>& ciphertext
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(ConstCiphertext<Element>& ciphertext,
-                                                         const Element& pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSubCore(
+        ConstCiphertext<Element>& ciphertext, const Element& pt) const {
     auto result = ciphertext->Clone();
     EvalSubCoreInPlace(result, pt);
     return result;
@@ -747,8 +741,8 @@ void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element>& ciphertext,
-                                                          const Element& pt) const {
+Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(
+        ConstCiphertext<Element>& ciphertext, const Element& pt) const {
     auto result = ciphertext->Clone();
     EvalMultCoreInPlace(result, pt);
     return result;

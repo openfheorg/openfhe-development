@@ -30,14 +30,18 @@
 //==================================================================================
 #include "utils/get-call-stack.h"
 
+#include <string>
+#include <vector>
+
 #if defined(__linux__) && defined(__GNUC__)
 // clang-format off
-#include "utils/demangle.h"
-
-#include <cstdlib>
 #include <cxxabi.h>
 #include <execinfo.h>
+
+#include <cstdlib>
 #include <memory>
+
+#include "utils/demangle.h"
 // clang-format on
 
 namespace {

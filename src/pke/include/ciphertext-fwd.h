@@ -31,8 +31,8 @@
 /*
  * It is a lightweight file to be included where we need the declaration of Ciphertext only
  */
-#ifndef __CIPHERTEXT_FWD_H__
-#define __CIPHERTEXT_FWD_H__
+#ifndef SRC_PKE_INCLUDE_CIPHERTEXT_FWD_H_
+#define SRC_PKE_INCLUDE_CIPHERTEXT_FWD_H_
 
 #include <cstdint>
 #include <memory>
@@ -74,13 +74,13 @@ struct seriesPowers {
         : powersRe(powers0), powersIm(powers1) {}
 
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
-                 const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
+            const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
         : powersRe(powers0), powers2Re(powers20), power2km1Re(power2km10), k(k0), m(m0) {}
 
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
-                 const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
-                 const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,
-                 const Ciphertext<Element>& power2km11)
+            const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
+            const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,
+            const Ciphertext<Element>& power2km11)
         : powersRe(powers0),
           powers2Re(powers20),
           power2km1Re(power2km10),
@@ -93,4 +93,4 @@ struct seriesPowers {
 
 }  // namespace lbcrypto
 
-#endif  // __CIPHERTEXT_FWD_H__
+#endif  // SRC_PKE_INCLUDE_CIPHERTEXT_FWD_H_

@@ -34,13 +34,17 @@
  */
 
 #include "encoding/coefpackedencoding.h"
+
+#include <cstdint>
+#include <vector>
+
 #include "constants.h"
 
 namespace lbcrypto {
 
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, int64_t ub,
-                             const std::vector<int64_t>& value, SCHEME schemeID) {
+        const std::vector<int64_t>& value, SCHEME schemeID) {
     if (ub > INT32_MAX || lb < INT32_MIN)
         OPENFHE_THROW("Cannot encode a coefficient larger than 32 bits");
 

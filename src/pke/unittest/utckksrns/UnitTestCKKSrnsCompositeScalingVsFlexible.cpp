@@ -82,12 +82,13 @@
   failures were not CS precision losses but FA reference runs that happened to land high.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -101,7 +102,7 @@ constexpr SecretKeyDist SK_DIST  = UNIFORM_TERNARY;
 // Builds a CKKS context for the requested scaling technique. COMPOSITESCALINGAUTO additionally sets
 // the register word size; everything else is identical so FA and CS are a fair comparison.
 CryptoContext<DCRTPoly> BuildContext(ScalingTechnique scalTech, uint32_t ringDim, uint32_t multDepth,
-                                     uint32_t scalingModSize, uint32_t firstModSize, uint32_t numLargeDigits) {
+        uint32_t scalingModSize, uint32_t firstModSize, uint32_t numLargeDigits) {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetSecretKeyDist(SK_DIST);
     parameters.SetSecurityLevel(HEStd_NotSet);
@@ -156,9 +157,8 @@ protected:
     // before returning: a test that takes two measurements would otherwise hold both bootstrapping key
     // sets at once, over 4 GB at ring 2^14.
     double BootstrapPrecisionBits(ScalingTechnique scalTech, uint32_t ringDim, uint32_t scalingModSize,
-                                  uint32_t firstModSize, const std::vector<uint32_t>& levelBudget, uint32_t numSlots,
-                                  uint32_t levelsAfterBootstrap, uint32_t numLargeDigits, bool stcFirst = false,
-                                  uint32_t extraLevels = 0) {
+            uint32_t firstModSize, const std::vector<uint32_t>& levelBudget, uint32_t numSlots,
+            uint32_t levelsAfterBootstrap, uint32_t numLargeDigits, bool stcFirst = false, uint32_t extraLevels = 0) {
         uint32_t depth = levelsAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, SK_DIST);
         auto cc        = BuildContext(scalTech, ringDim, depth, scalingModSize, firstModSize, numLargeDigits);
         auto cp        = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
@@ -259,10 +259,10 @@ TEST_F(UTCKKSRNSCSvsFA, FullPackingBootstrap_HybridKeySwitch) {
     const uint32_t levelsAfterBootstrap     = 10;
     const uint32_t numLargeDigits           = 3;
 
-    double faBits = BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap,
-                                           numLargeDigits);
-    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
-                                           levelsAfterBootstrap, numLargeDigits);
+    double faBits = BootstrapPrecisionBits(
+            FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, numLargeDigits);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, numLargeDigits);
 
     EXPECT_GT(csBits, 6.0) << "CS bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
@@ -281,9 +281,9 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapModRaiseHeadroom) {
     const uint32_t levelsAfterBootstrap     = 2;
 
     double faBits =
-        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 56, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
-    double csBits =
-        BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 56, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
+            BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 56, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 56, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
 
     EXPECT_GT(csBits, 6.0) << "CS 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
@@ -304,9 +304,9 @@ TEST_F(UTCKKSRNSCSvsFA, SparseBootstrapLargeModRaiseHeadroom) {
     const uint32_t levelsAfterBootstrap     = 2;
 
     double faBits =
-        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
-    double csBits =
-        BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
+            BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0);
 
     EXPECT_GT(csBits, 12.0) << "CS 8-slot deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
@@ -328,9 +328,9 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrap) {
     const uint32_t levelsAfterBootstrap     = 2;
 
     double faBits =
-        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
-    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
-                                           levelsAfterBootstrap, 0, true);
+            BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first 8-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
@@ -345,9 +345,9 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapLargeModRaiseHeadroom) {
     const uint32_t levelsAfterBootstrap     = 2;
 
     double faBits =
-        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
-    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots,
-                                           levelsAfterBootstrap, 0, true);
+            BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 54, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first deg=6 bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
@@ -362,9 +362,9 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstBootstrap1024Slots) {
     const uint32_t levelsAfterBootstrap     = 2;
 
     double faBits =
-        BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
-    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
-                                           levelsAfterBootstrap, 0, true);
+            BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first 1024-slot bootstrap precision unexpectedly low (" << csBits << " bits)";
     EXPECT_GE(csBits, faBits - kGapTol) << "CS lags FA by >" << kGapTol << " bits (CS=" << csBits << ", FA=" << faBits
@@ -381,10 +381,10 @@ TEST_F(UTCKKSRNSCSvsFA, StCFirstSparseBootstrapWithExtraLevels) {
     const uint32_t levelsAfterBootstrap     = 2;
     const uint32_t extraLevels              = 2;
 
-    double faBits = BootstrapPrecisionBits(FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap,
-                                           0, true, extraLevels);
-    double csBits = BootstrapPrecisionBits(COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots,
-                                           levelsAfterBootstrap, 0, true, extraLevels);
+    double faBits = BootstrapPrecisionBits(
+            FLEXIBLEAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true, extraLevels);
+    double csBits = BootstrapPrecisionBits(
+            COMPOSITESCALINGAUTO, ringDim, 59, 60, levelBudget, numSlots, levelsAfterBootstrap, 0, true, extraLevels);
 
     EXPECT_GT(csBits, 12.0) << "CS StC-first bootstrap precision with extra input levels unexpectedly low (" << csBits
                             << " bits)";

@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_FHE_H_
-#define _RGSW_FHE_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_H_
+
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 #include "rgsw-acckey.h"
 #include "rgsw-acckey32.h"
 #include "rgsw-cryptoparameters.h"
 #include "rlwe-ciphertext.h"
-
-#include <memory>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -61,21 +62,21 @@ public:
 #if NATIVEINT != 32
     // Generate the refreshing key directly in 32-bit internal form. Returns nullptr where the
     // accumulator does not implement it, so callers fall back to KeyGenAcc.
-    virtual RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>&, const NativePoly&,
-                                        ConstLWEPrivateKey&) const {
+    virtual RingGSWACCKey32 KeyGenAcc32(
+            const std::shared_ptr<RingGSWCryptoParams>&, const NativePoly&, ConstLWEPrivateKey&) const {
         return nullptr;
     }
 
     // Blind rotation on the 32-bit internal key; bit-identical to EvalAcc on the 64-bit key.
     // Implemented by every accumulator that implements KeyGenAcc32.
     virtual void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>&, ConstRingGSWACCKey32&, RLWECiphertext&,
-                           const NativeVector&) const {
+            const NativeVector&) const {
         OPENFHE_THROW("32-bit internal evaluation is not supported by this accumulator");
     }
 #endif
 
     virtual RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                                    ConstLWEPrivateKey& LWEsk) const {
+            ConstLWEPrivateKey& LWEsk) const {
         OPENFHE_THROW("Operation not supported");
     }
 
@@ -88,7 +89,7 @@ public:
    * @param a value to update the accumulator with
    */
     virtual void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
-                         RLWECiphertext& acc, const NativeVector& a) const {
+            RLWECiphertext& acc, const NativeVector& a) const {
         OPENFHE_THROW("Operation not supported");
     }
 
@@ -102,14 +103,14 @@ public:
    * @param index optional LWE secret-key coefficient index
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
-                              std::vector<NativePoly>& output) const;
+            std::vector<NativePoly>& output) const;
 
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
-                              std::vector<NativePoly>& output, uint32_t index) const;
+            std::vector<NativePoly>& output, uint32_t index) const;
 
     void SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                  const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
-                                  const RingGSWCryptoParams::BaseGParams& bp) const;
+            const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+            const RingGSWCryptoParams::BaseGParams& bp) const;
 
     /**
    * The signed digit decomposition which takes a ring element input and outputs a vector of its digits, i.e.,
@@ -121,9 +122,9 @@ public:
    * @param output decomposed value
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& input,
-                              std::vector<NativePoly>& output) const;
+            std::vector<NativePoly>& output) const;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_H_

@@ -33,9 +33,11 @@
  * This code benchmarks polynomial operations for ring dimension of 4k.
  */
 
+#include <cstdint>
+#include <iostream>
+
 #include "math/hal/basicint.h"
 #include "poly-benchmark.h"
-#include <iostream>
 
 constexpr uint32_t RING_DIM_LOG = 12;
 constexpr uint32_t DCRTBITS     = MAX_MODULUS_SIZE;

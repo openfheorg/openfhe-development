@@ -31,10 +31,12 @@
 
 #include "rgsw-acckey32.h"
 
-#include "utils/exception.h"
-
+#include <cstdint>
+#include <memory>
 #include <utility>
 #include <vector>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -67,14 +69,14 @@ bool RingGSWACCKey32Impl::Fits(const RingGSWCryptoParams& params) {
     return true;
 }
 
-RingGSWACCKey32Impl::RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params,
-                                         const RingGSWACCKeyImpl& ek) {
+RingGSWACCKey32Impl::RingGSWACCKey32Impl(
+        const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWACCKeyImpl& ek) {
     const auto& src = ek.GetElements();
     if (src.empty() || src[0].empty() || src[0][0].empty())
         OPENFHE_THROW("RingGSWACCKey32Impl: empty accumulator key");
     Init(params);
-    m_key.assign(src.size(),
-                 std::vector<std::vector<EvalKey32>>(src[0].size(), std::vector<EvalKey32>(src[0][0].size())));
+    m_key.assign(
+            src.size(), std::vector<std::vector<EvalKey32>>(src[0].size(), std::vector<EvalKey32>(src[0][0].size())));
     for (size_t i = 0; i < src.size(); ++i)
         for (size_t j = 0; j < src[i].size(); ++j)
             for (size_t k = 0; k < src[i][j].size(); ++k)
@@ -82,8 +84,8 @@ RingGSWACCKey32Impl::RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoPara
                     SetEvalKey(i, j, k, *src[i][j][k]);
 }
 
-RingGSWACCKey32Impl::RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params, uint32_t d1, uint32_t d2,
-                                         uint32_t d3) {
+RingGSWACCKey32Impl::RingGSWACCKey32Impl(
+        const std::shared_ptr<RingGSWCryptoParams>& params, uint32_t d1, uint32_t d2, uint32_t d3) {
     Init(params);
     m_key.assign(d1, std::vector<std::vector<EvalKey32>>(d2, std::vector<EvalKey32>(d3)));
 }

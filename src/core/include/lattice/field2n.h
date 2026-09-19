@@ -33,21 +33,20 @@
   Represents and defines power-of-2 fields
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_H
-#define LBCRYPTO_INC_LATTICE_FIELD2N_H
-
-#include "lattice/lat-hal.h"
-
-#include "math/matrix.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_
+#define SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_
 
 #include <complex>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "math/matrix.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 /**
@@ -338,8 +337,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::base_class<std::vector<std::complex<double>>>(this));
         ar(::cereal::make_nvp("f", format));
@@ -370,4 +369,4 @@ inline std::ostream& operator<<(std::ostream& os, const Field2n& m) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_

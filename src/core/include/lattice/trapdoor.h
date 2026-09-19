@@ -35,17 +35,17 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOOR_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
 
-#include "lattice/dgsampling.h"
-#include "lattice/field2n.h"
-
-#include "math/matrix.h"
-
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <utility>
 
+#include "lattice/dgsampling.h"
+#include "lattice/field2n.h"
+#include "math/matrix.h"
 #include "utils/debug.h"
 
 namespace lbcrypto {
@@ -106,9 +106,8 @@ public:
    * @return the trapdoor pair including the public key (matrix of rings)
    * and trapdoor itself
    */
-    static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGen(std::shared_ptr<ParmType> params,
-                                                                             double stddev, int64_t base = 2,
-                                                                             bool bal = false);
+    static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGen(
+            std::shared_ptr<ParmType> params, double stddev, int64_t base = 2, bool bal = false);
 
     /**
    * Generalized trapdoor generation method (described in "Implementing
@@ -124,10 +123,8 @@ public:
    * @return the trapdoor pair including the public key (matrix of rings) and
    * trapdoor itself
    */
-    static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGenSquareMat(std::shared_ptr<ParmType> params,
-                                                                                      double stddev, size_t dimension,
-                                                                                      int64_t base = 2,
-                                                                                      bool bal     = false);
+    static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGenSquareMat(
+            std::shared_ptr<ParmType> params, double stddev, size_t dimension, int64_t base = 2, bool bal = false);
 
     /**
    * Gaussian sampling as described in Alogorithm 2 of
@@ -146,7 +143,7 @@ public:
    * @return the sampled vector (matrix)
    */
     static Matrix<Element> GaussSamp(size_t n, size_t k, const Matrix<Element>& A, const RLWETrapdoorPair<Element>& T,
-                                     const Element& u, DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
+            const Element& u, DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
 
     /**
    * Gaussian sampling (described in "Implementing Token-Based Obfuscation under
@@ -164,8 +161,8 @@ public:
    * @return the sampled vector (matrix)
    */
     static Matrix<Element> GaussSampSquareMat(size_t n, size_t k, const Matrix<Element>& A,
-                                              const RLWETrapdoorPair<Element>& T, const Matrix<Element>& U,
-                                              DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
+            const RLWETrapdoorPair<Element>& T, const Matrix<Element>& U, DggType& dgg, DggType& dggLargeSigma,
+            int64_t base = 2);
 
     /**
    * On-line stage of pre-image sampling (includes only G-sampling)
@@ -183,8 +180,8 @@ public:
    * @return the sampled vector (matrix)
    */
     static Matrix<Element> GaussSampOnline(size_t n, size_t k, const Matrix<Element>& A,
-                                           const RLWETrapdoorPair<Element>& T, const Element& u, DggType& dgg,
-                                           const std::shared_ptr<Matrix<Element>> perturbationVector, int64_t base = 2);
+            const RLWETrapdoorPair<Element>& T, const Element& u, DggType& dgg,
+            const std::shared_ptr<Matrix<Element>> perturbationVector, int64_t base = 2);
 
     /**
    * Offline stage of pre-image sampling (perturbation sampling)
@@ -199,7 +196,7 @@ public:
    * @return the sampled vector (matrix)
    */
     static std::shared_ptr<Matrix<Element>> GaussSampOffline(size_t n, size_t k, const RLWETrapdoorPair<Element>& T,
-                                                             DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
+            DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
 
     /**
    * Method for perturbation generation as described in Algorithm 4 of
@@ -215,8 +212,7 @@ public:
    *@param *perturbationVector perturbation vector;output of the function
    */
     static void ZSampleSigmaP(size_t n, double s, double sigma, const RLWETrapdoorPair<Element>& Tprime,
-                              const DggType& dgg, const DggType& dggLargeSigma,
-                              std::shared_ptr<Matrix<Element>> perturbationVector) {
+            const DggType& dgg, const DggType& dggLargeSigma, std::shared_ptr<Matrix<Element>> perturbationVector) {
         OPENFHE_DEBUG_FLAG(false);
         TimeVar t1, t1_tot;
 
@@ -361,8 +357,7 @@ public:
    *@param *perturbationVector perturbation vector;output of the function
    */
     static void SamplePertSquareMat(size_t n, double s, double sigma, const RLWETrapdoorPair<Element>& Tprime,
-                                    const DggType& dgg, const DggType& dggLargeSigma,
-                                    std::shared_ptr<Matrix<Element>> perturbationVector) {
+            const DggType& dgg, const DggType& dggLargeSigma, std::shared_ptr<Matrix<Element>> perturbationVector) {
         Matrix<Element> R = Tprime.m_r;
         Matrix<Element> E = Tprime.m_e;
 
@@ -478,4 +473,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_

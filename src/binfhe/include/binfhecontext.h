@@ -33,18 +33,19 @@
   Header file for BinFHEContext class, which is used for Boolean circuit FHE schemes
  */
 
-#ifndef BINFHE_BINFHECONTEXT_H
-#define BINFHE_BINFHECONTEXT_H
+#ifndef SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
+#define SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "binfhe-base-scheme.h"
 #include "lattice/stdlatticeparms.h"
 #include "utils/memory.h"
 #include "utils/serializable.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -111,8 +112,8 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std, uint32_t baseKS,
-                               uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
-                               BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
+            uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY, BINFHE_METHOD method = GINX,
+            uint32_t numAutoKeys = 10);
 
     /**
    * Creates a crypto context using custom parameters.
@@ -128,7 +129,7 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ = 11, uint32_t N = 0,
-                               BINFHE_METHOD method = GINX, bool timeOptimization = false);
+            BINFHE_METHOD method = GINX, bool timeOptimization = false);
 
     /**
    * Creates a crypto context using predefined parameters sets. Recommended for
@@ -255,7 +256,7 @@ public:
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
-                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
+            LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
    * Encrypts a bit or integer using a public key (public key encryption)
@@ -268,7 +269,7 @@ public:
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
-                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
+            LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
    * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
@@ -379,8 +380,8 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
-                              bool extended = false) const;
+    LWECiphertext EvalBinGate(
+            BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
 
     /**
    * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
@@ -415,8 +416,8 @@ public:
    * @param p plaintext modulus
    * @return a shared pointer to the resulting ciphertext
    */
-    std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
-                                                      NativeInteger p);
+    std::vector<NativeInteger> GenerateLUTviaFunction(
+            NativeInteger (*f)(NativeInteger m, NativeInteger p), NativeInteger p);
 
     /**
    * Evaluate a round down function
@@ -492,8 +493,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("params", m_params));
         m_binfhescheme = std::make_shared<BinFHEScheme>(m_params->GetRingGSWParams()->GetMethod());
@@ -610,4 +611,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_

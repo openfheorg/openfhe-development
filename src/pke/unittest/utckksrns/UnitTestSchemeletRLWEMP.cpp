@@ -36,13 +36,13 @@
   bootstrapping tests only feed non-negative coefficients, so the negative branch went untested.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-#include "schemelet/rlwe-mp.h"
-
 #include <cstdint>
 #include <limits>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "openfhe.h"
+#include "schemelet/rlwe-mp.h"
 
 using namespace lbcrypto;
 
@@ -115,13 +115,13 @@ TEST_F(UTRLWEMP, OutOfRangeCoefficientsAreReduced) {
     const BigInteger Q = BigInteger(1) << 33;
 
     const std::vector<int64_t> input{
-        std::numeric_limits<int64_t>::min(), -(q + 5), -(3 * q + 7), q + 5, 3 * q + 7, -q, q, 0};
+            std::numeric_limits<int64_t>::min(), -(q + 5), -(3 * q + 7), q + 5, 3 * q + 7, -q, q, 0};
     const std::vector<int64_t> expected{0, -5, -7, 5, 7, 0, 0, 0};
 
     std::vector<int64_t> output;
     ASSERT_NO_THROW(output = SchemeletRLWEMP::DecryptCoeff(
-                        SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams), Q, p, keys.secretKey,
-                        elementParams, input.size()));
+                            SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams), Q, p,
+                            keys.secretKey, elementParams, input.size()));
     ASSERT_EQ(output.size(), expected.size());
     for (size_t i = 0; i < expected.size(); ++i)
         EXPECT_EQ(output[i], expected[i]) << "coefficient " << i << " (input " << input[i] << ")";

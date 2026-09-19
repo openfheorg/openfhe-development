@@ -29,17 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_PUBLICKEY_H_
-#define _LWE_PUBLICKEY_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_
+#define SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_
 
-#include "lwe-publickey-fwd.h"
-#include "math/math-hal.h"
-#include "utils/serializable.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lwe-publickey-fwd.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -119,8 +120,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("A", m_A));
         ar(::cereal::make_nvp("v", m_v));
@@ -141,4 +142,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_PUBLICKEY_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_

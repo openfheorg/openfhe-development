@@ -33,19 +33,20 @@
   Operations for the representation of ciphertext in OpenFHE
  */
 
-#ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H
-#define LBCRYPTO_CRYPTO_CIPHERTEXT_H
+#ifndef SRC_PKE_INCLUDE_CIPHERTEXT_H_
+#define SRC_PKE_INCLUDE_CIPHERTEXT_H_
 
-#include "ciphertext-fwd.h"
-#include "cryptoobject.h"
-#include "key/key.h"
-#include "metadata.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "ciphertext-fwd.h"
+#include "cryptoobject.h"
+#include "key/key.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 /**
@@ -69,8 +70,8 @@ public:
    *
    * @param cc
    */
-    explicit CiphertextImpl(const CryptoContext<Element>& cc, const std::string& id = "",
-                            PlaintextEncodings encType = INVALID_ENCODING)
+    explicit CiphertextImpl(
+            const CryptoContext<Element>& cc, const std::string& id = "", PlaintextEncodings encType = INVALID_ENCODING)
         : CryptoObject<Element>(cc, id), m_encodingType(encType) {}
 
     /**
@@ -485,8 +486,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         ar(cereal::base_class<CryptoObject<Element>>(this));
         ar(cereal::make_nvp("v", m_elements));
         ar(cereal::make_nvp("sl", m_slots));
@@ -632,4 +633,4 @@ Ciphertext<Element>& operator*=(Ciphertext<Element>& a, const Ciphertext<Element
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CIPHERTEXT_H_

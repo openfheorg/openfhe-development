@@ -37,17 +37,22 @@
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
 
+#include <cstdint>
+#include <memory>
+#include <set>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #include "math/math-hal.h"
     #include "math/binaryuniformgenerator-impl.h"
     #include "math/discretegaussiangenerator-impl.h"
     #include "math/discreteuniformgenerator-impl.h"
+    #include "math/hal/bigintntl/transformntl-impl.h"
+    #include "math/math-hal.h"
     #include "math/matrix-impl.h"
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
-    #include "math/hal/bigintntl/transformntl-impl.h"
 
 template class NTL::NumberTheoreticTransformNtl<NTL::BigVector>;
 template class NTL::ChineseRemainderTransformFTTNtl<NTL::BigVector>;

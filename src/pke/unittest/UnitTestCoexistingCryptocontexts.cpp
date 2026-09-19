@@ -34,9 +34,11 @@
  * as possible
  */
 
+#include <vector>
+
+#include "UnitTestUtils.h"
 #include "include/gtest/gtest.h"
 #include "openfhe.h"
-#include "UnitTestUtils.h"
 
 using namespace lbcrypto;
 
@@ -110,5 +112,5 @@ TEST_F(UTGENERAL_CRYPTOCONTEXTS, coexisting_ckks_cryptocontexts) {
 
     constexpr double epsilon = 0.0000001;
     EXPECT_TRUE(checkEquality(values, results->GetRealPackedValue(), epsilon))
-        << "static data for the first cryptocontext may be overriden";
+            << "static data for the first cryptocontext may be overriden";
 }

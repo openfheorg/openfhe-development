@@ -35,19 +35,22 @@ CKKS implementation. If NOISE_FLOODING_DECRYPT is set, we flood the decryption b
 
 #define PROFILE
 
+#include "scheme/ckksrns/ckksrns-pke.h"
+
+#include <vector>
+
 #include "ciphertext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-pke.h"
 
 namespace lbcrypto {
 
-DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                                  NativePoly* plaintext) const {
+DecryptResult PKECKKSRNS::Decrypt(
+        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, NativePoly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b                      = DecryptCore(cv, privateKey);
     if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+            cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
@@ -58,8 +61,8 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
 
     if (sizeQl != 1) {
         OPENFHE_THROW(
-            "sizeQl " + std::to_string(sizeQl) +
-            "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
+                "sizeQl " + std::to_string(sizeQl) +
+                "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
     }
 
     *plaintext = b.GetElementAtIndex(0);
@@ -67,13 +70,13 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
     return DecryptResult(plaintext->GetLength());
 }
 
-DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                                  Poly* plaintext) const {
+DecryptResult PKECKKSRNS::Decrypt(
+        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, Poly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b                      = DecryptCore(cv, privateKey);
     if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+            cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;

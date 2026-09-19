@@ -35,6 +35,10 @@
 
 #define _USE_MATH_DEFINES
 
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/discreteuniformgenerator.h"
@@ -42,9 +46,6 @@
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
 #include "math/ternaryuniformgenerator.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 

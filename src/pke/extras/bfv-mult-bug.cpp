@@ -33,12 +33,17 @@
   Simple example for BFVrns (integer arithmetic)
  */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
 
 void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, uint32_t ptm,
-                  double& noise, double& logQ);
+        double& noise, double& logQ);
 
 int main() {
     CCParams<CryptoContextBFVRNS> parameters;
@@ -109,7 +114,7 @@ int main() {
 }
 
 void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, uint32_t ptm,
-                  double& noise, double& logQ) {
+        double& noise, double& logQ) {
     const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();

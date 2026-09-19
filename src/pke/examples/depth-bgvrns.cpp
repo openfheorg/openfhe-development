@@ -37,9 +37,12 @@
 #define PROFILE
 
 #include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "openfhe.h"
 

@@ -29,13 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __NATIVEINTBACKEND_H__
-#define __NATIVEINTBACKEND_H__
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_NATIVEINTBACKEND_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_NATIVEINTBACKEND_H_
 
 #include "math/hal/basicint.h"
-#include "math/hal/intnat/ubintnat.h"
 #include "math/hal/intnat/mubintvecnat.h"
 #include "math/hal/intnat/transformnat.h"
+#include "math/hal/intnat/ubintnat.h"
 
 template <typename VecType>
 using NatChineseRemainderTransformFTT = intnat::ChineseRemainderTransformFTTNat<VecType>;
@@ -58,4 +58,4 @@ using NativeVector  = lbcrypto::NativeVector;
 using NativeInteger32 = lbcrypto::NativeInteger32;
 using NativeVector32  = lbcrypto::NativeVector32;
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_NATIVEINTBACKEND_H_

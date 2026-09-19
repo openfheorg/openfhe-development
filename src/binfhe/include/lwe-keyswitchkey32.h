@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_KEYSWITCHKEY32_H_
-#define _LWE_KEYSWITCHKEY32_H_
-
-#include "lwe-cryptoparameters.h"
-#include "lwe-keyswitchkey-fwd.h"
-#include "utils/serializable.h"
+#ifndef SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY32_H_
+#define SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY32_H_
 
 #include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "lwe-cryptoparameters.h"
+#include "lwe-keyswitchkey-fwd.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -166,8 +166,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("N", m_N));
         ar(::cereal::make_nvp("m", m_m));
@@ -231,4 +231,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_KEYSWITCHKEY32_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY32_H_

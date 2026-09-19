@@ -34,13 +34,16 @@
   This code shows how the EvalRotate and EvalMerge operations work
  */
 
+#include <complex>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <random>
+#include <vector>
 
-#include "openfhe.h"
 #include "math/math-hal.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

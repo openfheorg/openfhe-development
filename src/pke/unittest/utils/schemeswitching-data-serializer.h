@@ -28,13 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __SCHEMESWITCHING_DATA_SERIALIZER_H__
-#define __SCHEMESWITCHING_DATA_SERIALIZER_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_
+#define SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_
 
-#include "cryptocontext.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
+
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 
@@ -66,8 +67,8 @@ protected:
     }
 
     DataAndLocation() = default;
-    DataAndLocation(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
-                    Ciphertext<DCRTPoly> RAWCiphertext0)
+    DataAndLocation(
+            CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
         : cryptoContext(cryptoContext0),
           publicKey(publicKey0),
           binFHECryptoContext(cryptoContext0->GetBinCCForSchemeSwitch()),
@@ -90,8 +91,8 @@ public:
 
 class SchemeSwitchingDataSerializer : public DataAndLocation {
 public:
-    SchemeSwitchingDataSerializer(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
-                                  Ciphertext<DCRTPoly> RAWCiphertext0)
+    SchemeSwitchingDataSerializer(
+            CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
         : DataAndLocation(cryptoContext0, publicKey0, RAWCiphertext0) {}
 
     void Serialize();
@@ -116,4 +117,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __SCHEMESWITCHING_DATA_SERIALIZER_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_SCHEMESWITCHING_DATA_SERIALIZER_H_

@@ -29,16 +29,23 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemebase/base-scheme.h"
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "key/evalkey.h"
 #include "key/keypair.h"
-#include "schemebase/base-scheme.h"
 
 // the code below is from base-scheme-impl.cpp
 namespace lbcrypto {
 
 template <typename Element>
-EvalKey<Element> SchemeBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivateKey,
-                                               const PublicKey<Element> newPublicKey) const {
+EvalKey<Element> SchemeBase<Element>::ReKeyGen(
+        const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
     VerifyPREEnabled(__func__);
     auto result = m_PRE->ReKeyGen(oldPrivateKey, newPublicKey);
     result->SetKeyTag(newPublicKey->GetKeyTag());
@@ -47,7 +54,7 @@ EvalKey<Element> SchemeBase<Element>::ReKeyGen(const PrivateKey<Element> oldPriv
 
 template <typename Element>
 Ciphertext<Element> SchemeBase<Element>::ReEncrypt(ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
-                                                   const PublicKey<Element> publicKey) const {
+        const PublicKey<Element> publicKey) const {
     VerifyPREEnabled(__func__);
     auto result = m_PRE->ReEncrypt(ciphertext, evalKey, publicKey);
     result->SetKeyTag(evalKey->GetKeyTag());
@@ -73,7 +80,7 @@ std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const Private
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
@@ -83,8 +90,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalA
 
 template <typename Element>
 Ciphertext<Element> SchemeBase<Element>::ComposedEvalMult(ConstCiphertext<Element>& ciphertext1,
-                                                          ConstCiphertext<Element>& ciphertext2,
-                                                          const EvalKey<Element> evalKey) const {
+        ConstCiphertext<Element>& ciphertext2, const EvalKey<Element> evalKey) const {
     VerifyLeveledSHEEnabled(__func__);
     auto result = m_LeveledSHE->ComposedEvalMult(ciphertext1, ciphertext2, evalKey);
     result->SetKeyTag(evalKey->GetKeyTag());
@@ -101,7 +107,7 @@ Ciphertext<Element> SchemeBase<Element>::ModReduce(ConstCiphertext<Element>& cip
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey) const {
+        const PrivateKey<Element> privateKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey);
     for (auto& key : *evalKeyMap)
@@ -111,7 +117,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices) const {
+        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+        std::vector<uint32_t>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
     auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     for (auto& key : *evalKeyMap)
@@ -121,7 +128,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const {
+        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
     auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, indices);
     for (auto& key : *evalKeyMap)
@@ -131,9 +138,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 Ciphertext<Element> SchemeBase<Element>::EvalInnerProduct(ConstCiphertext<Element>& ciphertext1,
-                                                          ConstCiphertext<Element>& ciphertext2, uint32_t batchSize,
-                                                          const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
-                                                          const EvalKey<Element> evalMultKey) const {
+        ConstCiphertext<Element>& ciphertext2, uint32_t batchSize,
+        const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap, const EvalKey<Element> evalMultKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     if (!evalSumKeyMap.size())
         OPENFHE_THROW("Input evaluation key map is empty");
@@ -146,9 +152,8 @@ Ciphertext<Element> SchemeBase<Element>::EvalInnerProduct(ConstCiphertext<Elemen
 }
 
 template <typename Element>
-KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc,
-                                                       const std::vector<PrivateKey<Element>>& privateKeyVec,
-                                                       bool makeSparse) {
+KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(
+        CryptoContext<Element> cc, const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse) {
     VerifyMultipartyEnabled(__func__);
     if (!cc)
         OPENFHE_THROW("Input crypto context is nullptr");
@@ -161,8 +166,8 @@ KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc
 }
 
 template <typename Element>
-KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc, const PublicKey<Element> publicKey,
-                                                       bool makeSparse, bool PRE) {
+KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(
+        CryptoContext<Element> cc, const PublicKey<Element> publicKey, bool makeSparse, bool PRE) {
     VerifyMultipartyEnabled(__func__);
     if (!cc)
         OPENFHE_THROW("Input crypto context is nullptr");
@@ -175,8 +180,8 @@ KeyPair<Element> SchemeBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc
 }
 
 template <typename Element>
-Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptMain(ConstCiphertext<Element>& ciphertext,
-                                                               const PrivateKey<Element> privateKey) const {
+Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptMain(
+        ConstCiphertext<Element>& ciphertext, const PrivateKey<Element> privateKey) const {
     VerifyMultipartyEnabled(__func__);
     CheckMultipartyDecryptCompatibility(ciphertext);
 
@@ -185,8 +190,8 @@ Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptMain(ConstCiphertext<E
 }
 
 template <typename Element>
-Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptLead(ConstCiphertext<Element>& ciphertext,
-                                                               const PrivateKey<Element> privateKey) const {
+Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptLead(
+        ConstCiphertext<Element>& ciphertext, const PrivateKey<Element> privateKey) const {
     VerifyMultipartyEnabled(__func__);
     CheckMultipartyDecryptCompatibility(ciphertext);
 
@@ -196,8 +201,7 @@ Ciphertext<Element> SchemeBase<Element>::MultipartyDecryptLead(ConstCiphertext<E
 
 template <typename Element>
 EvalKey<Element> SchemeBase<Element>::MultiKeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                                        const PrivateKey<Element> newPrivateKey,
-                                                        const EvalKey<Element> evalKey) const {
+        const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiKeySwitchGen(oldPrivateKey, newPrivateKey, evalKey);
     result->SetKeyTag(newPrivateKey->GetKeyTag());
@@ -206,8 +210,9 @@ EvalKey<Element> SchemeBase<Element>::MultiKeySwitchGen(const PrivateKey<Element
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiEvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
-    const std::vector<uint32_t>& indexList, const std::string& keyId) {
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+        const std::vector<uint32_t>& indexList, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiEvalAutomorphismKeyGen(privateKey, evalAutoKeyMap, indexList);
     for (auto& key : *result) {
@@ -220,8 +225,9 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiEvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
-    const std::vector<int32_t>& indexList, const std::string& keyId) {
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+        const std::vector<int32_t>& indexList, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiEvalAtIndexKeyGen(privateKey, evalAutoKeyMap, indexList);
     for (auto& key : *result) {
@@ -234,8 +240,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiEvalSumKeyGen(
-    const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap,
-    const std::string& keyId) {
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap,
+        const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiEvalSumKeyGen(privateKey, evalSumKeyMap);
     for (auto& key : *result) {
@@ -247,8 +253,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 }
 
 template <typename Element>
-EvalKey<Element> SchemeBase<Element>::MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
-                                                       const std::string& keyId) {
+EvalKey<Element> SchemeBase<Element>::MultiAddEvalKeys(
+        EvalKey<Element> evalKey1, EvalKey<Element> evalKey2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto evalKeySum = m_Multiparty->MultiAddEvalKeys(evalKey1, evalKey2);
     evalKeySum->SetKeyTag(keyId);
@@ -256,8 +262,8 @@ EvalKey<Element> SchemeBase<Element>::MultiAddEvalKeys(EvalKey<Element> evalKey1
 }
 
 template <typename Element>
-EvalKey<Element> SchemeBase<Element>::MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
-                                                       const std::string& keyId) {
+EvalKey<Element> SchemeBase<Element>::MultiMultEvalKey(
+        PrivateKey<Element> privateKey, EvalKey<Element> evalKey, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiMultEvalKey(privateKey, evalKey);
     result->SetKeyTag(keyId);
@@ -266,8 +272,8 @@ EvalKey<Element> SchemeBase<Element>::MultiMultEvalKey(PrivateKey<Element> priva
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiAddEvalSumKeys(
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiAddEvalSumKeys(evalSumKeyMap1, evalSumKeyMap2);
     for (auto& key : *result) {
@@ -280,8 +286,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiAddEvalAutomorphismKeys(
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiAddEvalAutomorphismKeys(evalSumKeyMap1, evalSumKeyMap2);
     for (auto& key : *result) {
@@ -293,8 +299,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 }
 
 template <typename Element>
-PublicKey<Element> SchemeBase<Element>::MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
-                                                        const std::string& keyId) {
+PublicKey<Element> SchemeBase<Element>::MultiAddPubKeys(
+        PublicKey<Element> publicKey1, PublicKey<Element> publicKey2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto publicKeySum = m_Multiparty->MultiAddPubKeys(publicKey1, publicKey2);
     publicKeySum->SetKeyTag(keyId);
@@ -302,8 +308,8 @@ PublicKey<Element> SchemeBase<Element>::MultiAddPubKeys(PublicKey<Element> publi
 }
 
 template <typename Element>
-EvalKey<Element> SchemeBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
-                                                           const std::string& keyId) {
+EvalKey<Element> SchemeBase<Element>::MultiAddEvalMultKeys(
+        EvalKey<Element> evalKey1, EvalKey<Element> evalKey2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto evalKeySum = m_Multiparty->MultiAddEvalMultKeys(evalKey1, evalKey2);
     evalKeySum->SetKeyTag(keyId);
@@ -312,7 +318,7 @@ EvalKey<Element> SchemeBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> eval
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)

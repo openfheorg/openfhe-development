@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACC_CGGI_H_
-#define _RGSW_ACC_CGGI_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_
+
+#include <cstdint>
+#include <memory>
 
 #include "rgsw-acc.h"
 #include "rgsw-acckey32.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -61,14 +62,14 @@ public:
    * 64-bit key is never materialised.
    */
     RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                                ConstLWEPrivateKey& LWEsk) const override;
+            ConstLWEPrivateKey& LWEsk) const override;
 
     void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
-                   const NativeVector& a) const override;
+            const NativeVector& a) const override;
 #endif
 
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                            ConstLWEPrivateKey& LWEsk) const override;
+            ConstLWEPrivateKey& LWEsk) const override;
 
     /**
    * Main accumulator function used in bootstrapping - GINX variant
@@ -79,7 +80,7 @@ public:
    * @param a value to update the accumulator with
    */
     void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
-                 const NativeVector& a) const override;
+            const NativeVector& a) const override;
 
 private:
     /**
@@ -92,7 +93,7 @@ private:
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-                              LWEPlaintext m, uint32_t index) const;
+            LWEPlaintext m, uint32_t index) const;
 
     /**
    * CGGI Accumulation as described in https://eprint.iacr.org/2020/086
@@ -105,9 +106,9 @@ private:
    * @param index LWE secret-key coefficient index
    */
     void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
-                      ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const;
+            ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const;
 };
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACC_CGGI_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_

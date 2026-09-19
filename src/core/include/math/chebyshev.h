@@ -33,8 +33,8 @@
  * This code provides Chebyshev approximation utilities.
  */
 
-#ifndef LBCRYPTO_INC_MATH_CHEBYSHEV_H
-#define LBCRYPTO_INC_MATH_CHEBYSHEV_H
+#ifndef SRC_CORE_INCLUDE_MATH_CHEBYSHEV_H_
+#define SRC_CORE_INCLUDE_MATH_CHEBYSHEV_H_
 
 #include <cstdint>
 #include <functional>
@@ -73,9 +73,9 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> f, d
  * @param degree is the desired degree of approximation
  * @return Evaluation of the approximated function over the plaintexts.
  */
-std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> f, const std::vector<double>& ptxt,
-                                              double a, double b, size_t d);
+std::vector<double> EvalChebyshevFunctionPtxt(
+        std::function<double(double)> f, const std::vector<double>& ptxt, double a, double b, size_t d);
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_CHEBYSHEV_H_

@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BGVRNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_
 
-#include "schemerns/rns-multiparty.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
@@ -46,11 +47,11 @@ class MultipartyBGVRNS : public MultipartyRNS {
 public:
     virtual ~MultipartyBGVRNS() {}
 
-    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                          NativePoly* plaintext) const override;
+    DecryptResult MultipartyDecryptFusion(
+            const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const override;
 
-    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                          Poly* plaintext) const override;
+    DecryptResult MultipartyDecryptFusion(
+            const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, Poly* plaintext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -68,4 +69,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_

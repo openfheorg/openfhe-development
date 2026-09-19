@@ -33,27 +33,29 @@
   This file contains the cpp implementation of  mubintvec, a <vector> of ubint, with associated math operators
  */
 
+#include <algorithm>
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include "math/math-hal.h"
     #include "math/hal/bigintdyn/mubintvecdyn.h"
-
+    #include "math/math-hal.h"
     #include "utils/exception.h"
     #include "utils/inttypes.h"
     #include "utils/serializable.h"
 
 //    #include "time.h"
 //    #include <chrono>
-    #include <initializer_list>
-    #include <string>
-    #include <vector>
 
 namespace bigintdyn {
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
-                                 std::initializer_list<std::string> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(
+        uint32_t length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
@@ -61,8 +63,8 @@ mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
 }
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
-                                 std::initializer_list<uint64_t> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(
+        uint32_t length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)

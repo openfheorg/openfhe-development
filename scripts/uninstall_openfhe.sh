@@ -1,7 +1,7 @@
 #!/bin/bash
-# 
+#
 # This script is meant to uninstall OpenFHE installed on a Linux, Mac, or MinGW distribution.
-# 
+#
 # NOTE - openfhe_remove_manifest_files below deletes every file listed in install_manifest.txt.
 # The manifest lists files only, never directories, so the two directories OpenFHE creates for
 # itself have to be derived from it and removed separately:

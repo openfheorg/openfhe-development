@@ -29,13 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <vector>
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -118,11 +122,11 @@ constexpr uint32_t SCALE = 78;
 #else
 constexpr uint32_t SCALE = 50;
 #endif
-constexpr uint32_t RING_DIM        = 16;
-constexpr uint32_t BATCH           = 8;
-constexpr uint32_t MULT_DEPTH      = 4;
+constexpr uint32_t RING_DIM     = 16;
+constexpr uint32_t BATCH        = 8;
+constexpr uint32_t MULT_DEPTH   = 4;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
-constexpr uint32_t PTM             = 65537;
+constexpr uint32_t PTM          = 65537;
 
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_EVALMULT> testCasesUTGENERAL_EVALMULT = {
@@ -275,8 +279,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalMultManyErrorHandling(const TEST_CASE_UTGENERAL_EVALMULT& testData,
-                                            const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultManyErrorHandling(
+            const TEST_CASE_UTGENERAL_EVALMULT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
 
@@ -315,12 +319,13 @@ protected:
             ////////////////////////////////////////////////////////////
             // Encryption
             ////////////////////////////////////////////////////////////
-            auto ciphertext1 = (INVALID_PUBLIC_KEY == testData.error) ?
-                                   cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
-                                   cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 =
+                    (INVALID_PUBLIC_KEY == testData.error) ?
+                            cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
+                            cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testData.error) ?
-                                   cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
-                                   cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
+                                       cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
+                                       cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
             auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
             auto ciphertext4 = cryptoContext->Encrypt(keyPair.publicKey, plaintext4);
 
@@ -329,11 +334,11 @@ protected:
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
             auto ciphertextMul12                  = (INVALID_CIPHERTEXT_ERROR1 == testData.error) ?
-                                                        cryptoContext->EvalMultNoRelin(nullptr, ciphertext2) :
-                                                        cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
+                                                            cryptoContext->EvalMultNoRelin(nullptr, ciphertext2) :
+                                                            cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
             auto ciphertextMul123                 = (INVALID_CIPHERTEXT_ERROR2 == testData.error) ?
-                                                        cryptoContext->EvalMultNoRelin(ciphertextMul12, nullptr) :
-                                                        cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
+                                                            cryptoContext->EvalMultNoRelin(ciphertextMul12, nullptr) :
+                                                            cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
             Ciphertext<Element> ciphertextMul1234 = nullptr;
             if (INVALID_CIPHERTEXT_ERROR3 == testData.error)
                 ciphertextMul1234 = cryptoContext->EvalMultAndRelinearize(nullptr, ciphertext4);
@@ -369,8 +374,8 @@ protected:
             // Compute EvalMultMany
             ////////////////////////////////////////////////////////////
             auto ciphertextMul12345 = (INVALID_CIPHER_TEXT_LIST_MANY == testData.error) ?
-                                          cryptoContext->EvalMultMany(std::vector<Ciphertext<Element>>()) :
-                                          cryptoContext->EvalMultMany(cipherTextList);
+                                              cryptoContext->EvalMultMany(std::vector<Ciphertext<Element>>()) :
+                                              cryptoContext->EvalMultMany(cipherTextList);
 
             ////////////////////////////////////////////////////////////
             // Decrypt EvalMultMany
@@ -413,8 +418,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalMultErrorHandling(const TEST_CASE_UTGENERAL_EVALMULT& testData,
-                                        const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultErrorHandling(
+            const TEST_CASE_UTGENERAL_EVALMULT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
 
@@ -462,12 +467,13 @@ protected:
             ////////////////////////////////////////////////////////////
             // Encryption
             ////////////////////////////////////////////////////////////
-            auto ciphertext1 = (INVALID_PUBLIC_KEY == testData.error) ?
-                                   cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
-                                   cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 =
+                    (INVALID_PUBLIC_KEY == testData.error) ?
+                            cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
+                            cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testData.error) ?
-                                   cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
-                                   cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
+                                       cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
+                                       cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
 
             ////////////////////////////////////////////////////////////
             // EvalMult Operation
@@ -482,8 +488,8 @@ protected:
                 ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
 
             Ciphertext<Element> ciphertextMult = (INVALID_CIPHERTEXT_ERROR3 == testData.error) ?
-                                                     cryptoContext->Relinearize(nullptr) :
-                                                     cryptoContext->Relinearize(ciphertextMul12);
+                                                         cryptoContext->Relinearize(nullptr) :
+                                                         cryptoContext->Relinearize(ciphertextMul12);
 
             ////////////////////////////////////////////////////////////
             // Decryption of multiplicative results with and without keyswtiching (depends
@@ -526,8 +532,8 @@ protected:
         }
     }
 
-    void UnitTest_Relinearization(const TEST_CASE_UTGENERAL_EVALMULT& testData,
-                                  const std::string& failmsg = std::string()) {
+    void UnitTest_Relinearization(
+            const TEST_CASE_UTGENERAL_EVALMULT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
 
@@ -625,8 +631,8 @@ protected:
 
             errMsg = failmsg + " Relinearization after two multiplications failed.";
             if (CKKSRNS_SCHEME == testData.params.schemeId)
-                checkEquality(plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps, errMsg);
             else
                 checkEquality(plaintextMult2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
 
@@ -637,8 +643,8 @@ protected:
 
             errMsg = failmsg + " In-place relinearization after two multiplications failed.";
             if (CKKSRNS_SCHEME == testData.params.schemeId)
-                checkEquality(plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps, errMsg);
             else
                 checkEquality(plaintextMult2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
         }

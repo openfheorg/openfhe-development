@@ -33,6 +33,9 @@
   Example of integer Gaussian sampling
  */
 
+#include <cmath>
+#include <iostream>
+
 #include "openfhecore.h"
 // #include <vld.h>
 using namespace lbcrypto;

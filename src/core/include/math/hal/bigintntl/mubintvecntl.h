@@ -37,25 +37,29 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+
+#include <cstdint>
+#include <type_traits>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
+    #include <NTL/SmartPtr.h>
+    #include <NTL/vec_ZZ.h>
+    #include <NTL/vector.h>
 
-        #include <NTL/SmartPtr.h>
-        #include <NTL/vec_ZZ.h>
-        #include <NTL/vector.h>
+    #include <initializer_list>
+    #include <ostream>
+    #include <string>
+    #include <vector>
 
-        #include "math/hal/bigintntl/ubintntl.h"
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <initializer_list>
-        #include <ostream>
-        #include <string>
-        #include <vector>
+    #include "math/hal/bigintntl/ubintntl.h"
+    #include "math/hal/vector.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 // defining this forces modulo when you write to the vector (except with at())
 // this is becuase NTL required inputs to modmath to be < modulus but BU does
@@ -616,7 +620,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         // YSP. This was seg-faulting in MINGW
         // ar( m_modulus.ToString() );
         // ar( m_modulus_state );
@@ -633,7 +637,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_modulus.ToString()));
         ar(::cereal::make_nvp("ms", m_modulus_state));
         ar(::cereal::make_nvp("l", this->GetLength()));
@@ -644,10 +648,10 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         // YSP. This was seg-faulting in MINGW
         // std::string m;
@@ -676,10 +680,10 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         std::string m;
         ar(::cereal::make_nvp("m", m));
@@ -752,6 +756,6 @@ protected:
 
 }  // namespace NTL
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_

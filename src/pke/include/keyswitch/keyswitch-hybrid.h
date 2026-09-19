@@ -39,15 +39,15 @@
                Cons : need to double dimension,N, or reduce size of ciphertext modulus, Q, by a factor of 2
 
 */
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_HYBRID_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_HYBRID_H
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "keyswitch/keyswitch-rns.h"
 #include "schemebase/rlwe-cryptoparameters.h"
-
-#include <string>
-#include <vector>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -72,15 +72,14 @@ public:
 
     virtual ~KeySwitchHYBRID() = default;
 
-    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(
+            const PrivateKey<DCRTPoly> oldPrivateKey, const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey,
-                                           const EvalKey<DCRTPoly> evalKey) const override;
+            const PrivateKey<DCRTPoly> newPrivateKey, const EvalKey<DCRTPoly> evalKey) const override;
 
-    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PublicKey<DCRTPoly> newPublicKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(
+            const PrivateKey<DCRTPoly> oldPrivateKey, const PublicKey<DCRTPoly> newPublicKey) const override;
 
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 
@@ -97,15 +96,13 @@ public:
     std::vector<DCRTPoly> KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
-        const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
+            const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
     std::vector<DCRTPoly> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
-                                                const EvalKey<DCRTPoly> evalKey,
-                                                const std::shared_ptr<ParmType> paramsQl) const override;
+            const EvalKey<DCRTPoly> evalKey, const std::shared_ptr<ParmType> paramsQl) const override;
 
     std::vector<DCRTPoly> EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<DCRTPoly>> digits,
-                                                   const EvalKey<DCRTPoly> evalKey,
-                                                   const std::shared_ptr<ParmType> paramsQl) const override;
+            const EvalKey<DCRTPoly> evalKey, const std::shared_ptr<ParmType> paramsQl) const override;
 
     /////////////////////////////////////////
     // SERIALIZATION
@@ -128,4 +125,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_HYBRID_H_

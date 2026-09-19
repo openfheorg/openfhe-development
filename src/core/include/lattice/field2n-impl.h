@@ -33,20 +33,19 @@
   implementation of the power-of-2 fields
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
-#define LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
+
+#include <complex>
+#include <cstdint>
+#include <vector>
 
 #include "lattice/field2n.h"
 #include "lattice/lat-hal.h"
-
 #include "math/dftransform.h"
 #include "math/math-hal.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <complex>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -292,4 +291,4 @@ void Field2n::SwitchFormat() {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_

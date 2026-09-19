@@ -34,6 +34,11 @@
  */
 
 #define PROFILE  // for TIC TOC
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;

@@ -33,12 +33,12 @@
  * Abstract interface class for the RNS versions of key switching algorithms
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_RNS_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_RNS_H
-
-#include "keyswitch/keyswitch-base.h"
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_RNS_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_RNS_H_
 
 #include <string>
+
+#include "keyswitch/keyswitch-base.h"
 
 /**
  * @namespace lbcrypto
@@ -75,4 +75,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_RNS_H_

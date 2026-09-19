@@ -33,15 +33,16 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
 
-#include "math/distributiongenerator.h"
-#include "math/math-hal.h"
-
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/distributiongenerator.h"
+#include "math/math-hal.h"
 
 namespace lbcrypto {
 
@@ -87,4 +88,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_

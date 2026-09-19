@@ -34,14 +34,14 @@
   all other distribution generators
  */
 
-#ifndef __DISTRIBUTIONGENERATOR_H__
-#define __DISTRIBUTIONGENERATOR_H__
-
-#include "utils/prng/prng.h"
-#include "config_core.h"
+#ifndef SRC_CORE_INCLUDE_MATH_DISTRIBUTIONGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_DISTRIBUTIONGENERATOR_H_
 
 #include <memory>
 #include <string>
+
+#include "config_core.h"
+#include "utils/prng/prng.h"
 
 namespace lbcrypto {
 
@@ -84,4 +84,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // __DISTRIBUTIONGENERATOR_H__
+#endif  // SRC_CORE_INCLUDE_MATH_DISTRIBUTIONGENERATOR_H_

@@ -29,18 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
-#define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
-
-#include "cryptocontext-fwd.h"
-#include "encoding/encodingparams.h"
-#include "schemebase/base-cryptoparameters.h"
-#include "cryptocontextfactory.h"
+#ifndef SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
+#define SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "cryptocontext-fwd.h"
+#include "cryptocontextfactory.h"
+#include "encoding/encodingparams.h"
+#include "schemebase/base-cryptoparameters.h"
 
 namespace lbcrypto {
 
@@ -108,8 +109,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         ar(::cereal::make_nvp("cc", context));
         ar(::cereal::make_nvp("kt", keyTag));
         context = CryptoContextFactory<Element>::GetFullContextByDeserializedContext(context);
@@ -125,4 +126,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CRYPTOOBJECT_H_

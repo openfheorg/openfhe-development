@@ -30,6 +30,11 @@
 //==================================================================================
 #include "schemerns/rns-pke.h"
 
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ciphertext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
@@ -69,8 +74,8 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPol
     return ciphertext;
 }
 
-DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                              Poly* plaintext) const {
+DecryptResult PKERNS::Decrypt(
+        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, Poly* plaintext) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b                      = DecryptCore(cv, privateKey);
 
@@ -90,8 +95,8 @@ DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Privat
     return DecryptResult(plaintext->GetLength());
 }
 
-DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                              NativePoly* plaintext) const {
+DecryptResult PKERNS::Decrypt(
+        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, NativePoly* plaintext) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b                      = DecryptCore(cv, privateKey);
 
@@ -99,8 +104,8 @@ DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Privat
     const size_t sizeQl = b.GetParams()->GetParams().size();
     if (sizeQl != 1) {
         OPENFHE_THROW(
-            "sizeQl " + std::to_string(sizeQl) +
-            "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
+                "sizeQl " + std::to_string(sizeQl) +
+                "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
     }
 
     *plaintext = b.GetElementAtIndex(0);
@@ -108,8 +113,8 @@ DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Privat
     return DecryptResult(plaintext->GetLength());
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<DCRTPoly> privateKey,
-                                                               const std::shared_ptr<ParmType> params) const {
+std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
+        const PrivateKey<DCRTPoly> privateKey, const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
     const DCRTPoly& s  = privateKey->GetPrivateElement();
@@ -146,8 +151,8 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
     return result;
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
-                                                               const std::shared_ptr<ParmType> params) const {
+std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
+        const PublicKey<DCRTPoly> publicKey, const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();

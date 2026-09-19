@@ -29,16 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemebase/base-pke.h"
+
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "key/keypair.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "schemebase/base-pke.h"
 #include "schemebase/rlwe-cryptoparameters.h"
-
-#include <memory>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -89,8 +91,8 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
     if (sizePK > sizeQ)
         s.DropLastElements(sizePK - sizeQ);
 
-    KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
-                             std::make_shared<PrivateKeyImpl<Element>>(cc));
+    KeyPair<Element> keyPair(
+            std::make_shared<PublicKeyImpl<Element>>(cc), std::make_shared<PrivateKeyImpl<Element>>(cc));
     keyPair.secretKey->SetPrivateElement(std::move(s));
     std::vector<Element> pkElems;
     pkElems.reserve(2);
@@ -125,10 +127,10 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(Element plaintext, const PublicKey
 
 // makeSparse is not used by this scheme
 template <class Element>
-std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const PrivateKey<Element> privateKey,
-                                                                        const std::shared_ptr<ParmType> params) const {
+std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
     const auto elementParams = (params == nullptr) ? cryptoParams->GetElementParams() : params;
 
     DugType dug;
@@ -149,10 +151,10 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pr
 
 // makeSparse is not used by this scheme
 template <class Element>
-std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const PublicKey<Element> publicKey,
-                                                                        const std::shared_ptr<ParmType> params) const {
+std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
+        const PublicKey<Element> publicKey, const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(publicKey->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(publicKey->GetCryptoParameters());
 
     const auto ns      = cryptoParams->GetNoiseScale();
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();

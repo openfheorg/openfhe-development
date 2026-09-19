@@ -33,10 +33,16 @@
   This code provides basic arithmetic functionality for vectors of native integers
  */
 
-#include "math/math-hal.h"
 #include "math/hal/intnat/mubintvecnat.h"
-#include "math/nbtheory-impl.h"
 
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "math/math-hal.h"
+#include "math/nbtheory-impl.h"
 #include "utils/exception.h"
 
 namespace intnat {
@@ -82,8 +88,8 @@ static inline T centeredCorrectionLane(T v, T halfQ, T diff) {
 }
 
 template <class IntegerType>
-void NativeVectorT<IntegerType>::GeneralShrinkLoop(IntegerType* dst, const IntegerType* src, size_t size, BasicInt ov,
-                                                   BasicInt nv) {
+void NativeVectorT<IntegerType>::GeneralShrinkLoop(
+        IntegerType* dst, const IntegerType* src, size_t size, BasicInt ov, BasicInt nv) {
     using DInt = typename IntegerType::DNativeInt;
     const BasicInt halfQ{ov >> 1};
     const BasicInt diffR{static_cast<BasicInt>((ov - nv) % nv)};
@@ -121,8 +127,8 @@ void NativeVectorT<IntegerType>::GeneralShrinkLoop(IntegerType* dst, const Integ
 }
 
 template <class IntegerType>
-NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
-                                          std::initializer_list<std::string> rhs) noexcept
+NativeVectorT<IntegerType>::NativeVectorT(
+        uint32_t length, const IntegerType& modulus, std::initializer_list<std::string> rhs) noexcept
     : m_modulus{modulus}, m_data(length) {
     const uint32_t vlen = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (uint32_t i = 0; i < vlen; ++i)
@@ -130,8 +136,8 @@ NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& mo
 }
 
 template <class IntegerType>
-NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
-                                          std::initializer_list<uint64_t> rhs) noexcept
+NativeVectorT<IntegerType>::NativeVectorT(
+        uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs) noexcept
     : m_modulus{modulus}, m_data(length) {
     const uint32_t vlen = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (uint32_t i = 0; i < vlen; ++i)
@@ -538,8 +544,8 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const Nati
 }
 
 template <class IntegerType>
-NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultiplyAndRound(const IntegerType& p,
-                                                                        const IntegerType& q) const {
+NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultiplyAndRound(
+        const IntegerType& p, const IntegerType& q) const {
     auto halfQ{m_modulus.m_value >> 1};
     auto mv{m_modulus};
     auto ans(*this);
@@ -678,8 +684,8 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(ui
 }
 
 template <class IntegerType>
-void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size,
-                                                   const IntegerType& modulus) {
+void NativeVectorT<IntegerType>::BarrettModMulLoop(
+        IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
     if constexpr (sizeof(DInt) > sizeof(NInt)) {
@@ -711,8 +717,8 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const Integer
 }
 
 template <class IntegerType>
-void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b,
-                                                   size_t size, const IntegerType& modulus) {
+void NativeVectorT<IntegerType>::BarrettModMulLoop(
+        IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
     if constexpr (sizeof(DInt) > sizeof(NInt)) {
@@ -744,8 +750,8 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const Integ
 }
 
 template <class IntegerType>
-void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b,
-                                                    size_t size, const IntegerType& modulus) {
+void NativeVectorT<IntegerType>::BarrettMultAccLoop(
+        IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
     if constexpr (sizeof(DInt) > sizeof(NInt)) {
@@ -786,8 +792,8 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulNoCheckEq(const Na
 }
 
 template <class IntegerType>
-NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const NativeVectorT& a,
-                                                                         const NativeVectorT& b) {
+NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(
+        const NativeVectorT& a, const NativeVectorT& b) {
     BarrettMultAccLoop(m_data.data(), a.m_data.data(), b.m_data.data(), m_data.size(), m_modulus);
     return *this;
 }

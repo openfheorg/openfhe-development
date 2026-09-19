@@ -35,10 +35,14 @@ Example for CKKS bootstrapping with full packing
 
 */
 
-#include "openfhe.h"
-
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <iostream>
 #include <ostream>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -57,8 +61,8 @@ int main(int argc, char* argv[]) {
 // (https://cic.iacr.org/p/1/4/26/pdf), precision bits are evaluated as the negative
 // base 2 logarithm of the average L1 norm between results from standard (cleartext) calculation
 // and those computed homomorphically.
-double CalculateApproximationError(const std::vector<std::complex<double>>& result,
-                                   const std::vector<std::complex<double>>& expectedResult) {
+double CalculateApproximationError(
+        const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
         OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -99,8 +103,8 @@ void SimpleBootstrapExample() {
     * below unless you are an FHE expert.
     */
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits               = 98;
-    uint32_t firstMod               = 100;
+    uint32_t dcrtBits            = 98;
+    uint32_t firstMod            = 100;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -156,8 +160,8 @@ void SimpleBootstrapExample() {
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
     size_t encodedLength  = x.size();
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
-    uint32_t compositeDegree   = cryptoParams->GetCompositeDegree();
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     // We start with a depleted ciphertext that has used up all of its levels.
     // Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, compositeDegree * (depth - 1));
@@ -229,8 +233,8 @@ void SimpleBootstrapStCFirstExample() {
     * below unless you are an FHE expert.
     */
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits               = 98;
-    uint32_t firstMod               = 100;
+    uint32_t dcrtBits            = 98;
+    uint32_t firstMod            = 100;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -286,8 +290,8 @@ void SimpleBootstrapStCFirstExample() {
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
     size_t encodedLength  = x.size();
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
-    uint32_t compositeDegree   = cryptoParams->GetCompositeDegree();
+    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     // We start with a depleted ciphertext that has used up all of its levels.
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, compositeDegree * (depth - 1 - levelBudget[1]));
 

@@ -31,22 +31,24 @@
 
 #include "encoding/ckkspackedencoding.h"
 
-#include "lattice/lat-hal.h"
-
-#include "math/hal/basicint.h"
-#include "math/dftransform.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
-
-#include <complex>
 #include <cmath>
+#include <complex>
+#include <cstdint>
 #include <limits>
 #include <memory>
+#include <numeric>
+#include <random>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "math/dftransform.h"
+#include "math/hal/basicint.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -310,8 +312,8 @@ bool CKKSPackedEncoding::Encode() {
     return isEncoded = true;
 }
 
-bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, ScalingTechnique scalTech,
-                                ExecutionMode executionMode) {
+bool CKKSPackedEncoding::Decode(
+        size_t noiseScaleDeg, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) {
     double p     = encodingParams->GetPlaintextModulus();
     double powP  = 0.0;
     uint32_t Nh  = GetElementRingDimension() / 2;
@@ -321,7 +323,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
     if (typeFlag == IsNativePoly) {
         if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
-            scalTech == COMPOSITESCALINGMANUAL)
+                scalTech == COMPOSITESCALINGMANUAL)
             powP = std::pow(scalingFactor, -1);
         else
             powP = std::pow(2, -p);
@@ -354,7 +356,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // we will bring down the scaling factor to 2^p
         double scalingFactorPre = 0.0;
         if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||
-            scalTech == COMPOSITESCALINGMANUAL)
+                scalTech == COMPOSITESCALINGMANUAL)
             scalingFactorPre = std::pow(scalingFactor, -1) * std::pow(2, p);
         else
             scalingFactorPre = std::pow(2, -p * (noiseScaleDeg - 1));
@@ -428,8 +430,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             //   If less than 5 bits of precision is observed
             if (logstd > p - 5.0)
                 OPENFHE_THROW(
-                    "The decryption failed because the approximation error is "
-                    "too high. Check the parameters. ");
+                        "The decryption failed because the approximation error is "
+                        "too high. Check the parameters. ");
         }
 
         // real values
@@ -490,8 +492,8 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
 
 void CKKSPackedEncoding::Destroy() {}
 
-void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int64_t bigBound,
-                                           NativeVector* nativeVec) const {
+void CKKSPackedEncoding::FitToNativeVector(
+        const std::vector<int64_t>& vec, int64_t bigBound, NativeVector* nativeVec) const {
     NativeInteger bigValueHf(bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = bigBound - modulus;
@@ -535,8 +537,8 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
 }
 
 #if NATIVEINT == 128
-void CKKSPackedEncoding::FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound,
-                                           NativeVector* nativeVec) const {
+void CKKSPackedEncoding::FitToNativeVector(
+        const std::vector<int128_t>& vec, int128_t bigBound, NativeVector* nativeVec) const {
     NativeInteger bigValueHf((uint128_t)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = NativeInteger((uint128_t)bigBound) - modulus;

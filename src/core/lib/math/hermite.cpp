@@ -34,13 +34,14 @@
  */
 
 #include "math/hermite.h"
-#include "utils/exception.h"
 
 #include <cmath>
 #include <complex>
 #include <cstdint>
 #include <functional>
 #include <vector>
+
+#include "utils/exception.h"
 
 static bool IsNotEqualZero(std::complex<double> v) {
     // TODO: tune this delta value during the fbt refactor
@@ -50,8 +51,8 @@ static bool IsNotEqualZero(std::complex<double> v) {
 
 namespace lbcrypto {
 
-std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64_t(int64_t)> func, uint32_t p,
-                                                             size_t order, double scale) {
+std::vector<std::complex<double>> GetHermiteTrigCoefficients(
+        std::function<int64_t(int64_t)> func, uint32_t p, size_t order, double scale) {
     using namespace std::complex_literals;
     if (p == 0)
         OPENFHE_THROW("The degree of approximation can not be zero");

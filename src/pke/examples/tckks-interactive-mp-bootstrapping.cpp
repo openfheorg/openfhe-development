@@ -41,6 +41,12 @@
 
 #define PROFILE
 
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -81,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
-        scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
+            scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
         std::string errMsg = "ERROR: Scaling technique is not supported!";
         OPENFHE_THROW(errMsg);
     }
@@ -265,7 +271,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     for (uint32_t i = 1; i < numParties; i++) {
         std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
         partialCiphertextVec.push_back(
-            cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
+                cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
     }
 
     // Checking the results

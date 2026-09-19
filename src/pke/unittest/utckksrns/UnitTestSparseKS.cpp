@@ -35,6 +35,14 @@
   KeySwitchSparse must stay at the modulus switching (rounding) noise level.
 */
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "UnitTestException.h"
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -42,14 +50,7 @@
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestException.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -90,7 +91,7 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
 
         auto keyPair = cc->KeyGen();
         auto cryptoParams =
-            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
 
         // encode at the last level so the ciphertext has a single tower (q0), as at the
         // modulus raise step of bootstrapping
@@ -128,7 +129,7 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
         }
 
         EXPECT_LE(maxNoise.ConvertToInt<uint64_t>(), 32u)
-            << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
+                << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
     }
     catch (std::exception& e) {
         std::cerr << "Exception thrown from KeySwitchSparseAddedNoise: " << e.what() << std::endl;

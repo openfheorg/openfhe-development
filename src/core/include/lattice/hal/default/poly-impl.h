@@ -33,23 +33,25 @@
   implementation of the integer lattice
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-
-#include "lattice/hal/default/poly.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
 
 #include <cmath>
+#include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/poly.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -76,8 +78,8 @@ PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::
 }
 
 template <typename VecType>
-PolyImpl<VecType>::PolyImpl(const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format,
-                            uint32_t h)
+PolyImpl<VecType>::PolyImpl(
+        const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format, uint32_t h)
     : m_format{Format::COEFFICIENT},
       m_params{params},
       m_values{std::make_unique<VecType>(tug.GenerateVector(params->GetRingDimension(), params->GetModulus(), h))} {
@@ -257,8 +259,8 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& rhs) const {
 }
 
 template <typename VecType>
-PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(const typename VecType::Integer& p,
-                                                      const typename VecType::Integer& q) const {
+PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(
+        const typename VecType::Integer& p, const typename VecType::Integer& q) const {
     PolyImpl<VecType> tmp(m_params, m_format);
     tmp.SetValues((*m_values).MultiplyAndRound(p, q), m_format);
     return tmp;
@@ -396,8 +398,8 @@ PolyImpl<VecType> PolyImpl<VecType>::Mod(const Integer& modulus) const {
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                                      const Integer& rootOfUnityArb) {
+void PolyImpl<VecType>::SwitchModulus(
+        const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb, const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->SwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
@@ -406,8 +408,8 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                                          const Integer& rootOfUnityArb) {
+void PolyImpl<VecType>::LazySwitchModulus(
+        const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb, const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->LazySwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
@@ -601,4 +603,4 @@ inline PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_

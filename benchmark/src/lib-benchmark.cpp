@@ -36,19 +36,23 @@
 
 #define _USE_MATH_DEFINES
 
-#include "benchmark/benchmark.h"
-#include "math/hal/basicint.h"
-#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
-
+#include <complex>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <limits>
 #include <random>
+#include <utility>
+#include <vector>
+
+#include "benchmark/benchmark.h"
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "math/hal/basicint.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
+#include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 
 using namespace lbcrypto;
 
@@ -1105,12 +1109,11 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
 
     uint32_t i = 0;
     while (state.KeepRunning()) {
-        i        = (i + 1) & (KS_POOL - 1);
-        auto out = parts[i].ApproxSwitchCRTBasis(
-            cryptoParams->GetParamsPartQ(0), cryptoParams->GetParamsComplPartQ(sizeQl - 1, 0),
-            cryptoParams->GetPartQlHatInvModq(0, sizePartQl - 1),
-            cryptoParams->GetPartQlHatInvModqPrecon(0, sizePartQl - 1), cryptoParams->GetPartQlHatModp(sizeQl - 1, 0),
-            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, 0));
+        i         = (i + 1) & (KS_POOL - 1);
+        auto out  = parts[i].ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(0),
+                 cryptoParams->GetParamsComplPartQ(sizeQl - 1, 0), cryptoParams->GetPartQlHatInvModq(0, sizePartQl - 1),
+                 cryptoParams->GetPartQlHatInvModqPrecon(0, sizePartQl - 1),
+                 cryptoParams->GetPartQlHatModp(sizeQl - 1, 0), cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, 0));
         auto sink = out.GetElementAtIndex(0)[0];
         benchmark::DoNotOptimize(sink);
     }
@@ -1142,10 +1145,9 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     while (state.KeepRunning()) {
         i         = (i + 1) & (KS_POOL - 1);
         auto out  = ext[i].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                                         cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                         cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                         cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                         cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+                 cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                 cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                 cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
         auto sink = out.GetElementAtIndex(0)[0];
         benchmark::DoNotOptimize(sink);
     }

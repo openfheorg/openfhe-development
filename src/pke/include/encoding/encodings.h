@@ -33,8 +33,8 @@
   all supported encodings of plaintext objects in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_ENCODING_ENCODINGS_H_
-#define SRC_CORE_LIB_ENCODING_ENCODINGS_H_
+#ifndef SRC_PKE_INCLUDE_ENCODING_ENCODINGS_H_
+#define SRC_PKE_INCLUDE_ENCODING_ENCODINGS_H_
 
 #include "encoding/ckkspackedencoding.h"
 #include "encoding/coefpackedencoding.h"
@@ -43,4 +43,4 @@
 #include "encoding/plaintext.h"
 #include "encoding/stringencoding.h"
 
-#endif /* SRC_CORE_LIB_ENCODING_ENCODINGS_H_ */
+#endif  // SRC_PKE_INCLUDE_ENCODING_ENCODINGS_H_

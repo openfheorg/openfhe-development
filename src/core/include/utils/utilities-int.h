@@ -29,8 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __UTILITIES_INT_H__
-#define __UTILITIES_INT_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_
+#define SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_
+
+#include <cstdint>
 
 #include "math/math-hal.h"
 #include "utils/utilities.h"
@@ -101,4 +103,4 @@ inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt& a, uint64_t modul
 #endif
 
 }  // namespace lbcrypto
-#endif  // __UTILITIES_INT_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_

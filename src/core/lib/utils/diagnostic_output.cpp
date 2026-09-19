@@ -31,8 +31,9 @@
 
 // Built-in diagnostic sink; see diagnostic_output.h for the interface contract.
 
-#include "config_core.h"
 #include "utils/diagnostic_output.h"
+
+#include "config_core.h"
 
 #ifdef WITH_DEFAULT_DIAGNOSTIC_SINK
 

@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_BFVRNS_PARAMETERGENERATION_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PARAMETERGENERATION_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "schemerns/rns-parametergeneration.h"
-
-#include <string>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -48,8 +49,8 @@ public:
     virtual ~ParameterGenerationBFVRNS() {}
 
     bool ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
-                                 uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrBits, uint32_t n,
-                                 uint32_t numPartQ) const override;
+            uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrBits, uint32_t n,
+            uint32_t numPartQ) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -68,4 +69,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PARAMETERGENERATION_H_

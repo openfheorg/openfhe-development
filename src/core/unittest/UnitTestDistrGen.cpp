@@ -29,6 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -37,9 +44,6 @@
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
-#include <thread>
 
 using namespace lbcrypto;
 
@@ -81,11 +85,11 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
         typename V::Integer modulus("10403");
         auto dug = DiscreteUniformGeneratorImpl<V>();
 
-        uint32_t size      = 10;
+        uint32_t size   = 10;
         V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size)
-            << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
+                << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
         // test content
         for (size_t i = 0; i < size; i++) {
             EXPECT_LT(uniRandVector.at(i), modulus) << msg
@@ -101,7 +105,7 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
         typename V::Integer modulus("10402635286389262637365363");
         auto dug = DiscreteUniformGeneratorImpl<V>();
 
-        uint32_t size      = 100;
+        uint32_t size   = 100;
         V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size) << "Failure testing vector_uniform_vector_large_modulus";
@@ -175,7 +179,7 @@ void testDiscreteUniformGenerator(typename V::Integer& modulus, std::string test
     auto distrUniGen = DiscreteUniformGeneratorImpl<V>();
     distrUniGen.SetModulus(modulus);
 
-    uint32_t size      = 50000;
+    uint32_t size   = 50000;
     V randBigVector = distrUniGen.GenerateVector(size);
 
     double sum = 0;
@@ -208,7 +212,7 @@ void testDiscreteUniformGenerator(typename V::Integer& modulus, std::string test
     double diffInStdDev     = std::abs(computedStdDev - expectedStdDevInDouble);
 
     EXPECT_LT(diffInStdDev, 0.01 * expectedStdDevInDouble)
-        << "Failure testing second_moment_test_convertToDouble " << test_name;
+            << "Failure testing second_moment_test_convertToDouble " << test_name;
 }
 
 #ifdef PARALLEL
@@ -239,7 +243,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     double modulusInDouble = modulus.ConvertToDouble();
     // we expect the mean to be modulus/2 (the mid range of the min-max data);
     double expectedMeanInDouble = modulusInDouble / 2.0;
-    uint32_t size                  = 50000;
+    uint32_t size               = 50000;
     // uint32_t size = omp_get_max_threads() * 4;
 
     OPENFHE_DEBUG_FLAG(false);
@@ -285,11 +289,11 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
 
     // within 1% of expected mean
     EXPECT_LT(diffInMeans, 0.01 * modulusInDouble)
-        << "Failure testing parallel_first_central_moment_test " << test_name;
+            << "Failure testing parallel_first_central_moment_test " << test_name;
 
     // TEST CASE ON SECOND CENTRAL MOMENT SMALL MODULUS
     double expectedVarianceInDouble =
-        ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
+            ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
     double expectedStdDevInDouble = std::sqrt(expectedVarianceInDouble);
 
     sum = 0;
@@ -360,7 +364,7 @@ void BinaryUniformGeneratorTest(const std::string& msg) {
     {
         auto binaryUniGen = BinaryUniformGeneratorImpl<V>();
 
-        uint32_t length       = 100000;
+        uint32_t length    = 100000;
         auto modulus       = typename V::Integer("1041");
         auto randBigVector = binaryUniGen.GenerateVector(length, modulus);
 
@@ -388,7 +392,7 @@ template <typename V>
 void TernaryUniformGeneratorTest(const std::string& msg) {
     auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
 
-    uint32_t length    = 100000;
+    uint32_t length = 100000;
     auto modulus    = typename V::Integer("1041");
     V randBigVector = ternaryUniGen.GenerateVector(length, modulus);
 
@@ -423,7 +427,7 @@ void DiscreteGaussianGeneratorTest(const std::string& msg) {
     // mean test
 
     {
-        int stdev  = 5;
+        int stdev     = 5;
         uint32_t size = 100000;
         typename V::Integer modulus("10403");
         auto dgg           = DiscreteGaussianGeneratorImpl<V>(stdev);
@@ -441,7 +445,7 @@ void DiscreteGaussianGeneratorTest(const std::string& msg) {
 
     // generate_vector_mean_test
     {
-        int stdev  = 5;
+        int stdev     = 5;
         uint32_t size = 100000;
         typename V::Integer modulus("10403");
         typename V::Integer modulusByTwo(modulus.DividedBy(2));
@@ -478,7 +482,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
 
     {
-        int stdev  = 5;
+        int stdev     = 5;
         uint32_t size = 10000;
         typename V::Integer modulus("10403");
 
@@ -521,7 +525,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
 
     // generate_vector_mean_test
     {
-        int stdev  = 5;
+        int stdev     = 5;
         uint32_t size = 100000;
         typename V::Integer modulus("10403");
         typename V::Integer modulusByTwo(modulus.DividedBy(2));
@@ -580,7 +584,7 @@ TEST(UTDistrGen, ParallelDiscreteGaussianGenerator_VERY_LONG) {
 template <typename V>
 void Karney_Mean(const std::string& msg) {
     int stdev     = 10;
-    uint32_t size    = 10000;
+    uint32_t size = 10000;
     double mean   = 0;
     double center = 10;
     auto dgg      = DiscreteGaussianGeneratorImpl<V>(stdev);
@@ -601,7 +605,7 @@ TEST(UTDistrGen, Karney_Mean) {
 template <typename V>
 void Karney_Variance(const std::string& msg) {
     int stdev       = 10;
-    uint32_t size      = 10000;
+    uint32_t size   = 10000;
     double mean     = 0;
     double variance = 0;
     auto dgg        = DiscreteGaussianGeneratorImpl<V>(stdev);

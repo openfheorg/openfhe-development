@@ -33,11 +33,15 @@
   This file contains the vector manipulation functionality
  */
 
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #include "math/math-hal.h"
     #include "math/hal/bigintfxd/mubintvecfxd.h"
+    #include "math/math-hal.h"
     #include "math/nbtheory.h"
     #include "utils/debug.h"
     #include "utils/serializable.h"
@@ -81,8 +85,8 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(BigVectorFixedT&& bigVector) {
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus,
-                                              std::initializer_list<std::string> rhs) {
+BigVectorFixedT<IntegerType>::BigVectorFixedT(
+        uint32_t length, const IntegerType& modulus, std::initializer_list<std::string> rhs) {
     this->m_length  = length;
     this->m_modulus = modulus;
     this->m_data    = new IntegerType[m_length]();
@@ -98,8 +102,8 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus,
-                                              std::initializer_list<uint64_t> rhs) {
+BigVectorFixedT<IntegerType>::BigVectorFixedT(
+        uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs) {
     this->m_length  = length;
     this->m_modulus = modulus;
     this->m_data    = new IntegerType[m_length]();
@@ -519,16 +523,16 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultWithOutModEq(con
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultiplyAndRound(const IntegerType& p,
-                                                                            const IntegerType& q) const {
+BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultiplyAndRound(
+        const IntegerType& p, const IntegerType& q) const {
     BigVectorFixedT ans(*this);
     ans.MultiplyAndRoundEq(p, q);
     return ans;
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(const IntegerType& p,
-                                                                               const IntegerType& q) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(
+        const IntegerType& p, const IntegerType& q) {
     IntegerType halfQ(this->m_modulus >> 1);
     IntegerType temp;
     for (uint32_t i = 0; i < this->m_length; i++) {

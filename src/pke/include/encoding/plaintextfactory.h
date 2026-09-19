@@ -33,15 +33,17 @@
   Manufactures plaintext objects in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
-#define SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
+#ifndef SRC_PKE_INCLUDE_ENCODING_PLAINTEXTFACTORY_H_
+#define SRC_PKE_INCLUDE_ENCODING_PLAINTEXTFACTORY_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 #include "encoding/encodings.h"
 #include "scheme/scheme-id.h"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 // TODO: when the parms are polymorphic, reduce the tuple of methods to a
 // single one
@@ -53,11 +55,11 @@ class PlaintextFactory {
 
 public:
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-                                   SCHEME schemeID = SCHEME::INVALID_SCHEME, CKKSDataType cdt = REAL) {
+            SCHEME schemeID = SCHEME::INVALID_SCHEME, CKKSDataType cdt = REAL) {
         switch (encoding) {
             case COEF_PACKED_ENCODING:
                 return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
@@ -73,12 +75,12 @@ public:
     }
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     static Plaintext MakePlaintext(const std::vector<int64_t>& value, PlaintextEncodings encoding,
-                                   std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
-                                   size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+            std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
+            size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         // Check if plaintext has got enough slots for data (value)
         uint32_t ringDim = vp->GetRingDimension();
         size_t valueSize = value.size();
@@ -102,12 +104,12 @@ public:
     }
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
-                                                  bool>::type = true>
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
+                                  bool>::type = true>
     static Plaintext MakePlaintext(const std::string& value, PlaintextEncodings encoding, std::shared_ptr<T> vp,
-                                   EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
-                                   size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+            EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME, size_t noiseScaleDeg = 1, uint32_t level = 0,
+            NativeInteger scalingFactor = 1) {
         // Check if plaintext has got enough slots for data (value)
         uint32_t ringDim = vp->GetRingDimension();
         size_t valueSize = value.size();
@@ -133,4 +135,4 @@ public:
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_ */
+#endif  // SRC_PKE_INCLUDE_ENCODING_PLAINTEXTFACTORY_H_

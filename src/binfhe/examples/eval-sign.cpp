@@ -34,6 +34,10 @@
  */
 
 #define PROFILE
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;

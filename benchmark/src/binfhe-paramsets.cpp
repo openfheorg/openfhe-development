@@ -29,10 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <functional>
+#include <random>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "binfhecontext.h"
-
-#include <random>
 
 using namespace lbcrypto;
 
@@ -78,9 +80,8 @@ using namespace lbcrypto;
     cc.BTKeyGen(sk);
     auto x = std::bind(std::uniform_int_distribution<LWEPlaintext>(0, 1), std::default_random_engine());
     for (auto _ : state)
-        auto ct = cc.EvalBinGate(
-            g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), SMALL_DIM, 6), cc.Encrypt(sk, x(), SMALL_DIM, 6),
-                                          cc.Encrypt(sk, x(), SMALL_DIM, 6)});
+        auto ct = cc.EvalBinGate(g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), SMALL_DIM, 6),
+                                            cc.Encrypt(sk, x(), SMALL_DIM, 6), cc.Encrypt(sk, x(), SMALL_DIM, 6)});
 }
 
 [[maybe_unused]] static void FHEW_BINGATE4(benchmark::State& state, BINFHE_PARAMSET s, BINFHE_METHOD m, BINGATE g) {
@@ -91,8 +92,8 @@ using namespace lbcrypto;
     auto x = std::bind(std::uniform_int_distribution<LWEPlaintext>(0, 1), std::default_random_engine());
     for (auto _ : state)
         auto ct = cc.EvalBinGate(
-            g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), SMALL_DIM, 8), cc.Encrypt(sk, x(), SMALL_DIM, 8),
-                                          cc.Encrypt(sk, x(), SMALL_DIM, 8), cc.Encrypt(sk, x(), SMALL_DIM, 8)});
+                g, std::vector<LWECiphertext>{cc.Encrypt(sk, x(), SMALL_DIM, 8), cc.Encrypt(sk, x(), SMALL_DIM, 8),
+                           cc.Encrypt(sk, x(), SMALL_DIM, 8), cc.Encrypt(sk, x(), SMALL_DIM, 8)});
 }
 
 // clang-format off

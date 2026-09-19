@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_UTILITIES_H
-#define LBCRYPTO_UTILS_UTILITIES_H
+#ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
+#define SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
 
-#include "config_core.h"
-#include "utils/inttypes.h"
-
-#include <cmath>
 #include <climits>  // CHAR_BIT
+#include <cmath>
 #include <cstdint>
 #include <limits>  // std::numeric_limits
 #include <string>
 #include <type_traits>  // std::is_integral
+
+#include "config_core.h"
+#include "utils/inttypes.h"
 
 /**
  * @namespace lbcrypto
@@ -110,8 +110,8 @@ inline bool is64BitOverflow(double d) {
 
 #if NATIVEINT == 128
 inline constexpr __int128 Max128BitValue() {
-    return static_cast<int128_t>((static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) -
-                                 static_cast<uint128_t>(1));
+    return static_cast<int128_t>(
+            (static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) - static_cast<uint128_t>(1));
 }
 
 inline bool is128BitOverflow(double d) {
@@ -165,4 +165,4 @@ inline bool isConvertableToNativeInt(double d) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_UTILITIES_H_

@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_RNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_MULTIPARTY_H_
+
+#include <cstdint>
+#include <string>
 
 #include "lattice/lat-hal.h"
-
 #include "schemebase/base-multiparty.h"
-
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -80,22 +80,22 @@ class MultipartyRNS : public MultipartyBase<DCRTPoly> {
 public:
     virtual ~MultipartyRNS() = default;
 
-    Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
-                                               const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> MultipartyDecryptMain(
+            ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey) const override;
 
-    Ciphertext<DCRTPoly> MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
-                                               const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> MultipartyDecryptLead(
+            ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey) const override;
 
     EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const override;
 
-    Ciphertext<DCRTPoly> IntBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
-                                        ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> IntBootDecrypt(
+            const PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-    Ciphertext<DCRTPoly> IntBootEncrypt(const PublicKey<DCRTPoly> publicKey,
-                                        ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> IntBootEncrypt(
+            const PublicKey<DCRTPoly> publicKey, ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-    Ciphertext<DCRTPoly> IntBootAdd(ConstCiphertext<DCRTPoly> ciphertext1,
-                                    ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> IntBootAdd(
+            ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -114,4 +114,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_MULTIPARTY_H_

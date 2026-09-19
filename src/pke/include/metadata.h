@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_METADATA_H
-#define LBCRYPTO_CRYPTO_METADATA_H
+#ifndef SRC_PKE_INCLUDE_METADATA_H_
+#define SRC_PKE_INCLUDE_METADATA_H_
 
-#include "utils/exception.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <string>
 #include <ostream>
+#include <string>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -112,8 +113,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
     }
 
@@ -143,4 +144,4 @@ protected:
 
 }  // end namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_METADATA_H_

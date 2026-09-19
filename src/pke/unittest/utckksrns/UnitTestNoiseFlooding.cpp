@@ -29,14 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <iterator>
-#include <vector>
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -171,8 +175,8 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
         return ciphResult;
     }
 
-    Ciphertext<DCRTPoly> EncryptedMultipartyComputation(CryptoContext<DCRTPoly>& cryptoContext,
-                                                        PublicKey<DCRTPoly> publicKey) {
+    Ciphertext<DCRTPoly> EncryptedMultipartyComputation(
+            CryptoContext<DCRTPoly>& cryptoContext, PublicKey<DCRTPoly> publicKey) {
         // Encoding and encryption of inputs
         // Generate random input
         std::vector<double> vec1 = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
@@ -208,8 +212,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_NoiseEstimation(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
-                                  const std::string& failmsg = std::string()) {
+    void UnitTest_NoiseEstimation(
+            const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
             cc->Enable(PKE);
@@ -224,7 +228,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, noiseCiphertext, &noisePlaintext);
             double noise = noisePlaintext->GetLogError();
             double expectedNoise =
-                testData.params.scalTech == FLEXIBLEAUTOEXT ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
+                    testData.params.scalTech == FLEXIBLEAUTOEXT ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
             EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
         }
         catch (std::exception& e) {
@@ -236,8 +240,8 @@ protected:
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
-    void UnitTest_FullNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
-                                    const std::string& failmsg = std::string()) {
+    void UnitTest_FullNoiseFlooding(
+            const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData, const std::string& failmsg = std::string()) {
         CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
         cc->Enable(PKE);
         cc->Enable(LEVELEDSHE);
@@ -257,8 +261,8 @@ protected:
         checkEquality(result->GetCKKSPackedValue(), expectedResult, eps, failmsg + " Noise flooding computation fails");
     }
 
-    void UnitTest_MultipartyNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
-                                          const std::string& failmsg = std::string()) {
+    void UnitTest_MultipartyNoiseFlooding(
+            const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData, const std::string& failmsg = std::string()) {
         CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
         cc->Enable(PKE);
         cc->Enable(LEVELEDSHE);

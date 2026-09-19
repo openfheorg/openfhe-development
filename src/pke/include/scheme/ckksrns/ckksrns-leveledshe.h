@@ -29,15 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_LEVELEDSHE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_LEVELEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_LEVELEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_LEVELEDSHE_H_
 
-#include "schemerns/rns-leveledshe.h"
-
+#include <complex>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-leveledshe.h"
 
 /**
  * @namespace lbcrypto
@@ -124,8 +126,8 @@ public:
     /////////////////////////////////////
 
     Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index,
-                                             const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
-                                             const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const override;
+            const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
+            const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const override;
 
     uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
@@ -168,14 +170,14 @@ public:
 
     void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const;
 
-    void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                     Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthInPlace(
+            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthToOneInPlace(
+            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
-                                                             double operand) const;
+    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(
+            ConstCiphertext<DCRTPoly>& ciphertext, double operand) const;
 
     std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const;
 
@@ -200,4 +202,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_LEVELEDSHE_H_

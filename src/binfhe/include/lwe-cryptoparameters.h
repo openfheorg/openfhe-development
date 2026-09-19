@@ -29,18 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CRYPTOPARAMETERS_H_
-#define _LWE_CRYPTOPARAMETERS_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+#define SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -64,7 +65,7 @@ public:
    * @param keyDist the key distribution
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, NativeInteger q_KS, double std,
-                             uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
+            uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_n == 0)
             OPENFHE_THROW("m_n (lattice parameter) can not be zero");
@@ -187,8 +188,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("n", m_n));
@@ -237,4 +238,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CRYPTOPARAMETERS_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_

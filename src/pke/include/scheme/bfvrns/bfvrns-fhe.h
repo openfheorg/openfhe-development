@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_FHE_H
-#define LBCRYPTO_CRYPTO_BFVRNS_FHE_H
-
-#include "schemerns/rns-fhe.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_FHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_FHE_H_
 
 #include <string>
+
+#include "schemerns/rns-fhe.h"
 
 /**
  * @namespace lbcrypto
@@ -66,4 +66,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_FHE_H_

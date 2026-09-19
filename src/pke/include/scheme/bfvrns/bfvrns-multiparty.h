@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BFVRNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_
 
-#include "schemerns/rns-multiparty.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
@@ -53,14 +54,13 @@ public:
     virtual ~MultipartyBFVRNS() {}
 
     KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
-                                       const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
-                                       bool makeSparse) override;
+            const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec, bool makeSparse) override;
 
-    KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey, bool makeSparse,
-                                       bool fresh) override;
+    KeyPair<DCRTPoly> MultipartyKeyGen(
+            CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey, bool makeSparse, bool fresh) override;
 
-    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                          NativePoly* plaintext) const override;
+    DecryptResult MultipartyDecryptFusion(
+            const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
@@ -78,4 +78,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_

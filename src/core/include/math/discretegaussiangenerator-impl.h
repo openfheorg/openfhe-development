@@ -34,17 +34,19 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
-#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
-
-#include "math/discretegaussiangenerator.h"
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
+
+#include "math/discretegaussiangenerator.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -122,14 +124,14 @@ std::vector<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(u
 
 template <typename VecType>
 typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
-    const typename VecType::Integer& modulus) const {
+        const typename VecType::Integer& modulus) const {
     auto val = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
     return (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
 }
 
 template <typename VecType>
-VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(uint32_t size,
-                                                               const typename VecType::Integer& modulus) const {
+VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(
+        uint32_t size, const typename VecType::Integer& modulus) const {
     VecType ans(size, modulus);
     auto& g = PseudoRandomNumberGenerator::GetPRNG();
     for (uint32_t i = 0; i < size; ++i) {
@@ -141,7 +143,7 @@ VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(uint32_t size,
 
 template <typename VecType>
 typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
-    double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const {
+        double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const {
     double t = std::log2(n) * stddev;
 
     std::uniform_int_distribution<int32_t> uniform_int(std::floor(mean - t), std::ceil(mean + t));
@@ -355,4 +357,4 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmBDouble(PRNG& g, int32_t k
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_

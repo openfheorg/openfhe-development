@@ -29,15 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "include/gtest/gtest.h"
-#include "utils/exception.h"
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <sstream>
-#include <vector>
+#include "include/gtest/gtest.h"
+#include "utils/exception.h"
 
 using namespace lbcrypto;
 
@@ -385,8 +390,8 @@ protected:
     //  - testData.star false/true
     //  - CKKSRNS_TEST false/true
     // runs for two parties only
-    void UnitTest_MultiParty(const TEST_CASE_UTGENERAL_MULTIPARTY& testData,
-                             const std::string& failmsg = std::string()) {
+    void UnitTest_MultiParty(
+            const TEST_CASE_UTGENERAL_MULTIPARTY& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -398,14 +403,14 @@ protected:
             auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
             cc->EvalSumKeyGen(kp1.secretKey);
             auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>(
-                cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+                    cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
             cc->EvalAtIndexKeyGen(kp1.secretKey, indices);
             auto evalAtIndexKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>(
-                cc->GetEvalAutomorphismKeyMap(kp1.secretKey->GetKeyTag()));
+                    cc->GetEvalAutomorphismKeyMap(kp1.secretKey->GetKeyTag()));
             //====================================================================
 
-            KeyPair<Element> kp2 =
-                testData.star ? cc->MultipartyKeyGen(kp1.publicKey) : cc->MultipartyKeyGen(kp1.publicKey, false, true);
+            KeyPair<Element> kp2 = testData.star ? cc->MultipartyKeyGen(kp1.publicKey) :
+                                                   cc->MultipartyKeyGen(kp1.publicKey, false, true);
 
             auto evalMultKey2    = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
             auto evalMultAB      = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
@@ -415,15 +420,14 @@ protected:
             cc->InsertEvalSumKey(evalSumKeysJoin);
 
             auto evalAtIndexKeysB =
-                cc->MultiEvalAtIndexKeyGen(kp2.secretKey, evalAtIndexKeys, indices, kp2.publicKey->GetKeyTag());
+                    cc->MultiEvalAtIndexKeyGen(kp2.secretKey, evalAtIndexKeys, indices, kp2.publicKey->GetKeyTag());
             auto evalAtIndexKeysJoin =
-                cc->MultiAddEvalAutomorphismKeys(evalAtIndexKeys, evalAtIndexKeysB, kp2.publicKey->GetKeyTag());
+                    cc->MultiAddEvalAutomorphismKeys(evalAtIndexKeys, evalAtIndexKeysB, kp2.publicKey->GetKeyTag());
             cc->InsertEvalAutomorphismKey(evalAtIndexKeysJoin);
 
             auto evalMultAAB   = cc->MultiMultEvalKey(kp1.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
-            auto evalMultFinal = cc->MultiAddEvalMultKeys(
-                evalMultAAB, evalMultBAB,
-                (CKKSRNS_TEST == testData.testCaseType) ? evalMultAB->GetKeyTag() : kp2.publicKey->GetKeyTag());
+            auto evalMultFinal = cc->MultiAddEvalMultKeys(evalMultAAB, evalMultBAB,
+                    (CKKSRNS_TEST == testData.testCaseType) ? evalMultAB->GetKeyTag() : kp2.publicKey->GetKeyTag());
             cc->InsertEvalMultKey({evalMultFinal});
             //====================================================================
             std::vector<PrivateKey<Element>> secretKeys{kp1.secretKey, kp2.secretKey};
@@ -494,19 +498,19 @@ protected:
                 // TODO (dsuponit): we have to rename MakeCKKSPackedPlaintext() to MakePackedPlaintext(). All of them have different input params
                 // for CKKS we need to convert vectors of integers to vectors of complex numbers
                 plaintext1 =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts1), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts1), 1, 0, nullptr, testData.slots);
                 plaintext2 =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts2), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts2), 1, 0, nullptr, testData.slots);
                 plaintext3 =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts3), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts3), 1, 0, nullptr, testData.slots);
                 plaintextSumInput =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(sumInput), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(sumInput), 1, 0, nullptr, testData.slots);
                 plaintextMultInput =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(multInput), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(multInput), 1, 0, nullptr, testData.slots);
                 plaintextEvalSumInput =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(evalSumInput), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(evalSumInput), 1, 0, nullptr, testData.slots);
                 plaintextRotateInput =
-                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(rotateInput), 1, 0, nullptr, testData.slots);
+                        cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(rotateInput), 1, 0, nullptr, testData.slots);
             }
             else {
                 plaintext1            = cc->MakePackedPlaintext(vectorOfInts1);
@@ -521,8 +525,8 @@ protected:
             // Encryption
             ////////////////////////////////////////////////////////////
             auto pubKeyForEncryption =
-                testData.star ? kp2.publicKey :
-                                cc->MultiAddPubKeys(kp1.publicKey, kp2.publicKey, kp2.publicKey->GetKeyTag());
+                    testData.star ? kp2.publicKey :
+                                    cc->MultiAddPubKeys(kp1.publicKey, kp2.publicKey, kp2.publicKey->GetKeyTag());
             Ciphertext<Element> ciphertext1 = cc->Encrypt(pubKeyForEncryption, plaintext1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(pubKeyForEncryption, plaintext2);
             Ciphertext<Element> ciphertext3 = cc->Encrypt(pubKeyForEncryption, plaintext3);
@@ -551,8 +555,8 @@ protected:
             // TODO (dsuponit): we have to rename GetCKKSPackedValue() to GetPackedValue(). it should be an override of the virtual function in plaintext.h
             std::string errMsg = failmsg + " accumulation failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
-                checkEquality(plaintextAddNew->GetCKKSPackedValue(), plaintextSumInput->GetCKKSPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextAddNew->GetCKKSPackedValue(), plaintextSumInput->GetCKKSPackedValue(), eps, errMsg);
             }
             else {
                 checkEquality(plaintextAddNew->GetPackedValue(), plaintextSumInput->GetPackedValue(), eps, errMsg);
@@ -564,8 +568,8 @@ protected:
 
             errMsg = failmsg + " multiplication failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
-                checkEquality(plaintextMult->GetCKKSPackedValue(), plaintextMultInput->GetCKKSPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextMult->GetCKKSPackedValue(), plaintextMultInput->GetCKKSPackedValue(), eps, errMsg);
             }
             else {
                 checkEquality(plaintextMult->GetPackedValue(), plaintextMultInput->GetPackedValue(), eps, errMsg);
@@ -577,8 +581,8 @@ protected:
 
             errMsg = failmsg + " rotation failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
-                checkEquality(plaintextRotate->GetCKKSPackedValue(), plaintextRotateInput->GetCKKSPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextRotate->GetCKKSPackedValue(), plaintextRotateInput->GetCKKSPackedValue(), eps, errMsg);
             }
             else {
                 checkEquality(plaintextRotate->GetPackedValue(), plaintextRotateInput->GetPackedValue(), eps, errMsg);
@@ -601,11 +605,11 @@ protected:
                        << " - we get: " << plaintextSumInput->GetCKKSPackedValue();
 
                 checkEquality(plaintextMultipartyNew->GetCKKSPackedValue(), plaintextSumInput->GetCKKSPackedValue(),
-                              eps, errMsg + buffer.str());
+                        eps, errMsg + buffer.str());
             }
             else {
-                checkEquality(plaintextMultipartyNew->GetPackedValue(), plaintextSumInput->GetPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextMultipartyNew->GetPackedValue(), plaintextSumInput->GetPackedValue(), eps, errMsg);
             }
             //====================================================================
             if (BGVRNS_TEST == testData.testCaseType && testData.star) {  // TODO (dsuponit): is this necessary???
@@ -623,11 +627,11 @@ protected:
             errMsg = failmsg + " Multiparty multiplication failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
                 checkEquality(plaintextMultipartyMult->GetCKKSPackedValue(), plaintextMultInput->GetCKKSPackedValue(),
-                              eps, errMsg);
+                        eps, errMsg);
             }
             else {
-                checkEquality(plaintextMultipartyMult->GetPackedValue(), plaintextMultInput->GetPackedValue(), eps,
-                              errMsg);
+                checkEquality(
+                        plaintextMultipartyMult->GetPackedValue(), plaintextMultInput->GetPackedValue(), eps, errMsg);
             }
             //====================================================================
             Plaintext plaintextMultipartyEvalSum;
@@ -640,11 +644,11 @@ protected:
             errMsg = failmsg + " Multiparty eval sum failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
                 checkEquality(plaintextMultipartyEvalSum->GetCKKSPackedValue(),
-                              plaintextEvalSumInput->GetCKKSPackedValue(), eps, errMsg);
+                        plaintextEvalSumInput->GetCKKSPackedValue(), eps, errMsg);
             }
             else {
                 checkEquality(plaintextMultipartyEvalSum->GetPackedValue(), plaintextEvalSumInput->GetPackedValue(),
-                              eps, errMsg);
+                        eps, errMsg);
             }
             //====================================================================
             Plaintext plaintextMultipartyRotate;
@@ -657,11 +661,11 @@ protected:
             errMsg = failmsg + " Multiparty rotation failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
                 checkEquality(plaintextMultipartyRotate->GetCKKSPackedValue(),
-                              plaintextRotateInput->GetCKKSPackedValue(), eps, errMsg);
+                        plaintextRotateInput->GetCKKSPackedValue(), eps, errMsg);
             }
             else {
                 checkEquality(plaintextMultipartyRotate->GetPackedValue(), plaintextRotateInput->GetPackedValue(), eps,
-                              errMsg);
+                        errMsg);
             }
         }
         catch (std::exception& e) {
@@ -675,8 +679,8 @@ protected:
     }
 
     // runs for three parties only
-    void UnitTestMultiparty(const TEST_CASE_UTGENERAL_MULTIPARTY& testData,
-                            const std::string& failmsg = std::string()) {
+    void UnitTestMultiparty(
+            const TEST_CASE_UTGENERAL_MULTIPARTY& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
             ////////////////////////////////////////////////////////////
@@ -772,8 +776,8 @@ protected:
             auto ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextAddNew}, kp2.secretKey);
             auto ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextAddNew}, kp3.secretKey);
 
-            std::vector<Ciphertext<Element>> partialCiphertextVec{ciphertextPartial1[0], ciphertextPartial2[0],
-                                                                  ciphertextPartial3[0]};
+            std::vector<Ciphertext<Element>> partialCiphertextVec{
+                    ciphertextPartial1[0], ciphertextPartial2[0], ciphertextPartial3[0]};
 
             Plaintext plaintextMultipartyNew;
             cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
@@ -783,8 +787,8 @@ protected:
             std::string errMsg = failmsg + " Multiparty: Does not match plaintext addition";
             checkEquality(vectorOfIntsSum, plaintextMultipartyNew->GetCoefPackedValue(), eps, errMsg);
             errMsg = failmsg + " Multiparty: Does not match the results of direction encryption";
-            checkEquality(plaintextAddNew->GetCoefPackedValue(), plaintextMultipartyNew->GetCoefPackedValue(), eps,
-                          errMsg);
+            checkEquality(
+                    plaintextAddNew->GetCoefPackedValue(), plaintextMultipartyNew->GetCoefPackedValue(), eps, errMsg);
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -797,8 +801,8 @@ protected:
     }
 
     // runs for three parties only
-    void UnitTestMultipartyAborts(const TEST_CASE_UTGENERAL_MULTIPARTY& testData,
-                                  const std::string& failmsg = std::string()) {
+    void UnitTestMultipartyAborts(
+            const TEST_CASE_UTGENERAL_MULTIPARTY& testData, const std::string& failmsg = std::string()) {
         ////////////////////////////////////////////////////////////
         // Set-up of parameters
         ////////////////////////////////////////////////////////////
@@ -807,7 +811,7 @@ protected:
         const uint32_t N = 3;  // number of parties
         // threshold number of parties
         const uint32_t THRESH =
-            (testData.sharingScheme == "shamir") ? static_cast<uint32_t>(std::floor(N / 2)) + 1 : N - 1;
+                (testData.sharingScheme == "shamir") ? static_cast<uint32_t>(std::floor(N / 2)) + 1 : N - 1;
 
         ////////////////////////////////////////////////////////////
         // Perform Key Generation Operation
@@ -821,8 +825,8 @@ protected:
 
         // Generate evalsum key part for A
         cc->EvalSumKeyGen(kp1.secretKey);
-        auto evalSumKeys =
-            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+        auto evalSumKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(
+                cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
         // Round 2 (party B)
         KeyPair<DCRTPoly> kp2 = cc->MultipartyKeyGen(kp1.publicKey);
@@ -904,9 +908,9 @@ protected:
             plaintext3 = cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts3), 1, 0, nullptr, testData.slots);
             plaintextevaladd = cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(sumInput), 1, 0, nullptr, testData.slots);
             plaintextevalmult =
-                cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(multInput), 1, 0, nullptr, testData.slots);
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(multInput), 1, 0, nullptr, testData.slots);
             plaintextevalsum =
-                cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(evalSumInput), 1, 0, nullptr, testData.slots);
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(evalSumInput), 1, 0, nullptr, testData.slots);
         }
         else {
             plaintext1        = cc->MakePackedPlaintext(vectorOfInts1);
@@ -999,18 +1003,18 @@ protected:
         std::string errMsg = failmsg + " Multiparty: Does not match plaintext computaion results";
 
         if ((testData.testCaseType == TEST_ABORTS) && (testData.params.schemeId == CKKSRNS_SCHEME)) {
-            checkEquality(plaintextevaladd->GetCKKSPackedValue(), plaintextMultipartyNew->GetCKKSPackedValue(), eps,
-                          errMsg);
+            checkEquality(
+                    plaintextevaladd->GetCKKSPackedValue(), plaintextMultipartyNew->GetCKKSPackedValue(), eps, errMsg);
             checkEquality(plaintextevalmult->GetCKKSPackedValue(), plaintextMultipartyMult->GetCKKSPackedValue(), eps,
-                          errMsg);
+                    errMsg);
             checkEquality(plaintextevalsum->GetCKKSPackedValue(), plaintextMultipartyEvalSum->GetCKKSPackedValue(), eps,
-                          errMsg);
+                    errMsg);
         }
         else {
             checkEquality(plaintextevaladd->GetPackedValue(), plaintextMultipartyNew->GetPackedValue(), eps, errMsg);
             checkEquality(plaintextevalmult->GetPackedValue(), plaintextMultipartyMult->GetPackedValue(), eps, errMsg);
-            checkEquality(plaintextevalsum->GetPackedValue(), plaintextMultipartyEvalSum->GetPackedValue(), eps,
-                          errMsg);
+            checkEquality(
+                    plaintextevalsum->GetPackedValue(), plaintextMultipartyEvalSum->GetPackedValue(), eps, errMsg);
         }
     }
 };

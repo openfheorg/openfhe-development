@@ -33,16 +33,17 @@
   Public key type for lattice crypto operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
-#define LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_
+#define SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_
 
-#include "key/key.h"
-#include "key/publickey-fwd.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "key/key.h"
+#include "key/publickey-fwd.h"
 
 /**
  * @namespace lbcrypto
@@ -157,8 +158,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::base_class<Key<Element>>(this));
         ar(::cereal::make_nvp("h", m_h));
@@ -175,4 +176,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_

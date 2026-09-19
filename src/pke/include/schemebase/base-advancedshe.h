@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "encoding/plaintext-fwd.h"
@@ -39,13 +47,6 @@
 #include "key/publickey-fwd.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <complex>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -94,7 +95,7 @@ public:
    * @param *newCiphertext the new resulting ciphertext.
    */
     virtual Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec,
-                                             const std::vector<EvalKey<Element>>& evalKeyVec) const;
+            const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
     //------------------------------------------------------------------------------
     // LINEAR WEIGHTED SUM
@@ -108,16 +109,16 @@ public:
    * @param constants vector containing double weights.
    * @return A ciphertext containing the linear weighted sum.
    */
-    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
-                                               const std::vector<int64_t>& weights) const {
+    virtual Ciphertext<Element> EvalLinearWSum(
+            std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec, const std::vector<int64_t>& weights) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalLinearWSum(
+            std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec, const std::vector<double>& weights) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
-                                               const std::vector<double>& weights) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
-                                               const std::vector<std::complex<double>>& weights) const {
+            const std::vector<std::complex<double>>& weights) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -130,16 +131,16 @@ public:
    * @param constants vector containing double weights.
    * @return A ciphertext containing the linear weighted sum.
    */
-    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
-                                                      const std::vector<int64_t>& weights) const {
+    virtual Ciphertext<Element> EvalLinearWSumMutable(
+            std::vector<Ciphertext<Element>>& ciphertextVec, const std::vector<int64_t>& weights) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
-                                                      const std::vector<double>& weights) const {
+    virtual Ciphertext<Element> EvalLinearWSumMutable(
+            std::vector<Ciphertext<Element>>& ciphertextVec, const std::vector<double>& weights) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
-                                                      const std::vector<std::complex<double>>& weights) const {
+    virtual Ciphertext<Element> EvalLinearWSumMutable(
+            std::vector<Ciphertext<Element>>& ciphertextVec, const std::vector<std::complex<double>>& weights) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -157,16 +158,16 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
-    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
-                                                              const std::vector<int64_t>& coefficients) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
-                                                              const std::vector<double>& coefficients) const {
+    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(
-        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -179,29 +180,29 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the resulting data structure of powers.
    */
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
-                                         const std::vector<int64_t>& coefficients) const {
+    virtual Ciphertext<Element> EvalPoly(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
-                                         const std::vector<double>& coefficients) const {
+    virtual Ciphertext<Element> EvalPoly(
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
-                                         const std::vector<std::complex<double>>& coefficients) const {
+    virtual Ciphertext<Element> EvalPoly(
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
-                                                    const std::vector<int64_t>& coefficients) const {
+    virtual Ciphertext<Element> EvalPolyWithPrecomp(
+            std::shared_ptr<seriesPowers<Element>> powers, const std::vector<int64_t>& coefficients) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalPolyWithPrecomp(
+            std::shared_ptr<seriesPowers<Element>> powers, const std::vector<double>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
-                                                    const std::vector<double>& coefficients) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
-                                                    const std::vector<std::complex<double>>& coefficients) const {
+            const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -215,16 +216,16 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
-    virtual Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
-                                               const std::vector<int64_t>& coefficients) const {
+    virtual Ciphertext<Element> EvalPolyLinear(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
-                                               const std::vector<double>& coefficients) const {
+    virtual Ciphertext<Element> EvalPolyLinear(
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
-                                               const std::vector<std::complex<double>>& coefficients) const {
+    virtual Ciphertext<Element> EvalPolyLinear(
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -237,15 +238,15 @@ public:
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
-    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x,
-                                           const std::vector<int64_t>& coefficients) const {
+    virtual Ciphertext<Element> EvalPolyPS(
+            ConstCiphertext<Element>& x, const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x, const std::vector<double>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
-    virtual Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& x,
-                                           const std::vector<std::complex<double>>& coefficients) const {
+    virtual Ciphertext<Element> EvalPolyPS(
+            ConstCiphertext<Element>& x, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -264,19 +265,16 @@ public:
    * @param b - upper bound of argument for which the coefficients were found
    * @return the result of polynomial evaluation.
    */
-    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
-                                                                  const std::vector<int64_t>& coefficients, double a,
-                                                                  double b) const {
+    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients, double a, double b) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
-                                                                  const std::vector<double>& coefficients, double a,
-                                                                  double b) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
-                                                                  const std::vector<std::complex<double>>& coefficients,
-                                                                  double a, double b) const {
+            const std::vector<std::complex<double>>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -292,63 +290,55 @@ public:
    * @param b - upper bound of argument for which the coefficients were found
    * @return the result of polynomial evaluation.
    */
-    virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
-                                                    const std::vector<int64_t>& coefficients, double a,
-                                                    double b) const {
+    virtual Ciphertext<Element> EvalChebyshevSeries(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients, double a, double b) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeries(
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
-                                                    const std::vector<double>& coefficients, double a, double b) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
-                                                    const std::vector<std::complex<double>>& coefficients, double a,
-                                                    double b) const {
+            const std::vector<std::complex<double>>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
-                                                               const std::vector<int64_t>& coefficients) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
-                                                               const std::vector<double>& coefficients) const {
+    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(
+            std::shared_ptr<seriesPowers<Element>> polys, const std::vector<int64_t>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(
-        std::shared_ptr<seriesPowers<Element>> polys, const std::vector<std::complex<double>>& coefficients) const {
+            std::shared_ptr<seriesPowers<Element>> polys, const std::vector<double>& coefficients) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(
+            std::shared_ptr<seriesPowers<Element>> polys, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
-                                                          const std::vector<int64_t>& coefficients, double a,
-                                                          double b) const {
+    virtual Ciphertext<Element> EvalChebyshevSeriesLinear(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients, double a, double b) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeriesLinear(
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
-                                                          const std::vector<double>& coefficients, double a,
-                                                          double b) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
-                                                          const std::vector<std::complex<double>>& coefficients,
-                                                          double a, double b) const {
+            const std::vector<std::complex<double>>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
-    virtual Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
-                                                      const std::vector<int64_t>& coefficients, double a,
-                                                      double b) const {
+    virtual Ciphertext<Element> EvalChebyshevSeriesPS(
+            ConstCiphertext<Element>& ciphertext, const std::vector<int64_t>& coefficients, double a, double b) const {
+        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
+    }
+    virtual Ciphertext<Element> EvalChebyshevSeriesPS(
+            ConstCiphertext<Element>& ciphertext, const std::vector<double>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
-                                                      const std::vector<double>& coefficients, double a,
-                                                      double b) const {
-        OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
-    }
-    virtual Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
-                                                      const std::vector<std::complex<double>>& coefficients, double a,
-                                                      double b) const {
+            const std::vector<std::complex<double>>& coefficients, double a, double b) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -364,7 +354,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
-        const PrivateKey<Element> privateKey) const;
+            const PrivateKey<Element> privateKey) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumRows; works
@@ -377,8 +367,8 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
-        std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+            std::vector<uint32_t>& indices) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumCols; works
@@ -389,7 +379,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
 
     /**
     * @brief Sums all elements in log (batch size) time - works only with packedvencoding
@@ -399,7 +389,7 @@ public:
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
-                                        const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap) const;
 
     /**
     * @brief Sums all elements over row-vectors in a matrix - works only with packed encoding.
@@ -410,8 +400,7 @@ public:
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, uint32_t numRows,
-                                            const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
-                                            uint32_t subringDim) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalSumKeys, uint32_t subringDim) const;
 
     /**
     * @brief Sums all elements over column-vectors in a matrix - works only with packed encoding. The code is
@@ -423,8 +412,8 @@ public:
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, uint32_t numCols,
-                                            const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
-                                            const std::map<uint32_t, EvalKey<Element>>& rightEvalKeys) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
+            const std::map<uint32_t, EvalKey<Element>>& rightEvalKeys) const;
 
     //------------------------------------------------------------------------------
     // Advanced SHE EVAL INNER PRODUCT
@@ -440,9 +429,8 @@ public:
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext1,
-                                                 ConstCiphertext<Element> ciphertext2, uint32_t batchSize,
-                                                 const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
-                                                 const EvalKey<Element> evalMultKey) const;
+            ConstCiphertext<Element> ciphertext2, uint32_t batchSize,
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap, const EvalKey<Element> evalMultKey) const;
 
     /**
     * @brief Evaluates inner product in batched encoding
@@ -453,8 +441,7 @@ public:
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext,
-                                                 uint32_t batchSize,
-                                                 const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            uint32_t batchSize, const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     /**
    * Function to add random noise to all plaintext slots except for the first
@@ -476,7 +463,7 @@ public:
    * @return resulting ciphertext
    */
     virtual Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVector,
-                                          const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     //------------------------------------------------------------------------------
     // LINEAR TRANSFORMATION
@@ -509,23 +496,23 @@ protected:
    * covers size slots. Power-of-two m only.
    */
     Ciphertext<Element> EvalSumRadixFold(ConstCiphertext<Element>& ciphertext, uint32_t g0, uint32_t size, uint32_t m,
-                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     static std::set<uint32_t> GenerateIndexListForEvalSum(const PrivateKey<Element>& privateKey);
 
     Ciphertext<Element> EvalSum_2n(ConstCiphertext<Element> ciphertext, uint32_t batchSize, uint32_t m,
-                                   const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     Ciphertext<Element> EvalSum2nComplex(ConstCiphertext<Element> ciphertext, uint32_t batchSize, uint32_t m,
-                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     Ciphertext<Element> EvalSum2nComplexRows(ConstCiphertext<Element> ciphertext, uint32_t rowSize, uint32_t m,
-                                             const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 
     Ciphertext<Element> EvalSum2nComplexCols(ConstCiphertext<Element> ciphertext, uint32_t batchSize, uint32_t m,
-                                             const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
+            const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_

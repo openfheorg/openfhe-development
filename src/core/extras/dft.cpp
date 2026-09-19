@@ -33,13 +33,12 @@
   Example of Discrete Fourier Transform
  */
 
-#include "math/dftransform.h"
-
-#include "utils/debug.h"
-
 #include <complex>
 #include <iostream>
 #include <vector>
+
+#include "math/dftransform.h"
+#include "utils/debug.h"
 
 using namespace lbcrypto;
 

@@ -29,15 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -61,8 +63,8 @@ public:
  * @param vectorSize The length of the two vectors.
  * @param failmsg Debug message to display upon failure.
  */
-static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64_t>& b, int vectorSize,
-                          const std::string& failmsg) {
+static void checkEquality(
+        const std::vector<int64_t>& a, const std::vector<int64_t>& b, int vectorSize, const std::string& failmsg) {
     std::vector<uint32_t> allTrue(vectorSize);
     std::vector<uint32_t> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {

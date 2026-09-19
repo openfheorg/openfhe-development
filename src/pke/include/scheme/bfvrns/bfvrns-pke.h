@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_PKE_H
-#define LBCRYPTO_CRYPTO_BFVRNS_PKE_H
-
-#include "schemerns/rns-pke.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PKE_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PKE_H_
 
 #include <string>
+
+#include "schemerns/rns-pke.h"
 
 /**
  * @namespace lbcrypto
@@ -87,7 +87,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          NativePoly* plaintext) const override;
+            NativePoly* plaintext) const override;
 
     /**
    * Method for decrypting plaintext using LBC
@@ -98,11 +98,11 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-                          Poly* plaintext) const override {
+            Poly* plaintext) const override {
         std::string errMsg =
-            "PKEBFVRNS: Decryption to Poly from DCRTPoly is not supported as it "
-            "may "
-            "lead to incorrect results.";
+                "PKEBFVRNS: Decryption to Poly from DCRTPoly is not supported as it "
+                "may "
+                "lead to incorrect results.";
         OPENFHE_THROW(errMsg);
     }
 
@@ -126,4 +126,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_PKE_H_

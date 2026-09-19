@@ -32,8 +32,8 @@
  * It is a lightweight file to be included where we need the declaration of EvalKey only
  *
  */
-#ifndef __EVALKEY_FWD_H__
-#define __EVALKEY_FWD_H__
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEY_FWD_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEY_FWD_H_
 
 #include <memory>
 
@@ -47,4 +47,4 @@ using EvalKey = std::shared_ptr<EvalKeyImpl<Element>>;
 
 }  // namespace lbcrypto
 
-#endif  // __EVALKEY_FWD_H__
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEY_FWD_H_

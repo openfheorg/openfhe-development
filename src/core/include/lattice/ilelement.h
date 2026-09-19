@@ -33,17 +33,19 @@
   Represents and defines integer lattice element objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILELEMENT_H
-#define LBCRYPTO_INC_LATTICE_ILELEMENT_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
+#define SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
+
+#include <cstdint>
+#include <initializer_list>
+#include <vector>
 
 #include "math/discretegaussiangenerator.h"
+#include "math/hal/nativeintbackend.h"  // NativeInteger
 #include "math/nbtheory.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
-
-#include <vector>
 
 namespace lbcrypto {
 
@@ -433,7 +435,7 @@ public:
    * rootOfUnity for the modulus.
    */
     virtual void SwitchModulus(const IntType& modulus, const IntType& rootOfUnity, const IntType& modulusArb,
-                               const IntType& rootOfUnityArb) = 0;
+            const IntType& rootOfUnityArb) = 0;
 
     /**
    * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
@@ -454,4 +456,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_

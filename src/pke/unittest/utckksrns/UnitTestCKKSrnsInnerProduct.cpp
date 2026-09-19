@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "utils/debug.h"
-
-#include <vector>
 
 using namespace lbcrypto;
 

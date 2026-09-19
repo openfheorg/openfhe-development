@@ -29,14 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -414,7 +417,7 @@ void poly_other_methods(const std::string& msg) {
 
         for (uint32_t i = 0; i < m / 2; ++i) {
             EXPECT_EQ(ilvProduct1[i], typename Element::Integer(1))
-                << msg << " Failure: ilvProduct1.MultiplicativeInverse() @ index " << i;
+                    << msg << " Failure: ilvProduct1.MultiplicativeInverse() @ index " << i;
         }
     }
 
@@ -598,7 +601,7 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
 
         for (uint32_t i = 0; i < order / 2; i++) {
             EXPECT_EQ(bbvResult[i], (bbv1[i] + bbv2[i]).Mod(primeModulus))
-                << msg << " Poly + operation returns incorrect results.";
+                    << msg << " Poly + operation returns incorrect results.";
         }
     }
 
@@ -608,7 +611,7 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
 
         for (uint32_t i = 0; i < order / 2; i++) {
             EXPECT_EQ(bbvResult[i], (bbv1[i] * bbv2[i]).Mod(primeModulus))
-                << msg << " Poly * operation returns incorrect results.";
+                    << msg << " Poly * operation returns incorrect results.";
         }
     }
 }

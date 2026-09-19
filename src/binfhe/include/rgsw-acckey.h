@@ -29,25 +29,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_BTKEY_H_
-#define _RGSW_BTKEY_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACCKEY_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACCKEY_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
 #include "lwe-cryptoparameters.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
-#include "rgsw-evalkey.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
+#include "rgsw-evalkey.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -65,9 +66,10 @@ public:
 
     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
 
-    RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
+    explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
 
-    RingGSWACCKeyImpl(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept : m_key(std::move(key)) {}
+    explicit RingGSWACCKeyImpl(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept
+        : m_key(std::move(key)) {}
 
     RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) : m_key(rhs.m_key) {}
 
@@ -146,8 +148,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("k", m_key));
     }
@@ -170,4 +172,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_BTKEY_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACCKEY_H_

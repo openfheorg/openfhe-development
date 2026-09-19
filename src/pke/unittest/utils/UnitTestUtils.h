@@ -33,18 +33,19 @@
   Helper functions for unittests
  */
 
-#ifndef _UNIT_TEST_UTILS_H_
-#define _UNIT_TEST_UTILS_H_
-
-#include "gtest/gtest.h"
-#include "UnitTestException.h"
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTUTILS_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTUTILS_H_
 
 #include <algorithm>
 #include <complex>
 #include <csignal>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "UnitTestException.h"
+#include "gtest/gtest.h"
 
 // some functions are inlined in this files to avoid link errors
 //===========================================================================================================
@@ -100,8 +101,8 @@ bool checkEquality(const std::vector<V>& a, const std::vector<V>& b, const doubl
     if (a.size() != b.size())
         return false;
 
-    return std::equal(a.begin(), a.end(), b.begin(),
-                      [&eps](const V& a, const V& b) { return checkEquality(a, b, eps); });
+    return std::equal(
+            a.begin(), a.end(), b.begin(), [&eps](const V& a, const V& b) { return checkEquality(a, b, eps); });
 }
 
 /**
@@ -150,9 +151,9 @@ inline bool CheckAutomorphism(const std::vector<int64_t>& result, const std::vec
 inline std::string RandomString(uint64_t outStringLength) {
     auto getRandomChar = []() -> char {
         const char charset[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
+                "0123456789"
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                "abcdefghijklmnopqrstuvwxyz";
         const size_t max_index = (sizeof(charset) - 1);
         return charset[rand() % max_index];
     };
@@ -210,4 +211,4 @@ inline void setupSignals() {
     std::signal(SIGTERM, sighandler);
 }
 
-#endif  // _UNIT_TEST_UTILS_H_
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTUTILS_H_

@@ -35,15 +35,15 @@ Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(S
 
 #include "keyswitch/keyswitch-base.h"
 
-#include "lattice/lat-hal.h"
 #include "ciphertext.h"
 #include "key/evalkey.h"
+#include "lattice/lat-hal.h"
 
 namespace lbcrypto {
 
 template <typename Element>
-Ciphertext<Element> KeySwitchBase<Element>::KeySwitch(ConstCiphertext<Element> ciphertext,
-                                                      const EvalKey<Element> evalKey) const {
+Ciphertext<Element> KeySwitchBase<Element>::KeySwitch(
+        ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
     Ciphertext<Element> result = ciphertext->Clone();
     KeySwitchInPlace(result, evalKey);
     return result;

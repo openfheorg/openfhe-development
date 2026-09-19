@@ -31,13 +31,17 @@
 
 #define PROFILE
 
-#include "math/dftransform.h"
 #include "schemerns/rns-cryptoparameters.h"
 
-#include <vector>
+#include <cmath>
+#include <cstdint>
 #include <memory>
-#include <utility>
+#include <numeric>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 namespace {
@@ -46,8 +50,8 @@ uint32_t sizeP_estimate_global{};
 }  // namespace
 
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
-                                              EncryptionTechnique encTech, MultiplicationTechnique multTech,
-                                              uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
+        EncryptionTechnique encTech, MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
+        uint32_t extraBits) {
     // Set the key switching technique.
     m_ksTechnique = ksTech;
     // Set the scaling technique.
@@ -117,7 +121,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             auto startTower = j * a;
             auto endTower   = ((j + 1) * a - 1 < sizeQ) ? (j + 1) * a - 1 : sizeQ - 1;
             std::vector<std::shared_ptr<ILNativeParams>> params =
-                GetElementParams()->GetParamPartition(startTower, endTower);
+                    GetElementParams()->GetParamPartition(startTower, endTower);
             std::vector<NativeInteger> moduli(params.size());
             std::vector<NativeInteger> roots(params.size());
             for (uint32_t i = 0; i < params.size(); i++) {
@@ -125,7 +129,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 roots[i]  = params[i]->GetRootOfUnity();
             }
             m_paramsPartQ[j] =
-                std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
+                    std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
         }
 
         // Find number and size of individual special primes.
@@ -145,8 +149,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
         // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
         uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
-                              6 + GetMSB64(m_compositeDegree - 1) :
-                              4;
+                                  6 + GetMSB64(m_compositeDegree - 1) :
+                                  4;
         if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
             ++sizeP;
         // validate the estimated sizeP value
@@ -311,7 +315,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 m_modComplPartqBarrettMu[l][j].resize(moduli.size());
                 for (uint32_t i = 0; i < moduli.size(); i++) {
                     m_modComplPartqBarrettMu[l][j][i] =
-                        (BarrettBase128Bit / BigInteger(moduli[i])).ConvertToInt<DoubleNativeInt>();
+                            (BarrettBase128Bit / BigInteger(moduli[i])).ConvertToInt<DoubleNativeInt>();
                 }
             }
         }
@@ -336,7 +340,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                     BigInteger QHatInvModqi                      = QHat.ModInverse(params[i]->GetModulus());
                     m_PartQlHatInvModq[k][sizePartQk - l - 1][i] = QHatInvModqi.ConvertToInt();
                     m_PartQlHatInvModqPrecon[k][sizePartQk - l - 1][i] =
-                        m_PartQlHatInvModq[k][sizePartQk - l - 1][i].PrepModMulConst(params[i]->GetModulus());
+                            m_PartQlHatInvModq[k][sizePartQk - l - 1][i].PrepModMulConst(params[i]->GetModulus());
                 }
             }
         }
@@ -428,11 +432,8 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
 }
 
 std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
-                                                              double dcrtBits, double extraModulusSize,
-                                                              uint32_t numPrimes, uint32_t auxBits,
-                                                              ScalingTechnique scalTech, bool addOne,
-                                                              bool isNoiseFloodingMultiparty,
-                                                              uint32_t compositeDegree) {
+        double dcrtBits, double extraModulusSize, uint32_t numPrimes, uint32_t auxBits, ScalingTechnique scalTech,
+        bool addOne, bool isNoiseFloodingMultiparty, uint32_t compositeDegree) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -472,7 +473,7 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
         // sum qi elements qi[startTower] + ... + qi[endTower] inclusive. the end element should be qi.begin()+(endTower+1)
         uint32_t bits =
-            static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
+                static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
         if (bits > maxBits)
             maxBits = bits;
     }
@@ -492,8 +493,8 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
     // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
     uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
-                          6 + GetMSB64(compositeDegree - 1) :
-                          4;
+                              6 + GetMSB64(compositeDegree - 1) :
+                              4;
     if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
         ++sizeP;
 

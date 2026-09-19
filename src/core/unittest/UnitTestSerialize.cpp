@@ -33,6 +33,12 @@
   This code exercises serialization in CORE for the OpenFHE lattice encryption library
  */
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -41,8 +47,6 @@
 #include "testdefs.h"
 #include "utils/serial.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 

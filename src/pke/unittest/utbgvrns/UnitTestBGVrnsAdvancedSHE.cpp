@@ -31,13 +31,16 @@
 
 #if !defined(_MSC_VER)
 
-    #include "gtest/gtest.h"
+    #include <cstdint>
+    #include <iostream>
+    #include <sstream>
+    #include <string>
+    #include <vector>
+
     #include "UnitTestCCParams.h"
     #include "UnitTestCryptoContext.h"
     #include "UnitTestUtils.h"
-
-    #include <iostream>
-    #include <vector>
+    #include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -98,7 +101,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEAD
 constexpr uint32_t RING_DIM = 8192;
 constexpr uint32_t PTM      = 20;
 constexpr uint32_t DSIZE    = 4;
-constexpr double STD_DEV = 3.19;
+constexpr double STD_DEV    = 3.19;
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED = {
@@ -129,8 +132,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
-                                 const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultSingle(
+            const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -169,8 +172,8 @@ protected:
         }
     }
 
-    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
-                                const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAddSingle(
+            const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 

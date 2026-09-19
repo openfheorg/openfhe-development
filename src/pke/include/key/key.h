@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_KEY_H
-#define LBCRYPTO_CRYPTO_KEY_KEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_KEY_H_
+#define SRC_PKE_INCLUDE_KEY_KEY_H_
 
-#include "cryptoobject.h"
-#include "utils/serial.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "cryptoobject.h"
+#include "utils/serial.h"
 
 /**
  * @namespace lbcrypto
@@ -74,4 +75,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_KEY_H_

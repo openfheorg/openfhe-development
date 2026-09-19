@@ -33,6 +33,13 @@
   Example for serializing and deserializing CKKS bootstrap evaluation keys.
  */
 
+#include <cstdint>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 // Header files needed for serialization
@@ -40,12 +47,6 @@
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -112,13 +113,13 @@ int main() {
     auto ciphertext = serverCC->Encrypt(keyPair.publicKey, plaintext);
 
     ErrorCheck(Serial::SerializeToFile(DATAFOLDER + ccLocation, serverCC, SerType::BINARY),
-               "Error serializing crypto context");
+            "Error serializing crypto context");
     ErrorCheck(Serial::SerializeToFile(DATAFOLDER + publicKeyLocation, keyPair.publicKey, SerType::BINARY),
-               "Error serializing public key");
+            "Error serializing public key");
     ErrorCheck(Serial::SerializeToFile(DATAFOLDER + secretKeyLocation, keyPair.secretKey, SerType::BINARY),
-               "Error serializing secret key");
+            "Error serializing secret key");
     ErrorCheck(Serial::SerializeToFile(DATAFOLDER + ciphertextLocation, ciphertext, SerType::BINARY),
-               "Error serializing ciphertext");
+            "Error serializing ciphertext");
 
     std::ofstream multKeyOut(DATAFOLDER + multKeyLocation, std::ios::out | std::ios::binary);
     ErrorCheck(multKeyOut.is_open(), "Error opening eval-mult key output file");
@@ -127,9 +128,9 @@ int main() {
 
     std::ofstream bootstrapKeyOut(DATAFOLDER + bootstrapKeyLocation, std::ios::out | std::ios::binary);
     ErrorCheck(bootstrapKeyOut.is_open(), "Error opening bootstrap eval-key output file");
-    ErrorCheck(serverCC->SerializeEvalBootstrapKey(bootstrapKeyOut, SerType::BINARY, serverCC,
-                                                   keyPair.secretKey->GetKeyTag(), numSlots),
-               "Error serializing bootstrap eval keys");
+    ErrorCheck(serverCC->SerializeEvalBootstrapKey(
+                       bootstrapKeyOut, SerType::BINARY, serverCC, keyPair.secretKey->GetKeyTag(), numSlots),
+            "Error serializing bootstrap eval keys");
     bootstrapKeyOut.close();
 
     serverCC->ClearEvalMultKeys();
@@ -142,13 +143,13 @@ int main() {
     Ciphertext<DCRTPoly> clientCiphertext;
 
     ErrorCheck(Serial::DeserializeFromFile(DATAFOLDER + ccLocation, clientCC, SerType::BINARY),
-               "Error deserializing crypto context");
+            "Error deserializing crypto context");
     ErrorCheck(Serial::DeserializeFromFile(DATAFOLDER + publicKeyLocation, publicKey, SerType::BINARY),
-               "Error deserializing public key");
+            "Error deserializing public key");
     ErrorCheck(Serial::DeserializeFromFile(DATAFOLDER + secretKeyLocation, secretKey, SerType::BINARY),
-               "Error deserializing secret key");
+            "Error deserializing secret key");
     ErrorCheck(Serial::DeserializeFromFile(DATAFOLDER + ciphertextLocation, clientCiphertext, SerType::BINARY),
-               "Error deserializing ciphertext");
+            "Error deserializing ciphertext");
     clientCC->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots);
     const auto bootstrapKeyIndices = clientCC->GetScheme()->EvalBootstrapKeyMapIndices(clientCC, numSlots);
 
@@ -159,16 +160,16 @@ int main() {
 
     std::ifstream bootstrapKeyIn(DATAFOLDER + bootstrapKeyLocation, std::ios::in | std::ios::binary);
     ErrorCheck(bootstrapKeyIn.is_open(), "Error opening bootstrap eval-key input file");
-    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(bootstrapKeyIn, SerType::BINARY, clientCC,
-                                                     secretKey->GetKeyTag(), numSlots),
-               "Error deserializing bootstrap eval keys");
+    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(
+                       bootstrapKeyIn, SerType::BINARY, clientCC, secretKey->GetKeyTag(), numSlots),
+            "Error deserializing bootstrap eval keys");
     bootstrapKeyIn.close();
 
     std::ifstream bootstrapKeyInByIndex(DATAFOLDER + bootstrapKeyLocation, std::ios::in | std::ios::binary);
     ErrorCheck(bootstrapKeyInByIndex.is_open(), "Error opening bootstrap eval-key input file");
-    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(bootstrapKeyInByIndex, SerType::BINARY, secretKey->GetKeyTag(),
-                                                     bootstrapKeyIndices),
-               "Error deserializing bootstrap eval keys by index list");
+    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(
+                       bootstrapKeyInByIndex, SerType::BINARY, secretKey->GetKeyTag(), bootstrapKeyIndices),
+            "Error deserializing bootstrap eval keys by index list");
     bootstrapKeyInByIndex.close();
 
     auto ciphertextAfter = clientCC->EvalBootstrap(clientCiphertext);

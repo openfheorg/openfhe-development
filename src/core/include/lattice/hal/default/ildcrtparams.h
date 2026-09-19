@@ -33,24 +33,23 @@
   Wraps parameters for integer lattice operations using double-CRT representation. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
-#define LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
 
-#include "lattice/hal/elemparams.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/hal/basicint.h"
-#include "math/math-hal.h"
-#include "math/nbtheory-impl.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
+#include <cstdint>
 #include <iomanip>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/ilparams.h"
+#include "lattice/hal/elemparams.h"
+#include "math/hal/basicint.h"
+#include "math/math-hal.h"
+#include "math/nbtheory-impl.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -127,8 +126,8 @@ public:
    * @param rootsOfUnityBig the list of the roots of unity of the component
    * polynomials for big moduli (arbitrary cyclotomics).
    */
-    ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
-                 const std::vector<NativeInteger>& rootsOfUnity)
+    ILDCRTParams(
+            uint32_t corder, const std::vector<NativeInteger>& moduli, const std::vector<NativeInteger>& rootsOfUnity)
         : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
         if (limbs != rootsOfUnity.size())
@@ -144,8 +143,8 @@ public:
     }
 
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
-                 const std::vector<NativeInteger>& rootsOfUnity, const std::vector<NativeInteger>& moduliBig,
-                 const std::vector<NativeInteger>& rootsOfUnityBig)
+            const std::vector<NativeInteger>& rootsOfUnity, const std::vector<NativeInteger>& moduliBig,
+            const std::vector<NativeInteger>& rootsOfUnityBig)
         : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
         if (limbs != rootsOfUnity.size() || limbs != moduliBig.size() || limbs != rootsOfUnityBig.size())
@@ -154,8 +153,8 @@ public:
         m_params.reserve(limbs);
         IntType compositeModulus(1);
         for (size_t i = 0; i < limbs; ++i) {
-            m_params.push_back(
-                std::make_shared<ILNativeParams>(corder, moduli[i], rootsOfUnity[i], moduliBig[i], rootsOfUnityBig[i]));
+            m_params.push_back(std::make_shared<ILNativeParams>(
+                    corder, moduli[i], rootsOfUnity[i], moduliBig[i], rootsOfUnityBig[i]));
             compositeModulus *= IntType(moduli[i].template ConvertToInt<BasicInteger>());
         }
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
@@ -258,7 +257,7 @@ public:
 
     void PopLastParam() {
         ElemParams<IntType>::m_ciphertextModulus /=
-            IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
+                IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.pop_back();
     }
 
@@ -268,7 +267,7 @@ public:
    */
     void PopFirstParam() {
         ElemParams<IntType>::m_ciphertextModulus /=
-            IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
+                IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.erase(m_params.begin());
     }
 
@@ -313,7 +312,7 @@ public:
         ElemParams<IntType>::m_ciphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
             ElemParams<IntType>::m_ciphertextModulus *=
-                IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
+                    IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
     }
 
     /**
@@ -324,7 +323,7 @@ public:
         ElemParams<IntType>::m_bigCiphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
             ElemParams<IntType>::m_bigCiphertextModulus *=
-                IntType(m_params[i]->GetBigModulus().template ConvertToInt<BasicInteger>());
+                    IntType(m_params[i]->GetBigModulus().template ConvertToInt<BasicInteger>());
     }
 
     template <class Archive>
@@ -336,8 +335,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::base_class<ElemParams<IntType>>(this));
         ar(::cereal::make_nvp("p", m_params));
@@ -367,4 +366,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_

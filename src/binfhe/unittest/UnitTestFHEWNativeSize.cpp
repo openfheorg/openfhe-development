@@ -29,11 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "binfhecontext-ser.h"
-#include "gtest/gtest.h"
-
+#include <cstdint>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
+
+#include "binfhecontext-ser.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -61,8 +64,8 @@ struct Gate {
     int truth[4];  // indexed by (2 * a + b)
 };
 
-const std::vector<Gate> gates{{AND, "AND", {0, 0, 0, 1}}, {OR, "OR", {0, 1, 1, 1}},   {NAND, "NAND", {1, 1, 1, 0}},
-                              {NOR, "NOR", {1, 0, 0, 0}}, {XOR, "XOR", {0, 1, 1, 0}}, {XNOR, "XNOR", {1, 0, 0, 1}}};
+const std::vector<Gate> gates{{AND, "AND", {0, 0, 0, 1}}, {OR, "OR", {0, 1, 1, 1}}, {NAND, "NAND", {1, 1, 1, 0}},
+        {NOR, "NOR", {1, 0, 0, 0}}, {XOR, "XOR", {0, 1, 1, 0}}, {XNOR, "XNOR", {1, 0, 0, 1}}};
 
 // every gate against every input pair, decrypted and compared with its truth table
 void ExpectTruthTables(BinFHEContext& cc, ConstLWEPrivateKey& sk, const std::string& msg) {
@@ -73,7 +76,7 @@ void ExpectTruthTables(BinFHEContext& cc, ConstLWEPrivateKey& sk, const std::str
                 LWEPlaintext result;
                 cc.Decrypt(sk, ct, &result);
                 EXPECT_EQ(g.truth[2 * a + b], static_cast<int>(result))
-                    << msg << " " << g.name << "(" << a << "," << b << ")";
+                        << msg << " " << g.name << "(" << a << "," << b << ")";
             }
         }
     }
@@ -168,7 +171,7 @@ TEST(UnitTestFHEWNativeSize, PartialQualification) {
     const std::string msg("UnitTestFHEWNativeSize.PartialQualification:");
     BinFHEContext cc;
     cc.GenerateBinFHEContext(
-        BinFHEContextParams{37, 4096, 821, 2048, 32768, 32, 8192, 64, 10, UNIFORM_TERNARY, 3.19, {}}, GINX);
+            BinFHEContextParams{37, 4096, 821, 2048, 32768, 32, 8192, 64, 10, UNIFORM_TERNARY, 3.19, {}}, GINX);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk, SYM_ENCRYPT, /*internal32=*/true);
     EXPECT_FALSE(cc.HasInternal32RefreshKey()) << msg << " a 37-bit modulus must not yield a 32-bit refresh key";
@@ -280,8 +283,8 @@ TEST(UnitTestFHEWNativeSize, SwitchingKey32FitsCapsModulus) {
 TEST(UnitTestFHEWNativeSize, SwitchingKey32RejectsCiphertextAboveKeySwitchingModulus) {
     const std::string msg("UnitTestFHEWNativeSize.SwitchingKey32RejectsCiphertextAboveKeySwitchingModulus:");
     BinFHEContext cc;
-    cc.GenerateBinFHEContext(BinFHEContextParams{27, 1024, 64, 512, 16384, 32, 512, 23, 9, UNIFORM_TERNARY, 3.19, {}},
-                             GINX);
+    cc.GenerateBinFHEContext(
+            BinFHEContextParams{27, 1024, 64, 512, 16384, 32, 512, 23, 9, UNIFORM_TERNARY, 3.19, {}}, GINX);
     auto&& lwe = cc.GetParams()->GetLWEParams();
     auto sk    = cc.KeyGen();
     auto skN   = cc.KeyGenN();

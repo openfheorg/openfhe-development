@@ -27,16 +27,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_MATH_MATRIX_UTILS_H
-#define LBCRYPTO_MATH_MATRIX_UTILS_H
-
-#include "math/math-hal.h"
-
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_
 
 #include <cstdint>
 #include <limits>
 #include <string>
+
+#include "math/math-hal.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -90,7 +89,7 @@ public:
                 return static_cast<int32_t>(value.template ConvertToInt<uint64_t>());
             if (value >= m_minNegative && value < m_modulus)
                 return static_cast<int32_t>(
-                    -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
+                        -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
         }
         OPENFHE_THROW("The centered representative of " + value.ToString() + " mod " + m_modulus.ToString() +
                       " cannot be represented as int32_t");
@@ -112,4 +111,4 @@ using CenteredToInt32Converter = CenteredToInt32ConverterImpl<BigInteger>;
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_MATRIX_UTILS_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_

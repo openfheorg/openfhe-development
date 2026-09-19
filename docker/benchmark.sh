@@ -23,4 +23,3 @@ do
 
 done
 echo "</body></html>" >> $RESULTS
-

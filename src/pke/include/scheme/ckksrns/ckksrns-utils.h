@@ -29,15 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _CKKSRNS_UTILS_H_
-#define _CKKSRNS_UTILS_H_
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_UTILS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_UTILS_H_
 
-#include "utils/exception.h"
+#include <stdint.h>
 
 #include <complex>
+#include <cstdint>
+#include <initializer_list>
 #include <memory>
-#include <stdint.h>
 #include <vector>
+
+#include "utils/exception.h"
 
 /*
  * Subroutines used by the linear transformation homomorphic capability
@@ -115,8 +118,8 @@ std::shared_ptr<longDiv<VecDType>> LongDivisionPoly(const std::vector<VecDType>&
  * @return a struct with the coefficients for the quotient and remainder.
  */
 template <typename VecDType>
-std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(const std::vector<VecDType>& f,
-                                                         const std::vector<VecDType>& g);
+std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(
+        const std::vector<VecDType>& f, const std::vector<VecDType>& g);
 
 /**
  * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
@@ -152,8 +155,8 @@ uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<VecDType>& vec, b
  *
  * @return the vector corresponding to the shifted diagonal
  */
-std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
-                                                         int i);
+std::vector<std::complex<double>> ExtractShiftedDiagonal(
+        const std::vector<std::vector<std::complex<double>>>& A, int i);
 
 /**
  * Rotates a vector by an index - left rotation
@@ -204,9 +207,8 @@ std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots);
  * @param rotGroup rotation group indices to appropriately choose the elements of pows to compute iFFT.
  * @param flag_i flag that is 0 when we compute the coefficients for conj(U_0^T) and is 1 for conj(i*U_0^T).
  */
-std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::vector<std::complex<double>>& pows,
-                                                                     const std::vector<uint32_t>& rotGroup,
-                                                                     bool flag_i);
+std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, bool flag_i);
 
 /**
  * Computes the coefficients for the FFT decoding for CoeffDecodingCollapse such that every
@@ -216,9 +218,8 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
  * @param rotGroup rotation group indices to appropriately choose the elements of pows to compute iFFT.
  * @param flag_i flag that is 0 when we compute the coefficients for U_0 and is 1 for i*U_0.
  */
-std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::vector<std::complex<double>>& pows,
-                                                                     const std::vector<uint32_t>& rotGroup,
-                                                                     bool flag_i);
+std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, bool flag_i);
 
 /**
  * Computes the coefficients for the given level budget for the FFT encoding. Needed in
@@ -230,8 +231,8 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
  * @param flag_i flag that is 0 when we compute the coefficients for conj(U_0^T) and is 1 for conj(i*U_0^T).
  */
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollapse(
-    const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
-    bool flag_i);
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
+        bool flag_i);
 
 /**
  * Computes the coefficients for the given level budget for the FFT decoding. Needed in
@@ -243,8 +244,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
  * @param flag_i flag that is 0 when we compute the coefficients for U_0 and is 1 for i*U_0.
  */
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
-    const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
-    bool flag_i);
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
+        bool flag_i);
 
 /**
  * Ensures that the index for rotation is positive and between 1 and slots.
@@ -306,4 +307,4 @@ std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t bloc
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_UTILS_H_

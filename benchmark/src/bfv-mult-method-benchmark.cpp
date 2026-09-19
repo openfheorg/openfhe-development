@@ -36,24 +36,25 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 
 using namespace lbcrypto;
 
-constexpr uint32_t RING_DIM             = 16384;
-constexpr uint32_t MULT_DEPTH           = 7;
-constexpr uint32_t PTM                  = 2;
-constexpr uint32_t DCRT_BITS            = 60;
+constexpr uint32_t RING_DIM          = 16384;
+constexpr uint32_t MULT_DEPTH        = 7;
+constexpr uint32_t PTM               = 2;
+constexpr uint32_t DCRT_BITS         = 60;
 constexpr KeySwitchTechnique KS_TECH = BV;
 
 static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED};

@@ -33,12 +33,13 @@
   This file contains the functionality for parallel operation
  */
 
-#ifndef SRC_CORE_LIB_UTILS_PARALLEL_H_
-#define SRC_CORE_LIB_UTILS_PARALLEL_H_
+#ifndef SRC_CORE_INCLUDE_UTILS_PARALLEL_H_
+#define SRC_CORE_INCLUDE_UTILS_PARALLEL_H_
 
 #ifdef PARALLEL
-    #include <atomic>
     #include <omp.h>
+
+    #include <atomic>
 #endif
 
 namespace lbcrypto {
@@ -145,4 +146,4 @@ extern ParallelControls OpenFHEParallelControls;
 
 }  // namespace lbcrypto
 
-#endif /* SRC_CORE_LIB_UTILS_PARALLEL_H_ */
+#endif  // SRC_CORE_INCLUDE_UTILS_PARALLEL_H_

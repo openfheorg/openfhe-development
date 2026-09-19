@@ -31,31 +31,18 @@ please coordinate with the team to schedule testing.
 
 ## Pre-requisites
 
-Before contributing an improvement, install Python3 if it is not already installed. Then install the following
-dependencies:
+Before contributing an improvement, install Python 3 if it is not already installed. Then install `pre-commit`:
 
-- `clang-format`
-- `pre-commit`
-- `cpplint`
+- On Linux: `pip3 install pre-commit`
+- On macOS: `brew install pre-commit`
+- On Windows, from ```git bash```: `pip3 install pre-commit`
 
-On linux systems you will need to
+That is the only tool you need to install. `clang-format` and `cpplint` are pinned to specific versions in
+`.pre-commit-config.yaml`, and `pre-commit` downloads them into its own cache the first time the hooks run. Every
+contributor therefore formats with the same versions, and the `clang-format` already on your system is not used.
 
-- `pip3 install clang-format`
-- `pip3 install pre-commit`
-- `pip3 install cpplint`
-
-On macOS install using
-
-- `brew install clang-format`
-- `brew install pre-commit`
-- `pip install cpplint`
-
-On Windows systems, install clang-format using an executable for Clang v9.0.0 or later. Then using ```git bash``` run
-
-- `pip3 install pre-commit`
-- `pip3 install cpplint`
-
-Note, clang-format is not backwards compatible; the current format has been tested using `clang-format` version 9.0.0.
+Note that `clang-format` output differs between versions, so an editor configured to format on save may disagree with
+the hook. Running `pip3 install clang-format==18.1.8` gives your editor the same binary the hook uses.
 
 ## Setup
 
@@ -64,6 +51,9 @@ pre-commit install
 ```
 
 Now, `pre-commit` will run automatically on `git commit`.
+
+The same hooks run in CI on every pull request. If they report a failure there, the log shows the exact changes they
+would make; `pre-commit run --all-files` locally applies them.
 
 By default, `pre-commit` will only run on changed files. To run on all the files (recommended when adding new hooks),
 call
@@ -89,9 +79,8 @@ We request that you conform to the following workflow:
 
 * Note the commit message should be succinct yet meaningful and indicate the issue you're addressing, and discussion of
   things you weren't able to address.
-* Be sure the `pre-commit` hooks run, to ensure the code meets the style guidelines. As a check,
-  running `./maint/apply-code-format.sh` to apply clang-format should not result in any additional formatting changes in
-  the code.
+* Be sure the `pre-commit` hooks run, to ensure the code meets the style guidelines. As a check, running
+  `pre-commit run --all-files` a second time should report that every hook passed and should not change any files.
 * For a more granular control, you can first add files using `git add` and then run `git commit -m "commit message"`. In
   this case, the changes made by pre-commit will not automatically be added to the commit. Review the changes
   using `git diff`. If all looks well, run `git add`, and then retry `git commit -m "commit message"`.
@@ -178,7 +167,14 @@ In addition to the workflow for Minor contributions the following is the request
 * All classes, member variables, and methods should have Doxygen-style comments
   (e.g., comment lines starting with `//!` or comment blocks starting with `/*!`)
 * Avoid defining non-trivial functions in header files
-* Header files should include an 'include guard'
+* Header files should include an 'include guard' named after the file's path from the repository root, upper-cased,
+  with every non-alphanumeric character replaced by an underscore and a trailing underscore. For
+  `src/pke/include/cryptocontext.h` that is `SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_`. The closing line reads
+  `#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_`, and the guard wraps the whole file, including any feature check such
+  as `#ifdef WITH_NTL`.
+* Includes are grouped in this order, separated by blank lines: the header this file implements, C system headers,
+  C++ system headers, then everything else. A file includes the headers it uses rather than relying on another header
+  to provide them.
 * Protected and private member variable names are generally prefixed with
   `m_`. For most classes, member variables should not be public. Data member should generally use `m_camelCase`.
 * Variable names use `camelCase`

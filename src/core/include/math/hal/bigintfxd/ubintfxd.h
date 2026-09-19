@@ -38,52 +38,53 @@
  * is the maximum bitwidth for the big integer.
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
-        #define LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
+    #include <cstdlib>
+    #include <cstring>
+    #include <fstream>
+    #include <functional>
+    #include <limits>
+    #include <memory>
+    #include <ostream>
+    #include <string>
+    #include <type_traits>
+    #include <typeinfo>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/memory.h"
-        #include "utils/openfhebase64.h"
-        #include "utils/serializable.h"
-        #include "utils/utilities.h"
-
-        #include <cstdlib>
-        #include <cstring>
-        #include <fstream>
-        #include <functional>
-        #include <limits>
-        #include <memory>
-        #include <ostream>
-        #include <string>
-        #include <type_traits>
-        #include <typeinfo>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/memory.h"
+    #include "utils/openfhebase64.h"
+    #include "utils/serializable.h"
+    #include "utils/utilities.h"
 
 ////////// bigintfxd code
 typedef uint32_t integral_dtype;
 
-        /** Define the mapping for BigIntegerFixedT
+    /** Define the mapping for BigIntegerFixedT
     3500 is the maximum bit width supported by BigIntegers, large enough for
 most use cases The bitwidth can be decreased to the least value still supporting
 BigIntegerFixedT operations for a specific application - to achieve smaller runtimes
 **/
-        #ifndef BigIntegerBitLength
-            #if (NATIVEINT < 128)
-                #define BigIntegerBitLength 3500  // for 32-bit and 64-bit native backend
-            #else
-                #define BigIntegerBitLength 8000  // for 128-bit native backend
-            #endif
+    #ifndef BigIntegerBitLength
+        #if (NATIVEINT < 128)
+            #define BigIntegerBitLength 3500  // for 32-bit and 64-bit native backend
+        #else
+            #define BigIntegerBitLength 8000  // for 128-bit native backend
         #endif
+    #endif
 
-        #if BigIntegerBitLength < 600
-            #error "BigIntegerBitLength is too small"
-        #endif
+    #if BigIntegerBitLength < 600
+        #error "BigIntegerBitLength is too small"
+    #endif
 
 /**
  * @namespace bigintfxd
@@ -92,9 +93,9 @@ BigIntegerFixedT operations for a specific application - to achieve smaller runt
 namespace bigintfxd {
 
 using U64BITS = uint64_t;
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 using U128BITS = uint128_t;
-        #endif
+    #endif
 
 // forward declaration for aliases
 template <typename uint_type, uint32_t BITLENGTH>
@@ -242,11 +243,11 @@ struct DoubleDataType<uint32_t> {
  */
 template <>
 struct DoubleDataType<uint64_t> {
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     typedef uint128_t T;
-        #else
+    #else
     typedef uint64_t T;
-        #endif
+    #endif
 };
 
 constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log base 2 of 10.
@@ -296,9 +297,9 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     BigIntegerFixedT(uint64_t val);  // NOLINT
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
     BigIntegerFixedT(U128BITS val);  // NOLINT
-        #endif
+    #endif
 
     /**
    * Constructors from smaller basic types
@@ -316,17 +317,18 @@ public:
    *
    * @param &val is the initial integer represented as a big integer.
    */
-    template <typename T, typename std::enable_if<
-                              !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
-                                  !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
-                                  !std::is_same<T, long long>::value &&                                  // NOLINT
-        #if defined(HAVE_INT128)
-                                  !std::is_same<T, U128BITS>::value &&
-        #endif
-                                  !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&
-                                  !std::is_same<T, const char>::value && !std::is_same<T, BigIntegerFixedT>::value &&
-                                  !std::is_same<T, double>::value,
-                              bool>::type = true>
+    template <typename T,
+            typename std::enable_if<
+                    !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
+                            !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
+                            !std::is_same<T, long long>::value &&                                  // NOLINT
+    #if defined(HAVE_INT128)
+                            !std::is_same<T, U128BITS>::value &&
+    #endif
+                            !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&
+                            !std::is_same<T, const char>::value && !std::is_same<T, BigIntegerFixedT>::value &&
+                            !std::is_same<T, double>::value,
+                    bool>::type = true>
     BigIntegerFixedT(const T& val) : BigIntegerFixedT(val.ConvertToInt()) {  // NOLINT
     }
 
@@ -369,8 +371,8 @@ public:
     }
 
     template <typename T, typename std::enable_if<!std::is_same<T, BigIntegerFixedT>::value &&
-                                                      !std::is_same<T, const BigIntegerFixedT>::value,
-                                                  bool>::type = true>
+                                                          !std::is_same<T, const BigIntegerFixedT>::value,
+                                  bool>::type = true>
     BigIntegerFixedT& operator=(const T& val) {
         return (*this = BigIntegerFixedT(val));
     }
@@ -626,8 +628,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    BigIntegerFixedT ModAdd(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                            const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModAdd(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus addition operation. In-place variant.
@@ -683,8 +685,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
-    BigIntegerFixedT ModSub(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                            const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModSub(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus subtraction operation. In-place variant.
@@ -722,8 +724,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    BigIntegerFixedT ModMul(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                            const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModMul(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus multiplication. In-place variant.
@@ -762,8 +764,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    BigIntegerFixedT ModMulFast(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModMulFast(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
@@ -774,16 +776,16 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                   const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModMulFastEq(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
 
-    BigIntegerFixedT ModMulFastConst(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                     const BigIntegerFixedT& bInv) const {
+    BigIntegerFixedT ModMulFastConst(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& bInv) const {
         OPENFHE_THROW("ModMulFastConst is not implemented for backend 2");
     }
 
-    BigIntegerFixedT& ModMulFastConstEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                        const BigIntegerFixedT& bInv) {
+    BigIntegerFixedT& ModMulFastConstEq(
+            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& bInv) {
         OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 2");
     }
 
@@ -875,9 +877,9 @@ public:
    * @return the int representation of the value as uint64_t.
    */
     // TODO (dsuponit): make ConvertToInt() a template utility function
-    template <typename T             = BasicInteger,
-              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                               bool> = true>
+    template <typename T  = BasicInteger,
+            std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                    bool> = true>
     T ConvertToInt() const {
         constexpr uint32_t bits = sizeof(T) * CHAR_BIT;
         T result                = 0;
@@ -1056,24 +1058,24 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::binary_data(m_value, sizeof(m_value)));
         ar(::cereal::binary_data(&m_MSB, sizeof(m_MSB)));
     }
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
     }
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::binary_data(m_value, sizeof(m_value)));
         ar(::cereal::binary_data(&m_MSB, sizeof(m_MSB)));
@@ -1081,10 +1083,10 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW("serialized object version " + std::to_string(version) +
-                          " is from a later version of the library");
+            OPENFHE_THROW(
+                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
@@ -1210,6 +1212,6 @@ private:
 
 }  // namespace bigintfxd
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_UBINTFXD_H
-
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_UBINTFXD_H_
