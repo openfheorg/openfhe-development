@@ -51,6 +51,7 @@ enum TEST_CASE_TYPE : int {
     INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,
     INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,
     INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY,
+    INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY,
 };
 static TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
     const std::unordered_map<std::string, TEST_CASE_TYPE> stringToCaseType = {
@@ -59,7 +60,8 @@ static TEST_CASE_TYPE convertStringToCaseType(const std::string& str) {
         {"INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY", INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY},
         {"INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY", INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY},
         {"INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY", INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY},
-        {"INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY", INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY}};
+        {"INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY", INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY},
+        {"INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY", INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY}};
     auto search = stringToCaseType.find(str);
     if (stringToCaseType.end() != search) {
         return search->second;
@@ -73,7 +75,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         {INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_ENCRYPT_2PARTY_ONLY"},
         {INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY"},
         {INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY"},
-        {INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY"}};
+        {INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY"},
+        {INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY, "INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY"}};
     auto search = caseTypeToString.find(type);
     if (caseTypeToString.end() != search) {
         return os << search->second;
@@ -476,6 +479,62 @@ protected:
         }
     }
 
+    void UnitTest_MultiPartyBootRounding2(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
+                                          const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData));
+
+            KeyPair<DCRTPoly> kp = cc->KeyGen();
+            if (!kp.good())
+                OPENFHE_THROW(std::string("Key generation failed"));
+
+            const std::vector<std::complex<double>> inVec{0.25, -0.5};
+            Ciphertext<Element> inCtxt = cc->Encrypt(kp.publicKey, cc->MakeCKKSPackedPlaintext(inVec));
+            const auto& params         = inCtxt->GetElements()[0].GetParams();
+            if (params->GetParams().size() != 2)
+                OPENFHE_THROW("IntBootDecrypt expects 2 RNS limbs");
+
+            // With c1 = 0, IntBootDecrypt rounds c0 itself, so its coefficients are chosen directly: random values
+            // plus values at and next to the rounding boundaries Q/4 and 3Q/4, Q/2, and the ends of [0, Q)
+            DCRTPoly::DugType dug;
+            DCRTPoly c0(dug, params, Format::COEFFICIENT);
+            const BigInteger Q{c0.GetModulus()};
+            const BigInteger one{1};
+            const BigInteger Qhalf{Q / BigInteger(2)};
+            const BigInteger Q1quart{Q / BigInteger(4)};
+            const BigInteger Q3quart{(BigInteger(3) * Q) / BigInteger(4)};
+            const std::vector<BigInteger> boundaries{
+                BigInteger(0), one,     Q1quart - one, Q1quart,           Q1quart + one, Qhalf,
+                Q3quart - one, Q3quart, Q3quart + one, Q - BigInteger(2), Q - one};
+            for (auto& tower : c0.GetAllElements()) {
+                const BigInteger qi{tower.GetModulus().ConvertToInt()};
+                for (size_t i = 0; i < boundaries.size(); i++)
+                    tower[i] = NativeInteger(boundaries[i].Mod(qi).ConvertToInt());
+            }
+
+            auto ctxt = inCtxt->Clone();
+            ctxt->SetElements({c0, DCRTPoly(params, Format::EVALUATION, true)});
+            auto outCtxt = cc->IntBootDecrypt(kp.secretKey, ctxt);
+
+            auto expected = c0.CRTInterpolate();
+            for (uint32_t i = 0; i < expected.GetRingDimension(); i++) {
+                if ((expected[i] > Q1quart) && (expected[i] <= Q3quart))
+                    expected[i].ModAddEq(Qhalf, Q);
+            }
+
+            EXPECT_TRUE(expected == outCtxt->GetElements()[0].CRTInterpolate())
+                << failmsg + " Interactive bootstrapping (decrypt) rounding fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_MultiPartyBootThresholdFHE2(const TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT& testData,
                                               const std::string& failmsg = std::string()) {
         try {
@@ -662,6 +721,9 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
                 break;
             case INTERACTIVE_MP_BOOT_CHEBYSHEV_2PARTY_ONLY:
                 UnitTest_MultiPartyBootChebyshev2(test, test.buildTestName());
+                break;
+            case INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY:
+                UnitTest_MultiPartyBootRounding2(test, test.buildTestName());
                 break;
 #endif
             default:

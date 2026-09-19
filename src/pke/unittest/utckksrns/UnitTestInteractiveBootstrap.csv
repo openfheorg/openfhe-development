@@ -33,6 +33,10 @@ INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,4,CKKSRNS_SCHEME,,,,,,HYBRID,FLEXIBLEAUT
 INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,5,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
 INTERACTIVE_MP_BOOT_DECRYPT_2PARTY_ONLY,6,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDMANUAL,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
 #### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
+INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY,1,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY,2,CKKSRNS_SCHEME,,,,,,BV,FIXEDAUTO,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+INTERACTIVE_MP_BOOT_ROUNDING_2PARTY_ONLY,3,CKKSRNS_SCHEME,,,,,,HYBRID,FIXEDMANUAL,,16,,,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
+#### TestType,Descr,scheme,ptModulus,digitSize,standardDeviation,secretKeyDist,maxRelinSkDeg,ksTech,scalTech,firstModSize,batchSize,numLargeDigits,multiplicativeDepth,scalingModSize,securityLevel,ringDim,evalAddCount,keySwitchCount,encryptionTechnique,multiplicationTechnique,PRENumHops,PREMode,multipartyMode,executionMode,decryptionNoiseMode,noiseEstimate,desiredPrecision,statisticalSecurity,numAdversarialQueries,thresholdNumOfParties,interactiveBootCompressionLevel,compositeDegree,registerWordSize,ckksDataType,numParties,numTowers
 INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,1,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTO,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
 INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,2,CKKSRNS_SCHEME,,,,,,BV,FLEXIBLEAUTOEXT,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,
 INTERACTIVE_MP_BOOT_THRESHOLD_FHE_2PARTY_ONLY,3,CKKSRNS_SCHEME,,,,,,BV,FIXEDAUTO,,16,,7,,HEStd_NotSet,1024,,,,,,,,,,,,,,,,,,,,

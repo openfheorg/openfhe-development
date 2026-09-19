@@ -34,6 +34,7 @@
 #include "key/evalkeyrelin.h"
 #include "cryptocontext.h"
 #include "schemerns/rns-pke.h"
+#include "utils/constanttime.h"
 
 #include <memory>
 #include <vector>
@@ -261,6 +262,7 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
         qHalf[i] = Qhalfbig.Mod(BigInteger(q[i].ConvertToInt())).ConvertToInt();
 
     if constexpr (sizeof(NativeInteger::DNativeInt) > sizeof(BasicInteger)) {
+        // The coefficients depend on the secret key: reduce and round with masks, not branches or division
         const auto Q = static_cast<NativeInteger::DNativeInt>(q[0].ConvertToInt()) *
                        static_cast<NativeInteger::DNativeInt>(q[1].ConvertToInt());
         const auto Q1quart = Q / 4;
@@ -268,20 +270,21 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
         for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
             NativeInteger::DNativeInt x128 =
                 static_cast<NativeInteger::DNativeInt>(
-                    (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt()) *
+                    (poly[0][k].ModMulFastConstCT(qInv[0], q[0], precon[0])).ConvertToInt()) *
                 q[1].ConvertToInt();
             x128 += static_cast<NativeInteger::DNativeInt>(
-                        (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt()) *
+                        (poly[1][k].ModMulFastConstCT(qInv[1], q[1], precon[1])).ConvertToInt()) *
                     q[0].ConvertToInt();
-            if (x128 > Q)
-                x128 %= Q;
-            if ((x128 > Q1quart) && (x128 <= Q3quart)) {
-                poly[0][k].ModAddFastEq(qHalf[0], q[0]);
-                poly[1][k].ModAddFastEq(qHalf[1], q[1]);
-            }
+            // each term is below Q, so x128 < 2Q and one conditional subtraction reduces it mod Q
+            x128 = ct::SubIfGE(x128, Q);
+            // all-ones iff Q/4 < x128 <= 3Q/4 (operands are below Q, within the helpers' bound)
+            const auto mask = static_cast<BasicInteger>(ct::LessMask(Q1quart, x128) & ~ct::LessMask(Q3quart, x128));
+            poly[0][k].ModAddFastEqCT(qHalf[0].ConvertToInt() & mask, q[0]);
+            poly[1][k].ModAddFastEqCT(qHalf[1].ConvertToInt() & mask, q[1]);
         }
     }
     else {
+        // BigInteger fallback (no double-width native integer, e.g., NATIVE_SIZE=128); not constant-time
         const BigInteger Q1quart{Qbig / BigInteger(4)};
         const BigInteger Q3quart{(BigInteger(3) * Qbig) / BigInteger(4)};
         const BigInteger q0big{q[0].ConvertToInt()};
