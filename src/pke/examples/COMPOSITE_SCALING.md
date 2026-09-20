@@ -44,6 +44,8 @@ CKKS composite scaling is designed to achieve high-precision RNS-CKKS encrypted 
 
 - By design, when operating on composite scaling mode (i.e., COMPOSITESCALINGAUTO), the target hardware platform is assumed to have a fixed word size smaller than 64 bits. However, it still works when CKKS scaling factors are greater than 64 bits, even on hardware architectures with 64-bit register word sizes. The latter is a more efficient alternative to using NATIVE_SIZE=128 in scenarios when $IND-CPA^D$ security or high precision needs to be achieved.
 
+- The first modulus is assembled out of `compositeDegree` primes as well, chosen so that their product stays as close as possible to `firstModSize` bits. Every one of them has to fit the register word size, so `firstModSize` cannot exceed `compositeDegree` times the register word size, and the primes of the required size can also run out for a large ring dimension. Parameter generation reports either case as an error rather than settling for a first modulus that is smaller than requested; increasing the register word size or decreasing `firstModSize` resolves it.
+
 - Regardless of the target architecture word size, the OpenFHE library needs to be compiled using the NATIVE_SIZE=64 compilation flag. In other words, NATIVE_SIZE=32 is not supported.
 
 - COMPOSITESCALING<AUTO/MANUAL> scaling technique mode only works with the CKKS scheme.

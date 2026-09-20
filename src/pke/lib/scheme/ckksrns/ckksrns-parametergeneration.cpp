@@ -38,6 +38,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
 
+#include <algorithm>
+#include <cmath>
 #include <vector>
 #include <memory>
 #include <string>
@@ -208,12 +210,52 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
     return true;
 }
 
+namespace {
+// Returns the largest prime congruent to 1 mod cyclOrder that does not exceed 2^maxBits and is not in
+// moduliQRecord yet. Throws (from PreviousPrime()) once the candidates run out.
+NativeInteger LargestUnusedPrime(double maxBits, uint32_t cyclOrder,
+                                 const std::unordered_set<uint64_t>& moduliQRecord) {
+    const NativeInteger bound(static_cast<uint64_t>(std::llround(std::exp2(maxBits))));
+    // largest integer congruent to 1 mod cyclOrder that does not exceed the bound, one candidate above it
+    // so that the first PreviousPrime() step lands on it
+    NativeInteger q = bound - (bound - NativeInteger(1)).Mod(cyclOrder) + NativeInteger(cyclOrder);
+    do {
+        q = PreviousPrime<NativeInteger>(q, cyclOrder);
+    } while (std::log2(q.ConvertToDouble()) > maxBits || moduliQRecord.find(q.ConvertToInt()) != moduliQRecord.end());
+    return q;
+}
+
+// Returns the smallest prime congruent to 1 mod cyclOrder that is above 2^minBits and is not in
+// moduliQRecord yet, or 0 when every such prime is larger than 2^maxBits.
+NativeInteger SmallestUnusedPrimeAbove(double minBits, double maxBits, uint32_t cyclOrder,
+                                       const std::unordered_set<uint64_t>& moduliQRecord) {
+    const NativeInteger bound(static_cast<uint64_t>(std::llround(std::exp2(minBits))));
+    NativeInteger q = bound - (bound - NativeInteger(1)).Mod(cyclOrder);
+    double qBits    = 0.0;
+    do {
+        q     = NextPrime<NativeInteger>(q, cyclOrder);
+        qBits = std::log2(q.ConvertToDouble());
+    } while (qBits <= maxBits && moduliQRecord.find(q.ConvertToInt()) != moduliQRecord.end());
+    return (qBits <= maxBits) ? q : NativeInteger(0);
+}
+}  // namespace
+
 void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteger>& moduliQ,
                                                          std::vector<NativeInteger>& rootsQ, uint32_t compositeDegree,
                                                          uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,
                                                          uint32_t cyclOrder, uint32_t registerWordSize) const {
     if (firstModSize <= dcrtBits) {
         OPENFHE_THROW("firstModSize must be > scalingModSize.");
+    }
+
+    // a prime of the first modulus must fit both a register word and a NativeInteger
+    const uint32_t maxPrimeBitSize = std::min(registerWordSize, static_cast<uint32_t>(MAX_MODULUS_SIZE));
+    if (firstModSize > compositeDegree * maxPrimeBitSize) {
+        std::string errMsg("The requested firstModSize (" + std::to_string(firstModSize) + " bits) is out of reach: ");
+        errMsg += "a composite modulus of " + std::to_string(compositeDegree) + " primes holds at most ";
+        errMsg += std::to_string(compositeDegree * maxPrimeBitSize) + " bits. ";
+        errMsg += "Consider increasing the register word size or decreasing firstModSize.";
+        OPENFHE_THROW(errMsg);
     }
 
     std::unordered_set<uint64_t> moduliQRecord;
@@ -392,28 +434,97 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         }  // for loop
     }  // if numPrimes > 1
 
-    for (uint32_t d = 1, remBits = firstModSize; d <= compositeDegree; ++d) {
-        uint32_t qBitSize = std::ceil(static_cast<double>(remBits) / (compositeDegree - d + 1));
-        try {
-            // Find next prime
-            NativeInteger nextInteger = FirstPrime<NativeInteger>(qBitSize, cyclOrder);
-            nextInteger               = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);
+    // The scaling primes were sampled into moduliQ[numPrimes - compositeDegree .. numPrimes - 1] and the first
+    // modulus occupies moduliQ[0 .. compositeDegree - 1]. At multiplicative depth 0 the chain holds nothing but
+    // the first modulus, so those are the same slots: the scaling primes there are about to be overwritten and
+    // their values are free again. Keeping them reserved only pushes the sampling below onto smaller primes,
+    // which can make a first modulus that the available primes do support look out of reach.
+    for (uint32_t d = 1; d <= compositeDegree; ++d) {
+        if (numPrimes - d < compositeDegree)
+            moduliQRecord.erase(moduliQ[numPrimes - d].ConvertToInt());
+    }
 
-            while (std::log2(nextInteger.ConvertToDouble()) > qBitSize ||
-                   std::log2(nextInteger.ConvertToDouble()) > registerWordSize ||
-                   moduliQRecord.find(nextInteger.ConvertToInt()) != moduliQRecord.end())
-                nextInteger = PreviousPrime<NativeInteger>(nextInteger, cyclOrder);
+    // Sample the compositeDegree primes whose product makes up the first modulus. Each of them gets an
+    // equal share of the bit budget left by the primes sampled before it, where the budget is charged
+    // the size of the prime actually found and not its nominal share: the primes closest to a share may
+    // already be taken by the moduli sampled above, in which case the search settles for a smaller one.
+    // Charging the nominal share instead let such a shortfall pass unnoticed and accumulate, so the
+    // first composite modulus could come out several bits below firstModSize.
+    std::vector<double> qBits(compositeDegree, 0.0);
+    double remBits = static_cast<double>(firstModSize);
+    for (uint32_t d = 0; d < compositeDegree; ++d) {
+        const double targetBits = std::min(remBits / (compositeDegree - d), static_cast<double>(maxPrimeBitSize));
+        try {
+            NativeInteger q = LargestUnusedPrime(targetBits, cyclOrder, moduliQRecord);
+            qBits[d]        = std::log2(q.ConvertToDouble());
+
+            // A prime more than a bit short of its share means the primes of that size have run out.
+            // Reach above the share then, for the prime closest to it from above, as long as that one
+            // still fits in a register word and in what is left of the bit budget. Staying within the
+            // budget keeps the first modulus below 2^firstModSize, which callers such as the
+            // SPARSE_ENCAPSULATED key encapsulation rely on.
+            if ((targetBits - qBits[d]) > 1.0) {
+                const NativeInteger qAbove = SmallestUnusedPrimeAbove(
+                    targetBits, std::min(remBits, static_cast<double>(maxPrimeBitSize)), cyclOrder, moduliQRecord);
+                if (qAbove > NativeInteger(0)) {
+                    const double qAboveBits = std::log2(qAbove.ConvertToDouble());
+                    if ((qAboveBits - targetBits) < (targetBits - qBits[d])) {
+                        q        = qAbove;
+                        qBits[d] = qAboveBits;
+                    }
+                }
+            }
 
             // Store prime
-            moduliQ[d - 1] = nextInteger;
-            rootsQ[d - 1]  = RootOfUnity(cyclOrder, moduliQ[d - 1]);
+            moduliQ[d] = q;
+            rootsQ[d]  = RootOfUnity(cyclOrder, moduliQ[d]);
             // Keep track of existing primes
-            moduliQRecord.emplace(moduliQ[d - 1].ConvertToInt());
-            remBits -= qBitSize;
+            moduliQRecord.emplace(q.ConvertToInt());
+            remBits -= qBits[d];
         }
         catch (const OpenFHEException& ex) {
             OPENFHE_THROW(compositeScalingErrMsg);
         }
+    }
+
+    // The pass above leaves the budget partly unspent whenever a prime came out below its share, and an
+    // equal share of what is left is of no use to any single prime at that point. Hand all of it to one
+    // prime at a time instead, growing each into the largest unused prime that fits the bits it frees
+    // plus the ones still unspent.
+    for (uint32_t d = 0; d < compositeDegree && remBits > 0.0; ++d) {
+        const double budget = std::min(remBits + qBits[d], static_cast<double>(maxPrimeBitSize));
+        if (budget <= qBits[d])
+            continue;
+        try {
+            const NativeInteger q   = LargestUnusedPrime(budget, cyclOrder, moduliQRecord);
+            const double grownQBits = std::log2(q.ConvertToDouble());
+            if (grownQBits <= qBits[d])
+                continue;
+
+            moduliQRecord.erase(moduliQ[d].ConvertToInt());
+            moduliQ[d] = q;
+            rootsQ[d]  = RootOfUnity(cyclOrder, moduliQ[d]);
+            moduliQRecord.emplace(q.ConvertToInt());
+            remBits -= grownQBits - qBits[d];
+            qBits[d] = grownQBits;
+        }
+        catch (const OpenFHEException& ex) {
+            // no prime left to grow this one into; the one sampled above stands
+            continue;
+        }
+    }
+
+    // What is left of the bit budget is how far the first composite modulus fell short of firstModSize.
+    // A prime is always smaller than the power of two it is sampled from, so the target can only be
+    // approached, never met; but the primes of the required size can also be too scarce to get close to
+    // it, and that is reported instead of silently costing precision at the last level.
+    constexpr double MAX_FIRST_MOD_DEFICIT = 2.0;  // bits
+    if (remBits > MAX_FIRST_MOD_DEFICIT) {
+        std::string errMsg("COMPOSITE SCALING could only generate a first modulus of ");
+        errMsg += std::to_string(static_cast<double>(firstModSize) - remBits) + " bits for the requested ";
+        errMsg += "firstModSize of " + std::to_string(firstModSize) + " bits: there are not enough primes ";
+        errMsg += "of the required size. Consider increasing the register word size or decreasing firstModSize.";
+        OPENFHE_THROW(errMsg);
     }
 
     return;
