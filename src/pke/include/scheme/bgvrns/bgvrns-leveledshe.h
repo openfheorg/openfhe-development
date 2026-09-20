@@ -50,7 +50,7 @@ public:
     // AUTOMORPHISM
     /////////////////////////////////////
 
-    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
+    uint32_t FindAutomorphismIndex(int32_t index, uint32_t m) const override;
 
     /////////////////////////////////////
     // Mod Reduce

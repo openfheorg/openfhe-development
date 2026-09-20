@@ -134,13 +134,13 @@ public:
                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap,
                                           CALLER_INFO_ARGS_HDR) const override;
 
-    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const uint32_t index, const uint32_t m,
+    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const int32_t index, const uint32_t m,
                                           const std::shared_ptr<std::vector<DCRTPoly>> digits) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalFastRotationPrecompute(
         ConstCiphertext<DCRTPoly>& ciphertext) const override;
 
-    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
+    uint32_t FindAutomorphismIndex(int32_t index, uint32_t m) const override;
 
     Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly>& ciphertext, size_t towersLeft,
                                   size_t noiseScaleDeg) const override;
