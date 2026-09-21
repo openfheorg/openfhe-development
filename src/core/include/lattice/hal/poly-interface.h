@@ -56,15 +56,15 @@ namespace lbcrypto {
 
 template <typename DerivedType, typename VecType, template <typename LVT> typename ContainerType>
 class PolyInterface : public ILElement<DerivedType, VecType> {
-public:
-    using Vector     = VecType;
-    using Integer    = typename VecType::Integer;
-    using Params     = ILParamsImpl<Integer>;
+  public:
+    using Vector = VecType;
+    using Integer = typename VecType::Integer;
+    using Params = ILParamsImpl<Integer>;
     using PolyNative = ContainerType<NativeVector>;
-    using DggType    = DiscreteGaussianGeneratorImpl<VecType>;
-    using DugType    = DiscreteUniformGeneratorImpl<VecType>;
-    using TugType    = TernaryUniformGeneratorImpl<VecType>;
-    using BugType    = BinaryUniformGeneratorImpl<VecType>;
+    using DggType = DiscreteGaussianGeneratorImpl<VecType>;
+    using DugType = DiscreteUniformGeneratorImpl<VecType>;
+    using TugType = TernaryUniformGeneratorImpl<VecType>;
+    using BugType = BinaryUniformGeneratorImpl<VecType>;
 
     /**
    * @brief Get the Derived object, this is apart of the CRTP software design pattern
@@ -119,8 +119,8 @@ public:
    * @param format format for the polynomials generated.
    * @return the resulting vector.
    */
-    inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(
-            const std::shared_ptr<Params>& params, Format format) {
+    inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
+                                                                            Format format) {
         return [=]() {
             DugType dug;
             return DerivedType(dug, params, format);
@@ -128,7 +128,7 @@ public:
     }
 
     DerivedType& operator=(const DerivedType& rhs) override = 0;
-    DerivedType& operator=(DerivedType&& rhs) override      = 0;
+    DerivedType& operator=(DerivedType&& rhs) override = 0;
     DerivedType& operator=(const std::vector<int32_t>& rhs) {
         return this->GetDerived().operator=(rhs);
     }
@@ -201,7 +201,7 @@ public:
    * Note this operation is computationally intense. Does bound checking
    * @return interpolated value at index i.
    */
-    Integer& at(uint32_t i) override             = 0;
+    Integer& at(uint32_t i) override = 0;
     const Integer& at(uint32_t i) const override = 0;
 
     /**
@@ -453,9 +453,9 @@ public:
    * rootOfUnity for the modulus
    */
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-            const Integer& rootOfUnityArb) override = 0;
+                       const Integer& rootOfUnityArb) override = 0;
     virtual void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-            const Integer& rootOfUnityArb)          = 0;
+                                   const Integer& rootOfUnityArb) = 0;
 
     virtual DerivedType& MultAccEqNoCheck(const DerivedType& V, const Integer& I) = 0;
 
@@ -544,13 +544,13 @@ public:
    * @param format
    */
     virtual void SetValues(const VecType& values, Format format) = 0;
-    virtual void SetValues(VecType&& values, Format format)      = 0;
+    virtual void SetValues(VecType&& values, Format format) = 0;
 
     /**
    * @brief Sets all values of element to zero.
    */
     virtual void SetValuesToZero() = 0;
-    virtual void SetValuesToMax()  = 0;
+    virtual void SetValuesToMax() = 0;
 
     /**
    * @brief Interpolates the DCRTPoly to an Poly based on the Chinese Remainder
@@ -593,7 +593,7 @@ public:
         return this->GetDerived().GetElementName();
     }
 
-protected:
+  protected:
     /**
    * @brief ostream operator
    * @param os the input preceding output stream

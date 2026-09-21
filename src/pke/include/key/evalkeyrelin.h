@@ -53,11 +53,11 @@ namespace lbcrypto {
  */
 template <class Element>
 class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
-private:
+  private:
     std::vector<Element> m_AKey;
     std::vector<Element> m_BKey;
 
-public:
+  public:
     /**
    * Basic constructor for setting crypto params
    *
@@ -96,8 +96,8 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
-        m_AKey        = rhs.m_AKey;
-        m_BKey        = rhs.m_BKey;
+        m_AKey = rhs.m_AKey;
+        m_BKey = rhs.m_BKey;
         return *this;
     }
 
@@ -108,8 +108,8 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
         this->context = std::move(rhs.context);
-        m_AKey        = std::move(rhs.m_AKey);
-        m_BKey        = std::move(rhs.m_BKey);
+        m_AKey = std::move(rhs.m_AKey);
+        m_BKey = std::move(rhs.m_BKey);
         return *this;
     }
 
@@ -193,8 +193,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
         ar(::cereal::make_nvp("ak", m_AKey));

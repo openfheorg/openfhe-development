@@ -43,7 +43,7 @@
 using namespace lbcrypto;
 
 class UTGENERAL_CRYPTOCONTEXTS : public ::testing::Test {
-protected:
+  protected:
     virtual void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -102,7 +102,7 @@ TEST_F(UTGENERAL_CRYPTOCONTEXTS, coexisting_ckks_cryptocontexts) {
     // Encrypt
     std::vector<double> values = {1.0, 1.1, 1.2};
     // const size_t dataSize = values.size();
-    Plaintext ptxt  = cc1->MakeCKKSPackedPlaintext(values);
+    Plaintext ptxt = cc1->MakeCKKSPackedPlaintext(values);
     auto ciphertext = cc1->Encrypt(ptxt, key1.publicKey);
 
     // Decrypt

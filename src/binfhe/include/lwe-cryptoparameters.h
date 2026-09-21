@@ -49,7 +49,7 @@ namespace lbcrypto {
  * @brief Class that stores all parameters for the LWE scheme
  */
 class LWECryptoParams : public Serializable {
-public:
+  public:
     LWECryptoParams() = default;
 
     /**
@@ -65,7 +65,7 @@ public:
    * @param keyDist the key distribution
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, NativeInteger q_KS, double std,
-            uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
+                             uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_n == 0)
             OPENFHE_THROW("m_n (lattice parameter) can not be zero");
@@ -98,12 +98,12 @@ public:
     }
 
     LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        m_q       = rhs.m_q;
-        m_Q       = rhs.m_Q;
-        m_qKS     = rhs.m_qKS;
-        m_n       = rhs.m_n;
-        m_N       = rhs.m_N;
-        m_baseKS  = rhs.m_baseKS;
+        m_q = rhs.m_q;
+        m_Q = rhs.m_Q;
+        m_qKS = rhs.m_qKS;
+        m_n = rhs.m_n;
+        m_N = rhs.m_N;
+        m_baseKS = rhs.m_baseKS;
         m_keyDist = rhs.m_keyDist;
         m_dgg.SetStd(rhs.m_dgg.GetStd());
         m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
@@ -188,8 +188,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("n", m_n));
@@ -215,7 +215,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // modulus for the additive LWE scheme
     NativeInteger m_q;
     // modulus for the RingGSW/RingLWE scheme

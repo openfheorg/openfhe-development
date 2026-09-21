@@ -61,8 +61,8 @@ struct RNSExtensionTables {
     Format resultFormat;
 };
 
-DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
-        const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, Poly* plaintext) const {
+DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                         Poly* plaintext) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
@@ -89,8 +89,8 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
     return DecryptResult(plaintext->GetLength());
 }
 
-DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
-        const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const {
+DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                         NativePoly* plaintext) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
 
@@ -119,7 +119,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     if (ciphertext->NumberCiphertextElements() == 0)
         OPENFHE_THROW("No polynomials in the input ciphertext.");
 
-    auto cc                 = ciphertext->GetCryptoContext();
+    auto cc = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
     auto st = cryptoParams->GetScalingTechnique();
@@ -131,8 +131,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     // Compress ctxt and reduce it to numPrimesToKeep towers
     // 1 is for the message itself (assuming 1 tower (60-bit) for msg)
     size_t scalingFactorBits = cc->GetEncodingParams()->GetPlaintextModulus();
-    size_t firstModulusSize  = ciphertext->GetElements()[0].GetAllElements()[0].GetParams()->GetModulus().GetMSB();
-    size_t numTowersToKeep   = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
+    size_t firstModulusSize = ciphertext->GetElements()[0].GetAllElements()[0].GetParams()->GetModulus().GetMSB();
+    size_t numTowersToKeep = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
     if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep)
         OPENFHE_THROW("Not enough towers in the input polynomial.");
@@ -140,9 +140,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT) {
         auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep + 1);
 
-        uint32_t lvl       = st == FLEXIBLEAUTO ? 0 : 1;
-        double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
-        double sourceSF    = ciphertextAdjusted->GetScalingFactor();
+        uint32_t lvl = st == FLEXIBLEAUTO ? 0 : 1;
+        double targetSF = cryptoParams->GetScalingFactorReal(lvl);
+        double sourceSF = ciphertextAdjusted->GetScalingFactor();
         uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
         double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
         double adjustmentFactor = (targetSF / sourceSF) * (modToDrop / sourceSF);
@@ -156,8 +156,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
     return cc->Compress(ciphertext, numTowersToKeep);
 }
 
-Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(
-        std::shared_ptr<CryptoParametersCKKSRNS> params, const PublicKey<DCRTPoly> publicKey) const {
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                                  const PublicKey<DCRTPoly> publicKey) const {
     typename DCRTPoly::DugType dug;
     DCRTPoly crp(dug, params->GetElementParams());
     crp.SetFormat(Format::EVALUATION);
@@ -172,8 +172,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(
     return outCtxt;
 }
 
-Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(
-        std::shared_ptr<CryptoParametersCKKSRNS> params, ConstCiphertext<DCRTPoly>& ciphertext) const {
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                                  ConstCiphertext<DCRTPoly>& ciphertext) const {
     const auto& ctxtElems = ciphertext->GetElements();
 
     typename DCRTPoly::DugType dug;
@@ -190,8 +190,8 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(
 
 // Subroutines for Interactive Multi-Party Bootstrapping
 // Calculating RNS parameters
-void PrecomputeRNSExtensionTables(
-        CryptoContext<DCRTPoly>& cc, uint32_t from, uint32_t to, RNSExtensionTables& rnsExtTables) {
+void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, uint32_t from, uint32_t to,
+                                  RNSExtensionTables& rnsExtTables) {
     std::vector<NativeInteger> moduliQ;
     moduliQ.reserve(from);
     std::vector<NativeInteger> rootsQ;
@@ -223,25 +223,25 @@ void PrecomputeRNSExtensionTables(
     // populate moduli for CRT basis Q
     for (size_t i = 0; i < sizeQ; i++) {
         moduliQP[i] = moduliQ[i];
-        rootsQP[i]  = rootsQ[i];
+        rootsQP[i] = rootsQ[i];
     }
 
     // populate moduli for CRT basis P
     for (size_t j = 0; j < sizeP; j++) {
         moduliQP[sizeQ + j] = moduliP[j];
-        rootsQP[sizeQ + j]  = rootsP[j];
+        rootsQP[sizeQ + j] = rootsP[j];
     }
 
-    uint32_t ringDim      = cc->GetCryptoParameters()->GetElementParams()->GetRingDimension();
-    rnsExtTables.paramsP  = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliP, rootsP);
+    uint32_t ringDim = cc->GetCryptoParameters()->GetElementParams()->GetRingDimension();
+    rnsExtTables.paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliP, rootsP);
     rnsExtTables.paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliQP, rootsQP);
 
     rnsExtTables.QHatInvModq.resize(sizeQ);
     rnsExtTables.QHatInvModqPrecon.resize(sizeQ);
     for (uint32_t i = 0; i < sizeQ; i++) {
         BigInteger qi(moduliQ[i].ConvertToInt());
-        BigInteger QHati                  = modulusQ / qi;
-        rnsExtTables.QHatInvModq[i]       = QHati.ModInverse(qi).Mod(qi).ConvertToInt();
+        BigInteger QHati = modulusQ / qi;
+        rnsExtTables.QHatInvModq[i] = QHati.ModInverse(qi).Mod(qi).ConvertToInt();
         rnsExtTables.QHatInvModqPrecon[i] = rnsExtTables.QHatInvModq[i].PrepModMulConst(qi.ConvertToInt());
     }
 
@@ -252,7 +252,7 @@ void PrecomputeRNSExtensionTables(
         BigInteger pj(moduliP[j].ConvertToInt());
         for (uint32_t i = 0; i < sizeQ; i++) {
             BigInteger qi(moduliQ[i].ConvertToInt());
-            BigInteger QHati            = modulusQ / qi;
+            BigInteger QHati = modulusQ / qi;
             rnsExtTables.QHatModp[j][i] = QHati.Mod(pj).ConvertToInt();
         }
     }
@@ -287,7 +287,7 @@ DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const
         OPENFHE_THROW("Number of towers in input polys does not match!");
     DCRTPoly res = sk * poly;
     if (false == IsZeroNoise) {
-        const auto cryptoParams      = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
         const DCRTPoly::DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
         res += DCRTPoly(dgg, poly.GetParams(), Format::EVALUATION);
     }
@@ -297,8 +297,8 @@ DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const
 // Generate random mask
 DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
     // only the parameters of the first maskBoundNumTowers towers are needed here, not their contents
-    auto params = std::make_shared<DCRTPoly::Params>(
-            c1.GetParams()->GetCyclotomicOrder(), c1.GetParams()->GetParamPartition(0, maskBoundNumTowers - 1));
+    auto params = std::make_shared<DCRTPoly::Params>(c1.GetParams()->GetCyclotomicOrder(),
+                                                     c1.GetParams()->GetParamPartition(0, maskBoundNumTowers - 1));
 
     typename DCRTPoly::DugType dug;
     return DCRTPoly(dug, params, Format::EVALUATION);
@@ -306,7 +306,7 @@ DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
 
 // Compute h_{0,i}
 DCRTPoly GenerateMaskedDecryptionShare(CryptoContext<DCRTPoly>& cc, const PrivateKey<DCRTPoly> privateKey,
-        const DCRTPoly& c1, DCRTPoly& Mi, uint32_t compressionLevel) {
+                                       const DCRTPoly& c1, DCRTPoly& Mi, uint32_t compressionLevel) {
     // reduce sk's numTowers to c1's numTowers
     DCRTPoly sk = privateKey->GetPrivateElement().CloneTowers(0, c1.GetAllElements().size() - 1);
 
@@ -320,9 +320,10 @@ DCRTPoly GenerateMaskedDecryptionShare(CryptoContext<DCRTPoly>& cc, const Privat
     PrecomputeRNSExtensionTables(cc, compressionLevel, c1.GetAllElements().size(), MiForDecryptionShareRNSExtTables);
 
     MiCopy.ExpandCRTBasis(MiForDecryptionShareRNSExtTables.paramsQP, MiForDecryptionShareRNSExtTables.paramsP,
-            MiForDecryptionShareRNSExtTables.QHatInvModq, MiForDecryptionShareRNSExtTables.QHatInvModqPrecon,
-            MiForDecryptionShareRNSExtTables.QHatModp, MiForDecryptionShareRNSExtTables.alphaQModp,
-            MiForDecryptionShareRNSExtTables.modpBarrettMu, MiForDecryptionShareRNSExtTables.qInv, EVALUATION);
+                          MiForDecryptionShareRNSExtTables.QHatInvModq,
+                          MiForDecryptionShareRNSExtTables.QHatInvModqPrecon, MiForDecryptionShareRNSExtTables.QHatModp,
+                          MiForDecryptionShareRNSExtTables.alphaQModp, MiForDecryptionShareRNSExtTables.modpBarrettMu,
+                          MiForDecryptionShareRNSExtTables.qInv, EVALUATION);
 
     maskedDecryptionShare = maskedDecryptionShare - MiCopy;
 
@@ -331,19 +332,20 @@ DCRTPoly GenerateMaskedDecryptionShare(CryptoContext<DCRTPoly>& cc, const Privat
 
 // Compute h_{1,i}
 DCRTPoly GenerateReEncryptionShare(CryptoContext<DCRTPoly>& cc, const PrivateKey<DCRTPoly> privateKey,
-        ConstCiphertext<DCRTPoly> a, DCRTPoly& Mi, uint32_t compressionLevel) {
-    DCRTPoly sk                = privateKey->GetPrivateElement();
-    auto negsk                 = sk.Negate();
+                                   ConstCiphertext<DCRTPoly> a, DCRTPoly& Mi, uint32_t compressionLevel) {
+    DCRTPoly sk = privateKey->GetPrivateElement();
+    auto negsk = sk.Negate();
     DCRTPoly reEncryptionShare = ComputeNoisyMult(cc, negsk, a->GetElements()[0], false);
 
     DCRTPoly MiCopy = Mi;
     // Init RNS parameters - we generate these params online as of now - should be cheap
     // Extending Mi parameters:
     RNSExtensionTables MiForReEncryptionShareRNSExtTables;  // extending Mi from R_t to R_Q
-    PrecomputeRNSExtensionTables(
-            cc, compressionLevel, a->GetElements()[0].GetAllElements().size(), MiForReEncryptionShareRNSExtTables);
+    PrecomputeRNSExtensionTables(cc, compressionLevel, a->GetElements()[0].GetAllElements().size(),
+                                 MiForReEncryptionShareRNSExtTables);
 
-    MiCopy.ExpandCRTBasis(MiForReEncryptionShareRNSExtTables.paramsQP, MiForReEncryptionShareRNSExtTables.paramsP,
+    MiCopy.ExpandCRTBasis(
+            MiForReEncryptionShareRNSExtTables.paramsQP, MiForReEncryptionShareRNSExtTables.paramsP,
             MiForReEncryptionShareRNSExtTables.QHatInvModq, MiForReEncryptionShareRNSExtTables.QHatInvModqPrecon,
             MiForReEncryptionShareRNSExtTables.QHatModp, MiForReEncryptionShareRNSExtTables.alphaQModp,
             MiForReEncryptionShareRNSExtTables.modpBarrettMu, MiForReEncryptionShareRNSExtTables.qInv, EVALUATION);
@@ -353,18 +355,19 @@ DCRTPoly GenerateReEncryptionShare(CryptoContext<DCRTPoly>& cc, const PrivateKey
 }
 
 std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
-        ConstCiphertext<DCRTPoly> ciphertext, ConstCiphertext<DCRTPoly> a) const {
+                                                                      ConstCiphertext<DCRTPoly> ciphertext,
+                                                                      ConstCiphertext<DCRTPoly> a) const {
     // Generate maskedDecryptionShares: secretShare M_i and publicShare: s_i*c_1+e_{0,i} to compute h_{0,i}
     // Generate secretShare M_i \in R_{q*2^{\lambda}} where lambda is the security level
     // Calculate publicShare s_i*c_1 + e_{0,i} in R_{q*2^{\lambda}}
     // Calculate h_{0,i} = publicShare - secretShare
 
-    auto cc                 = ciphertext->GetCryptoContext();
+    auto cc = ciphertext->GetCryptoContext();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
     auto compressionLevel = cryptoParams->GetMPIntBootCiphertextCompressionLevel();
 
-    auto& c1    = ciphertext->GetElements()[0];      // input ctxt must only include one element which is c1
+    auto& c1 = ciphertext->GetElements()[0];         // input ctxt must only include one element which is c1
     DCRTPoly Mi = GenerateMi(c1, compressionLevel);  // Mi is in NTT domain
 
     // Encryption to Share protocol to compute: h_{0,i}
@@ -410,8 +413,9 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootAdd(
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPoly> publicKey,
-        const std::vector<Ciphertext<DCRTPoly>>& sharesPair, ConstCiphertext<DCRTPoly> a,
-        ConstCiphertext<DCRTPoly> ciphertext) const {
+                                                         const std::vector<Ciphertext<DCRTPoly>>& sharesPair,
+                                                         ConstCiphertext<DCRTPoly> a,
+                                                         ConstCiphertext<DCRTPoly> ciphertext) const {
     if (ciphertext->NumberCiphertextElements() == 0) {
         OPENFHE_THROW("No polynomials in the input ciphertext.");
     }
@@ -423,12 +427,12 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
     // Extending Mi parameters:
     RNSExtensionTables C0ForReEncryptRNSExtTables;  // extending c0 from R_q to R_Q
     PrecomputeRNSExtensionTables(cc, c0Prime.GetAllElements().size(), a->GetElements()[0].GetAllElements().size(),
-            C0ForReEncryptRNSExtTables);
+                                 C0ForReEncryptRNSExtTables);
 
     c0Prime.ExpandCRTBasis(C0ForReEncryptRNSExtTables.paramsQP, C0ForReEncryptRNSExtTables.paramsP,
-            C0ForReEncryptRNSExtTables.QHatInvModq, C0ForReEncryptRNSExtTables.QHatInvModqPrecon,
-            C0ForReEncryptRNSExtTables.QHatModp, C0ForReEncryptRNSExtTables.alphaQModp,
-            C0ForReEncryptRNSExtTables.modpBarrettMu, C0ForReEncryptRNSExtTables.qInv, EVALUATION);
+                           C0ForReEncryptRNSExtTables.QHatInvModq, C0ForReEncryptRNSExtTables.QHatInvModqPrecon,
+                           C0ForReEncryptRNSExtTables.QHatModp, C0ForReEncryptRNSExtTables.alphaQModp,
+                           C0ForReEncryptRNSExtTables.modpBarrettMu, C0ForReEncryptRNSExtTables.qInv, EVALUATION);
 
     c0Prime = c0Prime + sharesPair[1]->GetElements()[0];
 
@@ -475,9 +479,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntBootAdjustScale(ConstCiphertext<DCRTP
 
         auto ciphertextAdjusted = cc->Compress(ciphertext, 3);
 
-        uint32_t lvl       = st == FLEXIBLEAUTO ? 0 : 1;
-        double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
-        double sourceSF    = ciphertextAdjusted->GetScalingFactor();
+        uint32_t lvl = st == FLEXIBLEAUTO ? 0 : 1;
+        double targetSF = cryptoParams->GetScalingFactorReal(lvl);
+        double sourceSF = ciphertextAdjusted->GetScalingFactor();
         uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
         double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
         double adjustmentFactor = (targetSF / sourceSF) * (modToDrop / sourceSF);

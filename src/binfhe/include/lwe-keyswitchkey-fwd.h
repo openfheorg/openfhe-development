@@ -37,7 +37,7 @@ namespace lbcrypto {
 
 class LWESwitchingKeyImpl;
 
-using LWESwitchingKey      = std::shared_ptr<LWESwitchingKeyImpl>;
+using LWESwitchingKey = std::shared_ptr<LWESwitchingKeyImpl>;
 using ConstLWESwitchingKey = const std::shared_ptr<const LWESwitchingKeyImpl>;
 
 }  // namespace lbcrypto

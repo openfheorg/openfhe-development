@@ -49,7 +49,7 @@ const std::vector<NativeInteger>& RingGSWCryptoParams::PrecomputeGPower(uint32_t
     std::vector<NativeInteger> tempvec(digitsG);
     for (uint32_t i = 0; i < digitsG; ++i) {
         tempvec[i] = vTemp;
-        vTemp      = vTemp.ModMulFast(NativeInteger(baseG), m_Q);
+        vTemp = vTemp.ModMulFast(NativeInteger(baseG), m_Q);
     }
     return m_Gpower_map.emplace(baseG, std::move(tempvec)).first->second;
 }
@@ -113,7 +113,8 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             auto it = m_Gpower_map.find(baseG);
             if (it == m_Gpower_map.end())
                 OPENFHE_THROW("No GPower found for the requested gadget base.");
-            m_baseGByIndex.insert(m_baseGByIndex.end(), count,
+            m_baseGByIndex.insert(
+                    m_baseGByIndex.end(), count,
                     BaseGParams{baseG, DigitsForBase(m_Q, baseG), GetMSB(baseG) - 1, &it->second, m_teamWidth});
         }
     }
@@ -126,8 +127,8 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         uint32_t gPow{1};
         m_logGen[M - gPow] = M;  // for -1
         for (uint32_t i = 1; i < m_N / 2; ++i) {
-            gPow               = (gPow * gen) % M;
-            m_logGen[gPow]     = i;
+            gPow = (gPow * gen) % M;
+            m_logGen[gPow] = i;
             m_logGen[M - gPow] = -i;
         }
 
@@ -150,7 +151,8 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
 #if NATIVEINT != 32
 const std::shared_ptr<ILNativeParams32>& RingGSWCryptoParams::GetPolyParams32() {
     if (m_polyParams32 == nullptr) {
-        m_polyParams32 = std::make_shared<ILNativeParams32>(2 * m_N, NativeInteger32(m_Q.ConvertToInt<uint32_t>()),
+        m_polyParams32 = std::make_shared<ILNativeParams32>(
+                2 * m_N, NativeInteger32(m_Q.ConvertToInt<uint32_t>()),
                 NativeInteger32(m_polyParams->GetRootOfUnity().ConvertToInt<uint32_t>()));
     }
     return m_polyParams32;

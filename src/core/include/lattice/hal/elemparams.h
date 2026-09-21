@@ -57,9 +57,9 @@ namespace lbcrypto {
  */
 template <typename IntegerType>
 class ElemParams : public Serializable {
-public:
+  public:
     constexpr ElemParams() = default;
-    virtual ~ElemParams()  = default;
+    virtual ~ElemParams() = default;
 
     ElemParams(uint32_t order, const IntegerType& ctModulus)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
@@ -84,7 +84,7 @@ public:
    * @param bigRUnity the big root of unity used for bit packing operations.
    */
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity, const IntegerType& bigCtModulus,
-            const IntegerType& bigRUnity)
+               const IntegerType& bigRUnity)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus),
@@ -92,9 +92,9 @@ public:
           m_bigCiphertextModulus(bigCtModulus),
           m_bigRootOfUnity(bigRUnity) {}
 
-    ElemParams(const ElemParams& rhs)                = default;
-    ElemParams(ElemParams&& rhs) noexcept            = default;
-    ElemParams& operator=(const ElemParams& rhs)     = default;
+    ElemParams(const ElemParams& rhs) = default;
+    ElemParams(ElemParams&& rhs) noexcept = default;
+    ElemParams& operator=(const ElemParams& rhs) = default;
     ElemParams& operator=(ElemParams&& rhs) noexcept = default;
 
     /**
@@ -192,8 +192,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         ar(::cereal::make_nvp("co", m_cyclotomicOrder));
         ar(::cereal::make_nvp("rd", m_ringDimension));
         ar(::cereal::make_nvp("cm", m_ciphertextModulus));
@@ -209,7 +209,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     uint32_t m_ringDimension{0};
     uint32_t m_cyclotomicOrder{0};
     IntegerType m_ciphertextModulus{0};

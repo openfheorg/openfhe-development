@@ -57,7 +57,7 @@ namespace lbcrypto {
  */
 template <typename IntType>
 class ILParamsImpl final : public ElemParams<IntType> {
-public:
+  public:
     using Integer = IntType;
 
     constexpr ILParamsImpl() : ElemParams<IntType>() {}
@@ -77,7 +77,7 @@ public:
         : ElemParams<IntType>(order, modulus, rootOfUnity) {}
 
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity, const IntType& bigModulus,
-            const IntType& bigRootOfUnity)
+                 const IntType& bigRootOfUnity)
         : ElemParams<IntType>(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}
 
     /**
@@ -132,8 +132,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         ar(::cereal::base_class<ElemParams<IntType>>(this));
     }
 
@@ -145,7 +145,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     std::ostream& doprint(std::ostream& out) const override {
         out << "ILParams ";
         ElemParams<IntType>::doprint(out);

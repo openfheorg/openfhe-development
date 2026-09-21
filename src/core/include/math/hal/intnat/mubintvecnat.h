@@ -60,9 +60,9 @@ namespace intnat {
 
 template <typename IntType>
 class NativeVectorT;
-using NativeVector    = NativeVectorT<NativeInteger>;
+using NativeVector = NativeVectorT<NativeInteger>;
 using NativeInteger32 = NativeIntegerT<uint32_t>;
-using NativeVector32  = NativeVectorT<NativeInteger32>;
+using NativeVector32 = NativeVectorT<NativeInteger32>;
 
 /**
  * @brief The class for representing vectors of native integers.
@@ -70,7 +70,7 @@ using NativeVector32  = NativeVectorT<NativeInteger32>;
 template <class IntegerType>
 class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
                             public lbcrypto::Serializable {
-private:
+  private:
     IntegerType m_modulus{0};
     std::vector<IntegerType> m_data{};
 
@@ -78,7 +78,7 @@ private:
         return length < m_data.size();
     }
 
-public:
+  public:
     using BasicInt = typename IntegerType::Integer;
 
     constexpr NativeVectorT() = default;
@@ -182,7 +182,7 @@ public:
    */
     NativeVectorT& operator=(NativeVectorT&& rhs) noexcept {
         m_modulus = std::move(rhs.m_modulus);
-        m_data    = std::move(rhs.m_data);
+        m_data = std::move(rhs.m_data);
         return *this;
     }
 
@@ -626,8 +626,8 @@ public:
     }
 
     template <class Archive>
-    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> save(
-            Archive& ar, std::uint32_t const version) const {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
+                                                                                  std::uint32_t const version) const {
         ::cereal::size_type size = m_data.size();
         ar(size);
         if (size > 0) {
@@ -637,18 +637,18 @@ public:
     }
 
     template <class Archive>
-    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> save(
-            Archive& ar, std::uint32_t const version) const {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> save(Archive& ar,
+                                                                                 std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
     }
 
     template <class Archive>
-    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> load(
-            Archive& ar, std::uint32_t const version) {
+    std::enable_if_t<!cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
+                                                                                  std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ::cereal::size_type size;
         ar(size);
@@ -660,11 +660,11 @@ public:
     }
 
     template <class Archive>
-    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> load(
-            Archive& ar, std::uint32_t const version) {
+    std::enable_if_t<cereal::traits::is_text_archive<Archive>::value, void> load(Archive& ar,
+                                                                                 std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
@@ -678,7 +678,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     /**
    * Generalized-Barrett multiply loop with the reduction constants hoisted out of the
    * loop. Uses the same shift structure and validity domain (operands < modulus) as
@@ -693,8 +693,8 @@ private:
    */
     static void BarrettModMulLoop(IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
 
-    static void BarrettModMulLoop(
-            IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
+    static void BarrettModMulLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
+                                  const IntegerType& modulus);
 
     /**
    * General-shrink loop shared by SwitchModulus, ModEq and the copy-with-switch ctor:
@@ -729,8 +729,8 @@ private:
    * @param size is the number of elements.
    * @param &modulus is the modulus to perform operations with.
    */
-    static void BarrettMultAccLoop(
-            IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size, const IntegerType& modulus);
+    static void BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size,
+                                   const IntegerType& modulus);
 };
 
 }  // namespace intnat
@@ -755,8 +755,8 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
     for (const auto& v : vec) {
         uint64_t vec[2];
         uint128_t v128 = v.ConvertToInt();
-        vec[0]         = v128 & mask;  // least significant word
-        vec[1]         = v128 >> 64;   // most significant word
+        vec[0] = v128 & mask;  // least significant word
+        vec[1] = v128 >> 64;   // most significant word
         ar(vec);
     }
 }

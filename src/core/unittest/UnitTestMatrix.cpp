@@ -54,8 +54,8 @@ static std::function<Element()> secureIL2nAlloc() {
     uint32_t m = 2048;
     typename Element::Integer secureModulus("8590983169");
     typename Element::Integer secureRootOfUnity("4810681236");
-    return Element::Allocator(
-            std::make_shared<typename Element::Params>(m, secureModulus, secureRootOfUnity), Format::EVALUATION);
+    return Element::Allocator(std::make_shared<typename Element::Params>(m, secureModulus, secureRootOfUnity),
+                              Format::EVALUATION);
 }
 
 template <typename Element>
@@ -71,8 +71,8 @@ static std::function<Element()> fastUniformIL2nAlloc() {
     uint32_t m = 16;
     typename Element::Integer modulus("67108913");
     typename Element::Integer rootOfUnity("61564");
-    return Element::MakeDiscreteUniformAllocator(
-            std::make_shared<typename Element::Params>(m, modulus, rootOfUnity), Format::EVALUATION);
+    return Element::MakeDiscreteUniformAllocator(std::make_shared<typename Element::Params>(m, modulus, rootOfUnity),
+                                                 Format::EVALUATION);
 }
 
 TEST(UTMatrix, serializer) {
@@ -80,7 +80,7 @@ TEST(UTMatrix, serializer) {
 }
 
 TEST(UTMatrix, convert_to_int32_checks_centered_range) {
-    constexpr uint64_t int32MaxValue     = static_cast<uint64_t>(std::numeric_limits<int32_t>::max());
+    constexpr uint64_t int32MaxValue = static_cast<uint64_t>(std::numeric_limits<int32_t>::max());
     constexpr uint64_t int32MinMagnitude = int32MaxValue + 1;
     const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
     Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
@@ -129,10 +129,10 @@ TEST(UTMatrix, convert_to_int32_representable_values) {
     const BigInteger lowest(modulus - BigInteger(static_cast<uint64_t>(int32Max) + 1));
 
     Matrix<BigInteger> input([]() { return BigInteger(0); }, 2, 2);
-    input(0, 0)         = BigInteger(0);
-    input(0, 1)         = BigInteger(static_cast<uint64_t>(int32Max));
-    input(1, 0)         = minusOne;
-    input(1, 1)         = lowest;
+    input(0, 0) = BigInteger(0);
+    input(0, 1) = BigInteger(static_cast<uint64_t>(int32Max));
+    input(1, 0) = minusOne;
+    input(1, 1) = lowest;
     Matrix<int32_t> out = ConvertToInt32(input, modulus);
     EXPECT_EQ(0, out(0, 0));
     EXPECT_EQ(int32Max, out(0, 1));
@@ -151,22 +151,22 @@ TEST(UTMatrix, convert_to_int32_representable_values) {
         return BigVector(1, modulus);
     };
     Matrix<BigVector> vectorInput(vectorAllocator, 1, 2);
-    vectorInput(0, 0).at(0)   = BigInteger(static_cast<uint64_t>(int32Max));
-    vectorInput(0, 1).at(0)   = lowest;
+    vectorInput(0, 0).at(0) = BigInteger(static_cast<uint64_t>(int32Max));
+    vectorInput(0, 1).at(0) = lowest;
     Matrix<int32_t> vectorOut = ConvertToInt32(vectorInput, modulus);
     EXPECT_EQ(int32Max, vectorOut(0, 0));
     EXPECT_EQ(int32Min, vectorOut(0, 1));
 
     MatrixStrassen<BigInteger> strassenInput([]() { return BigInteger(0); }, 1, 2);
-    strassenInput(0, 0)                 = BigInteger(static_cast<uint64_t>(int32Max));
-    strassenInput(0, 1)                 = lowest;
+    strassenInput(0, 0) = BigInteger(static_cast<uint64_t>(int32Max));
+    strassenInput(0, 1) = lowest;
     MatrixStrassen<int32_t> strassenOut = ConvertToInt32(strassenInput, modulus);
     EXPECT_EQ(int32Max, strassenOut(0, 0));
     EXPECT_EQ(int32Min, strassenOut(0, 1));
 
     MatrixStrassen<BigVector> strassenVectorInput(vectorAllocator, 1, 2);
-    strassenVectorInput(0, 0).at(0)           = BigInteger(static_cast<uint64_t>(int32Max));
-    strassenVectorInput(0, 1).at(0)           = lowest;
+    strassenVectorInput(0, 0).at(0) = BigInteger(static_cast<uint64_t>(int32Max));
+    strassenVectorInput(0, 1).at(0) = lowest;
     MatrixStrassen<int32_t> strassenVectorOut = ConvertToInt32(strassenVectorInput, modulus);
     EXPECT_EQ(int32Max, strassenVectorOut(0, 0));
     EXPECT_EQ(int32Min, strassenVectorOut(0, 1));
@@ -176,9 +176,9 @@ TEST(UTMatrix, convert_to_int32_representable_values) {
 TEST(UTMatrix, convert_to_int32_small_modulus) {
     const BigInteger modulus(static_cast<uint64_t>(1024));
     Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 3);
-    input(0, 0)         = BigInteger(512);
-    input(0, 1)         = BigInteger(513);
-    input(0, 2)         = BigInteger(1023);
+    input(0, 0) = BigInteger(512);
+    input(0, 1) = BigInteger(513);
+    input(0, 2) = BigInteger(1023);
     Matrix<int32_t> out = ConvertToInt32(input, modulus);
     EXPECT_EQ(512, out(0, 0));
     EXPECT_EQ(-511, out(0, 1));
@@ -325,9 +325,9 @@ TEST(UTMatrix, basic_intvec_math) {
 
 template <typename Element>
 void transpose(const std::string& msg) {
-    Matrix<Element> n  = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
+    Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
     Matrix<Element> nT = Matrix<Element>(n).Transpose();
-    Matrix<Element> I  = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Identity();
+    Matrix<Element> I = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Identity();
     EXPECT_EQ(nT, I * nT) << msg;
 }
 
@@ -338,8 +338,8 @@ TEST(UTMatrix, transpose) {
 template <typename Element>
 void scalar_mult(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
-    auto one          = secureIL2nAlloc<Element>()();
-    one               = 1;
+    auto one = secureIL2nAlloc<Element>()();
+    one = 1;
     EXPECT_EQ(n, one * n) << msg;
     EXPECT_EQ(n, n * one) << msg;
 }
@@ -443,8 +443,8 @@ TEST(UTMatrix, cholesky) {
 template <typename Element>
 void gadget_vector(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 1, 4).GadgetVector();
-    auto v            = secureIL2nAlloc<Element>()();
-    v                 = 1;
+    auto v = secureIL2nAlloc<Element>()();
+    v = 1;
     EXPECT_EQ(v, n(0, 0)) << msg;
     v = 2;
     EXPECT_EQ(v, n(0, 1)) << msg;
@@ -460,16 +460,16 @@ TEST(UTMatrix, gadget_vector) {
 
 template <typename Element>
 void rotate_vec_result(const std::string& msg) {
-    Matrix<Element> n                        = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
+    Matrix<Element> n = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
     const typename Element::Integer& modulus = n(0, 0).GetModulus();
     n.SetFormat(Format::COEFFICIENT);
-    n(0, 0).at(2)                      = 1;
+    n(0, 0).at(2) = 1;
     Matrix<typename Element::Vector> R = RotateVecResult(n);
     EXPECT_EQ(8U, R.GetRows()) << msg;
     EXPECT_EQ(16U, R.GetCols()) << msg;
     EXPECT_EQ(Element::Vector::Single(1, modulus), R(0, 0)) << msg;
 
-    typename Element::Integer negOne   = n(0, 0).GetModulus() - typename Element::Integer(1);
+    typename Element::Integer negOne = n(0, 0).GetModulus() - typename Element::Integer(1);
     typename Element::Vector negOneVec = Element::Vector::Single(negOne, modulus);
     EXPECT_EQ(negOneVec, R(0, 6)) << msg;
     EXPECT_EQ(negOneVec, R(1, 7)) << msg;
@@ -490,7 +490,7 @@ void rotate(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
 
     n.SetFormat(Format::COEFFICIENT);
-    n(0, 0).at(2)                       = 1;
+    n(0, 0).at(2) = 1;
     Matrix<typename Element::Integer> R = Rotate(n);
     EXPECT_EQ(8U, R.GetRows()) << msg;
     EXPECT_EQ(16U, R.GetCols()) << msg;

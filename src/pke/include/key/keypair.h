@@ -43,7 +43,7 @@ namespace lbcrypto {
 
 template <class Element>
 class KeyPair {
-public:
+  public:
     PublicKey<Element> publicKey;
     PrivateKey<Element> secretKey;
 

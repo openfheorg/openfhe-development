@@ -55,7 +55,7 @@ typedef std::shared_ptr<EncodingParamsImpl> EncodingParams;
  * @brief All parameters for plaintext encodings into ciphertext space.
  */
 class EncodingParamsImpl : public lbcrypto::Serializable {
-public:
+  public:
     /**
    * Main constructor. Supports (1) default constructor, (2) regular encoding
    * with plaintext modulus set, (3) packed encoding with at least first two
@@ -69,8 +69,8 @@ public:
    * EvalSum
    */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
-            NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
-            NativeInteger plaintextBigRootOfUnity = 0)
+                       NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
+                       NativeInteger plaintextBigRootOfUnity = 0)
         : m_plaintextModulus(plaintextModulus),
           m_plaintextRootOfUnity(plaintextRootOfUnity),
           m_plaintextBigModulus(plaintextBigModulus),
@@ -84,12 +84,12 @@ public:
    * @param &rhs the input set of parameters which is copied.
    */
     EncodingParamsImpl(const EncodingParamsImpl& rhs) {
-        m_plaintextModulus        = rhs.m_plaintextModulus;
-        m_plaintextRootOfUnity    = rhs.m_plaintextRootOfUnity;
-        m_plaintextBigModulus     = rhs.m_plaintextBigModulus;
+        m_plaintextModulus = rhs.m_plaintextModulus;
+        m_plaintextRootOfUnity = rhs.m_plaintextRootOfUnity;
+        m_plaintextBigModulus = rhs.m_plaintextBigModulus;
         m_plaintextBigRootOfUnity = rhs.m_plaintextBigRootOfUnity;
-        m_plaintextGenerator      = rhs.m_plaintextGenerator;
-        m_batchSize               = rhs.m_batchSize;
+        m_plaintextGenerator = rhs.m_plaintextGenerator;
+        m_batchSize = rhs.m_batchSize;
     }
 
     /**
@@ -98,12 +98,12 @@ public:
    * @param &rhs the input set of parameters which is copied.
    */
     EncodingParamsImpl(EncodingParamsImpl&& rhs) noexcept {
-        m_plaintextModulus        = std::move(rhs.m_plaintextModulus);
-        m_plaintextRootOfUnity    = std::move(rhs.m_plaintextRootOfUnity);
-        m_plaintextBigModulus     = std::move(rhs.m_plaintextBigModulus);
+        m_plaintextModulus = std::move(rhs.m_plaintextModulus);
+        m_plaintextRootOfUnity = std::move(rhs.m_plaintextRootOfUnity);
+        m_plaintextBigModulus = std::move(rhs.m_plaintextBigModulus);
         m_plaintextBigRootOfUnity = std::move(rhs.m_plaintextBigRootOfUnity);
-        m_plaintextGenerator      = std::move(rhs.m_plaintextGenerator);
-        m_batchSize               = rhs.m_batchSize;
+        m_plaintextGenerator = std::move(rhs.m_plaintextGenerator);
+        m_batchSize = rhs.m_batchSize;
     }
 
     /**
@@ -113,12 +113,12 @@ public:
    * @return the resulting EncodingParamsImpl.
    */
     const EncodingParamsImpl& operator=(const EncodingParamsImpl& rhs) {
-        m_plaintextModulus        = rhs.m_plaintextModulus;
-        m_plaintextRootOfUnity    = rhs.m_plaintextRootOfUnity;
-        m_plaintextBigModulus     = rhs.m_plaintextBigModulus;
+        m_plaintextModulus = rhs.m_plaintextModulus;
+        m_plaintextRootOfUnity = rhs.m_plaintextRootOfUnity;
+        m_plaintextBigModulus = rhs.m_plaintextBigModulus;
         m_plaintextBigRootOfUnity = rhs.m_plaintextBigRootOfUnity;
-        m_plaintextGenerator      = rhs.m_plaintextGenerator;
-        m_batchSize               = rhs.m_batchSize;
+        m_plaintextGenerator = rhs.m_plaintextGenerator;
+        m_batchSize = rhs.m_batchSize;
         return *this;
     }
 
@@ -267,8 +267,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_plaintextModulus));
         ar(::cereal::make_nvp("ru", m_plaintextRootOfUnity));
@@ -285,7 +285,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     std::ostream& doprint(std::ostream& out) const {
         out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
             << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
@@ -293,7 +293,7 @@ protected:
         return out;
     }
 
-private:
+  private:
     // plaintext modulus that is used by all schemes
     PlaintextModulus m_plaintextModulus;
     // root of unity for plaintext modulus

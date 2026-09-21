@@ -54,12 +54,12 @@ class CCParams;
 //====================================================================================================================
 template <>
 class CCParams<CryptoContextCKKSRNS> : public Params {
-public:
+  public:
     CCParams() : Params(CKKSRNS_SCHEME) {}
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj)     = default;
+    CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj) noexcept = default;
-    ~CCParams()                       = default;
+    ~CCParams() = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to CKKSRNS

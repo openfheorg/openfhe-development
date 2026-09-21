@@ -130,10 +130,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SCHE
 }
 //===========================================================================================================
 
-constexpr uint32_t MULT_DEPTH1                  = 13;
+constexpr uint32_t MULT_DEPTH1 = 13;
 [[maybe_unused]] constexpr uint32_t MULT_DEPTH2 = 16;
-constexpr uint32_t RDIM                         = 64;
-constexpr uint32_t NUM_LRG_DIGS                 = 3;
+constexpr uint32_t RDIM = 64;
+constexpr uint32_t NUM_LRG_DIGS = 3;
 
 #if NATIVEINT == 128
 constexpr uint32_t SMODSIZE = 70;
@@ -265,8 +265,8 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
 
     // CalculateApproximationError() calculates the precision number (or approximation error).
     // The higher the precision, the less the error.
-    double CalculateApproximationError(
-            const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
+    double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                       const std::vector<std::complex<double>>& expectedResult) {
         if (result.size() != expectedResult.size())
             OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -281,8 +281,8 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
         return std::abs(std::log2(maxError));
     }
 
-    double CalculateApproximationErrorInt(
-            const std::vector<int32_t>& result, const std::vector<int32_t>& expectedResult) {
+    double CalculateApproximationErrorInt(const std::vector<int32_t>& result,
+                                          const std::vector<int32_t>& expectedResult) {
         if (result.size() != expectedResult.size())
             OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -297,7 +297,7 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
         return std::abs(std::log2(maxError));
     }
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -307,8 +307,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_SchemeSwitch_CKKS_FHEW(
-            const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_SchemeSwitch_CKKS_FHEW(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -323,12 +323,12 @@ protected:
             params.SetNumSlotsCKKS(testData.slots);
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
             auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(params);
-            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE = cc->GetBinCCForSchemeSwitch();
             cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW);
 
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
-            double scale     = 1.0 / pLWE;
+            auto pLWE = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            double scale = 1.0 / pLWE;
             cc->EvalCKKStoFHEWPrecompute(scale);
 
             auto input(Fill<double>({0, 1, -2, -3, pLWE / 8.0, pLWE / 4.0, pLWE / 2.0, pLWE / 1.0}, testData.slots));
@@ -340,7 +340,7 @@ protected:
             });
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, 0, nullptr, testData.slots);
-            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalCKKStoFHEW(ciphertext1, testData.numValues);
 
             std::string failed = " Scheme switching from CKKS to FHEW for sparsely packed ciphertexts fails.";
@@ -350,19 +350,17 @@ protected:
                 ccLWE->Decrypt(privateKeyFHEW, ciphertextAfter[i], &result, pLWE);
                 EXPECT_EQ(result, inputInt[i]) << failed;
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_SchemeSwitch_FHEW_CKKS(
-            const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_SchemeSwitch_FHEW_CKKS(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -404,7 +402,7 @@ protected:
             plaintextDec->SetLength(testData.numValues);
 
             checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x1_values), eps1,
-                    failmsg + " FHEW to CKKS fails for binary messages.");
+                          failmsg + " FHEW to CKKS fails for binary messages.");
 
             cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, testData.numValues, testData.slots, pLWE, 0, pLWE);
 
@@ -412,20 +410,18 @@ protected:
             plaintextDec->SetLength(testData.numValues);
 
             checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x2_values), eps2,
-                    failmsg + " FHEW to CKKS fails for larger messages.");
-        }
-        catch (std::exception& e) {
+                          failmsg + " FHEW to CKKS fails for larger messages.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_SchemeSwitch_Comparison(
-            const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_SchemeSwitch_Comparison(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                          const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -443,7 +439,7 @@ protected:
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
             params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
             ccLWE->BTKeyGen(privateKeyFHEW);
 
@@ -460,8 +456,8 @@ protected:
 
             auto cDiff = cc->EvalSub(c1, c2);
 
-            auto modulus_LWE     = 1 << testData.logQ;
-            auto pLWE            = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            auto modulus_LWE = 1 << testData.logQ;
+            auto pLWE = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
             double scaleSignFHEW = 8.0;
             cc->EvalCompareSwitchPrecompute(pLWE, scaleSignFHEW);
 
@@ -481,19 +477,17 @@ protected:
             plaintextDec->SetLength(testData.numValues);
 
             checkEquality(plaintextDec->GetCKKSPackedValue(), inputSign, eps1, failmsg + " EvalCompare fails.");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_SchemeSwitch_Argmin(
-            const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_SchemeSwitch_Argmin(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                      const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -512,22 +506,22 @@ protected:
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
             params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
             cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
             double scaleSign = 128.0;
 
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            auto pLWE = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
             cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
-            auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
-            auto xargmin           = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
+            auto xmin = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
+            auto xargmin = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
 
             Plaintext p1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, testData.slots);
-            auto c1      = cc->Encrypt(keyPair.publicKey, p1);
+            auto c1 = cc->Encrypt(keyPair.publicKey, p1);
 
             auto result = cc->EvalMinSchemeSwitching(c1, keyPair.publicKey, testData.numValues, testData.slots);
 
@@ -543,10 +537,9 @@ protected:
 
                 std::vector<std::complex<double>> xargminOH(testData.numValues);
                 xargminOH[xargmin] = 1;
-                checkEquality(
-                        ptxtMin->GetCKKSPackedValue(), xargminOH, eps1, failmsg + " EvalMinSchemeSwitching fails.");
-            }
-            else {
+                checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
+                              failmsg + " EvalMinSchemeSwitching fails.");
+            } else {
                 ptxtMin->SetLength(1);
                 checkEquality(ptxtMin->GetRealPackedValue()[0], static_cast<double>(xargmin), eps1);
             }
@@ -576,19 +569,17 @@ protected:
                 checkEquality(ptxtMax->GetRealPackedValue()[0], static_cast<double>(xargmax), eps1);
             }
             */
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_SchemeSwitch_AltArgmin(
-            const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_SchemeSwitch_AltArgmin(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -608,22 +599,22 @@ protected:
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
             params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-            auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+            auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
             cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW);
 
             double scaleSign = 128.0;
 
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            auto pLWE = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
             cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
-            auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
-            auto xargmin           = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
+            auto xmin = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
+            auto xargmin = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
 
             Plaintext p1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, testData.slots);
-            auto c1      = cc->Encrypt(keyPair.publicKey, p1);
+            auto c1 = cc->Encrypt(keyPair.publicKey, p1);
 
             auto result = cc->EvalMinSchemeSwitchingAlt(c1, keyPair.publicKey, testData.numValues, testData.slots);
 
@@ -638,10 +629,9 @@ protected:
                 ptxtMin->SetLength(testData.numValues);
                 std::vector<std::complex<double>> xargminOH(testData.numValues);
                 xargminOH[xargmin] = 1;
-                checkEquality(
-                        ptxtMin->GetCKKSPackedValue(), xargminOH, eps1, failmsg + " EvalMinSchemeSwitching fails.");
-            }
-            else {
+                checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
+                              failmsg + " EvalMinSchemeSwitching fails.");
+            } else {
                 ptxtMin->SetLength(1);
                 checkEquality(ptxtMin->GetRealPackedValue()[0], static_cast<double>(xargmin), eps1);
             }
@@ -670,19 +660,17 @@ protected:
                 checkEquality(ptxtMax->GetRealPackedValue()[0], static_cast<double>(xargmax), eps1);
             }
             */
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_SchemeSwitch_Serialize(
-            const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_SchemeSwitch_Serialize(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<Element>::ClearEvalMultKeys();
             CryptoContextImpl<Element>::ClearEvalSumKeys();
@@ -703,7 +691,7 @@ protected:
             params.SetBStepLTrCKKStoFHEW(testData.dim1[0]);
             params.SetBStepLTrFHEWtoCKKS(testData.dim1[1]);
             auto privateKeyFHEWInit = ccInit->EvalSchemeSwitchingSetup(params);
-            auto ccLWEInit          = ccInit->GetBinCCForSchemeSwitch();
+            auto ccLWEInit = ccInit->GetBinCCForSchemeSwitch();
 
             auto keyPairInit = ccInit->KeyGen();
 
@@ -711,11 +699,11 @@ protected:
             auto swkFHEWtoCKKSInit = ccInit->GetSwkFC();
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
-            auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
-            auto xargmin           = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
+            auto xmin = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
+            auto xargmin = std::min_element(x1.begin(), x1.begin() + testData.numValues) - x1.begin();
 
             Plaintext p1 = ccInit->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, testData.slots);
-            auto c1      = ccInit->Encrypt(keyPairInit.publicKey, p1);
+            auto c1 = ccInit->Encrypt(keyPairInit.publicKey, p1);
 
             // Serialize all necessary objects
             SchemeSwitchingDataSerializer serializer(ccInit, keyPairInit.publicKey, c1);
@@ -747,7 +735,7 @@ protected:
 
             double scaleSign = 128.0;
             auto modulus_LWE = 1 << testData.logQ;
-            auto pLWE        = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
+            auto pLWE = modulus_LWE / (2 * ccLWE->GetBeta().ConvertToInt());
             cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
 
             auto result = cc->EvalMinSchemeSwitching(clientC, clientPublicKey, testData.numValues, testData.slots);
@@ -764,14 +752,12 @@ protected:
             std::vector<std::complex<double>> xargminOH(testData.numValues);
             xargminOH[xargmin] = 1;
             checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,
-                    failmsg + " Serialization for scheme switching fails.");
-        }
-        catch (std::exception& e) {
+                          failmsg + " Serialization for scheme switching fails.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

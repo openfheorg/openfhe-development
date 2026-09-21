@@ -45,11 +45,11 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-DecryptResult PKEBGVRNS::Decrypt(
-        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, NativePoly* plaintext) const {
+DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                                 NativePoly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    size_t sizeQl                   = cv[0].GetParams()->GetParams().size();
+    size_t sizeQl = cv[0].GetParams()->GetParams().size();
 
     DCRTPoly b;
     NativeInteger scalingFactorInt = ciphertext->GetScalingFactorInt();
@@ -59,34 +59,33 @@ DecryptResult PKEBGVRNS::Decrypt(
         if (sizeQl > 0) {
             for (size_t i = sizeQl - 1; i > 0; --i) {
                 b.ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
-                        cryptoParams->GetNegtInvModq(i), cryptoParams->GetNegtInvModqPrecon(i),
-                        cryptoParams->GetqlInvModq(i), cryptoParams->GetqlInvModqPrecon(i));
+                            cryptoParams->GetNegtInvModq(i), cryptoParams->GetNegtInvModqPrecon(i),
+                            cryptoParams->GetqlInvModq(i), cryptoParams->GetqlInvModqPrecon(i));
             }
             // TODO: Use pre-computed scaling factor at level L.
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                    cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+                cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
                 for (size_t i = 0; i < sizeQl - 1; ++i) {
-                    NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                    NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
                     NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
                     scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
                 }
             }
         }
-    }
-    else {
+    } else {
         std::vector<DCRTPoly> ct(cv);
         if (sizeQl > 0) {
             for (size_t j = sizeQl - 1; j > 0; j--) {
                 for (uint32_t i = 0; i < ct.size(); i++) {
                     ct[i].ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
-                            cryptoParams->GetNegtInvModq(j), cryptoParams->GetNegtInvModqPrecon(j),
-                            cryptoParams->GetqlInvModq(j), cryptoParams->GetqlInvModqPrecon(j));
+                                    cryptoParams->GetNegtInvModq(j), cryptoParams->GetNegtInvModqPrecon(j),
+                                    cryptoParams->GetqlInvModq(j), cryptoParams->GetqlInvModqPrecon(j));
                 }
             }
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                    cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+                cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
                 for (size_t i = 0; i < sizeQl - 1; i++) {
-                    NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                    NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
                     NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
                     scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
                 }

@@ -56,23 +56,25 @@
 namespace lbcrypto {
 
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
-        const std::vector<NativePoly>& input, std::vector<NativePoly>& output) const {
+                                              const std::vector<NativePoly>& input,
+                                              std::vector<NativePoly>& output) const {
     SignedDigitDecomposeImpl(params, input, output, params->GetDefaultBaseGParams());
 }
 
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
-        const std::vector<NativePoly>& input, std::vector<NativePoly>& output, uint32_t index) const {
+                                              const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                              uint32_t index) const {
     SignedDigitDecomposeImpl(params, input, output, params->GetBaseGParams(index));
 }
 
 void RingGSWAccumulator::SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
-        const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
-        const RingGSWCryptoParams::BaseGParams& bp) const {
+                                                  const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
+                                                  const RingGSWCryptoParams::BaseGParams& bp) const {
     ExcessHDigitDecompose(params->GetQ().ConvertToInt<BasicInteger>(), bp, input, output);
 }
 
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
-        const NativePoly& input, std::vector<NativePoly>& output) const {
+                                              const NativePoly& input, std::vector<NativePoly>& output) const {
     ExcessHDigitDecompose(params->GetQ().ConvertToInt<BasicInteger>(), params->GetDefaultBaseGParams(), input, output);
 }
 

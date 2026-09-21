@@ -56,12 +56,12 @@ class KeyPair;
 template <class Element>
 class PKEBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     virtual ~PKEBase() = default;
 
     /**
@@ -110,8 +110,8 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-    virtual DecryptResult Decrypt(
-            ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey, NativePoly* plaintext) const {
+    virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
+                                  NativePoly* plaintext) const {
         OPENFHE_THROW("Not supported for NativePoly");
     }
 
@@ -123,8 +123,8 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-    virtual DecryptResult Decrypt(
-            ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey, Poly* plaintext) const {
+    virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
+                                  Poly* plaintext) const {
         OPENFHE_THROW("Not supported for Poly");
     }
 
@@ -132,11 +132,11 @@ public:
     // CORE OPERATIONS
     /////////////////////////////////////////
 
-    virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(
-            const PrivateKey<Element> privateKey, const std::shared_ptr<ParmType> params) const;
+    virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PrivateKey<Element> privateKey,
+                                                                  const std::shared_ptr<ParmType> params) const;
 
-    virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(
-            const PublicKey<Element> publicKey, const std::shared_ptr<ParmType> params) const;
+    virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey,
+                                                                  const std::shared_ptr<ParmType> params) const;
 
     virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };

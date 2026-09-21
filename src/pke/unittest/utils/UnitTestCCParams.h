@@ -45,32 +45,32 @@ struct UnitTestCCParams {
     lbcrypto::SCHEME schemeId = lbcrypto::INVALID_SCHEME;  // mandatory field indicating what scheme is used
 
     // all double values are just data holders. Having them we can use parameters' default values
-    double ringDimension           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double multiplicativeDepth     = DFLT;  // CKKSRNS, BGVRNS
-    double scalingModSize          = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double digitSize               = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double batchSize               = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double secretKeyDist           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double maxRelinSkDeg           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
-    double firstModSize            = DFLT;  // CKKSRNS, BGVRNS
-    double securityLevel           = DFLT;  // BFVRNS, BGVRNS
-    double ksTech                  = DFLT;  // CKKSRNS, BGVRNS
-    double scalTech                = DFLT;  // CKKSRNS, BGVRNS
-    double numLargeDigits          = DFLT;  // CKKSRNS, BGVRNS
-    double plaintextModulus        = DFLT;  // BFVRNS, BGVRNS
-    double standardDeviation       = DFLT;  // BFVRNS, BGVRNS
-    double evalAddCount            = DFLT;  // BFVRNS,
-    double keySwitchCount          = DFLT;  // BFVRNS,
+    double ringDimension = DFLT;            // CKKSRNS, BFVRNS, BGVRNS
+    double multiplicativeDepth = DFLT;      // CKKSRNS, BGVRNS
+    double scalingModSize = DFLT;           // CKKSRNS, BFVRNS, BGVRNS
+    double digitSize = DFLT;                // CKKSRNS, BFVRNS, BGVRNS
+    double batchSize = DFLT;                // CKKSRNS, BFVRNS, BGVRNS
+    double secretKeyDist = DFLT;            // CKKSRNS, BFVRNS, BGVRNS
+    double maxRelinSkDeg = DFLT;            // CKKSRNS, BFVRNS, BGVRNS
+    double firstModSize = DFLT;             // CKKSRNS, BGVRNS
+    double securityLevel = DFLT;            // BFVRNS, BGVRNS
+    double ksTech = DFLT;                   // CKKSRNS, BGVRNS
+    double scalTech = DFLT;                 // CKKSRNS, BGVRNS
+    double numLargeDigits = DFLT;           // CKKSRNS, BGVRNS
+    double plaintextModulus = DFLT;         // BFVRNS, BGVRNS
+    double standardDeviation = DFLT;        // BFVRNS, BGVRNS
+    double evalAddCount = DFLT;             // BFVRNS,
+    double keySwitchCount = DFLT;           // BFVRNS,
     double multiplicationTechnique = DFLT;  // BFVRNS,
-    double encryptionTechnique     = DFLT;  // BFVRNS,
-    double PREMode                 = DFLT;  // BGVRNS, BFVRNS, CKKSRNS
-    double multipartyMode          = DFLT;  // BGVRNS, BFVRNS
-    double decryptionNoiseMode     = DFLT;  // CKKSRNS
-    double executionMode           = DFLT;  // CKKSRNS
-    double noiseEstimate           = DFLT;  // CKKSRNS
-    double registerWordSize        = DFLT;  // CKKSRNS
-    double compositeDegree         = DFLT;  // CKKSRNS
-    double ckksDataType            = DFLT;  // CKKSRNS
+    double encryptionTechnique = DFLT;      // BFVRNS,
+    double PREMode = DFLT;                  // BGVRNS, BFVRNS, CKKSRNS
+    double multipartyMode = DFLT;           // BGVRNS, BFVRNS
+    double decryptionNoiseMode = DFLT;      // CKKSRNS
+    double executionMode = DFLT;            // CKKSRNS
+    double noiseEstimate = DFLT;            // CKKSRNS
+    double registerWordSize = DFLT;         // CKKSRNS
+    double compositeDegree = DFLT;          // CKKSRNS
+    double ckksDataType = DFLT;             // CKKSRNS
 
     std::string toString() const;
 };

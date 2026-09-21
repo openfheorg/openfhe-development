@@ -179,7 +179,7 @@ class Params {
 
     void SetToDefaults(SCHEME scheme);
 
-protected:
+  protected:
     // How to disable a particular setter for a particular scheme and get an exception thrown if a user tries to call it:
     // 1. The set function should be declared virtual in this file
     // 2. The same function should be re-defined in the scheme-specific derived file using macros DISABLED_FOR_xxxxRNS defined below.
@@ -201,7 +201,7 @@ protected:
 #define DISABLED_FOR_BGVRNS  OPENFHE_THROW("This function is not available for BGVRNS.");
 #define DISABLED_FOR_BFVRNS  OPENFHE_THROW("This function is not available for BFVRNS.");
 
-public:
+  public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
         SetToDefaults(scheme0);
     }
@@ -213,10 +213,10 @@ public:
      */
     explicit Params(const std::vector<std::string>& vals);
 
-    Params(const Params& obj)            = default;
+    Params(const Params& obj) = default;
     Params& operator=(const Params& obj) = default;
 
-    Params(Params&& obj) noexcept            = default;
+    Params(Params&& obj) noexcept = default;
     Params& operator=(Params&& obj) noexcept = default;
 
     virtual ~Params() = default;
@@ -228,13 +228,39 @@ public:
      * @return a vector with names of all data members of Params
      */
     static const std::vector<std::string> getAllParamsDataMembers() {
-        return {"scheme", "ptModulus", "digitSize", "standardDeviation", "secretKeyDist", "maxRelinSkDeg", "ksTech",
-                "scalTech", "firstModSize", "batchSize", "numLargeDigits", "multiplicativeDepth", "scalingModSize",
-                "securityLevel", "ringDim", "evalAddCount", "keySwitchCount", "encryptionTechnique",
-                "multiplicationTechnique", "PRENumHops", "PREMode", "multipartyMode", "executionMode",
-                "decryptionNoiseMode", "noiseEstimate", "desiredPrecision", "statisticalSecurity",
-                "numAdversarialQueries", "thresholdNumOfParties", "interactiveBootCompressionLevel", "compositeDegree",
-                "registerWordSize", "ckksDataType"};
+        return {"scheme",
+                "ptModulus",
+                "digitSize",
+                "standardDeviation",
+                "secretKeyDist",
+                "maxRelinSkDeg",
+                "ksTech",
+                "scalTech",
+                "firstModSize",
+                "batchSize",
+                "numLargeDigits",
+                "multiplicativeDepth",
+                "scalingModSize",
+                "securityLevel",
+                "ringDim",
+                "evalAddCount",
+                "keySwitchCount",
+                "encryptionTechnique",
+                "multiplicationTechnique",
+                "PRENumHops",
+                "PREMode",
+                "multipartyMode",
+                "executionMode",
+                "decryptionNoiseMode",
+                "noiseEstimate",
+                "desiredPrecision",
+                "statisticalSecurity",
+                "numAdversarialQueries",
+                "thresholdNumOfParties",
+                "interactiveBootCompressionLevel",
+                "compositeDegree",
+                "registerWordSize",
+                "ckksDataType"};
     }
 
     // getters

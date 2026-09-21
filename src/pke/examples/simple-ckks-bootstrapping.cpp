@@ -91,12 +91,12 @@ void SimpleBootstrapExample() {
     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89;
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -139,7 +139,7 @@ void SimpleBootstrapExample() {
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    size_t encodedLength  = x.size();
+    size_t encodedLength = x.size();
 
     // We start with a depleted ciphertext that has used up all of its levels.
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
@@ -211,12 +211,12 @@ void SimpleBootstrapStCExample() {
     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89;
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -259,7 +259,7 @@ void SimpleBootstrapStCExample() {
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    size_t encodedLength  = x.size();
+    size_t encodedLength = x.size();
 
     // We start with a depleted ciphertext that has used up all of its levels, but which still
     // has sufficient levels to perform the SlotsToCoefficients operation.

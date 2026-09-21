@@ -53,7 +53,7 @@
 namespace lbcrypto {
 
 class SchemeBFVRNS : public SchemeRNS {
-public:
+  public:
     SchemeBFVRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationBFVRNS>();
     }

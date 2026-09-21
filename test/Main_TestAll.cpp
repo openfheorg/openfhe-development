@@ -72,7 +72,7 @@ class MinimalistPrinter : public EmptyTestEventListener {
         fflush(stdout);
     }
 
-public:
+  public:
     void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
         cout << lead << "OpenFHE Version " << GetOPENFHEVersion() << endl;
         cout << lead << "Date " << testing::internal::FormatEpochTimeInMillisAsIso8601(unit_test.start_timestamp())
@@ -148,9 +148,9 @@ public:
     }
 };
 
-bool TestB2     = false;
-bool TestB4     = false;
-bool TestB6     = false;
+bool TestB2 = false;
+bool TestB4 = false;
+bool TestB6 = false;
 bool TestNative = true;
 
 inline const std::string& GetMathBackendParameters() {
@@ -172,8 +172,7 @@ int main(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {
         if (string(argv[i]) == "-t") {
             terse = true;
-        }
-        else if (string(argv[i]) == "-all") {
+        } else if (string(argv[i]) == "-all") {
 #ifdef WITH_BE2
             TestB2 = true;
 #endif
@@ -184,18 +183,15 @@ int main(int argc, char** argv) {
             TestB6 = true;
 #endif
             beset = true;
-        }
-        else if (string(argv[i]) == "-2") {
+        } else if (string(argv[i]) == "-2") {
             TestB2 = true;
-            beset  = true;
-        }
-        else if (string(argv[i]) == "-4") {
+            beset = true;
+        } else if (string(argv[i]) == "-4") {
             TestB4 = true;
-            beset  = true;
-        }
-        else if (string(argv[i]) == "-6") {
+            beset = true;
+        } else if (string(argv[i]) == "-6") {
             TestB6 = true;
-            beset  = true;
+            beset = true;
         }
     }
 
@@ -221,8 +217,7 @@ int main(int argc, char** argv) {
         // Adds a listener to the end.  Google Test takes the ownership.
         delete listeners.Release(listeners.default_result_printer());
         listeners.Append(new MinimalistPrinter);
-    }
-    else {
+    } else {
         cout << "OpenFHE Version: " << GetOPENFHEVersion() << endl;
         cout << "Default Backend: " << GetMathBackendParameters() << endl;
     }

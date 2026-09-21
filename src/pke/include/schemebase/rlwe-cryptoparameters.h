@@ -56,7 +56,7 @@ namespace lbcrypto {
  */
 template <class Element>
 class CryptoParametersRLWE : public CryptoParametersBase<Element> {
-public:
+  public:
     /**
    * Default Constructor
    */
@@ -67,26 +67,26 @@ public:
    */
     CryptoParametersRLWE(const CryptoParametersRLWE& rhs)
         : CryptoParametersBase<Element>(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {
-        m_distributionParameter         = rhs.m_distributionParameter;
-        m_assuranceMeasure              = rhs.m_assuranceMeasure;
-        m_noiseScale                    = rhs.m_noiseScale;
-        m_digitSize                     = rhs.m_digitSize;
-        m_noiseEstimate                 = rhs.m_noiseEstimate;
-        m_multiplicativeDepth           = rhs.m_multiplicativeDepth;
-        m_evalAddCount                  = rhs.m_evalAddCount;
-        m_keySwitchCount                = rhs.m_keySwitchCount;
-        m_PRENumHops                    = rhs.m_PRENumHops;
-        m_maxRelinSkDeg                 = rhs.m_maxRelinSkDeg;
-        m_secretKeyDist                 = rhs.m_secretKeyDist;
-        m_stdLevel                      = rhs.m_stdLevel;
+        m_distributionParameter = rhs.m_distributionParameter;
+        m_assuranceMeasure = rhs.m_assuranceMeasure;
+        m_noiseScale = rhs.m_noiseScale;
+        m_digitSize = rhs.m_digitSize;
+        m_noiseEstimate = rhs.m_noiseEstimate;
+        m_multiplicativeDepth = rhs.m_multiplicativeDepth;
+        m_evalAddCount = rhs.m_evalAddCount;
+        m_keySwitchCount = rhs.m_keySwitchCount;
+        m_PRENumHops = rhs.m_PRENumHops;
+        m_maxRelinSkDeg = rhs.m_maxRelinSkDeg;
+        m_secretKeyDist = rhs.m_secretKeyDist;
+        m_stdLevel = rhs.m_stdLevel;
         m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;
         m_dgg.SetStd(m_distributionParameter);
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
-        m_PREMode               = rhs.m_PREMode;
-        m_multipartyMode        = rhs.m_multipartyMode;
-        m_executionMode         = rhs.m_executionMode;
-        m_decryptionNoiseMode   = rhs.m_decryptionNoiseMode;
-        m_statisticalSecurity   = rhs.m_statisticalSecurity;
+        m_PREMode = rhs.m_PREMode;
+        m_multipartyMode = rhs.m_multipartyMode;
+        m_executionMode = rhs.m_executionMode;
+        m_decryptionNoiseMode = rhs.m_decryptionNoiseMode;
+        m_statisticalSecurity = rhs.m_statisticalSecurity;
         m_numAdversarialQueries = rhs.m_numAdversarialQueries;
         m_thresholdNumOfParties = rhs.m_thresholdNumOfParties;
     }
@@ -107,25 +107,27 @@ public:
    * @param noiseScale used in HRA-secure PRE
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
-            float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, uint32_t digitSize,
-            int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, ProxyReEncryptionMode PREMode = INDCPA,
-            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY, ExecutionMode executionMode = EXEC_EVALUATION,
-            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-            uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
+                         float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel,
+                         uint32_t digitSize, int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
+                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                         ExecutionMode executionMode = EXEC_EVALUATION,
+                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
+                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                         uint32_t thresholdNumOfParties = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
-        m_assuranceMeasure      = assuranceMeasure;
-        m_noiseScale            = noiseScale;
-        m_digitSize             = digitSize;
+        m_assuranceMeasure = assuranceMeasure;
+        m_noiseScale = noiseScale;
+        m_digitSize = digitSize;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg         = maxRelinSkDeg;
-        m_secretKeyDist         = secretKeyDist;
-        m_stdLevel              = stdLevel;
-        m_PREMode               = PREMode;
-        m_multipartyMode        = multipartyMode;
-        m_executionMode         = executionMode;
-        m_decryptionNoiseMode   = decryptionNoiseMode;
-        m_statisticalSecurity   = statisticalSecurity;
+        m_maxRelinSkDeg = maxRelinSkDeg;
+        m_secretKeyDist = secretKeyDist;
+        m_stdLevel = stdLevel;
+        m_PREMode = PREMode;
+        m_multipartyMode = multipartyMode;
+        m_executionMode = executionMode;
+        m_decryptionNoiseMode = decryptionNoiseMode;
+        m_statisticalSecurity = statisticalSecurity;
         m_numAdversarialQueries = numAdversarialQueries;
         m_thresholdNumOfParties = thresholdNumOfParties;
     }
@@ -507,7 +509,7 @@ public:
         return "CryptoParametersRLWE";
     }
 
-protected:
+  protected:
     // standard deviation in Discrete Gaussian Distribution
     float m_distributionParameter = 0;
     // standard deviation in Discrete Gaussian Distribution with Flooding

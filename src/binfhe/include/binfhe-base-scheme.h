@@ -92,8 +92,8 @@ struct RingGSWBTKey {
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("bs", BSkey));
         ar(::cereal::make_nvp("ks", KSkey));
@@ -118,7 +118,7 @@ struct RingGSWBTKey {
  * https://eprint.iacr.org/2014/816, https://eprint.iacr.org/2020/086 and https://eprint.iacr.org/2022/198
  */
 class BinFHEScheme {
-public:
+  public:
     BinFHEScheme() = default;
 
     explicit BinFHEScheme(BINFHE_METHOD method) {
@@ -142,7 +142,7 @@ public:
    * @return a shared pointer to the refresh key
    */
     RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
-            KEYGEN_MODE keygenMode, bool internal32) const;
+                        KEYGEN_MODE keygenMode, bool internal32) const;
 
     /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)
@@ -155,7 +155,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
-            ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
+                              ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
 
     /**
    * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine).
@@ -168,7 +168,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
-            const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
+                              const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
 
     /**
    * Evaluates NOT gate
@@ -188,7 +188,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-            ConstLWECiphertext& ct, bool extended = false) const;
+                            ConstLWECiphertext& ct, bool extended = false) const;
 
     /**
    * Evaluate an arbitrary function
@@ -201,7 +201,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-            ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT, NativeInteger beta) const;
+                           ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT, NativeInteger beta) const;
 
     /**
    * Evaluate a round down function
@@ -214,7 +214,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFloor(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-            ConstLWECiphertext& ct, NativeInteger beta, uint32_t roundbits = 0) const;
+                            ConstLWECiphertext& ct, NativeInteger beta, uint32_t roundbits = 0) const;
 
     /**
    * Evaluate a sign function over large precision
@@ -227,8 +227,8 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
-            const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta,
-            bool schemeSwitch = false) const;
+                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta,
+                           bool schemeSwitch = false) const;
 
     /**
    * Evaluate digit decomposition over a large precision LWE ciphertext
@@ -240,9 +240,10 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     std::vector<LWECiphertext> EvalDecomp(const std::shared_ptr<BinFHECryptoParams>& params,
-            const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta) const;
+                                          const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
+                                          NativeInteger beta) const;
 
-private:
+  private:
     /**
    * Core bootstrapping operation
    *
@@ -253,7 +254,7 @@ private:
    * @return the output RingLWE accumulator
    */
     RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-            const RingGSWBTKey& EK, ConstLWECiphertext& ct) const;
+                                     const RingGSWBTKey& EK, ConstLWECiphertext& ct) const;
 
     // Arbitrary function evaluation purposes
 
@@ -269,7 +270,7 @@ private:
    */
     template <typename Func>
     RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-            ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
+                                     ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
 
     /**
    * Bootstraps a fresh ciphertext
@@ -283,16 +284,16 @@ private:
    */
     template <typename Func>
     LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
-            ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
+                                ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
 
     // dispatch to the key representation EK actually holds
-    LWECiphertext SwitchCTtoqn(
-            const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK, ConstLWECiphertext& ct) const;
+    LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
+                               ConstLWECiphertext& ct) const;
 
-    LWECiphertext KeySwitch(
-            const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK, ConstLWECiphertext& ct) const;
+    LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
+                            ConstLWECiphertext& ct) const;
 
-protected:
+  protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};
     std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};
 

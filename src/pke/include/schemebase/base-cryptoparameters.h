@@ -53,12 +53,12 @@ namespace lbcrypto {
 template <typename Element>
 class CryptoParametersBase : public Serializable {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     CryptoParametersBase() = default;
 
     virtual ~CryptoParametersBase() = default;
@@ -175,8 +175,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("elp", m_params));
         ar(::cereal::make_nvp("enp", m_encodingParams));
@@ -189,23 +189,23 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     explicit CryptoParametersBase(const PlaintextModulus& plaintextModulus) {
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, const PlaintextModulus& plaintextModulus) {
-        m_params         = params;
+        m_params = params;
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams) {
-        m_params         = params;
+        m_params = params;
         m_encodingParams = encodingParams;
     }
 
     CryptoParametersBase(CryptoParametersBase<Element>* from, std::shared_ptr<typename Element::Params> newElemParms) {
-        *this    = *from;
+        *this = *from;
         m_params = newElemParms;
     }
 

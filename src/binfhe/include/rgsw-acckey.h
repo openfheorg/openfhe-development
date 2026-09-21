@@ -53,7 +53,7 @@
 namespace lbcrypto {
 
 class RingGSWACCKeyImpl;
-using RingGSWACCKey      = std::shared_ptr<RingGSWACCKeyImpl>;
+using RingGSWACCKey = std::shared_ptr<RingGSWACCKeyImpl>;
 using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
 
 /**
@@ -61,7 +61,7 @@ using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
  * A three-dimensional vector of RingGSW ciphertexts
  */
 class RingGSWACCKeyImpl : public Serializable {
-public:
+  public:
     RingGSWACCKeyImpl() = default;
 
     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
@@ -125,8 +125,7 @@ public:
                     if (l3.get() == nullptr || o3.get() == nullptr) {
                         if (l3.get() != o3.get())
                             return false;
-                    }
-                    else {
+                    } else {
                         if (*l3 != *o3)
                             return false;
                     }
@@ -148,8 +147,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("k", m_key));
     }
@@ -162,7 +161,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     using dim3_t = std::vector<RingGSWEvalKey>;
     using dim2_t = std::vector<dim3_t>;
     using dim1_t = std::vector<dim2_t>;

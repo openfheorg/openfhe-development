@@ -95,13 +95,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_NOIS
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t MULT_DEPTH                 = 25;
-constexpr uint32_t RDIM                       = 512;
-constexpr uint32_t NUM_LRG_DIGS               = 3;
-constexpr uint32_t SMODSIZE                   = 59;
-constexpr uint32_t FMODSIZE                   = 60;
+constexpr uint32_t MULT_DEPTH = 25;
+constexpr uint32_t RDIM = 512;
+constexpr uint32_t NUM_LRG_DIGS = 3;
+constexpr uint32_t SMODSIZE = 59;
+constexpr uint32_t FMODSIZE = 60;
 constexpr double NOISE_ESTIMATE_FLEX_AUTO_EXT = 2;
-constexpr double NOISE_ESTIMATE               = 5.5;
+constexpr double NOISE_ESTIMATE = 5.5;
 #if NATIVEINT != 128
 constexpr double MP_NOISE_ESTIMATE_FLEX_AUTO_EXT = 1;
 #endif
@@ -151,7 +151,7 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
 
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
-    const double eps    = 0.0001;
+    const double eps = 0.0001;
     const double buffer = 1;
 
     Ciphertext<DCRTPoly> EncryptedComputation(CryptoContext<DCRTPoly>& cryptoContext, PublicKey<DCRTPoly> publicKey) {
@@ -161,8 +161,8 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
         std::vector<double> vec2 = {1, 1, 0, 0, 1, 0, 0, 1};
 
         // Encoding as plaintexts and encrypt
-        Plaintext ptxt1            = cryptoContext->MakeCKKSPackedPlaintext(vec1);
-        Plaintext ptxt2            = cryptoContext->MakeCKKSPackedPlaintext(vec2);
+        Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(vec1);
+        Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(vec2);
         Ciphertext<DCRTPoly> ciph1 = cryptoContext->Encrypt(publicKey, ptxt1);
         Ciphertext<DCRTPoly> ciph2 = cryptoContext->Encrypt(publicKey, ptxt2);
 
@@ -175,16 +175,16 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
         return ciphResult;
     }
 
-    Ciphertext<DCRTPoly> EncryptedMultipartyComputation(
-            CryptoContext<DCRTPoly>& cryptoContext, PublicKey<DCRTPoly> publicKey) {
+    Ciphertext<DCRTPoly> EncryptedMultipartyComputation(CryptoContext<DCRTPoly>& cryptoContext,
+                                                        PublicKey<DCRTPoly> publicKey) {
         // Encoding and encryption of inputs
         // Generate random input
         std::vector<double> vec1 = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
         std::vector<double> vec2 = {1, 1, 0, 0, 1, 0, 0, 1};
 
         // Encoding as plaintexts and encrypt
-        Plaintext ptxt1            = cryptoContext->MakeCKKSPackedPlaintext(vec1);
-        Plaintext ptxt2            = cryptoContext->MakeCKKSPackedPlaintext(vec2);
+        Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(vec1);
+        Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(vec2);
         Ciphertext<DCRTPoly> ciph1 = cryptoContext->Encrypt(publicKey, ptxt1);
         Ciphertext<DCRTPoly> ciph2 = cryptoContext->Encrypt(publicKey, ptxt2);
 
@@ -193,16 +193,16 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
     }
 
     void GenerateMultipartyKeys(CryptoContext<DCRTPoly>& cryptoContext, KeyPair<DCRTPoly> kp1, KeyPair<DCRTPoly> kp2) {
-        auto evalMultKey   = cryptoContext->KeySwitchGen(kp1.secretKey, kp1.secretKey);
-        auto evalMultKey2  = cryptoContext->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
-        auto evalMultAB    = cryptoContext->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
-        auto evalMultBAB   = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
-        auto evalMultAAB   = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
+        auto evalMultKey = cryptoContext->KeySwitchGen(kp1.secretKey, kp1.secretKey);
+        auto evalMultKey2 = cryptoContext->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
+        auto evalMultAB = cryptoContext->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
+        auto evalMultBAB = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
+        auto evalMultAAB = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
         auto evalMultFinal = cryptoContext->MultiAddEvalMultKeys(evalMultAAB, evalMultBAB, evalMultAB->GetKeyTag());
         cryptoContext->InsertEvalMultKey({evalMultFinal});
     }
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -212,8 +212,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_NoiseEstimation(
-            const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_NoiseEstimation(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
+                                  const std::string& failmsg = std::string()) {
         try {
             CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
             cc->Enable(PKE);
@@ -230,18 +230,16 @@ protected:
             double expectedNoise =
                     testData.params.scalTech == FLEXIBLEAUTOEXT ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
             EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
-    void UnitTest_FullNoiseFlooding(
-            const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_FullNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
+                                    const std::string& failmsg = std::string()) {
         CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
         cc->Enable(PKE);
         cc->Enable(LEVELEDSHE);
@@ -261,14 +259,14 @@ protected:
         checkEquality(result->GetCKKSPackedValue(), expectedResult, eps, failmsg + " Noise flooding computation fails");
     }
 
-    void UnitTest_MultipartyNoiseFlooding(
-            const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_MultipartyNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
+                                          const std::string& failmsg = std::string()) {
         CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
         cc->Enable(PKE);
         cc->Enable(LEVELEDSHE);
         cc->Enable(MULTIPARTY);
 
-        auto kp1             = cc->KeyGen();
+        auto kp1 = cc->KeyGen();
         KeyPair<Element> kp2 = cc->MultipartyKeyGen(kp1.publicKey, false, true);
         GenerateMultipartyKeys(cc, kp1, kp2);
         auto pubKeyForEncryption = cc->MultiAddPubKeys(kp1.publicKey, kp2.publicKey, kp2.publicKey->GetKeyTag());

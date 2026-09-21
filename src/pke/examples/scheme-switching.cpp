@@ -84,15 +84,15 @@ void SwitchCKKSToFHEW() {
     // Step 1: Setup CryptoContext for CKKS
 
     // Specify main parameters
-    uint32_t multDepth    = 3;
+    uint32_t multDepth = 3;
     uint32_t firstModSize = 60;
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 4096;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 4096;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
+    uint32_t logQ_ccLWE = 25;
     // uint32_t slots        = ringDim / 2;  // Uncomment for fully-packed
-    uint32_t slots     = 16;  // sparsely-packed
+    uint32_t slots = 16;  // sparsely-packed
     uint32_t batchSize = slots;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -127,7 +127,7 @@ void SwitchCKKSToFHEW() {
     params.SetCtxtModSizeFHEWLargePrec(logQ_ccLWE);
     params.SetNumSlotsCKKS(slots);
     auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
     cc->EvalCKKStoFHEWKeyGen(keys, privateKeyFHEW);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE->GetParams()->GetLWEParams()->Getn();
@@ -135,10 +135,10 @@ void SwitchCKKSToFHEW() {
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Compute the scaling factor to decrypt correctly in FHEW; under the hood, the LWE mod switch will performed on the ciphertext at the last level
-    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto pLWE1 = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
+    auto beta = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE2 = modulus_LWE / (2 * beta);  // Large precision
 
     double scale1 = 1.0 / pLWE1;
     double scale2 = 1.0 / pLWE2;
@@ -149,8 +149,8 @@ void SwitchCKKSToFHEW() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1  = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    std::vector<double> x2  = {0.0, 271.0, 30000.0, static_cast<double>(pLWE2) - 2};
+    std::vector<double> x1 = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    std::vector<double> x2 = {0.0, 271.0, 30000.0, static_cast<double>(pLWE2) - 2};
     uint32_t encodedLength1 = x1.size();
     uint32_t encodedLength2 = x2.size();
 
@@ -174,8 +174,9 @@ void SwitchCKKSToFHEW() {
               << std::endl;
 
     std::vector<int32_t> x1Int(encodedLength1);
-    std::transform(x1.begin(), x1.end(), x1Int.begin(),
-            [&](const double& elem) { return static_cast<int32_t>(static_cast<int32_t>(std::round(elem)) % pLWE1); });
+    std::transform(x1.begin(), x1.end(), x1Int.begin(), [&](const double& elem) {
+        return static_cast<int32_t>(static_cast<int32_t>(std::round(elem)) % pLWE1);
+    });
     ptxt1->SetLength(encodedLength1);
     std::cout << "Input x1: " << ptxt1->GetRealPackedValue() << "; which rounds to: " << x1Int << std::endl;
     std::cout << "FHEW decryption: ";
@@ -251,12 +252,12 @@ void SwitchFHEWtoCKKS() {
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;  // If this is not HEStd_NotSet, ensure ringDim is compatible
-    uint32_t logQ_ccLWE   = 28;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;  // If this is not HEStd_NotSet, ensure ringDim is compatible
+    uint32_t logQ_ccLWE = 28;
 
     // uint32_t slots = ringDim/2; // Uncomment for fully-packed
-    uint32_t slots     = 16;  // sparsely-packed
+    uint32_t slots = 16;  // sparsely-packed
     uint32_t batchSize = slots;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -323,7 +324,7 @@ void SwitchFHEWtoCKKS() {
     //   large enough for correctly rounded message even after leveled computations in the linear transformation before evaluating sin(x).
 
     uint32_t gap_bits = (logQ_ccLWE - std::log2(2 * (*std::max_element(x2.begin(), x2.end())))) / 2;
-    uint32_t pLWE3    = 1 << (logQ_ccLWE - gap_bits);  // Large precision
+    uint32_t pLWE3 = 1 << (logQ_ccLWE - gap_bits);  // Large precision
 
     // Encrypt
     std::vector<LWECiphertext> ctxtsLWE1(slots);
@@ -412,12 +413,12 @@ void FloorViaSchemeSwitching() {
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 23;
-    uint32_t slots        = 16;  // sparsely-packed
-    uint32_t batchSize    = slots;
+    uint32_t logQ_ccLWE = 23;
+    uint32_t slots = 16;  // sparsely-packed
+    uint32_t batchSize = slots;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -451,7 +452,7 @@ void FloorViaSchemeSwitching() {
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(slots);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -464,9 +465,9 @@ void FloorViaSchemeSwitching() {
 
     // Set the scaling factor to be able to decrypt; under the hood, the LWE mod switch will be performed on the ciphertext at the last level
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
-    double scaleCF   = 1.0 / pLWE;
+    auto beta = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE = modulus_LWE / (2 * beta);  // Large precision
+    double scaleCF = 1.0 / pLWE;
 
     cc->EvalCKKStoFHEWPrecompute(scaleCF);
 
@@ -524,14 +525,14 @@ void FuncViaSchemeSwitching() {
 
     // Step 1: Setup CryptoContext for CKKS
     // 1 for CKKS to FHEW, 14 for FHEW to CKKS
-    uint32_t multDepth    = 9 + 3 + 2;
+    uint32_t multDepth = 9 + 3 + 2;
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 2048;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 2048;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
-    uint32_t slots        = 8;  // sparsely-packed
-    uint32_t batchSize    = slots;
+    uint32_t logQ_ccLWE = 25;
+    uint32_t slots = 8;  // sparsely-packed
+    uint32_t batchSize = slots;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -565,7 +566,7 @@ void FuncViaSchemeSwitching() {
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(slots);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -666,18 +667,18 @@ void ComparisonViaSchemeSwitching() {
 
     // Step 1: Setup CryptoContext for CKKS
     ScalingTechnique scTech = FLEXIBLEAUTO;
-    uint32_t multDepth      = 17;
+    uint32_t multDepth = 17;
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
 
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
-    uint32_t slots        = 16;  // sparsely-packed
-    uint32_t batchSize    = slots;
+    uint32_t logQ_ccLWE = 25;
+    uint32_t slots = 16;  // sparsely-packed
+    uint32_t batchSize = slots;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -715,7 +716,7 @@ void ComparisonViaSchemeSwitching() {
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(slots);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     ccLWE->BTKeyGen(privateKeyFHEW);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -725,10 +726,10 @@ void ComparisonViaSchemeSwitching() {
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
     // Set the scaling factor to be able to decrypt; the LWE mod switch is performed on the ciphertext at the last level
-    auto pLWE1           = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
-    auto modulus_LWE     = 1 << logQ_ccLWE;
-    auto beta            = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE2           = modulus_LWE / (2 * beta);  // Large precision
+    auto pLWE1 = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto modulus_LWE = 1 << logQ_ccLWE;
+    auto beta = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE2 = modulus_LWE / (2 * beta);  // Large precision
     double scaleSignFHEW = 1.0;
     cc->EvalCompareSwitchPrecompute(pLWE2, scaleSignFHEW);
 
@@ -881,15 +882,15 @@ void ArgminViaSchemeSwitching() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
-    bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
+    uint32_t logQ_ccLWE = 25;
+    bool oneHot = true;  // Change to false if the output should not be one-hot encoded
 
-    uint32_t slots          = 16;  // sparsely-packed
-    uint32_t batchSize      = slots;
-    uint32_t numValues      = 16;
+    uint32_t slots = 16;  // sparsely-packed
+    uint32_t batchSize = slots;
+    uint32_t numValues = 16;
     ScalingTechnique scTech = FLEXIBLEAUTOEXT;
     // 13 for FHEW to CKKS, log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
@@ -930,7 +931,7 @@ void ArgminViaSchemeSwitching() {
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -941,8 +942,8 @@ void ArgminViaSchemeSwitching() {
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
+    auto beta = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE = modulus_LWE / (2 * beta);  // Large precision
     // This formulation is for clarity
     cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
@@ -950,8 +951,8 @@ void ArgminViaSchemeSwitching() {
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
-    std::vector<double> x1 = {
-            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
+                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < numValues) {
         std::vector<int> zeros(numValues - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -981,8 +982,7 @@ void ArgminViaSchemeSwitching() {
     if (oneHot) {
         ptxtMin->SetLength(numValues);
         std::cout << "Argmin indicator vector: " << ptxtMin << std::endl;
-    }
-    else {
+    } else {
         ptxtMin->SetLength(1);
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
@@ -997,8 +997,7 @@ void ArgminViaSchemeSwitching() {
     if (oneHot) {
         ptxtMax->SetLength(numValues);
         std::cout << "Argmax indicator vector: " << ptxtMax << std::endl;
-    }
-    else {
+    } else {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
@@ -1013,15 +1012,15 @@ void ArgminViaSchemeSwitchingAlt() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
-    bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
+    uint32_t logQ_ccLWE = 25;
+    bool oneHot = true;  // Change to false if the output should not be one-hot encoded
 
-    uint32_t slots          = 16;  // sparsely-packed
-    uint32_t batchSize      = slots;
-    uint32_t numValues      = 16;
+    uint32_t slots = 16;  // sparsely-packed
+    uint32_t batchSize = slots;
+    uint32_t numValues = 16;
     ScalingTechnique scTech = FLEXIBLEAUTOEXT;
     // 13 for FHEW to CKKS, log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
@@ -1063,7 +1062,7 @@ void ArgminViaSchemeSwitchingAlt() {
     params.SetComputeArgmin(true);
     params.SetUseAltArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1074,8 +1073,8 @@ void ArgminViaSchemeSwitchingAlt() {
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
+    auto beta = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE = modulus_LWE / (2 * beta);  // Large precision
     // This formulation is for clarity
     cc->EvalCompareSwitchPrecompute(pLWE, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
@@ -1084,8 +1083,8 @@ void ArgminViaSchemeSwitchingAlt() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {
-            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
+                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < numValues) {
         std::vector<int> zeros(numValues - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1115,8 +1114,7 @@ void ArgminViaSchemeSwitchingAlt() {
     if (oneHot) {
         ptxtMin->SetLength(numValues);
         std::cout << "Argmin indicator vector: " << ptxtMin << std::endl;
-    }
-    else {
+    } else {
         ptxtMin->SetLength(1);
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
@@ -1131,8 +1129,7 @@ void ArgminViaSchemeSwitchingAlt() {
     if (oneHot) {
         ptxtMax->SetLength(numValues);
         std::cout << "Argmax indicator vector: " << ptxtMax << std::endl;
-    }
-    else {
+    } else {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
@@ -1147,15 +1144,15 @@ void ArgminViaSchemeSwitchingUnit() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
-    bool oneHot           = true;
+    uint32_t logQ_ccLWE = 25;
+    bool oneHot = true;
 
-    uint32_t slots          = 32;  // sparsely-packed
-    uint32_t batchSize      = slots;
-    uint32_t numValues      = 32;
+    uint32_t slots = 32;  // sparsely-packed
+    uint32_t batchSize = slots;
+    uint32_t numValues = 32;
     ScalingTechnique scTech = FLEXIBLEAUTO;
     // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
@@ -1197,7 +1194,7 @@ void ArgminViaSchemeSwitchingUnit() {
     params.SetNumValues(numValues);
     params.SetComputeArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1211,8 +1208,8 @@ void ArgminViaSchemeSwitchingUnit() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {
-            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
+                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < slots) {
         std::vector<int> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1251,8 +1248,7 @@ void ArgminViaSchemeSwitchingUnit() {
     if (oneHot) {
         ptxtMin->SetLength(numValues);
         std::cout << "Argmin indicator vector: " << ptxtMin << std::endl;
-    }
-    else {
+    } else {
         ptxtMin->SetLength(1);
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
@@ -1267,8 +1263,7 @@ void ArgminViaSchemeSwitchingUnit() {
     if (oneHot) {
         ptxtMax->SetLength(numValues);
         std::cout << "Argmax indicator vector: " << ptxtMax << std::endl;
-    }
-    else {
+    } else {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
@@ -1283,15 +1278,15 @@ void ArgminViaSchemeSwitchingAltUnit() {
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 8192;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
-    bool oneHot           = true;
+    uint32_t logQ_ccLWE = 25;
+    bool oneHot = true;
 
-    uint32_t slots          = 32;  // sparsely-packed
-    uint32_t batchSize      = slots;
-    uint32_t numValues      = 32;
+    uint32_t slots = 32;  // sparsely-packed
+    uint32_t batchSize = slots;
+    uint32_t numValues = 32;
     ScalingTechnique scTech = FLEXIBLEAUTO;
     // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
     uint32_t multDepth = 9 + 3 + 1 + static_cast<int>(std::log2(numValues));
@@ -1334,7 +1329,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     params.SetComputeArgmin(true);
     params.SetUseAltArgmin(true);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
 
@@ -1348,8 +1343,8 @@ void ArgminViaSchemeSwitchingAltUnit() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {
-            -1.125, -1.12, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
+                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < slots) {
         std::vector<int> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1388,8 +1383,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     if (oneHot) {
         ptxtMin->SetLength(numValues);
         std::cout << "Argmin indicator vector: " << ptxtMin << std::endl;
-    }
-    else {
+    } else {
         ptxtMin->SetLength(1);
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
@@ -1404,8 +1398,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     if (oneHot) {
         ptxtMax->SetLength(numValues);
         std::cout << "Argmax indicator vector: " << ptxtMax << std::endl;
-    }
-    else {
+    } else {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
@@ -1425,12 +1418,12 @@ void PolyViaSchemeSwitching() {
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 2048;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim = 2048;
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
-    uint32_t logQ_ccLWE   = 25;
+    uint32_t logQ_ccLWE = 25;
 
-    uint32_t slots     = 16;  // sparsely-packed
+    uint32_t slots = 16;  // sparsely-packed
     uint32_t batchSize = slots;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -1465,7 +1458,7 @@ void PolyViaSchemeSwitching() {
     params.SetNumSlotsCKKS(slots);
     params.SetNumValues(slots);
     auto privateKeyFHEW = cc->EvalSchemeSwitchingSetup(params);
-    auto ccLWE          = cc->GetBinCCForSchemeSwitch();
+    auto ccLWE = cc->GetBinCCForSchemeSwitch();
 
     // Step 3. Precompute the necessary keys and information for switching from FHEW to CKKS and back
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW);
@@ -1474,10 +1467,10 @@ void PolyViaSchemeSwitching() {
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE->GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    auto pLWE1       = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto pLWE1 = ccLWE->GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
-    auto beta        = ccLWE->GetBeta().ConvertToInt();
-    auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
+    auto beta = ccLWE->GetBeta().ConvertToInt();
+    auto pLWE2 = modulus_LWE / (2 * beta);  // Large precision
 
     double scale1 = 1.0 / pLWE1;
     double scale2 = 1.0 / pLWE2;
@@ -1528,7 +1521,7 @@ void PolyViaSchemeSwitching() {
 
     // Step 6. Perform the desired computation in CKKS
     auto cPoly = cc->EvalAdd(cTemp, cc->EvalRotate(cTemp, 1));
-    cPoly      = cc->EvalMult(cc->EvalMult(cPoly, cPoly), 0.25);
+    cPoly = cc->EvalMult(cc->EvalMult(cPoly, cPoly), 0.25);
 
     // Perform the precomputation for switching back to CKKS
     cc->EvalCKKStoFHEWPrecompute(scale1);

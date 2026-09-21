@@ -72,30 +72,30 @@ namespace lbcrypto {
  */
 class MultipartyRNS : public MultipartyBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~MultipartyRNS() = default;
 
-    Ciphertext<DCRTPoly> MultipartyDecryptMain(
-            ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const PrivateKey<DCRTPoly> privateKey) const override;
 
-    Ciphertext<DCRTPoly> MultipartyDecryptLead(
-            ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const PrivateKey<DCRTPoly> privateKey) const override;
 
     EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const override;
 
-    Ciphertext<DCRTPoly> IntBootDecrypt(
-            const PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> IntBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
+                                        ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-    Ciphertext<DCRTPoly> IntBootEncrypt(
-            const PublicKey<DCRTPoly> publicKey, ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> IntBootEncrypt(const PublicKey<DCRTPoly> publicKey,
+                                        ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-    Ciphertext<DCRTPoly> IntBootAdd(
-            ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> IntBootAdd(ConstCiphertext<DCRTPoly> ciphertext1,
+                                    ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

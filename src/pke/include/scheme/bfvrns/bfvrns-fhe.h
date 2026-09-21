@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 class FHEBFVRNS : public FHERNS {
-public:
+  public:
     virtual ~FHEBFVRNS() {}
 
     /////////////////////////////////////

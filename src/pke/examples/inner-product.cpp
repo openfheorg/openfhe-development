@@ -78,8 +78,8 @@ bool innerProductBFV(std::vector<int64_t>& incomingVector) {
     cc->EvalSumKeyGen(keys.secretKey);
 
     Plaintext plaintext1 = cc->MakePackedPlaintext(incomingVector);
-    auto ct1             = cc->Encrypt(keys.publicKey, plaintext1);
-    auto finalResult     = cc->EvalInnerProduct(ct1, ct1, batchSize);
+    auto ct1 = cc->Encrypt(keys.publicKey, plaintext1);
+    auto finalResult = cc->EvalInnerProduct(ct1, ct1, batchSize);
     lbcrypto::Plaintext res;
     cc->Decrypt(keys.secretKey, finalResult, &res);
     auto final = res->GetPackedValue()[0];
@@ -89,11 +89,11 @@ bool innerProductBFV(std::vector<int64_t>& incomingVector) {
 }
 
 bool innerProductCKKS(const std::vector<double>& incomingVector) {
-    double expectedResult                 = plainInnerProduct(incomingVector);
+    double expectedResult = plainInnerProduct(incomingVector);
     lbcrypto::SecurityLevel securityLevel = lbcrypto::HEStd_NotSet;
-    uint32_t dcrtBits                     = 59;
-    uint32_t ringDim                      = 1 << 8;
-    uint32_t batchSize                    = ringDim / 2;
+    uint32_t dcrtBits = 59;
+    uint32_t ringDim = 1 << 8;
+    uint32_t batchSize = ringDim / 2;
     lbcrypto::CCParams<lbcrypto::CryptoContextCKKSRNS> parameters;
     uint32_t multDepth = 10;
 
@@ -115,8 +115,8 @@ bool innerProductCKKS(const std::vector<double>& incomingVector) {
     cc->EvalSumKeyGen(keys.secretKey);
 
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(incomingVector);
-    auto ct1             = cc->Encrypt(keys.publicKey, plaintext1);
-    auto finalResult     = cc->EvalInnerProduct(ct1, ct1, batchSize);
+    auto ct1 = cc->Encrypt(keys.publicKey, plaintext1);
+    auto finalResult = cc->EvalInnerProduct(ct1, ct1, batchSize);
     lbcrypto::Plaintext res;
     cc->Decrypt(keys.secretKey, finalResult, &res);
     res->SetLength(incomingVector.size());
@@ -127,7 +127,7 @@ bool innerProductCKKS(const std::vector<double>& incomingVector) {
 
 int main(int argc, char* argv[]) {
     std::vector<int64_t> vec = {1, 2, 3, 4, 5};
-    bool bfvRes              = innerProductBFV(vec);
+    bool bfvRes = innerProductBFV(vec);
     std::cout << "BFV Inner Product Correct? " << (bfvRes ? "True" : "False") << std::endl;
 
     std::cout << "********************************************************************" << std::endl;

@@ -69,7 +69,7 @@ using BigVector = BigVectorFixedT<BigInteger>;
 template <class IntegerType>
 class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>, IntegerType>,
                               public lbcrypto::Serializable {
-public:
+  public:
     ~BigVectorFixedT() {
         delete[] m_data;
     }
@@ -570,8 +570,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
             Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("l", m_length));
@@ -583,8 +583,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
             Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("l", m_length));
@@ -602,7 +602,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // m_data is a pointer to the vector
     IntegerType* m_data;
     // m_length stores the length of the vector

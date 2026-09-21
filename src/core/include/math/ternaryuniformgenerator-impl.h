@@ -52,8 +52,8 @@ std::uniform_int_distribution<int32_t> TernaryUniformGeneratorImpl<VecType>::m_d
         std::uniform_int_distribution<int32_t>(-1, 1);
 
 template <typename VecType>
-VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(
-        uint32_t size, const typename VecType::Integer& modulus, uint32_t h) const {
+VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, const typename VecType::Integer& modulus,
+                                                             uint32_t h) const {
     if (h == 0) {
         // regular ternary distribution
         VecType v(size, modulus, modulus - typename VecType::Integer(1));
@@ -71,7 +71,7 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(
     VecType v(size, modulus);
 
     auto distrHWT = std::uniform_int_distribution<int32_t>(0, size - 1);
-    auto& prng    = PseudoRandomNumberGenerator::GetPRNG();
+    auto& prng = PseudoRandomNumberGenerator::GetPRNG();
     BinaryUniformGeneratorImpl<VecType> bug;
     uint32_t counterPlus = 0;
 
@@ -89,8 +89,7 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(
             if (v[randomIndex] == typename VecType::Integer(0)) {
                 if (bug.GenerateInteger() == typename VecType::Integer(0)) {
                     v[randomIndex] = modulus - typename VecType::Integer(1);
-                }
-                else {
+                } else {
                     v[randomIndex] = typename VecType::Integer(1);
                     ++counterPlus;
                 }
@@ -133,8 +132,7 @@ std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uin
             if (v[randomIndex] == 0) {
                 if (bug.GenerateInteger() == typename VecType::Integer(0)) {
                     v[randomIndex] = -1;
-                }
-                else {
+                } else {
                     v[randomIndex] = 1;
                     ++counterPlus;
                 }

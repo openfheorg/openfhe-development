@@ -54,7 +54,7 @@ std::complex<double>* DiscreteFourierTransform::rootOfUnityTable = nullptr;
 std::unordered_map<uint32_t, DiscreteFourierTransform::PrecomputedValues> DiscreteFourierTransform::precomputedValues;
 
 DiscreteFourierTransform::PrecomputedValues::PrecomputedValues(uint32_t m, uint32_t nh) {
-    m_M  = m;
+    m_M = m;
     m_Nh = nh;
 
     m_rotGroup.resize(m_Nh);
@@ -78,13 +78,13 @@ DiscreteFourierTransform::PrecomputedValues::PrecomputedValues(uint32_t m, uint3
     m_invTw.resize(m_fwdTw.size());
     for (uint32_t lenh = 1; lenh <= m_Nh / 2; lenh <<= 1) {
         uint32_t lenq = lenh << 3;
-        uint32_t gap  = m_M / lenq;
-        auto* fwd     = &m_fwdTw[lenh - 1];
-        auto* inv     = &m_invTw[lenh - 1];
+        uint32_t gap = m_M / lenq;
+        auto* fwd = &m_fwdTw[lenh - 1];
+        auto* inv = &m_invTw[lenh - 1];
         for (uint32_t j = 0; j < lenh; ++j) {
             uint32_t rg = m_rotGroup[j] % lenq;
-            fwd[j]      = m_ksiPows[rg * gap];
-            inv[j]      = m_ksiPows[(lenq - rg) * gap];
+            fwd[j] = m_ksiPows[rg * gap];
+            inv[j] = m_ksiPows[(lenq - rg) * gap];
         }
     }
 }
@@ -166,7 +166,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
 
     // Cooley-Tukey decimation-in-time radix-2 FFT
     for (uint32_t size = 2; size <= m; size *= 2) {
-        uint32_t halfsize  = size / 2;
+        uint32_t halfsize = size / 2;
         uint32_t tablestep = m / size;
         for (uint32_t i = 0; i < m; i += size) {
             for (uint32_t j = i, k = 0; j < i + halfsize; j++, k += tablestep) {
@@ -187,7 +187,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::FFTForwardTransform(
 
 std::vector<std::complex<double>> DiscreteFourierTransform::FFTInverseTransform(std::vector<std::complex<double>>& A) {
     std::vector<std::complex<double>> result = DiscreteFourierTransform::FFTForwardTransform(A);
-    double n                                 = result.size() / 2;
+    double n = result.size() / 2;
     for (int i = 0; i < n; i++) {
         result[i] = std::complex<double>(result[i].real() / n, result[i].imag() / n);
     }
@@ -220,7 +220,7 @@ std::vector<std::complex<double>> DiscreteFourierTransform::InverseTransform(std
     size_t n = A.size();
     std::vector<std::complex<double>> dft(2 * n);
     for (size_t i = 0; i < n; i++) {
-        dft[2 * i]     = 0;
+        dft[2 * i] = 0;
         dft[2 * i + 1] = A[i];
     }
     std::vector<std::complex<double>> invDft = FFTInverseTransform(dft);
@@ -237,7 +237,7 @@ void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& 
     const size_t valsSize = vals.size();
     for (size_t len = valsSize; len >= 2; len >>= 1) {
         const size_t lenh = len >> 1;
-        const auto* tw    = &pv.m_invTw[lenh - 1];
+        const auto* tw = &pv.m_invTw[lenh - 1];
         for (size_t i = 0; i < valsSize; i += len) {
             auto* lo = &vals[i];
             auto* hi = lo + lenh;
@@ -248,8 +248,8 @@ void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& 
                 const double vi = lo[j].imag() - hi[j].imag();
                 const double wr = tw[j].real();
                 const double wi = tw[j].imag();
-                lo[j]           = {ur, ui};
-                hi[j]           = {vr * wr - vi * wi, vr * wi + vi * wr};
+                lo[j] = {ur, ui};
+                hi[j] = {vr * wr - vi * wi, vr * wi + vi * wr};
             }
         }
     }
@@ -268,7 +268,7 @@ void DiscreteFourierTransform::FFTSpecial(std::vector<std::complex<double>>& val
     const size_t valsSize = vals.size();
     for (size_t len = 2; len <= valsSize; len <<= 1) {
         const size_t lenh = len >> 1;
-        const auto* tw    = &pv.m_fwdTw[lenh - 1];
+        const auto* tw = &pv.m_fwdTw[lenh - 1];
         for (size_t i = 0; i < valsSize; i += len) {
             auto* lo = &vals[i];
             auto* hi = lo + lenh;
@@ -279,8 +279,8 @@ void DiscreteFourierTransform::FFTSpecial(std::vector<std::complex<double>>& val
                 const double vi = hi[j].real() * wi + hi[j].imag() * wr;
                 const double ur = lo[j].real();
                 const double ui = lo[j].imag();
-                lo[j]           = {ur + vr, ui + vi};
-                hi[j]           = {ur - vr, ui - vi};
+                lo[j] = {ur + vr, ui + vi};
+                hi[j] = {ur - vr, ui - vi};
             }
         }
     }

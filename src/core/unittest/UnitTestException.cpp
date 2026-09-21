@@ -51,8 +51,7 @@ static void parthrow(const std::string& msg) {
         try {
             if (i == 7)
                 regthrow("inside throw");
-        }
-        catch (...) {
+        } catch (...) {
             e.CaptureException();
         }
     }

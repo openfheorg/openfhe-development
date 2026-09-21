@@ -46,7 +46,7 @@ namespace lbcrypto {
 #if NATIVEINT != 32
 
 class RingGSWACCKey32Impl;
-using RingGSWACCKey32      = std::shared_ptr<RingGSWACCKey32Impl>;
+using RingGSWACCKey32 = std::shared_ptr<RingGSWACCKey32Impl>;
 using ConstRingGSWACCKey32 = const std::shared_ptr<const RingGSWACCKey32Impl>;
 
 // exact conversions between the two widths: every value is below 2^28, so 32 -> 64 -> 32 is the
@@ -69,8 +69,8 @@ inline void WidenPoly32Into(const NativePoly32& src, NativePoly& dst) {
         dst[i] = NativeInteger(static_cast<uint64_t>(v[i].ConvertToInt()));
 }
 
-inline std::vector<NativePoly32> NarrowAcc32(
-        const std::shared_ptr<ILNativeParams32>& params, const std::vector<NativePoly>& acc) {
+inline std::vector<NativePoly32> NarrowAcc32(const std::shared_ptr<ILNativeParams32>& params,
+                                             const std::vector<NativePoly>& acc) {
     std::vector<NativePoly32> out;
     out.reserve(acc.size());
     for (const auto& p : acc)
@@ -95,7 +95,7 @@ inline void WidenAcc32Into(const std::vector<NativePoly32>& acc32, std::vector<N
  * width produces bit-identical results.
  */
 class RingGSWACCKey32Impl : public Serializable {
-public:
+  public:
     RingGSWACCKey32Impl() = default;
 
     // one RGSW eval key: [digit][column]
@@ -153,8 +153,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("N", m_N));
         ar(::cereal::make_nvp("p", m_polyParams));
@@ -169,7 +169,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     void Init(const std::shared_ptr<RingGSWCryptoParams>& params);
 
     std::shared_ptr<ILNativeParams32> m_polyParams;

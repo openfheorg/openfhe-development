@@ -42,9 +42,9 @@ namespace lbcrypto {
  * @brief Lists all modes for RLWE schemes, such as BGV and BFV, and for LWE schemes, such as DM and TFHE
  */
 enum SecretKeyDist {
-    GAUSSIAN            = 0,
-    UNIFORM_TERNARY     = 1,  // Default value, all schemes support this key distribution
-    SPARSE_TERNARY      = 2,
+    GAUSSIAN = 0,
+    UNIFORM_TERNARY = 1,  // Default value, all schemes support this key distribution
+    SPARSE_TERNARY = 2,
     SPARSE_ENCAPSULATED = 3,  // For more effient bootstrapping in SIMD schemes
                               // (has been used for CKKS and BFV bootstrapping in literature)
     // BINARY = X, // Future implementation

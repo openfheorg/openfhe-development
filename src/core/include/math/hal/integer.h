@@ -45,7 +45,7 @@ namespace lbcrypto {
 
 template <typename T>
 class BigIntegerInterface {
-public:
+  public:
     // CONSTRUCTORS
 
     // Constructors must be implemented in the derived classes
@@ -457,7 +457,7 @@ public:
    */
     const std::string ToString() const;
 
-protected:
+  protected:
     ~BigIntegerInterface() = default;
 
     // SERIALIZATION

@@ -55,7 +55,7 @@ using namespace lbcrypto;
  * A utility class defining a party that is involved in the collective bootstrapping protocol
  */
 struct Party {
-public:
+  public:
     uint32_t id;  // unique party identifier starting from 0
 
     std::vector<Ciphertext<DCRTPoly>> sharesPair;  // (h_{0,i}, h_{1,i}) = (masked decryption
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
-            scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
+        scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
         std::string errMsg = "ERROR: Scaling technique is not supported!";
         OPENFHE_THROW(errMsg);
     }
@@ -224,7 +224,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Encryption
     Ciphertext<DCRTPoly> inCtxt = cryptoContext->Encrypt(kpMultiparty.publicKey, ptxt1);
-    DCRTPoly ptxtpoly           = ptxt1->GetElement<DCRTPoly>();
+    DCRTPoly ptxtpoly = ptxt1->GetElement<DCRTPoly>();
 
     std::cout << "Compressing ctxt to the smallest possible number of towers!\n";
     inCtxt = cryptoContext->IntMPBootAdjustScale(inCtxt);

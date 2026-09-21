@@ -52,7 +52,7 @@ namespace lbcrypto {
  * @brief Discrete Fourier Transform FFT implementation.
  */
 class DiscreteFourierTransform {
-public:
+  public:
     /**
    * Virtual FFT forward transform.
    *
@@ -110,7 +110,7 @@ public:
 
     static void Initialize(uint32_t m, uint32_t nh);
 
-private:
+  private:
     static std::complex<double>* rootOfUnityTable;
 
     // structure to keep values precomputed by Initialize() for every cyclotomic order value

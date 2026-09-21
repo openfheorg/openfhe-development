@@ -113,14 +113,14 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM       = 32;
-constexpr uint32_t MULT_DEPTH     = 3;
-constexpr uint32_t MAX_RELIN_DEG  = 2;
-constexpr uint32_t DSIZE          = 4;
-constexpr uint32_t PTM            = 65537;
-constexpr uint32_t BATCH          = 16;
+constexpr uint32_t RING_DIM = 32;
+constexpr uint32_t MULT_DEPTH = 3;
+constexpr uint32_t MAX_RELIN_DEG = 2;
+constexpr uint32_t DSIZE = 4;
+constexpr uint32_t PTM = 65537;
+constexpr uint32_t BATCH = 16;
 constexpr uint32_t FIRST_MOD_SIZE = 0;
-constexpr SecurityLevel SEC_LVL   = HEStd_NotSet;
+constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
 // clang-format off
@@ -157,10 +157,10 @@ static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
 // clang-format on
 //===========================================================================================================
 class UTBGVRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SER> {
-    using Element    = DCRTPoly;
+    using Element = DCRTPoly;
     const double eps = EPSILON;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -178,8 +178,8 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(
-            const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -232,8 +232,8 @@ protected:
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
             OPENFHE_DEBUG("step 3");
-            std::vector<int64_t> vals       = {1, 3, 5, 7, 9, 2, 4, 6, 8, 11};
-            Plaintext plaintextShort        = cc->MakePackedPlaintext(vals);
+            std::vector<int64_t> vals = {1, 3, 5, 7, 9, 2, 4, 6, 8, 11};
+            Plaintext plaintextShort = cc->MakePackedPlaintext(vals);
             Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
 
             OPENFHE_DEBUG("step 4");
@@ -254,7 +254,7 @@ protected:
             bufferShort << "should be: " << plaintextShortNew->GetPackedValue()
                         << " - we get: " << plaintextShort->GetPackedValue();
             checkEquality(plaintextShortNew->GetPackedValue(), plaintextShort->GetPackedValue(), eps,
-                    failmsg + " Decrypted serialization test fails" + bufferShort.str());
+                          failmsg + " Decrypted serialization test fails" + bufferShort.str());
 
             OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
@@ -351,21 +351,19 @@ protected:
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTestKeysAndCiphertexts(
-            const TEST_CASE_UTBGVRNS_SER& testData, const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData,
+                                    const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }

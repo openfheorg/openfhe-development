@@ -49,11 +49,11 @@ namespace lbcrypto {
 class CryptoContextCKKSRNS {
     using Element = DCRTPoly;
 
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
+  public:
+    using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
+    using Factory = CryptoContextFactory<Element>;
     using PublicKeyEncryptionScheme = SchemeCKKSRNS;
-    using CryptoParams              = CryptoParametersCKKSRNS;
+    using CryptoParams = CryptoParametersCKKSRNS;
 
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextCKKSRNS>& parameters) {
         validateParametersForCryptocontext(parameters);

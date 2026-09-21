@@ -48,7 +48,7 @@ namespace lbcrypto {
  * @brief Class that stores the LWE scheme public key; contains a vector
  */
 class LWEPublicKeyImpl : public Serializable {
-public:
+  public:
     LWEPublicKeyImpl() = default;
 
     LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
@@ -120,8 +120,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("A", m_A));
         ar(::cereal::make_nvp("v", m_v));
@@ -135,7 +135,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<NativeVector> m_A;
     NativeVector m_v;
 };

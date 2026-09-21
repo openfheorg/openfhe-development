@@ -122,11 +122,11 @@ constexpr uint32_t SCALE = 78;
 #else
 constexpr uint32_t SCALE = 50;
 #endif
-constexpr uint32_t RING_DIM     = 16;
-constexpr uint32_t BATCH        = 8;
-constexpr uint32_t MULT_DEPTH   = 4;
+constexpr uint32_t RING_DIM = 16;
+constexpr uint32_t BATCH = 8;
+constexpr uint32_t MULT_DEPTH = 4;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
-constexpr uint32_t PTM          = 65537;
+constexpr uint32_t PTM = 65537;
 
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_EVALMULT> testCasesUTGENERAL_EVALMULT = {
@@ -266,10 +266,10 @@ static std::vector<TEST_CASE_UTGENERAL_EVALMULT> testCasesUTGENERAL_EVALMULT = {
 //===========================================================================================================
 
 class UTGENERAL_EVALMULT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_EVALMULT> {
-    using Element    = DCRTPoly;
+    using Element = DCRTPoly;
     const double eps = EPSILON;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -279,8 +279,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalMultManyErrorHandling(
-            const TEST_CASE_UTGENERAL_EVALMULT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultManyErrorHandling(const TEST_CASE_UTGENERAL_EVALMULT& testData,
+                                            const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
 
@@ -307,10 +307,10 @@ protected:
             std::vector<int64_t> vectorOfInts5 = {10, 8, 6, 4, 2, 0, 10, 8, 6, 4, 2, 0};
             std::vector<int64_t> vectorOfInts6 = {30, 24, 18, 12, 6, 0, 30, 24, 18, 12, 6, 0};
             std::vector<int64_t> vectorOfInts7 = {120, 96, 72, 48, 24, 0, 120, 96, 72, 48, 24, 0};
-            Plaintext plaintext1               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
-            Plaintext plaintext2               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
-            Plaintext plaintext3               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts3);
-            Plaintext plaintext4               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts4);
+            Plaintext plaintext1 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
+            Plaintext plaintext2 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
+            Plaintext plaintext3 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts3);
+            Plaintext plaintext4 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts4);
 
             Plaintext plaintextResult1 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts5);
             Plaintext plaintextResult2 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts6);
@@ -333,12 +333,12 @@ protected:
             // EvalMult Operation
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
-            auto ciphertextMul12                  = (INVALID_CIPHERTEXT_ERROR1 == testData.error) ?
-                                                            cryptoContext->EvalMultNoRelin(nullptr, ciphertext2) :
-                                                            cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
-            auto ciphertextMul123                 = (INVALID_CIPHERTEXT_ERROR2 == testData.error) ?
-                                                            cryptoContext->EvalMultNoRelin(ciphertextMul12, nullptr) :
-                                                            cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
+            auto ciphertextMul12 = (INVALID_CIPHERTEXT_ERROR1 == testData.error) ?
+                                           cryptoContext->EvalMultNoRelin(nullptr, ciphertext2) :
+                                           cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
+            auto ciphertextMul123 = (INVALID_CIPHERTEXT_ERROR2 == testData.error) ?
+                                            cryptoContext->EvalMultNoRelin(ciphertextMul12, nullptr) :
+                                            cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
             Ciphertext<Element> ciphertextMul1234 = nullptr;
             if (INVALID_CIPHERTEXT_ERROR3 == testData.error)
                 ciphertextMul1234 = cryptoContext->EvalMultAndRelinearize(nullptr, ciphertext4);
@@ -403,23 +403,20 @@ protected:
                 // make it fail
                 EXPECT_EQ(0, 1);
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             if (SUCCESS == testData.error) {
                 std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
                 // make it fail
                 EXPECT_EQ(0, 1);
-            }
-            else
+            } else
                 EXPECT_EQ(1, 1);
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_EvalMultErrorHandling(
-            const TEST_CASE_UTGENERAL_EVALMULT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultErrorHandling(const TEST_CASE_UTGENERAL_EVALMULT& testData,
+                                        const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
 
@@ -451,8 +448,7 @@ protected:
                 std::vector<std::complex<double>> vectorOfIntsResult = {0, 6, 10, 12, 12, 10, 6, 0};
 
                 plaintextResult = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
-            }
-            else {
+            } else {
                 std::vector<int64_t> vectorOfInts1 = {0, 1, 2, 3, 4, 5, 6, 7};
                 std::vector<int64_t> vectorOfInts2 = {7, 6, 5, 4, 3, 2, 1, 0};
 
@@ -517,23 +513,20 @@ protected:
                 // make it fail
                 EXPECT_EQ(0, 1);
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             if (SUCCESS == testData.error) {
                 std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
                 // make it fail
                 EXPECT_EQ(0, 1);
-            }
-            else
+            } else
                 EXPECT_EQ(1, 1);
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_Relinearization(
-            const TEST_CASE_UTGENERAL_EVALMULT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Relinearization(const TEST_CASE_UTGENERAL_EVALMULT& testData,
+                                  const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
 
@@ -560,23 +553,22 @@ protected:
                 plaintext1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts1);
                 plaintext2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts2);
 
-                std::vector<std::complex<double>> vectorOfIntsResult  = {0, 6, 10, 12, 12, 10, 6, 0};
+                std::vector<std::complex<double>> vectorOfIntsResult = {0, 6, 10, 12, 12, 10, 6, 0};
                 std::vector<std::complex<double>> vectorOfIntsResult2 = {0, 6, 20, 36, 48, 50, 36, 0};
 
-                plaintextResult  = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
+                plaintextResult = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
                 plaintextResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult2);
-            }
-            else {
+            } else {
                 std::vector<int64_t> vectorOfInts1 = {0, 1, 2, 3, 4, 5, 6, 7};
                 std::vector<int64_t> vectorOfInts2 = {7, 6, 5, 4, 3, 2, 1, 0};
 
                 plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
                 plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
-                std::vector<int64_t> vectorOfIntsResult  = {0, 6, 10, 12, 12, 10, 6, 0};
+                std::vector<int64_t> vectorOfIntsResult = {0, 6, 10, 12, 12, 10, 6, 0};
                 std::vector<int64_t> vectorOfIntsResult2 = {0, 6, 20, 36, 48, 50, 36, 0};
 
-                plaintextResult  = cryptoContext->MakePackedPlaintext(vectorOfIntsResult);
+                plaintextResult = cryptoContext->MakePackedPlaintext(vectorOfIntsResult);
                 plaintextResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsResult2);
             }
             ////////////////////////////////////////////////////////////
@@ -590,7 +582,7 @@ protected:
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
             auto ciphertextMul12 = cryptoContext->EvalMultNoRelinNoCheck(ciphertext1, ciphertext2);
-            auto ciphertextMult  = cryptoContext->Relinearize(ciphertextMul12);
+            auto ciphertextMult = cryptoContext->Relinearize(ciphertextMul12);
 
             ////////////////////////////////////////////////////////////
             // Decryption of multiplicative results with and without keyswtiching (depends
@@ -619,7 +611,7 @@ protected:
 
             // Perform consecutive multiplications and do a keyswtiching at the end.
             auto ciphertextMul123 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertextMul12);
-            auto ciphertextMult2  = cryptoContext->Relinearize(ciphertextMul123);
+            auto ciphertextMult2 = cryptoContext->Relinearize(ciphertextMul123);
 
             ////////////////////////////////////////////////////////////
             // Decryption of multiplicative results with and without keyswtiching (depends
@@ -631,8 +623,8 @@ protected:
 
             errMsg = failmsg + " Relinearization after two multiplications failed.";
             if (CKKSRNS_SCHEME == testData.params.schemeId)
-                checkEquality(
-                        plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps, errMsg);
+                checkEquality(plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps,
+                              errMsg);
             else
                 checkEquality(plaintextMult2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
 
@@ -643,17 +635,15 @@ protected:
 
             errMsg = failmsg + " In-place relinearization after two multiplications failed.";
             if (CKKSRNS_SCHEME == testData.params.schemeId)
-                checkEquality(
-                        plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps, errMsg);
+                checkEquality(plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps,
+                              errMsg);
             else
                 checkEquality(plaintextMult2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

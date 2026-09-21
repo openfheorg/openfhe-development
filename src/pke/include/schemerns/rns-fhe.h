@@ -48,7 +48,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class FHERNS : public FHEBase<DCRTPoly> {
-public:
+  public:
     virtual ~FHERNS() = default;
 
     /////////////////////////////////////

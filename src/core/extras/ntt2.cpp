@@ -99,8 +99,7 @@ bool clonetest(Poly& a, Poly& b, std::string name) {
     if (a != b) {
         std::cout << name << " FAILED " << std::endl;
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -313,8 +312,7 @@ void test_NTT(const uint32_t level, const uint32_t nloop) {
 
     if (failed) {
         std::cout << "failure in loop number " << ix << std::endl;
-    }
-    else {
+    } else {
         time1af /= static_cast<double>(nloop);
         time1bf /= static_cast<double>(nloop);
         time2af /= static_cast<double>(nloop);

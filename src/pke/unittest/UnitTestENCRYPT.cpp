@@ -96,7 +96,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_ENCR
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t BATCH    = 16;
+constexpr uint32_t BATCH = 16;
 constexpr uint32_t BV_DSIZE = 4;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
@@ -141,7 +141,7 @@ static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
 class UTGENERAL_ENCRYPT_DECRYPT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> {
     using Element = DCRTPoly;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -151,12 +151,12 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void EncryptionString(
-            const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
+    void EncryptionString(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData,
+                          const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            std::string value   = "You keep using that word. I do not think it means what you think it means";
+            std::string value = "You keep using that word. I do not think it means what you think it means";
             Plaintext plaintext = cc->MakeStringPlaintext(value);
 
             KeyPair<Element> kp = cc->KeyGen();
@@ -166,25 +166,23 @@ protected:
             Plaintext plaintextNew;
             cc->Decrypt(kp.secretKey, ciphertext, &plaintextNew);
             EXPECT_EQ(*plaintext, *plaintextNew) << failmsg << " string encrypt/decrypt failed";
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void EncryptionCoefPacked(
-            const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
+    void EncryptionCoefPacked(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData,
+                              const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             size_t intSize = cc->GetRingDimension();
-            auto ptm       = cc->GetCryptoParameters()->GetPlaintextModulus();
-            int half       = ptm / 2;
+            auto ptm = cc->GetCryptoParameters()->GetPlaintextModulus();
+            int half = ptm / 2;
 
             std::vector<int64_t> intvec;
             for (size_t ii = 0; ii < intSize; ii++)
@@ -214,13 +212,11 @@ protected:
             cc->Decrypt(kp.secretKey, ciphertext5, &plaintextSIntNew);
             EXPECT_EQ(*plaintextSIntNew, *plaintextSInt)
                     << failmsg << "coef packed encrypt/decrypt failed for signed integer plaintext";
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

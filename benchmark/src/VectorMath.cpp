@@ -49,7 +49,7 @@
 
 using namespace lbcrypto;
 
-constexpr size_t VEC_POOL    = 8;
+constexpr size_t VEC_POOL = 8;
 constexpr size_t VEC_POOL_M1 = VEC_POOL - 1;
 
 template <typename V>

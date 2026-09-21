@@ -48,7 +48,7 @@ namespace lbcrypto {
  * and integer "b"
  */
 class LWECiphertextImpl : public Serializable {
-public:
+  public:
     LWECiphertextImpl() = default;
 
     LWECiphertextImpl(const NativeVector& a, NativeInteger b, NativeInteger p = 4) : m_a(a), m_b(b), m_p(p) {}
@@ -136,8 +136,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
@@ -151,7 +151,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     NativeVector m_a;
     NativeInteger m_b;
     NativeInteger m_p{4};  // pt modulus; see the copy constructor for why copies reset it

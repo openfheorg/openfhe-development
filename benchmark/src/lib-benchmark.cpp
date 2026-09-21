@@ -260,7 +260,7 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
     std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
     while (state.KeepRunning()) {
         auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
@@ -273,7 +273,7 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
     std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
     Plaintext plaintextDec1;
@@ -327,10 +327,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
     std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
     std::vector<int64_t> vectorOfInts2 = {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
     auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
@@ -349,10 +349,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
     std::vector<int64_t> vectorOfInts2 = {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
     auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
@@ -487,9 +487,9 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
         vectorOfInts1[i] = benchRandReal();
     }
 
-    auto plaintext1  = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
+    auto plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
     auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
-    ciphertext1      = cc->LevelReduce(ciphertext1, nullptr, 1);
+    ciphertext1 = cc->LevelReduce(ciphertext1, nullptr, 1);
 
     Plaintext plaintextDec1;
 
@@ -658,7 +658,7 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
     auto ciphertext2 = cc->Encrypt(keyPair.publicKey, plaintext2);
 
-    auto ciphertextMul      = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
+    auto ciphertextMul = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
     auto ciphertextMulClone = ciphertextMul->Clone();
 
     while (state.KeepRunning()) {
@@ -710,9 +710,9 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
         vectorOfInts[i] = benchRandReal();
     }
 
-    auto plaintext          = cc->MakeCKKSPackedPlaintext(vectorOfInts);
-    auto ciphertext         = cc->Encrypt(keyPair.publicKey, plaintext);
-    auto ciphertextMul      = cc->EvalMult(ciphertext, ciphertext);
+    auto plaintext = cc->MakeCKKSPackedPlaintext(vectorOfInts);
+    auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+    auto ciphertextMul = cc->EvalMult(ciphertext, ciphertext);
     auto ciphertextMulClone = ciphertextMul->Clone();
 
     while (state.KeepRunning()) {
@@ -830,7 +830,7 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext               = cryptoContext->MakePackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cryptoContext->MakePackedPlaintext(vectorOfInts);
 
     while (state.KeepRunning()) {
         auto ciphertext = cryptoContext->Encrypt(keyPair.publicKey, plaintext);
@@ -843,10 +843,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
     auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-    ciphertext      = cc->ModReduce(ciphertext);  // TODO LevelReduce
+    ciphertext = cc->ModReduce(ciphertext);  // TODO LevelReduce
 
     Plaintext plaintextDec;
 
@@ -973,7 +973,7 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
     auto ciphertext2 = cc->Encrypt(keyPair.publicKey, plaintext2);
 
-    auto ciphertextMul      = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
+    auto ciphertextMul = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
     auto ciphertextMulClone = ciphertextMul->Clone();
 
     while (state.KeepRunning()) {
@@ -1014,9 +1014,9 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
 
-    auto plaintext          = cc->MakePackedPlaintext(vectorOfInts);
-    auto ciphertext         = cc->Encrypt(keyPair.publicKey, plaintext);
-    auto ciphertextMul      = cc->EvalMult(ciphertext, ciphertext);
+    auto plaintext = cc->MakePackedPlaintext(vectorOfInts);
+    auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+    auto ciphertextMul = cc->EvalMult(ciphertext, ciphertext);
     auto ciphertextMulClone = ciphertextMul->Clone();
 
     while (state.KeepRunning()) {
@@ -1080,10 +1080,10 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
 
 [[maybe_unused]] void CKKSrns_ApproxSwitchCRTBasis(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
-    KeyPair<DCRTPoly> keyPair  = cc->KeyGen();
+    KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    uint32_t slots          = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vals(slots);
 
     constexpr uint32_t KS_POOL = 4;
@@ -1109,11 +1109,12 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
 
     uint32_t i = 0;
     while (state.KeepRunning()) {
-        i         = (i + 1) & (KS_POOL - 1);
-        auto out  = parts[i].ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(0),
-                 cryptoParams->GetParamsComplPartQ(sizeQl - 1, 0), cryptoParams->GetPartQlHatInvModq(0, sizePartQl - 1),
-                 cryptoParams->GetPartQlHatInvModqPrecon(0, sizePartQl - 1),
-                 cryptoParams->GetPartQlHatModp(sizeQl - 1, 0), cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, 0));
+        i = (i + 1) & (KS_POOL - 1);
+        auto out = parts[i].ApproxSwitchCRTBasis(
+                cryptoParams->GetParamsPartQ(0), cryptoParams->GetParamsComplPartQ(sizeQl - 1, 0),
+                cryptoParams->GetPartQlHatInvModq(0, sizePartQl - 1),
+                cryptoParams->GetPartQlHatInvModqPrecon(0, sizePartQl - 1),
+                cryptoParams->GetPartQlHatModp(sizeQl - 1, 0), cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, 0));
         auto sink = out.GetElementAtIndex(0)[0];
         benchmark::DoNotOptimize(sink);
     }
@@ -1121,16 +1122,16 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
 
 [[maybe_unused]] void CKKSrns_ApproxModDown(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(state.range(0));
-    KeyPair<DCRTPoly> keyPair  = cc->KeyGen();
+    KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    uint32_t slots          = cc->GetEncodingParams()->GetBatchSize();
+    uint32_t slots = cc->GetEncodingParams()->GetBatchSize();
     std::vector<std::complex<double>> vals(slots);
     for (uint32_t k = 0; k < slots; k++)
         vals[k] = benchRandReal();
 
-    auto c               = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(vals))->GetElements()[0];
-    const auto paramsQl  = c.GetParams();
+    auto c = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(vals))->GetElements()[0];
+    const auto paramsQl = c.GetParams();
     const auto paramsQlP = c.GetExtendedCRTBasis(cryptoParams->GetParamsP());
 
     constexpr uint32_t KS_POOL = 4;
@@ -1143,11 +1144,12 @@ static std::vector<NativeVector> MakeNTTPool(uint32_t n, const NativeInteger& mo
     const NativeInteger t(0);
     uint32_t i = 0;
     while (state.KeepRunning()) {
-        i         = (i + 1) & (KS_POOL - 1);
-        auto out  = ext[i].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
-                 cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
-                 cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                 cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+        i = (i + 1) & (KS_POOL - 1);
+        auto out = ext[i].ApproxModDown(paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
+                                        cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
+                                        cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+                                        cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
+                                        cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
         auto sink = out.GetElementAtIndex(0)[0];
         benchmark::DoNotOptimize(sink);
     }

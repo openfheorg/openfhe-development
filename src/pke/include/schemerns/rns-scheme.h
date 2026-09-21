@@ -61,7 +61,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class SchemeRNS : public SchemeBase<DCRTPoly> {
-public:
+  public:
     SchemeRNS() = default;
 
     virtual ~SchemeRNS() = default;
@@ -69,11 +69,9 @@ public:
     void SetKeySwitchingTechnique(KeySwitchTechnique ksTech) {
         if (ksTech == BV) {
             m_KeySwitch = std::make_shared<KeySwitchBV>();
-        }
-        else if (ksTech == HYBRID) {
+        } else if (ksTech == HYBRID) {
             m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
-        }
-        else
+        } else
             OPENFHE_THROW("ksTech is invalid");
     }
 

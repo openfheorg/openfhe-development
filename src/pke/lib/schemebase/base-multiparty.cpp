@@ -52,9 +52,10 @@ namespace lbcrypto {
 
 // makeSparse is not used by this scheme
 template <class Element>
-KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
-        CryptoContext<Element> cc, const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse) {
-    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc,
+                                                           const std::vector<PrivateKey<Element>>& privateKeyVec,
+                                                           bool makeSparse) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
     const auto elementParams = cryptoParams->GetElementParams();
 
     // Private Key Generation
@@ -76,8 +77,8 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
         e *= ns;
     Element b(std::move(e -= a * s));
 
-    KeyPair<Element> keyPair(
-            std::make_shared<PublicKeyImpl<Element>>(cc), std::make_shared<PrivateKeyImpl<Element>>(cc));
+    KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
+                             std::make_shared<PrivateKeyImpl<Element>>(cc));
     keyPair.secretKey->SetPrivateElement(std::move(s));
     std::vector<Element> pkElems;
     pkElems.reserve(2);
@@ -88,11 +89,12 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
 }
 
 template <class Element>
-KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
-        CryptoContext<Element> cc, const PublicKey<Element> publicKey, bool makeSparse, bool fresh) {
-    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc,
+                                                           const PublicKey<Element> publicKey, bool makeSparse,
+                                                           bool fresh) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
     const auto elementParams = cryptoParams->GetElementParams();
-    const auto paramsPK      = cryptoParams->GetParamsPK();
+    const auto paramsPK = cryptoParams->GetParamsPK();
     if (!paramsPK)
         OPENFHE_THROW("PrecomputeCRTTables() must be called before using precomputed params.");
 
@@ -128,13 +130,13 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
     if (!fresh)
         b += pk[0];
 
-    auto sizeQ  = elementParams->GetParams().size();
+    auto sizeQ = elementParams->GetParams().size();
     auto sizePK = paramsPK->GetParams().size();
     if (sizePK > sizeQ)
         s.DropLastElements(sizePK - sizeQ);
 
-    KeyPair<Element> keyPair(
-            std::make_shared<PublicKeyImpl<Element>>(cc), std::make_shared<PrivateKeyImpl<Element>>(cc));
+    KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
+                             std::make_shared<PrivateKeyImpl<Element>>(cc));
     keyPair.secretKey->SetPrivateElement(std::move(s));
     std::vector<Element> pkElems;
     pkElems.reserve(2);
@@ -146,7 +148,8 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
 
 template <class Element>
 EvalKey<Element> MultipartyBase<Element>::MultiKeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-        const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const {
+                                                            const PrivateKey<Element> newPrivateKey,
+                                                            const EvalKey<Element> evalKey) const {
     return oldPrivateKey->GetCryptoContext()->GetScheme()->KeySwitchGen(oldPrivateKey, newPrivateKey, evalKey);
 }
 
@@ -155,7 +158,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::vector<uint32_t>& indexList) const {
     const Element& s = privateKey->GetPrivateElement();
-    uint32_t N       = s.GetRingDimension();
+    uint32_t N = s.GetRingDimension();
 
     if (indexList.size() > N - 1)
         OPENFHE_THROW("size exceeds the ring dimension");
@@ -200,7 +203,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
         const std::vector<int32_t>& indexList) const {
     std::vector<uint32_t> autoIndices(indexList.size());
-    const auto cc    = privateKey->GetCryptoContext();
+    const auto cc = privateKey->GetCryptoContext();
     const uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     for (size_t i = 0; i < indexList.size(); i++)
         autoIndices[i] = cc->GetScheme()->FindAutomorphismIndex(indexList[i], M);
@@ -217,16 +220,16 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
 }
 
 template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(
-        ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey) const {
+Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(ConstCiphertext<Element> ciphertext,
+                                                                   const PrivateKey<Element> privateKey) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-    const auto ns                                 = cryptoParams->GetNoiseScale();
+    const auto ns = cryptoParams->GetNoiseScale();
 
     const std::vector<Element>& cv = ciphertext->GetElements();
-    const Element& s               = privateKey->GetPrivateElement();
+    const Element& s = privateKey->GetPrivateElement();
 
     DggType dgg(NoiseFlooding::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
@@ -238,16 +241,16 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(
 }
 
 template <class Element>
-Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(
-        ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey) const {
+Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(ConstCiphertext<Element> ciphertext,
+                                                                   const PrivateKey<Element> privateKey) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-    const auto es                                 = cryptoParams->GetNoiseScale();
+    const auto es = cryptoParams->GetNoiseScale();
 
     const std::vector<Element>& cv = ciphertext->GetElements();
-    const Element& s               = privateKey->GetPrivateElement();
+    const Element& s = privateKey->GetPrivateElement();
 
     DggType dgg(NoiseFlooding::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
@@ -259,8 +262,8 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(
 }
 
 template <class Element>
-DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(
-        const std::vector<Ciphertext<Element>>& ciphertextVec, NativePoly* plaintext) const {
+DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
+                                                               NativePoly* plaintext) const {
     Element b = (ciphertextVec.size() > 1) ? ciphertextVec[0]->GetElements()[0] + ciphertextVec[1]->GetElements()[0] :
                                              ciphertextVec[0]->GetElements()[0];
     for (size_t i = 2; i < ciphertextVec.size(); i++)
@@ -273,13 +276,13 @@ DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(
 }
 
 template <class Element>
-PublicKey<Element> MultipartyBase<Element>::MultiAddPubKeys(
-        PublicKey<Element> publicKey1, PublicKey<Element> publicKey2) const {
+PublicKey<Element> MultipartyBase<Element>::MultiAddPubKeys(PublicKey<Element> publicKey1,
+                                                            PublicKey<Element> publicKey2) const {
     PublicKey<Element> publicKeySum = std::make_shared<PublicKeyImpl<Element>>(publicKey1->GetCryptoContext());
 
     const Element& b1 = publicKey1->GetPublicElements()[0];
     const Element& b2 = publicKey2->GetPublicElements()[0];
-    const Element& a  = publicKey1->GetPublicElements()[1];
+    const Element& a = publicKey1->GetPublicElements()[1];
     std::vector<Element> pkElems;
     pkElems.reserve(2);
     pkElems.push_back(b1 + b2);
@@ -295,7 +298,7 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalKeys(EvalKey<Element> eval
 
     EvalKey<Element> evalKeySum = std::make_shared<EvalKeyRelinImpl<Element>>(cc);
 
-    const std::vector<Element>& a  = evalKey1->GetAVector();
+    const std::vector<Element>& a = evalKey1->GetAVector();
     const std::vector<Element>& b1 = evalKey1->GetBVector();
     const std::vector<Element>& b2 = evalKey2->GetBVector();
 
@@ -312,8 +315,8 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalKeys(EvalKey<Element> eval
 }
 
 template <class Element>
-EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(
-        EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const {
+EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> evalKey1,
+                                                               EvalKey<Element> evalKey2) const {
     const auto cc = evalKey1->GetCryptoContext();
 
     EvalKey<Element> evalKeySum = std::make_shared<EvalKeyRelinImpl<Element>>(cc);
@@ -339,13 +342,13 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(
 }
 
 template <class Element>
-EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(
-        PrivateKey<Element> privateKey, EvalKey<Element> evalKey) const {
+EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> privateKey,
+                                                           EvalKey<Element> evalKey) const {
     const auto cc = evalKey->GetCryptoContext();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
 
-    const DggType& dgg       = cryptoParams->GetDiscreteGaussianGenerator();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
     const auto elementParams = cryptoParams->GetElementParams();
 
     EvalKey<Element> evalKeyResult = std::make_shared<EvalKeyRelinImpl<Element>>(cc);
@@ -354,7 +357,7 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(
     const std::vector<Element>& b0 = evalKey->GetBVector();
 
     const Element& s = privateKey->GetPrivateElement();
-    const auto ns    = cryptoParams->GetNoiseScale();
+    const auto ns = cryptoParams->GetNoiseScale();
 
     std::vector<Element> a;
     a.reserve(a0.size());

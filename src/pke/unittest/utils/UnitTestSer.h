@@ -48,8 +48,8 @@
 using namespace lbcrypto;
 
 template <typename Element, typename ST>
-void UnitTestContextWithSertype(
-        CryptoContext<Element> cc, const ST& sertype, const std::string& failmsg = std::string()) {
+void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
     try {
         KeyPair<Element> kp = cc->KeyGen();
         cc->EvalMultKeyGen(kp.secretKey);
@@ -89,15 +89,13 @@ void UnitTestContextWithSertype(
         CryptoContext<Element> newccFromkey = newPub->GetCryptoContext();
         EXPECT_EQ(*cc, *newccFromkey) << failmsg << " Key deser has wrong context";
         EnablePrecomputeCRTTablesAfterDeserializaton();
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         EnablePrecomputeCRTTablesAfterDeserializaton();
 
         std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
-    }
-    catch (...) {
+    } catch (...) {
         EnablePrecomputeCRTTablesAfterDeserializaton();
 
         UNIT_TEST_HANDLE_ALL_EXCEPTIONS;

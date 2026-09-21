@@ -44,7 +44,7 @@
 namespace lbcrypto {
 
 class LeveledSHEBGVRNS : public LeveledSHERNS {
-public:
+  public:
     virtual ~LeveledSHEBGVRNS() = default;
 
     /////////////////////////////////////
@@ -72,11 +72,11 @@ public:
 
     void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
-    void AdjustLevelsAndDepthInPlace(
-            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                     Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    void AdjustLevelsAndDepthToOneInPlace(
-            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

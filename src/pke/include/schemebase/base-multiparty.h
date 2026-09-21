@@ -82,14 +82,14 @@ class KeyPair;
 template <class Element>
 class MultipartyBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
     constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
 
-public:
+  public:
     virtual ~MultipartyBase() = default;
 
     /**
@@ -103,8 +103,8 @@ public:
    * @return key pair including the private for the current party and joined
    * public key
    */
-    virtual KeyPair<Element> MultipartyKeyGen(
-            CryptoContext<Element> cc, const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse);
+    virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc,
+                                              const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse);
 
     /**
    * Threshold FHE: Generation of a public key derived
@@ -120,8 +120,8 @@ public:
    * @return key pair including the secret share for the current party and
    * joined public key
    */
-    virtual KeyPair<Element> MultipartyKeyGen(
-            CryptoContext<Element> cc, const PublicKey<Element> publicKey, bool makeSparse, bool fresh);
+    virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc, const PublicKey<Element> publicKey,
+                                              bool makeSparse, bool fresh);
 
     /**
    * Threshold FHE: Generates a joined evaluation key
@@ -134,7 +134,8 @@ public:
    * @return the new joined evaluation key.
    */
     virtual EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-            const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const;
+                                               const PrivateKey<Element> newPrivateKey,
+                                               const EvalKey<Element> evalKey) const;
 
     /**
    * Threshold FHE: Generates joined automorphism keys
@@ -188,8 +189,8 @@ public:
    * @param ciphertext ciphertext that is being decrypted.
    * @param privateKey secret key share used for decryption.
    */
-    virtual Ciphertext<Element> MultipartyDecryptMain(
-            ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey) const;
+    virtual Ciphertext<Element> MultipartyDecryptMain(ConstCiphertext<Element> ciphertext,
+                                                      const PrivateKey<Element> privateKey) const;
 
     /**
    * Threshold FHE: Method for decryption operation run by the lead decryption
@@ -198,8 +199,8 @@ public:
    * @param ciphertext ciphertext id decrypted.
    * @param privateKey secret key share used for decryption.
    */
-    virtual Ciphertext<Element> MultipartyDecryptLead(
-            ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey) const;
+    virtual Ciphertext<Element> MultipartyDecryptLead(ConstCiphertext<Element> ciphertext,
+                                                      const PrivateKey<Element> privateKey) const;
 
     /**
    * Threshold FHE: Method for combining the partially decrypted ciphertexts
@@ -209,8 +210,8 @@ public:
    * @param *plaintext the plaintext output as a NativePoly.
    * @return the decoding result.
    */
-    virtual DecryptResult MultipartyDecryptFusion(
-            const std::vector<Ciphertext<Element>>& ciphertextVec, NativePoly* plaintext) const;
+    virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
+                                                  NativePoly* plaintext) const;
 
     /**
    * Threshold FHE: Method for combining the partially decrypted ciphertexts
@@ -220,8 +221,8 @@ public:
    * @param *plaintext the plaintext output as a Poly.
    * @return the decoding result.
    */
-    virtual DecryptResult MultipartyDecryptFusion(
-            const std::vector<Ciphertext<Element>>& ciphertextVec, Poly* plaintext) const {
+    virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
+                                                  Poly* plaintext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -315,8 +316,8 @@ public:
        * @param ciphertext: input ciphertext
        * @return: Resulting masked decryption
        */
-    virtual Ciphertext<Element> IntBootDecrypt(
-            const PrivateKey<Element> privateKey, ConstCiphertext<Element> ciphertext) const {
+    virtual Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
+                                               ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -330,8 +331,8 @@ public:
        * @param ciphertext: input ciphertext
        * @return: Resulting encryption
        */
-    virtual Ciphertext<Element> IntBootEncrypt(
-            const PublicKey<Element> publicKey, ConstCiphertext<Element> ciphertext) const {
+    virtual Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
+                                               ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -344,8 +345,8 @@ public:
        * @param ciphertext2: unencrypted masked decryption
        * @return: Refreshed ciphertext
        */
-    virtual Ciphertext<Element> IntBootAdd(
-            ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    virtual Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1,
+                                           ConstCiphertext<Element> ciphertext2) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -365,12 +366,12 @@ public:
     * @param publicKey: the scheme public key (you can also provide the lead party's public-key)
     * @return: Resulting ring element
     */
-    virtual Ciphertext<Element> IntMPBootRandomElementGen(
-            std::shared_ptr<CryptoParametersCKKSRNS> params, const PublicKey<Element> publicKey) const {
+    virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                          const PublicKey<Element> publicKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
-    virtual Ciphertext<Element> IntMPBootRandomElementGen(
-            std::shared_ptr<CryptoParametersCKKSRNS> params, ConstCiphertext<Element>& ciphertext) const {
+    virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+                                                          ConstCiphertext<Element>& ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -384,7 +385,8 @@ public:
     * @return: Resulting masked decryption
     */
     virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
-            ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const {
+                                                              ConstCiphertext<Element> ciphertext,
+                                                              ConstCiphertext<Element> a) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -415,8 +417,9 @@ public:
     * @return: Resulting encryption
     */
     virtual Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
-            const std::vector<Ciphertext<Element>>& sharesPair, ConstCiphertext<Element> a,
-            ConstCiphertext<Element> ciphertext) const {
+                                                 const std::vector<Ciphertext<Element>>& sharesPair,
+                                                 ConstCiphertext<Element> a,
+                                                 ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 

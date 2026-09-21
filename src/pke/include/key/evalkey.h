@@ -54,7 +54,7 @@ template <class Element>
 class EvalKeyImpl : public Key<Element> {
     constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
 
-public:
+  public:
     /**
    * Basic constructor for setting crypto params
    *

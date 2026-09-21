@@ -60,10 +60,13 @@ constexpr uint32_t CYCLOTOMIC_ORDER = 8;
 // the range of Signed is dropped rather than truncated into a different value.
 template <typename Signed>
 std::vector<std::vector<Signed>> SignedCases(int64_t modulus) {
-    constexpr int64_t lowest  = static_cast<int64_t>(std::numeric_limits<Signed>::min());
+    constexpr int64_t lowest = static_cast<int64_t>(std::numeric_limits<Signed>::min());
     constexpr int64_t highest = static_cast<int64_t>(std::numeric_limits<Signed>::max());
     const std::vector<std::vector<int64_t>> candidates{{lowest, lowest + 1, highest, -1},
-            {-modulus, modulus, -2 * modulus, 2 * modulus}, {-modulus - 1, modulus + 1, 0, 1, 42}, {lowest}, {}};
+                                                       {-modulus, modulus, -2 * modulus, 2 * modulus},
+                                                       {-modulus - 1, modulus + 1, 0, 1, 42},
+                                                       {lowest},
+                                                       {}};
     std::vector<std::vector<Signed>> cases;
     cases.reserve(candidates.size());
     for (const auto& candidate : candidates) {
@@ -87,7 +90,7 @@ int64_t ExpectedResidue(int64_t value, int64_t modulus) {
 // away from the parameters the element was built with.
 template <typename Element, typename Signed>
 void CheckSignedAssignment(Element& poly) {
-    using Integer         = typename Element::Integer;
+    using Integer = typename Element::Integer;
     const int64_t modulus = static_cast<int64_t>(poly.GetModulus().ConvertToInt());
     SCOPED_TRACE("modulus " + std::to_string(modulus));
     for (const auto& values : SignedCases<Signed>(modulus)) {
@@ -175,11 +178,11 @@ void CheckSignedToResidue(uint64_t modulusValue, const std::string& msg) {
     SCOPED_TRACE(msg + ", modulus " + std::to_string(modulusValue));
     const IntType modulus{modulusValue};
     const int64_t signedModulus = static_cast<int64_t>(modulusValue);
-    constexpr int64_t lowest    = std::numeric_limits<int64_t>::min();
-    constexpr int64_t highest   = std::numeric_limits<int64_t>::max();
+    constexpr int64_t lowest = std::numeric_limits<int64_t>::min();
+    constexpr int64_t highest = std::numeric_limits<int64_t>::max();
     // 2^32 + 1 and its negation are wider than a 32-bit destination but reduce to small residues.
     for (int64_t value : {lowest, lowest + 1, highest, int64_t(-4294967297), int64_t(4294967297), -signedModulus,
-                 signedModulus, int64_t(-1), int64_t(0), int64_t(1), int64_t(42)}) {
+                          signedModulus, int64_t(-1), int64_t(0), int64_t(1), int64_t(42)}) {
         SCOPED_TRACE(value);
         const uint64_t expected = static_cast<uint64_t>(ExpectedResidue(value, signedModulus));
         EXPECT_EQ(SignedToResidue(value, modulusValue), expected);

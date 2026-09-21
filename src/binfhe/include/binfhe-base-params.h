@@ -57,7 +57,7 @@ namespace lbcrypto {
  * bootstrapping
  */
 class BinFHECryptoParams : public Serializable {
-public:
+  public:
     BinFHECryptoParams() = default;
 
     /**
@@ -66,8 +66,8 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param rgswparams a shared poiter to an instance of RingGSWCryptoParams
    */
-    BinFHECryptoParams(
-            const std::shared_ptr<LWECryptoParams>& lweparams, const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
+    BinFHECryptoParams(const std::shared_ptr<LWECryptoParams>& lweparams,
+                       const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
         : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {
         auto keyDist = m_LWEParams->GetKeyDist();
         if (keyDist != m_RGSWParams->GetKeyDist())
@@ -119,8 +119,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("lweparams", m_LWEParams));
         ar(::cereal::make_nvp("rgswparams", m_RGSWParams));
@@ -134,7 +134,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // shared pointer to an instance of LWECryptoParams
     std::shared_ptr<LWECryptoParams> m_LWEParams{nullptr};
 

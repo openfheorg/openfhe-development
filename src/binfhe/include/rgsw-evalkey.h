@@ -52,7 +52,7 @@
 namespace lbcrypto {
 
 class RingGSWEvalKeyImpl;
-using RingGSWEvalKey      = std::shared_ptr<RingGSWEvalKeyImpl>;
+using RingGSWEvalKey = std::shared_ptr<RingGSWEvalKeyImpl>;
 using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
 
 /**
@@ -60,7 +60,7 @@ using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
  * ring elements
  */
 class RingGSWEvalKeyImpl : public Serializable {
-public:
+  public:
     RingGSWEvalKeyImpl() = default;
 
     RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) noexcept
@@ -144,8 +144,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("elements", m_elements));
     }
@@ -158,7 +158,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<std::vector<NativePoly>> m_elements;
 };
 

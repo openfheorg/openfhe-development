@@ -54,48 +54,48 @@
 namespace lbcrypto {
 
 using ILNativeParams = ILParamsImpl<NativeInteger>;
-using ILParams       = ILParamsImpl<BigInteger>;
-using Poly           = PolyImpl<BigVector>;
-using NativePoly     = PolyImpl<NativeVector>;
-using DCRTPoly       = DCRTPolyImpl<BigVector>;
+using ILParams = ILParamsImpl<BigInteger>;
+using Poly = PolyImpl<BigVector>;
+using NativePoly = PolyImpl<NativeVector>;
+using DCRTPoly = DCRTPolyImpl<BigVector>;
 
 using ILNativeParams32 = ILParamsImpl<NativeInteger32>;
-using NativePoly32     = PolyImpl<NativeVector32>;
+using NativePoly32 = PolyImpl<NativeVector32>;
 
 #ifdef WITH_BE2
-using M2Params     = ILParamsImpl<M2Integer>;
+using M2Params = ILParamsImpl<M2Integer>;
 using M2DCRTParams = ILDCRTParams<M2Integer>;
-using M2Poly       = PolyImpl<M2Vector>;
-using M2DCRTPoly   = DCRTPolyImpl<M2Vector>;
+using M2Poly = PolyImpl<M2Vector>;
+using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
 #else
-using M2Params     = void;
+using M2Params = void;
 using M2DCRTParams = void;
-using M2Poly       = void;
-using M2DCRTPoly   = void;
+using M2Poly = void;
+using M2DCRTPoly = void;
 #endif
 
 #ifdef WITH_BE4
-using M4Params     = ILParamsImpl<M4Integer>;
+using M4Params = ILParamsImpl<M4Integer>;
 using M4DCRTParams = ILDCRTParams<M4Integer>;
-using M4Poly       = PolyImpl<M4Vector>;
-using M4DCRTPoly   = DCRTPolyImpl<M4Vector>;
+using M4Poly = PolyImpl<M4Vector>;
+using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
 #else
-using M4Params     = void;
+using M4Params = void;
 using M4DCRTParams = void;
-using M4Poly       = void;
-using M4DCRTPoly   = void;
+using M4Poly = void;
+using M4DCRTPoly = void;
 #endif
 
 #ifdef WITH_NTL
-using M6Params     = ILParamsImpl<M6Integer>;
+using M6Params = ILParamsImpl<M6Integer>;
 using M6DCRTParams = ILDCRTParams<M6Integer>;
-using M6Poly       = PolyImpl<M6Vector>;
-using M6DCRTPoly   = DCRTPolyImpl<M6Vector>;
+using M6Poly = PolyImpl<M6Vector>;
+using M6DCRTPoly = DCRTPolyImpl<M6Vector>;
 #else
-using M6Params     = void;
+using M6Params = void;
 using M6DCRTParams = void;
-using M6Poly       = void;
-using M6DCRTPoly   = void;
+using M6Poly = void;
+using M6DCRTPoly = void;
 #endif
 
 }  // namespace lbcrypto

@@ -85,7 +85,7 @@ class SchSwchParams {
         }
     }
 
-public:
+  public:
     friend std::ostream& operator<<(std::ostream& s, const SchSwchParams& obj);
     //=================================================================================================================
     void SetSecurityLevelCKKS(SecurityLevel securityLevelCKKS0) {

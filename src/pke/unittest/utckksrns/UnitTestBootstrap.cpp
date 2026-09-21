@@ -138,8 +138,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_BOOT
 }
 
 //===========================================================================================================
-constexpr uint32_t MULT_DEPTH   = 25;
-constexpr uint32_t RDIM         = 64;
+constexpr uint32_t MULT_DEPTH = 25;
+constexpr uint32_t RDIM = 64;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 
 #if NATIVEINT == 128
@@ -393,8 +393,8 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
 
     // CalculateApproximationError() calculates the precision number (or approximation error).
     // The higher the precision, the less the error.
-    double CalculateApproximationError(
-            const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
+    double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                       const std::vector<std::complex<double>>& expectedResult) {
         if (result.size() != expectedResult.size())
             OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -408,7 +408,7 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         return std::abs(std::log2(maxError));
     }
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -418,8 +418,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_Bootstrap(
-            const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag, const std::string& failmsg = std::string()) {
+    void UnitTest_Bootstrap(const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag,
+                            const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -434,19 +434,17 @@ protected:
             // If CKKSDataType is set to REAL, the imaginary parts are ignored.
             if (testData.slots < 8) {
                 input = Fill({0.1415926 + 0.1415926i}, testData.slots);
-            }
-            else {
-                input = Fill(
-                        {0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
-                                0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
-                        testData.slots);
+            } else {
+                input = Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
+                              0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
+                             testData.slots);
             }
 
             size_t encodedLength = input.size();
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
                     input, 1, MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag, nullptr, testData.slots);
-            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
 
             Plaintext result;
@@ -454,8 +452,8 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                    failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             int32_t rotIndex = (testData.slots < 8) ? 0 : 6;
             if (cc->GetCKKSDataType() == REAL) {
@@ -470,21 +468,19 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
             result6->SetLength(encodedLength);
             checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
-                    failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_Bootstrap_KeySwitching(
-            const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Bootstrap_KeySwitching(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -495,88 +491,86 @@ protected:
             auto keyPair = cc->KeyGen();
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {1});
 
-            double eps                          = 0.00000001;
+            double eps = 0.00000001;
             std::vector<std::complex<double>> a = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
             std::vector<std::complex<double>> b = {0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-            Plaintext plaintext_a               = cc->MakeCKKSPackedPlaintext(a);
-            auto comp_a                         = plaintext_a->GetCKKSPackedValue();
-            Plaintext plaintext_b               = cc->MakeCKKSPackedPlaintext(b);
-            auto comp_b                         = plaintext_b->GetCKKSPackedValue();
+            Plaintext plaintext_a = cc->MakeCKKSPackedPlaintext(a);
+            auto comp_a = plaintext_a->GetCKKSPackedValue();
+            Plaintext plaintext_b = cc->MakeCKKSPackedPlaintext(b);
+            auto comp_b = plaintext_b->GetCKKSPackedValue();
 
             // Test for KeySwitchExt + KeySwitchDown
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
-            ciphertext      = cc->KeySwitchExt(ciphertext, true);
-            ciphertext      = cc->KeySwitchDown(ciphertext);
+            ciphertext = cc->KeySwitchExt(ciphertext, true);
+            ciphertext = cc->KeySwitchDown(ciphertext);
 
             Plaintext result;
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(a.size());
             checkEquality(result->GetCKKSPackedValue(), comp_a, eps,
-                    failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown failed");
+                          failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown failed");
 
             // Test for EvalFastRotationExt
-            ciphertext  = cc->Encrypt(keyPair.publicKey, plaintext_a);
+            ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
             auto digits = cc->EvalFastRotationPrecompute(ciphertext);
-            ciphertext  = cc->EvalFastRotationExt(ciphertext, 1, digits, true);
-            ciphertext  = cc->KeySwitchDown(ciphertext);
+            ciphertext = cc->EvalFastRotationExt(ciphertext, 1, digits, true);
+            ciphertext = cc->KeySwitchDown(ciphertext);
 
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(b.size());
             checkEquality(result->GetCKKSPackedValue(), comp_b, eps,
-                    failmsg + " Bootstrapping for EvalFastRotationExt failed");
+                          failmsg + " Bootstrapping for EvalFastRotationExt failed");
 
             // Test for KeySwitchExt + KeySwitchDown w/o first element
-            ciphertext        = cc->Encrypt(keyPair.publicKey, plaintext_a);
+            ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
             auto firstCurrent = ciphertext->GetElements()[0];
-            ciphertext        = cc->KeySwitchExt(ciphertext, false);
-            ciphertext        = cc->KeySwitchDown(ciphertext);
-            auto elements     = ciphertext->GetElements();
+            ciphertext = cc->KeySwitchExt(ciphertext, false);
+            ciphertext = cc->KeySwitchDown(ciphertext);
+            auto elements = ciphertext->GetElements();
             elements[0] += firstCurrent;
             ciphertext->SetElements(elements);
 
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(a.size());
             checkEquality(result->GetCKKSPackedValue(), comp_a, eps,
-                    failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown w/o first element failed");
+                          failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown w/o first element failed");
 
             // Test for EvalFastRotationExt w/o first element
-            ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext_a);
+            ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
             firstCurrent = ciphertext->GetElements()[0];
             // Find the automorphism index that corresponds to rotation index index.
             uint32_t autoIndex = FindAutomorphismIndex2nComplex(1, 4096);
             std::vector<uint32_t> map(4096 / 2);
             PrecomputeAutoMap(4096 / 2, autoIndex, &map);
             firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
-            digits       = cc->EvalFastRotationPrecompute(ciphertext);
-            ciphertext   = cc->EvalFastRotationExt(ciphertext, 1, digits, false);
-            ciphertext   = cc->KeySwitchDown(ciphertext);
-            elements     = ciphertext->GetElements();
+            digits = cc->EvalFastRotationPrecompute(ciphertext);
+            ciphertext = cc->EvalFastRotationExt(ciphertext, 1, digits, false);
+            ciphertext = cc->KeySwitchDown(ciphertext);
+            elements = ciphertext->GetElements();
             elements[0] += firstCurrent;
             ciphertext->SetElements(elements);
 
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(b.size());
             checkEquality(result->GetCKKSPackedValue(), comp_b, eps,
-                    failmsg + " Bootstrapping for EvalFastRotationExt w/o first element failed");
-        }
-        catch (std::exception& e) {
+                          failmsg + " Bootstrapping for EvalFastRotationExt w/o first element failed");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_Bootstrap_Iterative(
-            const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag, const std::string& failmsg = std::string()) {
+    void UnitTest_Bootstrap_Iterative(const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag,
+                                      const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             // For small ring dimensions like the ones tested, the correction factor for StC-first should be small, e.g., 10.
-            cc->EvalBootstrapSetup(
-                    testData.levelBudget, testData.dim1, testData.slots, (StCFlag) ? 10 : 0, true, StCFlag);
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, (StCFlag) ? 10 : 0, true,
+                                   StCFlag);
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
@@ -584,16 +578,15 @@ protected:
             cc->EvalMultKeyGen(keyPair.secretKey);
 
             // If CKKSDataType is set to REAL, the imaginary parts are ignored.
-            auto input(Fill(
-                    {0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
-                            0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
-                    testData.slots));
+            auto input(Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
+                             0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
+                            testData.slots));
 
             size_t encodedLength = input.size();
 
             Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
                     input, 1, MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag, nullptr, testData.slots);
-            auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
 
             Plaintext result;
@@ -607,7 +600,7 @@ protected:
             precision -= precisionBuffer;
 
             // Add numIterations as a parameter.
-            uint32_t numIterations       = 2;
+            uint32_t numIterations = 2;
             auto ciphertextTwoIterations = cc->EvalBootstrap(ciphertext, numIterations, precision);
 
             Plaintext resultTwoIterations;
@@ -615,8 +608,8 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult = resultTwoIterations->GetCKKSPackedValue();
             checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps,
-                    failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+                          failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
             double precisionMultipleIterations =
                     CalculateApproximationError(actualResult, plaintext->GetCKKSPackedValue());
 
@@ -639,21 +632,19 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
             result6->SetLength(encodedLength);
             checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
-                    failmsg + " EvalAtIndex after Bootstrapping for ciphertexts fails for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalAtIndex after Bootstrapping for ciphertexts fails for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_Bootstrap_NumTowers(
-            const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag, const std::string& failmsg = std::string()) {
+    void UnitTest_Bootstrap_NumTowers(const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag,
+                                      const std::string& failmsg = std::string()) {
         // This test checks to make sure that we return the original ciphertext if we
         // start with more towers than the number of towers we would end up with by
         // bootstrapping.
@@ -667,16 +658,16 @@ protected:
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto input(Fill(
-                    {0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
+            auto input(Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
+                            testData.slots));
             size_t encodedLength = input.size();
 
             // We start with a ciphertext with 0 levels consumed.
-            Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input);
-            auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
 
-            auto initNumTowers          = ciphertext->GetElements()[0].GetNumOfElements();
+            auto initNumTowers = ciphertext->GetElements()[0].GetNumOfElements();
             auto bootstrappingNumTowers = ciphertextAfter->GetElements()[0].GetNumOfElements();
             // Check to make sure we don't lose any towers.
             EXPECT_EQ(initNumTowers, bootstrappingNumTowers);
@@ -686,10 +677,10 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult = result->GetCKKSPackedValue();
             checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps,
-                    failmsg + " Bootstrapping failed for " + ((StCFlag) ? "StC-first" : "ModRaise-first") +
-                            " version.");
+                          failmsg + " Bootstrapping failed for " + ((StCFlag) ? "StC-first" : "ModRaise-first") +
+                                  " version.");
 
-            auto ciphertextTwoIterations             = cc->EvalBootstrap(ciphertext);
+            auto ciphertextTwoIterations = cc->EvalBootstrap(ciphertext);
             auto bootstrappingNumTowersTwoIterations = ciphertextTwoIterations->GetElements()[0].GetNumOfElements();
             // Check to make sure we don't lose any towers with double-iteration bootstrapping.
             EXPECT_EQ(initNumTowers, bootstrappingNumTowersTwoIterations);
@@ -699,21 +690,19 @@ protected:
             result->SetLength(encodedLength);
             auto actualResult2 = result2->GetCKKSPackedValue();
             checkEquality(actualResult2, plaintext->GetCKKSPackedValue(), eps,
-                    failmsg + " Bootstrapping with two iterations failed for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
-        }
-        catch (std::exception& e) {
+                          failmsg + " Bootstrapping with two iterations failed for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_Bootstrap_Serialize(
-            const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag, const std::string& failmsg = std::string()) {
+    void UnitTest_Bootstrap_Serialize(const TEST_CASE_UTCKKSRNS_BOOT& testData, const bool StCFlag,
+                                      const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -765,15 +754,14 @@ protected:
             cc->EvalBootstrapPrecompute(testData.slots / 2);
             //====================================================================================================
             // If CKKSDataType is set to REAL, the imaginary parts are ignored.
-            auto input(Fill(
-                    {0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
-                            0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
-                    testData.slots));
+            auto input(Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i,
+                             0.555555 + 0.555555i, 0.666666 - 0.444444i, 0.777777 + 0.333333i, 0.888888 - 0.222222i},
+                            testData.slots));
             size_t encodedLength = input.size();
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(
                     input, 1, MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag, nullptr, testData.slots);
-            auto ciphertext1      = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext1After = cc->EvalBootstrap(ciphertext1);
 
             Plaintext result;
@@ -781,34 +769,32 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                    failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
 
             //====================================================================================================
             auto input2(Fill({0.111111 + 0.999999i, 0.222222 - 0.888888i, 0.333333 + 0.777777i, 0.444444 - 0.666666i},
-                    testData.slots / 2));
+                             testData.slots / 2));
             size_t encodedLength2 = input2.size();
 
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(
                     input2, 1, MULT_DEPTH - 1 - testData.levelBudget[1] * StCFlag, nullptr, testData.slots / 2);
-            auto ciphertext2      = cc->Encrypt(keyPair.publicKey, plaintext2);
+            auto ciphertext2 = cc->Encrypt(keyPair.publicKey, plaintext2);
             auto ciphertext2After = cc->EvalBootstrap(ciphertext2);
 
             cc->Decrypt(keyPair.secretKey, ciphertext2After, &result);
             result->SetLength(encodedLength2);
             plaintext2->SetLength(encodedLength2);
             checkEquality(result->GetCKKSPackedValue(), plaintext2->GetCKKSPackedValue(), eps,
-                    failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
-                            ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails for " +
+                                  ((StCFlag) ? "StC-first" : "ModRaise-first") + " version.");
             //====================================================================================================
             EXPECT_TRUE(1 == 1) << failmsg;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -823,11 +809,11 @@ protected:
                     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
 
             std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 0.375, 0.675, 0.125, 0.925};
-            size_t encodedLength  = x.size();
+            size_t encodedLength = x.size();
 
             // We start with a depleted ciphertext that has used up all of its levels.
             auto depth = cryptoParams->GetMultiplicativeDepth();
-            auto ptxt  = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1);
+            auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1);
             ptxt->SetLength(encodedLength);
             auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
 
@@ -848,14 +834,12 @@ protected:
             cc->Decrypt(skNew, ctresult, &result);
             result->SetLength(8);
 
-            checkEquality(
-                    ptxt->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps, failmsg + " input/output mismatch");
-        }
-        catch (std::exception& e) {
+            checkEquality(ptxt->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
+                          failmsg + " input/output mismatch");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

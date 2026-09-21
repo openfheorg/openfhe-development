@@ -47,7 +47,7 @@
 using namespace lbcrypto;
 
 void printPrimeModuliChain(const DCRTPoly& poly) {
-    int num_primes       = poly.GetNumOfElements();
+    int num_primes = poly.GetNumOfElements();
     double total_bit_len = 0.0;
     for (int i = 0; i < num_primes; i++) {
         auto qi = poly.GetParams()->GetParams()[i]->GetModulus();
@@ -59,9 +59,9 @@ void printPrimeModuliChain(const DCRTPoly& poly) {
 }
 
 double getScaleApproxError(const DCRTPoly& poly, uint32_t numPrimes, uint32_t compositeDegree, uint32_t firstModSize,
-        uint32_t scalingModSize) {
+                           uint32_t scalingModSize) {
     double delta0 = std::pow(2.0, static_cast<double>(firstModSize));
-    double delta  = std::pow(2.0, static_cast<double>(scalingModSize));
+    double delta = std::pow(2.0, static_cast<double>(scalingModSize));
     // uint32_t numPrimes = poly.GetNumOfElements();
     auto q = poly.GetParams()->GetParams();
 
@@ -107,14 +107,14 @@ int main(int argc, char* argv[]) {
     // uint32_t scalingModSize   = 104;
     // uint32_t registerWordSize = 32;
     // Parameters for d=3
-    uint32_t firstModSize     = 96;
-    uint32_t scalingModSize   = 80;
+    uint32_t firstModSize = 96;
+    uint32_t scalingModSize = 80;
     uint32_t registerWordSize = 32;
 
     std::cout << "\n======EXAMPLE FOR EVALPOLY========\n" << std::endl;
 
     uint32_t multDepth = 6;
-    int argcCount      = 1;
+    int argcCount = 1;
     if (argc > 1) {
         while (argcCount < argc) {
             uint32_t paramValue = atoi(argv[argcCount]);
@@ -143,8 +143,7 @@ int main(int argc, char* argv[]) {
         }
 
         std::cout << "Completed reading input parameters!" << std::endl;
-    }
-    else {
+    } else {
         std::cout << "Using default parameters" << std::endl;
         std::cout << "First Mod Size: " << firstModSize << std::endl;
         std::cout << "Scaling Mod Size: " << scalingModSize << std::endl;
@@ -169,7 +168,7 @@ int main(int argc, char* argv[]) {
     cc->Enable(ADVANCEDSHE);
 
     const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    uint32_t compositeDegree       = cryptoParamsCKKSRNS->GetCompositeDegree();
+    uint32_t compositeDegree = cryptoParamsCKKSRNS->GetCompositeDegree();
 
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Composite Degree: " << compositeDegree << "\nPrime Moduli Size: "
@@ -182,8 +181,9 @@ int main(int argc, char* argv[]) {
     size_t encodedLength = input.size();
 
     std::vector<double> coefficients1({0.15, 0.75, 0, 1.25, 0, 0, 1, 0, 1, 2, 0, 1, 0, 0, 0, 0, 1});
-    std::vector<double> coefficients2({1, 2, 3, 4, 5, -1, -2, -3, -4, -5, 0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3,
-            -0.4, -0.5, 0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
+    std::vector<double> coefficients2({1,   2,   3,   4,   5,   -1,   -2,   -3,   -4,   -5,
+                                       0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5,
+                                       0.1, 0.2, 0.3, 0.4, 0.5, -0.1, -0.2, -0.3, -0.4, -0.5});
 
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
 
@@ -197,8 +197,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Moduli chain of pk: " << std::endl;
     printPrimeModuliChain(ckkspk[0]);
 
-    double avgScaleError = getScaleApproxError(
-            ckkspk[0], (multDepth + 1) * compositeDegree, compositeDegree, firstModSize, scalingModSize);
+    double avgScaleError = getScaleApproxError(ckkspk[0], (multDepth + 1) * compositeDegree, compositeDegree,
+                                               firstModSize, scalingModSize);
     std::cout << "Average Scale Error: " << avgScaleError << std::endl;
 
     auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);

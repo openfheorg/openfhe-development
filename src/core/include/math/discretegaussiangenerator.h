@@ -85,7 +85,7 @@ constexpr double KARNEY_THRESHOLD = 300.0;
  */
 template <typename VecType>
 class DiscreteGaussianGeneratorImpl {
-public:
+  public:
     /**
    * @brief         Basic constructor for specifying distribution parameter and
    * modulus.
@@ -160,8 +160,8 @@ public:
    * param modulus modulus
    * @return A random value within this Discrete Gaussian Distribution.
    */
-    typename VecType::Integer GenerateInteger(
-            double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const;
+    typename VecType::Integer GenerateInteger(double mean, double stddev, size_t n,
+                                              const typename VecType::Integer& modulus) const;
 
     /**
    * @brief  Returns a generated integer. Uses rejection method.
@@ -191,7 +191,7 @@ public:
     static int64_t GenerateIntegerKarney(double mean, double stddev);
     static int64_t GenerateIntegerKarney(double mean, double stddev, PRNG& g);
 
-private:
+  private:
     // Gyana to add precomputation methods and data members
     // all parameters are set as int because it is assumed that they are used for
     // generating "small" polynomials only

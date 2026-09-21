@@ -44,7 +44,7 @@ namespace {
 // when it goes out of scope, so a failing expectation cannot leave the channels
 // pointing at a destroyed stream.
 class ScopedDiagnosticCapture {
-public:
+  public:
     ScopedDiagnosticCapture() : m_previousErr(SetOpenFHEErrStream(m_err)), m_previousOut(SetOpenFHEOutStream(m_out)) {}
 
     ~ScopedDiagnosticCapture() {
@@ -59,7 +59,7 @@ public:
         return m_out.str();
     }
 
-private:
+  private:
     std::ostringstream m_err;
     std::ostringstream m_out;
     std::ostream& m_previousErr;

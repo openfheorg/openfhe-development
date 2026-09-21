@@ -42,7 +42,7 @@ using namespace lbcrypto;
 
 namespace {
 class UTCKKSRNS_INNERPRODUCT : public ::testing::Test {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -52,7 +52,7 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-public:
+  public:
 };
 
 enum TEST_ESTIMATED_RESULT { SUCCESS, FAILURE };
@@ -74,9 +74,9 @@ T plainInnerProduct(std::vector<T> vec) {
 // in power of 2 cyclotomics.
 double CKKSrnsInnerProduct(const std::vector<double> testVec) {
     lbcrypto::SecurityLevel securityLevel = lbcrypto::HEStd_NotSet;
-    uint32_t dcrtBits                     = 59;
-    uint32_t ringDim                      = 1 << 8;
-    uint32_t batchSize                    = ringDim / 2;
+    uint32_t dcrtBits = 59;
+    uint32_t ringDim = 1 << 8;
+    uint32_t batchSize = ringDim / 2;
     lbcrypto::CCParams<lbcrypto::CryptoContextCKKSRNS> parameters;
     uint32_t multDepth = 10;
 
@@ -98,8 +98,8 @@ double CKKSrnsInnerProduct(const std::vector<double> testVec) {
     cc->EvalSumKeyGen(keys.secretKey);
 
     Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(testVec);
-    auto ct1             = cc->Encrypt(keys.publicKey, plaintext1);
-    auto finalResult     = cc->EvalInnerProduct(ct1, ct1, batchSize);
+    auto ct1 = cc->Encrypt(keys.publicKey, plaintext1);
+    auto finalResult = cc->EvalInnerProduct(ct1, ct1, batchSize);
     lbcrypto::Plaintext res;
     cc->Decrypt(keys.secretKey, finalResult, &res);
     res->SetLength(testVec.size());

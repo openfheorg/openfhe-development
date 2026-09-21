@@ -110,8 +110,8 @@ inline bool is64BitOverflow(double d) {
 
 #if NATIVEINT == 128
 inline constexpr __int128 Max128BitValue() {
-    return static_cast<int128_t>(
-            (static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) - static_cast<uint128_t>(1));
+    return static_cast<int128_t>((static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) -
+                                 static_cast<uint128_t>(1));
 }
 
 inline bool is128BitOverflow(double d) {
@@ -129,9 +129,9 @@ enum { MAX_DOUBLE_PRECISION = 52 };
  * @return value modulo modulus, in [0, modulus).
  */
 inline uint64_t SignedToResidue(int64_t value, uint64_t modulus) {
-    const bool negative      = value < 0;
+    const bool negative = value < 0;
     const uint64_t magnitude = negative ? uint64_t(0) - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
-    const uint64_t residue   = (magnitude < modulus) ? magnitude : magnitude % modulus;
+    const uint64_t residue = (magnitude < modulus) ? magnitude : magnitude % modulus;
     return (negative && residue != 0) ? modulus - residue : residue;
 }
 

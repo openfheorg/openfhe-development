@@ -114,11 +114,11 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SER&
  *        Use small values (3-4?) if you need rotations before any multiplications.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM   = 32;
-constexpr uint32_t SMODSIZE   = 50;
+constexpr uint32_t RING_DIM = 32;
+constexpr uint32_t SMODSIZE = 50;
 constexpr uint32_t MULT_DEPTH = 3;
-constexpr uint32_t DSIZE      = 20;
-constexpr uint32_t BATCH      = 16;
+constexpr uint32_t DSIZE = 20;
+constexpr uint32_t BATCH = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,  EncTech, PREMode
@@ -173,10 +173,10 @@ static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
 // clang-format on
 //===========================================================================================================
 class UTCKKSRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_SER> {
-    using Element    = DCRTPoly;
+    using Element = DCRTPoly;
     const double eps = EPSILON;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -196,8 +196,8 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(
-            const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -240,10 +240,10 @@ protected:
             }
             OPENFHE_DEBUG("step 3");
             std::vector<std::complex<double>> vals = {1.0, 3.0, 5.0, 7.0, 9.0, 2.0, 4.0, 6.0, 8.0, 11.0};
-            Plaintext plaintextShort               = cc->MakeCKKSPackedPlaintext(vals);
-            Plaintext plaintextShortL2D2           = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
-            Ciphertext<DCRTPoly> ciphertext        = cc->Encrypt(kp.publicKey, plaintextShort);
-            Ciphertext<DCRTPoly> ciphertextL2D2    = cc->Encrypt(kp.publicKey, plaintextShortL2D2);
+            Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
+            Plaintext plaintextShortL2D2 = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
+            Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
+            Ciphertext<DCRTPoly> ciphertextL2D2 = cc->Encrypt(kp.publicKey, plaintextShortL2D2);
 
             OPENFHE_DEBUG("step 4");
             Ciphertext<DCRTPoly> newC;
@@ -267,9 +267,9 @@ protected:
             plaintextShortNew->SetLength(plaintextShort->GetLength());
             plaintextShortNewL2D2->SetLength(plaintextShortL2D2->GetLength());
             checkEquality(plaintextShortNew->GetCKKSPackedValue(), plaintextShort->GetCKKSPackedValue(), eps,
-                    failmsg + " Decrypted serialization test fails");
+                          failmsg + " Decrypted serialization test fails");
             checkEquality(plaintextShortNewL2D2->GetCKKSPackedValue(), plaintextShortL2D2->GetCKKSPackedValue(), eps,
-                    failmsg + " Decrypted serialization test fails (level 2, depth 2)");
+                          failmsg + " Decrypted serialization test fails (level 2, depth 2)");
 
             OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
@@ -366,27 +366,25 @@ protected:
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
-    void UnitTestKeysAndCiphertexts(
-            const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData,
+                                    const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
 
     template <typename ST>
-    void TestDecryptionSerNoCRTTables(
-            const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype,
+                                      const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -398,8 +396,8 @@ protected:
             KeyPair<Element> kp = cc->KeyGen();
 
             std::vector<std::complex<double>> vals = {1.0, 3.0, 5.0, 7.0, 9.0, 2.0, 4.0, 6.0, 8.0, 11.0};
-            Plaintext plaintextShort               = cc->MakeCKKSPackedPlaintext(vals);
-            Ciphertext<DCRTPoly> ciphertext        = cc->Encrypt(kp.publicKey, plaintextShort);
+            Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
+            Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
 
             std::stringstream s;
             Serial::Serialize(cc, s, sertype);
@@ -437,27 +435,25 @@ protected:
             cc->Decrypt(kp.secretKey, newC, &result);
             result->SetLength(plaintextShort->GetLength());
             checkEquality(plaintextShort->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
-                    failmsg + " Decryption Failed");
+                          failmsg + " Decryption Failed");
 
             EnablePrecomputeCRTTablesAfterDeserializaton();
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
-    void UnitTestDecryptionSerNoCRTTables(
-            const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {
+    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData,
+                                          const std::string& failmsg = std::string()) {
         TestDecryptionSerNoCRTTables(testData, SerType::JSON, "json");
         TestDecryptionSerNoCRTTables(testData, SerType::BINARY, "binary");
     }

@@ -42,7 +42,7 @@ namespace lbcrypto {
 class DataAndLocation {
     std::string getDataDir();
 
-protected:
+  protected:
     CryptoContext<DCRTPoly> cryptoContext{nullptr};
     PublicKey<DCRTPoly> publicKey{nullptr};
     std::shared_ptr<lbcrypto::BinFHEContext> binFHECryptoContext{nullptr};
@@ -50,32 +50,32 @@ protected:
     Ciphertext<DCRTPoly> RAWCiphertext{nullptr};
 
     // Save-Load locations
-    std::string dataDirectory                 = "demoData";
-    const std::string cryptoContextFile       = "cryptocontext.txt";
-    const std::string pubKeyFile              = "key_pub.txt";
-    const std::string multKeyFile             = "key_mult.txt";
-    const std::string rotKeyFile              = "key_rot.txt";
+    std::string dataDirectory = "demoData";
+    const std::string cryptoContextFile = "cryptocontext.txt";
+    const std::string pubKeyFile = "key_pub.txt";
+    const std::string multKeyFile = "key_mult.txt";
+    const std::string rotKeyFile = "key_rot.txt";
     const std::string FHEWtoCKKSSwitchKeyFile = "key_switch_fhew_ckks.txt";
-    const std::string ciphertextFile          = "ciphertext.txt";  // RAW ciphertext
+    const std::string ciphertextFile = "ciphertext.txt";  // RAW ciphertext
     const std::string binFHECryptoContextFile = "binfhe_cryptocontext.txt";
-    const std::string binFHEBootKeyFile       = "key_binfhe_boot.txt";
-    const std::string baseBTKeyFile           = "key_bt.txt";
-    const std::string keyIndexFile            = "key_indices.txt";
+    const std::string binFHEBootKeyFile = "key_binfhe_boot.txt";
+    const std::string baseBTKeyFile = "key_bt.txt";
+    const std::string keyIndexFile = "key_indices.txt";
 
     std::string createMapFileName(uint32_t index, const std::string& baseFileName) {
         return std::string(dataDirectory) + "/" + std::to_string(index) + "_" + baseFileName;
     }
 
     DataAndLocation() = default;
-    DataAndLocation(
-            CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
+    DataAndLocation(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
+                    Ciphertext<DCRTPoly> RAWCiphertext0)
         : cryptoContext(cryptoContext0),
           publicKey(publicKey0),
           binFHECryptoContext(cryptoContext0->GetBinCCForSchemeSwitch()),
           FHEWtoCKKSSwitchKey(cryptoContext0->GetSwkFC()),
           RAWCiphertext(RAWCiphertext0) {}
 
-public:
+  public:
     void SetDataDirectory(const std::string& dir) {
         if (dir.empty()) {
             OPENFHE_THROW("dir is an empty string");
@@ -90,16 +90,16 @@ public:
 };
 
 class SchemeSwitchingDataSerializer : public DataAndLocation {
-public:
-    SchemeSwitchingDataSerializer(
-            CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0, Ciphertext<DCRTPoly> RAWCiphertext0)
+  public:
+    SchemeSwitchingDataSerializer(CryptoContext<DCRTPoly> cryptoContext0, PublicKey<DCRTPoly> publicKey0,
+                                  Ciphertext<DCRTPoly> RAWCiphertext0)
         : DataAndLocation(cryptoContext0, publicKey0, RAWCiphertext0) {}
 
     void Serialize();
 };
 
 class SchemeSwitchingDataDeserializer : public DataAndLocation {
-public:
+  public:
     SchemeSwitchingDataDeserializer() = default;
 
     CryptoContext<DCRTPoly> getCryptoContext() {

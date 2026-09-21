@@ -71,13 +71,13 @@ int main() {
 
     // First plaintext vector is encoded
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
     // Second plaintext vector is encoded
     std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
     // Third plaintext vector is encoded
     std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
+    Plaintext plaintext3 = cryptoContext->MakePackedPlaintext(vectorOfInts3);
 
     // The encoded vectors are encrypted
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
@@ -87,13 +87,13 @@ int main() {
     // Sample Program: Step 4 - Evaluation
 
     // Homomorphic additions
-    auto ciphertextAdd12     = cryptoContext->EvalAdd(ciphertext1, ciphertext2);
+    auto ciphertextAdd12 = cryptoContext->EvalAdd(ciphertext1, ciphertext2);
     auto ciphertextAddResult = cryptoContext->EvalAdd(ciphertextAdd12, ciphertext3);
 
     // Homomorphic multiplications
     // modulus switching is done automatically because by default the modulus
     // switching method is set to AUTO (rather than MANUAL)
-    auto ciphertextMul12      = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+    auto ciphertextMul12 = cryptoContext->EvalMult(ciphertext1, ciphertext2);
     auto ciphertextMultResult = cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
     // Homomorphic rotations
     auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);

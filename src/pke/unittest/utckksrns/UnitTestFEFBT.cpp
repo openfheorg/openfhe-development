@@ -153,31 +153,31 @@ constexpr uint32_t MULT_DEPTH = 26;
 constexpr uint32_t REG_WORD_SIZE = 32;
 
 #if NATIVEINT != 128
-constexpr uint32_t RDIM         = 1 << 12;
+constexpr uint32_t RDIM = 1 << 12;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 constexpr uint32_t SPARSE_SLOTS = 8;
-constexpr uint32_t SMODSIZE     = 59;
-constexpr uint32_t FMODSIZE     = 60;
+constexpr uint32_t SMODSIZE = 59;
+constexpr uint32_t FMODSIZE = 60;
 // composite degree 3 for the 32-bit register word size (three ~26-bit primes per level); FE functional
 // bootstrapping requires the first modulus to be exactly one bit larger than the scaling factor
 constexpr uint32_t SMODSIZED3 = 78;
 constexpr uint32_t FMODSIZED3 = 79;
 
 UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd, ScalingTechnique scalingTechnique = FIXEDMANUAL,
-        uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
+                                 uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
     UnitTestCCParams params;
-    params.schemeId            = CKKSRNS_SCHEME;
-    params.ringDimension       = RDIM;
+    params.schemeId = CKKSRNS_SCHEME;
+    params.ringDimension = RDIM;
     params.multiplicativeDepth = MULT_DEPTH;
-    params.scalingModSize      = scalingModSize;
-    params.batchSize           = batchSize;
-    params.secretKeyDist       = skd;
-    params.firstModSize        = firstModSize;
-    params.securityLevel       = HEStd_NotSet;
-    params.ksTech              = HYBRID;
-    params.scalTech            = scalingTechnique;
-    params.numLargeDigits      = NUM_LRG_DIGS;
-    params.ckksDataType        = REAL;
+    params.scalingModSize = scalingModSize;
+    params.batchSize = batchSize;
+    params.secretKeyDist = skd;
+    params.firstModSize = firstModSize;
+    params.securityLevel = HEStd_NotSet;
+    params.ksTech = HYBRID;
+    params.scalTech = scalingTechnique;
+    params.numLargeDigits = NUM_LRG_DIGS;
+    params.ckksDataType = REAL;
     if (scalingTechnique == COMPOSITESCALINGAUTO || scalingTechnique == COMPOSITESCALINGMANUAL) {
         params.registerWordSize = REG_WORD_SIZE;
         if (scalingTechnique == COMPOSITESCALINGMANUAL)
@@ -188,16 +188,17 @@ UnitTestCCParams MakeFEFBTParams(uint32_t batchSize, SecretKeyDist skd, ScalingT
 }
 
 TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::string& description, uint32_t batchSize,
-        SecretKeyDist skd, uint32_t slots, FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget = {3, 2},
-        ScalingTechnique scalingTechnique = FIXEDMANUAL, uint32_t scalingModSize = SMODSIZE,
-        uint32_t firstModSize = FMODSIZE) {
+                                        SecretKeyDist skd, uint32_t slots, FEFBT_FUNCTION functionType,
+                                        std::vector<uint32_t> levelBudget = {3, 2},
+                                        ScalingTechnique scalingTechnique = FIXEDMANUAL,
+                                        uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase;
     testCase.testCaseType = testCaseType;
-    testCase.description  = description;
-    testCase.params       = MakeFEFBTParams(batchSize, skd, scalingTechnique, scalingModSize, firstModSize);
-    testCase.levelBudget  = std::move(levelBudget);
-    testCase.dim1         = {0, 0};
-    testCase.slots        = slots;
+    testCase.description = description;
+    testCase.params = MakeFEFBTParams(batchSize, skd, scalingTechnique, scalingModSize, firstModSize);
+    testCase.levelBudget = std::move(levelBudget);
+    testCase.dim1 = {0, 0};
+    testCase.slots = slots;
     testCase.functionType = functionType;
 
     return testCase;
@@ -207,7 +208,8 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::
 // COMPOSITESCALINGAUTO, and the CS precision must come within gapTolBits of the FA precision (the analog of
 // the FBT_NOISE_VS_FLEXIBLE rows of UnitTestFBT and of UnitTestCKKSrnsCompositeScalingVsFlexible).
 TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCSvsFACase(const std::string& description, uint32_t slots, SecretKeyDist skd,
-        FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget, double gapTolBits) {
+                                              FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget,
+                                              double gapTolBits) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase =
             MakeFEFBTCase(FEFBT_CS_VS_FA, description, slots, skd, slots, functionType, std::move(levelBudget));
     testCase.gapTolBits = gapTolBits;
@@ -217,9 +219,9 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCSvsFACase(const std::string& description, ui
 // A CKKSDataType COMPLEX case: the input carries nonzero imaginary parts, which FE functional
 // bootstrapping discards (its output is twice the real part of a Fourier series, hence always real).
 TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTComplexInputCase(const std::string& description, uint32_t slots,
-        FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget) {
-    TEST_CASE_UTCKKSRNS_FEFBT testCase = MakeFEFBTCase(
-            FEFBT_COMPLEX_INPUT, description, slots, SPARSE_TERNARY, slots, functionType, std::move(levelBudget));
+                                                    FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget) {
+    TEST_CASE_UTCKKSRNS_FEFBT testCase = MakeFEFBTCase(FEFBT_COMPLEX_INPUT, description, slots, SPARSE_TERNARY, slots,
+                                                       functionType, std::move(levelBudget));
     testCase.params.ckksDataType = COMPLEX;
     return testCase;
 }
@@ -422,7 +424,7 @@ class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFB
 
     static constexpr double eps = 0.0001;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -487,7 +489,7 @@ protected:
 
     std::vector<double> BuildNormalizedInput(uint32_t slots) const {
         std::vector<double> input(slots);
-        constexpr double left  = -0.5;
+        constexpr double left = -0.5;
         constexpr double right = 0.5;
 
         for (uint32_t i = 0; i < slots; ++i) {
@@ -497,8 +499,8 @@ protected:
         return input;
     }
 
-    std::vector<double> BuildExpectedOutput(
-            FEFBT_FUNCTION functionType, const std::vector<double>& normalizedInput) const {
+    std::vector<double> BuildExpectedOutput(FEFBT_FUNCTION functionType,
+                                            const std::vector<double>& normalizedInput) const {
         std::vector<double> expected(normalizedInput.size());
         const double radius = GetRadius(functionType);
 
@@ -519,26 +521,24 @@ protected:
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto input    = BuildNormalizedInput(testData.slots);
+            auto input = BuildNormalizedInput(testData.slots);
             auto expected = BuildExpectedOutput(testData.functionType, input);
             Plaintext plaintext =
                     cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-            auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+            auto resultCt = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
 
             Plaintext result;
             cc->Decrypt(keyPair.secretKey, resultCt, &result);
             result->SetLength(expected.size());
 
             checkEquality(result->GetRealPackedValue(), expected, eps,
-                    failmsg + " FE functional bootstrapping failed for " + GetFunctionName(testData.functionType) +
-                            ".");
-        }
-        catch (std::exception& e) {
+                          failmsg + " FE functional bootstrapping failed for " +
+                                  GetFunctionName(testData.functionType) + ".");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -547,7 +547,7 @@ protected:
     // achieved precision in bits (-log2 of the maximum slot error). Releases its own context before
     // returning so a CS-vs-FA test never holds two bootstrapping key sets at once.
     double FEFBTPrecisionBits(const TEST_CASE_UTCKKSRNS_FEFBT& testData, ScalingTechnique scalingTechnique) {
-        auto params     = testData.params;
+        auto params = testData.params;
         params.scalTech = scalingTechnique;
         if (scalingTechnique == COMPOSITESCALINGAUTO)
             params.registerWordSize = REG_WORD_SIZE;
@@ -560,12 +560,12 @@ protected:
         cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
         cc->EvalMultKeyGen(keyPair.secretKey);
 
-        auto input    = BuildNormalizedInput(testData.slots);
+        auto input = BuildNormalizedInput(testData.slots);
         auto expected = BuildExpectedOutput(testData.functionType, input);
         Plaintext plaintext =
                 cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
         auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-        auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+        auto resultCt = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
 
         Plaintext result;
         cc->Decrypt(keyPair.secretKey, resultCt, &result);
@@ -594,18 +594,16 @@ protected:
             EXPECT_GE(csBits, faBits - testData.gapTolBits)
                     << failmsg << " CS lags FA by >" << testData.gapTolBits << " bits (CS=" << csBits
                     << ", FA=" << faBits << ") for " << GetFunctionName(testData.functionType) << ".";
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_FEFBT_PostRotation(
-            const TEST_CASE_UTCKKSRNS_FEFBT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_FEFBT_PostRotation(const TEST_CASE_UTCKKSRNS_FEFBT& testData,
+                                     const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -616,15 +614,15 @@ protected:
             cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            auto input    = BuildNormalizedInput(testData.slots);
+            auto input = BuildNormalizedInput(testData.slots);
             auto expected = BuildExpectedOutput(testData.functionType, input);
             Plaintext plaintext =
                     cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-            auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+            auto resultCt = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
 
             constexpr int32_t rotIndex = 6;
-            auto rotatedCt             = cc->EvalAtIndex(resultCt, rotIndex);
+            auto rotatedCt = cc->EvalAtIndex(resultCt, rotIndex);
             std::rotate(expected.begin(), expected.begin() + rotIndex, expected.end());
 
             Plaintext result;
@@ -632,14 +630,12 @@ protected:
             result->SetLength(expected.size());
 
             checkEquality(result->GetRealPackedValue(), expected, eps,
-                    failmsg + " EvalAtIndex after FE functional bootstrapping failed for " +
-                            GetFunctionName(testData.functionType) + ".");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalAtIndex after FE functional bootstrapping failed for " +
+                                  GetFunctionName(testData.functionType) + ".");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -648,8 +644,8 @@ protected:
     // agree, slot for slot, with running the single-shot EvalFEFuncBootstrap for each of them. The powers
     // are precomputed for testData.functionType, the longest series of the family, and the shorter series
     // are evaluated against those same powers.
-    void UnitTest_FEFBT_MultiValue(
-            const TEST_CASE_UTCKKSRNS_FEFBT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_FEFBT_MultiValue(const TEST_CASE_UTCKKSRNS_FEFBT& testData,
+                                   const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -668,7 +664,7 @@ protected:
 
             for (auto functionType : {FEFBT_GELU_TANH, FEFBT_SIGMOID, FEFBT_EXP}) {
                 const auto& coefficients = GetCoefficients(functionType);
-                auto expected            = BuildExpectedOutput(functionType, input);
+                auto expected = BuildExpectedOutput(functionType, input);
 
                 Plaintext shared;
                 auto sharedCt = cc->EvalFEFuncBootstrapWithPrecomp(powers, coefficients);
@@ -676,8 +672,8 @@ protected:
                 shared->SetLength(expected.size());
 
                 checkEquality(shared->GetRealPackedValue(), expected, eps,
-                        failmsg + " FE functional bootstrapping with precomputed powers failed for " +
-                                GetFunctionName(functionType) + ".");
+                              failmsg + " FE functional bootstrapping with precomputed powers failed for " +
+                                      GetFunctionName(functionType) + ".");
 
                 // and the shared-powers result must match the single-shot path, not merely the target
                 Plaintext single;
@@ -686,10 +682,10 @@ protected:
                 single->SetLength(expected.size());
 
                 checkEquality(shared->GetRealPackedValue(), single->GetRealPackedValue(), eps,
-                        failmsg +
-                                " precomputed-powers and single-shot FE functional bootstrapping "
-                                "disagree for " +
-                                GetFunctionName(functionType) + ".");
+                              failmsg +
+                                      " precomputed-powers and single-shot FE functional bootstrapping "
+                                      "disagree for " +
+                                      GetFunctionName(functionType) + ".");
             }
 
             // A series padded with trailing zeros denotes the same polynomial, so it must give the same
@@ -706,7 +702,7 @@ protected:
             fromTrimmed->SetLength(testData.slots);
 
             checkEquality(fromPadded->GetRealPackedValue(), fromTrimmed->GetRealPackedValue(), eps,
-                    failmsg + " a trailing-zero padded series did not match the trimmed one.");
+                          failmsg + " a trailing-zero padded series did not match the trimmed one.");
 
             // A precomputation made for a short series leaves a correspondingly narrow power basis; a later
             // series that would read past it must be rejected rather than overrun it.
@@ -724,17 +720,15 @@ protected:
             auto expectedAfter = BuildExpectedOutput(FEFBT_SIGMOID, input);
             Plaintext after;
             cc->Decrypt(keyPair.secretKey, cc->EvalFEFuncBootstrapWithPrecomp(powers, GetCoefficients(FEFBT_SIGMOID)),
-                    &after);
+                        &after);
             after->SetLength(expectedAfter.size());
 
             checkEquality(after->GetRealPackedValue(), expectedAfter, eps,
-                    failmsg + " the shared powers did not survive evaluating a short series.");
-        }
-        catch (std::exception& e) {
+                          failmsg + " the shared powers did not survive evaluating a short series.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -743,8 +737,8 @@ protected:
     // own channel, which FE functional bootstrapping drops (its result, twice the real part of a Fourier
     // series, is real-valued). This pins that contract down: the function is applied to the real part of
     // every slot, and the imaginary part of the result is zero regardless of the input's imaginary part.
-    void UnitTest_FEFBT_ComplexInput(
-            const TEST_CASE_UTCKKSRNS_FEFBT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_FEFBT_ComplexInput(const TEST_CASE_UTCKKSRNS_FEFBT& testData,
+                                     const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -766,7 +760,7 @@ protected:
             Plaintext plaintext =
                     cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-            auto resultCt   = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+            auto resultCt = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
 
             Plaintext result;
             cc->Decrypt(keyPair.secretKey, resultCt, &result);
@@ -781,18 +775,16 @@ protected:
             }
 
             checkEquality(actualReal, expected, eps,
-                    failmsg + " FE functional bootstrapping of a complex input did not apply " +
-                            GetFunctionName(testData.functionType) + " to the real part.");
+                          failmsg + " FE functional bootstrapping of a complex input did not apply " +
+                                  GetFunctionName(testData.functionType) + " to the real part.");
             checkEquality(actualImag, std::vector<double>(packed.size(), 0.0), eps,
-                    failmsg +
-                            " FE functional bootstrapping of a complex input returned a nonzero "
-                            "imaginary part.");
-        }
-        catch (std::exception& e) {
+                          failmsg +
+                                  " FE functional bootstrapping of a complex input returned a nonzero "
+                                  "imaginary part.");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

@@ -80,8 +80,7 @@ bool PackedEncoding::Encode() {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
                 tempVector[i] = NativeInteger(mod) - NativeInteger((uint64_t)llabs(value[i]));
-            }
-            else {
+            } else {
                 tempVector[i] = NativeInteger(value[i]);
             }
         }
@@ -101,11 +100,10 @@ bool PackedEncoding::Encode() {
 
             // Calls the inverse NTT mod plaintext modulus
             this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                    this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
+                                   this->encodedNativeVector.GetCyclotomicOrder(), &tempVector);
             tempVector.SetModulus(q);
             this->encodedNativeVector.SetValues(std::move(tempVector), Format::COEFFICIENT);
-        }
-        else {
+        } else {
             PlaintextModulus q = this->encodedVectorDCRT.GetParams()->GetParams()[0]->GetModulus().ConvertToInt();
             if (q < mod) {
                 OPENFHE_THROW(
@@ -116,28 +114,27 @@ bool PackedEncoding::Encode() {
 
             // Calls the inverse NTT mod plaintext modulus
             this->PackNativeVector(this->encodingParams->GetPlaintextModulus(),
-                    this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
+                                   this->encodedVectorDCRT.GetCyclotomicOrder(), &tempVector);
             // Switches from plaintext modulus to the modulus of the first RNS limb
             tempVector.SetModulus(q);
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
             firstElement.SetValues(std::move(tempVector), Format::COEFFICIENT);
 
-            const std::shared_ptr<ILDCRTParams<BigInteger>> params           = this->encodedVectorDCRT.GetParams();
+            const std::shared_ptr<ILDCRTParams<BigInteger>> params = this->encodedVectorDCRT.GetParams();
             const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
             // Sets the values for all other RNS limbs
             for (size_t j = 1; j < nativeParams.size(); j++) {
                 NativePoly tempPoly(nativeParams[j], Format::COEFFICIENT);
-                tempPoly.SetValues(
-                        NativeVector(firstElement.GetValues(), nativeParams[j]->GetModulus()), Format::COEFFICIENT);
+                tempPoly.SetValues(NativeVector(firstElement.GetValues(), nativeParams[j]->GetModulus()),
+                                   Format::COEFFICIENT);
                 this->encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
             }
             // Setting the first limb at the end make sure firstElement is available during the main loop
             this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
             this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
-    }
-    else {
+    } else {
         BigVector temp(this->GetElementRingDimension(), BigInteger(this->GetElementModulus()));
 
         BigInteger q = this->GetElementModulus();
@@ -153,8 +150,7 @@ bool PackedEncoding::Encode() {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
                 entry = BigInteger(mod) - BigInteger((uint64_t)llabs(value[i]));
-            }
-            else {
+            } else {
                 entry = BigInteger(value[i]);
             }
 
@@ -204,13 +200,12 @@ bool PackedEncoding::Decode() {
         if (this->typeFlag == IsNativePoly) {
             this->Unpack(&this->GetElement<NativePoly>(), ptm);
             NativePoly firstElement = encodedNativeVector;
-            firstElement            = firstElement.Times(scfInv);
-            firstElement            = firstElement.Mod(ptm);
+            firstElement = firstElement.Times(scfInv);
+            firstElement = firstElement.Mod(ptm);
             fillVec(firstElement, ptm, this->value);
             // clears the values containing information about the noise
             this->GetElement<NativePoly>().SetValuesToZero();
-        }
-        else {
+        } else {
             NativePoly firstElement = this->GetElement<DCRTPoly>().GetElementAtIndex(0);
             this->Unpack(&firstElement, ptm);
             firstElement = firstElement.Times(scfInv);
@@ -219,8 +214,7 @@ bool PackedEncoding::Decode() {
             // clears the values containing information about the noise
             this->GetElement<DCRTPoly>().SetValuesToZero();
         }
-    }
-    else {
+    } else {
         this->Unpack(&this->GetElement<Poly>(), ptm);
         fillVec(this->encodedVector, ptm, this->value);
         // clears the values containing information about the noise
@@ -250,18 +244,16 @@ void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
         if (IsPowerOfTwo(m)) {
 #pragma omp critical
             { SetParams_2n(m, params); }
-        }
-        else {
+        } else {
 #pragma omp critical
             {
                 const ModulusM modulusM = {modulusNI, m};
                 // Arbitrary: Bluestein based CRT Arb. So we need the 2mth root of unity
                 if (params->GetPlaintextRootOfUnity() == 0) {
                     NativeInteger initRoot = RootOfUnity<NativeInteger>(2 * m, modulusNI);
-                    m_initRoot[modulusM]   = initRoot;
+                    m_initRoot[modulusM] = initRoot;
                     params->SetPlaintextRootOfUnity(m_initRoot[modulusM].ConvertToInt());
-                }
-                else {
+                } else {
                     m_initRoot[modulusM] = params->GetPlaintextRootOfUnity();
                 }
 
@@ -270,56 +262,52 @@ void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
                     uint32_t nttDim = uint32_t{1} << GetMSB(2 * m - 2);
                     if ((modulusNI.ConvertToInt() - 1) % nttDim == 0) {
                         m_bigModulus[modulusM] = modulusNI;
-                    }
-                    else {
+                    } else {
                         uint32_t bigModulusSize = GetMSB(2 * m - 2) + 2 * modulusNI.GetMSB() + 1;
-                        m_bigModulus[modulusM]  = LastPrime<NativeInteger>(bigModulusSize, nttDim);
+                        m_bigModulus[modulusM] = LastPrime<NativeInteger>(bigModulusSize, nttDim);
                     }
                     m_bigRoot[modulusM] = RootOfUnity<NativeInteger>(nttDim, m_bigModulus[modulusM]);
                     params->SetPlaintextBigModulus(m_bigModulus[modulusM]);
                     params->SetPlaintextBigRootOfUnity(m_bigRoot[modulusM]);
-                }
-                else {
+                } else {
                     m_bigModulus[modulusM] = params->GetPlaintextBigModulus();
-                    m_bigRoot[modulusM]    = params->GetPlaintextBigRootOfUnity();
+                    m_bigRoot[modulusM] = params->GetPlaintextBigRootOfUnity();
                 }
 
                 // Find a generator for the automorphism group
                 if (params->GetPlaintextGenerator() == 0) {
                     NativeInteger M(m);  // Hackish typecast
                     NativeInteger automorphismGenerator = FindGeneratorCyclic<NativeInteger>(M);
-                    m_automorphismGenerator[m]          = automorphismGenerator.ConvertToInt();
+                    m_automorphismGenerator[m] = automorphismGenerator.ConvertToInt();
                     params->SetPlaintextGenerator(m_automorphismGenerator[m]);
-                }
-                else {
+                } else {
                     m_automorphismGenerator[m] = params->GetPlaintextGenerator();
                 }
 
                 // Create the permutations that interchange the automorphism and crt
                 // ordering
                 uint32_t phim = GetTotient(m);
-                auto tList    = GetTotientList(m);
-                auto tIdx     = std::vector<uint32_t>(m, -1);
+                auto tList = GetTotientList(m);
+                auto tIdx = std::vector<uint32_t>(m, -1);
                 for (uint32_t i = 0; i < phim; i++) {
                     tIdx[tList[i]] = i;
                 }
 
-                m_toCRTPerm[m]   = std::vector<uint32_t>(phim);
+                m_toCRTPerm[m] = std::vector<uint32_t>(phim);
                 m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
                 uint32_t curr_index = 1;
                 for (uint32_t i = 0; i < phim; i++) {
                     m_toCRTPerm[m][tIdx[curr_index]] = i;
-                    m_fromCRTPerm[m][i]              = tIdx[curr_index];
+                    m_fromCRTPerm[m][i] = tIdx[curr_index];
 
                     curr_index = curr_index * m_automorphismGenerator[m] % m;
                 }
             }
         }
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         exception_message = e.what();
-        hadEx             = true;
+        hadEx = true;
     }
 
     if (hadEx)
@@ -364,13 +352,11 @@ void PackedEncoding::Pack(P* ring, const PlaintextModulus& modulus) const {
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
                     permutedSlots, m_initRoot[modulusM], m, &slotValues);
-        }
-        else {
+        } else {
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
                     slotValues, m_initRoot[modulusM], m, &slotValues);
         }
-    }
-    else {  // Arbitrary cyclotomic
+    } else {  // Arbitrary cyclotomic
         // Permute to CRT Order
         NativeVector permutedSlots(phim, modulusNI);
         for (uint32_t i = 0; i < phim; i++) {
@@ -421,13 +407,11 @@ void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t 
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
                     permutedSlots, m_initRoot[modulusM], m, &slotValues);
-        }
-        else {
+        } else {
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
                     slotValues, m_initRoot[modulusM], m, &slotValues);
         }
-    }
-    else {  // Arbitrary cyclotomic
+    } else {  // Arbitrary cyclotomic
         // Permute to CRT Order
         NativeVector permutedSlots(phim, modulusNI);
         for (uint32_t i = 0; i < phim; i++) {
@@ -468,10 +452,9 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
     // Transform Coeff to Eval
     NativeVector permutedSlots(phim, modulusNI);
     if (IsPowerOfTwo(m)) {
-        ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
-                packedVector, m_initRoot[modulusM], m, &permutedSlots);
-    }
-    else {  // Arbitrary cyclotomic
+        ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(packedVector, m_initRoot[modulusM], m,
+                                                                                  &permutedSlots);
+    } else {  // Arbitrary cyclotomic
         permutedSlots = ChineseRemainderTransformArb<NativeVector>().ForwardTransform(
                 packedVector, m_initRoot[modulusM], m_bigModulus[modulusM], m_bigRoot[modulusM], m);
     }
@@ -481,8 +464,7 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
         for (uint32_t i = 0; i < phim; i++) {
             packedVector[i] = permutedSlots[m_fromCRTPerm[m][i]];
         }
-    }
-    else {
+    } else {
         packedVector = permutedSlots;
     }
 
@@ -511,22 +493,22 @@ void PackedEncoding::SetParams_2n(uint32_t m, NativeInteger modulusNI) {
     // First we create the cyclic group generated by 5 and then adjoin the
     // co-factor by multiplying by (-1)
 
-    uint32_t phim      = (m >> 1);
+    uint32_t phim = (m >> 1);
     uint32_t phim_by_2 = (m >> 2);
 
-    m_toCRTPerm[m]   = std::vector<uint32_t>(phim);
+    m_toCRTPerm[m] = std::vector<uint32_t>(phim);
     m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
     uint32_t curr_index = 1;
-    uint32_t logn       = std::round(std::log2(m / 2));
+    uint32_t logn = std::round(std::log2(m / 2));
     for (uint32_t i = 0; i < phim_by_2; i++) {
         m_toCRTPerm[m][ReverseBits((curr_index - 1) / 2, logn)] = i;
-        m_fromCRTPerm[m][i]                                     = ReverseBits((curr_index - 1) / 2, logn);
+        m_fromCRTPerm[m][i] = ReverseBits((curr_index - 1) / 2, logn);
 
         uint32_t cofactor_index = curr_index * (m - 1) % m;
 
         m_toCRTPerm[m][ReverseBits((cofactor_index - 1) / 2, logn)] = i + phim_by_2;
-        m_fromCRTPerm[m][i + phim_by_2]                             = ReverseBits((cofactor_index - 1) / 2, logn);
+        m_fromCRTPerm[m][i + phim_by_2] = ReverseBits((cofactor_index - 1) / 2, logn);
 
         curr_index = curr_index * 5 % m;
     }
@@ -545,30 +527,29 @@ void PackedEncoding::SetParams_2n(uint32_t m, EncodingParams params) {
     if (params->GetPlaintextRootOfUnity() == 0) {
         m_initRoot[modulusM] = RootOfUnity<NativeInteger>(m, modulusNI);
         params->SetPlaintextRootOfUnity(m_initRoot[modulusM]);
-    }
-    else {
+    } else {
         m_initRoot[modulusM] = params->GetPlaintextRootOfUnity();
     }
 
     // Create the permutations that interchange the automorphism and crt ordering
     // First we create the cyclic group generated by 5 and then adjoin the
     // co-factor by multiplying by (-1)
-    uint32_t phim      = (m >> 1);
+    uint32_t phim = (m >> 1);
     uint32_t phim_by_2 = (m >> 2);
 
-    m_toCRTPerm[m]   = std::vector<uint32_t>(phim);
+    m_toCRTPerm[m] = std::vector<uint32_t>(phim);
     m_fromCRTPerm[m] = std::vector<uint32_t>(phim);
 
     uint32_t curr_index = 1;
-    uint32_t logn       = std::round(std::log2(m >> 1));
+    uint32_t logn = std::round(std::log2(m >> 1));
     for (uint32_t i = 0; i < phim_by_2; i++) {
         m_toCRTPerm[m][ReverseBits((curr_index - 1) / 2, logn)] = i;
-        m_fromCRTPerm[m][i]                                     = ReverseBits((curr_index - 1) / 2, logn);
+        m_fromCRTPerm[m][i] = ReverseBits((curr_index - 1) / 2, logn);
 
         uint32_t cofactor_index = curr_index * (m - 1) % m;
 
         m_toCRTPerm[m][ReverseBits((cofactor_index - 1) / 2, logn)] = i + phim_by_2;
-        m_fromCRTPerm[m][i + phim_by_2]                             = ReverseBits((cofactor_index - 1) / 2, logn);
+        m_fromCRTPerm[m][i + phim_by_2] = ReverseBits((cofactor_index - 1) / 2, logn);
 
         curr_index = curr_index * 5 % m;
     }

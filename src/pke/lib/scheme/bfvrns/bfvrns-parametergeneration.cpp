@@ -50,8 +50,9 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-        uint32_t evalAddCount, uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
-        uint32_t numDigits) const {
+                                                        uint32_t evalAddCount, uint32_t multiplicativeDepth,
+                                                        uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
+                                                        uint32_t numDigits) const {
     if (!cryptoParams)
         OPENFHE_THROW("No crypto parameters are supplied to BFVrns ParamsGen");
 
@@ -62,12 +63,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
 
     const auto cryptoParamsBFVRNS = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 
-    KeySwitchTechnique ksTech        = cryptoParamsBFVRNS->GetKeySwitchTechnique();
-    ScalingTechnique scalTech        = cryptoParamsBFVRNS->GetScalingTechnique();
-    EncryptionTechnique encTech      = cryptoParamsBFVRNS->GetEncryptionTechnique();
+    KeySwitchTechnique ksTech = cryptoParamsBFVRNS->GetKeySwitchTechnique();
+    ScalingTechnique scalTech = cryptoParamsBFVRNS->GetScalingTechnique();
+    EncryptionTechnique encTech = cryptoParamsBFVRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
-    ProxyReEncryptionMode PREMode    = cryptoParamsBFVRNS->GetPREMode();
-    MultipartyMode multipartyMode    = cryptoParamsBFVRNS->GetMultipartyMode();
+    ProxyReEncryptionMode PREMode = cryptoParamsBFVRNS->GetPREMode();
+    MultipartyMode multipartyMode = cryptoParamsBFVRNS->GetMultipartyMode();
 
     if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         std::stringstream s;
@@ -75,12 +76,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         OPENFHE_THROW(s.str());
     }
 
-    double sigma           = cryptoParamsBFVRNS->GetDistributionParameter();
-    double alpha           = cryptoParamsBFVRNS->GetAssuranceMeasure();
-    double p               = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
-    uint32_t digitSize     = cryptoParamsBFVRNS->GetDigitSize();
+    double sigma = cryptoParamsBFVRNS->GetDistributionParameter();
+    double alpha = cryptoParamsBFVRNS->GetAssuranceMeasure();
+    double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
+    uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
     SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
-    uint32_t auxBits       = DCRT_MODULUS::MAX_SIZE;
+    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
 
     // Bound of the Gaussian error polynomial
     double Berr = sigma * std::sqrt(alpha);
@@ -94,12 +95,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
     if (cryptoParamsBFVRNS->GetSecretKeyDist() == GAUSSIAN) {
-        Bkey     = std::sqrt(thresholdParties) * Berr;
+        Bkey = std::sqrt(thresholdParties) * Berr;
         distType = HEStd_error;
-    }
-    else {
+    } else {
         // Bkey set to thresholdParties * 1 for ternary distribution
-        Bkey     = thresholdParties;
+        Bkey = thresholdParties;
         distType = HEStd_ternary;
     }
 
@@ -125,8 +125,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     auto nRLWE = [&](double logq) -> double {
         if (stdLevel == HEStd_NotSet) {
             return 0;
-        }
-        else {
+        } else {
             // takes into account the noise added during the threshold FHE instantiation of BFV
             if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
                 logq += cryptoParamsBFVRNS->EstimateMultipartyFloodingLogQ();
@@ -156,8 +155,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
 #else
             return numTowers * (delta(n) * Berr + deltaMS(n) * Bkey + 1.0);
 #endif
-        }
-        else {
+        } else {
             double numDigitsPerTower = (digitSize == 0) ? 1 : ((dcrtBits / digitSize) + 1);
             return delta(n) * numDigitsPerTower * (std::floor(logqPrev / (dcrtBits)) + 1) * w * Berr / 2.0;
         }
@@ -183,7 +181,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         logq = logqBFV(n);
 
         while (nRLWE(logq) > n) {
-            n    = 2 * n;
+            n = 2 * n;
             logq = logqBFV(n);
         }
 
@@ -194,13 +192,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         double logqCeil = k * dcrtBits;
 
         while (nRLWE(logqCeil) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n);
-            k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+            n = 2 * n;
+            logq = logqBFV(n);
+            k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
             logqCeil = k * dcrtBits;
         }
-    }
-    else if ((multiplicativeDepth == 0) && (keySwitchCount > 0) && (evalAddCount == 0)) {
+    } else if ((multiplicativeDepth == 0) && (keySwitchCount > 0) && (evalAddCount == 0)) {
         // this case supports automorphism w/o any other operations
         // base for relinearization
 
@@ -213,13 +210,13 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
 
         // initial values
         double logqPrev = 6. * std::log2(10);
-        logq            = logqBFV(n, logqPrev);
-        logqPrev        = logq;
+        logq = logqBFV(n, logqPrev);
+        logqPrev = logq;
 
         // increases n up to the level where desired security level is achieved
         while (nRLWE(logq) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
+            n = 2 * n;
+            logq = logqBFV(n, logqPrev);
             logqPrev = logq;
         }
 
@@ -228,7 +225,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         // let logq converge with prescribed accuracy
         while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
             logqPrev = logq;
-            logq     = logqBFV(n, logqPrev);
+            logq = logqBFV(n, logqPrev);
         }
 
         // this code updates n and q to account for the discrete size of CRT
@@ -236,17 +233,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
 
         double logqCeil = k * dcrtBits;
-        logqPrev        = logqCeil;
+        logqPrev = logqCeil;
 
         while (nRLWE(logqCeil) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
-            k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+            n = 2 * n;
+            logq = logqBFV(n, logqPrev);
+            k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
             logqCeil = k * dcrtBits;
             logqPrev = logqCeil;
         }
-    }
-    else if ((evalAddCount == 0) && (multiplicativeDepth > 0) && (keySwitchCount == 0)) {
+    } else if ((evalAddCount == 0) && (multiplicativeDepth > 0) && (keySwitchCount == 0)) {
         // Only EvalMult operations are used in the correctness constraint
         // the correctness constraint from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
         // is used
@@ -272,13 +268,13 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
 
         // initial values
         double logqPrev = 6. * std::log2(10);
-        logq            = logqBFV(n, logqPrev);
-        logqPrev        = logq;
+        logq = logqBFV(n, logqPrev);
+        logqPrev = logq;
 
         // increases n up to the level where desired security level is achieved
         while (nRLWE(logq) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
+            n = 2 * n;
+            logq = logqBFV(n, logqPrev);
             logqPrev = logq;
         }
 
@@ -287,7 +283,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         // let logq converge with prescribed accuracy
         while (std::fabs(logq - logqPrev) > std::log2(1.001)) {
             logqPrev = logq;
-            logq     = logqBFV(n, logqPrev);
+            logq = logqBFV(n, logqPrev);
         }
 
         // this code updates n and q to account for the discrete size of CRT
@@ -296,17 +292,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         int32_t k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
 
         double logqCeil = k * dcrtBits;
-        logqPrev        = logqCeil;
+        logqPrev = logqCeil;
 
         while (nRLWE(logqCeil) > n) {
-            n        = 2 * n;
-            logq     = logqBFV(n, logqPrev);
-            k        = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
+            n = 2 * n;
+            logq = logqBFV(n, logqPrev);
+            k = static_cast<int32_t>(std::ceil(std::ceil(logq) / dcrtBits));
             logqCeil = k * dcrtBits;
             logqPrev = logqCeil;
         }
-    }
-    else if ((multiplicativeDepth && (evalAddCount || keySwitchCount)) || (evalAddCount && keySwitchCount)) {
+    } else if ((multiplicativeDepth && (evalAddCount || keySwitchCount)) || (evalAddCount && keySwitchCount)) {
         // throw an exception if at least 2 variables are not zero
         std::string errMsg("multiplicativeDepth, evalAddCount and keySwitchCount are incorrectly set to [ ");
         errMsg += std::to_string(multiplicativeDepth) + ", ";
@@ -333,21 +328,21 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     std::vector<NativeInteger> rootsQ(sizeQ);
 
     // makes sure the first integer is less than 2^60-1
-    moduliQ[0]                = LastPrime<NativeInteger>(dcrtBits, 2 * n);
-    rootsQ[0]                 = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
+    moduliQ[0] = LastPrime<NativeInteger>(dcrtBits, 2 * n);
+    rootsQ[0] = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
     NativeInteger lastModulus = moduliQ[0];
 
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
         moduliQ[1] = LastPrime<NativeInteger>(NoiseFlooding::MULTIPARTY_MOD_SIZE, 2 * n);
         if (moduliQ[1] == lastModulus) {
-            moduliQ[1]  = PreviousPrime<NativeInteger>(moduliQ[1], 2 * n);
+            moduliQ[1] = PreviousPrime<NativeInteger>(moduliQ[1], 2 * n);
             lastModulus = moduliQ[1];
         }
         rootsQ[1] = RootOfUnity<NativeInteger>(2 * n, moduliQ[1]);
 
         for (size_t i = 2; i < 1 + NoiseFlooding::NUM_MODULI_MULTIPARTY; i++) {
             moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
-            rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
+            rootsQ[i] = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
             if (lastModulus != moduliQ[0])
                 lastModulus = moduliQ[i];
         }
@@ -356,10 +351,10 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     size_t index = 1 + (sizeQ - numInitialModuli);
     if (index < sizeQ) {
         moduliQ[index] = PreviousPrime<NativeInteger>(lastModulus, 2 * n);
-        rootsQ[index]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[index]);
+        rootsQ[index] = RootOfUnity<NativeInteger>(2 * n, moduliQ[index]);
         for (size_t i = index + 1; i < sizeQ; i++) {
             moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
-            rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
+            rootsQ[i] = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
         }
     }
 
@@ -394,8 +389,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
         uint32_t logActualQ = 0;
         if (ksTech == HYBRID) {
             logActualQ = cryptoParamsBFVRNS->GetParamsQP()->GetModulus().GetMSB();
-        }
-        else {
+        } else {
             logActualQ = cryptoParamsBFVRNS->GetElementParams()->GetModulus().GetMSB();
         }
 

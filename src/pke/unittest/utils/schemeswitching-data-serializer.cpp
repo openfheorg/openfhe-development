@@ -83,7 +83,7 @@ std::filesystem::path getProgramPath() {
 }
 
 std::string DataAndLocation::getDataDir() {
-    const std::filesystem::path exe    = getProgramPath();
+    const std::filesystem::path exe = getProgramPath();
     const std::filesystem::path exeDir = exe.empty() ? std::filesystem::current_path() : exe.parent_path();
 
     // One level up (e.g., .../build/unittest -> .../build)
@@ -144,8 +144,7 @@ void SchemeSwitchingDataSerializer::Serialize() {
             THROW_SERIALIZATION_ERROR;
         }
         multKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -156,8 +155,7 @@ void SchemeSwitchingDataSerializer::Serialize() {
             THROW_SERIALIZATION_ERROR;
         }
         rotationKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -184,7 +182,7 @@ void SchemeSwitchingDataSerializer::Serialize() {
     std::vector<uint32_t> indices;
     auto BTKeyMap = binFHECryptoContext->GetBTKeyMap();
     for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); ++it) {
-        uint32_t index      = it->first;
+        uint32_t index = it->first;
         RingGSWBTKey thekey = it->second;
 
         outFile = createMapFileName(index, baseBTKeyFile);
@@ -221,8 +219,7 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
             THROW_DESERIALIZATION_ERROR;
         }
         multKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -233,8 +230,7 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
             THROW_DESERIALIZATION_ERROR;
         }
         rotationKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -265,8 +261,7 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
     outFile = dataDirectory + "/" + keyIndexFile;
     if (!Serial::DeserializeFromFile(outFile, indices, SERTYPE)) {
         THROW_SERIALIZATION_ERROR;
-    }
-    else if (!indices.size()) {
+    } else if (!indices.size()) {
         std::string errMsg(std::string("Error deserializing from ") + outFile + ". No indices found.");
         OPENFHE_THROW(errMsg);
     }

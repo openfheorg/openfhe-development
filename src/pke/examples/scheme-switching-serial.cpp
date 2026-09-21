@@ -124,8 +124,11 @@ Plaintext serverVerification(CryptoContext<DCRTPoly>& cc, KeyPair<DCRTPoly>& kp,
  * @return Tuple<cryptoContext, keyPair>
  */
 std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(uint32_t ringDim, uint32_t batchSize,
-        uint32_t multDepth, uint32_t scaleModSize, uint32_t firstModSize, uint32_t logQ_LWE, bool oneHot) {
-    SecurityLevel sl      = HEStd_NotSet;
+                                                                                uint32_t multDepth,
+                                                                                uint32_t scaleModSize,
+                                                                                uint32_t firstModSize,
+                                                                                uint32_t logQ_LWE, bool oneHot) {
+    SecurityLevel sl = HEStd_NotSet;
     BINFHE_PARAMSET slBin = TOY;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -228,8 +231,8 @@ void clientProcess(uint32_t modulus_LWE) {
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     double scaleSign = 512.0;
-    auto beta        = clientBinCC->GetBeta().ConvertToInt();
-    auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
+    auto beta = clientBinCC->GetBeta().ConvertToInt();
+    auto pLWE = modulus_LWE / (2 * beta);  // Large precision
 
     clientCC->EvalCompareSwitchPrecompute(pLWE, scaleSign, false);
 
@@ -255,17 +258,17 @@ int main() {
               << "an error writing serializations." << std::endl;
 
     // Set main params
-    uint32_t ringDim      = 64;
-    uint32_t batchSize    = 4;
-    uint32_t multDepth    = 13 + static_cast<int>(std::log2(batchSize));
-    uint32_t logQ_ccLWE   = 25;
-    bool oneHot           = true;
+    uint32_t ringDim = 64;
+    uint32_t batchSize = 4;
+    uint32_t multDepth = 13 + static_cast<int>(std::log2(batchSize));
+    uint32_t logQ_ccLWE = 25;
+    bool oneHot = true;
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
 
     const int cryptoContextIdx = 0;
-    const int keyPairIdx       = 1;
-    const int vectorSizeIdx    = 2;
+    const int keyPairIdx = 1;
+    const int vectorSizeIdx = 2;
 
     demarcate(
             "Scheme switching Part 1: Cryptocontext generation, key generation, data encryption "
@@ -274,8 +277,8 @@ int main() {
     auto tupleCryptoContext_KeyPair =
             serverSetupAndWrite(ringDim, batchSize, multDepth, scaleModSize, firstModSize, logQ_ccLWE, oneHot);
 
-    auto cc         = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);
-    auto kp         = std::get<keyPairIdx>(tupleCryptoContext_KeyPair);
+    auto cc = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);
+    auto kp = std::get<keyPairIdx>(tupleCryptoContext_KeyPair);
     auto vectorSize = std::get<vectorSizeIdx>(tupleCryptoContext_KeyPair);
 
     demarcate("Scheme switching Part 3: Client deserialize all data");

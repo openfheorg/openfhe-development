@@ -44,12 +44,12 @@ namespace lbcrypto {
 
 class PKECKKSRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~PKECKKSRNS() = default;
 
     /**
@@ -61,7 +61,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-            NativePoly* plaintext) const override;
+                          NativePoly* plaintext) const override;
 
     /**
    * Method for decrypting plaintext with noise flooding
@@ -72,7 +72,7 @@ public:
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
-            Poly* plaintext) const override;
+                          Poly* plaintext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

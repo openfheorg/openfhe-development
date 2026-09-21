@@ -192,8 +192,8 @@ template <typename VecType>
 std::map<uint32_t, uint32_t> ChineseRemainderTransformArbNat<VecType>::m_nttDivisionDim;
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(
-        const VecType& element, const VecType& rootOfUnityTable, VecType* r) {
+void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(const VecType& element,
+                                                                     const VecType& rootOfUnityTable, VecType* r) {
     uint32_t n = element.GetLength();
     if (r->GetLength() != n)
         OPENFHE_THROW("size of input element and size of output element not of same size");
@@ -201,14 +201,16 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::InverseTransformIterative(
-        const VecType& element, const VecType& rootInvTable, VecType* r) {
+void NumberTheoreticTransformNat<VecType>::InverseTransformIterative(const VecType& element,
+                                                                     const VecType& rootInvTable, VecType* r) {
     InverseTransformIterative(element, rootInvTable, prepShoupConsts(rootInvTable, element.GetModulus()), r);
 }
 
 template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(const VecType& element,
-        const VecType& rootOfUnityTable, const VecType& preconRootOfUnityTable, VecType* result) {
+                                                                     const VecType& rootOfUnityTable,
+                                                                     const VecType& preconRootOfUnityTable,
+                                                                     VecType* result) {
     uint32_t n = element.GetLength();
     if (result->GetLength() != n)
         OPENFHE_THROW("size of input element and size of output element not of same size");
@@ -230,16 +232,16 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(const VecTy
     std::vector<NInt> omega(n >> 1);
     std::vector<NInt> preconOmega(n >> 1);
     for (size_t logm = 1; logm <= logn; ++logm) {
-        uint32_t m     = 1u << (logm - 1);
+        uint32_t m = 1u << (logm - 1);
         uint32_t shift = logn - logm;
         for (size_t i = 0; i < m; ++i) {
-            omega[i]       = rootOfUnityTable[i << shift].m_value;
+            omega[i] = rootOfUnityTable[i << shift].m_value;
             preconOmega[i] = preconRootOfUnityTable[i << shift].m_value;
         }
         for (size_t j = 0; j < n; j += (m << 1)) {
             for (size_t i = 0; i < m; ++i) {
                 size_t indexEven = j + i;
-                size_t indexOdd  = indexEven + m;
+                size_t indexOdd = indexEven + m;
                 NInt odd{(*result)[indexOdd].m_value};
                 NInt even{(*result)[indexEven].m_value};
                 NInt of{static_cast<NInt>(odd * omega[i] - shoupMulHi(odd, preconOmega[i]) * mv)};
@@ -255,11 +257,13 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformIterative(const VecTy
 
 template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::InverseTransformIterative(const VecType& element,
-        const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable, VecType* result) {
-    uint32_t n         = element.GetLength();
+                                                                     const VecType& rootOfUnityInverseTable,
+                                                                     const VecType& preconRootOfUnityInverseTable,
+                                                                     VecType* result) {
+    uint32_t n = element.GetLength();
     const auto modulus = element.GetModulus();
-    NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(
-            element, rootOfUnityInverseTable, preconRootOfUnityInverseTable, result);
+    NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(element, rootOfUnityInverseTable,
+                                                                     preconRootOfUnityInverseTable, result);
     using NInt = decltype(modulus.m_value);
     const NInt mv{modulus.m_value};
     IntType cycloOrderInv(IntType(n).ModInverse(modulus));
@@ -273,15 +277,16 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformIterative(const VecTy
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
-        const VecType& rootTable, VecType* element) {
+void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootTable,
+                                                                               VecType* element) {
     // compute the Shoup constants once and share the vectorized precon kernel
     ForwardTransformToBitReverseInPlace(rootTable, prepShoupConsts(rootTable, element->GetModulus()), element);
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(
-        const VecType& element, const VecType& rootOfUnityTable, VecType* result) {
+void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const VecType& element,
+                                                                        const VecType& rootOfUnityTable,
+                                                                        VecType* result) {
     uint32_t n = element.GetLength();
     if (result->GetLength() != n)
         OPENFHE_THROW("size of input element and size of output element not of same size");
@@ -291,8 +296,9 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
-        const VecType& rootOfUnityTable, const VecType& preconRootOfUnityTable, VecType* element) {
+void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
+                                                                               const VecType& preconRootOfUnityTable,
+                                                                               VecType* element) {
     // NTT based on the Cooley-Tukey (CT) butterfly
     // Inputs: element (vector of size n in standard ordering)
     //         rootOfUnityTable (precomputed roots of unity in bit-reversed ordering)
@@ -342,8 +348,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
                 }
             }
         }
-    }
-    else {
+    } else {
         for (size_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
             for (size_t i{0}; i < m; ++i) {
                 const NInt omega{rootOfUnityTable[i + m].m_value};
@@ -353,7 +358,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
                     NInt hi{(*element)[j1 + t].m_value};
                     NInt of{static_cast<NInt>(hi * omega - shoupMulHi(hi, preconOmega) * mv)};
                     NInt lo{(*element)[j1 + 0].m_value};
-                    lo                         = condSubNoCmp(lo, mv2);
+                    lo = condSubNoCmp(lo, mv2);
                     (*element)[j1 + 0].m_value = lo + of;
                     (*element)[j1 + t].m_value = lo - of + mv2;
                 }
@@ -394,8 +399,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
                 s = condSubNoCmp(s, mv2);
                 s = condSubNoCmp(s, mv);
                 NInt d{static_cast<NInt>(lo - of + mv2)};
-                d                             = condSubNoCmp(d, mv2);
-                d                             = condSubNoCmp(d, mv);
+                d = condSubNoCmp(d, mv2);
+                d = condSubNoCmp(d, mv);
                 (*element)[2 * i + 0].m_value = s;
                 (*element)[2 * i + 1].m_value = d;
             }
@@ -412,13 +417,12 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
             s = condSubNoCmp(s, mv2);
             s = condSubNoCmp(s, mv);
             NInt d{static_cast<NInt>(lo - of + mv2)};
-            d                             = condSubNoCmp(d, mv2);
-            d                             = condSubNoCmp(d, mv);
+            d = condSubNoCmp(d, mv2);
+            d = condSubNoCmp(d, mv);
             (*element)[2 * i + 0].m_value = s;
             (*element)[2 * i + 1].m_value = d;
         }
-    }
-    else {
+    } else {
         // wide words without wide lanes: nothing vectorizes here and the classic i += 2 form
         // is the faster scalar
         if (lazy) {
@@ -437,8 +441,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
                 s = condSubNoCmp(s, mv2);
                 s = condSubNoCmp(s, mv);
                 NInt d{static_cast<NInt>(lo - of + mv2)};
-                d                         = condSubNoCmp(d, mv2);
-                d                         = condSubNoCmp(d, mv);
+                d = condSubNoCmp(d, mv2);
+                d = condSubNoCmp(d, mv);
                 (*element)[i + 0].m_value = s;
                 (*element)[i + 1].m_value = d;
             }
@@ -455,8 +459,8 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
             s = condSubNoCmp(s, mv2);
             s = condSubNoCmp(s, mv);
             NInt d{static_cast<NInt>(lo - of + mv2)};
-            d                         = condSubNoCmp(d, mv2);
-            d                         = condSubNoCmp(d, mv);
+            d = condSubNoCmp(d, mv2);
+            d = condSubNoCmp(d, mv);
             (*element)[i + 0].m_value = s;
             (*element)[i + 1].m_value = d;
         }
@@ -465,7 +469,9 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(
 
 template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const VecType& element,
-        const VecType& rootOfUnityTable, const VecType& preconRootOfUnityTable, VecType* result) {
+                                                                        const VecType& rootOfUnityTable,
+                                                                        const VecType& preconRootOfUnityTable,
+                                                                        VecType* result) {
     if (result->GetLength() != element.GetLength())
         OPENFHE_THROW("size of input element and size of output element not of same size");
     *result = element;
@@ -473,17 +479,20 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverse(const Ve
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
-        const VecType& rootInvTable, const IntType& coInv, VecType* element) {
+void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(const VecType& rootInvTable,
+                                                                                 const IntType& coInv,
+                                                                                 VecType* element) {
     // compute the Shoup constants once and share the vectorized precon kernel
     const auto modulus = element->GetModulus();
-    const auto precon  = prepShoupConsts(rootInvTable, modulus);
+    const auto precon = prepShoupConsts(rootInvTable, modulus);
     InverseTransformFromBitReverseInPlace(rootInvTable, precon, coInv, coInv.PrepModMulConst(modulus), element);
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(
-        const VecType& element, const VecType& rootOfUnityInverseTable, const IntType& cycloOrderInv, VecType* result) {
+void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(const VecType& element,
+                                                                          const VecType& rootOfUnityInverseTable,
+                                                                          const IntType& cycloOrderInv,
+                                                                          VecType* result) {
     uint32_t n = element.GetLength();
     if (result->GetLength() != n)
         OPENFHE_THROW("size of input element and size of output element not of same size");
@@ -492,9 +501,9 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(const VecType& rootOfUnityInverseTable,
-        const VecType& preconRootOfUnityInverseTable, const IntType& cycloOrderInv, const IntType& preconCycloOrderInv,
-        VecType* element) {
+void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
+        const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable,
+        const IntType& cycloOrderInv, const IntType& preconCycloOrderInv, VecType* element) {
     //
     // INTT based on the Gentleman-Sande (GS) butterfly
     // Inputs: element (vector of size n in bit-reversed ordering)
@@ -574,8 +583,8 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         s = condSubNoCmp(s, mv2);
         NInt d{static_cast<NInt>(lo - hi + mv2)};
         NInt y{static_cast<NInt>(d * o1 - shoupMulHi(d, preconO1) * mv)};
-        y                           = condSubNoCmp(y, mv);
-        (*element)[j1 + 0].m_value  = s;
+        y = condSubNoCmp(y, mv);
+        (*element)[j1 + 0].m_value = s;
         (*element)[j1 + j2].m_value = y;
     }
     // perform remaining n/2 scalar multiplies by (n inverse), reducing to [0, modulus)
@@ -584,14 +593,14 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     for (size_t i{0}; i < j2; ++i) {
         NInt v{(*element)[i].m_value};
         NInt r{static_cast<NInt>(v * nInv - shoupMulHi(v, preconNInv) * mv)};
-        r                     = condSubNoCmp(r, mv);
+        r = condSubNoCmp(r, mv);
         (*element)[i].m_value = r;
     }
 }
 
 template <typename VecType>
-void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(const VecType& element,
-        const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable,
+void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(
+        const VecType& element, const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable,
         const IntType& cycloOrderInv, const IntType& preconCycloOrderInv, VecType* result) {
     uint32_t n = element.GetLength();
     if (result->GetLength() != n)
@@ -602,49 +611,55 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(const 
     for (size_t i = 0; i < n; i++) {
         (*result)[i] = element[i];
     }
-    InverseTransformFromBitReverseInPlace(
-            rootOfUnityInverseTable, preconRootOfUnityInverseTable, cycloOrderInv, preconCycloOrderInv, result);
+    InverseTransformFromBitReverseInPlace(rootOfUnityInverseTable, preconRootOfUnityInverseTable, cycloOrderInv,
+                                          preconCycloOrderInv, result);
 
     return;
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPlace(
-        const IntType& rootOfUnity, const uint32_t cycloOrder, VecType* element) {
+void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPlace(const IntType& rootOfUnity,
+                                                                                   const uint32_t cycloOrder,
+                                                                                   VecType* element) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0))
         return;
     auto tables = GetTables(rootOfUnity, cycloOrder, element->GetModulus());
-    NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
-            tables->rootReverse, tables->preconRootReverse, element);
+    NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(tables->rootReverse,
+                                                                               tables->preconRootReverse, element);
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(
-        const VecType& element, const IntType& rootOfUnity, const uint32_t cycloOrder, VecType* result) {
+void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(const VecType& element,
+                                                                            const IntType& rootOfUnity,
+                                                                            const uint32_t cycloOrder,
+                                                                            VecType* result) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {
         *result = element;
         return;
     }
     auto tables = GetTables(rootOfUnity, cycloOrder, element.GetModulus());
-    NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
-            element, tables->rootReverse, tables->preconRootReverse, result);
+    NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(element, tables->rootReverse,
+                                                                        tables->preconRootReverse, result);
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverseInPlace(
-        const IntType& rootOfUnity, const uint32_t cycloOrder, VecType* element) {
+void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverseInPlace(const IntType& rootOfUnity,
+                                                                                     const uint32_t cycloOrder,
+                                                                                     VecType* element) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0))
         return;
-    auto tables  = GetTables(rootOfUnity, cycloOrder, element->GetModulus());
+    auto tables = GetTables(rootOfUnity, cycloOrder, element->GetModulus());
     uint32_t msb = GetMSB((cycloOrder >> 1) - 1);
-    NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(tables->rootInverseReverse,
-            tables->preconRootInverseReverse, tables->cycloOrderInverse[msb], tables->preconCycloOrderInverse[msb],
-            element);
+    NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
+            tables->rootInverseReverse, tables->preconRootInverseReverse, tables->cycloOrderInverse[msb],
+            tables->preconCycloOrderInverse[msb], element);
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(
-        const VecType& element, const IntType& rootOfUnity, const uint32_t cycloOrder, VecType* result) {
+void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(const VecType& element,
+                                                                              const IntType& rootOfUnity,
+                                                                              const uint32_t cycloOrder,
+                                                                              VecType* result) {
     if (rootOfUnity == IntType(1) || rootOfUnity == IntType(0)) {
         *result = element;
         return;
@@ -655,15 +670,15 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(
     for (size_t i = 0; i < n; ++i)
         (*result)[i] = element[i];
     uint32_t msb = GetMSB(n - 1);
-    NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(tables->rootInverseReverse,
-            tables->preconRootInverseReverse, tables->cycloOrderInverse[msb], tables->preconCycloOrderInverse[msb],
-            result);
+    NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
+            tables->rootInverseReverse, tables->preconRootInverseReverse, tables->cycloOrderInverse[msb],
+            tables->preconCycloOrderInverse[msb], result);
 }
 
 template <typename VecType>
 std::shared_ptr<const typename ChineseRemainderTransformFTTNat<VecType>::Tables>
-ChineseRemainderTransformFTTNat<VecType>::GetTables(
-        const IntType& rootOfUnity, const uint32_t cycloOrder, const IntType& modulus) {
+ChineseRemainderTransformFTTNat<VecType>::GetTables(const IntType& rootOfUnity, const uint32_t cycloOrder,
+                                                    const IntType& modulus) {
     const uint32_t ringDim = (cycloOrder >> 1);
     {
         std::shared_lock<std::shared_mutex> rlk(TablesMutex());
@@ -678,8 +693,8 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(
 
     auto t = std::make_shared<Tables>();
     IntType x(1), xinv(1);
-    uint32_t msb               = GetMSB(ringDim - 1);
-    IntType mu                 = modulus.ComputeMu();
+    uint32_t msb = GetMSB(ringDim - 1);
+    IntType mu = modulus.ComputeMu();
     IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);
     const IntType& nModulus{modulus};
     VecType Table(ringDim, modulus);
@@ -687,28 +702,28 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(
     VecType preconTable(ringDim, nModulus);
     VecType preconTableI(ringDim, nModulus);
     for (size_t i = 0; i < ringDim; ++i) {
-        auto iinv         = ReverseBits(i, msb);
-        Table[iinv]       = x;
+        auto iinv = ReverseBits(i, msb);
+        Table[iinv] = x;
         preconTable[iinv] = x.PrepModMulConst(nModulus);
         x.ModMulEq(rootOfUnity, modulus, mu);
-        TableI[iinv]       = xinv;
+        TableI[iinv] = xinv;
         preconTableI[iinv] = xinv.PrepModMulConst(nModulus);
         xinv.ModMulEq(rootOfUnityInverse, modulus, mu);
     }
-    t->rootReverse              = std::move(Table);
-    t->rootInverseReverse       = std::move(TableI);
-    t->preconRootReverse        = std::move(preconTable);
+    t->rootReverse = std::move(Table);
+    t->rootInverseReverse = std::move(TableI);
+    t->preconRootReverse = std::move(preconTable);
     t->preconRootInverseReverse = std::move(preconTableI);
 
     IntType coInv(1);
     VecType TableCOI(msb + 1, modulus);
     VecType preconTableCOI(msb + 1, nModulus);
     for (size_t i = 0; i <= msb; ++i) {
-        TableCOI[i]       = coInv.ModInverse(modulus);
+        TableCOI[i] = coInv.ModInverse(modulus);
         preconTableCOI[i] = TableCOI[i].PrepModMulConst(nModulus);
         coInv <<= 1;
     }
-    t->cycloOrderInverse       = std::move(TableCOI);
+    t->cycloOrderInverse = std::move(TableCOI);
     t->preconCycloOrderInverse = std::move(preconTableCOI);
 
     std::shared_ptr<const Tables> ct(std::move(t));
@@ -717,14 +732,14 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTNat<VecType>::PreCompute(
-        const IntType& rootOfUnity, const uint32_t cycloOrder, const IntType& modulus) {
+void ChineseRemainderTransformFTTNat<VecType>::PreCompute(const IntType& rootOfUnity, const uint32_t cycloOrder,
+                                                          const IntType& modulus) {
     GetTables(rootOfUnity, cycloOrder, modulus);
 }
 
 template <typename VecType>
-void ChineseRemainderTransformFTTNat<VecType>::PreCompute(
-        std::vector<IntType>& rootOfUnity, const uint32_t cycloOrder, std::vector<IntType>& moduliiChain) {
+void ChineseRemainderTransformFTTNat<VecType>::PreCompute(std::vector<IntType>& rootOfUnity, const uint32_t cycloOrder,
+                                                          std::vector<IntType>& moduliiChain) {
     uint32_t numOfRootU = rootOfUnity.size();
     uint32_t numModulii = moduliiChain.size();
     if (numOfRootU != numModulii)
@@ -742,22 +757,22 @@ void ChineseRemainderTransformFTTNat<VecType>::Reset() {
 template <typename VecType>
 void BluesteinFFTNat<VecType>::PreComputeDefaultNTTModulusRoot(uint32_t cycloOrder, const IntType& modulus) {
     std::lock_guard<std::recursive_mutex> lk(CacheMutex());
-    uint32_t nttDim                           = 1u << GetMSB(2 * cycloOrder - 2);
-    const auto nttModulus                     = LastPrime<IntType>(std::log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
-    const auto nttRoot                        = RootOfUnity<IntType>(nttDim, nttModulus);
+    uint32_t nttDim = 1u << GetMSB(2 * cycloOrder - 2);
+    const auto nttModulus = LastPrime<IntType>(std::log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
+    const auto nttRoot = RootOfUnity<IntType>(nttDim, nttModulus);
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
-    m_defaultNTTModulusRoot[modulus]          = nttModulusRoot;
+    m_defaultNTTModulusRoot[modulus] = nttModulusRoot;
 
     PreComputeRootTableForNTT(cycloOrder, nttModulusRoot);
 }
 
 template <typename VecType>
-void BluesteinFFTNat<VecType>::PreComputeRootTableForNTT(
-        uint32_t cyclotoOrder, const ModulusRoot<IntType>& nttModulusRoot) {
+void BluesteinFFTNat<VecType>::PreComputeRootTableForNTT(uint32_t cyclotoOrder,
+                                                         const ModulusRoot<IntType>& nttModulusRoot) {
     std::lock_guard<std::recursive_mutex> lk(CacheMutex());
-    uint32_t nttDim        = 1u << GetMSB(2 * cyclotoOrder - 2);
+    uint32_t nttDim = 1u << GetMSB(2 * cyclotoOrder - 2);
     const auto& nttModulus = nttModulusRoot.first;
-    const auto& nttRoot    = nttModulusRoot.second;
+    const auto& nttRoot = nttModulusRoot.second;
 
     IntType root(nttRoot);
     auto rootInv = root.ModInverse(nttModulus);
@@ -770,17 +785,17 @@ void BluesteinFFTNat<VecType>::PreComputeRootTableForNTT(
 
     IntType x(1), y(1);
     for (size_t i = 0; i < nttDimHf; ++i) {
-        rootTable[i]   = x;
+        rootTable[i] = x;
         preconTable[i] = x.PrepModMulConst(nttModulus);
         x.ModMulEq(root, nttModulus);
-        rootTableInverse[i]   = y;
+        rootTableInverse[i] = y;
         preconTableInverse[i] = y.PrepModMulConst(nttModulus);
         y.ModMulEq(rootInv, nttModulus);
     }
 
-    m_rootOfUnityTableByModulusRoot[nttModulusRoot]              = std::move(rootTable);
-    m_rootOfUnityInverseTableByModulusRoot[nttModulusRoot]       = std::move(rootTableInverse);
-    m_preconRootOfUnityTableByModulusRoot[nttModulusRoot]        = std::move(preconTable);
+    m_rootOfUnityTableByModulusRoot[nttModulusRoot] = std::move(rootTable);
+    m_rootOfUnityInverseTableByModulusRoot[nttModulusRoot] = std::move(rootTableInverse);
+    m_preconRootOfUnityTableByModulusRoot[nttModulusRoot] = std::move(preconTable);
     m_preconRootOfUnityInverseTableByModulusRoot[nttModulusRoot] = std::move(preconTableInverse);
 }
 
@@ -788,13 +803,13 @@ template <typename VecType>
 void BluesteinFFTNat<VecType>::PreComputePowers(uint32_t cycloOrder, const ModulusRoot<IntType>& modulusRoot) {
     std::lock_guard<std::recursive_mutex> lk(CacheMutex());
     const auto& modulus = modulusRoot.first;
-    const auto& root    = modulusRoot.second;
+    const auto& root = modulusRoot.second;
 
     VecType powers(cycloOrder, modulus);
     powers[0] = 1;
     for (size_t i = 1; i < cycloOrder; i++) {
         auto iSqr = (i * i) % (2 * cycloOrder);
-        auto val  = root.ModExp(IntType(iSqr), modulus);
+        auto val = root.ModExp(IntType(iSqr), modulus);
         powers[i] = val;
     }
     m_powersTableByModulusRoot[modulusRoot] = std::move(powers);
@@ -804,21 +819,21 @@ template <typename VecType>
 void BluesteinFFTNat<VecType>::PreComputeRBTable(uint32_t cycloOrder, const ModulusRootPair<IntType>& modulusRootPair) {
     std::lock_guard<std::recursive_mutex> lk(CacheMutex());
     const auto& modulusRoot = modulusRootPair.first;
-    const auto& modulus     = modulusRoot.first;
-    const auto& root        = modulusRoot.second;
-    const auto rootInv      = root.ModInverse(modulus);
+    const auto& modulus = modulusRoot.first;
+    const auto& root = modulusRoot.second;
+    const auto rootInv = root.ModInverse(modulus);
 
     const auto& nttModulusRoot = modulusRootPair.second;
-    const auto& nttModulus     = nttModulusRoot.first;
-    const auto& rootTable      = m_rootOfUnityTableByModulusRoot[nttModulusRoot];
-    const auto& preconTable    = m_preconRootOfUnityTableByModulusRoot[nttModulusRoot];
-    uint32_t nttDim            = 1u << GetMSB(2 * cycloOrder - 2);
+    const auto& nttModulus = nttModulusRoot.first;
+    const auto& rootTable = m_rootOfUnityTableByModulusRoot[nttModulusRoot];
+    const auto& preconTable = m_preconRootOfUnityTableByModulusRoot[nttModulusRoot];
+    uint32_t nttDim = 1u << GetMSB(2 * cycloOrder - 2);
 
     VecType b(2 * cycloOrder - 1, modulus);
     b[cycloOrder - 1] = 1;
     for (size_t i = 1; i < cycloOrder; i++) {
-        auto iSqr             = (i * i) % (2 * cycloOrder);
-        auto val              = rootInv.ModExp(IntType(iSqr), modulus);
+        auto iSqr = (i * i) % (2 * cycloOrder);
+        auto val = rootInv.ModExp(IntType(iSqr), modulus);
         b[cycloOrder - 1 + i] = val;
         b[cycloOrder - 1 - i] = val;
     }
@@ -832,8 +847,8 @@ void BluesteinFFTNat<VecType>::PreComputeRBTable(uint32_t cycloOrder, const Modu
 }
 
 template <typename VecType>
-VecType BluesteinFFTNat<VecType>::ForwardTransform(
-        const VecType& element, const IntType& root, const uint32_t cycloOrder) {
+VecType BluesteinFFTNat<VecType>::ForwardTransform(const VecType& element, const IntType& root,
+                                                   const uint32_t cycloOrder) {
     const auto& modulus = element.GetModulus();
     std::unique_lock<std::recursive_mutex> lk(CacheMutex());
     const auto nttModulusRoot = m_defaultNTTModulusRoot[modulus];
@@ -843,30 +858,31 @@ VecType BluesteinFFTNat<VecType>::ForwardTransform(
 
 template <typename VecType>
 VecType BluesteinFFTNat<VecType>::ForwardTransform(const VecType& element, const IntType& root,
-        const uint32_t cycloOrder, const ModulusRoot<IntType>& nttModulusRoot) {
+                                                   const uint32_t cycloOrder,
+                                                   const ModulusRoot<IntType>& nttModulusRoot) {
     if (element.GetLength() != cycloOrder)
         OPENFHE_THROW("expected size of element vector should be equal to cyclotomic order");
 
-    const auto& modulus                            = element.GetModulus();
-    const ModulusRoot<IntType> modulusRoot         = {modulus, root};
+    const auto& modulus = element.GetModulus();
+    const ModulusRoot<IntType> modulusRoot = {modulus, root};
     const ModulusRootPair<IntType> modulusRootPair = {modulusRoot, nttModulusRoot};
 
     // all tables are precomputed by the callers; take stable references under the cache
     // lock (map nodes never move), then compute without it
     std::unique_lock<std::recursive_mutex> lk(CacheMutex());
-    const VecType& powers             = m_powersTableByModulusRoot.at(modulusRoot);
-    const VecType& rootTable          = m_rootOfUnityTableByModulusRoot.at(nttModulusRoot);
-    const VecType& preconTable        = m_preconRootOfUnityTableByModulusRoot.at(nttModulusRoot);
-    const VecType& rootTableInverse   = m_rootOfUnityInverseTableByModulusRoot.at(nttModulusRoot);
+    const VecType& powers = m_powersTableByModulusRoot.at(modulusRoot);
+    const VecType& rootTable = m_rootOfUnityTableByModulusRoot.at(nttModulusRoot);
+    const VecType& preconTable = m_preconRootOfUnityTableByModulusRoot.at(nttModulusRoot);
+    const VecType& rootTableInverse = m_rootOfUnityInverseTableByModulusRoot.at(nttModulusRoot);
     const VecType& preconTableInverse = m_preconRootOfUnityInverseTableByModulusRoot.at(nttModulusRoot);
-    const VecType& RB                 = m_RBTableByModulusRootPair.at(modulusRootPair);
+    const VecType& RB = m_RBTableByModulusRootPair.at(modulusRootPair);
     lk.unlock();
 
     const auto& nttModulus = nttModulusRoot.first;
-    VecType x              = element.ModMul(powers);
+    VecType x = element.ModMul(powers);
 
     uint32_t nttDim = 1u << GetMSB(2 * cycloOrder - 2);
-    auto Ra         = PadZeros(x, nttDim);
+    auto Ra = PadZeros(x, nttDim);
     Ra.SetModulus(nttModulus);
     VecType RA(nttDim);
     NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(Ra, rootTable, preconTable, &RA);
@@ -925,23 +941,26 @@ void ChineseRemainderTransformArbNat<VecType>::PreCompute(const uint32_t cycloto
 }
 
 template <typename VecType>
-void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTModulus(
-        uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttModulus, const IntType& nttRoot) {
+void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTModulus(uint32_t cyclotoOrder, const IntType& modulus,
+                                                                        const IntType& nttModulus,
+                                                                        const IntType& nttRoot) {
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
     std::lock_guard<std::recursive_mutex> lk(BluesteinFFTNat<VecType>::CacheMutex());
     BluesteinFFTNat<VecType>().PreComputeRootTableForNTT(cyclotoOrder, nttModulusRoot);
 }
 
 template <typename VecType>
-void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTDivisionModulus(
-        uint32_t cyclotoOrder, const IntType& modulus, const IntType& nttMod, const IntType& nttRootBig) {
+void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTDivisionModulus(uint32_t cyclotoOrder,
+                                                                                const IntType& modulus,
+                                                                                const IntType& nttMod,
+                                                                                const IntType& nttRootBig) {
     std::lock_guard<std::recursive_mutex> lk(BluesteinFFTNat<VecType>::CacheMutex());
     OPENFHE_DEBUG_FLAG(false);
 
     uint32_t n = GetTotient(cyclotoOrder);
     OPENFHE_DEBUG("GetTotient(" << cyclotoOrder << ")= " << n);
 
-    uint32_t power                 = cyclotoOrder - n;
+    uint32_t power = cyclotoOrder - n;
     m_nttDivisionDim[cyclotoOrder] = 2u << GetMSB(power - 1);
 
     uint32_t nttDimBig = 1u << GetMSB(2 * cyclotoOrder - 2);
@@ -950,7 +969,7 @@ void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTDivisionModulus(
     // for regular NTT
     IntType nttRoot = nttRootBig.ModExp(IntType(nttDimBig / m_nttDivisionDim[cyclotoOrder]), nttMod);
 
-    m_DivisionNTTModulus[modulus]     = nttMod;
+    m_DivisionNTTModulus[modulus] = nttMod;
     m_DivisionNTTRootOfUnity[modulus] = nttRoot;
     // part0 setting of rootTable and inverse rootTable
     uint32_t nttDim = m_nttDivisionDim[cyclotoOrder];
@@ -965,31 +984,31 @@ void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTDivisionModulus(
 
     IntType x(1);
     for (size_t i = 0; i < nttDimHf; i++) {
-        rootTable[i]   = x;
+        rootTable[i] = x;
         preconTable[i] = x.PrepModMulConst(nttMod);
-        x              = x.ModMul(root, nttMod);
+        x = x.ModMul(root, nttMod);
     }
 
     x = 1;
     for (size_t i = 0; i < nttDimHf; i++) {
-        rootTableInverse[i]   = x;
+        rootTableInverse[i] = x;
         preconTableInverse[i] = x.PrepModMulConst(nttMod);
-        x                     = x.ModMul(rootInv, nttMod);
+        x = x.ModMul(rootInv, nttMod);
     }
 
-    m_rootOfUnityDivisionTableByModulus[nttMod]              = std::move(rootTable);
-    m_rootOfUnityDivisionInverseTableByModulus[nttMod]       = std::move(rootTableInverse);
-    m_rootOfUnityDivisionPreconTableByModulus[nttMod]        = std::move(preconTable);
+    m_rootOfUnityDivisionTableByModulus[nttMod] = std::move(rootTable);
+    m_rootOfUnityDivisionInverseTableByModulus[nttMod] = std::move(rootTableInverse);
+    m_rootOfUnityDivisionPreconTableByModulus[nttMod] = std::move(preconTable);
     m_rootOfUnityDivisionInversePreconTableByModulus[nttMod] = std::move(preconTableInverse);
 
     // end of part0
     // part1
     const auto& RevCPM = InversePolyMod(m_cyclotomicPolyMap[modulus], modulus, power);
-    auto RevCPMPadded  = BluesteinFFTNat<VecType>().PadZeros(RevCPM, nttDim);
+    auto RevCPMPadded = BluesteinFFTNat<VecType>().PadZeros(RevCPM, nttDim);
     RevCPMPadded.SetModulus(nttMod);
     // end of part1
 
-    const auto& divTable  = m_rootOfUnityDivisionTableByModulus[nttMod];
+    const auto& divTable = m_rootOfUnityDivisionTableByModulus[nttMod];
     const auto& divPrecon = m_rootOfUnityDivisionPreconTableByModulus[nttMod];
     VecType RA(nttDim);
     NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(RevCPMPadded, divTable, divPrecon, &RA);
@@ -1002,15 +1021,15 @@ void ChineseRemainderTransformArbNat<VecType>::SetPreComputedNTTDivisionModulus(
         QForwardTransform[i] = cycloPoly[i];
 
     VecType QFwdResult(nttDim);
-    NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(
-            QForwardTransform, divTable, divPrecon, &QFwdResult);
+    NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(QForwardTransform, divTable, divPrecon,
+                                                                     &QFwdResult);
 
     m_cyclotomicPolyNTTMap[modulus] = std::move(QFwdResult);
 }
 
 template <typename VecType>
-VecType ChineseRemainderTransformArbNat<VecType>::InversePolyMod(
-        const VecType& cycloPoly, const IntType& modulus, uint32_t power) {
+VecType ChineseRemainderTransformArbNat<VecType>::InversePolyMod(const VecType& cycloPoly, const IntType& modulus,
+                                                                 uint32_t power) {
     VecType result(power, modulus);
     uint32_t r = (power > 1) ? GetMSB(power - 1) : 0;
     VecType h(1, modulus);  // h is a unit polynomial
@@ -1022,7 +1041,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::InversePolyMod(
     for (size_t i = 0; i < r; i++) {
         uint32_t qDegree = 1u << (i + 1);
         VecType q(qDegree + 1, modulus);  // q = x^(2^i+1)
-        q[qDegree]   = 1;
+        q[qDegree] = 1;
         auto hSquare = PolynomialMultiplication(h, h);
 
         auto a = h * IntType(2);
@@ -1031,8 +1050,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::InversePolyMod(
         for (size_t j = 0; j < b.GetLength(); j++) {
             if (j < a.GetLength()) {
                 b[j] = a[j].ModSub(b[j], modulus, mu);
-            }
-            else {
+            } else {
                 b[j] = modulus.ModSub(b[j], modulus, mu);
             }
         }
@@ -1048,15 +1066,16 @@ VecType ChineseRemainderTransformArbNat<VecType>::InversePolyMod(
 
 template <typename VecType>
 VecType ChineseRemainderTransformArbNat<VecType>::ForwardTransform(const VecType& element, const IntType& root,
-        const IntType& nttModulus, const IntType& nttRoot, const uint32_t cycloOrder) {
+                                                                   const IntType& nttModulus, const IntType& nttRoot,
+                                                                   const uint32_t cycloOrder) {
     uint32_t phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim)
         OPENFHE_THROW("element size should be equal to phim");
 
-    const auto& modulus                    = element.GetModulus();
+    const auto& modulus = element.GetModulus();
     const ModulusRoot<IntType> modulusRoot = {modulus, root};
 
-    const ModulusRoot<IntType> nttModulusRoot      = {nttModulus, nttRoot};
+    const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
     const ModulusRootPair<IntType> modulusRootPair = {modulusRoot, nttModulusRoot};
 
     {
@@ -1084,7 +1103,8 @@ VecType ChineseRemainderTransformArbNat<VecType>::ForwardTransform(const VecType
 
 template <typename VecType>
 VecType ChineseRemainderTransformArbNat<VecType>::InverseTransform(const VecType& element, const IntType& root,
-        const IntType& nttModulus, const IntType& nttRoot, const uint32_t cycloOrder) {
+                                                                   const IntType& nttModulus, const IntType& nttRoot,
+                                                                   const uint32_t cycloOrder) {
     uint32_t phim = GetTotient(cycloOrder);
     if (element.GetLength() != phim)
         OPENFHE_THROW("element size should be equal to phim");
@@ -1093,7 +1113,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::InverseTransform(const VecType
     auto rootInverse(root.ModInverse(modulus));
     const ModulusRoot<IntType> modulusRootInverse = {modulus, rootInverse};
 
-    const ModulusRoot<IntType> nttModulusRoot      = {nttModulus, nttRoot};
+    const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
     const ModulusRootPair<IntType> modulusRootPair = {modulusRootInverse, nttModulusRoot};
 
     {
@@ -1115,7 +1135,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::InverseTransform(const VecType
             BluesteinFFTNat<VecType>().ForwardTransform(inputToBluestein, rootInverse, cycloOrder, nttModulusRoot);
     auto cyclotomicInverse((IntType(cycloOrder)).ModInverse(modulus));
     outputBluestein = outputBluestein * cyclotomicInverse;
-    VecType output  = Drop(outputBluestein, cycloOrder, false, nttModulus, nttRoot);
+    VecType output = Drop(outputBluestein, cycloOrder, false, nttModulus, nttRoot);
     return output;
 }
 
@@ -1130,10 +1150,9 @@ VecType ChineseRemainderTransformArbNat<VecType>::Pad(const VecType& element, co
         for (size_t i = 0; i < n; i++) {
             inputToBluestein[i] = element[i];
         }
-    }
-    else {  // Inverse transform padding
+    } else {  // Inverse transform padding
         auto tList = GetTotientList(cycloOrder);
-        size_t i   = 0;
+        size_t i = 0;
         for (auto& coprime : tList) {
             inputToBluestein[coprime] = element[i++];
         }
@@ -1144,7 +1163,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::Pad(const VecType& element, co
 
 template <typename VecType>
 VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, const uint32_t cycloOrder, bool forward,
-        const IntType& bigMod, const IntType& bigRoot) {
+                                                       const IntType& bigMod, const IntType& bigRoot) {
     uint32_t n = GetTotient(cycloOrder);
 
     const auto& modulus = element.GetModulus();
@@ -1155,8 +1174,7 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
         for (size_t i = 0; i < n; i++) {
             output[i] = element[tList[i]];
         }
-    }
-    else {  // Inverse transform drop
+    } else {  // Inverse transform drop
         if ((n + 1) == cycloOrder) {
             IntType mu = modulus.ComputeMu();  // Precompute the Barrett mu parameter
             // cycloOrder is prime: Reduce mod Phi_{n+1}(x)
@@ -1165,16 +1183,15 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
             for (size_t i = 0; i < n; i++) {
                 output[i] = element[i].ModSub(coeff_n, modulus, mu);
             }
-        }
-        else if ((n + 1) * 2 == cycloOrder) {
+        } else if ((n + 1) * 2 == cycloOrder) {
             IntType mu = modulus.ComputeMu();  // Precompute the Barrett mu parameter
             // cycloOrder is 2*prime: 2 Step reduction
             // First reduce mod x^(n+1)+1 (=(x+1)*Phi_{2*(n+1)}(x))
             // Subtract co-efficient of x^(i+n+1) from x^(i)
             for (size_t i = 0; i < n; i++) {
-                auto coeff_i  = element[i];
+                auto coeff_i = element[i];
                 auto coeff_ip = element[i + n + 1];
-                output[i]     = coeff_i.ModSub(coeff_ip, modulus, mu);
+                output[i] = coeff_i.ModSub(coeff_ip, modulus, mu);
             }
             auto coeff_n = element[n].ModSub(element[2 * n + 1], modulus, mu);
             // Now reduce mod Phi_{2*(n+1)}(x)
@@ -1182,29 +1199,27 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
             for (size_t i = 0; i < n; i++) {
                 if (i % 2 == 0) {
                     output[i].ModSubEq(coeff_n, modulus, mu);
-                }
-                else {
+                } else {
                     output[i].ModAddEq(coeff_n, modulus, mu);
                 }
             }
-        }
-        else {
+        } else {
             // precompute root of unity tables for division NTT
             std::unique_lock<std::recursive_mutex> lk(BluesteinFFTNat<VecType>::CacheMutex());
             if ((m_rootOfUnityDivisionTableByModulus[bigMod].GetLength() == 0) ||
-                    (m_DivisionNTTModulus[modulus] != bigMod)) {
+                (m_DivisionNTTModulus[modulus] != bigMod)) {
                 SetPreComputedNTTDivisionModulus(cycloOrder, modulus, bigMod, bigRoot);
             }
 
             // cycloOrder is arbitrary
-            const auto nttMod                 = m_DivisionNTTModulus[modulus];
-            const VecType& rootTable          = m_rootOfUnityDivisionTableByModulus.at(nttMod);
-            const VecType& preconTable        = m_rootOfUnityDivisionPreconTableByModulus.at(nttMod);
-            const VecType& rootTableInverse   = m_rootOfUnityDivisionInverseTableByModulus.at(nttMod);
+            const auto nttMod = m_DivisionNTTModulus[modulus];
+            const VecType& rootTable = m_rootOfUnityDivisionTableByModulus.at(nttMod);
+            const VecType& preconTable = m_rootOfUnityDivisionPreconTableByModulus.at(nttMod);
+            const VecType& rootTableInverse = m_rootOfUnityDivisionInverseTableByModulus.at(nttMod);
             const VecType& preconTableInverse = m_rootOfUnityDivisionInversePreconTableByModulus.at(nttMod);
-            const VecType& cycloReverseNTT    = m_cyclotomicPolyReverseNTTMap.at(modulus);
-            const VecType& cycloNTT           = m_cyclotomicPolyNTTMap.at(modulus);
-            const uint32_t nttDivDim          = m_nttDivisionDim.at(cycloOrder);
+            const VecType& cycloReverseNTT = m_cyclotomicPolyReverseNTTMap.at(modulus);
+            const VecType& cycloNTT = m_cyclotomicPolyNTTMap.at(modulus);
+            const uint32_t nttDivDim = m_nttDivisionDim.at(cycloOrder);
             lk.unlock();
 
             VecType aPadded2(nttDivDim, nttMod);
@@ -1217,8 +1232,8 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
             NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(aPadded2, rootTable, preconTable, &A);
             auto AB = A * cycloReverseNTT;
             VecType a(nttDivDim);
-            NumberTheoreticTransformNat<VecType>().InverseTransformIterative(
-                    AB, rootTableInverse, preconTableInverse, &a);
+            NumberTheoreticTransformNat<VecType>().InverseTransformIterative(AB, rootTableInverse, preconTableInverse,
+                                                                             &a);
 
             VecType quotient(nttDivDim, modulus);
             for (size_t i = 0; i < power; i++) {
@@ -1228,13 +1243,13 @@ VecType ChineseRemainderTransformArbNat<VecType>::Drop(const VecType& element, c
             quotient.SetModulus(nttMod);
 
             VecType newQuotient(nttDivDim);
-            NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(
-                    quotient, rootTable, preconTable, &newQuotient);
+            NumberTheoreticTransformNat<VecType>().ForwardTransformIterative(quotient, rootTable, preconTable,
+                                                                             &newQuotient);
             newQuotient *= cycloNTT;
 
             VecType newQuotient2(nttDivDim);
-            NumberTheoreticTransformNat<VecType>().InverseTransformIterative(
-                    newQuotient, rootTableInverse, preconTableInverse, &newQuotient2);
+            NumberTheoreticTransformNat<VecType>().InverseTransformIterative(newQuotient, rootTableInverse,
+                                                                             preconTableInverse, &newQuotient2);
             newQuotient2.SetModulus(modulus);
             newQuotient2.ModReduceEq();
 

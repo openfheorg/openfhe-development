@@ -51,7 +51,7 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
     // the number of coefficients to be generated should be degree+1 as zero is also included
     size_t coeffTotal{degree + 1};
     double bMinusA = 0.5 * (b - a);
-    double bPlusA  = 0.5 * (b + a);
+    double bPlusA = 0.5 * (b + a);
     double PiByDeg = M_PI / static_cast<double>(coeffTotal);
     std::vector<double> functionPoints(coeffTotal);
     for (size_t i = 0; i < coeffTotal; ++i)
@@ -68,8 +68,8 @@ std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func
 }
 
 // A cleartext version of CryptoContext<...>::EvalChebyshevFunction(...)
-std::vector<double> EvalChebyshevFunctionPtxt(
-        std::function<double(double)> func, const std::vector<double>& ptxt, double a, double b, size_t degree) {
+std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> func, const std::vector<double>& ptxt,
+                                              double a, double b, size_t degree) {
     auto coeffs = EvalChebyshevCoefficients(func, a, b, degree);
 
     // The standard practice is to halve the 1st coefficient.
@@ -86,22 +86,22 @@ std::vector<double> EvalChebyshevFunctionPtxt(
 
     // If [a,b] is different than [-1,1] then need to scale the input
     double scaleFactor = 2.0 / (b - a);
-    double offset      = (b + a) * scaleFactor / -2.0;
+    double offset = (b + a) * scaleFactor / -2.0;
 
     std::vector<double> result(ptxt.size());
     for (size_t i = 0; i < ptxt.size(); i++) {
-        double x  = ptxt[i] * scaleFactor + offset;
+        double x = ptxt[i] * scaleFactor + offset;
         double x2 = 2 * x;
 
         double t_prev = 1.0;  // T0(x) = 1
-        double t_j    = x;    // T1(x) = x
-        double y      = coeffs[0] + coeffs[1] * x;
+        double t_j = x;       // T1(x) = x
+        double y = coeffs[0] + coeffs[1] * x;
         // Use the recursive formula T_{i+1}(X) = 2x T_i(x) - T_{i-1}(x)
         for (size_t j = 2; j < coeffs.size(); j++) {
             // Compute T_j(x) and add it to the approximation
             double t_next = x2 * t_j - t_prev;
-            t_prev        = t_j;
-            t_j           = t_next;
+            t_prev = t_j;
+            t_j = t_next;
             y += coeffs[j] * t_next;
         }
         result[i] = y;

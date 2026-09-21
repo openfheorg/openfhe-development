@@ -46,7 +46,7 @@ namespace lbcrypto {
  * This is used in unit tests.
  */
 class MetadataTest : public Metadata {
-public:
+  public:
     /**
    * Default constructor
    */
@@ -103,8 +103,7 @@ public:
             const MetadataTest& mdataTest = dynamic_cast<const MetadataTest&>(mdata);
             return m_s == mdataTest.GetMetadata();  // All Metadata objects without
                                                     // any members are equal
-        }
-        catch (const std::bad_cast& e) {
+        } catch (const std::bad_cast& e) {
             OPENFHE_THROW("Tried to downcast an object of different class to MetadataTest");
         }
     }
@@ -124,8 +123,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(cereal::base_class<Metadata>(this));
         ar(cereal::make_nvp("str", m_s));
@@ -145,8 +144,7 @@ public:
 
         if (ciphertext->MetadataFound(it)) {
             return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it)->Clone());
-        }
-        else {
+        } else {
             OPENFHE_THROW("Attempt to access metadata (MetadataTest) that has not been set.");
         }
     }
@@ -166,8 +164,7 @@ public:
 
         if (ciphertext->MetadataFound(it)) {
             return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it));
-        }
-        else {
+        } else {
             OPENFHE_THROW("Attempt to access metadata (MetadataTest) that has not been set.");
         }
     }
@@ -188,12 +185,12 @@ public:
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
     template <class Element>
-    static void StoreMetadata(
-            std::shared_ptr<CiphertextImpl<Element>> ciphertext, std::shared_ptr<MetadataTest> mdata) {
+    static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
+                              std::shared_ptr<MetadataTest> mdata) {
         ciphertext->SetMetadataByKey("test", mdata);
     }
 
-protected:
+  protected:
     /**
     * Defines how to print the contents of objects of this class.
     */

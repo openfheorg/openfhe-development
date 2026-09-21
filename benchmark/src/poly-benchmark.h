@@ -47,18 +47,18 @@
 
 using namespace lbcrypto;
 
-constexpr size_t POLY_NUM    = 8;
+constexpr size_t POLY_NUM = 8;
 constexpr size_t POLY_NUM_M1 = (POLY_NUM - 1);
 
 std::vector<uint32_t> tow_args({1, 2, 4, 8, 16, 32});
 
 uint32_t g_polyOrder = 0;
-uint32_t g_polyBits  = 0;
+uint32_t g_polyBits = 0;
 
 struct PolyBenchParams {
     PolyBenchParams(uint32_t order, uint32_t bits) {
         g_polyOrder = order;
-        g_polyBits  = bits;
+        g_polyBits = bits;
     }
 };
 
@@ -74,8 +74,8 @@ static void DCRTArguments(benchmark::internal::Benchmark* b) {
 }
 
 static void GeneratePolys(uint32_t order, uint32_t bits, std::shared_ptr<std::vector<NativePoly>>& polyArrayEval,
-        std::shared_ptr<std::vector<NativePoly>>& polyArrayCoef) {
-    auto p    = std::make_shared<ILNativeParams>(order, bits);
+                          std::shared_ptr<std::vector<NativePoly>>& polyArrayCoef) {
+    auto p = std::make_shared<ILNativeParams>(order, bits);
     auto eval = std::make_shared<std::vector<NativePoly>>(POLY_NUM);
     auto coef = std::make_shared<std::vector<NativePoly>>(POLY_NUM);
 #pragma omp parallel for collapse(2)
@@ -83,7 +83,7 @@ static void GeneratePolys(uint32_t order, uint32_t bits, std::shared_ptr<std::ve
         for (size_t i = 0; i < POLY_NUM; ++i) {
             DiscreteUniformGeneratorImpl<NativeVector> dug;
             auto& dst = (f == 0) ? (*eval)[i] : (*coef)[i];
-            dst       = NativePoly(dug, p, (f == 0) ? Format::EVALUATION : Format::COEFFICIENT);
+            dst = NativePoly(dug, p, (f == 0) ? Format::EVALUATION : Format::COEFFICIENT);
         }
     }
     polyArrayEval = std::move(eval);
@@ -91,8 +91,9 @@ static void GeneratePolys(uint32_t order, uint32_t bits, std::shared_ptr<std::ve
 }
 
 static void GenerateDCRTPolys(uint32_t order, uint32_t bits, uint32_t towers,
-        std::shared_ptr<std::vector<DCRTPoly>>& polyArrayEval, std::shared_ptr<std::vector<DCRTPoly>>& polyArrayCoef) {
-    auto p    = std::make_shared<ILDCRTParams<BigInteger>>(order, towers, bits);
+                              std::shared_ptr<std::vector<DCRTPoly>>& polyArrayEval,
+                              std::shared_ptr<std::vector<DCRTPoly>>& polyArrayCoef) {
+    auto p = std::make_shared<ILDCRTParams<BigInteger>>(order, towers, bits);
     auto eval = std::make_shared<std::vector<DCRTPoly>>(POLY_NUM);
     auto coef = std::make_shared<std::vector<DCRTPoly>>(POLY_NUM);
 #pragma omp parallel for collapse(2)
@@ -100,7 +101,7 @@ static void GenerateDCRTPolys(uint32_t order, uint32_t bits, uint32_t towers,
         for (size_t i = 0; i < POLY_NUM; ++i) {
             DiscreteUniformGeneratorImpl<NativeVector> tdug;
             auto& dst = (f == 0) ? (*eval)[i] : (*coef)[i];
-            dst       = DCRTPoly(tdug, p, (f == 0) ? Format::EVALUATION : Format::COEFFICIENT);
+            dst = DCRTPoly(tdug, p, (f == 0) ? Format::EVALUATION : Format::COEFFICIENT);
         }
     }
     polyArrayEval = std::move(eval);
@@ -472,8 +473,8 @@ static const std::shared_ptr<std::vector<DCRTPoly>>& DCRTpolysCoef(uint32_t towe
 
 [[maybe_unused]] static void DCRT_DropLastElementAndScale(benchmark::State& state) {
     std::shared_ptr<std::vector<DCRTPoly>> polys = DCRTpolysEval(state.range(0));
-    const auto& towers                           = (*polys)[0].GetParams()->GetParams();
-    const size_t last                            = towers.size() - 1;
+    const auto& towers = (*polys)[0].GetParams()->GetParams();
+    const size_t last = towers.size() - 1;
     if (last == 0) {
         state.SkipWithError("DropLastElementAndScale needs at least two towers");
         return;

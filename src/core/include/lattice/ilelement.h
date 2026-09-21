@@ -61,7 +61,7 @@ template <typename Element, typename VecType>
 class ILElement : public Serializable {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * @brief Clone the object by making a copy of it and returning the copy
    * @return new Element
@@ -435,7 +435,7 @@ public:
    * rootOfUnity for the modulus.
    */
     virtual void SwitchModulus(const IntType& modulus, const IntType& rootOfUnity, const IntType& modulusArb,
-            const IntType& rootOfUnityArb) = 0;
+                               const IntType& rootOfUnityArb) = 0;
 
     /**
    * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.

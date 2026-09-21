@@ -52,7 +52,7 @@ namespace lbcrypto {
  */
 template <class Element>
 class Key : public CryptoObject<Element>, public Serializable {
-public:
+  public:
     Key() = default;
 
     explicit Key(const CryptoContext<Element>& cc, const std::string& id = "") : CryptoObject<Element>(cc, id) {}

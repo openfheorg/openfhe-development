@@ -81,7 +81,7 @@ CryptoContext<DCRTPoly> MakeBootstrapCC(uint32_t ringDim = 1 << 8) {
     params.SetScalingTechnique(FLEXIBLEAUTO);
 #endif
     std::vector<uint32_t> levelBudget = {1, 1};
-    uint32_t depth                    = 2 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
+    uint32_t depth = 2 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
     params.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(params);
@@ -118,7 +118,7 @@ CryptoContext<DCRTPoly> MakeSchemeSwitchCC() {
 }  // namespace
 
 class UTCKKSCacheClear : public ::testing::Test {
-protected:
+  protected:
 #if defined(WITH_TCM) || defined(__EMSCRIPTEN__)
     void SetUp() override {
     #if defined(WITH_TCM)
@@ -136,7 +136,7 @@ protected:
 
 // These checks do not depend on allocator statistics and also run with tcmalloc and Emscripten.
 class UTCKKSReleaseAllContexts : public ::testing::Test {
-protected:
+  protected:
     void TearDown() override {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
@@ -183,7 +183,7 @@ TEST_F(UTCKKSReleaseAllContexts, ClearsSchemeSwitchPrecomWithLiveContext) {
 
 // Full clear drops every slot-keyed entry in FHECKKSRNS::m_bootPrecomMap.
 TEST_F(UTCKKSCacheClear, FullBootstrapClear) {
-    auto cc           = MakeBootstrapCC();
+    auto cc = MakeBootstrapCC();
     uint32_t numSlots = cc->GetRingDimension() / 2;
 
     // The first EvalBootstrapSetup() grows per-thread allocator structures in
@@ -219,7 +219,7 @@ TEST_F(UTCKKSCacheClear, SchemeSwitchPrecomClear) {
     p.SetCtxtModSizeFHEWLargePrec(25);
     p.SetNumSlotsCKKS(16);
     size_t before = HeapInUseBytes();
-    auto lweSk    = cc->EvalCKKStoFHEWSetup(p);
+    auto lweSk = cc->EvalCKKStoFHEWSetup(p);
     cc->EvalCKKStoFHEWKeyGen(kp, lweSk);
     // size_t after = HeapInUseBytes();
     cc->ClearSchemeSwitchPrecom();

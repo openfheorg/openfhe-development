@@ -52,11 +52,11 @@ class CryptoContextFactory;
 class CryptoContextBGVRNS {
     using Element = DCRTPoly;
 
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
+  public:
+    using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
+    using Factory = CryptoContextFactory<Element>;
     using PublicKeyEncryptionScheme = SchemeBGVRNS;
-    using CryptoParams              = CryptoParametersBGVRNS;
+    using CryptoParams = CryptoParametersBGVRNS;
 
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBGVRNS>& parameters) {
         validateParametersForCryptocontext(parameters);

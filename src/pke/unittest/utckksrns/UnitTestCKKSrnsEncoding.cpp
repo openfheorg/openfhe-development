@@ -56,7 +56,7 @@ using namespace lbcrypto;
 #if NATIVEINT == 128
 namespace {
 constexpr uint32_t SCALING_MOD_SIZE = 90;
-constexpr uint32_t SLOTS            = 8;
+constexpr uint32_t SLOTS = 8;
 
 // A constant slot vector encodes into the constant and X^(N/2) coefficients only: FitToNativeVector
 // places the 2 * SLOTS scaled values at a stride of N / (2 * SLOTS), and the inverse transform of a
@@ -78,12 +78,12 @@ CryptoContext<DCRTPoly> MakeContext() {
     return cc;
 }
 
-Plaintext EncodeConstant(
-        const CryptoContext<DCRTPoly>& cc, bool auxiliary, std::complex<double> value, uint32_t depth) {
+Plaintext EncodeConstant(const CryptoContext<DCRTPoly>& cc, bool auxiliary, std::complex<double> value,
+                         uint32_t depth) {
     std::vector<std::complex<double>> values(SLOTS, value);
     if (auxiliary)
-        return FHECKKSRNS::MakeAuxPlaintext(
-                *cc, cc->GetCryptoParameters()->GetElementParams(), values, depth, 0, SLOTS);
+        return FHECKKSRNS::MakeAuxPlaintext(*cc, cc->GetCryptoParameters()->GetElementParams(), values, depth, 0,
+                                            SLOTS);
     return cc->MakeCKKSPackedPlaintext(values, depth);
 }
 
@@ -93,10 +93,10 @@ Plaintext EncodeConstant(
 NativeInteger ExpectedUnits(double magnitude) {
     if (magnitude == 0.0)
         return NativeInteger(0);
-    int32_t exponent      = 0;
+    int32_t exponent = 0;
     const double mantissa = std::frexp(std::fabs(magnitude), &exponent);
-    const uint64_t units  = static_cast<uint64_t>(std::ldexp(mantissa, 53));
-    const int32_t shift   = exponent - 53 + static_cast<int32_t>(SCALING_MOD_SIZE);
+    const uint64_t units = static_cast<uint64_t>(std::ldexp(mantissa, 53));
+    const int32_t shift = exponent - 53 + static_cast<int32_t>(SCALING_MOD_SIZE);
     if (shift >= 0)
         return NativeInteger(units) << shift;
     return (shift <= -64) ? NativeInteger(0) : NativeInteger(units >> (-shift));
@@ -107,13 +107,13 @@ NativeInteger ExpectedUnits(double magnitude) {
 // every case be checked independently without printing every coefficient.
 // `units` is the unsigned expected magnitude; `realSign` and `imagSign` are -1, 0 or 1. The sign is
 // applied per tower because the negation depends on that tower's modulus.
-::testing::AssertionResult CoefficientsEqual(
-        const Plaintext& plaintext, const NativeInteger& units, int realSign, int imagSign, uint32_t depth) {
+::testing::AssertionResult CoefficientsEqual(const Plaintext& plaintext, const NativeInteger& units, int realSign,
+                                             int imagSign, uint32_t depth) {
     auto poly = plaintext->GetElement<DCRTPoly>();
     poly.SetFormat(Format::COEFFICIENT);
     for (const auto& tower : poly.GetAllElements()) {
         const auto& modulus = tower.GetModulus();
-        auto scaled         = units.Mod(modulus);
+        auto scaled = units.Mod(modulus);
         for (uint32_t d = 1; d < depth; ++d)
             scaled = scaled.ModMul(NativeInteger(1) << SCALING_MOD_SIZE, modulus);
         auto signedValue = [&](int sign) {
@@ -161,7 +161,7 @@ void CheckExactEncoding(const CryptoContext<DCRTPoly>& cc, bool auxiliary, doubl
 }
 
 class UTCKKSRNS_ENCODING : public ::testing::TestWithParam<bool> {
-protected:
+  protected:
     void TearDown() override {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
@@ -184,8 +184,8 @@ TEST_P(UTCKKSRNS_ENCODING, TinyInputs) {
         // rather than evaluate a count at or beyond the width of the intermediate type.
         int32_t exponent = 0;
         std::frexp(magnitude, &exponent);
-        SCOPED_TRACE(
-                "right shift of " + std::to_string(52 - static_cast<int32_t>(SCALING_MOD_SIZE) - exponent) + " bits");
+        SCOPED_TRACE("right shift of " + std::to_string(52 - static_cast<int32_t>(SCALING_MOD_SIZE) - exponent) +
+                     " bits");
         SCOPED_TRACE(magnitude);
         CheckExactEncoding(cc, GetParam(), magnitude);
     }
@@ -210,8 +210,8 @@ TEST_P(UTCKKSRNS_ENCODING, OverflowBoundary) {
     // The limit is Max128BitValue() / 2, which the mantissa reaches one ulp below
     // 2^(126 - SCALING_MOD_SIZE): the largest accepted magnitude and the smallest rejected one are
     // adjacent doubles, so this pins the guard rather than bracketing it by a factor of two.
-    const double firstRejected  = std::ldexp(1.0, 126 - static_cast<int32_t>(SCALING_MOD_SIZE));
-    const double lastAccepted   = std::nextafter(std::nextafter(firstRejected, 0.0), 0.0);
+    const double firstRejected = std::ldexp(1.0, 126 - static_cast<int32_t>(SCALING_MOD_SIZE));
+    const double lastAccepted = std::nextafter(std::nextafter(firstRejected, 0.0), 0.0);
     const double oneUlpRejected = std::nextafter(firstRejected, 0.0);
 
     for (double magnitude : {lastAccepted, std::ldexp(1.0, 20), 1.0}) {
@@ -222,7 +222,7 @@ TEST_P(UTCKKSRNS_ENCODING, OverflowBoundary) {
     // pRemaining reaches 127 at 2^88 and grows from there, so the shift guard is covered as well as
     // the magnitude guard.
     for (double magnitude : {oneUlpRejected, firstRejected, std::ldexp(1.0, 88), std::ldexp(1.0, 89),
-                 std::ldexp(1.0, 100), 1.0e12, 1.0e15, 1.0e300}) {
+                             std::ldexp(1.0, 100), 1.0e12, 1.0e15, 1.0e300}) {
         for (double sign : {1.0, -1.0}) {
             SCOPED_TRACE(sign * magnitude);
             EXPECT_THROW(EncodeConstant(cc, GetParam(), {sign * magnitude, 0.0}, 1), OpenFHEException);
@@ -233,6 +233,8 @@ TEST_P(UTCKKSRNS_ENCODING, OverflowBoundary) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_ENCODING, ::testing::Bool(),
-        [](const ::testing::TestParamInfo<bool>& info) { return info.param ? "Auxiliary" : "Packed"; });
+                         [](const ::testing::TestParamInfo<bool>& info) {
+                             return info.param ? "Auxiliary" : "Packed";
+                         });
 }  // namespace
 #endif

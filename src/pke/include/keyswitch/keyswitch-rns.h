@@ -51,7 +51,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
-public:
+  public:
     virtual ~KeySwitchRNS() = default;
 
     /////////////////////////////////////////

@@ -123,8 +123,8 @@ class BitGenerator;
  * centralizing the random bit pools by the samplers.
  */
 class BitGenerator {
-public:
-    BitGenerator()  = default;
+  public:
+    BitGenerator() = default;
     ~BitGenerator() = default;
     /*
    * @brief Method for generating a random bit
@@ -133,12 +133,12 @@ public:
     short Generate() {  // NOLINT
         if (m_counter == 0) {
             m_sequence = (PseudoRandomNumberGenerator::GetPRNG())();
-            m_counter  = 32;
+            m_counter = 32;
         }
         return static_cast<short>((m_sequence >> (--m_counter)) & 0x1);  // NOLINT
     }
 
-private:
+  private:
     uint32_t m_sequence{0};
     uint32_t m_counter{0};
 };
@@ -147,7 +147,7 @@ private:
  * UCSD generic sampler
  */
 class BaseSampler {
-public:
+  public:
     /*
    * @brief Constructor
    * @param mean Mean of the distribution
@@ -175,7 +175,7 @@ public:
         return bg->Generate();
     }
 
-private:
+  private:
     // all parameters are set as int because it is assumed that they are used for
     // generating "small" polynomials only
     double b_a;
@@ -265,7 +265,7 @@ private:
  * UCSD generic sampling
  */
 class SamplerCombiner final : public BaseSampler {
-public:
+  public:
     /**
    * @brief Constructor
    * @param s1 Pointer to the first sampler to be combined
@@ -287,7 +287,7 @@ public:
    */
     ~SamplerCombiner() = default;
 
-private:
+  private:
     // Samplers to be combined
     BaseSampler *sampler1, *sampler2;
     // Coefficients that are used for combining
@@ -298,7 +298,7 @@ private:
  * @brief The class for Generic Discrete Gaussion Distribution generator.
  */
 class DiscreteGaussianGeneratorGeneric {
-public:
+  public:
     /**
    * @brief Basic constructor which does the precomputations.
    * @param samplers Array containing the base samplers
@@ -309,7 +309,7 @@ public:
    */
     DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std, const int b, double N);
 
-    DiscreteGaussianGeneratorGeneric(const DiscreteGaussianGeneratorGeneric&)            = delete;
+    DiscreteGaussianGeneratorGeneric(const DiscreteGaussianGeneratorGeneric&) = delete;
     DiscreteGaussianGeneratorGeneric& operator=(const DiscreteGaussianGeneratorGeneric&) = delete;
 
     /**
@@ -328,7 +328,7 @@ public:
    */
     ~DiscreteGaussianGeneratorGeneric();
 
-private:
+  private:
     /**
    * @brief Subroutine used by Sample C
    * @param center Center of the distribution

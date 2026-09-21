@@ -69,8 +69,8 @@ int main(int argc, char* argv[]) {
 // (https://cic.iacr.org/p/1/4/26/pdf), precision bits are evaluated as the negative
 // base 2 logarithm of the average L1 norm between results from standard (cleartext) calculation
 // and those computed homomorphically.
-double CalculateApproximationError(
-        const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
+double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                   const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
         OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -92,9 +92,9 @@ void IterativeBootstrapExample() {
     // All modes are supported for 64-bit CKKS bootstrapping.
     // For this configuration, 3 words per level will be used
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits            = 61;
-    uint32_t firstMod            = 66;
-    uint32_t registerWordSize    = 27;
+    uint32_t dcrtBits = 61;
+    uint32_t firstMod = 66;
+    uint32_t registerWordSize = 27;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -106,7 +106,7 @@ void IterativeBootstrapExample() {
     uint32_t numIterations = 2;
 
     std::vector<uint32_t> levelBudget = {3, 3};
-    std::vector<uint32_t> bsgsDim     = {0, 0};
+    std::vector<uint32_t> bsgsDim = {0, 0};
 
     uint32_t levelsAvailableAfterBootstrap = 10;
     // Each extra iteration on top of 1 requires an extra level to be consumed.

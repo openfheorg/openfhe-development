@@ -78,7 +78,7 @@ static CryptoContext<DCRTPoly> BuildBootstrapContext() {
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
 
     std::vector<uint32_t> levelBudget = {4, 4};
-    uint32_t depth                    = 10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
+    uint32_t depth = 10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -91,8 +91,8 @@ static CryptoContext<DCRTPoly> BuildBootstrapContext() {
 }
 
 int main() {
-    auto cc           = BuildBootstrapContext();
-    uint32_t ringDim  = cc->GetRingDimension();
+    auto cc = BuildBootstrapContext();
+    uint32_t ringDim = cc->GetRingDimension();
     uint32_t numSlots = ringDim / 2;
 
     std::cout << "ring dim = " << ringDim << "\n";

@@ -109,8 +109,9 @@ struct fbt_config {
         return (x % a - a / 2) % b;
     };
 
-    std::vector<int64_t> x = {(t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3,
-            16, 33, 64, (t.PInput.ConvertToInt<int64_t>() - 1)};
+    std::vector<int64_t> x = {
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -152,10 +153,10 @@ struct fbt_config {
     while (state.KeepRunning()) {
         if (binaryLUT)
             cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                    0, t.order);
+                             0, t.order);
         else
             cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                    0, t.order);
+                             0, t.order);
     }
 
     cc->ClearStaticMapsAndVectors();
@@ -174,8 +175,9 @@ struct fbt_config {
         return (x % a - a / 2) % b;
     };
 
-    std::vector<int64_t> x = {(t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3,
-            16, 33, 64, (t.PInput.ConvertToInt<int64_t>() - 1)};
+    std::vector<int64_t> x = {
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -215,11 +217,11 @@ struct fbt_config {
     auto keyPair = cc->KeyGen();
 
     if (binaryLUT)
-        cc->EvalFBTSetup(
-                coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0, t.order);
+        cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
+                         t.order);
     else
-        cc->EvalFBTSetup(
-                coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0, t.order);
+        cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
+                         t.order);
 
     for (auto _ : state) {
         state.PauseTiming();
@@ -248,8 +250,9 @@ struct fbt_config {
         return (x % a - a / 2) % b;
     };
 
-    std::vector<int64_t> x = {(t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3,
-            16, 33, 64, (t.PInput.ConvertToInt<int64_t>() - 1)};
+    std::vector<int64_t> x = {
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -289,11 +292,11 @@ struct fbt_config {
     auto keyPair = cc->KeyGen();
 
     if (binaryLUT)
-        cc->EvalFBTSetup(
-                coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0, t.order);
+        cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
+                         t.order);
     else
-        cc->EvalFBTSetup(
-                coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0, t.order);
+        cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
+                         t.order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -336,14 +339,15 @@ struct fbt_config {
         return (x % a) >= (b / 2);
     };
 
-    std::vector<int64_t> x = {t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16,
-            33, 64, t.PInput.ConvertToInt<int64_t>() - 1};
+    std::vector<int64_t> x = {
+            t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+            t.PInput.ConvertToInt<int64_t>() - 1};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
     auto exact(x);
-    std::transform(
-            x.begin(), x.end(), exact.begin(), [&](int64_t elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
+    std::transform(x.begin(), x.end(), exact.begin(),
+                   [&](int64_t elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
 
     std::vector<int64_t> coeffintMod;
     std::vector<std::complex<double>> coeffcompMod;
@@ -351,12 +355,11 @@ struct fbt_config {
     bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
     if (binaryLUT) {
         coeffintMod = {funcMod(1), funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
-    }
-    else {
+    } else {
         coeffcompMod =
                 GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
         coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
-                t.scaleStepTHI);  // divided by 2
+                                                   t.scaleStepTHI);  // divided by 2
     }
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
@@ -388,10 +391,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                0, t.order);
+                         0, t.order);
     else
         cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                0, t.order);
+                         0, t.order);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -412,18 +415,18 @@ struct fbt_config {
 
         uint32_t QBFVBits = t.Q.GetMSB() - 1;
 
-        auto Q      = t.Q;
+        auto Q = t.Q;
         auto PInput = t.PInput;
 
         BigInteger QNew;
 
-        const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+        const bool checkgt2 = t.POutput.ConvertToInt() > 2;
         const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
 
-        uint64_t scaleTHI        = t.scaleTHI;
-        bool step                = false;
-        bool go                  = QBFVBits > dcrtBits;
-        size_t levelsToDrop      = 0;
+        uint64_t scaleTHI = t.scaleTHI;
+        bool step = false;
+        bool go = QBFVBits > dcrtBits;
+        size_t levelsToDrop = 0;
         uint32_t postScalingBits = 0;
 
         // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
@@ -435,17 +438,17 @@ struct fbt_config {
             encryptedDigit[0].SwitchModulus(t.Bigq, 1, 0, 0);
             encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
-            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(
-                    *cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth);
 
             // Bootstrap the digit.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, pDigitBits, ep->GetModulus(),
-                        scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
+                                           scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
             else
                 ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, pDigitBits, ep->GetModulus(),
-                        scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
+                                           scaleTHI * (1 << postScalingBits), levelsToDrop, t.order);
 
             auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
@@ -461,8 +464,7 @@ struct fbt_config {
                 PInput >>= pDigitBits;
                 QBFVBits -= pDigitBits;
                 postScalingBits += pDigitBits;
-            }
-            else {
+            } else {
                 ctxtBFV[0] = std::move(polys[0]);
                 ctxtBFV[1] = std::move(polys[1]);
             }
@@ -472,9 +474,9 @@ struct fbt_config {
             if (checkgt2 && !go && !step) {
                 if (!binaryLUT)
                     coeffcomp = coeffcompStep;
-                scaleTHI           = t.scaleStepTHI;
-                step               = true;
-                go                 = true;
+                scaleTHI = t.scaleStepTHI;
+                step = true;
+                go = true;
                 int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
                                      GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
                 if (coeffcompMod.size() > 4 && lvlsToDrop > 0)

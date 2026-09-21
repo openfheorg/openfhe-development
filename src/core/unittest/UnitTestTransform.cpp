@@ -54,7 +54,7 @@ template <typename V>
 void CRT_polynomial_mult(const std::string& msg) {
     typename V::Integer primeModulus("113");  // 65537
     uint32_t cycloOrder = 8;
-    uint32_t n          = cycloOrder / 2;
+    uint32_t n = cycloOrder / 2;
 
     typename V::Integer primitiveRootOfUnity = lbcrypto::RootOfUnity(cycloOrder, primeModulus);
 
@@ -75,8 +75,8 @@ void CRT_polynomial_mult(const std::string& msg) {
     V AB = A * B;
 
     V InverseFFTAB(cycloOrder / 2);
-    ChineseRemainderTransformFTT<V>().InverseTransformFromBitReverse(
-            AB, primitiveRootOfUnity, cycloOrder, &InverseFFTAB);
+    ChineseRemainderTransformFTT<V>().InverseTransformFromBitReverse(AB, primitiveRootOfUnity, cycloOrder,
+                                                                     &InverseFFTAB);
 
     V expectedResult(n, primeModulus);
     expectedResult.at(0) = typename V::Integer("94");
@@ -114,12 +114,12 @@ void CRT_polynomial_mult_small(const std::string& msg) {
     OPENFHE_DEBUG("3");
 
     V a(n, modulus);
-    a      = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto A = ChineseRemainderTransformArb<V>().ForwardTransform(a, squareRootOfRoot, bigModulus, bigRoot, m);
     OPENFHE_DEBUG("4 " << A);
 
     V b(n, modulus);
-    b      = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    b = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
     auto B = ChineseRemainderTransformArb<V>().ForwardTransform(b, squareRootOfRoot, bigModulus, bigRoot, m);
     OPENFHE_DEBUG("5 " << B);
     auto C = A * B;
@@ -153,18 +153,18 @@ void CRT_polynomial_mult_big_ring(const std::string& msg) {
     typename V::Integer bigModulus("1045889179649");
     typename V::Integer bigRoot("864331722621");
     typename V::Integer squareRootOfRoot("972");
-    uint32_t n     = GetTotient(m);
+    uint32_t n = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
     ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
     V a(n, modulus);
-    a      = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto A = ChineseRemainderTransformArb<V>().ForwardTransform(a, squareRootOfRoot, bigModulus, bigRoot, m);
 
     V b(n, modulus);
-    b      = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    b = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
     auto B = ChineseRemainderTransformArb<V>().ForwardTransform(b, squareRootOfRoot, bigModulus, bigRoot, m);
 
     auto C = A * B;
@@ -193,7 +193,7 @@ void CRT_polynomial_mult_big_ring_prime_cyclotomics(const std::string& msg) {
     typename V::Integer bigModulus("10889035741470030830827987437816582848513");
     typename V::Integer bigRoot("5879632101734955395039618227388702592012");
     typename V::Integer squareRootOfRoot("44343872016735288");
-    uint32_t n     = GetTotient(m);
+    uint32_t n = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
@@ -205,7 +205,7 @@ void CRT_polynomial_mult_big_ring_prime_cyclotomics(const std::string& msg) {
     auto A = ChineseRemainderTransformArb<V>().ForwardTransform(a, squareRootOfRoot, bigModulus, bigRoot, m);
 
     V b(n, modulus);
-    b      = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    b = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
     auto B = ChineseRemainderTransformArb<V>().ForwardTransform(b, squareRootOfRoot, bigModulus, bigRoot, m);
 
     auto C = A * B;
@@ -243,7 +243,7 @@ void CRT_CHECK_small_ring(const std::string& msg) {
     ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
     V input(n, modulus);
-    input      = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    input = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(input, squareRootOfRoot, bigModulus, bigRoot, m);
 
     auto inputCheck =
@@ -270,7 +270,7 @@ void CRT_CHECK_big_ring(const std::string& msg) {
     typename V::Integer squareRootOfRoot("972");
     typename V::Integer bigModulus("1045889179649");
     typename V::Integer bigRoot("864331722621");
-    uint32_t n     = GetTotient(m);
+    uint32_t n = GetTotient(m);
     auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
     // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);

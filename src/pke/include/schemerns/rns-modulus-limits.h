@@ -40,8 +40,8 @@ namespace lbcrypto {
 namespace DCRT_MODULUS {
 
 inline constexpr std::uint32_t DEFAULT_EXTRA_MOD_SIZE = 20;
-inline constexpr std::uint32_t MIN_SIZE               = 14;
-inline constexpr std::uint32_t MAX_SIZE               = MAX_MODULUS_SIZE;
+inline constexpr std::uint32_t MIN_SIZE = 14;
+inline constexpr std::uint32_t MAX_SIZE = MAX_MODULUS_SIZE;
 
 }  // namespace DCRT_MODULUS
 }  // namespace lbcrypto

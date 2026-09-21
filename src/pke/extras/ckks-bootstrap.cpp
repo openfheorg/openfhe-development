@@ -94,12 +94,12 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDMANUAL;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89; /*firstMod*/
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89; /*firstMod*/
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60; /*firstMod*/
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60; /*firstMod*/
 #endif
 
     // computes how many levels are needed for
@@ -206,7 +206,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
         auto input(Fill(a, slotsvec[i]));
         Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1, nullptr, slotsvec[i]);
-        auto ciphertext     = cc->Encrypt(keyPair.publicKey, plaintext);
+        auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
         std::cerr << "ciphertext number of slots: " << ciphertext->GetSlots() << std::endl;
 
@@ -215,7 +215,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
         TIC(t);
         auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
-        timeBootstrap        = TOC(t);
+        timeBootstrap = TOC(t);
         std::cout << "\nBootstrapping time: " << timeBootstrap / 1000.0 << " s" << std::endl;
         std::cerr << "\nNumber of levels consumed: "
                   << depth - ciphertextAfter->GetElements()[0].GetNumOfElements() + ciphertextAfter->GetNoiseScaleDeg()
@@ -262,12 +262,12 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDMANUAL;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89; /*firstMod*/
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89; /*firstMod*/
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60; /*firstMod*/
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60; /*firstMod*/
 #endif
 
     // computes how many levels are needed for

@@ -54,18 +54,17 @@ using namespace std;
 using namespace lbcrypto;
 
 static void checkApproximateEquality(const std::vector<std::complex<double>>& a,
-        const std::vector<std::complex<double>>& b, int vectorSize, double epsilon) {
+                                     const std::vector<std::complex<double>>& b, int vectorSize, double epsilon) {
     std::vector<std::complex<double>> allTrue(vectorSize);
     std::vector<std::complex<double>> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {
         allTrue[i] = 1;
-        tmp[i]     = std::abs(a[i] - b[i]) <= epsilon;
+        tmp[i] = std::abs(a[i] - b[i]) <= epsilon;
     }
     if (tmp != allTrue) {
         cerr << __func__ << " - " << __FILE__ << ":" << __LINE__ << " IntMPBoot - Ctxt Chebyshev Failed: " << endl;
         cerr << __func__ << " - " << __FILE__ << ":" << __LINE__ << " - is diff <= eps?: " << tmp << endl;
-    }
-    else {
+    } else {
         std::cout << "SUCESSFUL Bootstrapping!\n";
     }
 }
@@ -92,7 +91,7 @@ int main(int argc, char* argv[]) {
 
 void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
-            scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
+        scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
         std::string errMsg = "ERROR: Scaling technique is not supported!";
         OPENFHE_THROW(errMsg);
     }
@@ -208,26 +207,26 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
             cryptoContext->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     // Round 2 (party B)
-    kp2                  = cryptoContext->MultipartyKeyGen(kp1.publicKey);
-    auto evalMultKey2    = cryptoContext->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
-    auto evalMultAB      = cryptoContext->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
-    auto evalMultBAB     = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
-    auto evalSumKeysB    = cryptoContext->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
+    kp2 = cryptoContext->MultipartyKeyGen(kp1.publicKey);
+    auto evalMultKey2 = cryptoContext->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
+    auto evalMultAB = cryptoContext->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
+    auto evalMultBAB = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
+    auto evalSumKeysB = cryptoContext->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
     auto evalSumKeysJoin = cryptoContext->MultiAddEvalSumKeys(evalSumKeys, evalSumKeysB, kp2.publicKey->GetKeyTag());
     cryptoContext->InsertEvalSumKey(evalSumKeysJoin);
-    auto evalMultAAB   = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
+    auto evalMultAAB = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
     auto evalMultFinal = cryptoContext->MultiAddEvalMultKeys(evalMultAAB, evalMultBAB, evalMultAB->GetKeyTag());
     cryptoContext->InsertEvalMultKey({evalMultFinal});
 
     /////////////////////
     // Round 3 (party C) - Lead Party (who encrypts and finalizes the bootstrapping protocol)
-    kp3                 = cryptoContext->MultipartyKeyGen(kp2.publicKey);
-    auto evalMultKey3   = cryptoContext->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultKey);
-    auto evalMultABC    = cryptoContext->MultiAddEvalKeys(evalMultAB, evalMultKey3, kp3.publicKey->GetKeyTag());
-    auto evalMultBABC   = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
-    auto evalMultAABC   = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
-    auto evalMultCABC   = cryptoContext->MultiMultEvalKey(kp3.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
-    auto evalMultABABC  = cryptoContext->MultiAddEvalMultKeys(evalMultBABC, evalMultAABC, evalMultBABC->GetKeyTag());
+    kp3 = cryptoContext->MultipartyKeyGen(kp2.publicKey);
+    auto evalMultKey3 = cryptoContext->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultKey);
+    auto evalMultABC = cryptoContext->MultiAddEvalKeys(evalMultAB, evalMultKey3, kp3.publicKey->GetKeyTag());
+    auto evalMultBABC = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
+    auto evalMultAABC = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
+    auto evalMultCABC = cryptoContext->MultiMultEvalKey(kp3.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
+    auto evalMultABABC = cryptoContext->MultiAddEvalMultKeys(evalMultBABC, evalMultAABC, evalMultBABC->GetKeyTag());
     auto evalMultFinal2 = cryptoContext->MultiAddEvalMultKeys(evalMultABABC, evalMultCABC, evalMultCABC->GetKeyTag());
     cryptoContext->InsertEvalMultKey({evalMultFinal2});
 
@@ -255,12 +254,12 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Chebyshev coefficients
     std::vector<double> coefficients({1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348, 0.0, 0.00119324,
-            0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
+                                      0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
     // Input range
     double a = -4;
     double b = 4;
 
-    Plaintext pt1          = cryptoContext->MakeCKKSPackedPlaintext(input);
+    Plaintext pt1 = cryptoContext->MakeCKKSPackedPlaintext(input);
     uint32_t encodedLength = input.size();
 
     auto ct1 = cryptoContext->Encrypt(kp3.publicKey, pt1);
@@ -296,7 +295,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Party B finalizes the protocol by aggregating the shares and reEncrypting the results
     auto aggregatedSharesPair = cryptoContext->IntMPBootAdd(sharesPairVec);
-    auto ciphertextOutput     = cryptoContext->IntMPBootEncrypt(kp3.publicKey, aggregatedSharesPair, crp, ct1);
+    auto ciphertextOutput = cryptoContext->IntMPBootEncrypt(kp3.publicKey, aggregatedSharesPair, crp, ct1);
 
     // INTERACTIVE BOOTSTRAPPING ENDS
 
@@ -322,8 +321,8 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     std::cout << "Ground Truth: \n\t" << plaintextResult->GetCKKSPackedValue() << std::endl;
     std::cout << "Computed Res: \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
 
-    checkApproximateEquality(
-            plaintextResult->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), encodedLength, eps);
+    checkApproximateEquality(plaintextResult->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(),
+                             encodedLength, eps);
 
     std::cout << "\n============================ INTERACTIVE DECRYPTION ENDED ============================\n";
 

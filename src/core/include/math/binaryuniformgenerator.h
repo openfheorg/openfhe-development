@@ -51,11 +51,11 @@ namespace lbcrypto {
  */
 template <typename VecType>
 class BinaryUniformGeneratorImpl {
-public:
+  public:
     /**
    * @brief Basic constructor for Binary Uniform Generator.
    */
-    BinaryUniformGeneratorImpl()  = default;
+    BinaryUniformGeneratorImpl() = default;
     ~BinaryUniformGeneratorImpl() = default;
 
     /**
@@ -71,7 +71,7 @@ public:
    */
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus) const;
 
-private:
+  private:
     static std::bernoulli_distribution m_distribution;
 };
 

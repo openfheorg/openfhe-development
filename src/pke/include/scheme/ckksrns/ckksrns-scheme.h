@@ -54,7 +54,7 @@
 namespace lbcrypto {
 
 class SchemeCKKSRNS : public SchemeRNS {
-public:
+  public:
     SchemeCKKSRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
     }

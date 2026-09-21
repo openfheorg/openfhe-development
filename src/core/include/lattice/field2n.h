@@ -54,11 +54,11 @@ namespace lbcrypto {
  * @brief A class to represent field elements with power-of-2 dimension.
  */
 class Field2n : public std::vector<std::complex<double>>, public Serializable {
-private:
+  private:
     // Format of the field element
     Format format{Format::COEFFICIENT};
 
-public:
+  public:
     /**
    * @brief Default Constructor
    */
@@ -337,8 +337,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::base_class<std::vector<std::complex<double>>>(this));
         ar(::cereal::make_nvp("f", format));

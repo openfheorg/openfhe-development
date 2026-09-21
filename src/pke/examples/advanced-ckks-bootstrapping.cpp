@@ -96,13 +96,13 @@ void BootstrapExample(uint32_t numSlots) {
 #if NATIVEINT == 128
     // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89;
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89;
 #else
     // All modes are supported for 64-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);

@@ -40,7 +40,7 @@
 
 namespace lbcrypto {
 
-using LWEPlaintext        = int64_t;
+using LWEPlaintext = int64_t;
 using LWEPlaintextModulus = uint64_t;
 
 /**
@@ -58,9 +58,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
  * @brief Bootstrapping methods a predefined parameter set is configured for, one bit per BINFHE_METHOD
  */
 enum BINFHE_METHOD_SET : uint32_t {
-    FOR_AP         = 1u << AP,
-    FOR_GINX       = 1u << GINX,
-    FOR_LMKCDEY    = 1u << LMKCDEY,
+    FOR_AP = 1u << AP,
+    FOR_GINX = 1u << GINX,
+    FOR_LMKCDEY = 1u << LMKCDEY,
     FOR_ANY_METHOD = FOR_GINX | FOR_LMKCDEY | FOR_AP,
 };
 

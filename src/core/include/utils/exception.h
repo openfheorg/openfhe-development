@@ -57,7 +57,7 @@ class ThreadException {
     std::exception_ptr Ptr;
     std::mutex Lock;
 
-public:
+  public:
     ThreadException() : Ptr(nullptr) {}
     ~ThreadException() {}
     void Rethrow() {
@@ -73,8 +73,7 @@ public:
     void Run(Function f, Parameters... params) {
         try {
             f(params...);
-        }
-        catch (...) {
+        } catch (...) {
             CaptureException();
         }
     }
@@ -133,8 +132,8 @@ public:
           m_callStack(get_call_stack()) {}
     // clang-format on
 
-    ~OpenFHEException() override                         = default;
-    OpenFHEException(const OpenFHEException&)            = default;
+    ~OpenFHEException() override = default;
+    OpenFHEException(const OpenFHEException&) = default;
     OpenFHEException& operator=(const OpenFHEException&) = default;
 
     const char* what() const noexcept override {

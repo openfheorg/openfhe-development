@@ -45,17 +45,17 @@ using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<
 namespace lbcrypto {
 
 using NativeInteger = intnat::NativeInteger;
-using NativeVector  = intnat::NativeVector;
+using NativeVector = intnat::NativeVector;
 
 using NativeInteger32 = intnat::NativeInteger32;
-using NativeVector32  = intnat::NativeVector32;
+using NativeVector32 = intnat::NativeVector32;
 
 }  // namespace lbcrypto
 
 using NativeInteger = lbcrypto::NativeInteger;
-using NativeVector  = lbcrypto::NativeVector;
+using NativeVector = lbcrypto::NativeVector;
 
 using NativeInteger32 = lbcrypto::NativeInteger32;
-using NativeVector32  = lbcrypto::NativeVector32;
+using NativeVector32 = lbcrypto::NativeVector32;
 
 #endif  // SRC_CORE_INCLUDE_MATH_HAL_NATIVEINTBACKEND_H_

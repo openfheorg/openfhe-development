@@ -168,7 +168,7 @@ static const std::vector<std::complex<double>> coeff_gelu_8_double_44{
 
 std::vector<double> BuildNormalizedInput(size_t slots) {
     std::vector<double> input(slots);
-    constexpr double left  = -0.5;
+    constexpr double left = -0.5;
     constexpr double right = 0.5;
     for (size_t i = 0; i < slots; ++i) {
         input[i] = left + static_cast<double>(i) * (right - left) / static_cast<double>(slots);
@@ -184,7 +184,7 @@ double ComputeMeanPrecisionBits(const std::vector<double>& expected, const std::
 
     double minExpected = expected[0];
     double maxExpected = expected[0];
-    double sumError    = 0.0;
+    double sumError = 0.0;
     for (size_t i = 0; i < count; ++i) {
         minExpected = std::min(minExpected, expected[i]);
         maxExpected = std::max(maxExpected, expected[i]);
@@ -210,14 +210,14 @@ void PrintValues(const std::vector<double>& values, size_t count) {
 }  // namespace
 
 int main() {
-    const uint32_t ringDim                  = 1 << 16;
-    const uint32_t numSlots                 = 1 << 15;
+    const uint32_t ringDim = 1 << 16;
+    const uint32_t numSlots = 1 << 15;
     const ScalingTechnique scalingTechnique = FLEXIBLEAUTO;
     const std::vector<uint32_t> levelBudget = {3, 2};
-    const std::vector<uint32_t> bsgsDim     = {0, 0};
-    const usint dcrtBits                    = 59;
-    const usint firstMod                    = 60;
-    const SecretKeyDist skd                 = SPARSE_TERNARY;
+    const std::vector<uint32_t> bsgsDim = {0, 0};
+    const usint dcrtBits = 59;
+    const usint firstMod = 60;
+    const SecretKeyDist skd = SPARSE_TERNARY;
 
     // GetFEFBTDepth covers the functional bootstrapping itself, for the longest of the three series; the
     // levels added on top of it are what is left to compute with on the refreshed ciphertext.
@@ -258,7 +258,7 @@ int main() {
     const auto normalizedInput = BuildNormalizedInput(numSlots);
     Plaintext plaintext =
             cc->MakeCKKSPackedPlaintext(normalizedInput, 1, depth - (levelBudget[1] + 1), nullptr, numSlots);
-    auto input                = cc->Encrypt(keyPair.publicKey, plaintext);
+    auto input = cc->Encrypt(keyPair.publicKey, plaintext);
     uint32_t totalModulusBits = 0;
     for (const auto& modParams : cc->GetCryptoParameters()->GetElementParams()->GetParams()) {
         totalModulusBits += modParams->GetModulus().GetMSB();
@@ -269,24 +269,24 @@ int main() {
     // depend on the target function, so it is run once here and shared by every function below. The powers
     // are precomputed for the longest series of the family (gelu, degree 44); the shorter ones are evaluated
     // against those same powers.
-    auto precomputeStart      = std::chrono::high_resolution_clock::now();
-    auto sharedPowers         = cc->EvalFEFuncBootstrapPrecompute(input, coeff_gelu_8_double_44);
-    auto precomputeStop       = std::chrono::high_resolution_clock::now();
+    auto precomputeStart = std::chrono::high_resolution_clock::now();
+    auto sharedPowers = cc->EvalFEFuncBootstrapPrecompute(input, coeff_gelu_8_double_44);
+    auto precomputeStop = std::chrono::high_resolution_clock::now();
     const double precomputeMs = std::chrono::duration<double, std::milli>(precomputeStop - precomputeStart).count();
 
     std::cout << "Shared bootstrapping and complex exponential: " << static_cast<int64_t>(std::llround(precomputeMs))
               << " ms (paid once for all functions below)\n";
 
     auto runOne = [&](const std::string& title, double radius, const std::vector<std::complex<double>>& coeffs,
-                          const auto& target) {
+                      const auto& target) {
         auto expected = normalizedInput;
         for (double& value : expected) {
             value = target(2.0 * radius * value);
         }
 
-        auto start   = std::chrono::high_resolution_clock::now();
-        auto output  = cc->EvalFEFuncBootstrapWithPrecomp(sharedPowers, coeffs);
-        auto stop    = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
+        auto output = cc->EvalFEFuncBootstrapWithPrecomp(sharedPowers, coeffs);
+        auto stop = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration<double, std::milli>(stop - start).count();
 
         Plaintext decrypted;

@@ -37,7 +37,7 @@ namespace lbcrypto {
 
 class LWEPublicKeyImpl;
 
-using LWEPublicKey      = std::shared_ptr<LWEPublicKeyImpl>;
+using LWEPublicKey = std::shared_ptr<LWEPublicKeyImpl>;
 using ConstLWEPublicKey = const std::shared_ptr<const LWEPublicKeyImpl>;
 
 }  // namespace lbcrypto

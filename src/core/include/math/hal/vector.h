@@ -46,7 +46,7 @@ namespace lbcrypto {
 
 template <typename T, typename I>
 class BigVectorInterface {
-public:
+  public:
     typedef I Integer;
 
     // CONSTRUCTORS
@@ -480,7 +480,7 @@ public:
    */
     T GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
-protected:
+  protected:
     ~BigVectorInterface() = default;
 
     // STRINGS & STREAMS

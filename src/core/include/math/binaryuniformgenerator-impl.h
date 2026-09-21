@@ -54,8 +54,8 @@ typename VecType::Integer BinaryUniformGeneratorImpl<VecType>::GenerateInteger()
 }
 
 template <typename VecType>
-VecType BinaryUniformGeneratorImpl<VecType>::GenerateVector(
-        const uint32_t size, const typename VecType::Integer& modulus) const {
+VecType BinaryUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t size,
+                                                            const typename VecType::Integer& modulus) const {
     VecType v(size, modulus);
     for (uint32_t i = 0; i < size; i++)
         v[i] = GenerateInteger();

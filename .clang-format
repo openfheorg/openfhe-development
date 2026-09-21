@@ -12,23 +12,19 @@ BasedOnStyle: Google
 #######################################################################
 Language: Cpp
 Standard: c++17
-AccessModifierOffset: -4
-# Wrapped parameter and argument lists indent by ContinuationIndentWidth rather
-# than aligning under the open bracket, so a declaration's layout does not
-# depend on how long the function name is.
-AlignAfterOpenBracket: DontAlign
+AccessModifierOffset: -2
+AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: Consecutive
-AlignConsecutiveAssignments: Consecutive
 AlignEscapedNewlines: Left
-AlignOperands: Align
+AlignOperands: AlignAfterOperator
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
-BreakBeforeBraces: Custom
-BraceWrapping:
-    BeforeCatch:     true
-    BeforeElse:      true
+BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: false
 BreakStringLiterals: false
 ColumnLimit: 120

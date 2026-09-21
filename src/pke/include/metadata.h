@@ -49,7 +49,7 @@ using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metada
  * @brief Empty metadata container
  */
 class Metadata {
-public:
+  public:
     /**
    * Default constructor
    */
@@ -113,8 +113,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
     }
 
@@ -132,7 +132,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     /**
     * A method that prints the contents of metadata objects.
     * Please override in subclasses to print all members.

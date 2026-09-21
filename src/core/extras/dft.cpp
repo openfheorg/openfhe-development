@@ -44,16 +44,16 @@ using namespace lbcrypto;
 
 int main() {
     std::vector<std::complex<double>> dftVec(64);
-    dftVec.at(0)  = std::complex<double>(4, 0);
-    dftVec.at(1)  = std::complex<double>(5, 0);
-    dftVec.at(2)  = std::complex<double>(5, 0);
-    dftVec.at(3)  = std::complex<double>(4.2, 0);
-    dftVec.at(4)  = std::complex<double>(5, 0);
-    dftVec.at(5)  = std::complex<double>(7.1, 0);
-    dftVec.at(6)  = std::complex<double>(6, 0);
-    dftVec.at(7)  = std::complex<double>(3, 0);
-    dftVec.at(8)  = std::complex<double>(4, 0);
-    dftVec.at(9)  = std::complex<double>(5, 0);
+    dftVec.at(0) = std::complex<double>(4, 0);
+    dftVec.at(1) = std::complex<double>(5, 0);
+    dftVec.at(2) = std::complex<double>(5, 0);
+    dftVec.at(3) = std::complex<double>(4.2, 0);
+    dftVec.at(4) = std::complex<double>(5, 0);
+    dftVec.at(5) = std::complex<double>(7.1, 0);
+    dftVec.at(6) = std::complex<double>(6, 0);
+    dftVec.at(7) = std::complex<double>(3, 0);
+    dftVec.at(8) = std::complex<double>(4, 0);
+    dftVec.at(9) = std::complex<double>(5, 0);
     dftVec.at(10) = std::complex<double>(5, 0);
     dftVec.at(11) = std::complex<double>(4.2, 0);
     dftVec.at(12) = std::complex<double>(5, 0);
@@ -111,13 +111,13 @@ int main() {
 
     DiscreteFourierTransform::PreComputeTable(128);
 
-    double start                              = currentDateTime();
+    double start = currentDateTime();
     std::vector<std::complex<double>> dftVec2 = DiscreteFourierTransform::ForwardTransform(dftVec);
-    double end                                = currentDateTime();
+    double end = currentDateTime();
     std::cout << "Without table: " << end - start << " ms" << std::endl;
 
-    start                                     = currentDateTime();
+    start = currentDateTime();
     std::vector<std::complex<double>> dftVec3 = DiscreteFourierTransform::ForwardTransform(dftVec);
-    end                                       = currentDateTime();
+    end = currentDateTime();
     std::cout << "With table: " << end - start << " ms" << std::endl << std::endl;
 }

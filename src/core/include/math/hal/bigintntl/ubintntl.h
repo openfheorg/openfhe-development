@@ -106,7 +106,7 @@ struct Log2<2> {
 };
 
 class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
-public:
+  public:
     // CONSTRUCTORS
 
     /**
@@ -165,14 +165,14 @@ public:
    * @param &val is the initial integer represented as a native integer.
    */
     template <typename T,
-            typename std::enable_if<
-                    !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
-                            !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
-                            !std::is_same<T, long long>::value &&                                  // NOLINT
-                            !std::is_same<T, const std::string>::value &&                          // NOLINT
-                            !std::is_same<T, const char*>::value && !std::is_same<T, const char>::value &&
-                            !std::is_same<T, myZZ>::value && !std::is_same<T, double>::value,
-                    bool>::type = true>
+              typename std::enable_if<
+                      !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
+                              !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
+                              !std::is_same<T, long long>::value &&                                  // NOLINT
+                              !std::is_same<T, const std::string>::value &&                          // NOLINT
+                              !std::is_same<T, const char*>::value && !std::is_same<T, const char>::value &&
+                              !std::is_same<T, myZZ>::value && !std::is_same<T, double>::value,
+                      bool>::type = true>
     myZZ(const T& val) : myZZ(val.ConvertToInt()) {}  // NOLINT
 
     /**
@@ -280,8 +280,7 @@ public:
     myZZ& SubEq(const myZZ& b) {
         if (*this < b) {
             *this = ZZ(0);
-        }
-        else {
+        } else {
             *static_cast<ZZ*>(this) -= static_cast<const ZZ&>(b);
         }
         return *this;
@@ -535,8 +534,7 @@ public:
         if (newthis >= newb) {
             myZZ tmp(SubMod(newthis, newb, modulus));  // normal mod sub
             return tmp;
-        }
-        else {
+        } else {
             myZZ tmp(newthis + modulus - newb);  // signed mod
             return tmp;
         }
@@ -557,8 +555,7 @@ public:
         if (*this >= newb) {
             SubMod(*this, *this, newb, modulus);  // normal mod sub
             return *this;
-        }
-        else {
+        } else {
             this->AddEq(modulus);
             this->SubEq(newb);  // signed mod
             return *this;
@@ -575,8 +572,7 @@ public:
     myZZ ModSubFast(const myZZ& b, const myZZ& modulus) const {
         if (*this >= b) {
             return SubMod(*this, b, modulus);  // normal mod sub
-        }
-        else {
+        } else {
             return (*this + modulus - b);  // signed mod
         }
     }
@@ -591,8 +587,7 @@ public:
     myZZ& ModSubFastEq(const myZZ& b, const myZZ& modulus) {
         if (*this >= b) {
             return *this = SubMod(*this, b, modulus);  // normal mod sub
-        }
-        else {
+        } else {
             return *this = (*this + modulus - b);  // signed mod
         }
     }
@@ -611,8 +606,7 @@ public:
         if (newthis >= newb) {
             myZZ tmp(SubMod(newthis, newb, modulus));  // normal mod sub
             return tmp;
-        }
-        else {
+        } else {
             myZZ tmp(newthis + modulus - newb);  // signed mod
             return tmp;
         }
@@ -632,8 +626,7 @@ public:
         if (*this >= newb) {
             SubMod(*this, *this, newb, modulus);  // normal mod sub
             return *this;
-        }
-        else {
+        } else {
             this->AddEq(modulus);
             this->SubEq(newb);  // signed mod
             return *this;
@@ -784,9 +777,8 @@ public:
         myZZ tmp(0);
         try {
             tmp = InvMod(*this % modulus, modulus);
-        }
-        catch (InvModErrorObject& e) {  // note this code requires NTL Excptions coto be turned
-                                        // on. TODO: provide alternative when that is off.
+        } catch (InvModErrorObject& e) {  // note this code requires NTL Excptions coto be turned
+                                          // on. TODO: provide alternative when that is off.
             std::stringstream errmsg;
             errmsg << "ModInverse exception " << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a()
                    << "," << e.get_n() << "!=1" << std::endl;
@@ -807,9 +799,8 @@ public:
         }
         try {
             *this = InvMod(*this % modulus, modulus);
-        }
-        catch (InvModErrorObject& e) {  // note this code requires NTL Excptions coto be turned
-                                        // on. TODO: provide alternative when that is off.
+        } catch (InvModErrorObject& e) {  // note this code requires NTL Excptions coto be turned
+                                          // on. TODO: provide alternative when that is off.
             std::stringstream errmsg;
             errmsg << "ModInverse exception " << " this: " << *this << " modulus: " << modulus << "GCD(" << e.get_a()
                    << "," << e.get_n() << "!=1" << std::endl;
@@ -876,8 +867,7 @@ public:
         if constexpr (std::is_same_v<T, uint128_t>) {
             uint128_t tmp2 = (*this >> 64).ConvertToInt<uint64_t>();
             return (tmp2 << 64) | (*this % myZZ(1).LShiftEq(64)).ConvertToInt<uint64_t>();
-        }
-        else
+        } else
     #endif
         {
             std::stringstream s;  // slower
@@ -1025,8 +1015,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
             Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ::cereal::size_type len;
         ar(::cereal::binary_data(&len, sizeof(len)));
@@ -1046,8 +1036,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
             Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         std::string s;
         ar(::cereal::make_nvp("v", s));
@@ -1062,7 +1052,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // adapter kits
     void SetMSB();
 

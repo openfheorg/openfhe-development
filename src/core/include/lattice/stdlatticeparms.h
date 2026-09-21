@@ -103,13 +103,13 @@ class StdLatticeParm {
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
     static bool initialized;
 
-public:
+  public:
     StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
         : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}
 
     static void initializeLookups() {
         for (size_t i = 0; i < StandardLatticeParmSets.size(); i++) {
-            StdLatticeParm& s                                                              = StandardLatticeParmSets[i];
+            StdLatticeParm& s = StandardLatticeParmSets[i];
             byRing[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.ringDim] = &s;
             byLogQ[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.maxLogQ] = &s;
         }
@@ -117,7 +117,7 @@ public:
     }
 
     static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
-        int distTypeIdx  = static_cast<int>(distType);
+        int distTypeIdx = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
         if (!initialized)
             initializeLookups();
@@ -132,14 +132,14 @@ public:
             initializeLookups();
         uint32_t prev = 0;
 
-        int distTypeIdx  = static_cast<int>(distType);
+        int distTypeIdx = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
-        uint32_t n       = 0;
+        uint32_t n = 0;
         for (std::pair<const unsigned int, StdLatticeParm*>& it : byLogQ[distTypeIdx][minSecLevIdx]) {
             if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
                 return it.second->getRingDim();
             prev = it.second->getMaxLogQ();
-            n    = it.second->getRingDim();
+            n = it.second->getRingDim();
         }
         return 2 * n;
     }

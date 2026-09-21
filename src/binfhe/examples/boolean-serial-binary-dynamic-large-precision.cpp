@@ -54,9 +54,9 @@ int main() {
     cc1.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, true);
     uint32_t Q = 1 << logQ;
 
-    int q      = 4096;                                                // q
-    int factor = 1 << int(logQ - std::log2(q));                       // Q/q
-    int p      = cc1.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
+    int q = 4096;                                                // q
+    int factor = 1 << int(logQ - std::log2(q));                  // Q/q
+    int p = cc1.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     std::cout << "Generating keys." << std::endl;
 
@@ -91,7 +91,7 @@ int main() {
 
     auto BTKeyMap = cc1.GetBTKeyMap();
     for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++) {
-        auto index  = it->first;
+        auto index = it->first;
         auto thekey = it->second;
         if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "btKey.txt", thekey, SerType::BINARY)) {
             std::cerr << "Error serializing the bootstrapping keys" << std::endl;
@@ -141,8 +141,8 @@ int main() {
 
     for (size_t i = 0; i < 3; i++) {
         RingGSWBTKey mapKey;
-        if (Serial::DeserializeFromFile(
-                    DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey, SerType::BINARY) == false) {
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "btKey.txt", mapKey,
+                                        SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the bootstrapping keys" << std::endl;
             return 1;
         }

@@ -48,8 +48,7 @@ template <class X>
 void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
     if (dst.empty()) {
         dst = std::move(src);
-    }
-    else {
+    } else {
         dst.reserve(dst.size() + src.size());
         std::move(std::begin(src), std::end(src), std::back_inserter(dst));
         src.clear();

@@ -42,7 +42,7 @@ using namespace lbcrypto;
 
 namespace {
 class UTBFVRNS_INNERPRODUCT : public ::testing::Test {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -52,7 +52,7 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-public:
+  public:
 };
 
 enum TEST_ESTIMATED_RESULT { SUCCESS, FAILURE };
@@ -96,8 +96,8 @@ int64_t BFVrnsInnerProduct(const std::vector<int64_t> testVec) {
     cc->EvalSumKeyGen(keys.secretKey);
 
     Plaintext plaintext1 = cc->MakePackedPlaintext(testVec);
-    auto ct1             = cc->Encrypt(keys.publicKey, plaintext1);
-    auto finalResult     = cc->EvalInnerProduct(ct1, ct1, batchSize);
+    auto ct1 = cc->Encrypt(keys.publicKey, plaintext1);
+    auto finalResult = cc->EvalInnerProduct(ct1, ct1, batchSize);
     lbcrypto::Plaintext res;
     cc->Decrypt(keys.secretKey, finalResult, &res);
     return res->GetPackedValue()[0];

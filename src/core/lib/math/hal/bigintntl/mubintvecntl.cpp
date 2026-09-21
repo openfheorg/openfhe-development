@@ -104,8 +104,7 @@ myVecP<myT>::myVecP(const long n, const myT& q, std::initializer_list<uint64_t> 
     for (size_t i = 0; i < size_t(n); i++) {  // this loops over each entry
         if (i < len) {
             (*this)[i] = myT(*(rhs.begin() + i)) % m_modulus;
-        }
-        else {
+        } else {
             (*this)[i] = myT(0);
         }
     }
@@ -119,8 +118,7 @@ myVecP<myT>::myVecP(const long n, const myT& q, std::initializer_list<std::strin
     for (size_t i = 0; i < size_t(n); i++) {  // this loops over each entry
         if (i < len) {
             (*this)[i] = myT(*(rhs.begin() + i)) % m_modulus;
-        }
-        else {
+        } else {
             (*this)[i] = myT(0);
         }
     }
@@ -226,8 +224,7 @@ myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<uint64_t> rhs) {
                 // must be set directly
     #endif
                 (*this)[i] = myT(*(rhs.begin() + i));
-        }
-        else {
+        } else {
             (*this)[i] = myT(0);
         }
     }
@@ -255,8 +252,7 @@ myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<int32_t> rhs) {
                 // must be set directly
     #endif
                 (*this)[i] = myT(tmp);
-        }
-        else {
+        } else {
             (*this)[i] = myT(0);
         }
     }
@@ -281,8 +277,7 @@ myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<std::string> rhs) {
                 // must be set directly
     #endif
                 (*this)[i] = myT(*(rhs.begin() + i));
-        }
-        else {
+        } else {
             (*this)[i] = myT(0);
         }
     }
@@ -371,16 +366,13 @@ void myVecP<myT>::SwitchModulus(const myT& newModulus) {
         if (oldModulus < newModulus) {
             if (n > oldModulusByTwo) {
                 this->at(i) = n.ModAdd(diff, newModulus);
-            }
-            else {
+            } else {
                 this->at(i) = n.Mod(newModulus);
             }
-        }
-        else {
+        } else {
             if (n > oldModulusByTwo) {
                 this->at(i) = n.ModSub(diff, newModulus);
-            }
-            else {
+            } else {
                 this->at(i) = n.Mod(newModulus);
             }
         }
@@ -401,16 +393,14 @@ template <class myT>
 myVecP<myT> myVecP<myT>::Mod(const myT& modulus) const {
     if (modulus == myT(2)) {
         return this->ModByTwo();
-    }
-    else {
+    } else {
         myT thisMod(this->GetModulus());
         myVecP ans(this->GetLength(), thisMod);  // zeroed out
         myT halfQ(thisMod >> 1);
         for (size_t i = 0; i < this->GetLength(); i++) {
             if ((*this)[i] > halfQ) {
                 ans[i] = (*this)[i].ModSub(thisMod, modulus);
-            }
-            else {
+            } else {
                 ans[i] = (*this)[i].Mod(modulus);
             }
         }
@@ -422,15 +412,13 @@ template <class myT>
 myVecP<myT>& myVecP<myT>::ModEq(const myT& modulus) {
     if (modulus == myT(2)) {
         return this->ModByTwoEq();
-    }
-    else {
+    } else {
         myT thisMod(this->GetModulus());
         myT halfQ(thisMod >> 1);
         for (size_t i = 0; i < this->GetLength(); i++) {
             if (this->operator[](i) > halfQ) {
                 this->operator[](i).ModSubEq(thisMod, modulus);
-            }
-            else {
+            } else {
                 this->operator[](i).ModEq(modulus);
             }
         }
@@ -572,16 +560,13 @@ myVecP<myT>& myVecP<myT>::ModByTwoEq() {
         if (this->operator[](i) > halfQ) {
             if (this->operator[](i).Mod(myT(2)) == myT(1)) {
                 this->operator[](i) = 0;
-            }
-            else {
+            } else {
                 this->operator[](i) = 1;
             }
-        }
-        else {
+        } else {
             if (this->operator[](i).Mod(myT(2)) == myT(1)) {
                 this->operator[](i) = 1;
-            }
-            else {
+            } else {
                 this->operator[](i) = 0;
             }
         }
@@ -597,9 +582,8 @@ myVecP<myT> myVecP<myT>::MultiplyAndRound(const myT& p, const myT& q) const {
     for (size_t i = 0; i < this->GetLength(); i++) {
         if (ans[i] > halfQ) {
             myT temp = this->m_modulus - ans[i];
-            ans[i]   = this->m_modulus - temp.MultiplyAndRound(p, q);
-        }
-        else {
+            ans[i] = this->m_modulus - temp.MultiplyAndRound(p, q);
+        } else {
             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(this->m_modulus);
         }
     }
@@ -612,10 +596,9 @@ myVecP<myT>& myVecP<myT>::MultiplyAndRoundEq(const myT& p, const myT& q) {
     myT halfQ(this->m_modulus >> 1);
     for (size_t i = 0; i < this->GetLength(); i++) {
         if ((*this)[i] > halfQ) {
-            myT temp   = this->m_modulus - (*this)[i];
+            myT temp = this->m_modulus - (*this)[i];
             (*this)[i] = this->m_modulus - temp.MultiplyAndRound(p, q);
-        }
-        else {
+        } else {
             (*this)[i] = (*this)[i].MultiplyAndRound(p, q).Mod(this->m_modulus);
         }
     }
@@ -630,9 +613,8 @@ myVecP<myT> myVecP<myT>::DivideAndRound(const myT& q) const {
     for (size_t i = 0; i < this->GetLength(); i++) {
         if (ans[i] > halfQ) {
             myT temp = this->m_modulus - ans[i];
-            ans[i]   = this->m_modulus - temp.DivideAndRound(q);
-        }
-        else {
+            ans[i] = this->m_modulus - temp.DivideAndRound(q);
+        } else {
             ans[i] = ans[i].DivideAndRound(q);
         }
     }
@@ -645,10 +627,9 @@ myVecP<myT>& myVecP<myT>::DivideAndRoundEq(const myT& q) {
     myT halfQ(this->m_modulus >> 1);
     for (size_t i = 0; i < this->GetLength(); i++) {
         if ((*this)[i] > halfQ) {
-            myT temp   = this->m_modulus - (*this)[i];
+            myT temp = this->m_modulus - (*this)[i];
             (*this)[i] = this->m_modulus - temp.DivideAndRound(q);
-        }
-        else {
+        } else {
             (*this)[i] = (*this)[i].DivideAndRound(q);
         }
     }

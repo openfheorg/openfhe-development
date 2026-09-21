@@ -52,7 +52,7 @@ class CCParams;
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
         const CCParams<ContextGeneratorType>& parameters) {
-    using ParmType                   = typename Element::Params;
+    using ParmType = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
     auto ep = std::make_shared<ParmType>();

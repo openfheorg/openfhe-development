@@ -48,7 +48,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
-public:
+  public:
     virtual ~AdvancedSHERNS() = default;
 
     /////////////////////////////////////

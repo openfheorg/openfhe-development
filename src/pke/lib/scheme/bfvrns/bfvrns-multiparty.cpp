@@ -51,12 +51,13 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme
-KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
-        CryptoContext<DCRTPoly> cc, const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec, bool makeSparse) {
+KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
+                                                     const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
+                                                     bool makeSparse) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
-    KeyPair<DCRTPoly> keyPair(
-            std::make_shared<PublicKeyImpl<DCRTPoly>>(cc), std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
+                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
     auto elementParams = cryptoParams->GetElementParams();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -91,12 +92,12 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
     return keyPair;
 }
 
-KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
-        CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey, bool makeSparse, bool fresh) {
+KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey,
+                                                     bool makeSparse, bool fresh) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
-    KeyPair<DCRTPoly> keyPair(
-            std::make_shared<PublicKeyImpl<DCRTPoly>>(cc), std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
+                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
     auto elementParams = cryptoParams->GetElementParams();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -132,7 +133,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
     // When PRE is not used, a joint key is computed
     DCRTPoly b = fresh ? (ns * e - a * s) : (ns * e - a * s + pk[0]);
 
-    uint32_t sizeQ  = elementParams->GetParams().size();
+    uint32_t sizeQ = elementParams->GetParams().size();
     uint32_t sizePK = paramsPK->GetParams().size();
     if (sizePK > sizeQ) {
         s.DropLastElements(sizePK - sizeQ);
@@ -148,8 +149,8 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
     return keyPair;
 }
 
-DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(
-        const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const {
+DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                        NativePoly* plaintext) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
@@ -164,27 +165,26 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(
     size_t sizeQl = b.GetNumOfElements();
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ             = elementParams->GetParams().size();
+    size_t sizeQ = elementParams->GetParams().size();
 
     // use RNS procedures only if the number of RNS limbs is the same as for fresh ciphertexts
     if (sizeQl == sizeQ) {
         b.SetFormat(Format::COEFFICIENT);
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
-                cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
-                cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-            *plaintext = b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
+            cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
+            cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+            *plaintext = b.ScaleAndRound(
+                    cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
                     cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
                     cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
                     cryptoParams->GettQHatInvModqBDivqFrac());
+        } else {
+            *plaintext = b.ScaleAndRound(
+                    cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
+                    cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
+                    cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
         }
-        else {
-            *plaintext = b.ScaleAndRound(cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(),
-                    cryptoParams->Gettgamma(), cryptoParams->GettgammaQHatInvModq(),
-                    cryptoParams->GettgammaQHatInvModqPrecon(), cryptoParams->GetNegInvqModtgamma(),
-                    cryptoParams->GetNegInvqModtgammaPrecon());
-        }
-    }
-    else {
+    } else {
         // for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
         size_t diffQl = sizeQ - sizeQl;
         size_t levels = sizeQl - 1;
@@ -195,9 +195,9 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(
         b.SetFormat(Format::COEFFICIENT);
 
         const NativeInteger t = cryptoParams->GetPlaintextModulus();
-        NativePoly element    = b.GetElementAtIndex(0);
+        NativePoly element = b.GetElementAtIndex(0);
         const NativeInteger q = element.GetModulus();
-        element               = element.MultiplyAndRound(t, q);
+        element = element.MultiplyAndRound(t, q);
 
         // Setting the root of unity to ONE as the calculation is expensive
         // It is assumed that no polynomial multiplications in evaluation

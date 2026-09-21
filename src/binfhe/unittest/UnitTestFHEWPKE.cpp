@@ -150,8 +150,8 @@ TEST(UNITTestFHEWPKEAP, AND) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -186,8 +186,8 @@ TEST(UNITTestFHEWPKEGINX, AND) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -224,8 +224,8 @@ TEST(UNITTestFHEWPKEGINX, SIGNED_MOD) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -260,8 +260,8 @@ TEST(UNITTestFHEWPKEAP, OR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -296,8 +296,8 @@ TEST(UNITTestFHEWPKEGINX, OR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -332,8 +332,8 @@ TEST(UNITTestFHEWPKEAP, NAND) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -368,8 +368,8 @@ TEST(UNITTestFHEWPKEGINX, NAND) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -404,8 +404,8 @@ TEST(UNITTestFHEWPKEAP, NOR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -440,8 +440,8 @@ TEST(UNITTestFHEWPKEGINX, NOR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -476,8 +476,8 @@ TEST(UNITTestFHEWPKEAP, XOR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -512,8 +512,8 @@ TEST(UNITTestFHEWPKEGINX, XOR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -548,8 +548,8 @@ TEST(UNITTestFHEWPKEAP, XNOR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -584,8 +584,8 @@ TEST(UNITTestFHEWPKEGINX, XNOR) {
 
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
-    auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
-    auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
     auto ct1Alt = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0Alt = cc.Encrypt(cc.GetPublicKey(), 0);
 

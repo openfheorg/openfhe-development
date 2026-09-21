@@ -47,7 +47,7 @@ namespace lbcrypto {
 enum HashAlgorithm { SHA_256 = 0, SHA_512 = 1 };
 
 class HashUtil {
-public:
+  public:
     static void Hash(std::string message, HashAlgorithm algo, std::vector<int64_t>& digest) {
         switch (algo) {
             case SHA_256:
@@ -66,7 +66,7 @@ public:
 
     static std::string HashString(std::string message);
 
-private:
+  private:
     static void SHA256(std::string message, std::vector<int64_t>& digest);
     static void SHA512(std::string message, std::vector<int64_t>& digest);
     static const uint32_t k_256[64];

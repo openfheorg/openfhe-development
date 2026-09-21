@@ -44,13 +44,13 @@ CKKS implementation. If NOISE_FLOODING_DECRYPT is set, we flood the decryption b
 
 namespace lbcrypto {
 
-DecryptResult PKECKKSRNS::Decrypt(
-        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, NativePoly* plaintext) const {
+DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                                  NativePoly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    DCRTPoly b                      = DecryptCore(cv, privateKey);
+    DCRTPoly b = DecryptCore(cv, privateKey);
     if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-            cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
@@ -70,13 +70,13 @@ DecryptResult PKECKKSRNS::Decrypt(
     return DecryptResult(plaintext->GetLength());
 }
 
-DecryptResult PKECKKSRNS::Decrypt(
-        ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey, Poly* plaintext) const {
+DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                                  Poly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    DCRTPoly b                      = DecryptCore(cv, privateKey);
+    DCRTPoly b = DecryptCore(cv, privateKey);
     if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-            cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
@@ -90,8 +90,7 @@ DecryptResult PKECKKSRNS::Decrypt(
 
     if (sizeQl == 1) {
         *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
-    }
-    else {
+    } else {
         *plaintext = b.CRTInterpolate();
     }
 

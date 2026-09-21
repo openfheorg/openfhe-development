@@ -43,12 +43,12 @@
 #include "utils/exception.h"
 
 struct BaseTestCase {
-private:
+  private:
     // std::shared_ptr<lbcrypto::Params> params;
     lbcrypto::SCHEME scheme;
     std::vector<std::string> paramOverrides;
 
-public:
+  public:
     // there are cases when we don't support some features depending on different conditions.
     // skipTest() is to check all those conditions, so we do not get our unit tests failed
     bool skipTest() const {
@@ -123,8 +123,7 @@ public:
         // get the subset of elements with the parameter override values
         try {
             paramOverrides = std::vector<std::string>(start, start + numOverrides);
-        }
-        catch (...) {
+        } catch (...) {
             std::string errMsg("Check the number of parameter overrides in the .csv file. It should be [" +
                                std::to_string(numOverrides) + "]");
             OPENFHE_THROW(errMsg);

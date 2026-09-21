@@ -65,7 +65,7 @@ int main() {
     int p = cc.GetMaxPlaintextSpace().ConvertToInt();
 
     // Number of bits to round down
-    auto bits      = 1;
+    auto bits = 1;
     uint32_t input = 6;
     std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
 

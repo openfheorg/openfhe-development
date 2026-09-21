@@ -61,13 +61,13 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
-DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
-        const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, NativePoly* plaintext) const {
+DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                        NativePoly* plaintext) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
-    DCRTPoly b                       = cv0[0];
+    DCRTPoly b = cv0[0];
     for (size_t i = 1; i < ciphertextVec.size(); i++) {
         const std::vector<DCRTPoly>& cvi = ciphertextVec[i]->GetElements();
         b += cvi[0];
@@ -80,13 +80,13 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
     if (sizeQl > 0) {
         for (size_t i = sizeQl - 1; i > 0; --i) {
             b.ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
-                    cryptoParams->GetNegtInvModq(i), cryptoParams->GetNegtInvModqPrecon(i),
-                    cryptoParams->GetqlInvModq(i), cryptoParams->GetqlInvModqPrecon(i));
+                        cryptoParams->GetNegtInvModq(i), cryptoParams->GetNegtInvModqPrecon(i),
+                        cryptoParams->GetqlInvModq(i), cryptoParams->GetqlInvModqPrecon(i));
         }
         if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
             for (size_t i = 0; i < sizeQl - 1; ++i) {
-                NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
                 NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
                 scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
             }
@@ -98,8 +98,8 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
     return DecryptResult(plaintext->GetLength(), scalingFactorInt);
 }
 
-DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
-        const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec, Poly* plaintext) const {
+DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                        Poly* plaintext) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
 

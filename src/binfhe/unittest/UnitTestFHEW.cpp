@@ -275,7 +275,7 @@ static std::vector<TEST_CASE_UTGENERAL_FHEW> testCasesUTGENERAL_FHEW = {
 // clang-format on
 //===========================================================================================================
 class UTGENERAL_FHEW : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_FHEW> {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -291,7 +291,7 @@ protected:
 
             NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
 
-            auto sk  = cc.KeyGen();
+            auto sk = cc.KeyGen();
             auto skN = cc.KeyGenN();
 
             auto ctQN1 = cc.Encrypt(skN, 1, SMALL_DIM, 4, Q);
@@ -316,13 +316,11 @@ protected:
 
             EXPECT_EQ(testData.results[0], resultAfterKeySwitch1) << failed;
             EXPECT_EQ(testData.results[1], resultAfterKeySwitch0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -358,13 +356,11 @@ protected:
 
             EXPECT_EQ(1, resultAfterModSwitch1) << failed;
             EXPECT_EQ(0, resultAfterModSwitch0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -392,13 +388,11 @@ protected:
 
             EXPECT_EQ(testData.results[0], result1) << failed;
             EXPECT_EQ(testData.results[1], result0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -412,8 +406,8 @@ protected:
 
             cc.BTKeyGen(sk);
 
-            auto ct1    = cc.Encrypt(sk, 1);
-            auto ct0    = cc.Encrypt(sk, 0);
+            auto ct1 = cc.Encrypt(sk, 1);
+            auto ct0 = cc.Encrypt(sk, 0);
             auto ct1Alt = cc.Encrypt(sk, 1);
             auto ct0Alt = cc.Encrypt(sk, 0);
 
@@ -437,19 +431,17 @@ protected:
             EXPECT_EQ(testData.results[1], result01) << failed;
             EXPECT_EQ(testData.results[2], result10) << failed;
             EXPECT_EQ(testData.results[3], result00) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
 
-    void UnitTest_FHEW_MULTIINPUT(
-            const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_FHEW_MULTIINPUT(const TEST_CASE_UTGENERAL_FHEW& testData,
+                                  const std::string& failmsg = std::string()) {
         try {
             auto cc = BinFHEContext();
             cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
@@ -466,8 +458,7 @@ protected:
                 ctvec.push_back(ct1);
                 ctvec.push_back(ct2);
                 ctvec.push_back(ct3);
-            }
-            else if (testData.num_of_inputs == 4) {
+            } else if (testData.num_of_inputs == 4) {
                 auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
                 auto ct2 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
                 auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
@@ -485,13 +476,11 @@ protected:
             std::string failed = testData.toString() + " failed";
 
             EXPECT_EQ(testData.results[0], result11) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -537,13 +526,11 @@ protected:
 
             EXPECT_EQ(testData.results[0], result1) << failed;
             EXPECT_EQ(testData.results[1], result0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }

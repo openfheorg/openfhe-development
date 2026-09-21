@@ -50,7 +50,7 @@
 namespace lbcrypto {
 // Promote BigInteger and BigVector to lbcrypto namespace
 using BigInteger = bigintbackend::BigInteger;
-using BigVector  = bigintbackend::BigVector;
+using BigVector = bigintbackend::BigVector;
 }  // namespace lbcrypto
 
 //==============================================================================================

@@ -45,7 +45,7 @@
 namespace lbcrypto {
 
 class ParallelControls {
-public:
+  public:
     // @Brief CTOR, latches the number of machine threads the system reports
     // (can be overridden by environment variables) and allows all of them by default.
     ParallelControls() {
@@ -134,7 +134,7 @@ public:
 #endif
     }
 
-private:
+  private:
 #ifdef PARALLEL
     std::atomic<int> threadLimit{1};
     int savedLimit{1};

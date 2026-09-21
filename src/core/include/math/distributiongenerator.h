@@ -52,7 +52,7 @@ namespace lbcrypto {
  */
 
 class PseudoRandomNumberGenerator {
-public:
+  public:
     /**
     * @brief InitPRNGEngine() initializes the PRNG generator
     * @param libPath a string with the absolute path to an external PRNG library ("/path/to/libprng.so").
@@ -67,7 +67,7 @@ public:
      */
     static PRNG& GetPRNG();
 
-private:
+  private:
     using GenPRNGEngineFuncPtr = PRNG* (*)();
 
 #if defined(WITH_OPENMP)

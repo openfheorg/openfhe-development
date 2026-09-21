@@ -48,10 +48,10 @@
 namespace lbcrypto {
 
 class CoefPackedEncoding : public PlaintextImpl {
-private:
+  private:
     std::vector<int64_t> value;
 
-protected:
+  protected:
     /**
     * @brief PrintValue() is called by operator<<
     * @param out stream to print to
@@ -60,7 +60,7 @@ protected:
         out << "(";
 
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i = value.size();
         bool allZeroes = true;
         while (i > 0) {
             --i;
@@ -92,20 +92,20 @@ protected:
         return value == el.value;
     }
 
-public:
+  public:
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
-                                  bool>::type = true>
+                                                  bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)
         : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
-                                  bool>::type = true>
+                                                  bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs,
-            SCHEME schemeId = SCHEME::INVALID_SCHEME)
+                       SCHEME schemeId = SCHEME::INVALID_SCHEME)
         : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId), value(coeffs) {}
 
     ~CoefPackedEncoding() override = default;

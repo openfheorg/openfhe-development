@@ -104,8 +104,7 @@ void AtAndSetModulusTest(const std::string& msg) {
     for (uint32_t i = 0; i < len; i++) {
         if (i != 6) {  // value at 6 is < q
             EXPECT_NE(expectedResult[i], n[i].ConvertToInt()) << msg << " at no mod failed";
-        }
-        else {
+        } else {
             EXPECT_EQ(expectedResult[i], n[i].ConvertToInt()) << msg << " at no mod failed";
         }
     }
@@ -127,7 +126,7 @@ template <typename V>
 void CTOR_Test(const std::string& msg) {
     typename V::Integer q("233");
     uint32_t expectedResult[10] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
-    const uint32_t len          = sizeof(expectedResult) / sizeof(expectedResult[0]);
+    const uint32_t len = sizeof(expectedResult) / sizeof(expectedResult[0]);
 
     {
         V m(len, q, {"987968", "587679", "456454", "234343", "769789", "465654", "79", "346346", "325328", "7698798"});

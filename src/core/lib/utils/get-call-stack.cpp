@@ -63,7 +63,7 @@ static bool stringEmpty(const std::string& str) noexcept {
 
 std::vector<std::string> get_call_stack() noexcept {
     void* bt_buffer[MAX_BACKTRACE_ADDRESSES] = {NULL};
-    const int n                              = backtrace(bt_buffer, MAX_BACKTRACE_ADDRESSES);
+    const int n = backtrace(bt_buffer, MAX_BACKTRACE_ADDRESSES);
     if (n < 1) {
         return std::vector<std::string>();
     }
@@ -83,9 +83,9 @@ std::vector<std::string> get_call_stack() noexcept {
         //  /lib/libOPENFHEpke.so.1(_ZNK8lbcrypto25ParameterGenerationBGVRNS15ParamsGenBGVRNSESt10shared_ptrINS_20CryptoParametersBaseINS_12DCRTPolyImplIN9bigintdyn9mubintvecINS4_5ubintImEEEEEEEEEjjjjjjjj+0x44a) [0x7f1b5cf6a09a]
         // 1. we may have "+", so we search to find the last one to trim "symbol" from the right
         size_t pos = symbol.find_last_of("+");
-        symbol     = symbol.substr(0, pos);
+        symbol = symbol.substr(0, pos);
         // 2. find the last "(" which indicates the beginning of the actual mangled symbol enclosed in to "()"
-        pos           = symbol.find_last_of("(");
+        pos = symbol.find_last_of("(");
         size_t newLen = symbol.length() - pos;
         std::string mangledName(symbol.substr(pos + 1, newLen));
 

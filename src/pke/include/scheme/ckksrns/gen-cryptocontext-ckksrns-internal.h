@@ -56,16 +56,16 @@ class CCParams;
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         const CCParams<ContextGeneratorType>& parameters) {
-    using ParmType                   = typename Element::Params;
+    using ParmType = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
     auto ep = std::make_shared<ParmType>();
 
     uint32_t scalingModSize = parameters.GetScalingModSize();
-    uint32_t firstModSize   = parameters.GetFirstModSize();
+    uint32_t firstModSize = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-            parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        parameters.GetExecutionMode() == EXEC_EVALUATION) {
         double logstd = parameters.GetStatisticalSecurity() / 2 +
                         std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = std::pow(2, logstd + parameters.GetNoiseEstimate());
@@ -75,7 +75,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         firstModSize = scalingModSize + 11;
 #else
         scalingModSize = MAX_MODULUS_SIZE - 1;
-        firstModSize   = MAX_MODULUS_SIZE;
+        firstModSize = MAX_MODULUS_SIZE;
         if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
             OPENFHE_THROW("Precision of less than 3 bits is not supported. logstd " + std::to_string(logstd) +
                           " + noiseEstimate " + std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");

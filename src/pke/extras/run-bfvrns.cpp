@@ -104,7 +104,7 @@ void SHERun() {
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
     double finish = currentDateTime();
-    double diff   = finish - start;
+    double diff = finish - start;
     std::cout << "Key generation time: "
               << "\t" << diff << " ms" << std::endl;
 
@@ -120,10 +120,10 @@ void SHERun() {
     ////////////////////////////////////////////////////////////
 
     std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext1               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
 
     std::vector<int64_t> vectorOfInts2 = {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0};
-    Plaintext plaintext2               = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
 
     double timeDecrypt(0.0);
     double timeMult(0.0);

@@ -46,7 +46,7 @@ using namespace lbcrypto;
 //===========================================================================================================
 enum TEST_CASE_TYPE : int {
     EVAL_FAST_ROTATION = 0,
-    COMPRESSED_BFV     = 1,
+    COMPRESSED_BFV = 1,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -98,7 +98,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBFVRNS& test
 }
 //===========================================================================================================
 constexpr uint32_t MULDEPTH = 7;
-constexpr uint32_t PTM      = 65537;
+constexpr uint32_t PTM = 65537;
 // clang-format off
 static std::vector<TEST_CASE_UTBFVRNS> testCases = {
     // TestType,         Descr,  Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech, PREMode
@@ -125,7 +125,7 @@ class UTBFVRNS : public ::testing::TestWithParam<TEST_CASE_UTBFVRNS> {
     // This is necessary because BFV works for approximate numbers.
     const double eps = EPSILON;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -148,25 +148,25 @@ protected:
             cc->EvalRotateKeyGen(keyPair.secretKey, {1, 2, -1, -2});
 
             std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-            Plaintext plaintext1               = cc->MakePackedPlaintext(vectorOfInts1);
-            auto ciphertext1                   = cc->Encrypt(keyPair.publicKey, plaintext1);
+            Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
             std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-            Plaintext plaintext2               = cc->MakePackedPlaintext(vectorOfInts2);
-            auto ciphertext2                   = cc->Encrypt(keyPair.publicKey, plaintext2);
+            Plaintext plaintext2 = cc->MakePackedPlaintext(vectorOfInts2);
+            auto ciphertext2 = cc->Encrypt(keyPair.publicKey, plaintext2);
 
             std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 10, 11, 12};
-            Plaintext plaintext3               = cc->MakePackedPlaintext(vectorOfInts3);
-            auto ciphertext3                   = cc->Encrypt(keyPair.publicKey, plaintext3);
+            Plaintext plaintext3 = cc->MakePackedPlaintext(vectorOfInts3);
+            auto ciphertext3 = cc->Encrypt(keyPair.publicKey, plaintext3);
 
             // Homomorphic multiplications (do enough to drop some levels)
-            auto ciphertextMul12      = cc->EvalMult(ciphertext1, ciphertext2);
+            auto ciphertextMul12 = cc->EvalMult(ciphertext1, ciphertext2);
             auto ciphertextMultResult = cc->EvalMult(ciphertextMul12, ciphertext3);
-            ciphertextMultResult      = cc->EvalSquare(ciphertextMultResult);
-            ciphertextMultResult      = cc->EvalSquare(ciphertextMultResult);
+            ciphertextMultResult = cc->EvalSquare(ciphertextMultResult);
+            ciphertextMultResult = cc->EvalSquare(ciphertextMultResult);
 
-            auto digits      = cc->EvalFastRotationPrecompute(ciphertextMul12);
-            auto digits2     = cc->EvalFastRotationPrecompute(ciphertextMultResult);
+            auto digits = cc->EvalFastRotationPrecompute(ciphertextMul12);
+            auto digits2 = cc->EvalFastRotationPrecompute(ciphertextMultResult);
             const uint32_t M = cc->GetCyclotomicOrder();
 
             auto ciphertextRot1 = cc->EvalFastRotation(ciphertextMul12, 1, M, digits);
@@ -191,8 +191,8 @@ protected:
             checkEquality(results2, expectedResults2, eps, failmsg + " EvalFastRotation(-1) failed");
 
             // EvalFastRotate +2 (left rotation)
-            std::vector<int64_t> expectedResults3 = {
-                    -14912, -16, 15300, -29119, 3875, 16, -2298, 15428, -8061, 5916, 0, 0};
+            std::vector<int64_t> expectedResults3 = {-14912, -16,   15300, -29119, 3875, 16,
+                                                     -2298,  15428, -8061, 5916,   0,    0};
             Plaintext plaintextRot3;
             cc->Decrypt(keyPair.secretKey, ciphertextRot3, &plaintextRot3);
             plaintextRot3->SetLength(vectorOfInts1.size());
@@ -200,20 +200,18 @@ protected:
             checkEquality(results3, expectedResults3, eps, failmsg + " EvalFastRotation(+2) failed");
 
             // EvalFastRotate -2 (right rotation)
-            std::vector<int64_t> expectedResults4 = {
-                    0, 0, 81, 4096, -14912, -16, 15300, -29119, 3875, 16, -2298, 15428};
+            std::vector<int64_t> expectedResults4 = {0,     0,      81,   4096, -14912, -16,
+                                                     15300, -29119, 3875, 16,   -2298,  15428};
             Plaintext plaintextRot4;
             cc->Decrypt(keyPair.secretKey, ciphertextRot4, &plaintextRot4);
             plaintextRot4->SetLength(vectorOfInts1.size());
             auto results4 = plaintextRot4->GetPackedValue();
             checkEquality(results4, expectedResults4, eps, failmsg + " EvalFastRotation(-2) failed");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -231,25 +229,25 @@ protected:
             cc->EvalRotateKeyGen(keyPair.secretKey, {1});
 
             std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 11, 12};
-            Plaintext plaintext1               = cc->MakePackedPlaintext(vectorOfInts1, 1, 1);
-            auto ciphertext1                   = cc->Encrypt(keyPair.publicKey, plaintext1);
+            Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1, 1, 1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
             std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-            Plaintext plaintext2               = cc->MakePackedPlaintext(vectorOfInts2, 1, 1);
-            auto ciphertext2                   = cc->Encrypt(keyPair.publicKey, plaintext2);
+            Plaintext plaintext2 = cc->MakePackedPlaintext(vectorOfInts2, 1, 1);
+            auto ciphertext2 = cc->Encrypt(keyPair.publicKey, plaintext2);
 
             std::vector<int64_t> vectorOfInts3 = {1, 2, 5, 2, 5, 6, 7, 8, 9, 9, 11, 12};
-            Plaintext plaintext3               = cc->MakePackedPlaintext(vectorOfInts3, 1, 1);
-            auto ciphertext3                   = cc->Encrypt(keyPair.publicKey, plaintext3);
+            Plaintext plaintext3 = cc->MakePackedPlaintext(vectorOfInts3, 1, 1);
+            auto ciphertext3 = cc->Encrypt(keyPair.publicKey, plaintext3);
 
             // Homomorphic multiplications (do enough to drop some levels)
-            auto ciphertextMul12           = cc->EvalMult(ciphertext1, ciphertext2);
-            auto ciphertextMultResult      = cc->EvalMult(ciphertextMul12, ciphertext3);
+            auto ciphertextMul12 = cc->EvalMult(ciphertext1, ciphertext2);
+            auto ciphertextMultResult = cc->EvalMult(ciphertextMul12, ciphertext3);
             auto ciphertextMultCompressed1 = cc->Compress(ciphertextMultResult, 1);
             auto ciphertextMultCompressed2 = cc->Compress(ciphertextMultResult, 2);
-            auto ciphertextSquareResult    = cc->EvalSquare(ciphertext1);
+            auto ciphertextSquareResult = cc->EvalSquare(ciphertext1);
 
-            auto digits      = cc->EvalFastRotationPrecompute(ciphertextMul12);
+            auto digits = cc->EvalFastRotationPrecompute(ciphertextMul12);
             const uint32_t M = cc->GetCyclotomicOrder();
 
             auto ciphertextRot1 = cc->EvalFastRotation(ciphertextMul12, 1, M, digits);
@@ -322,13 +320,11 @@ protected:
             plaintextMultComp2->SetLength(vectorOfInts1.size());
             results1 = plaintextMultComp2->GetPackedValue();
             checkEquality(results1, expectedResults1, eps, failmsg + " EvalMult compressed to 2 RNS limbs failed");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

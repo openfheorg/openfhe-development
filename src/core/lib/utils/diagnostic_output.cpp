@@ -59,12 +59,12 @@ std::ostream& OpenFHEOutStream() {
 
 std::ostream& SetOpenFHEErrStream(std::ostream& os) {
     std::ostream& previous = *g_errStream;
-    g_errStream            = &os;
+    g_errStream = &os;
     return previous;
 }
 std::ostream& SetOpenFHEOutStream(std::ostream& os) {
     std::ostream& previous = *g_outStream;
-    g_outStream            = &os;
+    g_outStream = &os;
     return previous;
 }
 

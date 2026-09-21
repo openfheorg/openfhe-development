@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 class AdvancedSHEBFVRNS : public AdvancedSHERNS {
-public:
+  public:
     virtual ~AdvancedSHEBFVRNS() {}
 
     /////////////////////////////////////

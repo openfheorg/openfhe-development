@@ -48,7 +48,7 @@
 namespace lbcrypto {
 
 class LeveledSHECKKSRNS : public LeveledSHERNS {
-public:
+  public:
     virtual ~LeveledSHECKKSRNS() = default;
 
     /////////////////////////////////////////
@@ -126,8 +126,8 @@ public:
     /////////////////////////////////////
 
     Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index,
-            const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
-            const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const override;
+                                             const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
+                                             const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const override;
 
     uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
@@ -170,14 +170,14 @@ public:
 
     void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, std::complex<double> operand) const;
 
-    void AdjustLevelsAndDepthInPlace(
-            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                     Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    void AdjustLevelsAndDepthToOneInPlace(
-            Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+    void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(
-            ConstCiphertext<DCRTPoly>& ciphertext, double operand) const;
+    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                             double operand) const;
 
     std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly>& ciphertext, double operand) const;
 

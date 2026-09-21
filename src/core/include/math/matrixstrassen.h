@@ -51,7 +51,7 @@ namespace lbcrypto {
 
 template <class Element>
 class MatrixStrassen {  // TODO : public Serializable {
-public:
+  public:
     typedef std::vector<std::vector<Element>> data_t;
     typedef std::vector<Element> lineardata_t;
     typedef typename std::vector<Element>::iterator it_lineardata_t;
@@ -476,7 +476,7 @@ public:
    */
     MatrixStrassen<Element> MultByRandomVector(std::vector<int> ranvec) const;
 
-private:
+  private:
     struct MatDescriptor {
         int lda;
         int nrec;
@@ -496,19 +496,19 @@ private:
     mutable int colpad = 0;
     alloc_func allocZero;
     mutable char* pattern = nullptr;
-    mutable int numAdd    = 0;
-    mutable int numMult   = 0;
-    mutable int numSub    = 0;
+    mutable int numAdd = 0;
+    mutable int numMult = 0;
+    mutable int numSub = 0;
     mutable MatDescriptor desc;
     mutable Element zeroUniquePtr = allocZero();
-    mutable int NUM_THREADS       = 1;
+    mutable int NUM_THREADS = 1;
 
-    void multiplyInternalCAPS(
-            it_lineardata_t A, it_lineardata_t B, it_lineardata_t C, MatDescriptor desc, it_lineardata_t work) const;
+    void multiplyInternalCAPS(it_lineardata_t A, it_lineardata_t B, it_lineardata_t C, MatDescriptor desc,
+                              it_lineardata_t work) const;
     void strassenDFSCAPS(it_lineardata_t A, it_lineardata_t B, it_lineardata_t C, MatDescriptor desc,
-            it_lineardata_t workPassThrough) const;
+                         it_lineardata_t workPassThrough) const;
     void block_multiplyCAPS(it_lineardata_t A, it_lineardata_t B, it_lineardata_t C, MatDescriptor d,
-            it_lineardata_t workPassThrough) const;
+                            it_lineardata_t workPassThrough) const;
     void LinearizeDataCAPS(lineardata_t* lineardataPtr) const;
     void UnlinearizeDataCAPS(lineardata_t* lineardataPtr) const;
     int getRank() const;
@@ -522,20 +522,20 @@ private:
     void smartAdditionCAPS(it_lineardata_t result, it_lineardata_t A, it_lineardata_t B) const;
     void addMatricesCAPS(int numEntries, it_lineardata_t C, it_lineardata_t A, it_lineardata_t B) const;
     void addSubMatricesCAPS(int numEntries, it_lineardata_t T1, it_lineardata_t S11, it_lineardata_t S12,
-            it_lineardata_t T2, it_lineardata_t S21, it_lineardata_t S22) const;
+                            it_lineardata_t T2, it_lineardata_t S21, it_lineardata_t S22) const;
     void subMatricesCAPS(int numEntries, it_lineardata_t C, it_lineardata_t A, it_lineardata_t B) const;
     void tripleAddMatricesCAPS(int numEntries, it_lineardata_t T1, it_lineardata_t S11, it_lineardata_t S12,
-            it_lineardata_t T2, it_lineardata_t S21, it_lineardata_t S22, it_lineardata_t T3, it_lineardata_t S31,
-            it_lineardata_t S32) const;
+                               it_lineardata_t T2, it_lineardata_t S21, it_lineardata_t S22, it_lineardata_t T3,
+                               it_lineardata_t S31, it_lineardata_t S32) const;
     void tripleSubMatricesCAPS(int numEntries, it_lineardata_t T1, it_lineardata_t S11, it_lineardata_t S12,
-            it_lineardata_t T2, it_lineardata_t S21, it_lineardata_t S22, it_lineardata_t T3, it_lineardata_t S31,
-            it_lineardata_t S32) const;
+                               it_lineardata_t T2, it_lineardata_t S21, it_lineardata_t S22, it_lineardata_t T3,
+                               it_lineardata_t S31, it_lineardata_t S32) const;
 
     void distributeFrom1ProcCAPS(MatDescriptor desc, it_lineardata_t O, it_lineardata_t I) const;
     void collectTo1ProcCAPS(MatDescriptor desc, it_lineardata_t O, it_lineardata_t I) const;
     void sendBlockCAPS(int rank, int target, it_lineardata_t O, int bs, int source, it_lineardata_t I, int ldi) const;
-    void receiveBlockCAPS(
-            int rank, int target, it_lineardata_t O, int bs, int source, it_lineardata_t I, int ldo) const;
+    void receiveBlockCAPS(int rank, int target, it_lineardata_t O, int bs, int source, it_lineardata_t I,
+                          int ldo) const;
     void distributeFrom1ProcRecCAPS(MatDescriptor desc, it_lineardata_t O, it_lineardata_t I, int ldi) const;
     void collectTo1ProcRecCAPS(MatDescriptor desc, it_lineardata_t O, it_lineardata_t I, int ldo) const;
 };
@@ -625,8 +625,8 @@ inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& i
  * @param &params Poly element params
  * @return the resulting matrix of Poly
  */
-inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(
-        MatrixStrassen<int32_t> const& other, size_t n, const std::shared_ptr<ILParams> params);
+inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,
+                                                       const std::shared_ptr<ILParams> params);
 
 /**
  * Another method for splitting a vector of int32_t into a vector of ring
@@ -637,8 +637,8 @@ inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(
  * @param &params Poly element params
  * @return the resulting matrix of Poly
  */
-inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(
-        MatrixStrassen<int32_t> const& other, size_t n, const std::shared_ptr<ILParams> params);
+inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,
+                                                          const std::shared_ptr<ILParams> params);
 }  // namespace lbcrypto
 
 #endif  // SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_

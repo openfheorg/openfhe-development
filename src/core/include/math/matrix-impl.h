@@ -90,8 +90,7 @@ Matrix<Element> Matrix<Element>::Mult(Matrix<Element> const& other) const {
                 result.data[0][col] += data[0][i] * other.data[i][col];
             }
         }
-    }
-    else {
+    } else {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.rows))
         for (size_t row = 0; row < result.rows; ++row) {
             for (size_t i = 0; i < cols; ++i) {
@@ -161,11 +160,9 @@ void Matrix<Element>::Determinant(Element* determinant) const {
 
     if (rows == 1) {
         *determinant = data[0][0];
-    }
-    else if (rows == 2) {
+    } else if (rows == 2) {
         *determinant = data[0][0] * (data[1][1]) - data[1][0] * (data[0][1]);
-    }
-    else {
+    } else {
         size_t j1, j2;
         size_t n = rows;
 

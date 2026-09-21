@@ -103,10 +103,10 @@ namespace {
 namespace {
 using MemPolicyWord = unsigned long;  // NOLINT(runtime/int) -- kernel nodemask word
 
-constexpr int OPENFHE_MPOL_DEFAULT        = 0;
-constexpr int OPENFHE_MPOL_INTERLEAVE     = 3;
+constexpr int OPENFHE_MPOL_DEFAULT = 0;
+constexpr int OPENFHE_MPOL_INTERLEAVE = 3;
 constexpr int OPENFHE_MPOL_F_MEMS_ALLOWED = 4;
-constexpr MemPolicyWord OPENFHE_MAXNODE   = 1024;
+constexpr MemPolicyWord OPENFHE_MAXNODE = 1024;
 
 [[maybe_unused]] const bool ofheNumaInterleaved = []() noexcept {
     const char* opt = std::getenv("OPENFHE_NUMA_INTERLEAVE");

@@ -54,8 +54,8 @@
 namespace bigintdyn {
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(
-        uint32_t length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
+                                 std::initializer_list<std::string> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
@@ -63,8 +63,8 @@ mubintvec<ubint_el_t>::mubintvec(
 }
 
 template <class ubint_el_t>
-mubintvec<ubint_el_t>::mubintvec(
-        uint32_t length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept
+mubintvec<ubint_el_t>::mubintvec(uint32_t length, const ubint_el_t& modulus,
+                                 std::initializer_list<uint64_t> rhs) noexcept
     : m_modulus{modulus}, m_modulus_state{State::INITIALIZED}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
@@ -89,7 +89,7 @@ mubintvec<ubint_el_t>::mubintvec(const std::vector<std::string>& s, const std::s
 // will overwrite target modulus
 template <class ubint_el_t>
 mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::operator=(const mubintvec& rhs) noexcept {
-    m_modulus       = rhs.m_modulus;
+    m_modulus = rhs.m_modulus;
     m_modulus_state = rhs.m_modulus_state;
     if (rhs.m_data.size() > m_data.size()) {
         m_data = rhs.m_data;
@@ -112,8 +112,7 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::operator=(std::initializer_list<st
             m_data[i] = ubint_el_t(*(rhs.begin() + i));
             if (reduce)
                 m_data[i].ModEq(m_modulus);
-        }
-        else {
+        } else {
             m_data[i] = 0;
         }
     }
@@ -131,8 +130,7 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::operator=(std::initializer_list<ui
             m_data[i] = ubint_el_t(*(rhs.begin() + i));
             if (reduce)
                 m_data[i].ModEq(m_modulus);
-        }
-        else {
+        } else {
             m_data[i] = 0;
         }
     }
@@ -154,8 +152,7 @@ void mubintvec<ubint_el_t>::SwitchModulus(const ubint_el_t& modulus) {
             if (m_data[i] > halfQ)
                 m_data[i] += diff;
         }
-    }
-    else {
+    } else {
         auto diff{modulus - (m_modulus % modulus)};
         for (size_t i = 0; i < size; ++i) {
             if (m_data[i] > halfQ)
@@ -187,8 +184,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::Mod(const ubint_el_t& modulus) cons
             if (ans.m_data[i] > halfQ)
                 ans.m_data[i] += diff;
         }
-    }
-    else {
+    } else {
         auto diff{modulus - (m_modulus % modulus)};
         for (size_t i = 0; i < size; ++i) {
             if (ans.m_data[i] > halfQ)
@@ -212,8 +208,7 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModEq(const ubint_el_t& modulus) {
             if (m_data[i] > halfQ)
                 m_data[i] += diff;
         }
-    }
-    else {
+    } else {
         auto diff{modulus - (m_modulus % modulus)};
         for (size_t i = 0; i < size; ++i) {
             if (m_data[i] > halfQ)
@@ -478,8 +473,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::MultiplyAndRound(const ubint_el_t& 
         if (ans.m_data[i] > halfQ) {
             auto&& tmp{mv - ans[i]};
             ans[i] = mv - tmp.MultiplyAndRound(p, q);
-        }
-        else {
+        } else {
             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(mv);
         }
     }
@@ -494,8 +488,7 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::MultiplyAndRoundEq(const ubint_el_
         if (m_data[i] > halfQ) {
             auto&& tmp{mv - m_data[i]};
             m_data[i] = mv - tmp.MultiplyAndRound(p, q);
-        }
-        else {
+        } else {
             m_data[i] = m_data[i].MultiplyAndRound(p, q).Mod(mv);
         }
     }
@@ -511,8 +504,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::DivideAndRound(const ubint_el_t& q)
         if (ans[i] > halfQ) {
             auto&& tmp{mv - ans[i]};
             ans[i] = mv - tmp.DivideAndRound(q);
-        }
-        else {
+        } else {
             ans[i] = ans[i].DivideAndRoundEq(q);
         }
     }
@@ -527,8 +519,7 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::DivideAndRoundEq(const ubint_el_t&
         if (m_data[i] > halfQ) {
             auto&& tmp{mv - m_data[i]};
             m_data[i] = mv - tmp.DivideAndRound(q);
-        }
-        else {
+        } else {
             m_data[i] = m_data[i].DivideAndRound(q);
         }
     }

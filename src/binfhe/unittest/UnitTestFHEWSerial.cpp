@@ -38,8 +38,8 @@
 using namespace lbcrypto;
 
 template <typename ST, typename PS>
-void UnitTestFHEWSerial(
-        const ST& sertype, const PS& secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType, const std::string& errMsg) {
+void UnitTestFHEWSerial(const ST& sertype, const PS& secLevel, BINFHE_METHOD variant, BINFHE_OUTPUT ctType,
+                        const std::string& errMsg) {
     const LWEPlaintext val(1);
     auto cc1 = BinFHEContext();
     cc1.GenerateBinFHEContext(secLevel, variant);
@@ -103,7 +103,7 @@ void UnitTestFHEWSerial(
         EXPECT_EQ(*ct1, *ct2) << errMsg << " Ciphertext mismatch";
     }
 
-    auto ctNew    = cc2.Encrypt(sk2, val, ctType);
+    auto ctNew = cc2.Encrypt(sk2, val, ctType);
     auto ctResult = cc2.EvalBinGate(AND, ct2, ctNew);
     LWEPlaintext result;
     cc2.Decrypt(sk2, ctResult, &result);

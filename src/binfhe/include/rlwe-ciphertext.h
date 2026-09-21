@@ -52,7 +52,7 @@
 namespace lbcrypto {
 
 class RLWECiphertextImpl;
-using RLWECiphertext      = std::shared_ptr<RLWECiphertextImpl>;
+using RLWECiphertext = std::shared_ptr<RLWECiphertextImpl>;
 using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
 
 /**
@@ -60,7 +60,7 @@ using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
  * ring elements
  */
 class RLWECiphertextImpl : public Serializable {
-public:
+  public:
     RLWECiphertextImpl() = default;
 
     explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
@@ -110,8 +110,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("elements", m_elements));
     }
@@ -124,7 +124,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<NativePoly> m_elements;
 };
 

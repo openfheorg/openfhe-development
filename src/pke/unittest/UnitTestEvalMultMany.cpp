@@ -45,7 +45,7 @@
 using namespace lbcrypto;
 
 class UTGENERAL_EVAL_MULT_MANY : public ::testing::Test {
-protected:
+  protected:
     virtual void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -54,7 +54,7 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-public:
+  public:
 };
 
 static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
@@ -135,8 +135,8 @@ static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext, std::strin
     ////////////////////////////////////////////////////////////
     OPENFHE_DEBUG("EvalMults");
     // Perform consecutive multiplications and do a keyswtiching at the end.
-    auto ciphertextMul12   = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
-    auto ciphertextMul123  = cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
+    auto ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
+    auto ciphertextMul123 = cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
     auto ciphertextMul1234 = cryptoContext->EvalMultAndRelinearize(ciphertextMul123, ciphertext4);
 
     ////////////////////////////////////////////////////////////

@@ -59,7 +59,7 @@ namespace lbcrypto {
  */
 template <class Element>
 class CiphertextImpl : public CryptoObject<Element> {
-public:
+  public:
     /**
    * Default constructor
    */
@@ -70,8 +70,8 @@ public:
    *
    * @param cc
    */
-    explicit CiphertextImpl(
-            const CryptoContext<Element>& cc, const std::string& id = "", PlaintextEncodings encType = INVALID_ENCODING)
+    explicit CiphertextImpl(const CryptoContext<Element>& cc, const std::string& id = "",
+                            PlaintextEncodings encType = INVALID_ENCODING)
         : CryptoObject<Element>(cc, id), m_encodingType(encType) {}
 
     /**
@@ -404,18 +404,18 @@ public:
    */
     virtual Ciphertext<Element> CloneEmpty() const {
         auto ct(std::make_shared<CiphertextImpl<Element>>(this->GetCryptoContext(), this->GetKeyTag(), m_encodingType));
-        ct->m_slots            = m_slots;
-        ct->m_level            = m_level;
-        ct->m_hopslevel        = m_hopslevel;
-        ct->m_noiseScaleDeg    = m_noiseScaleDeg;
-        ct->m_scalingFactor    = m_scalingFactor;
+        ct->m_slots = m_slots;
+        ct->m_level = m_level;
+        ct->m_hopslevel = m_hopslevel;
+        ct->m_noiseScaleDeg = m_noiseScaleDeg;
+        ct->m_scalingFactor = m_scalingFactor;
         ct->m_scalingFactorInt = m_scalingFactorInt;
-        *(ct->m_metadataMap)   = *(m_metadataMap);
+        *(ct->m_metadataMap) = *(m_metadataMap);
         return ct;
     }
 
     virtual Ciphertext<Element> Clone() const {
-        auto ct        = this->CloneEmpty();
+        auto ct = this->CloneEmpty();
         ct->m_elements = m_elements;
         return ct;
     }
@@ -486,8 +486,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         ar(cereal::base_class<CryptoObject<Element>>(this));
         ar(cereal::make_nvp("v", m_elements));
         ar(cereal::make_nvp("sl", m_slots));
@@ -507,7 +507,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // vector of ring elements for this Ciphertext
     std::vector<Element> m_elements;
 

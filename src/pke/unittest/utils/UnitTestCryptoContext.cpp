@@ -162,14 +162,12 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
         cc = GenCryptoContext(parameters);
-    }
-    else if (BFVRNS_SCHEME == params.schemeId) {
+    } else if (BFVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBFVRNS> parameters;
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
         cc = GenCryptoContext(parameters);
-    }
-    else if (BGVRNS_SCHEME == params.schemeId) {
+    } else if (BGVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBGVRNS> parameters;
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
@@ -193,17 +191,15 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const BaseTestCase& testCase) {
     CryptoContext<Element> cc(nullptr);
-    auto paramOverrides       = testCase.getCryptoContextParamOverrides();
+    auto paramOverrides = testCase.getCryptoContextParamOverrides();
     lbcrypto::SCHEME schemeId = lbcrypto::convertToSCHEME(*paramOverrides.begin());
     if (CKKSRNS_SCHEME == schemeId) {
         CCParams<CryptoContextCKKSRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
-    }
-    else if (BFVRNS_SCHEME == schemeId) {
+    } else if (BFVRNS_SCHEME == schemeId) {
         CCParams<CryptoContextBFVRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
-    }
-    else if (BGVRNS_SCHEME == schemeId) {
+    } else if (BGVRNS_SCHEME == schemeId) {
         CCParams<CryptoContextBGVRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
     }

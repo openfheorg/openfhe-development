@@ -248,7 +248,7 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     std::vector<std::complex<double>> input({-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0});
 
     std::vector<double> coefficients({1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348, 0.0, 0.00119324,
-            0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
+                                      0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
 
     double a = -4;
     double b = 4;

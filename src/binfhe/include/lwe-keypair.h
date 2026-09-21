@@ -50,7 +50,7 @@ namespace lbcrypto {
  * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
  */
 class LWEKeyPairImpl {
-public:
+  public:
     LWEPublicKey publicKey{nullptr};
     LWEPrivateKey secretKey{nullptr};
 

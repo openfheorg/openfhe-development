@@ -52,8 +52,8 @@ void Blake2Engine::Generate() {
     // m_counter is the input to the hash function
     // m_buffer is the output
     if (blake2xb(static_cast<void*>(m_buffer.data()), m_buffer.size() * sizeof(PRNG::result_type), &m_counter,
-                sizeof(m_counter), static_cast<const void*>(m_seed.data()),
-                m_seed.size() * sizeof(PRNG::result_type)) != 0) {
+                 sizeof(m_counter), static_cast<const void*>(m_seed.data()),
+                 m_seed.size() * sizeof(PRNG::result_type)) != 0) {
         OPENFHE_THROW("PRNG: blake2xb failed");
     }
     m_counter++;
@@ -105,7 +105,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
     #endif
     // heap variable; we are going to use up to 64 bits of its memory location as the counter.
     // This will increase the entropy of the PRNG sample
-    void* mem        = malloc(1);
+    void* mem = malloc(1);
     uint64_t counter = reinterpret_cast<uint64_t>(mem);
     free(mem);
 
@@ -115,7 +115,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
         s = distribution(gen);
 
     Blake2Engine::blake2_seed_array_t rdseed{};
-    size_t attempts  = 3;
+    size_t attempts = 3;
     bool rdGenPassed = false;
     for (size_t i = 0; i < attempts && !rdGenPassed; ++i) {
         try {
@@ -131,8 +131,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
                 rds = distribution(genR);
             }
             rdGenPassed = true;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
         }
     }
     if (!rdGenPassed)

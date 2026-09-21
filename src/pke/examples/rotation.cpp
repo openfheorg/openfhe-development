@@ -132,7 +132,7 @@ void CKKSEvalRotate2n() {
     // Initialize the public key containers.
     KeyPair<DCRTPoly> kp = cc->KeyGen();
 
-    int32_t n                      = cyclOrder / 4;
+    int32_t n = cyclOrder / 4;
     std::vector<int32_t> indexList = {2, 3, 4, 5, 6, 7, 8, 9, 10, -n + 2, -n + 3, n - 1, n - 2, -1, -2, -3, -4, -5};
 
     cc->EvalRotateKeyGen(kp.secretKey, indexList);
@@ -184,23 +184,23 @@ void BFVrnsEvalMerge2n() {
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
 
     std::vector<int64_t> vectorOfInts1 = {32, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    Plaintext intArray1                = cc->MakePackedPlaintext(vectorOfInts1);
+    Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
     ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray1));
 
     std::vector<int64_t> vectorOfInts2 = {2, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    Plaintext intArray2                = cc->MakePackedPlaintext(vectorOfInts2);
+    Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
     ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray2));
 
     std::vector<int64_t> vectorOfInts3 = {4, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    Plaintext intArray3                = cc->MakePackedPlaintext(vectorOfInts3);
+    Plaintext intArray3 = cc->MakePackedPlaintext(vectorOfInts3);
     ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray3));
 
     std::vector<int64_t> vectorOfInts4 = {8, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    Plaintext intArray4                = cc->MakePackedPlaintext(vectorOfInts4);
+    Plaintext intArray4 = cc->MakePackedPlaintext(vectorOfInts4);
     ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray4));
 
     std::vector<int64_t> vectorOfInts5 = {16, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    Plaintext intArray5                = cc->MakePackedPlaintext(vectorOfInts5);
+    Plaintext intArray5 = cc->MakePackedPlaintext(vectorOfInts5);
     ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray5));
 
     std::cout << "Input ciphertext " << *intArray1 << std::endl;

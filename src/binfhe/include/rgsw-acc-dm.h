@@ -44,7 +44,7 @@ namespace lbcrypto {
  * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
  */
 class RingGSWAccumulatorDM final : public RingGSWAccumulator {
-public:
+  public:
     RingGSWAccumulatorDM() = default;
 
     /**
@@ -56,14 +56,14 @@ public:
    * @return a shared pointer to the resulting keys
    */
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-            ConstLWEPrivateKey& LWEsk) const override;
+                            ConstLWEPrivateKey& LWEsk) const override;
 
 #if NATIVEINT != 32
     RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
-            ConstLWEPrivateKey& LWEsk) const override;
+                                ConstLWEPrivateKey& LWEsk) const override;
 
     void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
-            const NativeVector& a) const override;
+                   const NativeVector& a) const override;
 #endif
 
     /**
@@ -75,9 +75,9 @@ public:
    * @param a value to update the accumulator with
    */
     void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
-            const NativeVector& a) const override;
+                 const NativeVector& a) const override;
 
-private:
+  private:
     /**
    * DM Key generation for internal Ring GSW as described in https://eprint.iacr.org/2014/816
    *
@@ -88,7 +88,7 @@ private:
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT, LWEPlaintext m,
-            uint32_t index) const;
+                            uint32_t index) const;
 
     /**
    * DM Accumulation as described in https://eprint.iacr.org/2020/086
@@ -100,7 +100,7 @@ private:
    * @return
    */
     void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek, RLWECiphertext& acc,
-            uint32_t index) const;
+                    uint32_t index) const;
 };
 
 }  // namespace lbcrypto

@@ -69,14 +69,14 @@ bool RingGSWACCKey32Impl::Fits(const RingGSWCryptoParams& params) {
     return true;
 }
 
-RingGSWACCKey32Impl::RingGSWACCKey32Impl(
-        const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWACCKeyImpl& ek) {
+RingGSWACCKey32Impl::RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params,
+                                         const RingGSWACCKeyImpl& ek) {
     const auto& src = ek.GetElements();
     if (src.empty() || src[0].empty() || src[0][0].empty())
         OPENFHE_THROW("RingGSWACCKey32Impl: empty accumulator key");
     Init(params);
-    m_key.assign(
-            src.size(), std::vector<std::vector<EvalKey32>>(src[0].size(), std::vector<EvalKey32>(src[0][0].size())));
+    m_key.assign(src.size(),
+                 std::vector<std::vector<EvalKey32>>(src[0].size(), std::vector<EvalKey32>(src[0][0].size())));
     for (size_t i = 0; i < src.size(); ++i)
         for (size_t j = 0; j < src[i].size(); ++j)
             for (size_t k = 0; k < src[i][j].size(); ++k)
@@ -84,8 +84,8 @@ RingGSWACCKey32Impl::RingGSWACCKey32Impl(
                     SetEvalKey(i, j, k, *src[i][j][k]);
 }
 
-RingGSWACCKey32Impl::RingGSWACCKey32Impl(
-        const std::shared_ptr<RingGSWCryptoParams>& params, uint32_t d1, uint32_t d2, uint32_t d3) {
+RingGSWACCKey32Impl::RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params, uint32_t d1, uint32_t d2,
+                                         uint32_t d3) {
     Init(params);
     m_key.assign(d1, std::vector<std::vector<EvalKey32>>(d2, std::vector<EvalKey32>(d3)));
 }
@@ -95,7 +95,7 @@ void RingGSWACCKey32Impl::Init(const std::shared_ptr<RingGSWCryptoParams>& param
     if (!Fits(*params))
         OPENFHE_THROW("parameters do not qualify for the 32-bit internal path");
 
-    m_N          = params->GetN();
+    m_N = params->GetN();
     m_polyParams = params->GetPolyParams32();
     // force the lazy monomial build now: construction is single-threaded, gates may not be
     if (params->GetMethod() == BINFHE_METHOD::GINX)
@@ -104,7 +104,7 @@ void RingGSWACCKey32Impl::Init(const std::shared_ptr<RingGSWCryptoParams>& param
 
 void RingGSWACCKey32Impl::SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const RingGSWEvalKeyImpl& ek) {
     const auto& el = ek.GetElements();
-    auto& dst      = m_key[i][j][k];
+    auto& dst = m_key[i][j][k];
     dst.resize(el.size());
     for (size_t d = 0; d < el.size(); ++d) {
         dst[d].clear();
@@ -116,7 +116,7 @@ void RingGSWACCKey32Impl::SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const R
 
 RingGSWACCKey RingGSWACCKey32Impl::Widen(const std::shared_ptr<RingGSWCryptoParams>& params) const {
     const auto& polyParams = params->GetPolyParams();
-    auto ek                = std::make_shared<RingGSWACCKeyImpl>(m_key.size(), m_key[0].size(), m_key[0][0].size());
+    auto ek = std::make_shared<RingGSWACCKeyImpl>(m_key.size(), m_key[0].size(), m_key[0][0].size());
     for (size_t i = 0; i < m_key.size(); ++i) {
         for (size_t j = 0; j < m_key[i].size(); ++j) {
             for (size_t k = 0; k < m_key[i][j].size(); ++k) {

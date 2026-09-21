@@ -78,8 +78,8 @@ PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::
 }
 
 template <typename VecType>
-PolyImpl<VecType>::PolyImpl(
-        const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format, uint32_t h)
+PolyImpl<VecType>::PolyImpl(const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format,
+                            uint32_t h)
     : m_format{Format::COEFFICIENT},
       m_params{params},
       m_values{std::make_unique<VecType>(tug.GenerateVector(params->GetRingDimension(), params->GetModulus(), h))} {
@@ -241,8 +241,7 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(NativeInteger::SignedNativeInt elemen
         if (elementReduced > q)
             elementReduced.ModEq(q);
         tmp.SetValues((*m_values).ModMul(q - elementReduced), m_format);
-    }
-    else {
+    } else {
         Integer elementReduced{NativeInteger::Integer(element)};
         if (elementReduced > q)
             elementReduced.ModEq(q);
@@ -259,8 +258,8 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& rhs) const {
 }
 
 template <typename VecType>
-PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(
-        const typename VecType::Integer& p, const typename VecType::Integer& q) const {
+PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(const typename VecType::Integer& p,
+                                                      const typename VecType::Integer& q) const {
     PolyImpl<VecType> tmp(m_params, m_format);
     tmp.SetValues((*m_values).MultiplyAndRound(p, q), m_format);
     return tmp;
@@ -398,8 +397,8 @@ PolyImpl<VecType> PolyImpl<VecType>::Mod(const Integer& modulus) const {
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::SwitchModulus(
-        const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb, const Integer& rootOfUnityArb) {
+void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                                      const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->SwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
@@ -408,8 +407,8 @@ void PolyImpl<VecType>::SwitchModulus(
 }
 
 template <typename VecType>
-void PolyImpl<VecType>::LazySwitchModulus(
-        const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb, const Integer& rootOfUnityArb) {
+void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                                          const Integer& rootOfUnityArb) {
     if (m_values != nullptr) {
         m_values->LazySwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
@@ -452,8 +451,7 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
         m_format = Format::EVALUATION;
         auto&& v = ChineseRemainderTransformArb<VecType>().ForwardTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
-    }
-    else {
+    } else {
         m_format = Format::COEFFICIENT;
         auto&& v = ChineseRemainderTransformArb<VecType>().InverseTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
@@ -546,8 +544,7 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(uint32_t baseBit
                 xDigit.SwitchFormat();
             result.push_back(std::move(xDigit));
         }
-    }
-    else {
+    } else {
         // TP: x is same for BACKEND 2 and 6
         for (uint32_t i = 0; i < nWindows; ++i) {
             PolyImpl<VecType> xDigit(m_params);

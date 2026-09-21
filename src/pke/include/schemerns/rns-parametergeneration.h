@@ -51,7 +51,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
-public:
+  public:
     virtual ~ParameterGenerationRNS() = default;
 
     /////////////////////////////////////

@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 class PREBGVRNS : public PRERNS {
-public:
+  public:
     virtual ~PREBGVRNS() {}
 
     /////////////////////////////////////

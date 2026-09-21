@@ -109,7 +109,7 @@ int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt(PRNG& g) const {
     // we need to use the binary uniform generator rather than regular continuous
     // distribution; see DG14 for details
     double seed = std::uniform_real_distribution<double>(0.0, 1.0)(g) - 0.5;
-    double tmp  = std::abs(seed) - m_a / 2;
+    double tmp = std::abs(seed) - m_a / 2;
     return (tmp <= 0.0) ? 0 : FindInVector(m_vals, tmp) * (seed > 0.0 ? 1 : -1);
 }
 
@@ -130,13 +130,13 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
 }
 
 template <typename VecType>
-VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(
-        uint32_t size, const typename VecType::Integer& modulus) const {
+VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(uint32_t size,
+                                                               const typename VecType::Integer& modulus) const {
     VecType ans(size, modulus);
     auto& g = PseudoRandomNumberGenerator::GetPRNG();
     for (uint32_t i = 0; i < size; ++i) {
         auto val = m_peikert ? GenerateInt(g) : GenerateIntegerKarney(0, m_std, g);
-        ans[i]   = (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
+        ans[i] = (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
     }
     return ans;
 }
@@ -171,8 +171,8 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
     std::uniform_int_distribution<int32_t> uniform_int(std::floor(mean - t), std::ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
-    double sigmaFactor   = 1 / (-2. * stddev * stddev);
-    uint32_t count       = 0;
+    double sigmaFactor = 1 / (-2. * stddev * stddev);
+    uint32_t count = 0;
     const uint32_t limit = 10000;
 
     int32_t x;
@@ -216,8 +216,8 @@ int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mea
         // STEP D4
         double di0 = stddev * k + s * mean;
         int64_t i0 = std::ceil(di0);
-        double x0  = (i0 - di0) / stddev;
-        int64_t j  = uniform_j(g);
+        double x0 = (i0 - di0) / stddev;
+        int64_t j = uniform_j(g);
 
         double x = x0 + j / stddev;
 
@@ -277,8 +277,7 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmH(PRNG& g) {
             else if (h_a == h_b)  // numbers are equal - need higher precision
                 return AlgorithmHDouble(g);
         }
-    }
-    else {  // numbers are equal - need higher precision
+    } else {  // numbers are equal - need higher precision
         return AlgorithmHDouble(g);
     }
 }
@@ -306,7 +305,7 @@ template <typename VecType>
 bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmB(PRNG& g, int32_t k, double x) {
     std::uniform_real_distribution<float> dist(0.0, 1.0);
 
-    float y   = x;
+    float y = x;
     int32_t n = 0, m = 2 * k + 2;
     float z, r;
     float rTemp;
@@ -315,9 +314,8 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmB(PRNG& g, int32_t k, doub
         z = dist(g);
         if (z > y) {
             break;
-        }
-        else if (z < y) {
-            r     = dist(g);
+        } else if (z < y) {
+            r = dist(g);
             rTemp = (2 * k + x) / m;
             if (r > rTemp)
                 break;
@@ -325,8 +323,7 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmB(PRNG& g, int32_t k, doub
                 y = z;
             else  // r == Temp - need double precision
                 return AlgorithmBDouble(g, k, x);
-        }
-        else {  // z == x - need double precision
+        } else {  // z == x - need double precision
             return AlgorithmBDouble(g, k, x);
         }
     }
@@ -338,7 +335,7 @@ template <typename VecType>
 bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmBDouble(PRNG& g, int32_t k, double x) {
     std::uniform_real_distribution<double> dist(0.0, 1.0);
 
-    double y  = x;
+    double y = x;
     int32_t n = 0, m = 2 * k + 2;
     double z, r;
 

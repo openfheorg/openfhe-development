@@ -62,8 +62,7 @@ int main(int argc, char* argv[]) {
 
         std::cerr << "==== Using external PRNG" << std::endl;
         lbcrypto::PseudoRandomNumberGenerator::InitPRNGEngine(arg);
-    }
-    else {
+    } else {
         std::cerr << "==== Using OpenFHE's built-in PRNG" << std::endl;
     }
 

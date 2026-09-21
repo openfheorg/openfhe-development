@@ -99,9 +99,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEAD
 }
 //===========================================================================================================
 constexpr uint32_t RING_DIM = 8192;
-constexpr uint32_t PTM      = 20;
-constexpr uint32_t DSIZE    = 4;
-constexpr double STD_DEV    = 3.19;
+constexpr uint32_t PTM = 20;
+constexpr uint32_t DSIZE = 4;
+constexpr double STD_DEV = 3.19;
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED = {
@@ -122,7 +122,7 @@ static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED
 class UTBGVRNS_SHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SHEADVANCED> {
     using Element = DCRTPoly;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -132,8 +132,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalMultSingle(
-            const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
+                                 const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -141,18 +141,18 @@ protected:
             KeyPair<Element> kp = cc->KeyGen();
             cc->EvalMultKeyGen(kp.secretKey);
 
-            std::vector<int64_t> vectorOfInts1          = {2};
-            Plaintext intArray1                         = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-            std::vector<int64_t> vectorOfInts2          = {3};
-            Plaintext intArray2                         = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfInts1 = {2};
+            Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts2 = {3};
+            Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
             std::vector<int64_t> vectorOfExpectedValues = {6};  // = vectorOfInts1 * vectorOfInts2
-            Plaintext expectedValues                    = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
+            Plaintext expectedValues = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
 
             Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-            Ciphertext<Element> cResult     = cc->EvalMult(ciphertext1, ciphertext2);
+            Ciphertext<Element> cResult = cc->EvalMult(ciphertext1, ciphertext2);
 
-            KeyPair<Element> newKp          = cc->KeyGen();
+            KeyPair<Element> newKp = cc->KeyGen();
             EvalKey<Element> keySwitchHint2 = cc->KeySwitchGen(kp.secretKey, newKp.secretKey);
             cc->KeySwitchInPlace(cResult, keySwitchHint2);
 
@@ -161,48 +161,44 @@ protected:
             results->SetLength(expectedValues->GetLength());
 
             EXPECT_TRUE(checkEquality(results->GetCoefPackedValue(), expectedValues->GetCoefPackedValue()));
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_EvalAddSingle(
-            const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             // Initialize the public key containers.
             KeyPair<Element> kp = cc->KeyGen();
 
-            std::vector<int64_t> vectorOfInts1          = {2, 3, 1, 4};
-            Plaintext intArray1                         = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-            std::vector<int64_t> vectorOfInts2          = {3, 6, 3, 1};
-            Plaintext intArray2                         = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfInts1 = {2, 3, 1, 4};
+            Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts2 = {3, 6, 3, 1};
+            Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
             std::vector<int64_t> vectorOfExpectedValues = {5, 9, 4, 5};  // = vectorOfInts1 + vectorOfInts2
-            Plaintext expectedValues                    = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
+            Plaintext expectedValues = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
 
             Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-            Ciphertext<Element> cResult     = cc->EvalAdd(ciphertext1, ciphertext2);
+            Ciphertext<Element> cResult = cc->EvalAdd(ciphertext1, ciphertext2);
 
             Plaintext results;
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(expectedValues->GetLength());
 
             EXPECT_TRUE(checkEquality(results->GetCoefPackedValue(), expectedValues->GetCoefPackedValue()));
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

@@ -119,10 +119,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_AUTO
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t SMODSIZE     = 50;
-constexpr uint32_t RING_DIM     = 16;
-constexpr uint32_t BATCH        = 8;
-constexpr uint32_t MULT_DEPTH   = 1;
+constexpr uint32_t SMODSIZE = 50;
+constexpr uint32_t RING_DIM = 16;
+constexpr uint32_t BATCH = 8;
+constexpr uint32_t MULT_DEPTH = 1;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 static const std::vector<int32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
 static const std::vector<int32_t> cornerCaseIndexList{0};
@@ -200,7 +200,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> testCasesUTCKKSRNS_AUTOMORP
 //===========================================================================================================
 
 class UTCKKSRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> {
-    using Element    = DCRTPoly;
+    using Element = DCRTPoly;
     const double eps = EPSILON;
 
     const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
@@ -213,7 +213,7 @@ class UTCKKSRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
             std::accumulate(vector8Complex.begin(), vector8Complex.end(), std::complex<double>(0));  // 36.0;
     const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));          // 36
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -223,8 +223,8 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-    void UnitTest_EvalAtIndexPackedArray(
-            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                                         const std::string& failmsg = std::string()) {
         for (auto index : testData.indexList) {
             try {
                 CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -240,8 +240,7 @@ protected:
                 if (NO_KEY_GEN_CALL != testData.error) {
                     if (INVALID_PRIVATE_KEY == testData.error) {
                         cc->EvalAtIndexKeyGen(nullptr, indices);
-                    }
-                    else {
+                    } else {
                         cc->EvalAtIndexKeyGen(kp.secretKey, indices);
                     }
                 }
@@ -277,8 +276,7 @@ protected:
                         EXPECT_EQ(0, 1);
                         break;
                 }
-            }
-            catch (std::exception& e) {
+            } catch (std::exception& e) {
                 switch (testData.error) {
                     case SUCCESS:
                     case CORNER_CASES:
@@ -291,15 +289,14 @@ protected:
                         EXPECT_EQ(1, 1);
                         break;
                 }
-            }
-            catch (...) {
+            } catch (...) {
                 UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
             }
         }
     }
 
-    void UnitTest_EvalSumPackedArray(
-            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                                     const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -307,7 +304,7 @@ protected:
             KeyPair<Element> kp = cc->KeyGen();
 
             std::vector<std::complex<double>> inputVec = vector8Complex;
-            Plaintext intArray                         = cc->MakeCKKSPackedPlaintext(inputVec);
+            Plaintext intArray = cc->MakeCKKSPackedPlaintext(inputVec);
 
             if (NO_KEY_GEN_CALL != testData.error) {
                 if (INVALID_PRIVATE_KEY == testData.error)
@@ -320,7 +317,7 @@ protected:
                                                      cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
                                                      cc->Encrypt(kp.publicKey, intArray);
 
-            uint32_t batchSz       = (INVALID_BATCH_SIZE == testData.error) ? (BATCH * 2) : BATCH;
+            uint32_t batchSz = (INVALID_BATCH_SIZE == testData.error) ? (BATCH * 2) : BATCH;
             Ciphertext<Element> p1 = cc->EvalSum(ciphertext, batchSz);
 
             Plaintext intArrayNew;
@@ -341,8 +338,7 @@ protected:
                     EXPECT_EQ(0, 1);
                     break;
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             switch (testData.error) {
                 case SUCCESS:
                 case CORNER_CASES:
@@ -355,21 +351,20 @@ protected:
                     EXPECT_EQ(1, 1);
                     break;
             }
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_EvalSumRows(
-            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumRows(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                              const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             KeyPair<Element> kp = cc->KeyGen();
 
             std::vector<double> mat{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-            uint32_t rowSize   = 4;
+            uint32_t rowSize = 4;
             uint32_t batchSize = cc->GetEncodingParams()->GetBatchSize();
 
             const std::vector<std::complex<double>> outputSumRows{6.0, 8.0, 10.0, 12.0, 6.0, 8.0, 10.0, 12.0};
@@ -391,27 +386,25 @@ protected:
             result->SetLength(batchSize);
             // std::cout << "sum Rows: " << result;
             checkEquality(result->GetCKKSPackedValue(), outputSumRows, eps,
-                    failmsg + " EvalSumRowsKeyGen()/EvalSumRows fails - result is incorrect");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalSumRowsKeyGen()/EvalSumRows fails - result is incorrect");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_EvalSumCols(
-            const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSumCols(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                              const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             KeyPair<Element> kp = cc->KeyGen();
 
             std::vector<double> mat{8.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-            uint32_t colSize   = 4;
+            uint32_t colSize = 4;
             uint32_t batchSize = cc->GetEncodingParams()->GetBatchSize();
 
             const std::vector<std::complex<double>> outputSumCols{14.0, 14.0, 14.0, 14.0, 22.0, 22.0, 22.0, 22.0};
@@ -433,14 +426,12 @@ protected:
             result->SetLength(batchSize);
             // std::cout << "sum Cols: " << result;
             checkEquality(result->GetCKKSPackedValue(), outputSumCols, eps,
-                    failmsg + " EvalSumColsKeyGen()/EvalSumCols fails - result is incorrect");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalSumColsKeyGen()/EvalSumCols fails - result is incorrect");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -468,5 +459,5 @@ TEST_P(UTCKKSRNS_AUTOMORPHISM, Automorphism) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-        UnitTests, UTCKKSRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTCKKSRNS_AUTOMORPHISM), testName);
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTCKKSRNS_AUTOMORPHISM),
+                         testName);

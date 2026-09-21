@@ -61,7 +61,7 @@ const double SIGMA = std::sqrt(std::log(2 * N_MAX / DG_ERROR) / M_PI);
 
 // Spectral norm for preimage samples
 const double SPECTRAL_CONSTANT = 1.8;
-const auto SPECTRAL_BOUND      = [](uint64_t n, uint64_t k, uint64_t base) -> double {
+const auto SPECTRAL_BOUND = [](uint64_t n, uint64_t k, uint64_t base) -> double {
     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(n * k) + std::sqrt(2 * n) + 4.7);
 };
 
@@ -79,7 +79,7 @@ const auto SPECTRAL_BOUND_D = [](uint64_t n, uint64_t k, uint64_t base, uint64_t
  */
 template <class Element>
 class LatticeGaussSampUtility {
-public:
+  public:
     /**
    * Gaussian sampling from lattice for gagdet matrix G, syndrome u, and
    * arbitrary modulus q Discrete sampling variant As described in Figure 2 of
@@ -95,7 +95,7 @@ public:
    * G; represented as Z^(k x n)
    */
     static void GaussSampGq(const Element& u, double stddev, size_t k, const typename Element::Integer& q, int64_t base,
-            typename Element::DggType& dgg, Matrix<int64_t>* z);
+                            typename Element::DggType& dgg, Matrix<int64_t>* z);
 
     /**
    * Gaussian sampling from lattice for gagdet matrix G, syndrome u, and
@@ -112,7 +112,7 @@ public:
    * G; represented as Z^(k x n)
    */
     static void GaussSampGqArbBase(const Element& u, double stddev, size_t k, const typename Element::Integer& q,
-            int64_t base, typename Element::DggType& dgg, Matrix<int64_t>* z);
+                                   int64_t base, typename Element::DggType& dgg, Matrix<int64_t>* z);
 
     /**
    * Subroutine used by ZSampleSigmaP as described Algorithm 4 in
@@ -126,7 +126,7 @@ public:
    * @param p non-spherical perturbation vector; output of the function
    */
     static void ZSampleSigma2x2(const Field2n& a, const Field2n& b, const Field2n& d, const Matrix<Field2n>& c,
-            const typename Element::DggType& dgg, std::shared_ptr<Matrix<int64_t>> p);
+                                const typename Element::DggType& dgg, std::shared_ptr<Matrix<int64_t>> p);
 
     /**
    * Subroutine used by SamplePertSquareMat as described in "Implementing
@@ -140,7 +140,8 @@ public:
    * @param *p non-spherical perturbation matrix; output of the function
    */
     static void SampleMat(const Matrix<Field2n>& A, const Matrix<Field2n>& B, const Matrix<Field2n>& D,
-            const Matrix<Field2n>& C, const typename Element::DggType& dgg, std::shared_ptr<Matrix<int64_t>> p);
+                          const Matrix<Field2n>& C, const typename Element::DggType& dgg,
+                          std::shared_ptr<Matrix<int64_t>> p);
 
     /**
    * Subroutine used by ZSampleSigma2x2 as described Algorithm 4 in
@@ -151,26 +152,27 @@ public:
    * @param dgg discrete Gaussian generator
    * @param n ring dimension used for rejection sampling
    */
-    static std::shared_ptr<Matrix<int64_t>> ZSampleF(
-            const Field2n& f, const Field2n& c, const typename Element::DggType& dgg, size_t n);
+    static std::shared_ptr<Matrix<int64_t>> ZSampleF(const Field2n& f, const Field2n& c,
+                                                     const typename Element::DggType& dgg, size_t n);
 
-private:
+  private:
     // subroutine used by GaussSampGq
     // Discrete sampling variant
     // As described in Figure 2 of https://eprint.iacr.org/2017/308.pdf
     static void Perturb(double sigma, size_t k, size_t n, const std::vector<double>& l, const std::vector<double>& h,
-            int64_t base, typename Element::DggType& dgg, std::vector<int64_t>* p);
+                        int64_t base, typename Element::DggType& dgg, std::vector<int64_t>* p);
 
     // subroutine used by GaussSampGqArbBase
     // Continuous sampling variant
     // As described in Algorithm 3 of https://eprint.iacr.org/2017/844.pdf
     static void PerturbFloat(double sigma, size_t k, size_t n, const std::vector<double>& l,
-            const std::vector<double>& h, int64_t base, typename Element::DggType& dgg, std::vector<double>* p);
+                             const std::vector<double>& h, int64_t base, typename Element::DggType& dgg,
+                             std::vector<double>* p);
 
     // subroutine used by GaussSampGq
     // As described in Algorithm 3 of https://eprint.iacr.org/2017/844.pdf
     static void SampleC(const Matrix<double>& c, size_t k, size_t n, double sigma, typename Element::DggType& dgg,
-            Matrix<double>* a, std::vector<int64_t>* z);
+                        Matrix<double>* a, std::vector<int64_t>* z);
 
     // subroutine earlier used by ZSampleF
     // Algorithm utilizes the same permutation algorithm as discussed in

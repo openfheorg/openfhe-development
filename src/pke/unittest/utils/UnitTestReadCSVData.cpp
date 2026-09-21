@@ -42,7 +42,7 @@
 #include "utils/exception.h"
 
 //===========================================================================================================
-constexpr char DELIMITER   = ',';
+constexpr char DELIMITER = ',';
 constexpr char EXTENSION[] = ".csv";
 //===========================================================================================================
 std::string createDataFileName(const std::string& sourceFileName) {
@@ -109,12 +109,10 @@ std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileNa
         }
 
         return fileRows;
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         std::string errMsg(std::string("Exception for data file ") + dataFileName + ": " + e.what());
         OPENFHE_THROW(errMsg);
-    }
-    catch (...) {
+    } catch (...) {
         std::string errMsg(std::string("Unknown exception for data file ") + dataFileName + ": type " +
                            UNIT_TEST_EXCEPTION_TYPE_NAME);
         OPENFHE_THROW(errMsg);

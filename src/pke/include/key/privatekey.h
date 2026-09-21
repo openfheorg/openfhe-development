@@ -74,10 +74,10 @@ inline std::string GenerateUniqueKeyID() {
  */
 template <class Element>
 class PrivateKeyImpl : public Key<Element> {
-private:
+  private:
     Element m_sk;
 
-public:
+  public:
     /**
    * Construct in context
    */
@@ -168,8 +168,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::base_class<Key<Element>>(this));
         ar(::cereal::make_nvp("s", m_sk));

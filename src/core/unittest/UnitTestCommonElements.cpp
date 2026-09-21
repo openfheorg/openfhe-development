@@ -55,7 +55,7 @@ static void common_basic_ops(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
     using ParmType = typename Element::Params;
 
-    uint32_t m    = 8;
+    uint32_t m = 8;
     auto ilparams = std::make_shared<ParmType>(m);
 
     OPENFHE_DEBUGEXP(*ilparams);
@@ -113,7 +113,7 @@ static void common_basic_ops(const std::string& msg) {
 
 // instantiate ops for various backend combos
 TEST(UTPoly,  // NOLINTNEXTLINE
-        common_basic_ops){RUN_ALL_POLYS(common_basic_ops, "Poly basic_ops")}
+     common_basic_ops){RUN_ALL_POLYS(common_basic_ops, "Poly basic_ops")}
 
 TEST(UTDCRTPoly, common_basic_ops) {
     RUN_BIG_DCRTPOLYS(common_basic_ops, "DCRT basic_ops")
@@ -123,7 +123,7 @@ TEST(UTDCRTPoly, common_basic_ops) {
 template <typename Element>
 void common_set_format(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -165,7 +165,7 @@ TEST(UTDCRTPoly, common_set_format) {
 template <typename Element>
 void common_setters_getters(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -207,9 +207,9 @@ TEST(UTDCRTPoly, common_setters_getters) {
 template <typename Element>
 void common_binary_ops(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Vector::Integer;
+    using IntType = typename Element::Vector::Integer;
 
     uint32_t m = 8;
 
@@ -296,7 +296,7 @@ TEST(UTDCRTPoly, common_binary_ops) {
 // templet for common_clone_ops
 template <typename Element>
 void common_clone_ops(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -346,7 +346,7 @@ TEST(UTDCRTPoly, common_clone_ops) {
 // template for common_arithmetic_ops_element()
 template <typename Element>
 void common_arithmetic_ops_element(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -422,7 +422,7 @@ TEST(UTDCRTPoly, common_arithmetic_ops_element) {
 // template fore common_other_methods()
 template <typename Element>
 void common_other_methods(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
@@ -495,7 +495,7 @@ TEST(UTPoly, common_other_methods) {
 
 template <typename Element>
 void common_cyclotomicOrder(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;

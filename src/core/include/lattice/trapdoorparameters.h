@@ -51,9 +51,9 @@ namespace lbcrypto {
 template <class Element>
 class TrapdoorParams {
     using ParmType = typename Element::Params;
-    using DggType  = typename Element::DggType;
+    using DggType = typename Element::DggType;
 
-public:
+  public:
     /*
    *@brief Default destructor
    */
@@ -114,7 +114,7 @@ public:
         m_dgg.SetStd(stddev);
     }
 
-protected:
+  protected:
     double m_stddev;
     std::shared_ptr<ParmType> m_elemparams;
     DggType m_dgg;
@@ -127,9 +127,9 @@ protected:
 template <class Element>
 class RLWETrapdoorParams : public TrapdoorParams<Element> {
     using ParmType = typename Element::Params;
-    using DggType  = typename Element::DggType;
+    using DggType = typename Element::DggType;
 
-public:
+  public:
     /*
    *@brief Default destructor
    */
@@ -146,21 +146,21 @@ public:
    *@param base Base for the gadget matrix
    *@param bal Flag for balanced generation in trapdoor
    */
-    RLWETrapdoorParams(
-            std::shared_ptr<ParmType>& elemparams, DggType& dgg, double stddev, int64_t base, bool bal = false)
+    RLWETrapdoorParams(std::shared_ptr<ParmType>& elemparams, DggType& dgg, double stddev, int64_t base,
+                       bool bal = false)
         : TrapdoorParams<Element>(elemparams, dgg, stddev),
           m_base(base),
           m_k(0),
           m_bal(bal),
           m_n(elemparams->GetCyclotomicOrder() >> 1),
           m_dggLargeSigma(0) {
-        auto val    = elemparams->GetModulus().ConvertToDouble();
+        auto val = elemparams->GetModulus().ConvertToDouble();
         auto logTwo = std::log(val - 1.0) / std::log(base) + 1.0;
-        m_k         = static_cast<size_t>(std::floor(logTwo));
+        m_k = static_cast<size_t>(std::floor(logTwo));
 
-        auto c          = static_cast<double>(SIGMA * (m_base + 1));
-        auto s          = static_cast<double>(SPECTRAL_BOUND(m_n, m_k, base));
-        auto t          = std::sqrt(s * s - c * c);
+        auto c = static_cast<double>(SIGMA * (m_base + 1));
+        auto s = static_cast<double>(SPECTRAL_BOUND(m_n, m_k, base));
+        auto t = std::sqrt(s * s - c * c);
         m_dggLargeSigma = (t <= KARNEY_THRESHOLD) ? DggType(t) : dgg;
     }
     /*
@@ -222,7 +222,7 @@ public:
         m_dggLargeSigma = dggLargeSigma;
     }
 
-protected:
+  protected:
     int64_t m_base;
     size_t m_k;
     bool m_bal;
@@ -237,7 +237,7 @@ protected:
  */
 template <class Element>
 class PerturbationVector {
-public:
+  public:
     /*
    *@brief Default constructor
    */
@@ -262,7 +262,7 @@ public:
         return m_pvector;
     }
 
-private:
+  private:
     // Perturbation vector represented as a vector of ring elements
     std::shared_ptr<Matrix<Element>> m_pvector;
 };

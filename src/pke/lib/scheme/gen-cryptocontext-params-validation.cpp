@@ -45,21 +45,19 @@ void validateParametersForCryptocontext(const Params& parameters) {
     if (isCKKS(scheme)) {
 #if NATIVEINT == 128
         if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
-                parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-                parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
+            parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
+            parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
             OPENFHE_THROW(
                     "128-bit CKKS is not supported with the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL scaling technique.");
         }
 #endif
         if (NORESCALE == parameters.GetScalingTechnique()) {
             OPENFHE_THROW("NORESCALE is not supported in CKKSRNS");
-        }
-        else if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique()) {
+        } else if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique()) {
             if (1 != parameters.GetCompositeDegree()) {
                 OPENFHE_THROW("Composite degree can be set for COMPOSITESCALINGMANUAL only.");
             }
-        }
-        else if (COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
+        } else if (COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
             if (parameters.GetCompositeDegree() < 1 || parameters.GetCompositeDegree() > 4) {
                 OPENFHE_THROW("Composite degree valid values: 1, 2, 3, and 4.");
             }
@@ -72,9 +70,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
                     "NOISE_FLOODING_MULTIPARTY is not supported in CKKSRNS. Use NOISE_FLOODING_DECRYPT and EXEC_EVALUATION instead.");
         }
         if (COMPOSITESCALINGAUTO == parameters.GetScalingTechnique() ||
-                COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
+            COMPOSITESCALINGMANUAL == parameters.GetScalingTechnique()) {
             if (COMPOSITESCALING_MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
-                    DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+                DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
             }
@@ -82,10 +80,9 @@ void validateParametersForCryptocontext(const Params& parameters) {
                 OPENFHE_THROW(
                         "SPARSE_ENCAPSULATED with COMPOSITESCALING* supports a first modulus of at most 121 bits");
             }
-        }
-        else {
+        } else {
             if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
-                    DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
+                DCRT_MODULUS::MIN_SIZE > parameters.GetScalingModSize()) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(MAX_MODULUS_SIZE));
             }
@@ -107,14 +104,13 @@ void validateParametersForCryptocontext(const Params& parameters) {
             OPENFHE_THROW("firstModSize cannot be less than scalingModSize");
         }
         if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-                parameters.GetExecutionMode() == EXEC_EVALUATION) {
+            parameters.GetExecutionMode() == EXEC_EVALUATION) {
             if (parameters.GetNoiseEstimate() == 0) {
                 OPENFHE_THROW(
                         "Noise estimate must be set for the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
             }
         }
-    }
-    else if (isBFVRNS(scheme)) {
+    } else if (isBFVRNS(scheme)) {
         if (0 == parameters.GetPlaintextModulus()) {
             OPENFHE_THROW("PlaintextModulus is not set. It should be set to a non-zero value");
         }
@@ -124,8 +120,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
             OPENFHE_THROW("SPARSE_ENCAPSULATED not yet supported with BFVRNS");
         }
-    }
-    else if (isBGVRNS(scheme)) {
+    } else if (isBGVRNS(scheme)) {
         if (0 == parameters.GetPlaintextModulus()) {
             OPENFHE_THROW("PlaintextModulus is not set. It should be set to a non-zero value");
         }
@@ -180,8 +175,7 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
             OPENFHE_THROW("SPARSE_ENCAPSULATED not yet supported with BGVRNS");
         }
-    }
-    else {
+    } else {
         std::string errMsg(std::string("Unknown schemeId: ") + std::to_string(scheme));
         OPENFHE_THROW(errMsg);
     }

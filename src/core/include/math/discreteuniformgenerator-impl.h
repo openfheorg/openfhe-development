@@ -106,8 +106,8 @@ VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t siz
 }
 
 template <typename VecType>
-VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(
-        const uint32_t size, const typename VecType::Integer& modulus) {
+VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t size,
+                                                              const typename VecType::Integer& modulus) {
     SetModulus(modulus);
     return GenerateVector(size);
 }

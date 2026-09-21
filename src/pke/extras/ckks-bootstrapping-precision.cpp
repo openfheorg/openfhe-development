@@ -68,8 +68,8 @@ std::vector<double> MeasureStCFirstBootstrapDoubleIterPrecision(uint32_t numSlot
 // (https://cic.iacr.org/p/1/4/26/pdf), precision bits are evaluated as the negative
 // base 2 logarithm of the average L1 norm between results from standard (cleartext) calculation
 // and those computed homomorphically.
-double CalculateApproximationError(
-        const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
+double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                   const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
         OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 
@@ -82,13 +82,13 @@ double CalculateApproximationError(
 
 int main(int argc, char* argv[]) {
 #if NATIVEINT == 64
-    uint32_t numIterations         = 10;
-    uint32_t minCorrectionFactor   = 5;
-    uint32_t maxCorrectionFactor   = 15;
+    uint32_t numIterations = 10;
+    uint32_t minCorrectionFactor = 5;
+    uint32_t maxCorrectionFactor = 15;
     std::vector<uint32_t> slotsVec = {1 << 3, 1 << 7, 1 << 9, 1 << 11};
     for (uint32_t numSlots : slotsVec) {
         for (uint32_t correctionFactor = minCorrectionFactor; correctionFactor <= maxCorrectionFactor;
-                ++correctionFactor) {
+             ++correctionFactor) {
             std::cout << "`=======================================================================" << std::endl;
             std::cout << "Number of slots: " << numSlots << "\n";
             std::cout << "Correction Factor: " << correctionFactor << "\n";
@@ -141,11 +141,11 @@ double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor) {
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    std::vector<uint32_t> levelBudget      = {3, 3};
-    uint32_t approxBootstrapDepth          = 9;
-    std::vector<uint32_t> bsgsDim          = {0, 0};
+    std::vector<uint32_t> levelBudget = {3, 3};
+    uint32_t approxBootstrapDepth = 9;
+    std::vector<uint32_t> bsgsDim = {0, 0};
     uint32_t levelsAvailableAfterBootstrap = 10;
-    uint32_t depth                         = levelsAvailableAfterBootstrap +
+    uint32_t depth = levelsAvailableAfterBootstrap +
                      FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
@@ -205,8 +205,8 @@ double MeasureStCFirstBootstrapPrecision(uint32_t numSlots, uint32_t correctionF
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    std::vector<uint32_t> levelBudget      = {3, 3};
-    std::vector<uint32_t> bsgsDim          = {0, 0};
+    std::vector<uint32_t> levelBudget = {3, 3};
+    std::vector<uint32_t> bsgsDim = {0, 0};
     uint32_t levelsAvailableAfterBootstrap = 10 + levelBudget[1];
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth({levelBudget[0], 0}, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -267,11 +267,11 @@ std::vector<double> MeasureBootstrapDoubleIterPrecision(uint32_t numSlots, uint3
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    std::vector<uint32_t> levelBudget      = {3, 3};
-    uint32_t approxBootstrapDepth          = 9;
-    std::vector<uint32_t> bsgsDim          = {0, 0};
+    std::vector<uint32_t> levelBudget = {3, 3};
+    uint32_t approxBootstrapDepth = 9;
+    std::vector<uint32_t> bsgsDim = {0, 0};
     uint32_t levelsAvailableAfterBootstrap = 10;
-    uint32_t depth                         = levelsAvailableAfterBootstrap +
+    uint32_t depth = levelsAvailableAfterBootstrap +
                      FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
@@ -313,10 +313,10 @@ std::vector<double> MeasureBootstrapDoubleIterPrecision(uint32_t numSlots, uint3
 
     // Give buffer for precision to be lower than one measured result.
     const double precisionBuffer = 5;
-    double precisionUsed         = std::floor(std::max(0.0, precision - precisionBuffer));
+    double precisionUsed = std::floor(std::max(0.0, precision - precisionBuffer));
 
     // Add numIterations as a parameter.
-    uint32_t numIterations       = 2;
+    uint32_t numIterations = 2;
     auto ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precisionUsed);
 
     Plaintext resultTwoIterations;
@@ -346,11 +346,11 @@ std::vector<double> MeasureStCFirstBootstrapDoubleIterPrecision(uint32_t numSlot
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    std::vector<uint32_t> levelBudget      = {3, 3};
-    uint32_t approxBootstrapDepth          = 9;
-    std::vector<uint32_t> bsgsDim          = {0, 0};
+    std::vector<uint32_t> levelBudget = {3, 3};
+    uint32_t approxBootstrapDepth = 9;
+    std::vector<uint32_t> bsgsDim = {0, 0};
     uint32_t levelsAvailableAfterBootstrap = 10;
-    uint32_t depth                         = levelsAvailableAfterBootstrap +
+    uint32_t depth = levelsAvailableAfterBootstrap +
                      FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
@@ -392,10 +392,10 @@ std::vector<double> MeasureStCFirstBootstrapDoubleIterPrecision(uint32_t numSlot
 
     // Give buffer for precision to be lower than one measured result.
     const double precisionBuffer = 5;
-    double precisionUsed         = std::floor(std::max(0.0, precision - precisionBuffer));
+    double precisionUsed = std::floor(std::max(0.0, precision - precisionBuffer));
 
     // Add numIterations as a parameter.
-    uint32_t numIterations       = 2;
+    uint32_t numIterations = 2;
     auto ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precisionUsed);
 
     Plaintext resultTwoIterations;

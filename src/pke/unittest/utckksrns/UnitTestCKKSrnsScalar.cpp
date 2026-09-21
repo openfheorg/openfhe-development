@@ -59,7 +59,7 @@ namespace {
 // magnitudes from these two constants keeps the exercised shift counts fixed if the context
 // parameters are ever retuned.
 constexpr uint32_t SCALING_MOD_SIZE = 90;
-constexpr uint32_t MANTISSA_BITS    = 52;
+constexpr uint32_t MANTISSA_BITS = 52;
 
 // Exponent offsets below the scaling factor. An operand of 2^-(SCALING_MOD_SIZE + offset) is
 // shifted right by (MANTISSA_BITS - 1 + offset), so these cover shifts of 51, 52, 63, 64, 65,
@@ -87,23 +87,23 @@ CryptoContext<DCRTPoly> MakeContext(uint32_t multiplicativeDepth, uint32_t first
 // elements with EXPECT_EQ would print every coefficient of every tower of both operands
 // (hundreds of kilobytes) whenever a case fails.
 ::testing::AssertionResult ElementsEqual(const Ciphertext<DCRTPoly>& actual, const Ciphertext<DCRTPoly>& expected) {
-    const auto& actualElements   = actual->GetElements();
+    const auto& actualElements = actual->GetElements();
     const auto& expectedElements = expected->GetElements();
     if (actualElements.size() != expectedElements.size())
         return ::testing::AssertionFailure()
-               << "element count " << actualElements.size() << " != " << expectedElements.size();
+            << "element count " << actualElements.size() << " != " << expectedElements.size();
     for (size_t i = 0; i < actualElements.size(); ++i) {
-        const auto& actualTowers   = actualElements[i].GetAllElements();
+        const auto& actualTowers = actualElements[i].GetAllElements();
         const auto& expectedTowers = expectedElements[i].GetAllElements();
         if (actualTowers.size() != expectedTowers.size())
             return ::testing::AssertionFailure()
-                   << "element " << i << ": tower count " << actualTowers.size() << " != " << expectedTowers.size();
+                << "element " << i << ": tower count " << actualTowers.size() << " != " << expectedTowers.size();
         for (size_t j = 0; j < actualTowers.size(); ++j) {
             for (size_t k = 0; k < actualTowers[j].GetLength(); ++k) {
                 if (actualTowers[j][k] != expectedTowers[j][k])
                     return ::testing::AssertionFailure()
-                           << "element " << i << ", tower " << j << ", coefficient " << k << ": "
-                           << actualTowers[j][k].ToString() << " != " << expectedTowers[j][k].ToString();
+                        << "element " << i << ", tower " << j << ", coefficient " << k << ": "
+                        << actualTowers[j][k].ToString() << " != " << expectedTowers[j][k].ToString();
             }
         }
     }
@@ -111,7 +111,7 @@ CryptoContext<DCRTPoly> MakeContext(uint32_t multiplicativeDepth, uint32_t first
 }
 
 std::complex<double> FirstSlot(const CryptoContext<DCRTPoly>& cc, const PrivateKey<DCRTPoly>& secretKey,
-        const Ciphertext<DCRTPoly>& ciphertext) {
+                               const Ciphertext<DCRTPoly>& ciphertext) {
     Plaintext decoded;
     cc->Decrypt(secretKey, ciphertext, &decoded);
     return decoded->GetCKKSPackedValue()[0];
@@ -125,7 +125,7 @@ void ExpectSlotNear(const std::complex<double>& actual, const std::complex<doubl
 }
 
 class UTCKKSRNS_SCALAR : public ::testing::Test {
-protected:
+  protected:
     void TearDown() override {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
@@ -136,10 +136,10 @@ protected:
 // (an arithmetic shift floors), which showed up as a result near -2^-SCALING_MOD_SIZE instead of
 // zero.
 TEST_F(UTCKKSRNS_SCALAR, TinyOperands) {
-    auto cc          = MakeContext(2, SCALING_MOD_SIZE + 10);
-    auto keys        = cc->KeyGen();
-    auto plaintext   = cc->MakeCKKSPackedPlaintext(std::vector<double>(8, 1.0));
-    auto ciphertext  = cc->Encrypt(keys.publicKey, plaintext);
+    auto cc = MakeContext(2, SCALING_MOD_SIZE + 10);
+    auto keys = cc->KeyGen();
+    auto plaintext = cc->MakeCKKSPackedPlaintext(std::vector<double>(8, 1.0));
+    auto ciphertext = cc->Encrypt(keys.publicKey, plaintext);
     auto zeroProduct = cc->EvalMult(ciphertext, 0.0);
 
     // A ciphertext whose scale has already been raised by a multiplication. EvalAdd/EvalSub only
@@ -183,8 +183,7 @@ TEST_F(UTCKKSRNS_SCALAR, TinyOperands) {
                 EXPECT_TRUE(ElementsEqual(cc->EvalSub(scaled, operand), scaled));
                 EXPECT_TRUE(ElementsEqual(cc->EvalAdd(scaled, complexOperand), scaled));
                 EXPECT_TRUE(ElementsEqual(cc->EvalSub(scaled, complexOperand), scaled));
-            }
-            else {
+            } else {
                 // The smallest representable power of two must survive conversion.
                 EXPECT_FALSE(ElementsEqual(product, zeroProduct));
                 EXPECT_NEAR(FirstSlot(cc, keys.secretKey, product).real() / operand, 1.0, 1e-6);
@@ -198,9 +197,9 @@ TEST_F(UTCKKSRNS_SCALAR, TinyOperands) {
 // returned about -9.95e10. Each operand here is well within the ciphertext modulus, so the
 // results must be exact to CKKS precision.
 TEST_F(UTCKKSRNS_SCALAR, LargeOperands) {
-    auto cc         = MakeContext(3, SCALING_MOD_SIZE + 10);
-    auto keys       = cc->KeyGen();
-    auto plaintext  = cc->MakeCKKSPackedPlaintext(std::vector<double>(8, 1.0));
+    auto cc = MakeContext(3, SCALING_MOD_SIZE + 10);
+    auto keys = cc->KeyGen();
+    auto plaintext = cc->MakeCKKSPackedPlaintext(std::vector<double>(8, 1.0));
     auto ciphertext = cc->Encrypt(keys.publicKey, plaintext);
 
     // A ciphertext at a raised scale, so that EvalAdd/EvalSub also run the CRTMult loop over
@@ -210,7 +209,7 @@ TEST_F(UTCKKSRNS_SCALAR, LargeOperands) {
 
     // 2^37 is the first magnitude that overflowed; the rest bracket it on both sides.
     for (double magnitude : {std::ldexp(1.0, 20), std::ldexp(1.0, 36), std::ldexp(1.0, 37), std::ldexp(1.0, 38),
-                 std::ldexp(1.0, 50), 1.0e12, 1.0e15}) {
+                             std::ldexp(1.0, 50), 1.0e12, 1.0e15}) {
         for (double sign : {1.0, -1.0}) {
             double operand = sign * magnitude;
             SCOPED_TRACE(operand);
@@ -235,10 +234,10 @@ TEST_F(UTCKKSRNS_SCALAR, LargeOperands) {
             cc->RescaleInPlace(complexProduct);
             ExpectSlotNear(FirstSlot(cc, keys.secretKey, complexProduct), complexOperand);
 
-            ExpectSlotNear(
-                    FirstSlot(cc, keys.secretKey, cc->EvalAdd(ciphertext, complexOperand)), 1.0 + complexOperand);
-            ExpectSlotNear(
-                    FirstSlot(cc, keys.secretKey, cc->EvalSub(ciphertext, complexOperand)), 1.0 - complexOperand);
+            ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalAdd(ciphertext, complexOperand)),
+                           1.0 + complexOperand);
+            ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalSub(ciphertext, complexOperand)),
+                           1.0 - complexOperand);
             ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalAdd(scaled, complexOperand)), 2.0 + complexOperand);
             ExpectSlotNear(FirstSlot(cc, keys.secretKey, cc->EvalSub(scaled, complexOperand)), 2.0 - complexOperand);
         }
@@ -251,9 +250,9 @@ TEST_F(UTCKKSRNS_SCALAR, LargeOperands) {
 // here is only that the operations complete; a build with -fsanitize=shift (or UBSan) is what
 // turns this into a check of the shift counts themselves.
 TEST_F(UTCKKSRNS_SCALAR, UnrepresentableOperandsDoNotShiftOutOfRange) {
-    auto cc         = MakeContext(1, SCALING_MOD_SIZE);
-    auto keys       = cc->KeyGen();
-    auto plaintext  = cc->MakeCKKSPackedPlaintext(std::vector<double>(8, 1.0));
+    auto cc = MakeContext(1, SCALING_MOD_SIZE);
+    auto keys = cc->KeyGen();
+    auto plaintext = cc->MakeCKKSPackedPlaintext(std::vector<double>(8, 1.0));
     auto ciphertext = cc->Encrypt(keys.publicKey, plaintext);
 
     for (double magnitude : {1.0e300, std::numeric_limits<double>::max(), std::numeric_limits<double>::denorm_min()}) {

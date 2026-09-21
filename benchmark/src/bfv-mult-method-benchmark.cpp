@@ -51,10 +51,10 @@
 
 using namespace lbcrypto;
 
-constexpr uint32_t RING_DIM          = 16384;
-constexpr uint32_t MULT_DEPTH        = 7;
-constexpr uint32_t PTM               = 2;
-constexpr uint32_t DCRT_BITS         = 60;
+constexpr uint32_t RING_DIM = 16384;
+constexpr uint32_t MULT_DEPTH = 7;
+constexpr uint32_t PTM = 2;
+constexpr uint32_t DCRT_BITS = 60;
 constexpr KeySwitchTechnique KS_TECH = BV;
 
 static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED};

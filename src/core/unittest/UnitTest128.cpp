@@ -50,7 +50,7 @@ using namespace lbcrypto;
 #if NATIVEINT == 128
 TEST(UT128, modular_operations) {
     intnat::NativeInteger modulus = ((intnat::NativeInteger(1) << 120) + intnat::NativeInteger(123456789));
-    intnat::NativeInteger mu      = modulus.ComputeMu();
+    intnat::NativeInteger mu = modulus.ComputeMu();
 
     intnat::NativeInteger a = (intnat::NativeInteger(1) << 110) + intnat::NativeInteger(1234);
     intnat::NativeInteger b = (intnat::NativeInteger(1) << 115) + intnat::NativeInteger(6789);
@@ -113,7 +113,7 @@ TEST(UT128, modular_operations) {
 }
 
 TEST(UT128, NTT_operations) {
-    uint32_t m1   = 16;
+    uint32_t m1 = 16;
     uint32_t bits = 100;
 
     auto x1p = std::make_shared<ILNativeParams>(m1, bits);

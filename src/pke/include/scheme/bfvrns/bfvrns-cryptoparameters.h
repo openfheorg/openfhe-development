@@ -49,36 +49,41 @@ class CryptoParametersBFVRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
 #define DISABLED_FOR_BFVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BFVRNS.");
 
-public:
+  public:
     CryptoParametersBFVRNS() : CryptoParametersRNS() {}
 
     CryptoParametersBFVRNS(const CryptoParametersBFVRNS& rhs) : CryptoParametersRNS(rhs) {}
 
     CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
-            float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
-            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
-            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
-            MultiplicationTechnique multTech = HPS, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                           float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
+                           uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                           KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
+                           EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+                           MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
-                  digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, multipartyMode) {}
+                              digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
+                              multipartyMode) {}
 
     CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
-            float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize, SecretKeyDist secretKeyDist,
-            int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
-            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-            ProxyReEncryptionMode PREMode = NOT_SET, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
-            ExecutionMode executionMode             = EXEC_EVALUATION,
-            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-            uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
+                           float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
+                           SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
+                           ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
+                           MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET,
+                           MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                           ExecutionMode executionMode = EXEC_EVALUATION,
+                           DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                           PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
+                           uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
-                  secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode, multipartyMode,
-                  executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity, numAdversarialQueries,
-                  thresholdNumOfParties) {}
+                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
+                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
+                              numAdversarialQueries, thresholdNumOfParties) {}
 
     virtual ~CryptoParametersBFVRNS() {}
 
     void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
-            MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) override;
+                             MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
+                             uint32_t extraBits) override;
 
     uint64_t FindAuxPrimeStep() const override;
 
@@ -102,8 +107,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            std::string errMsg(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            std::string errMsg("serialized object version " + std::to_string(version) +
+                               " is from a later version of the library");
             OPENFHE_THROW(errMsg);
         }
 
@@ -111,7 +116,7 @@ public:
 
         if (PrecomputeCRTTablesAfterDeserializaton()) {
             PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
-                    m_extraBits);
+                                m_extraBits);
         }
     }
 

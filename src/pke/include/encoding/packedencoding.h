@@ -66,25 +66,25 @@ using ModulusM = std::pair<NativeInteger, uint64_t>;
 class PackedEncoding : public PlaintextImpl {
     std::vector<int64_t> value;
 
-public:
+  public:
     // these two constructors are used inside of Decrypt
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
-                                  bool>::type = true>
+                                                  bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
-                                  bool>::type = true>
+                                                  bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
-                                  bool>::type = true>
+                                                  bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::initializer_list<int64_t> coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
@@ -167,7 +167,7 @@ public:
     */
     static void Destroy();
 
-protected:
+  protected:
     /**
     * @brief PrintValue() is called by operator<<
     * @param out stream to print to
@@ -175,7 +175,7 @@ protected:
     void PrintValue(std::ostream& out) const override {
         out << "(";
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i = value.size();
         bool allZeroes = true;
         while (i > 0) {
             --i;
@@ -207,7 +207,7 @@ protected:
         return value == el.value;
     }
 
-private:
+  private:
     // initial root of unity for plaintext space
     static std::map<ModulusM, NativeInteger> m_initRoot;
     // modulus and root of unity to be used for Arbitrary CRT

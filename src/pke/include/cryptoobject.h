@@ -52,12 +52,12 @@ namespace lbcrypto {
  */
 template <typename Element>
 class CryptoObject {
-protected:
+  protected:
     CryptoContext<Element> context;  // crypto context belongs to the tag used to find the evaluation key needed
                                      // for SHE/FHE operations
     std::string keyTag;
 
-public:
+  public:
     CryptoObject() = default;
 
     explicit CryptoObject(const CryptoContext<Element>& cc, const std::string& tag = "") : context(cc), keyTag(tag) {}
@@ -70,13 +70,13 @@ public:
 
     CryptoObject& operator=(const CryptoObject& rhs) {
         context = rhs.context;
-        keyTag  = rhs.keyTag;
+        keyTag = rhs.keyTag;
         return *this;
     }
 
     CryptoObject& operator=(CryptoObject&& rhs) noexcept {
         context = std::move(rhs.context);
-        keyTag  = std::move(rhs.keyTag);
+        keyTag = std::move(rhs.keyTag);
         return *this;
     }
 
@@ -109,8 +109,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         ar(::cereal::make_nvp("cc", context));
         ar(::cereal::make_nvp("kt", keyTag));
         context = CryptoContextFactory<Element>::GetFullContextByDeserializedContext(context);

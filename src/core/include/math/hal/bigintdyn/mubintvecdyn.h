@@ -64,7 +64,7 @@ class mubintvec;
 
 /** Define the mapping for modulo Big Integer Vector */
 using xmubintvec = mubintvec<BigInteger>;
-using BigVector  = xmubintvec;
+using BigVector = xmubintvec;
 
 /**
  * @brief The class for representing vectors of ubint with associated modulo
@@ -74,7 +74,7 @@ using BigVector  = xmubintvec;
 template <class ubint_el_t>
 class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t>,
                         public lbcrypto::Serializable {
-public:
+  public:
     mubintvec() = default;
 
     static mubintvec Single(const ubint_el_t& val, const ubint_el_t& modulus) {
@@ -178,9 +178,9 @@ public:
    * @return the return value.
    */
     mubintvec& operator=(mubintvec&& rhs) noexcept {
-        m_modulus       = std::move(rhs.m_modulus);
+        m_modulus = std::move(rhs.m_modulus);
         m_modulus_state = rhs.m_modulus_state;
-        m_data          = std::move(rhs.m_data);
+        m_data = std::move(rhs.m_data);
         return *this;
     }
 
@@ -281,12 +281,12 @@ public:
    * @param value is the value to set.
    */
     void SetModulus(const ubint_el_t& value) noexcept {
-        m_modulus       = value;
+        m_modulus = value;
         m_modulus_state = State::INITIALIZED;
     }
 
     void SetModulus(ubint_el_t&& value) noexcept {
-        m_modulus       = std::move(value);
+        m_modulus = std::move(value);
         m_modulus_state = State::INITIALIZED;
     }
 
@@ -296,7 +296,7 @@ public:
    * @param value is the value to set.
    */
     void SetModulus(const std::string& value) {
-        m_modulus       = ubint_el_t(value);
+        m_modulus = ubint_el_t(value);
         m_modulus_state = State::INITIALIZED;
     }
 
@@ -306,7 +306,7 @@ public:
    * @param value is the vector whose modulus to use.
    */
     void SetModulus(const mubintvec& value) {
-        m_modulus       = value.GetModulus();
+        m_modulus = value.GetModulus();
         m_modulus_state = State::INITIALIZED;
     }
 
@@ -618,8 +618,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
@@ -634,7 +634,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     enum State { GARBAGE, INITIALIZED };
 
     ubint_el_t m_modulus{};

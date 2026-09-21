@@ -50,14 +50,13 @@
 // some functions are inlined in this files to avoid link errors
 //===========================================================================================================
 // simple macro for in cases with exceptions
-#define UT_EXPECT_THROW_SIMPLE(func)  \
-    PackedEncoding::Destroy();        \
-    try {                             \
-        func;                         \
-        EXPECT_EQ(0, 1);              \
-    }                                 \
-    catch (const std::exception& e) { \
-        EXPECT_EQ(1, 1);              \
+#define UT_EXPECT_THROW_SIMPLE(func)    \
+    PackedEncoding::Destroy();          \
+    try {                               \
+        func;                           \
+        EXPECT_EQ(0, 1);                \
+    } catch (const std::exception& e) { \
+        EXPECT_EQ(1, 1);                \
     }
 //===========================================================================================================
 constexpr double EPSILON = 0.00000001;
@@ -101,8 +100,8 @@ bool checkEquality(const std::vector<V>& a, const std::vector<V>& b, const doubl
     if (a.size() != b.size())
         return false;
 
-    return std::equal(
-            a.begin(), a.end(), b.begin(), [&eps](const V& a, const V& b) { return checkEquality(a, b, eps); });
+    return std::equal(a.begin(), a.end(), b.begin(),
+                      [&eps](const V& a, const V& b) { return checkEquality(a, b, eps); });
 }
 
 /**

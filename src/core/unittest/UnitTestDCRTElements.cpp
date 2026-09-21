@@ -51,7 +51,7 @@ void testDCRTPolyConstructorNegative(std::vector<NativePoly>& towers);
 template <typename Element>
 void DCRT_constructors(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    uint32_t m         = 8;
+    uint32_t m = 8;
     uint32_t towersize = 3;
 
     std::vector<NativeInteger> moduli(towersize);
@@ -193,7 +193,7 @@ TEST(UTDCRTPoly, DCRT_constructors) {
 
 template <typename Element>
 void DCRT_getters_and_ops(const std::string& msg) {
-    uint32_t m         = 8;
+    uint32_t m = 8;
     uint32_t towersize = 3;
 
     std::vector<NativeInteger> moduli(towersize);
@@ -282,7 +282,7 @@ TEST(UTDCRTPoly, DCRT_getters_and_ops) {
 
 template <typename Element>
 void DCRT_arithmetic_ops_element(const std::string& msg) {
-    uint32_t m         = 8;
+    uint32_t m = 8;
     uint32_t towersize = 3;
 
     std::vector<NativeInteger> moduli(towersize);
@@ -547,8 +547,8 @@ TEST(UTDCRTPoly, DCRT_arithmetic_ops_element) {
 
 template <typename Element>
 void DCRT_mod_ops_on_two_elements(const std::string& msg) {
-    uint32_t order     = 16;
-    uint32_t nBits     = 24;
+    uint32_t order = 16;
+    uint32_t nBits = 24;
     uint32_t towersize = 3;
 
     auto ildcrtparams = std::make_shared<ILDCRTParams<typename Element::Integer>>(order, towersize, nBits);

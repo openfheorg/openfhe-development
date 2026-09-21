@@ -166,10 +166,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_CS& 
  * DSIZE: The bit decomposition count used in BV relinearization.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM      = 512;
+constexpr uint32_t RING_DIM = 512;
 constexpr uint32_t RING_DIM_HALF = 256;
-constexpr uint32_t DSIZE         = 10;
-constexpr uint32_t BATCH         = 8;
+constexpr uint32_t DSIZE = 10;
+constexpr uint32_t BATCH = 8;
 // #if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
 // constexpr uint32_t RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 // #endif
@@ -374,7 +374,7 @@ bool checkMinDiff(const std::vector<V>& high, const std::vector<V>& low, const u
         return false;
 
     return std::equal(high.begin(), high.end(), low.begin(),
-            [&diff](const V& high, const V& low) { return checkMinDiff(high, low, diff); });
+                      [&diff](const V& high, const V& low) { return checkMinDiff(high, low, diff); });
 }
 
 /**
@@ -386,8 +386,8 @@ bool checkMinDiff(const std::vector<V>& high, const std::vector<V>& low, const u
  * @param diff   minimal expected difference between elements in high and low
  */
 template <typename V>
-void checkMinDiff(
-        const std::vector<V>& high, const std::vector<V>& low, const uint32_t diff, const std::string& errMsg) {
+void checkMinDiff(const std::vector<V>& high, const std::vector<V>& low, const uint32_t diff,
+                  const std::string& errMsg) {
     // print vector values to error message
     std::stringstream ss;
     ss << ": HIGHER precision/LOWER error: [";
@@ -433,12 +433,12 @@ class UTCKKSRNSCS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_CS> {
     // CalculateApproximationError() calculates the precision number (or approximation error).
     // The higher the precision, the less the error.
     template <typename T>
-    double CalculateApproximationError(
-            const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
+    double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                       const std::vector<std::complex<double>>& expectedResult) {
         OPENFHE_THROW("CalculateApproximationError() is not implemented for this datatype");
     }
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -450,7 +450,7 @@ protected:
 
     template <typename T>
     bool UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS_CS& testData, std::vector<T>& approximationErrors,
-            const std::string& failmsg = std::string()) {
+                             const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -464,8 +464,8 @@ protected:
             Plaintext negatives1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7neg, 1, 0, nullptr, testData.slots);
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0, 1, 0, nullptr, testData.slots);
 
-            Plaintext plaintextAdd = cc->MakeCKKSPackedPlaintext(
-                    std::vector<std::complex<double>>(VECTOR_SIZE, 7), 1, 0, nullptr, testData.slots);  // vector of 7s
+            Plaintext plaintextAdd = cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>(VECTOR_SIZE, 7), 1,
+                                                                 0, nullptr, testData.slots);  // vector of 7s
             Plaintext plaintextSub = cc->MakeCKKSPackedPlaintext(
                     std::vector<std::complex<double>>{-7, -5, -3, -1, 1, 3, 5, 7}, 1, 0, nullptr, testData.slots);
 
@@ -473,9 +473,9 @@ protected:
             KeyPair<Element> kp = cc->KeyGen();
 
             // Encrypt plaintexts
-            Ciphertext<Element> ciphertext1         = cc->Encrypt(kp.publicKey, plaintext1);
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
             Ciphertext<Element> ciphertext1_mutable = cc->Encrypt(kp.publicKey, plaintext1);
-            Ciphertext<Element> ciphertext2         = cc->Encrypt(kp.publicKey, plaintext2);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
             // Testing EvalAdd
             Plaintext results;
@@ -484,8 +484,8 @@ protected:
             cResult = cc->EvalAdd(ciphertext1, ciphertext2);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextAdd->GetLength());
-            checkEquality(
-                    plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps, failmsg + " EvalAdd fails");
+            checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalAdd fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -493,7 +493,7 @@ protected:
             cc->Decrypt(kp.secretKey, ciphertext1_mutable, &results);
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalAddInPlace fails");
+                          failmsg + " EvalAddInPlace fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -502,7 +502,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " operator+ fails");
+                          failmsg + " operator+ fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -512,15 +512,15 @@ protected:
             cc->Decrypt(kp.secretKey, caddInplace, &results);
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " operator+= fails");
+                          failmsg + " operator+= fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             cResult = cc->EvalSub(ciphertext1, ciphertext2);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextSub->GetLength());
-            checkEquality(
-                    plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps, failmsg + " EvalSub fails");
+            checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalSub fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -529,7 +529,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " operator- fails");
+                          failmsg + " operator- fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -539,7 +539,7 @@ protected:
             cc->Decrypt(kp.secretKey, csubInplace, &results);
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " operator-= fails");
+                          failmsg + " operator-= fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -548,7 +548,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalAdd Ct and Pt fails");
+                          failmsg + " EvalAdd Ct and Pt fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -557,7 +557,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalSub Ct and Pt fails fails");
+                          failmsg + " EvalSub Ct and Pt fails fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -566,43 +566,43 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalAdd Ct and double fails");
-            approximationErrors.emplace_back(CalculateApproximationError<T>(
-                    plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
+                          failmsg + " EvalAdd Ct and double fails");
+            approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1AddScalar->GetCKKSPackedValue(),
+                                                                            results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext - double
             cResult = cc->EvalSub(ciphertext1, 0.5);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalSub Ct and double fails");
-            approximationErrors.emplace_back(CalculateApproximationError<T>(
-                    plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
+                          failmsg + " EvalSub Ct and double fails");
+            approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1SubScalar->GetCKKSPackedValue(),
+                                                                            results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + negative double
             cResult = cc->EvalAdd(ciphertext1, -0.5);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalAdd Ct and negative double fails");
-            approximationErrors.emplace_back(CalculateApproximationError<T>(
-                    plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
+                          failmsg + " EvalAdd Ct and negative double fails");
+            approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1SubScalar->GetCKKSPackedValue(),
+                                                                            results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext - negative double
             cResult = cc->EvalSub(ciphertext1, -0.5);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalSub Ct and negative double fails");
-            approximationErrors.emplace_back(CalculateApproximationError<T>(
-                    plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
+                          failmsg + " EvalSub Ct and negative double fails");
+            approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1AddScalar->GetCKKSPackedValue(),
+                                                                            results->GetCKKSPackedValue()));
             if (testData.params.multiplicativeDepth > 0) {
                 // Testing EvalAdd ciphertext + large double
                 cResult = cc->EvalAdd(ciphertext1, factor);
                 cc->Decrypt(kp.secretKey, cResult, &results);
                 results->SetLength(plaintext1AddLargeScalar->GetLength());
                 checkEquality(plaintext1AddLargeScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(),
-                        factor * eps, failmsg + " EvalAdd Ct and large double fails");
+                              factor * eps, failmsg + " EvalAdd Ct and large double fails");
             }
 
             // Testing EvalNegate
@@ -610,18 +610,16 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(negatives1->GetLength());
             checkEquality(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalNegate fails");
+                          failmsg + " EvalNegate fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             return true;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
 
@@ -633,8 +631,8 @@ protected:
         UnitTest_Add_Packed(testData, precisions, failmsg);
     }
 
-    void UnitTest_Add_Packed_Precision(
-            const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Add_Packed_Precision(const TEST_CASE_UTCKKSRNS_CS& testData,
+                                       const std::string& failmsg = std::string()) {
         TEST_CASE_UTCKKSRNS_CS testDataLocal(testData);
 
         std::vector<double> lowPrecisions;
@@ -650,23 +648,23 @@ protected:
             return;
 
         checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF,
-                failmsg + " Approximation errors' comparison failed");
+                     failmsg + " Approximation errors' comparison failed");
     }
 
     template <typename T>
     bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS_CS& testData, std::vector<T>& approximationErrors,
-            const std::string& failmsg = std::string()) {
+                              const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            Plaintext plaintext1    = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7, 1, 0, nullptr, testData.slots);
-            Plaintext plaintext2    = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0, 1, 0, nullptr, testData.slots);
-            Plaintext plaintextNeg  = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0, 1, 0, nullptr, testData.slots);
+            Plaintext plaintextNeg = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg, 1, 0, nullptr, testData.slots);
             Plaintext plaintextMult = cc->MakeCKKSPackedPlaintext(
                     std::vector<std::complex<double>>({0, 6, 10, 12, 12, 10, 6, 0}), 1, 0, nullptr, testData.slots);
             Plaintext plaintextLarge =
                     cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>({factor, factor, 0, 0, 0, 0, 0, 0}),
-                            1, 0, nullptr, testData.slots);
+                                                1, 0, nullptr, testData.slots);
             Plaintext plaintextLargeMult = cc->MakeCKKSPackedPlaintext(
                     std::vector<std::complex<double>>({7 * factor, 6 * factor, 0, 0, 0, 0, 0, 0}), 1, 0, nullptr,
                     testData.slots);
@@ -694,7 +692,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalMult fails");
+                          failmsg + " EvalMult fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -703,14 +701,14 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextLargeMult->GetLength());
             checkEquality(plaintextLargeMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), factor * eps,
-                    failmsg + " EvalMult by a large plaintext fails");
+                          failmsg + " EvalMult by a large plaintext fails");
 
             // Testing operator*
             cResult = ciphertext1 * ciphertext2;
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " operator* fails");
+                          failmsg + " operator* fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -720,7 +718,7 @@ protected:
             cc->Decrypt(kp.secretKey, cmultInplace, &results);
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " operator*= fails");
+                          failmsg + " operator*= fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
@@ -729,14 +727,14 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalMult Ct and Pt fails");
+                          failmsg + " EvalMult Ct and Pt fails");
 
             // Testing EvalMult ciphertext * positive double
             cResult = cc->EvalMult(ciphertext1, 1.0);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalMult Ct and positive double fails");
+                          failmsg + " EvalMult Ct and positive double fails");
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -746,25 +744,23 @@ protected:
             buffer1 << "should be: " << plaintextNeg->GetCKKSPackedValue()
                     << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
+                          failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalMultNoRelin Ct fails");
+                          failmsg + " EvalMultNoRelin Ct fails");
             approximationErrors.emplace_back(
                     CalculateApproximationError<T>(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             return true;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
 
@@ -776,8 +772,8 @@ protected:
         UnitTest_Mult_Packed(testData, precisions, failmsg);
     }
 
-    void UnitTest_Mult_Packed_Precision(
-            const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed_Precision(const TEST_CASE_UTCKKSRNS_CS& testData,
+                                        const std::string& failmsg = std::string()) {
         TEST_CASE_UTCKKSRNS_CS testDataLocal(testData);
 
         std::vector<double> lowPrecisions;
@@ -793,7 +789,7 @@ protected:
             return;
 
         checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF,
-                failmsg + " Approximation errors' comparison failed");
+                     failmsg + " Approximation errors' comparison failed");
     }
 
     /**
@@ -804,8 +800,8 @@ protected:
      * - automatic scaling up of plaintexts to a depth that matches that of a
      * ciphertext
      */
-    void UnitTest_ScaleFactorAdjustments(
-            const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_ScaleFactorAdjustments(const TEST_CASE_UTCKKSRNS_CS& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -814,12 +810,12 @@ protected:
 
             std::vector<std::complex<double>> constantInts(
                     std::vector<std::complex<double>>(VECTOR_SIZE, 11));  // vector of 11s
-            Plaintext plaintextConst     = cc->MakeCKKSPackedPlaintext(constantInts);
+            Plaintext plaintextConst = cc->MakeCKKSPackedPlaintext(constantInts);
             Plaintext plaintextConstDeep = cc->MakeCKKSPackedPlaintext(constantInts, 2);
 
             std::vector<std::complex<double>> constantInts2(
                     std::vector<std::complex<double>>(VECTOR_SIZE, -11));  // vector of "-11"s
-            Plaintext plaintextConst2     = cc->MakeCKKSPackedPlaintext(constantInts2);
+            Plaintext plaintextConst2 = cc->MakeCKKSPackedPlaintext(constantInts2);
             Plaintext plaintextConst2Deep = cc->MakeCKKSPackedPlaintext(constantInts2, 2);
 
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0);
@@ -832,10 +828,10 @@ protected:
             std::vector<std::complex<double>> vectorOfIntsAddAfterMult2(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult2(VECTOR_SIZE);
             for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
-                vectorOfIntsMult[i]          = i * VECTOR_SIZE - i * i - i;
-                vectorOfIntsAddAfterMult[i]  = vectorOfIntsMult[i] + std::complex<double>(10, 0);
-                vectorOfIntsSubAfterMult[i]  = vectorOfIntsMult[i] - std::complex<double>(10, 0);
-                vectorOfIntsMult2[i]         = vectorOfIntsMult[i] * vectorOfInts1[i];
+                vectorOfIntsMult[i] = i * VECTOR_SIZE - i * i - i;
+                vectorOfIntsAddAfterMult[i] = vectorOfIntsMult[i] + std::complex<double>(10, 0);
+                vectorOfIntsSubAfterMult[i] = vectorOfIntsMult[i] - std::complex<double>(10, 0);
+                vectorOfIntsMult2[i] = vectorOfIntsMult[i] * vectorOfInts1[i];
                 vectorOfIntsAddAfterMult2[i] = vectorOfIntsMult2[i] + constantInts[i];  // complex<double>({11,0});
                 vectorOfIntsSubAfterMult2[i] = vectorOfIntsMult2[i] - constantInts[i];  // complex<double>({11,0});
             }
@@ -846,12 +842,12 @@ protected:
             // vectorOfIntsSubAfterMult = { -10,-4,0,2,2,0,-4,-10 };
             // vectorOfIntsAddAfterMult2 = { 11,17,31,47,59,61,47,11 };
             // vectorOfIntsSubAfterMult2 = { -11,-5,9,25,37,39,25,-11 };
-            Plaintext plaintextMult          = cc->MakeCKKSPackedPlaintext(vectorOfIntsMult);
-            Plaintext plaintexAddAfterMult   = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult);
-            Plaintext plaintexSubAfterMult   = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult);
-            Plaintext plaintexttMult2        = cc->MakeCKKSPackedPlaintext(vectorOfIntsMult2);
-            Plaintext plaintexAddAfterMult2  = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult2);
-            Plaintext plaintexSubAfterMult2  = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult2);
+            Plaintext plaintextMult = cc->MakeCKKSPackedPlaintext(vectorOfIntsMult);
+            Plaintext plaintexAddAfterMult = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult);
+            Plaintext plaintexSubAfterMult = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult);
+            Plaintext plaintexttMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsMult2);
+            Plaintext plaintexAddAfterMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult2);
+            Plaintext plaintexSubAfterMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult2);
             Plaintext plaintex2AddAfterMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsSubAfterMult2);
             Plaintext plaintex2SubAfterMult2 = cc->MakeCKKSPackedPlaintext(vectorOfIntsAddAfterMult2);
 
@@ -864,104 +860,104 @@ protected:
             Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
-            auto cMult   = cc->EvalMult(ciphertext1, ciphertext2);
+            auto cMult = cc->EvalMult(ciphertext1, ciphertext2);
             auto cMultRs = cc->Rescale(cMult);
 
-            auto cAddAfterMult     = cc->EvalAdd(cMultRs, 10);
-            auto cSubAfterMult     = cc->EvalSub(cMultRs, 10);
-            auto cMult2            = cc->EvalMult(ciphertext1, cMultRs);
-            auto cMultRs2          = cc->Rescale(cMult2);
-            auto cAddAfterMult2    = cc->EvalAdd(cMultRs2, 11);
-            auto cSubAfterMult2    = cc->EvalSub(cMultRs2, 11);
-            auto c2AddAfterMult2   = cc->EvalAdd(cMultRs2, -11);
-            auto c2SubAfterMult2   = cc->EvalSub(cMultRs2, -11);
-            auto cAddPtAfterMult2  = cc->EvalAdd(cMultRs2, plaintextConst);
-            auto cSubPtAfterMult2  = cc->EvalSub(cMultRs2, plaintextConst);
+            auto cAddAfterMult = cc->EvalAdd(cMultRs, 10);
+            auto cSubAfterMult = cc->EvalSub(cMultRs, 10);
+            auto cMult2 = cc->EvalMult(ciphertext1, cMultRs);
+            auto cMultRs2 = cc->Rescale(cMult2);
+            auto cAddAfterMult2 = cc->EvalAdd(cMultRs2, 11);
+            auto cSubAfterMult2 = cc->EvalSub(cMultRs2, 11);
+            auto c2AddAfterMult2 = cc->EvalAdd(cMultRs2, -11);
+            auto c2SubAfterMult2 = cc->EvalSub(cMultRs2, -11);
+            auto cAddPtAfterMult2 = cc->EvalAdd(cMultRs2, plaintextConst);
+            auto cSubPtAfterMult2 = cc->EvalSub(cMultRs2, plaintextConst);
             auto cAddPt2AfterMult2 = cc->EvalAdd(cMultRs2, plaintextConst2);
             auto cSubPt2AfterMult2 = cc->EvalSub(cMultRs2, plaintextConst2);
-            auto cDeepAdd          = cc->EvalAdd(cMultRs2, plaintextConstDeep);
-            auto cDeepSub          = cc->EvalSub(cMultRs2, plaintextConstDeep);
-            auto c2DeepAdd         = cc->EvalAdd(cMultRs2, plaintextConst2Deep);
-            auto c2DeepSub         = cc->EvalSub(cMultRs2, plaintextConst2Deep);
+            auto cDeepAdd = cc->EvalAdd(cMultRs2, plaintextConstDeep);
+            auto cDeepSub = cc->EvalSub(cMultRs2, plaintextConstDeep);
+            auto c2DeepAdd = cc->EvalAdd(cMultRs2, plaintextConst2Deep);
+            auto c2DeepSub = cc->EvalSub(cMultRs2, plaintextConst2Deep);
 
             Plaintext results;
             cc->Decrypt(kp.secretKey, cAddAfterMult, &results);
             results->SetLength(plaintexAddAfterMult->GetLength());
             checkEquality(plaintexAddAfterMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " add after 1 multiplication fails");
+                          failmsg + " add after 1 multiplication fails");
 
             cc->Decrypt(kp.secretKey, cSubAfterMult, &results);
             results->SetLength(plaintexSubAfterMult->GetLength());
             checkEquality(plaintexSubAfterMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtract after 1 multiplication fails");
+                          failmsg + " subtract after 1 multiplication fails");
 
             cc->Decrypt(kp.secretKey, cAddAfterMult2, &results);
             results->SetLength(plaintexAddAfterMult2->GetLength());
             checkEquality(plaintexAddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " add after 2 multiplications fails");
+                          failmsg + " add after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, cSubAfterMult2, &results);
             results->SetLength(plaintexSubAfterMult2->GetLength());
             checkEquality(plaintexSubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtract after 2 multiplications fails");
+                          failmsg + " subtract after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, c2AddAfterMult2, &results);
             results->SetLength(plaintex2AddAfterMult2->GetLength());
             checkEquality(plaintex2AddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " add (negative) after 2 multiplications fails");
+                          failmsg + " add (negative) after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, c2SubAfterMult2, &results);
             results->SetLength(plaintex2SubAfterMult2->GetLength());
             checkEquality(plaintex2SubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtract (negative) after 2 multiplications fails");
+                          failmsg + " subtract (negative) after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, cAddPtAfterMult2, &results);
             results->SetLength(plaintexAddAfterMult2->GetLength());
             checkEquality(plaintexAddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " add plaintext (auto scale factor matching) after 2 multiplications fails");
+                          failmsg + " add plaintext (auto scale factor matching) after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, cSubPtAfterMult2, &results);
             results->SetLength(plaintexSubAfterMult2->GetLength());
             checkEquality(plaintexSubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtract plaintext (auto scale factor matching) after 2 multiplications fails");
+                          failmsg + " subtract plaintext (auto scale factor matching) after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, cAddPt2AfterMult2, &results);
             results->SetLength(plaintex2AddAfterMult2->GetLength());
-            checkEquality(plaintex2AddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(
+                    plaintex2AddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                     failmsg + " add negative plaintext (auto scale factor matching) after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, cSubPt2AfterMult2, &results);
             results->SetLength(plaintex2SubAfterMult2->GetLength());
-            checkEquality(plaintex2SubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(
+                    plaintex2SubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                     failmsg +
                             " subtract negative plaintext (auto scale factor matching) after 2 multiplications fails");
 
             cc->Decrypt(kp.secretKey, cDeepAdd, &results);
             results->SetLength(plaintexAddAfterMult2->GetLength());
             checkEquality(plaintexAddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " add with deep plaintext fails");
+                          failmsg + " add with deep plaintext fails");
 
             cc->Decrypt(kp.secretKey, cDeepSub, &results);
             results->SetLength(plaintexSubAfterMult2->GetLength());
             checkEquality(plaintexSubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtract with deep plaintext fails");
+                          failmsg + " subtract with deep plaintext fails");
 
             cc->Decrypt(kp.secretKey, c2DeepAdd, &results);
             results->SetLength(plaintex2AddAfterMult2->GetLength());
             checkEquality(plaintex2AddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " add with deep negative plaintext fails");
+                          failmsg + " add with deep negative plaintext fails");
 
             cc->Decrypt(kp.secretKey, c2DeepSub, &results);
             results->SetLength(plaintex2SubAfterMult2->GetLength());
             checkEquality(plaintex2SubAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtract with deep negative plaintext fails");
-        }
-        catch (std::exception& e) {
+                          failmsg + " subtract with deep negative plaintext fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -996,35 +992,35 @@ protected:
             std::vector<std::complex<double>> pCt14(VECTOR_SIZE);
             for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 pCtMult[i] = vectorOfInts1[i] * vectorOfInts2[i];
-                pCt3[i]    = pCtMult[i] + vectorOfInts1[i];
-                pCt4[i]    = pCtMult[i] - vectorOfInts1[i];
-                pCt5[i]    = pCtMult[i] * vectorOfInts1[i];
-                pCt6[i]    = vectorOfInts1[i] + pCtMult[i];
-                pCt7[i]    = vectorOfInts1[i] - pCtMult[i];
+                pCt3[i] = pCtMult[i] + vectorOfInts1[i];
+                pCt4[i] = pCtMult[i] - vectorOfInts1[i];
+                pCt5[i] = pCtMult[i] * vectorOfInts1[i];
+                pCt6[i] = vectorOfInts1[i] + pCtMult[i];
+                pCt7[i] = vectorOfInts1[i] - pCtMult[i];
                 auto tmp =
                         (vectorOfInts1[i] * vectorOfInts1[i] + vectorOfInts1[i] * vectorOfInts1[i]) * vectorOfInts1[i];
-                pCt_5[i]    = tmp + vectorOfInts2[i];
-                pCt_6[i]    = tmp - vectorOfInts2[i];
-                pCt_7[i]    = tmp * vectorOfInts2[i];
-                pCt8[i]     = vectorOfInts1[i] * pCtMult[i];
+                pCt_5[i] = tmp + vectorOfInts2[i];
+                pCt_6[i] = tmp - vectorOfInts2[i];
+                pCt_7[i] = tmp * vectorOfInts2[i];
+                pCt8[i] = vectorOfInts1[i] * pCtMult[i];
                 pCtMult3[i] = pCtMult[i] * vectorOfInts1[i] * vectorOfInts1[i];
-                pCt9[i]     = pCtMult3[i] + vectorOfInts1[i];
-                pCt10[i]    = pCtMult3[i] - vectorOfInts1[i];
-                pCt11[i]    = pCtMult3[i] * vectorOfInts1[i];
-                pCt12[i]    = vectorOfInts1[i] + pCtMult3[i];
-                pCt13[i]    = vectorOfInts1[i] - pCtMult3[i];
-                pCt14[i]    = vectorOfInts1[i] * pCtMult3[i];
+                pCt9[i] = pCtMult3[i] + vectorOfInts1[i];
+                pCt10[i] = pCtMult3[i] - vectorOfInts1[i];
+                pCt11[i] = pCtMult3[i] * vectorOfInts1[i];
+                pCt12[i] = vectorOfInts1[i] + pCtMult3[i];
+                pCt13[i] = vectorOfInts1[i] - pCtMult3[i];
+                pCt14[i] = vectorOfInts1[i] * pCtMult3[i];
             }
-            Plaintext plaintextCt3  = cc->MakeCKKSPackedPlaintext(pCt3);
-            Plaintext plaintextCt4  = cc->MakeCKKSPackedPlaintext(pCt4);
-            Plaintext plaintextCt5  = cc->MakeCKKSPackedPlaintext(pCt5);
-            Plaintext plaintextCt6  = cc->MakeCKKSPackedPlaintext(pCt6);
-            Plaintext plaintextCt7  = cc->MakeCKKSPackedPlaintext(pCt7);
+            Plaintext plaintextCt3 = cc->MakeCKKSPackedPlaintext(pCt3);
+            Plaintext plaintextCt4 = cc->MakeCKKSPackedPlaintext(pCt4);
+            Plaintext plaintextCt5 = cc->MakeCKKSPackedPlaintext(pCt5);
+            Plaintext plaintextCt6 = cc->MakeCKKSPackedPlaintext(pCt6);
+            Plaintext plaintextCt7 = cc->MakeCKKSPackedPlaintext(pCt7);
             Plaintext plaintextCt_5 = cc->MakeCKKSPackedPlaintext(pCt_5);
             Plaintext plaintextCt_6 = cc->MakeCKKSPackedPlaintext(pCt_6);
             Plaintext plaintextCt_7 = cc->MakeCKKSPackedPlaintext(pCt_7);
-            Plaintext plaintextCt8  = cc->MakeCKKSPackedPlaintext(pCt8);
-            Plaintext plaintextCt9  = cc->MakeCKKSPackedPlaintext(pCt9);
+            Plaintext plaintextCt8 = cc->MakeCKKSPackedPlaintext(pCt8);
+            Plaintext plaintextCt9 = cc->MakeCKKSPackedPlaintext(pCt9);
             Plaintext plaintextCt10 = cc->MakeCKKSPackedPlaintext(pCt10);
             Plaintext plaintextCt11 = cc->MakeCKKSPackedPlaintext(pCt11);
             Plaintext plaintextCt12 = cc->MakeCKKSPackedPlaintext(pCt12);
@@ -1037,7 +1033,7 @@ protected:
             cc->EvalMultKeyGen(kp.secretKey);
 
             // Encrypt plaintexts
-            Ciphertext<Element> ct  = cc->Encrypt(kp.publicKey, plaintext1);
+            Ciphertext<Element> ct = cc->Encrypt(kp.publicKey, plaintext1);
             Ciphertext<Element> ct2 = cc->Encrypt(kp.publicKey, plaintext2);
 
             auto ctMul = cc->EvalMult(ct, ct2);
@@ -1049,7 +1045,7 @@ protected:
             cc->Decrypt(kp.secretKey, ct3, &results);
             results->SetLength(plaintextCt3->GetLength());
             checkEquality(plaintextCt3->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " addition with tower diff = 1 fails");
+                          failmsg + " addition with tower diff = 1 fails");
 
             // in-place addition with tower diff = 1
             auto ctRedClone = ctRed->Clone();
@@ -1057,28 +1053,28 @@ protected:
             cc->Decrypt(kp.secretKey, ctRedClone, &results);
             results->SetLength(plaintextCt3->GetLength());
             checkEquality(plaintextCt3->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " in-place addition with tower diff = 1 fails");
+                          failmsg + " in-place addition with tower diff = 1 fails");
 
             // Subtraction with tower diff = 1
             auto ct4 = cc->EvalSub(ctRed, ct);
             cc->Decrypt(kp.secretKey, ct4, &results);
             results->SetLength(plaintextCt4->GetLength());
             checkEquality(plaintextCt4->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtraction with tower diff = 1 fails");
+                          failmsg + " subtraction with tower diff = 1 fails");
 
             // Multiplication with tower diff = 1
             auto ct5 = cc->EvalMult(ctRed, ct);
             cc->Decrypt(kp.secretKey, ct5, &results);
             results->SetLength(plaintextCt5->GetLength());
             checkEquality(plaintextCt5->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " multiplication with tower diff = 1 fails");
+                          failmsg + " multiplication with tower diff = 1 fails");
 
             // Addition with tower diff = 1 (inputs reversed)
             auto ct6 = cc->EvalAdd(ct, ctRed);
             cc->Decrypt(kp.secretKey, ct6, &results);
             results->SetLength(plaintextCt6->GetLength());
             checkEquality(plaintextCt6->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " addition (reverse) with tower diff = 1 fails");
+                          failmsg + " addition (reverse) with tower diff = 1 fails");
 
             // in-place addition with tower diff = 1 (inputs reversed)
             Ciphertext<Element> ctClone = ct->Clone();
@@ -1086,21 +1082,21 @@ protected:
             cc->Decrypt(kp.secretKey, ctClone, &results);
             results->SetLength(plaintextCt6->GetLength());
             checkEquality(plaintextCt6->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " in-place addition (reverse) with tower diff = 1 fails");
+                          failmsg + " in-place addition (reverse) with tower diff = 1 fails");
 
             // Subtraction with tower diff = 1 (inputs reversed)
             auto ct7 = cc->EvalSub(ct, ctRed);
             cc->Decrypt(kp.secretKey, ct7, &results);
             results->SetLength(plaintextCt7->GetLength());
             checkEquality(plaintextCt7->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtraction (reverse) with tower diff = 1 fails");
+                          failmsg + " subtraction (reverse) with tower diff = 1 fails");
 
             // Multiplication with tower diff = 1 (inputs reversed)
             auto ct8 = cc->EvalMult(ct, ctRed);
             cc->Decrypt(kp.secretKey, ct8, &results);
             results->SetLength(plaintextCt8->GetLength());
             checkEquality(plaintextCt8->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " multiplication (reverse) with tower diff = 1 fails");
+                          failmsg + " multiplication (reverse) with tower diff = 1 fails");
 
             auto ctMul2 = cc->EvalMult(ctRed, ct);
             auto ctRed2 = cc->ModReduce(ctMul2);
@@ -1112,7 +1108,7 @@ protected:
             cc->Decrypt(kp.secretKey, ct9, &results);
             results->SetLength(plaintextCt9->GetLength());
             checkEquality(plaintextCt9->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " addition with tower diff > 1 fails");
+                          failmsg + " addition with tower diff > 1 fails");
 
             // In-place addition with more than 1 level difference
             auto ctRed3Clone = ctRed3->Clone();
@@ -1120,14 +1116,14 @@ protected:
             cc->Decrypt(kp.secretKey, ctRed3Clone, &results);
             results->SetLength(plaintextCt9->GetLength());
             checkEquality(plaintextCt9->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " in-place addition with tower diff > 1 fails");
+                          failmsg + " in-place addition with tower diff > 1 fails");
 
             // Subtraction with more than 1 level difference
             auto ct10 = cc->EvalSub(ctRed3, ct);
             cc->Decrypt(kp.secretKey, ct10, &results);
             results->SetLength(plaintextCt10->GetLength());
             checkEquality(plaintextCt10->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " in-place addition with tower diff > 1 fails");
+                          failmsg + " in-place addition with tower diff > 1 fails");
 
             // Multiplication with more than 1 level difference
             auto ct11 = cc->EvalMult(ctRed3, ct);
@@ -1136,14 +1132,14 @@ protected:
             std::stringstream buffer;
             buffer << plaintextCt11->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextCt11->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " multiplication with tower diff > 1 fails" + buffer.str());
+                          failmsg + " multiplication with tower diff > 1 fails" + buffer.str());
 
             // Addition with more than 1 level difference (inputs reversed)
             auto ct12 = cc->EvalAdd(ct, ctRed3);
             cc->Decrypt(kp.secretKey, ct12, &results);
             results->SetLength(plaintextCt12->GetLength());
             checkEquality(plaintextCt12->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " addition (reverse) with tower diff > 1 fails");
+                          failmsg + " addition (reverse) with tower diff > 1 fails");
 
             // In-place addition with more than 1 level difference (inputs reversed)
             ctClone = ct->Clone();
@@ -1151,21 +1147,21 @@ protected:
             cc->Decrypt(kp.secretKey, ctClone, &results);
             results->SetLength(plaintextCt12->GetLength());
             checkEquality(plaintextCt12->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " in-place addition (reverse) with tower diff > 1 fails");
+                          failmsg + " in-place addition (reverse) with tower diff > 1 fails");
 
             // Subtraction with more than 1 level difference (inputs reversed)
             auto ct13 = cc->EvalSub(ct, ctRed3);
             cc->Decrypt(kp.secretKey, ct13, &results);
             results->SetLength(plaintextCt13->GetLength());
             checkEquality(plaintextCt13->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " subtraction (reverse) with tower diff > 1 fails");
+                          failmsg + " subtraction (reverse) with tower diff > 1 fails");
 
             // Multiplication with more than 1 level difference (inputs reversed)
             auto ct14 = cc->EvalMult(ct, ctRed3);
             cc->Decrypt(kp.secretKey, ct14, &results);
             results->SetLength(plaintextCt14->GetLength());
             checkEquality(plaintextCt14->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " multiplication (reverse) with tower diff > 1 fails");
+                          failmsg + " multiplication (reverse) with tower diff > 1 fails");
 
             // This scenario tests for operations on ciphertext and plaintext that differ on
             // both scaling factor and number of towers.
@@ -1173,35 +1169,33 @@ protected:
             auto ct_2 = cc->EvalAdd(ct_1, ct_1);
             auto ct_3 = cc->ModReduce(ct_2);
             auto ct_4 = cc->EvalMult(ct_3, plaintext1);
-            ct_4      = cc->ModReduce(ct_4);
+            ct_4 = cc->ModReduce(ct_4);
 
             // Addition with plaintext and tower diff = 1
             auto ct_5 = cc->EvalAdd(ct_4, plaintext2);
             cc->Decrypt(kp.secretKey, ct_5, &results);
             results->SetLength(plaintextCt_5->GetLength());
             checkEquality(plaintextCt_5->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " addition with plaintext and tower diff = 1 fails");
+                          failmsg + " addition with plaintext and tower diff = 1 fails");
 
             // Subtraction with plaintext and tower diff = 1
             auto ct_6 = cc->EvalSub(ct_4, plaintext2);
             cc->Decrypt(kp.secretKey, ct_6, &results);
             results->SetLength(plaintextCt_6->GetLength());
             checkEquality(plaintextCt_6->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " subtraction with plaintext and tower diff = 1 fails");
+                          failmsg + " subtraction with plaintext and tower diff = 1 fails");
 
             // Multiplication with plaintext and tower diff = 1
             auto ct_7 = cc->EvalMult(ct_4, plaintext2);
             cc->Decrypt(kp.secretKey, ct_7, &results);
             results->SetLength(plaintextCt_7->GetLength());
             checkEquality(plaintextCt_7->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " multiplication with plaintext and tower diff = 1 fails");
-        }
-        catch (std::exception& e) {
+                          failmsg + " multiplication with plaintext and tower diff = 1 fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1220,8 +1214,8 @@ protected:
             // Encrypt plaintexts
             Ciphertext<Element> ct = cc->Encrypt(kp.publicKey, plaintext);
             ct *= ct;
-            size_t targetTowers      = 1;
-            auto cryptoParams        = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+            size_t targetTowers = 1;
+            auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
             uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
             targetTowers *= compositeDegree;
             auto ctCompressed = cc->Compress(ct, targetTowers);
@@ -1234,14 +1228,12 @@ protected:
             cc->Decrypt(kp.secretKey, ct, &result);
             cc->Decrypt(kp.secretKey, ctCompressed, &resultCompressed);
             checkEquality(result->GetCKKSPackedValue(), resultCompressed->GetCKKSPackedValue(), eps,
-                    failmsg + " compress fails - result is incorrect");
-        }
-        catch (std::exception& e) {
+                          failmsg + " compress fails - result is incorrect");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1287,20 +1279,20 @@ protected:
              * using a smaller digit size in BV (when creating the crypto context cc).
              */
             std::vector<std::complex<double>> vOnes(slots, 1);  // all 1s
-            Plaintext pOnes           = cc->MakeCKKSPackedPlaintext(vOnes, 1, 0, nullptr, testData.slots);
+            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vOnes, 1, 0, nullptr, testData.slots);
             Ciphertext<Element> cOnes = cc->Encrypt(kp.publicKey, pOnes);
             ciphertext1 *= cOnes;
 
             /* Testing EvalFastRotate +2 (left rotate)
              */
-            uint32_t M                  = ringDim << 1;
-            auto cPrecomp1              = cc->EvalFastRotationPrecompute(ciphertext1);
+            uint32_t M = ringDim << 1;
+            auto cPrecomp1 = cc->EvalFastRotationPrecompute(ciphertext1);
             Ciphertext<Element> cResult = cc->EvalFastRotation(ciphertext1, 2, M, cPrecomp1);
             Plaintext results;
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextLeft2->GetLength());
             checkEquality(plaintextLeft2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalFastRotation(+2) fails");
+                          failmsg + " EvalFastRotation(+2) fails");
 
             /* Testing EvalFastRotate -2 (right rotate)
              */
@@ -1308,14 +1300,12 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextRight2->GetLength());
             checkEquality(plaintextRight2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalFastRotation(-2) fails");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalFastRotation(-2) fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1333,8 +1323,7 @@ protected:
             for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 if ((slots + i - 2) % slots < VECTOR_SIZE) {
                     vIntsRightShift2[i] = vectorOfInts1_8[(slots + i - 2) % slots];
-                }
-                else {
+                } else {
                     vIntsRightShift2[i] = 0;
                 }
             }
@@ -1346,8 +1335,7 @@ protected:
             for (uint32_t i = 0; i < VECTOR_SIZE; i++) {
                 if ((i + 2) % slots < VECTOR_SIZE) {
                     vIntsLeftShift2[i] = vectorOfInts1_8[(i + 2) % slots];
-                }
-                else {
+                } else {
                     vIntsLeftShift2[i] = 0;
                 }
             }
@@ -1367,7 +1355,7 @@ protected:
              * This helps hide the rotation noise and get the correct result without
              * using a smaller digit size in BV (when creating the crypto context cc).
              */
-            Plaintext pOnes           = cc->MakeCKKSPackedPlaintext(vectorOfInts1s, 1, 0, nullptr, testData.slots);
+            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vectorOfInts1s, 1, 0, nullptr, testData.slots);
             Ciphertext<Element> cOnes = cc->Encrypt(kp.publicKey, pOnes);
             ciphertext1 *= cOnes;
 
@@ -1378,7 +1366,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextLeft2->GetLength());
             checkEquality(plaintextLeft2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalAtIndex(+2) fails");
+                          failmsg + " EvalAtIndex(+2) fails");
 
             /* Testing EvalAtIndex -2
              */
@@ -1386,14 +1374,12 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextRight2->GetLength());
             checkEquality(plaintextRight2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalAtIndex(-2) fails");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalAtIndex(-2) fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1419,18 +1405,18 @@ protected:
             std::vector<std::complex<double>> vSeven(VECTOR_SIZE, 0);
             vSeven[0] = 7;
             std::vector<std::complex<double>> vEight(VECTOR_SIZE, 0);
-            vEight[0]        = 8;
-            Plaintext pOne   = cc->MakeCKKSPackedPlaintext(vOne);
-            Plaintext pTwo   = cc->MakeCKKSPackedPlaintext(vTwo);
+            vEight[0] = 8;
+            Plaintext pOne = cc->MakeCKKSPackedPlaintext(vOne);
+            Plaintext pTwo = cc->MakeCKKSPackedPlaintext(vTwo);
             Plaintext pThree = cc->MakeCKKSPackedPlaintext(vThree);
-            Plaintext pFour  = cc->MakeCKKSPackedPlaintext(vFour);
-            Plaintext pFive  = cc->MakeCKKSPackedPlaintext(vFive);
-            Plaintext pSix   = cc->MakeCKKSPackedPlaintext(vSix);
+            Plaintext pFour = cc->MakeCKKSPackedPlaintext(vFour);
+            Plaintext pFive = cc->MakeCKKSPackedPlaintext(vFive);
+            Plaintext pSix = cc->MakeCKKSPackedPlaintext(vSix);
             Plaintext pSeven = cc->MakeCKKSPackedPlaintext(vSeven);
             Plaintext pEight = cc->MakeCKKSPackedPlaintext(vEight);
 
             Plaintext pMerged = cc->MakeCKKSPackedPlaintext(vectorOfInts1_8);
-            Plaintext pOnes   = cc->MakeCKKSPackedPlaintext(vectorOfInts1s);
+            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vectorOfInts1s);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -1461,15 +1447,13 @@ protected:
             Plaintext results;
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(pMerged->GetLength());
-            checkEquality(
-                    pMerged->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps, failmsg + " EvalMerge fails");
-        }
-        catch (std::exception& e) {
+            checkEquality(pMerged->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalMerge fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1510,21 +1494,19 @@ protected:
             Plaintext results;
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(pOut->GetLength());
-            checkEquality(
-                    pOut->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps, failmsg + " EvalLinearWSum fails");
+            checkEquality(pOut->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalLinearWSum fails");
 
             auto cResult2 = cc->EvalLinearWSumMutable(ciphertexts, weights);
             cc->Decrypt(kp.secretKey, cResult2, &results);
             results->SetLength(pOut->GetLength());
             checkEquality(pOut->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalLinearWSumMutable fails");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalLinearWSumMutable fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1534,7 +1516,7 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             size_t max = 128;
-            auto ptm   = 10;
+            auto ptm = 10;
 
             std::vector<std::complex<double>> intvec(max);
             for (size_t i = 0; i < max; ++i) {
@@ -1551,7 +1533,7 @@ protected:
             // This generates the keys which are used to perform the key switching.
             EvalKey<Element> evalKey = cc->ReKeyGen(kp.secretKey, newKp.publicKey);
 
-            Ciphertext<Element> ciphertext   = cc->Encrypt(kp.publicKey, plaintextInt);
+            Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintextInt);
             Ciphertext<Element> reCiphertext = cc->ReEncrypt(ciphertext, evalKey);
             Plaintext plaintextIntNew;
             cc->Decrypt(newKp.secretKey, reCiphertext, &plaintextIntNew);
@@ -1562,7 +1544,7 @@ protected:
             buffer << tmp_b << " - we get: " << tmp_a;
             checkEquality(tmp_a, tmp_b, epsHigh, failmsg + " ReEncrypt integer plaintext " + buffer.str());
 
-            Ciphertext<Element> ciphertext2   = cc->Encrypt(kp.publicKey, plaintextInt);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintextInt);
             Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(ciphertext2, evalKey, kp.publicKey);
             Plaintext plaintextIntNew2;
             cc->Decrypt(newKp.secretKey, reCiphertext2, &plaintextIntNew2);
@@ -1572,13 +1554,11 @@ protected:
             std::stringstream buffer2;
             buffer2 << tmp_b << " - we get: " << tmp_a;
             checkEquality(tmp_a, tmp_b, epsHigh, failmsg + " HRA-secure ReEncrypt integer plaintext " + buffer2.str());
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1642,7 +1622,7 @@ protected:
             buffer1 << "should be: " << plaintextResult1->GetCKKSPackedValue()
                     << " - we get: " << results1->GetCKKSPackedValue();
             checkEquality(plaintextResult1->GetCKKSPackedValue(), results1->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " EvalPoly with positive coefficients failed: " + buffer1.str());
+                          failmsg + " EvalPoly with positive coefficients failed: " + buffer1.str());
 
             Ciphertext<Element> cResult2 = cc->EvalPolyLinear(ciphertext1, coefficients2);
             Plaintext results2;
@@ -1652,7 +1632,7 @@ protected:
             buffer2 << "should be: " << plaintextResult2->GetCKKSPackedValue()
                     << " - we get: " << results2->GetCKKSPackedValue();
             checkEquality(plaintextResult2->GetCKKSPackedValue(), results2->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " EvalPoly with negative coefficients failed: " + buffer2.str());
+                          failmsg + " EvalPoly with negative coefficients failed: " + buffer2.str());
 
             Ciphertext<Element> cResult3 = cc->EvalPolyLinear(ciphertext1, coefficients3);
             Plaintext results3;
@@ -1662,7 +1642,7 @@ protected:
             buffer3 << "should be: " << plaintextResult3->GetCKKSPackedValue()
                     << " - we get: " << results3->GetCKKSPackedValue();
             checkEquality(plaintextResult3->GetCKKSPackedValue(), results3->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " EvalPoly for a power function failed: " + buffer3.str());
+                          failmsg + " EvalPoly for a power function failed: " + buffer3.str());
 
             Ciphertext<Element> cResult4 = cc->EvalPolyLinear(ciphertext1, coefficients4);
             Plaintext results4;
@@ -1672,7 +1652,7 @@ protected:
             buffer4 << "should be: " << plaintextResult4->GetCKKSPackedValue()
                     << " - we get: " << results4->GetCKKSPackedValue();
             checkEquality(plaintextResult4->GetCKKSPackedValue(), results4->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " EvalPoly for negative coefficients with magnitude > 1 failed: " + buffer4.str());
+                          failmsg + " EvalPoly for negative coefficients with magnitude > 1 failed: " + buffer4.str());
 
             Ciphertext<Element> cResult5 = cc->EvalPolyLinear(ciphertext1, coefficients5);
             Plaintext results5;
@@ -1682,14 +1662,12 @@ protected:
             buffer5 << "should be: " << plaintextResult5->GetCKKSPackedValue()
                     << " - we get: " << results5->GetCKKSPackedValue();
             checkEquality(plaintextResult5->GetCKKSPackedValue(), results5->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " EvalPoly for low-degree polynomial failed: " + buffer5.str());
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalPoly for low-degree polynomial failed: " + buffer5.str());
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1728,7 +1706,7 @@ protected:
 
             // Checking if metadata is carried over in EvalAdd(ctx,ctx)
             Ciphertext<Element> cAddCC = cc->EvalAdd(ciphertext1, ciphertext2);
-            auto addCCValTest          = MetadataTest::GetMetadata<Element>(cAddCC);
+            auto addCCValTest = MetadataTest::GetMetadata<Element>(cAddCC);
             EXPECT_EQ(val1->GetMetadata(), addCCValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalAdd(ctx,ctx)";
 
@@ -1741,60 +1719,60 @@ protected:
 
             // Checking if metadata is carried over in EvalAdd(ctx,ptx)
             Ciphertext<Element> cAddCP = cc->EvalAdd(ciphertext1, plaintext1);
-            auto addCPValTest          = MetadataTest::GetMetadata<Element>(cAddCP);
+            auto addCPValTest = MetadataTest::GetMetadata<Element>(cAddCP);
             EXPECT_EQ(val1->GetMetadata(), addCPValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalAdd(ctx,ptx)";
 
             // Checking if metadata is carried over in EvalAdd(ctx,double)
             Ciphertext<Element> cAddCD = cc->EvalAdd(ciphertext1, 2.0);
-            auto addCDValTest          = MetadataTest::GetMetadata<Element>(cAddCD);
+            auto addCDValTest = MetadataTest::GetMetadata<Element>(cAddCD);
             EXPECT_EQ(val1->GetMetadata(), addCDValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalAdd(ctx,double)";
 
             // Checking if metadata is carried over in EvalSub(ctx,ctx)
             Ciphertext<Element> cSubCC = cc->EvalSub(ciphertext1, ciphertext2);
-            auto subCCValTest          = MetadataTest::GetMetadata<Element>(cSubCC);
+            auto subCCValTest = MetadataTest::GetMetadata<Element>(cSubCC);
             EXPECT_EQ(val1->GetMetadata(), subCCValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalSub(ctx,ctx)";
 
             // Checking if metadata is carried over in EvalSub(ctx,ptx)
             Ciphertext<Element> cSubCP = cc->EvalSub(ciphertext1, plaintext1);
-            auto subCPValTest          = MetadataTest::GetMetadata<Element>(cSubCP);
+            auto subCPValTest = MetadataTest::GetMetadata<Element>(cSubCP);
             EXPECT_EQ(val1->GetMetadata(), subCPValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalSub(ctx,ptx)";
 
             // Checking if metadata is carried over in EvalSub(ctx,double)
             Ciphertext<Element> cSubCD = cc->EvalSub(ciphertext1, 2.0);
-            auto subCDValTest          = MetadataTest::GetMetadata<Element>(cSubCD);
+            auto subCDValTest = MetadataTest::GetMetadata<Element>(cSubCD);
             EXPECT_EQ(val1->GetMetadata(), subCDValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalSub(ctx,double)";
 
             // Checking if metadata is carried over in EvalMult(ctx,ctx)
             Ciphertext<Element> cMultCC = cc->EvalMult(ciphertext1, ciphertext2);
-            auto multCCValTest          = MetadataTest::GetMetadata<Element>(cMultCC);
+            auto multCCValTest = MetadataTest::GetMetadata<Element>(cMultCC);
             EXPECT_EQ(val1->GetMetadata(), multCCValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalMult(ctx,ctx)";
 
             // Checking if metadata is carried over in EvalMult(ctx,ptx)
             Ciphertext<Element> cMultCP = cc->EvalMult(ciphertext1, plaintext1);
-            auto multCPValTest          = MetadataTest::GetMetadata<Element>(cMultCP);
+            auto multCPValTest = MetadataTest::GetMetadata<Element>(cMultCP);
             EXPECT_EQ(val1->GetMetadata(), multCPValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalMult(ctx,ptx)";
 
             // Checking if metadata is carried over in EvalMult(ctx,double)
             Ciphertext<Element> cMultCD = cc->EvalMult(ciphertext1, 2.0);
-            auto multCDValTest          = MetadataTest::GetMetadata<Element>(cMultCD);
+            auto multCDValTest = MetadataTest::GetMetadata<Element>(cMultCD);
             EXPECT_EQ(val1->GetMetadata(), multCDValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalMult(ctx,double)";
 
             // Checking if metadata is carried over in EvalAtIndex +2 (left rotate)
-            auto cAtIndex2       = cc->EvalAtIndex(ciphertext1, 2);
+            auto cAtIndex2 = cc->EvalAtIndex(ciphertext1, 2);
             auto atIndex2ValTest = MetadataTest::GetMetadata<Element>(cAtIndex2);
             EXPECT_EQ(val1->GetMetadata(), atIndex2ValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalAtIndex +2";
 
             // Checking if metadata is carried over in EvalAtIndex -2 (right rotate)
-            auto cAtIndexMinus2       = cc->EvalAtIndex(ciphertext1, -2);
+            auto cAtIndexMinus2 = cc->EvalAtIndex(ciphertext1, -2);
             auto atIndexMinus2ValTest = MetadataTest::GetMetadata<Element>(cAtIndexMinus2);
             EXPECT_EQ(val1->GetMetadata(), atIndexMinus2ValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalAtIndex -2";
@@ -1803,14 +1781,14 @@ protected:
             uint32_t M = N << 1;
 
             // Checking if metadata is carried over EvalFastRotate +2 (left rotate)
-            auto cPrecomp1       = cc->EvalFastRotationPrecompute(ciphertext1);
-            auto cFastRot2       = cc->EvalFastRotation(ciphertext1, 2, M, cPrecomp1);
+            auto cPrecomp1 = cc->EvalFastRotationPrecompute(ciphertext1);
+            auto cFastRot2 = cc->EvalFastRotation(ciphertext1, 2, M, cPrecomp1);
             auto fastRot2ValTest = MetadataTest::GetMetadata<Element>(cFastRot2);
             EXPECT_EQ(val1->GetMetadata(), fastRot2ValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalFastRotation +2";
 
             // Checking if metadata is carried over EvalFastRotate -2 (right rotate)
-            auto cFastRotMinus2       = cc->EvalFastRotation(ciphertext1, -2, M, cPrecomp1);
+            auto cFastRotMinus2 = cc->EvalFastRotation(ciphertext1, -2, M, cPrecomp1);
             auto fastRotMinus2ValTest = MetadataTest::GetMetadata<Element>(cFastRotMinus2);
             EXPECT_EQ(val1->GetMetadata(), fastRotMinus2ValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalFastRotation -2";
@@ -1822,22 +1800,20 @@ protected:
             std::vector<ReadOnlyCiphertext<Element>> ciphertexts{ciphertext1, ciphertext2};
 
             // Checking if metadata is carried over in EvalLinearWSum
-            auto cLWS       = cc->EvalLinearWSum(ciphertexts, weights);
+            auto cLWS = cc->EvalLinearWSum(ciphertexts, weights);
             auto lwsValTest = MetadataTest::GetMetadata<Element>(cLWS);
             EXPECT_EQ(val1->GetMetadata(), lwsValTest->GetMetadata())
                     << "Ciphertext metadata mismatch in EvalLinearWSum";
 
             // Checking if metadata is carried over in EvalSum
-            auto cSum       = cc->EvalSum(ciphertext1, VECTOR_SIZE);
+            auto cSum = cc->EvalSum(ciphertext1, VECTOR_SIZE);
             auto sumValTest = MetadataTest::GetMetadata<Element>(cSum);
             EXPECT_EQ(val1->GetMetadata(), sumValTest->GetMetadata()) << "Ciphertext metadata mismatch in EvalSum";
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1847,7 +1823,7 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             const std::vector<std::complex<double>> vectorOfInts = {1, 0, 3, 1, 0, 1, 2, 1};
-            Plaintext plaintext                                  = cc->MakeCKKSPackedPlaintext(vectorOfInts);
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(vectorOfInts);
 
             // For cyclotomic order != 16, the expected result is the convolution of
             // vectorOfInt21 and vectorOfInts2
@@ -1855,7 +1831,7 @@ protected:
             Plaintext intArrayExpectedSquare = cc->MakeCKKSPackedPlaintext(vectorOfIntsSquare);
 
             const std::vector<std::complex<double>> vectorOfIntsSixth = {1, 0, 729, 1, 0, 1, 64, 1};
-            Plaintext intArrayExpectedSixth                           = cc->MakeCKKSPackedPlaintext(vectorOfIntsSixth);
+            Plaintext intArrayExpectedSixth = cc->MakeCKKSPackedPlaintext(vectorOfIntsSixth);
 
             // Initialize the public key containers.
             KeyPair<Element> kp = cc->KeyGen();
@@ -1870,7 +1846,7 @@ protected:
             cc->Decrypt(kp.secretKey, ciphertextSq, &results);
             results->SetLength(intArrayExpectedSquare->GetLength());
             checkEquality(intArrayExpectedSquare->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                    failmsg + " EvalSquare (CKKSPacked) fails");
+                          failmsg + " EvalSquare (CKKSPacked) fails");
 
             Ciphertext<Element> ciphertextThird = cc->EvalMult(ciphertextSq, plaintext);
 
@@ -1878,37 +1854,33 @@ protected:
             cc->Decrypt(kp.secretKey, ciphertextSixth, &results);
             results->SetLength(intArrayExpectedSixth->GetLength());
             checkEquality(intArrayExpectedSixth->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
-                    failmsg + " EvalSquare Sixth (CKKSPacked) fails");
-        }
-        catch (std::exception& e) {
+                          failmsg + " EvalSquare Sixth (CKKSPacked) fails");
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 
-    void UnitTest_Small_ScalingModSize(
-            const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Small_ScalingModSize(const TEST_CASE_UTCKKSRNS_CS& testData,
+                                       const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
 };
 
 template <>
-double UTCKKSRNSCS::CalculateApproximationError<double>(
-        const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expectedResult) {
+double UTCKKSRNSCS::CalculateApproximationError<double>(const std::vector<std::complex<double>>& result,
+                                                        const std::vector<std::complex<double>>& expectedResult) {
     if (result.size() != expectedResult.size())
         OPENFHE_THROW("Cannot compare vectors with different numbers of elements");
 

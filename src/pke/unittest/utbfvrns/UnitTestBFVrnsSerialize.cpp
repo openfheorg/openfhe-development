@@ -38,7 +38,7 @@
 using namespace lbcrypto;
 
 class UTBFVRNS_SER : public ::testing::Test {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }

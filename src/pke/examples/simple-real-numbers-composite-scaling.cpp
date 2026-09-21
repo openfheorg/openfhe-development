@@ -138,8 +138,7 @@ int main(int argc, char* argv[]) {
             std::cout << "argcCount: " << argcCount << std::endl;
         }
         std::cout << "Complete !" << std::endl;
-    }
-    else {
+    } else {
         std::cout << "Using default parameters" << std::endl;
         std::cout << "First Mod Size: " << firstModSize << std::endl;
         std::cout << "Scaling Mod Size: " << scaleModSize << std::endl;
@@ -175,7 +174,7 @@ int main(int argc, char* argv[]) {
     parameters.SetScalingTechnique(COMPOSITESCALINGAUTO);
     parameters.SetRegisterWordSize(registerWordSize);
 
-    CryptoContext<DCRTPoly> cc     = GenCryptoContext(parameters);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     std::cout << "Composite Degree: " << cryptoParamsCKKSRNS->GetCompositeDegree() << "\nPrime Modulus Size: "
               << static_cast<float>(scaleModSize) / cryptoParamsCKKSRNS->GetCompositeDegree()

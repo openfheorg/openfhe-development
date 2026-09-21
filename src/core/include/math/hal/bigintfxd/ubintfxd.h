@@ -260,7 +260,7 @@ constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of L
  */
 template <typename uint_type, uint32_t BITLENGTH>
 class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<uint_type, BITLENGTH>> {
-public:
+  public:
     // CONSTRUCTORS
 
     /**
@@ -318,17 +318,17 @@ public:
    * @param &val is the initial integer represented as a big integer.
    */
     template <typename T,
-            typename std::enable_if<
-                    !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
-                            !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
-                            !std::is_same<T, long long>::value &&                                  // NOLINT
+              typename std::enable_if<
+                      !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
+                              !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
+                              !std::is_same<T, long long>::value &&                                  // NOLINT
     #if defined(HAVE_INT128)
-                            !std::is_same<T, U128BITS>::value &&
+                              !std::is_same<T, U128BITS>::value &&
     #endif
-                            !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&
-                            !std::is_same<T, const char>::value && !std::is_same<T, BigIntegerFixedT>::value &&
-                            !std::is_same<T, double>::value,
-                    bool>::type = true>
+                              !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&
+                              !std::is_same<T, const char>::value && !std::is_same<T, BigIntegerFixedT>::value &&
+                              !std::is_same<T, double>::value,
+                      bool>::type = true>
     BigIntegerFixedT(const T& val) : BigIntegerFixedT(val.ConvertToInt()) {  // NOLINT
     }
 
@@ -372,7 +372,7 @@ public:
 
     template <typename T, typename std::enable_if<!std::is_same<T, BigIntegerFixedT>::value &&
                                                           !std::is_same<T, const BigIntegerFixedT>::value,
-                                  bool>::type = true>
+                                                  bool>::type = true>
     BigIntegerFixedT& operator=(const T& val) {
         return (*this = BigIntegerFixedT(val));
     }
@@ -628,8 +628,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    BigIntegerFixedT ModAdd(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModAdd(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                            const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus addition operation. In-place variant.
@@ -685,8 +685,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
-    BigIntegerFixedT ModSub(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModSub(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                            const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus subtraction operation. In-place variant.
@@ -724,8 +724,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    BigIntegerFixedT ModMul(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModMul(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                            const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus multiplication. In-place variant.
@@ -764,8 +764,8 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    BigIntegerFixedT ModMulFast(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
+    BigIntegerFixedT ModMulFast(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                                const BigIntegerFixedT& mu) const;
 
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
@@ -776,16 +776,16 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    BigIntegerFixedT& ModMulFastEq(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                                   const BigIntegerFixedT& mu);
 
-    BigIntegerFixedT ModMulFastConst(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& bInv) const {
+    BigIntegerFixedT ModMulFastConst(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                                     const BigIntegerFixedT& bInv) const {
         OPENFHE_THROW("ModMulFastConst is not implemented for backend 2");
     }
 
-    BigIntegerFixedT& ModMulFastConstEq(
-            const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& bInv) {
+    BigIntegerFixedT& ModMulFastConstEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                                        const BigIntegerFixedT& bInv) {
         OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 2");
     }
 
@@ -877,14 +877,14 @@ public:
    * @return the int representation of the value as uint64_t.
    */
     // TODO (dsuponit): make ConvertToInt() a template utility function
-    template <typename T  = BasicInteger,
-            std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
-                    bool> = true>
+    template <typename T = BasicInteger,
+              std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
+                               bool> = true>
     T ConvertToInt() const {
         constexpr uint32_t bits = sizeof(T) * CHAR_BIT;
-        T result                = 0;
+        T result = 0;
         // set num to number of equisized chunks
-        uint32_t num     = bits / m_uintBitLength;
+        uint32_t num = bits / m_uintBitLength;
         uint32_t ceilInt = m_nSize - ceilIntByUInt(m_MSB);
         // copy the values by shift and add
         for (uint32_t i = 0; i < num && (m_nSize - i - 1) >= ceilInt; i++) {
@@ -1002,7 +1002,7 @@ public:
    */
     std::string GetInternalRepresentation(void) const {
         std::string ret("");
-        size_t ceilInt  = ceilIntByUInt(m_MSB);  // max limb used
+        size_t ceilInt = ceilIntByUInt(m_MSB);  // max limb used
         size_t minIndex = static_cast<size_t>(m_nSize - ceilInt);
 
         for (size_t i = m_nSize - 1; i >= minIndex; i--) {
@@ -1074,8 +1074,8 @@ public:
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
             Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::binary_data(m_value, sizeof(m_value)));
         ar(::cereal::binary_data(&m_MSB, sizeof(m_MSB)));
@@ -1085,8 +1085,8 @@ public:
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
             Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            OPENFHE_THROW(
-                    "serialized object version " + std::to_string(version) + " is from a later version of the library");
+            OPENFHE_THROW("serialized object version " + std::to_string(version) +
+                          " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
@@ -1100,7 +1100,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     /**
    * Converts the string v into base-r integer where r is equal to 2^bitwidth of
    * integral data type.
@@ -1120,7 +1120,7 @@ protected:
    */
     void SetMSB(uint32_t guessIdxChar);
 
-private:
+  private:
     // array storing the native integers.
     // array size is the ceiling of BITLENGTH/(bits in the integral data type)
     uint_type m_value[(BITLENGTH + 8 * sizeof(uint_type) - 1) / (8 * sizeof(uint_type))];

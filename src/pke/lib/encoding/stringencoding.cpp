@@ -40,7 +40,7 @@
 
 namespace lbcrypto {
 
-static const size_t charPtm      = (1 << 8);
+static const size_t charPtm = (1 << 8);
 static const uint32_t CHARMARKER = (1 << 7);
 
 bool StringEncoding::Encode() {
@@ -61,8 +61,7 @@ bool StringEncoding::Encode() {
         for (; i < this->encodedNativeVector.GetLength(); i++) {
             this->encodedNativeVector[i] = CHARMARKER;
         }
-    }
-    else {
+    } else {
         this->encodedVector.SetValuesToZero();
         size_t i = 0;
         for (; i < ptx.size() && i < this->encodedVector.GetLength(); i++) {
@@ -100,8 +99,7 @@ bool StringEncoding::Decode() {
         fillPlaintext(this->encodedNativeVector, this->ptx, mod);
         // clears the values containing information about the noise
         this->encodedNativeVector.SetValuesToZero();
-    }
-    else {
+    } else {
         fillPlaintext(this->encodedVector, this->ptx, mod);
         // clears the values containing information about the noise
         this->encodedVector.SetValuesToZero();
