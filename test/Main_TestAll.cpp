@@ -44,7 +44,7 @@ static string lead = "****** ";
 
 class MinimalistPrinter : public EmptyTestEventListener {
     // in modern GoogleTest (v1.11+ or v1.17.0) internal::COLOR_GREEN and internal::ColoredPrintf(...) are no longer accessible, so
-    enum class Color { kDefault, kRed, kGreen };
+    enum class Color { kDefault, kRed, kGreen, kYellow };
 
     void ColoredPrintf(Color color, const char* fmt, ...) {
         const char* color_code = "";
@@ -54,6 +54,9 @@ class MinimalistPrinter : public EmptyTestEventListener {
                 break;
             case Color::kGreen:
                 color_code = "\033[1;32m";
+                break;
+            case Color::kYellow:
+                color_code = "\033[1;33m";
                 break;
             case Color::kDefault:
             default:
@@ -88,15 +91,38 @@ class MinimalistPrinter : public EmptyTestEventListener {
     void OnTestPartResult(const ::testing::TestPartResult& test_part_result) {}
 
     void OnTestEnd(const ::testing::TestInfo& test_info) {
-        if (test_info.result()->Passed()) {
+        auto tr = test_info.result();
+
+        if (tr->Passed()) {
             return;
         }
 
-        auto tr = test_info.result();
+        if (tr->Skipped()) {
+            ColoredPrintf(Color::kGreen, "[ RUN      ] ");
+            printf("%s.%s\n", test_info.test_case_name(), test_info.name());
+            fflush(stdout);
+
+            for (int i = 0; i < tr->total_part_count(); i++) {
+                auto pr = tr->GetTestPartResult(i);
+                if (!pr.skipped())
+                    continue;
+
+                auto n = pr.file_name();
+                if (n != NULL)
+                    cout << n << ":" << pr.line_number() << "\n";
+
+                cout << pr.summary() << endl;
+            }
+
+            ColoredPrintf(Color::kYellow, "[  SKIPPED ] ");
+            printf("%s.%s\n", test_info.test_case_name(), test_info.name());
+            fflush(stdout);
+            return;
+        }
 
         for (int i = 0; i < tr->total_part_count(); i++) {
             auto pr = tr->GetTestPartResult(i);
-            if (pr.passed())
+            if (!pr.failed())
                 continue;
 
             ColoredPrintf(Color::kGreen, "[ RUN      ] ");
@@ -122,7 +148,8 @@ class MinimalistPrinter : public EmptyTestEventListener {
 
     void OnTestProgramEnd(const ::testing::UnitTest& unit_test) {
         cout << lead << "End " << unit_test.test_to_run_count() << " cases " << unit_test.successful_test_count()
-             << " passed " << unit_test.failed_test_count() << " failed" << endl;
+             << " passed " << unit_test.skipped_test_count() << " skipped " << unit_test.failed_test_count()
+             << " failed" << endl;
 
         const int failed_test_count = unit_test.failed_test_count();
         if (failed_test_count == 0) {
@@ -136,7 +163,7 @@ class MinimalistPrinter : public EmptyTestEventListener {
             }
             for (int j = 0; j < test_case.total_test_count(); ++j) {
                 const TestInfo& test_info = *test_case.GetTestInfo(j);
-                if (!test_info.should_run() || test_info.result()->Passed()) {
+                if (!test_info.should_run() || !test_info.result()->Failed()) {
                     continue;
                 }
                 ColoredPrintf(Color::kRed, "[  FAILED  ] ");

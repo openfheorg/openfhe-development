@@ -49,17 +49,25 @@
     #include <malloc/malloc.h>
 #endif
 
+#if defined(__GLIBC__) || defined(__APPLE__)
+    #define OPENFHE_HAS_HEAP_PROBE 1
+#else
+    #define OPENFHE_HAS_HEAP_PROBE 0
+#endif
+
 using namespace lbcrypto;
 
 namespace {
 std::size_t HeapInUseBytes() {
-#if defined(__GLIBC__)
+#if OPENFHE_HAS_HEAP_PROBE
+    #if defined(__GLIBC__)
     auto info = mallinfo2();
     return info.uordblks;
-#elif defined(__APPLE__)
+    #else
     malloc_statistics_t s{};
     malloc_zone_statistics(malloc_default_zone(), &s);
     return s.size_in_use;
+    #endif
 #else
     OPENFHE_THROW("heap probe unavailable on this allocator");
 #endif
@@ -119,12 +127,16 @@ CryptoContext<DCRTPoly> MakeSchemeSwitchCC() {
 
 class UTCKKSCacheClear : public ::testing::Test {
   protected:
-#if defined(WITH_TCM) || defined(__EMSCRIPTEN__)
+#if defined(WITH_TCM) || !OPENFHE_HAS_HEAP_PROBE
     void SetUp() override {
     #if defined(WITH_TCM)
         GTEST_SKIP() << "Heap usage checks are not stable with tcmalloc enabled";
-    #else
+    #elif defined(__EMSCRIPTEN__)
         GTEST_SKIP() << "Heap probe unavailable under Emscripten";
+    #elif defined(_WIN32)
+        GTEST_SKIP() << "Heap probe unavailable on Windows";
+    #else
+        GTEST_SKIP() << "Heap probe unavailable on this allocator";
     #endif
     }
 #endif
@@ -134,7 +146,8 @@ class UTCKKSCacheClear : public ::testing::Test {
     }
 };
 
-// These checks do not depend on allocator statistics and also run with tcmalloc and Emscripten.
+// These checks do not depend on allocator statistics and also run with tcmalloc and on platforms
+// without a supported heap probe.
 class UTCKKSReleaseAllContexts : public ::testing::Test {
   protected:
     void TearDown() override {
