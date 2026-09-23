@@ -150,7 +150,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
     * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
     * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
-    * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise; used here for testing).
+    * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
     * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
@@ -312,7 +312,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
      * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
      * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
      * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
-     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise; used here for testing).
+     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
      * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
      * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
@@ -323,7 +323,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     uint32_t levelsAvailableAfterBootstrap = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum = 3;
-    SecretKeyDist secretKeyDist = SPARSE_TERNARY;
+    SecretKeyDist secretKeyDist = SPARSE_ENCAPSULATED;
     ScalingTechnique scalTech = FIXEDMANUAL;
     std::vector<uint32_t> lvlb = {3, 3};
 
@@ -564,7 +564,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
      * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
      * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
      * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
-     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise; used here for testing).
+     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
      * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
      * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
