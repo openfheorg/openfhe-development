@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/**
-Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(SHE) algorithms.
+/*
+  Base class for key switching algorithms.
  */
 
 #include "keyswitch/keyswitch-base.h"
