@@ -602,10 +602,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     double GetScalingFactorReal(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
-            if (l >= m_scalingFactorsReal.size()) {
-                // TODO: Return an error here.
-                return m_approxSF;
-            }
+            if (l >= m_scalingFactorsReal.size())
+                OPENFHE_THROW("Level index [" + std::to_string(l) + "] is out of range [0, " +
+                              std::to_string(m_scalingFactorsReal.size()) + ").");
 
             return m_scalingFactorsReal[l];
         }
@@ -616,10 +615,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     double GetScalingFactorRealBig(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
-            if (l >= m_scalingFactorsRealBig.size()) {
-                // TODO: Return an error here.
-                return m_approxSF;
-            }
+            if (l >= m_scalingFactorsRealBig.size())
+                OPENFHE_THROW("Level index [" + std::to_string(l) + "] is out of range [0, " +
+                              std::to_string(m_scalingFactorsRealBig.size()) + ").");
 
             return m_scalingFactorsRealBig[l];
         }

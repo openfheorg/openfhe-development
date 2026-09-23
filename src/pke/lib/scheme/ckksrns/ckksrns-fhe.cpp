@@ -3682,7 +3682,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciph
             uint32_t dstLevel = ctxtEnc->GetLevel() + compositeDegree * levelToReduce;
             uint32_t curLevel = ctxtEnc->GetLevel() + compositeDegree * (ctxtEnc->GetNoiseScaleDeg() == 2);
             // The level-specific scaling factors are precomputed only up to the second-to-last level
-            // (the accessors silently fall back for larger indices), and the rescale before
+            // (the accessors throw for larger indices), and the rescale before
             // SlotsToCoeffs consumes one more level anyway.
             uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
             if (dstLevel > sizeQ - 2 * compositeDegree)
