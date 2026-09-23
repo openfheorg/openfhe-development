@@ -33,13 +33,14 @@
   Represents and defines string-encoded plaintext objects in OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
-#define SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
-
-#include "encoding/plaintext.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_STRINGENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_STRINGENCODING_H_
 
 #include <memory>
 #include <string>
+#include <type_traits>
+
+#include "encoding/plaintext.h"
 
 namespace lbcrypto {
 
@@ -47,17 +48,17 @@ class StringEncoding : public PlaintextImpl {
     std::string ptx;
     // enum EncodingType { CHAR7bit } encoding = CHAR7bit;
 
-public:
+  public:
     // these three constructors are used inside of Decrypt
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     StringEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, STRING_ENCODING) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     StringEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::string& str)
         : PlaintextImpl(vp, ep, STRING_ENCODING), ptx(str) {}
@@ -104,7 +105,7 @@ public:
         return ptx.size();
     }
 
-protected:
+  protected:
     /**
     * Method to compare two plaintext to test for equivalence
     * Testing that the plaintexts are of the same type done in operator==
@@ -131,4 +132,4 @@ protected:
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_ENCODING_STRINGENCODING_H_ */
+#endif  // SRC_PKE_INCLUDE_ENCODING_STRINGENCODING_H_

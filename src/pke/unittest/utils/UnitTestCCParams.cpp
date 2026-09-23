@@ -33,6 +33,7 @@
 
 #include <ostream>
 #include <sstream>
+#include <string>
 
 std::string UnitTestCCParams::toString() const {
     std::stringstream ss;

@@ -30,16 +30,17 @@
 //==================================================================================
 #include "schemerns/rns-multiparty.h"
 
-#include "key/privatekey.h"
-#include "key/evalkeyrelin.h"
-#include "cryptocontext.h"
-#include "schemerns/rns-pke.h"
-
-#include <memory>
-#include <vector>
-#include <utility>
-#include <string>
+#include <cstdint>
 #include <cstring>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "cryptocontext.h"
+#include "key/evalkeyrelin.h"
+#include "key/privatekey.h"
+#include "schemerns/rns-pke.h"
 
 namespace lbcrypto {
 
@@ -48,11 +49,11 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    const auto ns                   = cryptoParams->GetNoiseScale();
+    const auto ns = cryptoParams->GetNoiseScale();
 
     const DCRTPoly& sk = privateKey->GetPrivateElement();
-    size_t sizeQl      = cv[0].GetParams()->GetParams().size();
-    auto s             = sk.CloneTowers(0, sizeQl - 1);
+    size_t sizeQl = cv[0].GetParams()->GetParams().size();
+    auto s = sk.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
@@ -61,19 +62,19 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
                           " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
         }
         DugType dug;
-        auto params                            = cv[0].GetParams();
-        auto cyclOrder                         = params->GetCyclotomicOrder();
+        auto params = cv[0].GetParams();
+        auto cyclOrder = params->GetCyclotomicOrder();
         std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
-        std::vector<NativeInteger> rootsFirst  = {params->GetParams()[0]->GetRootOfUnity()};
+        std::vector<NativeInteger> rootsFirst = {params->GetParams()[0]->GetRootOfUnity()};
         auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
         std::vector<NativeInteger> moduliAllButFirst(sizeQl - 1);
         std::vector<NativeInteger> rootsAllButFirst(sizeQl - 1);
         for (size_t i = 1; i < sizeQl; i++) {
             moduliAllButFirst[i - 1] = params->GetParams()[i]->GetModulus();
-            rootsAllButFirst[i - 1]  = params->GetParams()[i]->GetRootOfUnity();
+            rootsAllButFirst[i - 1] = params->GetParams()[i]->GetRootOfUnity();
         }
         auto paramsAllButFirst =
-            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
+                std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
         e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
@@ -84,14 +85,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
                                      Format::EVALUATION);
 
         noise = std::move(e);
-    }
-    else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-             cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+    } else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+               cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = std::move(e);
-    }
-    else {
+    } else {
         DggType dgg(NoiseFlooding::MP_SD);
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = std::move(e);
@@ -109,13 +108,13 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
 Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
                                                           const PrivateKey<DCRTPoly> privateKey) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
-    const auto ns           = cryptoParams->GetNoiseScale();
+    const auto ns = cryptoParams->GetNoiseScale();
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     const DCRTPoly& sk = privateKey->GetPrivateElement();
-    size_t sizeQl      = cv[0].GetParams()->GetParams().size();
-    auto s             = sk.CloneTowers(0, sizeQl - 1);
+    size_t sizeQl = cv[0].GetParams()->GetParams().size();
+    auto s = sk.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
@@ -124,15 +123,15 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
                           " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
         }
         DugType dug;
-        auto params                         = cv[0].GetParams();
+        auto params = cv[0].GetParams();
         ILDCRTParams<BigInteger> paramsCopy = *params;
         paramsCopy.PopFirstParam();
         auto paramsAllButFirst = std::make_shared<ILDCRTParams<BigInteger>>(paramsCopy);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
-        auto cyclOrder                         = params->GetCyclotomicOrder();
+        auto cyclOrder = params->GetCyclotomicOrder();
         std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
-        std::vector<NativeInteger> rootsFirst  = {params->GetParams()[0]->GetRootOfUnity()};
+        std::vector<NativeInteger> rootsFirst = {params->GetParams()[0]->GetRootOfUnity()};
         auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
         e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
                                      cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
@@ -142,14 +141,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
                                      Format::EVALUATION);
 
         noise = std::move(e);
-    }
-    else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-             cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+    } else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+               cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = std::move(e);
-    }
-    else {
+    } else {
         DggType dgg(NoiseFlooding::MP_SD);
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = std::move(e);
@@ -166,7 +163,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
 EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoContext()->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoContext()->GetCryptoParameters());
     const auto ns = cryptoParams->GetNoiseScale();
 
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
@@ -184,18 +181,17 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
     b.reserve(size);
 
     if (cryptoParams->GetKeySwitchTechnique() == BV) {
-        const DCRTPoly& s         = privateKey->GetPrivateElement();
+        const DCRTPoly& s = privateKey->GetPrivateElement();
         const auto& elementParams = s.GetParams();
         for (size_t i = 0; i < size; ++i) {
             a.push_back(a0[i] * s + ns * DCRTPoly(dgg, elementParams, Format::EVALUATION));
             b.push_back(b0[i] * s + ns * DCRTPoly(dgg, elementParams, Format::EVALUATION));
         }
-    }
-    else {
-        const auto& paramsQ  = cryptoParams->GetElementParams();
+    } else {
+        const auto& paramsQ = cryptoParams->GetElementParams();
         const auto& paramsQP = cryptoParams->GetParamsQP();
 
-        uint32_t sizeQ  = paramsQ->GetParams().size();
+        uint32_t sizeQ = paramsQ->GetParams().size();
         uint32_t sizeQP = paramsQP->GetParams().size();
 
         DCRTPoly s = privateKey->GetPrivateElement().Clone();
@@ -242,7 +238,7 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
     std::vector<NativePoly> poly(NUM_TOWERS);
     for (size_t i = 0; i < NUM_TOWERS; i++) {
         poly[i] = dcrtpoly.GetElementAtIndex(i);
-        q[i]    = poly[i].GetModulus();
+        q[i] = poly[i].GetModulus();
     }
 
     std::vector<NativeInteger> qInv(NUM_TOWERS);
@@ -267,11 +263,11 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
         const auto Q3quart = 3 * Q / 4;
         for (size_t k = 0; k < dcrtpoly.GetRingDimension(); k++) {
             NativeInteger::DNativeInt x128 =
-                static_cast<NativeInteger::DNativeInt>(
-                    (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt()) *
-                q[1].ConvertToInt();
+                    static_cast<NativeInteger::DNativeInt>(
+                            (poly[0][k].ModMulFastConst(qInv[0], q[0], precon[0])).ConvertToInt()) *
+                    q[1].ConvertToInt();
             x128 += static_cast<NativeInteger::DNativeInt>(
-                        (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt()) *
+                            (poly[1][k].ModMulFastConst(qInv[1], q[1], precon[1])).ConvertToInt()) *
                     q[0].ConvertToInt();
             if (x128 > Q)
                 x128 %= Q;
@@ -280,8 +276,7 @@ void PolynomialRound(DCRTPoly& dcrtpoly) {
                 poly[1][k].ModAddFastEq(qHalf[1], q[1]);
             }
         }
-    }
-    else {
+    } else {
         const BigInteger Q1quart{Qbig / BigInteger(4)};
         const BigInteger Q3quart{(BigInteger(3) * Qbig) / BigInteger(4)};
         const BigInteger q0big{q[0].ConvertToInt()};
@@ -312,9 +307,9 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     }
 
     const auto paramsQ = dcrtpoly.GetParams();
-    uint32_t sizeQP    = paramsQP->GetParams().size();
-    uint32_t sizeQ     = paramsQ->GetParams().size();
-    uint32_t sizeP     = sizeQP - sizeQ;
+    uint32_t sizeQP = paramsQP->GetParams().size();
+    uint32_t sizeQ = paramsQ->GetParams().size();
+    uint32_t sizeP = sizeQP - sizeQ;
 
     // Loads all moduli and roots of unity
     std::vector<NativeInteger> moduliQ(sizeQ);
@@ -328,7 +323,7 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     std::vector<NativeInteger> rootsP(sizeP);
     for (size_t i = 0; i < sizeP; i++) {
         moduliP[i] = paramsQP->GetParams()[i + sizeQ]->GetModulus();
-        rootsP[i]  = paramsQP->GetParams()[i + sizeQ]->GetRootOfUnity();
+        rootsP[i] = paramsQP->GetParams()[i + sizeQ]->GetRootOfUnity();
     }
     auto paramsP = std::make_shared<typename DCRTPoly::Params>(2 * paramsQ->GetRingDimension(), moduliP, rootsP);
 
@@ -344,7 +339,7 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
     for (uint32_t i = 0; i < sizeQ; i++) {
         const BigInteger QHati{modulusQ / BigInteger(moduliQ[i])};
         const NativeInteger QHatiModqi{QHati.Mod(BigInteger(moduliQ[i])).ConvertToInt()};
-        QHatInvModq[i]       = QHatiModqi.ModInverse(moduliQ[i]).Mod(moduliQ[i]);
+        QHatInvModq[i] = QHatiModqi.ModInverse(moduliQ[i]).Mod(moduliQ[i]);
         QHatInvModqPrecon[i] = QHatInvModq[i].PrepModMulConst(moduliQ[i]);
         for (uint32_t j = 0; j < sizeP; j++)
             QHatModp[j].push_back(NativeInteger(QHati.Mod(BigInteger(moduliP[j])).ConvertToInt()));
@@ -399,7 +394,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootDecrypt(const PrivateKey<DCRTPoly> pr
     size_t sizeQl = c[0].GetParams()->GetParams().size();
 
     const DCRTPoly& s = privateKey->GetPrivateElement();
-    auto scopy        = s.CloneTowers(0, sizeQl - 1);
+    auto scopy = s.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly cs{(NUM_POLYNOMIALS == 1) ? (c[0] * scopy) : (c[1] * scopy + c[0])};
     cs.SetFormat(Format::COEFFICIENT);
@@ -417,12 +412,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
         OPENFHE_THROW("No polynomials found in the input ciphertext");
     }
 
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
     using ParmType = typename DCRTPoly::Params;
 
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(publicKey->GetCryptoParameters());
+            std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(publicKey->GetCryptoParameters());
 
     DCRTPoly ptxt = ctxt->GetElements()[0];
     ptxt.SetFormat(Format::COEFFICIENT);
@@ -431,7 +426,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     ExtendBasis(ptxt, cryptoParams->GetElementParams());
 
     const std::shared_ptr<ParmType> ptxtParams = ptxt.GetParams();
-    const DggType& dgg                         = cryptoParams->GetDiscreteGaussianGenerator();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
     TugType tug;
 
     // Supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution (UNIFORM_TERNARY) cases
@@ -446,8 +441,8 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
     ptxt.SetFormat(Format::EVALUATION);
 
     const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();
-    uint32_t sizeQl                 = ptxtParams->GetParams().size();
-    uint32_t sizeQ                  = pk[0].GetParams()->GetParams().size();
+    uint32_t sizeQl = ptxtParams->GetParams().size();
+    uint32_t sizeQ = pk[0].GetParams()->GetParams().size();
 
     std::vector<DCRTPoly> cv;
     cv.reserve(2);
@@ -459,8 +454,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootEncrypt(const PublicKey<DCRTPoly> pub
         // the error e0 was already added to ptxt
         cv.push_back(b * v + ptxt);
         cv.push_back(a * v + e1);
-    }
-    else {
+    } else {
         // Use public keys as they are
         const DCRTPoly& b = pk[0];
         const DCRTPoly& a = pk[1];
@@ -500,7 +494,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::IntBootAdd(ConstCiphertext<DCRTPoly> ciphert
 
     elements2[0].SetFormat(Format::COEFFICIENT);
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(ciphertext1->GetCryptoParameters());
+            std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(ciphertext1->GetCryptoParameters());
     ExtendBasis(elements2[0], cryptoParams->GetElementParams());
     elements2[0].SetFormat(Format::EVALUATION);
 

@@ -33,38 +33,38 @@
   Defines an interface that any DCRT Polynomial implmentation must implement in order to work in OpenFHE.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_POLYINTERFACE_H
-#define LBCRYPTO_INC_LATTICE_HAL_POLYINTERFACE_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_
 
-#include "lattice/ilelement.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/math-hal.h"
-#include "math/distrgen.h"
-#include "math/nbtheory.h"
-
-#include "utils/inttypes.h"
-#include "utils/exception.h"
-
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "lattice/hal/default/ilparams.h"
+#include "lattice/ilelement.h"
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
 namespace lbcrypto {
 
 template <typename DerivedType, typename VecType, template <typename LVT> typename ContainerType>
 class PolyInterface : public ILElement<DerivedType, VecType> {
-public:
-    using Vector     = VecType;
-    using Integer    = typename VecType::Integer;
-    using Params     = ILParamsImpl<Integer>;
+  public:
+    using Vector = VecType;
+    using Integer = typename VecType::Integer;
+    using Params = ILParamsImpl<Integer>;
     using PolyNative = ContainerType<NativeVector>;
-    using DggType    = DiscreteGaussianGeneratorImpl<VecType>;
-    using DugType    = DiscreteUniformGeneratorImpl<VecType>;
-    using TugType    = TernaryUniformGeneratorImpl<VecType>;
-    using BugType    = BinaryUniformGeneratorImpl<VecType>;
+    using DggType = DiscreteGaussianGeneratorImpl<VecType>;
+    using DugType = DiscreteUniformGeneratorImpl<VecType>;
+    using TugType = TernaryUniformGeneratorImpl<VecType>;
+    using BugType = BinaryUniformGeneratorImpl<VecType>;
 
     /**
    * @brief Get the Derived object, this is apart of the CRTP software design pattern
@@ -105,7 +105,7 @@ public:
    * @return the resulting vector.
    */
     inline static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(
-        const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
+            const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
             return DerivedType(dgg, params, resultFormat);
@@ -128,7 +128,7 @@ public:
     }
 
     DerivedType& operator=(const DerivedType& rhs) override = 0;
-    DerivedType& operator=(DerivedType&& rhs) override      = 0;
+    DerivedType& operator=(DerivedType&& rhs) override = 0;
     DerivedType& operator=(const std::vector<int32_t>& rhs) {
         return this->GetDerived().operator=(rhs);
     }
@@ -201,7 +201,7 @@ public:
    * Note this operation is computationally intense. Does bound checking
    * @return interpolated value at index i.
    */
-    Integer& at(uint32_t i) override             = 0;
+    Integer& at(uint32_t i) override = 0;
     const Integer& at(uint32_t i) const override = 0;
 
     /**
@@ -413,7 +413,7 @@ public:
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
             OPENFHE_THROW(
-                "PolyInterface element transposition is currently implemented only in the Evaluation representation.");
+                    "PolyInterface element transposition is currently implemented only in the Evaluation representation.");
         }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
@@ -453,7 +453,7 @@ public:
    * rootOfUnity for the modulus
    */
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
-                       const Integer& rootOfUnityArb) override    = 0;
+                       const Integer& rootOfUnityArb) override = 0;
     virtual void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
                                    const Integer& rootOfUnityArb) = 0;
 
@@ -544,13 +544,13 @@ public:
    * @param format
    */
     virtual void SetValues(const VecType& values, Format format) = 0;
-    virtual void SetValues(VecType&& values, Format format)      = 0;
+    virtual void SetValues(VecType&& values, Format format) = 0;
 
     /**
    * @brief Sets all values of element to zero.
    */
     virtual void SetValuesToZero() = 0;
-    virtual void SetValuesToMax()  = 0;
+    virtual void SetValuesToMax() = 0;
 
     /**
    * @brief Interpolates the DCRTPoly to an Poly based on the Chinese Remainder
@@ -593,7 +593,7 @@ public:
         return this->GetDerived().GetElementName();
     }
 
-protected:
+  protected:
     /**
    * @brief ostream operator
    * @param os the input preceding output stream
@@ -707,4 +707,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_POLY_INTERFACE_H_

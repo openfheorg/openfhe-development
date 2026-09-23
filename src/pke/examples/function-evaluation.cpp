@@ -33,8 +33,14 @@
   Example of evaluating arbitrary smooth functions with the Chebyshev approximation using CKKS.
  */
 
-#include "openfhe.h"
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "math/chebyshev.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -62,10 +68,10 @@ void EvalLogisticExample() {
     parameters.SetRingDim(1 << 10);
 #if NATIVEINT == 128
     uint32_t scalingModSize = 78;
-    uint32_t firstModSize   = 89;
+    uint32_t firstModSize = 89;
 #else
     uint32_t scalingModSize = 50;
-    uint32_t firstModSize   = 60;
+    uint32_t firstModSize = 60;
 #endif
     parameters.SetScalingModSize(scalingModSize);
     parameters.SetFirstModSize(firstModSize);
@@ -91,19 +97,19 @@ void EvalLogisticExample() {
 
     std::vector<std::complex<double>> input{-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
     size_t encodedLength = input.size();
-    Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input);
-    auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
+    auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     double lowerBound = -5;
     double upperBound = 5;
-    auto result       = cc->EvalLogistic(ciphertext, lowerBound, upperBound, polyDegree);
+    auto result = cc->EvalLogistic(ciphertext, lowerBound, upperBound, polyDegree);
 
     Plaintext plaintextDec;
     cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
     plaintextDec->SetLength(encodedLength);
 
     std::vector<std::complex<double>> expectedOutput(
-        {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
+            {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
     std::cout << "Expected output\n\t" << expectedOutput << std::endl;
 
     std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
@@ -123,10 +129,10 @@ void EvalFunctionExample() {
     parameters.SetRingDim(1 << 10);
 #if NATIVEINT == 128
     uint32_t scalingModSize = 78;
-    uint32_t firstModSize   = 89;
+    uint32_t firstModSize = 89;
 #else
     uint32_t scalingModSize = 50;
-    uint32_t firstModSize   = 60;
+    uint32_t firstModSize = 60;
 #endif
     parameters.SetScalingModSize(scalingModSize);
     parameters.SetFirstModSize(firstModSize);
@@ -152,8 +158,8 @@ void EvalFunctionExample() {
 
     std::vector<std::complex<double>> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
     size_t encodedLength = input.size();
-    Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input);
-    auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
+    auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     double lowerBound = 0;
     double upperBound = 10;
@@ -167,14 +173,13 @@ void EvalFunctionExample() {
     plaintextDec->SetLength(encodedLength);
 
     std::vector<std::complex<double>> expectedOutput(
-        {1, 1.414213, 1.732050, 2, 2.236067, 2.449489, 2.645751, 2.828427, 3});
+            {1, 1.414213, 1.732050, 2, 2.236067, 2.449489, 2.645751, 2.828427, 3});
     std::cout << "Expected output\n\t" << expectedOutput << std::endl;
 
     // Compute the same approximation on cleartext data
     std::vector<double> inputDouble{1, 2, 3, 4, 5, 6, 7, 8, 9};
-    auto ptxtApprox = EvalChebyshevFunctionPtxt(
-            [](double x) -> double { return std::sqrt(x); },
-            inputDouble, lowerBound, upperBound, polyDegree);
+    auto ptxtApprox = EvalChebyshevFunctionPtxt([](double x) -> double { return std::sqrt(x); }, inputDouble,
+                                                lowerBound, upperBound, polyDegree);
     std::cout << "Cleartext output\n\t" << ptxtApprox << std::endl;
 
     std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();

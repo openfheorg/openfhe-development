@@ -29,9 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemebase/base-scheme.h"
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "key/evalkey.h"
 #include "key/keypair.h"
-#include "schemebase/base-scheme.h"
 
 // the code below is from base-scheme-impl.cpp
 namespace lbcrypto {
@@ -73,7 +80,7 @@ std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const Private
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
@@ -101,7 +108,7 @@ Ciphertext<Element> SchemeBase<Element>::ModReduce(ConstCiphertext<Element>& cip
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumKeyGen(
-    const PrivateKey<Element> privateKey) const {
+        const PrivateKey<Element> privateKey) const {
     VerifyAdvancedSHEEnabled(__func__);
     auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey);
     for (auto& key : *evalKeyMap)
@@ -111,7 +118,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices) const {
+        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+        std::vector<uint32_t>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
     auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     for (auto& key : *evalKeyMap)
@@ -121,7 +129,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const {
+        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
     auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, indices);
     for (auto& key : *evalKeyMap)
@@ -206,8 +214,9 @@ EvalKey<Element> SchemeBase<Element>::MultiKeySwitchGen(const PrivateKey<Element
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiEvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
-    const std::vector<uint32_t>& indexList, const std::string& keyId) {
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+        const std::vector<uint32_t>& indexList, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiEvalAutomorphismKeyGen(privateKey, evalAutoKeyMap, indexList);
     for (auto& key : *result) {
@@ -220,8 +229,9 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiEvalAtIndexKeyGen(
-    const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
-    const std::vector<int32_t>& indexList, const std::string& keyId) {
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+        const std::vector<int32_t>& indexList, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiEvalAtIndexKeyGen(privateKey, evalAutoKeyMap, indexList);
     for (auto& key : *result) {
@@ -234,8 +244,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiEvalSumKeyGen(
-    const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap,
-    const std::string& keyId) {
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap,
+        const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiEvalSumKeyGen(privateKey, evalSumKeyMap);
     for (auto& key : *result) {
@@ -266,8 +276,8 @@ EvalKey<Element> SchemeBase<Element>::MultiMultEvalKey(PrivateKey<Element> priva
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiAddEvalSumKeys(
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiAddEvalSumKeys(evalSumKeyMap1, evalSumKeyMap2);
     for (auto& key : *result) {
@@ -280,8 +290,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::Multi
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::MultiAddEvalAutomorphismKeys(
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
     VerifyMultipartyEnabled(__func__);
     auto result = m_Multiparty->MultiAddEvalAutomorphismKeys(evalSumKeyMap1, evalSumKeyMap2);
     for (auto& key : *result) {
@@ -312,7 +322,7 @@ EvalKey<Element> SchemeBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> eval
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGen(
-    const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
     auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)

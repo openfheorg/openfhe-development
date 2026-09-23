@@ -29,30 +29,31 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_BTKEY_H_
-#define _RGSW_BTKEY_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACCKEY_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACCKEY_H_
 
-#include "lattice/lat-hal.h"
-#include "lwe-ciphertext.h"
-#include "lwe-cryptoparameters.h"
-#include "lwe-keyswitchkey.h"
-#include "lwe-privatekey.h"
-#include "rgsw-evalkey.h"
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "lattice/lat-hal.h"
+#include "lwe-ciphertext.h"
+#include "lwe-cryptoparameters.h"
+#include "lwe-keyswitchkey.h"
+#include "lwe-privatekey.h"
+#include "math/discretegaussiangenerator.h"
+#include "math/nbtheory.h"
+#include "rgsw-evalkey.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
+
 namespace lbcrypto {
 
 class RingGSWACCKeyImpl;
-using RingGSWACCKey      = std::shared_ptr<RingGSWACCKeyImpl>;
+using RingGSWACCKey = std::shared_ptr<RingGSWACCKeyImpl>;
 using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
 
 /**
@@ -60,14 +61,15 @@ using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
  * A three-dimensional vector of RingGSW ciphertexts
  */
 class RingGSWACCKeyImpl : public Serializable {
-public:
+  public:
     RingGSWACCKeyImpl() = default;
 
     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
 
-    RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
+    explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
 
-    RingGSWACCKeyImpl(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept : m_key(std::move(key)) {}
+    explicit RingGSWACCKeyImpl(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept
+        : m_key(std::move(key)) {}
 
     RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) : m_key(rhs.m_key) {}
 
@@ -123,8 +125,7 @@ public:
                     if (l3.get() == nullptr || o3.get() == nullptr) {
                         if (l3.get() != o3.get())
                             return false;
-                    }
-                    else {
+                    } else {
                         if (*l3 != *o3)
                             return false;
                     }
@@ -160,7 +161,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     using dim3_t = std::vector<RingGSWEvalKey>;
     using dim2_t = std::vector<dim3_t>;
     using dim1_t = std::vector<dim2_t>;
@@ -170,4 +171,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_BTKEY_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACCKEY_H_

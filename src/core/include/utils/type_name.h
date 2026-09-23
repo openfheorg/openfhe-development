@@ -28,13 +28,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __TYPE_NAME_H__
-#define __TYPE_NAME_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_
+#define SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_
 
-#include "utils/demangle.h"
-#include <typeinfo>
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
+
+#include "utils/demangle.h"
 
 // define my own "is_shared_pointer"
 template <typename T>
@@ -75,4 +77,4 @@ std::string objectTypeName(const T& ptr) {
 }
 //=============================================================================
 
-#endif  // __TYPE_NAME_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_TYPE_NAME_H_

@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __UNIT_TEST_EXCEPTION_H__
-#define __UNIT_TEST_EXCEPTION_H__
-
-#include "gtest/gtest.h"
-#include "utils/demangle.h"
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTEXCEPTION_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTEXCEPTION_H_
 
 #include <iostream>
 #include <string>
+
+#include "gtest/gtest.h"
+#include "utils/demangle.h"
 
 // TODO (dsuponit): demangle separately for linux, MacOS and Windows. see some links below
 // https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive
@@ -53,4 +53,4 @@
     std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl; \
     EXPECT_TRUE(0 == 1) << failmsg;
 
-#endif  // __UNIT_TEST_EXCEPTION_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTEXCEPTION_H_

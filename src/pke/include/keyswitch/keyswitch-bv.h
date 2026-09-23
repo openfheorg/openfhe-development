@@ -29,15 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BV_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_BV_H
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BV_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BV_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "keyswitch/keyswitch-rns.h"
 #include "schemebase/rlwe-cryptoparameters.h"
-
-#include <string>
-#include <vector>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -55,11 +55,11 @@ namespace lbcrypto {
  */
 class KeySwitchBV : public KeySwitchRNS {
     using ParmType = typename DCRTPoly::Params;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     KeySwitchBV() = default;
 
     virtual ~KeySwitchBV() = default;
@@ -83,7 +83,7 @@ public:
     std::vector<DCRTPoly> KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
-        const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
+            const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
     std::vector<DCRTPoly> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                 const EvalKey<DCRTPoly> evalKey,
@@ -110,4 +110,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BV_H_

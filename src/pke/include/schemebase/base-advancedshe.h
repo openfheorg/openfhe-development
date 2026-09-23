@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "encoding/plaintext-fwd.h"
@@ -40,13 +48,6 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 
-#include <complex>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
-
 namespace lbcrypto {
 
 template <class Element>
@@ -55,16 +56,16 @@ class MultipartyBase;
 template <class Element>
 class AdvancedSHEBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
     constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
 
     friend class MultipartyBase<Element>;
 
-public:
+  public:
     virtual ~AdvancedSHEBase() = default;
 
     /**
@@ -166,7 +167,7 @@ public:
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(
-        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -316,7 +317,7 @@ public:
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
     virtual Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(
-        std::shared_ptr<seriesPowers<Element>> polys, const std::vector<std::complex<double>>& coefficients) const {
+            std::shared_ptr<seriesPowers<Element>> polys, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -364,7 +365,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
-        const PrivateKey<Element> privateKey) const;
+            const PrivateKey<Element> privateKey) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumRows; works
@@ -377,8 +378,8 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
-        std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+            std::vector<uint32_t>& indices) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumCols; works
@@ -389,7 +390,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
 
     /**
     * @brief Sums all elements in log (batch size) time - works only with packedvencoding
@@ -486,7 +487,7 @@ public:
     // Other Methods for Bootstrap
     //------------------------------------------------------------------------------
 
-protected:
+  protected:
     static std::set<uint32_t> GenerateIndices_2n(uint32_t batchSize, uint32_t m);
 
     static std::set<uint32_t> GenerateIndices2nComplex(uint32_t batchSize, uint32_t m);
@@ -528,4 +529,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_ADVANCEDSHE_H_

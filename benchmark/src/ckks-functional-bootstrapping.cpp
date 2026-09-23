@@ -29,6 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "config_core.h"
 #include "cryptocontext.h"
@@ -39,10 +46,6 @@
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "schemelet/rlwe-mp.h"
-
-#include <complex>
-#include <map>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -107,8 +110,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-        (t.PInput.ConvertToInt<int64_t>() - 1)};
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -173,8 +176,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-        (t.PInput.ConvertToInt<int64_t>() - 1)};
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -248,8 +251,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-        (t.PInput.ConvertToInt<int64_t>() - 1)};
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -312,7 +315,7 @@ struct fbt_config {
             ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
         else
             ctxtAfterFBT =
-                cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                    cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
         ctxtAfterFBT.reset();
     }
 
@@ -337,8 +340,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-        t.PInput.ConvertToInt<int64_t>() - 1};
+            t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+            t.PInput.ConvertToInt<int64_t>() - 1};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -352,10 +355,9 @@ struct fbt_config {
     bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
     if (binaryLUT) {
         coeffintMod = {funcMod(1), funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
-    }
-    else {
+    } else {
         coeffcompMod =
-            GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
+                GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
         coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
                                                    t.scaleStepTHI);  // divided by 2
     }
@@ -413,18 +415,18 @@ struct fbt_config {
 
         uint32_t QBFVBits = t.Q.GetMSB() - 1;
 
-        auto Q      = t.Q;
+        auto Q = t.Q;
         auto PInput = t.PInput;
 
         BigInteger QNew;
 
-        const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+        const bool checkgt2 = t.POutput.ConvertToInt() > 2;
         const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
 
-        uint64_t scaleTHI        = t.scaleTHI;
-        bool step                = false;
-        bool go                  = QBFVBits > dcrtBits;
-        size_t levelsToDrop      = 0;
+        uint64_t scaleTHI = t.scaleTHI;
+        bool step = false;
+        bool go = QBFVBits > dcrtBits;
+        size_t levelsToDrop = 0;
         uint32_t postScalingBits = 0;
 
         // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
@@ -436,8 +438,8 @@ struct fbt_config {
             encryptedDigit[0].SwitchModulus(t.Bigq, 1, 0, 0);
             encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
-            auto ctxt =
-                SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth);
 
             // Bootstrap the digit.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -462,8 +464,7 @@ struct fbt_config {
                 PInput >>= pDigitBits;
                 QBFVBits -= pDigitBits;
                 postScalingBits += pDigitBits;
-            }
-            else {
+            } else {
                 ctxtBFV[0] = std::move(polys[0]);
                 ctxtBFV[1] = std::move(polys[1]);
             }
@@ -473,9 +474,9 @@ struct fbt_config {
             if (checkgt2 && !go && !step) {
                 if (!binaryLUT)
                     coeffcomp = coeffcompStep;
-                scaleTHI           = t.scaleStepTHI;
-                step               = true;
-                go                 = true;
+                scaleTHI = t.scaleStepTHI;
+                step = true;
+                go = true;
                 int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
                                      GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
                 if (coeffcompMod.size() > 4 && lvlsToDrop > 0)

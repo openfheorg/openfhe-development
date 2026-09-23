@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "lattice/lat-hal.h"
-
 #include "schemebase/base-parametergeneration.h"
 #include "schemerns/rns-modulus-limits.h"
-
-#include <string>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -51,7 +51,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
-public:
+  public:
     virtual ~ParameterGenerationRNS() = default;
 
     /////////////////////////////////////
@@ -71,4 +71,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_PARAMETERGENERATION_H_

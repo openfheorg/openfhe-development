@@ -34,13 +34,14 @@
   relies on the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_
 
-#include "math/distributiongenerator.h"
-
+#include <cstdint>
 #include <limits>
 #include <random>
+
+#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
 
@@ -53,8 +54,8 @@ constexpr uint32_t DUG_CHUNK_MAX{std::numeric_limits<uint32_t>::max()};
  */
 template <typename VecType>
 class DiscreteUniformGeneratorImpl {
-public:
-    DiscreteUniformGeneratorImpl()  = default;
+  public:
+    DiscreteUniformGeneratorImpl() = default;
     ~DiscreteUniformGeneratorImpl() = default;
     explicit DiscreteUniformGeneratorImpl(const typename VecType::Integer& modulus);
 
@@ -76,7 +77,7 @@ public:
     VecType GenerateVector(const uint32_t size) const;
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus);
 
-private:
+  private:
     typename VecType::Integer GenerateIntegerWith(PRNG& prng, std::uniform_int_distribution<uint32_t>& dist) const;
 
     typename VecType::Integer m_modulus{};
@@ -88,4 +89,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEUNIFORMGENERATOR_H_

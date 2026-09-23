@@ -33,19 +33,23 @@
   This file contains the vector manipulation functionality
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_
+
+#include <cstdint>
+#include <initializer_list>
+#include <type_traits>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
-        #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+    #include <ostream>
+    #include <string>
 
-        #include "math/hal/bigintfxd/ubintfxd.h"
-
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <ostream>
-        #include <string>
+    #include "math/hal/bigintfxd/ubintfxd.h"
+    #include "math/hal/vector.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 /**
  * @namespace bigintfxd
@@ -65,7 +69,7 @@ using BigVector = BigVectorFixedT<BigInteger>;
 template <class IntegerType>
 class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>, IntegerType>,
                               public lbcrypto::Serializable {
-public:
+  public:
     ~BigVectorFixedT() {
         delete[] m_data;
     }
@@ -546,7 +550,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("l", m_length));
         ar(::cereal::binary_data(m_data, sizeof(IntegerType) * m_length));
@@ -554,7 +558,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("l", m_length));
         for (size_t i = 0; i < m_length; i++) {
@@ -564,7 +568,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -577,7 +581,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -598,7 +602,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // m_data is a pointer to the vector
     IntegerType* m_data;
     // m_length stores the length of the vector
@@ -614,6 +618,6 @@ private:
 
 }  // namespace bigintfxd
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
-
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_MUBINTVECFXD_H_

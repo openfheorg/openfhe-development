@@ -34,13 +34,14 @@
  */
 
 #include "math/hermite.h"
-#include "utils/exception.h"
 
 #include <cmath>
 #include <complex>
 #include <cstdint>
 #include <functional>
 #include <vector>
+
+#include "utils/exception.h"
 
 static bool IsNotEqualZero(std::complex<double> v) {
     // TODO: tune this delta value during the fbt refactor
@@ -113,7 +114,7 @@ std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64
             }
 
             uint32_t degree = 0;
-            coeffs[0]       = alpha[0];
+            coeffs[0] = alpha[0];
             for (uint32_t i = 1; i < coeffTotal; ++i) {
                 if (i < p)
                     coeffs[i] = alpha[i];
@@ -163,7 +164,7 @@ std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64
             }
 
             uint32_t degree = 0;
-            coeffs[0]       = alpha[0];
+            coeffs[0] = alpha[0];
             for (uint32_t i = 1; i < coeffTotal; ++i) {
                 if (i < p)
                     coeffs[i] = alpha[i];

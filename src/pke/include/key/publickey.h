@@ -33,16 +33,17 @@
   Public key type for lattice crypto operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
-#define LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_
+#define SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_
 
-#include "key/key.h"
-#include "key/publickey-fwd.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "key/key.h"
+#include "key/publickey-fwd.h"
 
 /**
  * @namespace lbcrypto
@@ -56,10 +57,10 @@ namespace lbcrypto {
  */
 template <typename Element>
 class PublicKeyImpl : public Key<Element> {
-private:
+  private:
     std::vector<Element> m_h;
 
-public:
+  public:
     PublicKeyImpl() = default;
 
     /**
@@ -175,4 +176,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_PUBLICKEY_H_

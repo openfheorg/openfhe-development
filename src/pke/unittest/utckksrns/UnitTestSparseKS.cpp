@@ -35,6 +35,14 @@
   KeySwitchSparse must stay at the modulus switching (rounding) noise level.
 */
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "UnitTestException.h"
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -42,14 +50,7 @@
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestException.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -90,33 +91,33 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
 
         auto keyPair = cc->KeyGen();
         auto cryptoParams =
-            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
 
         // encode at the last level so the ciphertext has a single tower (q0), as at the
         // modulus raise step of bootstrapping
         std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 0.375, 0.675, 0.125, 0.925};
-        auto ptxt             = cc->MakeCKKSPackedPlaintext(x, 1, cryptoParams->GetMultiplicativeDepth());
-        auto ctxt             = cc->Encrypt(keyPair.publicKey, ptxt);
+        auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, cryptoParams->GetMultiplicativeDepth());
+        auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
 
         // sparse key used for the modraising step
         DCRTPoly::TugType tug;
         auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
         skNew->SetPrivateElement(DCRTPoly(tug, cryptoParams->GetElementParams(), Format::EVALUATION, 32));
 
-        auto evalKey  = FHECKKSRNS::KeySwitchGenSparse(keyPair.secretKey, skNew);
+        auto evalKey = FHECKKSRNS::KeySwitchGenSparse(keyPair.secretKey, skNew);
         auto ctresult = FHECKKSRNS::KeySwitchSparse(ctxt, evalKey);
 
         // the noise added by the key switch: difference of the raw decryptions b + a*s
         // over q0 under the respective secret keys (the shared encryption noise cancels)
         const auto sOld0 = keyPair.secretKey->GetPrivateElement().GetElementAtIndex(0);
         const auto sNew0 = skNew->GetPrivateElement().GetElementAtIndex(0);
-        const auto& cvo  = ctxt->GetElements();
-        const auto& cvn  = ctresult->GetElements();
-        auto diff        = (cvo[0].GetElementAtIndex(0) + cvo[1].GetElementAtIndex(0) * sOld0) -
+        const auto& cvo = ctxt->GetElements();
+        const auto& cvn = ctresult->GetElements();
+        auto diff = (cvo[0].GetElementAtIndex(0) + cvo[1].GetElementAtIndex(0) * sOld0) -
                     (cvn[0].GetElementAtIndex(0) + cvn[1].GetElementAtIndex(0) * sNew0);
         diff.SetFormat(Format::COEFFICIENT);
 
-        const NativeInteger q    = diff.GetModulus();
+        const NativeInteger q = diff.GetModulus();
         const NativeInteger half = q >> 1;
         NativeInteger maxNoise(0);
         for (uint32_t i = 0; i < diff.GetLength(); ++i) {
@@ -128,13 +129,11 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
         }
 
         EXPECT_LE(maxNoise.ConvertToInt<uint64_t>(), 32u)
-            << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
-    }
-    catch (std::exception& e) {
+                << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
+    } catch (std::exception& e) {
         std::cerr << "Exception thrown from KeySwitchSparseAddedNoise: " << e.what() << std::endl;
         EXPECT_TRUE(0 == 1) << failmsg;
-    }
-    catch (...) {
+    } catch (...) {
         UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
     }
 

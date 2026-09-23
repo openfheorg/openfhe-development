@@ -33,19 +33,19 @@
 Base class for key switching algorithms.
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
-#define LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
-
-#include "ciphertext-fwd.h"
-#include "key/publickey-fwd.h"
-#include "key/privatekey-fwd.h"
-#include "key/evalkey-fwd.h"
-#include "utils/exception.h"
-#include "schemebase/base-cryptoparameters.h"
+#ifndef SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BASE_H_
+#define SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BASE_H_
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "ciphertext-fwd.h"
+#include "key/evalkey-fwd.h"
+#include "key/privatekey-fwd.h"
+#include "key/publickey-fwd.h"
+#include "schemebase/base-cryptoparameters.h"
+#include "utils/exception.h"
 
 /**
  * @namespace lbcrypto
@@ -63,7 +63,7 @@ class KeySwitchBase {
 
     constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
 
-public:
+  public:
     KeySwitchBase() = default;
 
     virtual ~KeySwitchBase() = default;
@@ -118,7 +118,7 @@ public:
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-        const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+            const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -137,4 +137,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEYSWITCH_KEYSWITCH_BASE_H_

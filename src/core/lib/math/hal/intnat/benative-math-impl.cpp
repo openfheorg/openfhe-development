@@ -33,12 +33,16 @@
   This file contains template instantiations for all math classes & functions using math native
  */
 
-#include "math/math-hal.h"
-#include "math/hal/transform.h"
+#include <cstdint>
+#include <memory>
+#include <set>
+#include <vector>
 
 #include "math/binaryuniformgenerator-impl.h"
 #include "math/discretegaussiangenerator-impl.h"
 #include "math/discreteuniformgenerator-impl.h"
+#include "math/hal/transform.h"
+#include "math/math-hal.h"
 #include "math/matrix-impl.h"
 #include "math/nbtheory-impl.h"
 #include "math/ternaryuniformgenerator-impl.h"

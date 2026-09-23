@@ -33,11 +33,11 @@
   Memory utlities
  */
 
-#ifndef LBCRYPTO_UTILS_MEMORY_H
-#define LBCRYPTO_UTILS_MEMORY_H
+#ifndef SRC_CORE_INCLUDE_UTILS_MEMORY_H_
+#define SRC_CORE_INCLUDE_UTILS_MEMORY_H_
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -48,8 +48,7 @@ template <class X>
 void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
     if (dst.empty()) {
         dst = std::move(src);
-    }
-    else {
+    } else {
         dst.reserve(dst.size() + src.size());
         std::move(std::begin(src), std::end(src), std::back_inserter(dst));
         src.clear();
@@ -77,4 +76,4 @@ bool AllocTrim();
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_UTILS_MEMORY_H
+#endif  // SRC_CORE_INCLUDE_UTILS_MEMORY_H_

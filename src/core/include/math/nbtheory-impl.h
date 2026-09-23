@@ -33,24 +33,25 @@
   This code provides number theory utilities
  */
 
-#ifndef LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
-#define LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
+#ifndef SRC_CORE_INCLUDE_MATH_NBTHEORY_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_NBTHEORY_IMPL_H_
 
 #define _USE_MATH_DEFINES
 
-#include "math/distributiongenerator.h"
-#include "math/nbtheory.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
 #include <cmath>
+#include <cstdint>
 #include <limits>
+#include <random>
 #include <set>
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include "math/distributiongenerator.h"
+#include "math/nbtheory.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -89,7 +90,7 @@ static IntType RNG(const IntType& modulus) {
  */
 template <typename IntType>
 static bool WitnessFunction(const IntType& a, const IntType& d, uint32_t s, const IntType& p) {
-    IntType mod  = a.ModExp(d, p);
+    IntType mod = a.ModExp(d, p);
     bool prevMod = false;
     for (uint32_t i = 0; i < s; ++i) {
         prevMod = (mod != IntType(1) && mod != p - IntType(1));
@@ -184,14 +185,14 @@ IntType RootOfUnity(uint32_t m, const IntType& modulo) {
     IntType M(m);
     if ((modulo - IntType(1)).Mod(M) != IntType(0)) {
         std::string errMsg =
-            "Please provide a primeModulus(q) and a cyclotomic number(m) "
-            "satisfying the condition: (q-1)/m is an integer. The values of "
-            "primeModulus = " +
-            modulo.ToString() + " and m = " + std::to_string(m) + " do not satisfy this condition";
+                "Please provide a primeModulus(q) and a cyclotomic number(m) "
+                "satisfying the condition: (q-1)/m is an integer. The values of "
+                "primeModulus = " +
+                modulo.ToString() + " and m = " + std::to_string(m) + " do not satisfy this condition";
         OPENFHE_THROW(errMsg);
     }
 
-    IntType gen    = FindGenerator(modulo);
+    IntType gen = FindGenerator(modulo);
     IntType result = gen.ModExp((modulo - IntType(1)).DividedBy(M), modulo);
     if (result == IntType(1))
         result = RootOfUnity(m, modulo);
@@ -298,9 +299,9 @@ const IntType PollardRhoFactorization(const IntType& n) {
     IntType xx(x);
     IntType mu(n.ComputeMu());
     do {
-        x       = x.ModMul(x, n, mu).ModAdd(c, n, mu);
-        xx      = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);
-        xx      = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);
+        x = x.ModMul(x, n, mu).ModAdd(c, n, mu);
+        xx = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);
+        xx = xx.ModMul(xx, n, mu).ModAdd(c, n, mu);
         divisor = GreatestCommonDivisor((x > xx) ? x - xx : xx - x, n);
     } while (divisor == IntType(1));
     return divisor;
@@ -424,7 +425,7 @@ IntVector PolyMod(const IntVector& dividend, const IntVector& divisor, const typ
         uint32_t divisorPtr(divisorLength - 1);
         for (uint32_t j = 0; j < dividendLength - i - 1; j++) {
             auto& rdtmp1 = runningDividend[dividendLength - 1 - j];
-            rdtmp1       = runningDividend[dividendLength - 2 - j];
+            rdtmp1 = runningDividend[dividendLength - 2 - j];
             if (divisorPtr > j)
                 rdtmp1.ModSubEq(divisor[divisorPtr - 1 - j] * divConst, modulus, mu);
         }
@@ -459,8 +460,7 @@ IntVector GetCyclotomicPolynomial(uint32_t m, const typename IntVector::Integer&
         auto val = intCP[i];
         if (val > -1) {
             result[i] = typename IntVector::Integer(val);
-        }
-        else {
+        } else {
             result[i] = modulus - typename IntVector::Integer(-val);
         }
     }
@@ -470,7 +470,7 @@ IntVector GetCyclotomicPolynomial(uint32_t m, const typename IntVector::Integer&
 template <typename IntVector>
 typename IntVector::Integer SyntheticRemainder(const IntVector& dividend, const typename IntVector::Integer& a,
                                                const typename IntVector::Integer& modulus) {
-    auto mu  = modulus.ComputeMu();
+    auto mu = modulus.ComputeMu();
     auto val = dividend[dividend.GetLength() - 1];
     for (int i = dividend.GetLength() - 2; i >= 0; --i)
         val = (dividend[i] + a * val).Mod(modulus, mu);
@@ -504,7 +504,7 @@ IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename 
     result[n - 1] = dividend[n];
     auto val(dividend[n]);
     for (int i = n - 1; i > 0; i--) {
-        val           = (val * a + dividend[i]).Mod(modulus, mu);
+        val = (val * a + dividend[i]).Mod(modulus, mu);
         result[i - 1] = val;
     }
     return result;
@@ -512,4 +512,4 @@ IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename 
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_NBTHEORY_IMPL_H_

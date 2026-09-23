@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEY_H
-#define LBCRYPTO_CRYPTO_KEY_EVALKEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEY_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEY_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "key/evalkey-fwd.h"
 #include "key/key.h"
-
-#include <memory>
-#include <vector>
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -53,7 +54,7 @@ template <class Element>
 class EvalKeyImpl : public Key<Element> {
     constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
 
-public:
+  public:
     /**
    * Basic constructor for setting crypto params
    *
@@ -164,4 +165,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEY_H_

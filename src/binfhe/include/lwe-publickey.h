@@ -29,17 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_PUBLICKEY_H_
-#define _LWE_PUBLICKEY_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_
+#define SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_
 
-#include "lwe-publickey-fwd.h"
-#include "math/math-hal.h"
-#include "utils/serializable.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lwe-publickey-fwd.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -47,7 +48,7 @@ namespace lbcrypto {
  * @brief Class that stores the LWE scheme public key; contains a vector
  */
 class LWEPublicKeyImpl : public Serializable {
-public:
+  public:
     LWEPublicKeyImpl() = default;
 
     LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
@@ -134,11 +135,11 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<NativeVector> m_A;
     NativeVector m_v;
 };
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_PUBLICKEY_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_H_

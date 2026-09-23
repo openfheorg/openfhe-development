@@ -33,18 +33,19 @@
   Header file for BinFHEContext class, which is used for Boolean circuit FHE schemes
  */
 
-#ifndef BINFHE_BINFHECONTEXT_H
-#define BINFHE_BINFHECONTEXT_H
+#ifndef SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
+#define SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "binfhe-base-scheme.h"
 #include "lattice/stdlatticeparms.h"
 #include "utils/memory.h"
 #include "utils/serializable.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -89,7 +90,7 @@ struct BinFHEContextParams {
  * The wrapper class for Boolean circuit FHE
  */
 class BinFHEContext : public Serializable {
-public:
+  public:
     BinFHEContext() = default;
 
     /**
@@ -524,7 +525,7 @@ public:
         return NativeInteger(128);
     }
 
-private:
+  private:
 #if NATIVEINT != 32
     /**
    * Convert the refreshing and switching keys to their 32-bit internal forms and release the
@@ -610,4 +611,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_BINFHECONTEXT_H_

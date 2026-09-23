@@ -29,12 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "binfhecontext.h"
-#include "gtest/gtest.h"
-
+#include <cstdint>
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#include "binfhecontext.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -46,7 +47,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate2) {
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto pk = cc.GetPublicKey();
-    auto Q  = cc.GetParams()->GetLWEParams()->GetQ();
+    auto Q = cc.GetParams()->GetLWEParams()->GetQ();
 
     auto ct_small = cc.Encrypt(pk, 1, SMALL_DIM, 4);
     EXPECT_NE(Q, ct_small->GetModulus());
@@ -77,7 +78,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate3) {
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto pk = cc.GetPublicKey();
-    auto Q  = cc.GetParams()->GetLWEParams()->GetQ();
+    auto Q = cc.GetParams()->GetLWEParams()->GetQ();
 
     auto ct_small = cc.Encrypt(pk, 1, SMALL_DIM, 6);
     EXPECT_NE(Q, ct_small->GetModulus());
@@ -112,7 +113,7 @@ TEST(UNITTestFHEWExtended, EvalBinGate4) {
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto pk = cc.GetPublicKey();
-    auto Q  = cc.GetParams()->GetLWEParams()->GetQ();
+    auto Q = cc.GetParams()->GetLWEParams()->GetQ();
 
     auto ct_small = cc.Encrypt(pk, 1, SMALL_DIM, 8);
     EXPECT_NE(Q, ct_small->GetModulus());
@@ -147,7 +148,7 @@ TEST(UNITTestFHEWExtended, BootStrap) {
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto pk = cc.GetPublicKey();
-    auto Q  = cc.GetParams()->GetLWEParams()->GetQ();
+    auto Q = cc.GetParams()->GetLWEParams()->GetQ();
 
     auto ct1 = cc.Bootstrap(cc.Encrypt(pk, 1, SMALL_DIM, 4), true);
     EXPECT_EQ(Q, ct1->GetModulus());
@@ -171,7 +172,7 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKey) {
             LWEPlaintext result;
             cc.Decrypt(sk, ct, &result);
             EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
-                << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
+                    << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
         }
     }
 }
@@ -193,7 +194,7 @@ TEST(UNITTestFHEWExtended, BTKeyGenRegeneratesForNewSecretKeyTimeOptimization) {
             LWEPlaintext result;
             cc.Decrypt(sk, ct, &result);
             EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
-                << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
+                    << "NAND(" << b0 << "," << b1 << ") wrong for secret key " << (round + 1);
         }
     }
 }
@@ -264,14 +265,14 @@ static BinFHEContextParams ToyParams(SecretKeyDist keyDist) {
 
 TEST(UNITTestFHEWExtended, GinxRejectsGaussianSecretKeyDist) {
     auto params = ToyParams(GAUSSIAN);
-    auto cc     = BinFHEContext();
+    auto cc = BinFHEContext();
     EXPECT_THROW(cc.GenerateBinFHEContext(params, GINX), OpenFHEException);
     EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, AP));
     EXPECT_NO_THROW(cc.GenerateBinFHEContext(params, LMKCDEY));
 }
 
 TEST(UNITTestFHEWExtended, ManualContextPropagatesSecretKeyDist) {
-    auto Q  = LastPrime<NativeInteger>(27, 1024);
+    auto Q = LastPrime<NativeInteger>(27, 1024);
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(64, 512, 512, Q, 3.19, 25, 512, 23, GAUSSIAN, LMKCDEY, 9);
     EXPECT_EQ(GAUSSIAN, cc.GetParams()->GetLWEParams()->GetKeyDist());
@@ -310,7 +311,7 @@ TEST(UNITTestFHEWExtended, MethodKeyDistCrossProduct) {
             LWEPlaintext result;
             cc.Decrypt(sk, ct, &result);
             EXPECT_EQ(static_cast<LWEPlaintext>(1 - (b0 & b1)), result)
-                << "NAND(" << b0 << "," << b1 << ") wrong for " << method << " / " << keyDist;
+                    << "NAND(" << b0 << "," << b1 << ") wrong for " << method << " / " << keyDist;
         }
     }
 }
@@ -319,7 +320,7 @@ TEST(UNITTestFHEWExtended, GinxKeyGenRejectsNonTernarySecret) {
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(ToyParams(UNIFORM_TERNARY), GINX);
     auto&& lweParams = cc.GetParams()->GetLWEParams();
-    auto sk          = cc.GetLWEScheme()->KeyGenGaussian(lweParams->Getn(), lweParams->GetqKS());
+    auto sk = cc.GetLWEScheme()->KeyGenGaussian(lweParams->Getn(), lweParams->GetqKS());
     EXPECT_THROW(cc.BTKeyGen(sk), OpenFHEException);
 }
 
@@ -330,12 +331,12 @@ TEST(UNITTestFHEWExtended, LargeModulusCiphertextPhaseIsClean) {
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(STD128, GINX);
     auto&& lweParams = cc.GetParams()->GetLWEParams();
-    auto Q           = lweParams->GetQ();
-    auto skN         = cc.KeyGenN();
+    auto Q = lweParams->GetQ();
+    auto skN = cc.KeyGenN();
 
     NativeInteger mu = Q.ComputeMu();
     for (uint32_t m = 0; m < 2; ++m) {
-        auto ct       = cc.Encrypt(skN, m, LARGE_DIM, 4, Q);
+        auto ct = cc.Encrypt(skN, m, LARGE_DIM, 4, Q);
         const auto& a = ct->GetA();
         const auto& s = skN->GetElement();
         NativeInteger inner(0);
@@ -344,7 +345,7 @@ TEST(UNITTestFHEWExtended, LargeModulusCiphertextPhaseIsClean) {
         auto phase = ct->GetB().ModSub(inner, Q);
         phase.ModSubFastEq(NativeInteger(m) * (Q / NativeInteger(4)), Q);
 
-        auto qi  = static_cast<int64_t>(Q.ConvertToInt());
+        auto qi = static_cast<int64_t>(Q.ConvertToInt());
         auto err = static_cast<int64_t>(phase.ConvertToInt());
         if (err > qi / 2)
             err -= qi;
@@ -359,7 +360,7 @@ TEST(UNITTestFHEWExtended, RejectsUnsupportedKeyDist) {
         for (auto method : {GINX, AP, LMKCDEY}) {
             auto cc = BinFHEContext();
             EXPECT_THROW(cc.GenerateBinFHEContext(ToyParams(dist), method), OpenFHEException)
-                << "keyDist " << dist << ", method " << method;
+                    << "keyDist " << dist << ", method " << method;
         }
     }
 }
@@ -433,7 +434,7 @@ TEST(UNITTestFHEWExtended, KeySwitchRejectsCiphertextAboveKeySwitchingModulus) {
     auto&& lwe = cc.GetParams()->GetLWEParams();
     ASSERT_LT(lwe->GetDigitExtentKS(lwe->GetDigitCountKS() - 1), lwe->GetBaseKS()) << "top position must be truncated";
 
-    auto sk  = cc.KeyGen();
+    auto sk = cc.KeyGen();
     auto skN = cc.KeyGenN();
     auto ksk = cc.KeySwitchGen(sk, skN);
     auto ctQ = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());

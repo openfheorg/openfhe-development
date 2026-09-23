@@ -164,6 +164,7 @@ int blake2xb(void *out, size_t outlen, const void *in, size_t inlen,
 
 #if defined(BLAKE2XB_SELFTEST)
 #include <string.h>
+
 #include "blake2-kat.h"
 int main(void) {
   uint8_t key[BLAKE2B_KEYBYTES];

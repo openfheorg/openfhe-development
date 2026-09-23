@@ -36,21 +36,23 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
+    #include <map>
+    #include <mutex>
+    #include <unordered_map>
+    #include <utility>
+    #include <vector>
 
-        #include <map>
-        #include <unordered_map>
-        #include <mutex>
-        #include <vector>
-        #include <utility>
-
-        #include "math/hal/bigintntl/ubintntl.h"
-        #include "math/hal/bigintntl/mubintvecntl.h"
-        #include "math/hal/transform.h"
+    #include "math/hal/bigintntl/mubintvecntl.h"
+    #include "math/hal/bigintntl/ubintntl.h"
+    #include "math/hal/transform.h"
 
 /**
  * @namespace NTL
@@ -65,7 +67,7 @@ template <typename VecType>
 class NumberTheoreticTransformNtl {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Forward transform in the ring Z_q[X]/(X^n-1).
    *
@@ -240,7 +242,7 @@ template <typename VecType>
 class ChineseRemainderTransformFTTNtl : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Copies \p element into \p result and calls NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    *
@@ -374,7 +376,7 @@ template <typename VecType>
 class BluesteinFFTNtl {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Forward transform.
    *
@@ -462,7 +464,7 @@ public:
     // unity as key.
     static std::map<ModulusRootPair<IntType>, VecType> m_RBTableByModulusRootPair;
 
-private:
+  private:
     // map to store the precomputed NTT modulus with modulus as key.
     static std::map<IntType, ModulusRoot<IntType>> m_defaultNTTModulusRoot;
 };
@@ -474,7 +476,7 @@ template <typename VecType>
 class ChineseRemainderTransformArbNtl : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Sets the cyclotomic polynomial.
    *
@@ -558,7 +560,7 @@ public:
    */
     VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, uint32_t power);
 
-private:
+  private:
     /**
    * @brief Padding zeroes to a vector
    * @param &element is the input of type VecType to be padded with zeros.
@@ -619,6 +621,6 @@ extern template class NTL::ChineseRemainderTransformFTTNtl<NTL::BigVector>;
 extern template class NTL::BluesteinFFTNtl<NTL::BigVector>;
 extern template class NTL::ChineseRemainderTransformArbNtl<NTL::BigVector>;
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H_

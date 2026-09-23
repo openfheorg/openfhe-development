@@ -33,20 +33,22 @@
   Represents and defines plaintext encodings in OpenFHE with packing capabilities
  */
 
-#ifndef LBCRYPTO_UTILS_PACKEDEXTENCODING_H
-#define LBCRYPTO_UTILS_PACKEDEXTENCODING_H
+#ifndef SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_
 
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-#include "utils/inttypes.h"
-
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <map>
 #include <memory>
 #include <numeric>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -64,24 +66,24 @@ using ModulusM = std::pair<NativeInteger, uint64_t>;
 class PackedEncoding : public PlaintextImpl {
     std::vector<int64_t> value;
 
-public:
+  public:
     // these two constructors are used inside of Decrypt
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::initializer_list<int64_t> coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
@@ -150,7 +152,7 @@ public:
    * @params modulus is the plaintext modulus
    */
     static void SetParams(uint32_t m, const PlaintextModulus& modulus)
-        __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
+            __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
 
     /**
    * SetLength of the plaintext to the given size
@@ -165,7 +167,7 @@ public:
     */
     static void Destroy();
 
-protected:
+  protected:
     /**
     * @brief PrintValue() is called by operator<<
     * @param out stream to print to
@@ -173,7 +175,7 @@ protected:
     void PrintValue(std::ostream& out) const override {
         out << "(";
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i = value.size();
         bool allZeroes = true;
         while (i > 0) {
             --i;
@@ -205,7 +207,7 @@ protected:
         return value == el.value;
     }
 
-private:
+  private:
     // initial root of unity for plaintext space
     static std::map<ModulusM, NativeInteger> m_initRoot;
     // modulus and root of unity to be used for Arbitrary CRT
@@ -245,4 +247,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_PACKEDENCODING_H_

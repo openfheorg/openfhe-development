@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PRE_H
-#define LBCRYPTO_CRYPTO_BASE_PRE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_
 
+#include <memory>
+#include <vector>
+
+#include "ciphertext-fwd.h"
+#include "key/evalkey-fwd.h"
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
-#include "key/evalkey-fwd.h"
 #include "utils/inttypes.h"
-#include "ciphertext-fwd.h"
-
-#include <vector>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -54,12 +54,12 @@ namespace lbcrypto {
 template <class Element>
 class PREBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     virtual ~PREBase() = default;
 
     /**
@@ -90,4 +90,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PRE_H_

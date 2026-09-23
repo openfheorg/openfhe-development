@@ -33,13 +33,14 @@
   PRNG engine based on BLAKE2b
  */
 
-#ifndef __BLAKE2ENGINE_H__
-#define __BLAKE2ENGINE_H__
-
-#include "utils/prng/prng.h"
+#ifndef SRC_CORE_INCLUDE_UTILS_PRNG_BLAKE2ENGINE_H_
+#define SRC_CORE_INCLUDE_UTILS_PRNG_BLAKE2ENGINE_H_
 
 #include <cstddef>
 #include <array>
+#include <cstdint>
+
+#include "utils/prng/prng.h"
 
 namespace default_prng {
 /**
@@ -106,5 +107,5 @@ extern "C" {
 
 }  // namespace default_prng
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_PRNG_BLAKE2ENGINE_H_
 // clang-format on

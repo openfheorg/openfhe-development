@@ -36,17 +36,18 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 
 using namespace lbcrypto;
 
@@ -215,7 +216,7 @@ BENCHMARK(BEHZ_EvalMultMany)->Unit(benchmark::kMicrosecond)->Apply(MultBFVArgume
 
 void BFVrns_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBFVrnsContext(state.range(0), state.range(1), 1 << state.range(2));
+            GenerateFlatBFVrnsContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
@@ -238,7 +239,7 @@ BENCHMARK(BFVrns_Decrypt)->Unit(benchmark::kMicrosecond)->Apply(DecBFVArguments)
 
 void BEHZ_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
+            GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 

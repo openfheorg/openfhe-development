@@ -29,11 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __BASICINT_H__
-#define __BASICINT_H__
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BASICINT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BASICINT_H_
+
+#include <cstdint>
 
 #include "config_core.h"
-#include <cstdint>
 
 #define MAX_MODULUS_SIZE32                28
 #define MAX_MODULUS_SIZE64                60
@@ -71,4 +72,4 @@
 #endif
 // clang-format on
 
-#endif  // __BASICINT_H__
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BASICINT_H_

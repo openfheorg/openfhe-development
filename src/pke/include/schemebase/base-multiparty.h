@@ -29,8 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "cryptocontext-fwd.h"
@@ -39,11 +45,6 @@
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -81,14 +82,14 @@ class KeyPair;
 template <class Element>
 class MultipartyBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
     constexpr static std::string_view NOT_SUPPORTED_ERROR = "This function is not supported";
 
-public:
+  public:
     virtual ~MultipartyBase() = default;
 
     /**
@@ -147,8 +148,9 @@ public:
    * @return a dictionary with new joined automorphism keys.
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
-        const std::vector<uint32_t>& indexVec) const;
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+            const std::vector<uint32_t>& indexVec) const;
 
     /**
    * Threshold FHE: Generates evaluation keys for a list of indices for a
@@ -161,8 +163,9 @@ public:
    * @return returns the joined evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
-        const std::vector<int32_t>& indexVec) const;
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+            const std::vector<int32_t>& indexVec) const;
 
     /**
    * Threshold FHE: Generates joined summation evaluation keys
@@ -174,8 +177,8 @@ public:
    * @return new joined summation keys.
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
-        const PrivateKey<Element> privateKey,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap) const;
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap) const;
 
     // MULTIPARTY PKE
 
@@ -269,8 +272,8 @@ public:
     * @return the new joined key set for summation.
     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
     * Threshold FHE: Adds two prior evaluation key sets for summation
@@ -280,8 +283,8 @@ public:
     * @return the new joined key set for summation.
     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
 	 * Prepare a ciphertext for interactive bootstraping.
@@ -396,7 +399,7 @@ public:
     * @return: aggregated pair of shares ((h_0, h_1)
     */
     virtual std::vector<Ciphertext<Element>> IntMPBootAdd(
-        std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+            std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -433,4 +436,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_MULTIPARTY_H_

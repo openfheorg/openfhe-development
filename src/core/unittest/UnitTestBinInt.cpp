@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
@@ -38,8 +43,6 @@
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -53,18 +56,18 @@ extern bool TestNative;
 /************************************************/
 
 class UTBinInt : public ::testing::Test {
-protected:
+  protected:
 };
 
 template <typename T>
 void assign_test(const std::string& msg) {
     T v;
     std::vector<uint64_t> vals({
-        27,
-        uint64_t(1) << 10,
-        uint64_t(1) << 25,
-        uint64_t(1) << 35,
-        uint64_t(1) << 55,
+            27,
+            uint64_t(1) << 10,
+            uint64_t(1) << 25,
+            uint64_t(1) << 35,
+            uint64_t(1) << 55,
     });
 
     for (auto tv : vals) {
@@ -129,7 +132,7 @@ void basic_math_test(const std::string& msg) {
         T b("2034");
 
         calculatedResult = a.Add(b);
-        expectedResult   = 205484;
+        expectedResult = 205484;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing add_a_greater_than_b";
     }
@@ -140,7 +143,7 @@ void basic_math_test(const std::string& msg) {
         T b("203450");
 
         calculatedResult = a.Add(b);
-        expectedResult   = 205484;
+        expectedResult = 205484;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing add_a_less_than_b";
     }
@@ -151,7 +154,7 @@ void basic_math_test(const std::string& msg) {
         T b("16523408");
 
         calculatedResult = a.Add(b);
-        expectedResult   = 17292308;
+        expectedResult = 17292308;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing overflow_to_next_byte";
     }
@@ -162,10 +165,10 @@ void basic_math_test(const std::string& msg) {
         T b("1015");
 
         calculatedResult = a.Add(b);
-        expectedResult   = 1050;
+        expectedResult = 1050;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing add_no_overflow_to_next_byte";
+                << msg << " Failure testing add_no_overflow_to_next_byte";
     }
 
     /************************************************/
@@ -250,7 +253,7 @@ void basic_math_test(const std::string& msg) {
         T b("2048956567");
 
         calculatedResult = a.Sub(b);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing sub_a_equal_to_b";
     }
@@ -260,7 +263,7 @@ void basic_math_test(const std::string& msg) {
         T b("2034455");
 
         calculatedResult = a.Sub(b);
-        expectedResult   = 2046922112;
+        expectedResult = 2046922112;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing sub_a_greater_than_b";
     }
@@ -270,10 +273,10 @@ void basic_math_test(const std::string& msg) {
         T b("65406");
 
         calculatedResult = a.Sub(b);
-        expectedResult   = 131331;
+        expectedResult = 131331;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing sub_borrow_from_next_byte";
+                << msg << " Failure testing sub_borrow_from_next_byte";
     }
 
     /************************************************/
@@ -342,7 +345,7 @@ void basic_math_test(const std::string& msg) {
         T b("654");
 
         calculatedResult = a * b;
-        expectedResult   = 1286418;
+        expectedResult = 1286418;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing mul_test";
     }
@@ -364,11 +367,11 @@ void basic_math_test(const std::string& msg) {
         T b("2034455");
 
         calculatedResult = a.DividedBy(b);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         // RESULT SHOULD BE ZERO
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing divided_by_a_less_than_b";
+                << msg << " Failure testing divided_by_a_less_than_b";
     }
 
     // TEST_F CASE WHEN FIRST NUMBER IS EQUAL TO THE SECOND NUMBER
@@ -377,7 +380,7 @@ void basic_math_test(const std::string& msg) {
         T b("2048956567");
 
         calculatedResult = a.DividedBy(b);
-        expectedResult   = 1;
+        expectedResult = 1;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing divided_by_a_equals_b";
     }
@@ -388,10 +391,10 @@ void basic_math_test(const std::string& msg) {
         T b("2034455");
 
         calculatedResult = a.DividedBy(b);
-        expectedResult   = 1007;
+        expectedResult = 1007;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing divided_by_a_greater_than_b";
+                << msg << " Failure testing divided_by_a_greater_than_b";
     }
 
     {
@@ -399,7 +402,7 @@ void basic_math_test(const std::string& msg) {
         T b("4049");
 
         calculatedResult = a.Mod(b);
-        expectedResult   = 4047;
+        expectedResult = 4047;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing Mod";
     }
@@ -411,10 +414,10 @@ void basic_math_test(const std::string& msg) {
         T b("4049");
 
         calculatedResult = a.DivideAndRound(b);
-        expectedResult   = 2;
+        expectedResult = 2;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing divided_and_rounding_by_a_greater_than_b";
+                << msg << " Failure testing divided_and_rounding_by_a_greater_than_b";
     }
 
     /*{
@@ -486,7 +489,7 @@ void basic_compare_test(const std::string& msg) {
         T a("112504");
         T b("46968");
 
-        c              = a.Compare(b);
+        c = a.Compare(b);
         expectedResult = 1;
 
         EXPECT_EQ(expectedResult, (int)c) << msg << " Failure testing compare_a_greater_than_b";
@@ -496,7 +499,7 @@ void basic_compare_test(const std::string& msg) {
         T a("12504");
         T b("46968");
 
-        c              = a.Compare(b);
+        c = a.Compare(b);
         expectedResult = -1;
 
         EXPECT_EQ(expectedResult, (int)c) << msg << " Failure testing compare_a_less_than_b";
@@ -506,7 +509,7 @@ void basic_compare_test(const std::string& msg) {
         T a("34512504");
         T b("34512504");
 
-        c              = a.Compare(b);
+        c = a.Compare(b);
         expectedResult = 0;
 
         EXPECT_EQ(expectedResult, (int)c) << msg << " Failure testing compare_a_equals_b";
@@ -536,10 +539,10 @@ void mod_test(const std::string& msg) {
         T p("240");
 
         calculatedResult = m.Mod(p);
-        expectedResult   = 27;
+        expectedResult = 27;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing number_less_than_modulus";
+                << msg << " Failure testing number_less_than_modulus";
     }
     // TEST_F CASE WHEN THE NUMBER IS GREATER THAN MOD
     {
@@ -547,10 +550,10 @@ void mod_test(const std::string& msg) {
         T p("406");
 
         calculatedResult = m.Mod(p);
-        expectedResult   = 35;
+        expectedResult = 35;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing number_greater_than_modulus";
+                << msg << " Failure testing number_greater_than_modulus";
     }
     // TEST_F CASE WHEN THE NUMBER IS DIVISIBLE BY MOD
     {
@@ -558,10 +561,10 @@ void mod_test(const std::string& msg) {
         T p("16");
 
         calculatedResult = m.Mod(p);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing number_dividible_by_modulus";
+                << msg << " Failure testing number_dividible_by_modulus";
     }
 
     // TEST_F CASE WHEN THE NUMBER IS EQUAL TO MOD
@@ -570,7 +573,7 @@ void mod_test(const std::string& msg) {
         T p("67108913");
 
         calculatedResult = m.Mod(p);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing number_equal_to_modulus";
     }
@@ -632,10 +635,10 @@ void mod_inverse(const std::string& msg) {
         T p("108");
 
         calculatedResult = m.ModInverse(p);
-        expectedResult   = 65;
+        expectedResult = 65;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing number_less_than_modulus";
+                << msg << " Failure testing number_less_than_modulus";
     }
     // TEST_F CASE WHEN THE NUMBER AND MOD ARE NOT CO-PRIME
     {
@@ -643,10 +646,10 @@ void mod_inverse(const std::string& msg) {
         T p("108");
 
         calculatedResult = m.ModInverse(p);
-        expectedResult   = 77;
+        expectedResult = 77;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing number_greater_than_modulus";
+                << msg << " Failure testing number_greater_than_modulus";
     }
 
     // TESTCASE
@@ -670,8 +673,7 @@ void mod_inverse(const std::string& msg) {
         bool thrown = false;
         try {
             modIresult = input.ModInverse(modulus);
-        }
-        catch (...) {
+        } catch (...) {
             thrown = true;
         }
 
@@ -718,10 +720,10 @@ void mod_arithmetic(const std::string& msg) {
         T q("4067");
 
         calculatedResult = m.ModAdd(n, q);
-        expectedResult   = 2871;
+        expectedResult = 2871;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing first_number_greater_than_modulus";
+                << msg << " Failure testing first_number_greater_than_modulus";
     }
     // TEST_F CASE WHEN THE SECOND NUMBER IS GREATER THAN MOD
     {
@@ -730,10 +732,10 @@ void mod_arithmetic(const std::string& msg) {
         T q("4067");
 
         calculatedResult = m.ModAdd(n, q);
-        expectedResult   = 3419;
+        expectedResult = 3419;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing second_number_greater_than_modulus";
+                << msg << " Failure testing second_number_greater_than_modulus";
     }
     // TEST_F CASE WHEN THE BOTH NUMBERS ARE LESS THAN MOD
     {
@@ -742,9 +744,9 @@ void mod_arithmetic(const std::string& msg) {
         T q("4067");
 
         calculatedResult = m.ModAdd(n, q);
-        expectedResult   = 971;
+        expectedResult = 971;
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing both_numbers_less_than_modulus";
+                << msg << " Failure testing both_numbers_less_than_modulus";
     }
     // TEST_F CASE WHEN THE BOTH NUMBERS ARE GREATER THAN MOD
     {
@@ -753,10 +755,10 @@ void mod_arithmetic(const std::string& msg) {
         T q("4067");
 
         calculatedResult = m.ModAdd(n, q);
-        expectedResult   = 2861;
+        expectedResult = 2861;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing both_numbers_greater_than_modulus";
+                << msg << " Failure testing both_numbers_greater_than_modulus";
     }
 
     /************************************************/
@@ -779,10 +781,10 @@ void mod_arithmetic(const std::string& msg) {
         T q("406");
 
         calculatedResult = m.ModSub(n, q);
-        expectedResult   = 196;
+        expectedResult = 196;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing first_number_greater_than_modulus";
+                << msg << " Failure testing first_number_greater_than_modulus";
     }
     // TEST_F CASE WHEN THE FIRST NUMBER LESS THAN SECOND NUMBER AND MOD
     {
@@ -791,11 +793,11 @@ void mod_arithmetic(const std::string& msg) {
         T q("406756");
 
         calculatedResult = m.ModSub(n, q);
-        expectedResult   = 33029;
+        expectedResult = 33029;
 
         // [{(a mod c)+ c} - (b mod c)] since a < b
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing first_number_less_than_modulus";
+                << msg << " Failure testing first_number_less_than_modulus";
     }
     // TEST_F CASE WHEN THE FIRST NUMBER EQUAL TO SECOND NUMBER
     {
@@ -804,10 +806,10 @@ void mod_arithmetic(const std::string& msg) {
         T q("406756");
 
         calculatedResult = m.ModSub(n, q);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing first_number_equals_second_number";
+                << msg << " Failure testing first_number_equals_second_number";
     }
 
     /************************************************/
@@ -826,7 +828,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 24;
+        expectedResult = 24;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul first > mod";
     }
@@ -838,7 +840,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul first == mod";
     }
@@ -850,7 +852,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 15;
+        expectedResult = 15;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul second > mod";
     }
@@ -862,7 +864,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul second == mod";
     }
@@ -874,7 +876,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 20;
+        expectedResult = 20;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul both > mod";
     }
@@ -886,7 +888,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul both == mod";
     }
@@ -898,7 +900,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 3;
+        expectedResult = 3;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul product > mod";
     }
@@ -910,7 +912,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("32");
 
         calculatedResult = m.ModMul(n, q);
-        expectedResult   = 0;
+        expectedResult = 0;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing ModMul product == mod";
     }
@@ -930,7 +932,7 @@ void mod_arithmetic(const std::string& msg) {
         T q("406756");
 
         calculatedResult = m.ModExp(n, q);
-        expectedResult   = 96776;
+        expectedResult = 96776;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt()) << msg << " Failure testing mod_exp_test";
     }
@@ -1005,22 +1007,22 @@ void shift(const std::string& msg) {
         T a("39960");
         uint16_t shift = 3;
 
-        T calculatedResult      = a << (shift);
+        T calculatedResult = a << (shift);
         uint64_t expectedResult = 319680;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing shift_less_than_max_shift";
+                << msg << " Failure testing shift_less_than_max_shift";
     }
     // TEST_F CASE WHEN SHIFT IS GREATER THAN 4 (MAX SHIFT DONE AT A TIME)
     {
         T a("39960");
         uint16_t shift = 6;
 
-        T calculatedResult      = a << (shift);
+        T calculatedResult = a << (shift);
         uint64_t expectedResult = 2557440;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing shift_greater_than_max_shift";
+                << msg << " Failure testing shift_greater_than_max_shift";
     }
 
     /************************************************/
@@ -1078,22 +1080,22 @@ void shift(const std::string& msg) {
         T a("39965675");
         uint16_t shift = 3;
 
-        T calculatedResult      = a >> (shift);
+        T calculatedResult = a >> (shift);
         uint64_t expectedResult = 4995709;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing shift_less_than_max_shift";
+                << msg << " Failure testing shift_less_than_max_shift";
     }
     // TEST_F CASE WHEN SHIFT IS GREATER THAN 4 (MAX SHIFT DONE AT A TIME)
     {
         T a("39965675");
         uint16_t shift = 6;
 
-        T calculatedResult      = a >> (shift);
+        T calculatedResult = a >> (shift);
         uint64_t expectedResult = 624463;
 
         EXPECT_EQ(expectedResult, calculatedResult.ConvertToInt())
-            << msg << " Failure testing shift_greater_than_max_shift";
+                << msg << " Failure testing shift_greater_than_max_shift";
     }
 
     /***************************************************************/
@@ -1147,7 +1149,7 @@ void binString(const std::string& msg) {
     // TEST_F CASE FOR STATIC METHOD FromBinaryString in BigInteger
 
     std::string binaryString = "1011101101110001111010111011000000011";
-    T b                      = T::FromBinaryString(binaryString);
+    T b = T::FromBinaryString(binaryString);
 
     T expectedResult("100633769475");
     EXPECT_EQ(expectedResult, b) << msg << " Failure testing FromBinaryString";

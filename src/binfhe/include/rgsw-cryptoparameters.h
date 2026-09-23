@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_CRYPTOPARAMETERS_H_
-#define _RGSW_CRYPTOPARAMETERS_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_CRYPTOPARAMETERS_H_
+#define SRC_BINFHE_INCLUDE_RGSW_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
@@ -42,13 +50,6 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 /**
@@ -56,7 +57,7 @@ namespace lbcrypto {
  * bootstrapping
  */
 class RingGSWCryptoParams : public Serializable {
-public:
+  public:
     RingGSWCryptoParams() = default;
 
     /**
@@ -372,13 +373,13 @@ public:
             if (!m_baseGByIndex.empty())
                 OPENFHE_THROW("Change_BaseG is not supported with per-dimension gadget bases");
             CheckDigitsG(BaseG, DigitsForBase(m_Q, BaseG));
-            m_baseG   = BaseG;
-            m_Gpower  = PrecomputeGPower(BaseG);
+            m_baseG = BaseG;
+            m_Gpower = PrecomputeGPower(BaseG);
             m_digitsG = DigitsForBase(m_Q, m_baseG);
         }
     }
 
-private:
+  private:
     // the approximate gadget decomposition drops the first digit, so a single-digit gadget
     // leaves the external product with no rows at all
     static void CheckDigitsG(uint32_t baseG, uint32_t digitsG) {
@@ -469,4 +470,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_CRYPTOPARAMETERS_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_CRYPTOPARAMETERS_H_

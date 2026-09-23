@@ -30,14 +30,20 @@
 //==================================================================================
 
 #include "scheme/ckksrns/ckksrns-utils.h"
-#include "utils/exception.h"
-#include "utils/utilities.h"
 
 #include <algorithm>
 #include <cmath>
 #include <complex>
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
+#include <iterator>
+#include <memory>
+#include <utility>
 #include <vector>
+
+#include "utils/exception.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -54,16 +60,16 @@ namespace {  // this namespace should stay unnamed
  */
 std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4) {
     uint32_t layers = std::ceil(static_cast<double>(logSlots) / budget);
-    uint32_t rows   = logSlots / layers;
-    uint32_t rem    = logSlots % layers;
-    uint32_t dim    = rows + (rem != 0);
+    uint32_t rows = logSlots / layers;
+    uint32_t rem = logSlots % layers;
+    uint32_t dim = rows + (rem != 0);
 
     // the above choice ensures dim <= budget
     if (dim < budget) {
         layers -= 1;
         rows = logSlots / layers;
-        rem  = logSlots - rows * layers;
-        dim  = rows + (rem != 0);
+        rem = logSlots - rows * layers;
+        dim = rows + (rem != 0);
 
         // the above choice endures dim >=budget
         if (dim > budget) {
@@ -110,7 +116,7 @@ uint32_t GetDepthByDegree(size_t d) {
     if (d >= LOWER_BOUND_DEGREE && d <= UPPER_BOUND_DEGREE)
         return std::upper_bound(rangemap.begin(), rangemap.end(), d,
                                 [](uint32_t v, const std::pair<uint32_t, uint32_t>& r) { return v <= r.first; })
-            ->second;
+                ->second;
     OPENFHE_THROW("degree " + std::to_string(d) + " not in range [" + std::to_string(LOWER_BOUND_DEGREE) + ", " +
                   std::to_string(UPPER_BOUND_DEGREE) + "].");
 }
@@ -140,7 +146,7 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionPoly(const std::vector<Vect
     q.resize(n - k + 1);
 
     auto& r = res->r;
-    r       = f;
+    r = f;
 
     std::vector<VectorDataType> d;
     d.reserve(g.size() + n);
@@ -197,7 +203,7 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
     q.resize(n - k + 1);
 
     auto& r = res->r;
-    r       = f;
+    r = f;
 
     std::vector<VectorDataType> d;
     d.reserve(g.size() + n);
@@ -214,8 +220,7 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
             d.front() = 2.0 * g[n - k];
             for (uint32_t i = 1; i < 2 * k + 1; ++i)
                 d[i] = g[std::abs(static_cast<int32_t>(n - k - i))];
-        }
-        else {
+        } else {
             if (k > (n - k)) {
                 d.front() = 2.0 * g[n - k];
                 for (uint32_t i = 1; i < k - (n - k) + 1; ++i) {
@@ -224,8 +229,7 @@ std::shared_ptr<longDiv<VectorDataType>> LongDivisionChebyshev(const std::vector
                 for (uint32_t i = k - (n - k) + 1; i < n + 1; ++i) {
                     d[i] = g[std::abs(static_cast<int32_t>(i - n + k))];
                 }
-            }
-            else {
+            } else {
                 d[n - k] = g.front();
                 for (uint32_t i = n - 2 * k; i < n + 1; ++i) {
                     if (i != n - k) {
@@ -285,7 +289,7 @@ template std::shared_ptr<longDiv<int64_t>> LongDivisionChebyshev(const std::vect
 template std::shared_ptr<longDiv<double>> LongDivisionChebyshev(const std::vector<double>& f,
                                                                 const std::vector<double>& g);
 template std::shared_ptr<longDiv<std::complex<double>>> LongDivisionChebyshev(
-    const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
+        const std::vector<std::complex<double>>& f, const std::vector<std::complex<double>>& g);
 
 /**
  * Compute positive integers k,m such that n < k(2^m-1), k is close to sqrt(n/2)
@@ -325,7 +329,7 @@ std::vector<uint32_t> ComputeDegreesPS(uint32_t n) {
     if (n <= UPPER_BOUND_PS) {
         auto m = std::upper_bound(rangemap.begin(), rangemap.end(), n,
                                   [](uint32_t v, const std::pair<uint32_t, uint32_t>& r) { return v <= r.first; })
-                     ->second;
+                         ->second;
         auto k = static_cast<uint32_t>(std::floor(n / ((1U << m) - 1)) + 1);
         return std::vector<uint32_t>{k, m};
     }
@@ -377,7 +381,7 @@ template std::vector<int64_t> Rotate(const std::vector<int64_t>& a, int32_t inde
 
 template <typename VectorDataType>
 std::vector<VectorDataType> RotateTwoHalves(const std::vector<VectorDataType>& a, int32_t index) {
-    const int32_t slots     = a.size();
+    const int32_t slots = a.size();
     const int32_t slotsHalf = slots >> 1;
     if (index < 0 || index > slotsHalf)
         index = ReduceRotation(index, slotsHalf);
@@ -440,7 +444,7 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
     constexpr std::complex<double> I(0.0, 1.0);
     static const std::complex<double> neg_exp_M_PI = std::exp(-M_PI / 2 * I);
 
-    const uint32_t dim   = pows.size() - 1;
+    const uint32_t dim = pows.size() - 1;
     const uint32_t slots = rotGroup.size();
 
     // Each outer iteration from the FFT algorithm can be written a weighted sum of
@@ -454,20 +458,20 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
     std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots, std::vector<std::complex<double>>(slots));
 
     for (uint32_t m = slots; m > 1; m >>= 1) {
-        uint32_t s   = std::log2(m) - 1;
+        uint32_t s = std::log2(m) - 1;
         auto& coeff0 = coeff[s];
         auto& coeff1 = coeff[(s += log2slots)];
         auto& coeff2 = coeff[(s += log2slots)];
 
         const std::complex<double> b = flag_i && (m == 2) ? neg_exp_M_PI : 1;
         for (uint32_t k = 0; k < slots; k += m) {
-            const uint32_t lenq  = m << 2;
-            const uint32_t lenh  = m >> 1;
+            const uint32_t lenq = m << 2;
+            const uint32_t lenh = m >> 1;
             const uint32_t klenh = k + lenh;
             std::fill(coeff2.begin() + k, coeff2.begin() + klenh, b);  // shifted left
             std::fill(coeff1.begin() + k, coeff1.begin() + klenh, b);  // not shifted
             for (uint32_t j = 0, jklenh = klenh; j < lenh; ++j, ++jklenh) {
-                const auto w   = b * pows[(lenq - (rotGroup[j] % lenq)) * (dim / lenq)];
+                const auto w = b * pows[(lenq - (rotGroup[j] % lenq)) * (dim / lenq)];
                 coeff1[jklenh] = -w;  // not shifted
                 coeff0[jklenh] = w;   // shifted right
             }
@@ -482,7 +486,7 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
     constexpr std::complex<double> I(0.0, 1.0);
     static const std::complex<double> pos_exp_M_PI = std::exp(M_PI / 2 * I);
 
-    const uint32_t dim   = pows.size() - 1;
+    const uint32_t dim = pows.size() - 1;
     const uint32_t slots = rotGroup.size();
 
     // Each outer iteration from the FFT algorithm can be written a weighted sum of
@@ -496,21 +500,21 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
     std::vector<std::vector<std::complex<double>>> coeff(3 * log2slots, std::vector<std::complex<double>>(slots));
 
     for (uint32_t m = 2; m <= slots; m <<= 1) {
-        uint32_t s   = std::log2(m) - 1;
+        uint32_t s = std::log2(m) - 1;
         auto& coeff0 = coeff[s];
         auto& coeff1 = coeff[(s += log2slots)];
         auto& coeff2 = coeff[(s += log2slots)];
 
         const std::complex<double> b = flag_i && (m == 2) ? pos_exp_M_PI : 1;
         for (uint32_t k = 0; k < slots; k += m) {
-            const uint32_t lenq  = m << 2;
-            const uint32_t lenh  = m >> 1;
+            const uint32_t lenq = m << 2;
+            const uint32_t lenh = m >> 1;
             const uint32_t klenh = k + lenh;
             std::fill(coeff0.begin() + klenh, coeff0.begin() + klenh + lenh, b);  // shifted right
             std::fill(coeff1.begin() + k, coeff1.begin() + klenh, b);             // not shifted
             for (uint32_t j = 0, jk = k; j < lenh; ++j, ++jk) {
-                const auto w      = b * pows[(rotGroup[j] % lenq) * (dim / lenq)];
-                coeff2[jk]        = w;   // shifted left
+                const auto w = b * pows[(rotGroup[j] % lenq) * (dim / lenq)];
+                coeff2[jk] = w;          // shifted left
                 coeff1[jk + lenh] = -w;  // not shifted
             }
         }
@@ -519,8 +523,8 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
 }
 
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollapse(
-    const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
-    bool flag_i) {
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
+        bool flag_i) {
     const uint32_t slots = rotGroup.size();
     if (!slots)
         OPENFHE_THROW("rotGroup can not be empty");
@@ -532,13 +536,13 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
     const std::vector<uint32_t> dims = SelectLayers(log2slots, levelBudget);
-    const uint32_t layersCollapse    = dims[0];
-    const uint32_t remCollapse       = dims[2];
+    const uint32_t layersCollapse = dims[0];
+    const uint32_t remCollapse = dims[2];
 
     const uint32_t dimCollapse = levelBudget;
-    const uint32_t flagRem     = (remCollapse == 0) ? 0 : 1;
+    const uint32_t flagRem = (remCollapse == 0) ? 0 : 1;
 
-    const uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
+    const uint32_t numRotations = (1U << (layersCollapse + 1)) - 1;
     const uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the coefficients for encoding for the given level budget
@@ -546,12 +550,12 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 
     // Coeff stores the coefficients for the given budget of levels
     std::vector<std::vector<std::vector<std::complex<double>>>> coeff(
-        dimCollapse,
-        std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
+            dimCollapse,
+            std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
     if (flagRem) {
         // this one corresponds to the first index in encoding (same applies to the last index in decoding too)
-        coeff[0] =
-            std::vector<std::vector<std::complex<double>>>(numRotationsRem, std::vector<std::complex<double>>(slots));
+        coeff[0] = std::vector<std::vector<std::complex<double>>>(numRotationsRem,
+                                                                  std::vector<std::complex<double>>(slots));
     }
 
     if (layersCollapse) {  // this condition is necessary for the code executed before the inner loop
@@ -568,15 +572,15 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
             coeff[s][2] = coeff1[top + 2 * log2slots];
             for (uint32_t l = 1; l < layersCollapse; ++l) {
                 auto temp = coeff[s];
-                coeff[s]  = zeros;
+                coeff[s] = zeros;
 
                 for (uint32_t u = 0; u < (1U << (l + 1)) - 1; ++u) {
                     for (uint32_t k = 0; k < slots; ++k) {
                         coeff[s][2 * u][k] +=
-                            coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
+                                coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
                         coeff[s][2 * u + 1][k] += coeff1[top - l + log2slots][k] * temp[u][k];
-                        coeff[s][2 * u + 2][k] +=
-                            coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
+                        coeff[s][2 * u + 2][k] += coeff1[top - l + 2 * log2slots][k] *
+                                                  temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
                     }
                 }
             }
@@ -597,14 +601,14 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
         coeff[s][2] = coeff1[top + 2 * log2slots];
         for (uint32_t l = 1; l < remCollapse; ++l) {
             auto temp = coeff[s];
-            coeff[s]  = zeros;
+            coeff[s] = zeros;
 
             for (uint32_t u = 0; u < (1U << (l + 1)) - 1; ++u) {
                 for (uint32_t k = 0; k < slots; ++k) {
                     coeff[s][2 * u][k] += coeff1[top - l][k] * temp[u][ReduceRotation(k - (1U << (top - l)), slots)];
                     coeff[s][2 * u + 1][k] += coeff1[top - l + log2slots][k] * temp[u][k];
                     coeff[s][2 * u + 2][k] +=
-                        coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
+                            coeff1[top - l + 2 * log2slots][k] * temp[u][ReduceRotation(k + (1U << (top - l)), slots)];
                 }
             }
         }
@@ -614,8 +618,8 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 }
 
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
-    const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
-    bool flag_i) {
+        const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
+        bool flag_i) {
     const uint32_t slots = rotGroup.size();
     if (!slots)
         OPENFHE_THROW("rotGroup can not be empty");
@@ -627,15 +631,15 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    std::vector<uint32_t> dims    = SelectLayers(log2slots, levelBudget);
+    std::vector<uint32_t> dims = SelectLayers(log2slots, levelBudget);
     const uint32_t layersCollapse = dims[0];
-    const uint32_t rowsCollapse   = dims[1];
-    const uint32_t remCollapse    = dims[2];
+    const uint32_t rowsCollapse = dims[1];
+    const uint32_t remCollapse = dims[2];
 
     const uint32_t dimCollapse = levelBudget;
-    const uint32_t flagRem     = (remCollapse == 0) ? 0 : 1;
+    const uint32_t flagRem = (remCollapse == 0) ? 0 : 1;
 
-    uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
+    uint32_t numRotations = (1U << (layersCollapse + 1)) - 1;
     uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the coefficients for decoding for the given level budget
@@ -643,12 +647,12 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 
     // Coeff stores the coefficients for the given budget of levels
     std::vector<std::vector<std::vector<std::complex<double>>>> coeff(
-        dimCollapse,
-        std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
+            dimCollapse,
+            std::vector<std::vector<std::complex<double>>>(numRotations, std::vector<std::complex<double>>(slots)));
     if (flagRem) {
         // this one corresponds to the last index in decoding (same applies to the first index in encoding too)
-        coeff[dimCollapse - 1] =
-            std::vector<std::vector<std::complex<double>>>(numRotationsRem, std::vector<std::complex<double>>(slots));
+        coeff[dimCollapse - 1] = std::vector<std::vector<std::complex<double>>>(
+                numRotationsRem, std::vector<std::complex<double>>(slots));
     }
 
     if (layersCollapse) {  // this condition is necessary for the code executed before the inner loop
@@ -661,7 +665,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 
             for (uint32_t l = 1; l < layersCollapse; ++l) {
                 auto temp = coeff[s];
-                coeff[s]  = zeros;
+                coeff[s] = zeros;
                 for (uint32_t t = 0; t < 3; ++t) {
                     uint32_t shift = (t == 0) ? 0 : ((t == 1) ? (1U << l) : (1U << (l + 1)));
                     for (uint32_t u = 0; u < (1U << (l + 1)) - 1; ++u) {
@@ -685,7 +689,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
                                                              std::vector<std::complex<double>>(slots, 0.0));
         for (uint32_t l = 1; l < remCollapse; ++l) {
             auto temp = coeff[s];
-            coeff[s]  = zeros;
+            coeff[s] = zeros;
             for (uint32_t t = 0; t < 3; ++t) {
                 uint32_t shift = (t == 0) ? 0 : ((t == 1) ? (1U << l) : (1U << (l + 1)));
                 for (uint32_t u = 0; u < (1U << (l + 1)) - 1; ++u) {
@@ -712,11 +716,11 @@ struct ckks_boot_params GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudg
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
     // level budget, the last level will contain the remaining layers collapsed.
-    auto dims               = SelectLayers(logSlots, levelBudget);
+    auto dims = SelectLayers(logSlots, levelBudget);
     uint32_t layersCollapse = dims[0];
-    uint32_t remCollapse    = dims[2];
+    uint32_t remCollapse = dims[2];
 
-    uint32_t numRotations    = (1U << (layersCollapse + 1)) - 1;
+    uint32_t numRotations = (1U << (layersCollapse + 1)) - 1;
     uint32_t numRotationsRem = (1U << (remCollapse + 1)) - 1;
 
     // Computing the baby-step b and the giant-step g for the collapsed layers for decoding.

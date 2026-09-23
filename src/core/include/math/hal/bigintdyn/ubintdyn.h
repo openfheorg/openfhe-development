@@ -36,28 +36,29 @@
   supported. a native double the base integer size is also needed.
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+    #include <functional>
+    #include <limits>
+    #include <ostream>
+    #include <string>
+    #include <type_traits>
+    #include <utility>
+    #include <vector>
 
-        #include "math/hal/basicint.h"
-        #include "math/hal/integer.h"
-        #include "math/nbtheory.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-        #include "utils/utilities.h"
-
-        #include <functional>
-        #include <limits>
-        #include <ostream>
-        #include <string>
-        #include <type_traits>
-        #include <utility>
-        #include <vector>
+    #include "math/hal/basicint.h"
+    #include "math/hal/integer.h"
+    #include "math/nbtheory.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
+    #include "utils/utilities.h"
 
     // clang-format off
         // TODO: fix shifting issue when limb_t == Dlimb_t
@@ -68,8 +69,8 @@
         #endif
     // clang-format on
 
-        #define _SECURE_SCL 0  // to speed up VS
-        #define NO_BARRETT     // currently barrett is slower than mod
+    #define _SECURE_SCL 0  // to speed up VS
+    #define NO_BARRETT     // currently barrett is slower than mod
 
 namespace bigintdyn {
 
@@ -77,7 +78,7 @@ template <typename limb_t>
 class ubint;
 
 /** Define the mapping for ExpBigInteger (experimental) */
-using xubint     = ubint<expdtype>;
+using xubint = ubint<expdtype>;
 using BigInteger = xubint;
 
 template <class ubint_el_t>
@@ -105,39 +106,39 @@ struct Log2<2> {
  */
 template <typename utype>
 struct DataTypes {
-    using SignedType       = void;
-    using DoubleType       = void;
+    using SignedType = void;
+    using DoubleType = void;
     using SignedDoubleType = void;
 };
 template <>
 struct DataTypes<uint32_t> {
-    using SignedType       = int32_t;
-    using DoubleType       = uint64_t;
+    using SignedType = int32_t;
+    using DoubleType = uint64_t;
     using SignedDoubleType = int64_t;
 };
 template <>
 struct DataTypes<uint64_t> {
     using SignedType = int64_t;
-        #if defined(HAVE_INT128)
-    using DoubleType       = uint128_t;
+    #if defined(HAVE_INT128)
+    using DoubleType = uint128_t;
     using SignedDoubleType = int128_t;
-        #else
-    using DoubleType       = uint64_t;
+    #else
+    using DoubleType = uint64_t;
     using SignedDoubleType = int64_t;
-        #endif
+    #endif
 };
-        #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 template <>
 struct DataTypes<uint128_t> {
-    using SignedType       = int128_t;
-    using DoubleType       = uint128_t;
+    using SignedType = int128_t;
+    using DoubleType = uint128_t;
     using SignedDoubleType = int128_t;
 };
-        #endif
+    #endif
 
 template <typename limb_t>
 class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
-private:
+  private:
     // variable that stores the MOST SIGNIFICANT BIT position in the
     uint32_t m_MSB{0};
     // vector storing the native integers. stored little endian
@@ -151,10 +152,10 @@ private:
 
     friend class mubintvec<ubint<limb_t>>;
 
-public:
-    using Integer  = limb_t;
-    using Slimb_t  = typename DataTypes<limb_t>::SignedType;
-    using Dlimb_t  = typename DataTypes<limb_t>::DoubleType;
+  public:
+    using Integer = limb_t;
+    using Slimb_t = typename DataTypes<limb_t>::SignedType;
+    using Dlimb_t = typename DataTypes<limb_t>::DoubleType;
     using SDlimb_t = typename DataTypes<limb_t>::SignedDoubleType;
 
     ubint() = default;
@@ -223,7 +224,7 @@ public:
    * @return assigned ubint ref.
    */
     ubint& operator=(const ubint& val) noexcept {
-        m_MSB   = val.m_MSB;
+        m_MSB = val.m_MSB;
         m_value = val.m_value;
         return *this;
     }
@@ -237,7 +238,7 @@ public:
 
     ubint& operator=(ubint&& val) noexcept {
         if (this != &val) {
-            m_MSB   = std::move(val.m_MSB);
+            m_MSB = std::move(val.m_MSB);
             m_value = std::move(val.m_value);
         }
         return *this;
@@ -265,7 +266,7 @@ public:
    * @param val is the ubint representation of the ubint to be assigned.
    */
     void SetValue(const ubint& val) noexcept {
-        m_MSB   = val.m_MSB;
+        m_MSB = val.m_MSB;
         m_value = val.m_value;
     }
 
@@ -720,7 +721,7 @@ public:
         }
         if constexpr (m_limbBitLength < limblen) {
             auto ceilInt = MSBToLimbs(limblen > m_MSB ? m_MSB : limblen);
-            auto result  = static_cast<T>(m_value[0]);
+            auto result = static_cast<T>(m_value[0]);
             for (uint32_t i{1}; i < ceilInt; ++i)
                 result |= static_cast<T>(m_value[i]) << (i * m_limbBitLength);
             return result;
@@ -897,7 +898,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     /**
    * Sets the MSB to the correct value as computed from the internal value.
    */
@@ -944,7 +945,7 @@ private:
     }
 };
 
-        #if 0
+    #if 0
 // stream helper function for vector of objects
 template <typename limb_t>
 std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
@@ -954,9 +955,9 @@ std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
   os << " ]";
   return os;
 }
-        #endif
+    #endif
 
 }  // namespace bigintdyn
-
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_UBINTDYN_H_

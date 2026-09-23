@@ -32,12 +32,14 @@
  Examples for 2-party Interactive Bootstrapping
 */
 
-#include "openfhe.h"
-
-#include <memory>
-#include <map>
-#include <vector>
+#include <complex>
+#include <cstdint>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -199,7 +201,7 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     std::cout << "Round 1 of key generation completed." << std::endl;
 
@@ -308,10 +310,10 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     std::cout << "\n Ciphertext result:" << plaintextMultiparty << std::endl;
 
     std::cout
-        << "\n Plaintext result: ( 0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011 ) \n";
+            << "\n Plaintext result: ( 0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011 ) \n";
 
     std::cout
-        << "\n Exact result: ( 0.0179862, 0.0474259, 0.119203, 0.268941, 0.5, 0.731059, 0.880797, 0.952574, 0.982014 ) \n";
+            << "\n Exact result: ( 0.0179862, 0.0474259, 0.119203, 0.268941, 0.5, 0.731059, 0.880797, 0.952574, 0.982014 ) \n";
 
     std::cout << "\n Another round of Chebyshev interpolation after interactive bootstrapping: \n";
 
@@ -335,5 +337,5 @@ void Chebyshev(enum ScalingTechnique rescaleTech) {
     std::cout << "\n Ciphertext result:" << plaintextMultiparty << std::endl;
 
     std::cout
-        << "\n Plaintext result: ( 0.504497, 0.511855, 0.529766, 0.566832, 0.622459, 0.675039, 0.706987, 0.721632, 0.727508 ) \n";
+            << "\n Plaintext result: ( 0.504497, 0.511855, 0.529766, 0.566832, 0.622459, 0.675039, 0.706987, 0.721632, 0.727508 ) \n";
 }

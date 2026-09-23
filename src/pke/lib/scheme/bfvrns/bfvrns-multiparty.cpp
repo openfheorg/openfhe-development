@@ -37,11 +37,16 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bfvrns/bfvrns-multiparty.h"
 
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "ciphertext.h"
+#include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "cryptocontext.h"
-#include "ciphertext.h"
 
 namespace lbcrypto {
 
@@ -128,7 +133,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     // When PRE is not used, a joint key is computed
     DCRTPoly b = fresh ? (ns * e - a * s) : (ns * e - a * s + pk[0]);
 
-    uint32_t sizeQ  = elementParams->GetParams().size();
+    uint32_t sizeQ = elementParams->GetParams().size();
     uint32_t sizePK = paramsPK->GetParams().size();
     if (sizePK > sizeQ) {
         s.DropLastElements(sizePK - sizeQ);
@@ -147,7 +152,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
 DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                         NativePoly* plaintext) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
@@ -160,7 +165,7 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
     size_t sizeQl = b.GetNumOfElements();
 
     const auto elementParams = cryptoParams->GetElementParams();
-    size_t sizeQ             = elementParams->GetParams().size();
+    size_t sizeQ = elementParams->GetParams().size();
 
     // use RNS procedures only if the number of RNS limbs is the same as for fresh ciphertexts
     if (sizeQl == sizeQ) {
@@ -168,20 +173,18 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-            *plaintext =
-                b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
-                                cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
-                                cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
-                                cryptoParams->GettQHatInvModqBDivqFrac());
-        }
-        else {
             *plaintext = b.ScaleAndRound(
-                cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
-                cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
-                cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
+                    cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
+                    cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
+                    cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
+                    cryptoParams->GettQHatInvModqBDivqFrac());
+        } else {
+            *plaintext = b.ScaleAndRound(
+                    cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
+                    cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
+                    cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
         }
-    }
-    else {
+    } else {
         // for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
         size_t diffQl = sizeQ - sizeQl;
         size_t levels = sizeQl - 1;
@@ -192,9 +195,9 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
         b.SetFormat(Format::COEFFICIENT);
 
         const NativeInteger t = cryptoParams->GetPlaintextModulus();
-        NativePoly element    = b.GetElementAtIndex(0);
+        NativePoly element = b.GetElementAtIndex(0);
         const NativeInteger q = element.GetModulus();
-        element               = element.MultiplyAndRound(t, q);
+        element = element.MultiplyAndRound(t, q);
 
         // Setting the root of unity to ONE as the calculation is expensive
         // It is assumed that no polynomial multiplications in evaluation

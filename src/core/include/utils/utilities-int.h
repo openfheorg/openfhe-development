@@ -29,8 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __UTILITIES_INT_H__
-#define __UTILITIES_INT_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_
+#define SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_
+
+#include <cstdint>
 
 #include "math/math-hal.h"
 #include "utils/utilities.h"
@@ -63,14 +65,14 @@ inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt& a, uint64_t modul
              tmp2 = 0, carry = 0;
     DoubleNativeInt middle = 0;
 
-    a_lo  = (uint64_t)a;
-    a_hi  = a >> 64;
+    a_lo = (uint64_t)a;
+    a_hi = a >> 64;
     mu_lo = (uint64_t)mu;
     mu_hi = mu >> 64;
 
     left_hi = (Mul128(a_lo, mu_lo)) >> 64;  // mul left parts, discard lower word
 
-    middle    = Mul128(a_lo, mu_hi);  // mul middle first
+    middle = Mul128(a_lo, mu_hi);  // mul middle first
     middle_lo = (uint64_t)middle;
     middle_hi = middle >> 64;
 
@@ -79,7 +81,7 @@ inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt& a, uint64_t modul
 
     tmp2 = middle_hi + carry;  // accumulate
 
-    middle    = Mul128(a_hi, mu_lo);  // mul middle second
+    middle = Mul128(a_hi, mu_lo);  // mul middle second
     middle_lo = (uint64_t)middle;
     middle_hi = middle >> 64;
 
@@ -101,4 +103,4 @@ inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt& a, uint64_t modul
 #endif
 
 }  // namespace lbcrypto
-#endif  // __UTILITIES_INT_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_UTILITIES_INT_H_

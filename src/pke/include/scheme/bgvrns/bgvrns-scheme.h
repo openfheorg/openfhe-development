@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_BGVRNS_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
 
-#include "schemerns/rns-scheme.h"
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
+#include "schemerns/rns-scheme.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -47,7 +47,7 @@
 namespace lbcrypto {
 
 class SchemeBGVRNS : public SchemeRNS {
-public:
+  public:
     SchemeBGVRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationBGVRNS>();
     }
@@ -80,4 +80,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_

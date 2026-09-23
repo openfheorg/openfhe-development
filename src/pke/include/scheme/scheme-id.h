@@ -33,8 +33,8 @@
   Defines scheme id enums
  */
 
-#ifndef _SCHEME_ID_H_
-#define _SCHEME_ID_H_
+#ifndef SRC_PKE_INCLUDE_SCHEME_SCHEME_ID_H_
+#define SRC_PKE_INCLUDE_SCHEME_SCHEME_ID_H_
 
 #include <iosfwd>
 #include <string>
@@ -67,4 +67,4 @@ inline bool isBGVRNS(SCHEME schemeId) {
 
 }  // namespace lbcrypto
 
-#endif  // _SCHEME_ID_H_
+#endif  // SRC_PKE_INCLUDE_SCHEME_SCHEME_ID_H_

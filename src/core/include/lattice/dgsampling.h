@@ -34,16 +34,17 @@
   https://eprint.iacr.org/2018/946, and "Implementing Token-Based Obfuscation under (Ring) LWE" (not publicly available yet)
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_DGSAMPLING_H
-#define LBCRYPTO_INC_LATTICE_DGSAMPLING_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_H_
+#define SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_H_
 
-#include "lattice/field2n.h"
-
-#include "math/matrix.h"
-#include "math/nbtheory.h"
-
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <vector>
+
+#include "lattice/field2n.h"
+#include "math/matrix.h"
+#include "math/nbtheory.h"
 
 namespace lbcrypto {
 
@@ -60,7 +61,7 @@ const double SIGMA = std::sqrt(std::log(2 * N_MAX / DG_ERROR) / M_PI);
 
 // Spectral norm for preimage samples
 const double SPECTRAL_CONSTANT = 1.8;
-const auto SPECTRAL_BOUND      = [](uint64_t n, uint64_t k, uint64_t base) -> double {
+const auto SPECTRAL_BOUND = [](uint64_t n, uint64_t k, uint64_t base) -> double {
     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(n * k) + std::sqrt(2 * n) + 4.7);
 };
 
@@ -78,7 +79,7 @@ const auto SPECTRAL_BOUND_D = [](uint64_t n, uint64_t k, uint64_t base, uint64_t
  */
 template <class Element>
 class LatticeGaussSampUtility {
-public:
+  public:
     /**
    * Gaussian sampling from lattice for gagdet matrix G, syndrome u, and
    * arbitrary modulus q Discrete sampling variant As described in Figure 2 of
@@ -154,7 +155,7 @@ public:
     static std::shared_ptr<Matrix<int64_t>> ZSampleF(const Field2n& f, const Field2n& c,
                                                      const typename Element::DggType& dgg, size_t n);
 
-private:
+  private:
     // subroutine used by GaussSampGq
     // Discrete sampling variant
     // As described in Figure 2 of https://eprint.iacr.org/2017/308.pdf
@@ -186,4 +187,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_DGSAMPLING_H_

@@ -29,14 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_PRE_H
-#define LBCRYPTO_CRYPTO_RNS_PRE_H
-
-#include "lattice/lat-hal.h"
-
-#include "schemebase/base-pre.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PRE_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PRE_H_
 
 #include <string>
+
+#include "lattice/lat-hal.h"
+#include "schemebase/base-pre.h"
 
 /**
  * @namespace lbcrypto
@@ -50,12 +49,12 @@ namespace lbcrypto {
  */
 class PRERNS : public PREBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~PRERNS() = default;
 
     /////////////////////////////////////
@@ -79,4 +78,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_PRE_H_

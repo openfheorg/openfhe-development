@@ -33,19 +33,20 @@
   Operations for the representation of ciphertext in OpenFHE
  */
 
-#ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H
-#define LBCRYPTO_CRYPTO_CIPHERTEXT_H
+#ifndef SRC_PKE_INCLUDE_CIPHERTEXT_H_
+#define SRC_PKE_INCLUDE_CIPHERTEXT_H_
 
-#include "ciphertext-fwd.h"
-#include "cryptoobject.h"
-#include "key/key.h"
-#include "metadata.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "ciphertext-fwd.h"
+#include "cryptoobject.h"
+#include "key/key.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 /**
@@ -58,7 +59,7 @@ namespace lbcrypto {
  */
 template <class Element>
 class CiphertextImpl : public CryptoObject<Element> {
-public:
+  public:
     /**
    * Default constructor
    */
@@ -403,18 +404,18 @@ public:
    */
     virtual Ciphertext<Element> CloneEmpty() const {
         auto ct(std::make_shared<CiphertextImpl<Element>>(this->GetCryptoContext(), this->GetKeyTag(), m_encodingType));
-        ct->m_slots            = m_slots;
-        ct->m_level            = m_level;
-        ct->m_hopslevel        = m_hopslevel;
-        ct->m_noiseScaleDeg    = m_noiseScaleDeg;
-        ct->m_scalingFactor    = m_scalingFactor;
+        ct->m_slots = m_slots;
+        ct->m_level = m_level;
+        ct->m_hopslevel = m_hopslevel;
+        ct->m_noiseScaleDeg = m_noiseScaleDeg;
+        ct->m_scalingFactor = m_scalingFactor;
         ct->m_scalingFactorInt = m_scalingFactorInt;
-        *(ct->m_metadataMap)   = *(m_metadataMap);
+        *(ct->m_metadataMap) = *(m_metadataMap);
         return ct;
     }
 
     virtual Ciphertext<Element> Clone() const {
-        auto ct        = this->CloneEmpty();
+        auto ct = this->CloneEmpty();
         ct->m_elements = m_elements;
         return ct;
     }
@@ -506,7 +507,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // vector of ring elements for this Ciphertext
     std::vector<Element> m_elements;
 
@@ -632,4 +633,4 @@ Ciphertext<Element>& operator*=(Ciphertext<Element>& a, const Ciphertext<Element
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CIPHERTEXT_H_

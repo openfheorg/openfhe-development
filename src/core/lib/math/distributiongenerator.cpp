@@ -35,9 +35,13 @@
  */
 
 #include "math/distributiongenerator.h"
-#include "utils/prng/blake2engine.h"
+
+#include <memory>
+#include <string>
+
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"
+#include "utils/prng/blake2engine.h"
 
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
     #include <dlfcn.h>
@@ -61,8 +65,7 @@ void PseudoRandomNumberGenerator::InitPRNGEngine(const std::string& libPath) {
         genPRNGEngine = default_prng::createEngineInstance;
         if (!genPRNGEngine)
             OPENFHE_THROW("Cannot find symbol: default_prng::createEngineInstance");
-    }
-    else {
+    } else {
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
         // enable this code for g++ on Linux only
         // do not close libraryHandle, your application will crash if you do

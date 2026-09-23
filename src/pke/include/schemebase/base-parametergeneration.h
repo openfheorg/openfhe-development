@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "constants.h"
 #include "schemebase/base-cryptoparameters.h"
-
-#include <vector>
-#include <memory>
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -52,12 +53,12 @@ namespace lbcrypto {
 template <class Element>
 class ParameterGenerationBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     virtual ~ParameterGenerationBase() = default;
 
     /**
@@ -136,4 +137,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PARAMETERGENERATION_H_

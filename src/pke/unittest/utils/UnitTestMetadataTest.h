@@ -28,15 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __UNITTESTMETADATATEST_H__
-#define __UNITTESTMETADATATEST_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_
 
-#include "ciphertext.h"
-#include "metadata.h"
-
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
+
+#include "ciphertext.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 
@@ -45,7 +46,7 @@ namespace lbcrypto {
  * This is used in unit tests.
  */
 class MetadataTest : public Metadata {
-public:
+  public:
     /**
    * Default constructor
    */
@@ -102,8 +103,7 @@ public:
             const MetadataTest& mdataTest = dynamic_cast<const MetadataTest&>(mdata);
             return m_s == mdataTest.GetMetadata();  // All Metadata objects without
                                                     // any members are equal
-        }
-        catch (const std::bad_cast& e) {
+        } catch (const std::bad_cast& e) {
             OPENFHE_THROW("Tried to downcast an object of different class to MetadataTest");
         }
     }
@@ -139,13 +139,12 @@ public:
    */
     template <class Element>
     static const std::shared_ptr<MetadataTest> CloneMetadata(
-        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+            const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
         auto it = ciphertext->FindMetadataByKey("test");
 
         if (ciphertext->MetadataFound(it)) {
             return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it)->Clone());
-        }
-        else {
+        } else {
             OPENFHE_THROW("Attempt to access metadata (MetadataTest) that has not been set.");
         }
     }
@@ -160,13 +159,12 @@ public:
    */
     template <class Element>
     static const std::shared_ptr<MetadataTest> GetMetadata(
-        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+            const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
         auto it = ciphertext->FindMetadataByKey("test");
 
         if (ciphertext->MetadataFound(it)) {
             return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it));
-        }
-        else {
+        } else {
             OPENFHE_THROW("Attempt to access metadata (MetadataTest) that has not been set.");
         }
     }
@@ -192,7 +190,7 @@ public:
         ciphertext->SetMetadataByKey("test", mdata);
     }
 
-protected:
+  protected:
     /**
     * Defines how to print the contents of objects of this class.
     */
@@ -206,4 +204,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif  // __UNITTESTMETADATATEST_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTMETADATATEST_H_

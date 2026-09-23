@@ -33,23 +33,25 @@
   implementation of the integer lattice
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-
-#include "lattice/hal/default/poly.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/utilities.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
 
 #include <cmath>
+#include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/poly.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -239,8 +241,7 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(NativeInteger::SignedNativeInt elemen
         if (elementReduced > q)
             elementReduced.ModEq(q);
         tmp.SetValues((*m_values).ModMul(q - elementReduced), m_format);
-    }
-    else {
+    } else {
         Integer elementReduced{NativeInteger::Integer(element)};
         if (elementReduced > q)
             elementReduced.ModEq(q);
@@ -450,8 +451,7 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
         m_format = Format::EVALUATION;
         auto&& v = ChineseRemainderTransformArb<VecType>().ForwardTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
-    }
-    else {
+    } else {
         m_format = Format::COEFFICIENT;
         auto&& v = ChineseRemainderTransformArb<VecType>().InverseTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
@@ -544,8 +544,7 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(uint32_t baseBit
                 xDigit.SwitchFormat();
             result.push_back(std::move(xDigit));
         }
-    }
-    else {
+    } else {
         // TP: x is same for BACKEND 2 and 6
         for (uint32_t i = 0; i < nWindows; ++i) {
             PolyImpl<VecType> xDigit(m_params);
@@ -601,4 +600,4 @@ inline PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_

@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_PARAMETERGENERATION_H
-#define LBCRYPTO_CRYPTO_BGVRNS_PARAMETERGENERATION_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PARAMETERGENERATION_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PARAMETERGENERATION_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "schemerns/rns-parametergeneration.h"
-
-#include <string>
-#include <vector>
-#include <memory>
-#include <utility>
 
 /**
  * @namespace lbcrypto
@@ -77,7 +78,7 @@ struct BGVNoiseEstimates {
 };
 
 class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
-public:
+  public:
     virtual ~ParameterGenerationBGVRNS() {}
 
     /*
@@ -112,7 +113,7 @@ public:
         return "ParameterGenerationBGVRNS";
     }
 
-private:
+  private:
     /*
    * Method that computes a security-compliant ring dimension.
    *
@@ -143,8 +144,8 @@ private:
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
-        const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
-        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
+            const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
+            uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
 
     /*
    * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
@@ -159,4 +160,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PARAMETERGENERATION_H_

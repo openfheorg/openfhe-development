@@ -29,24 +29,25 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef BINFHE_FHEW_H
-#define BINFHE_FHEW_H
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_
 
-#include "binfhe-base-params.h"
-#include "lwe-pke.h"
-#include "rgsw-acc.h"
-#include "rgsw-acc-cggi.h"
-#include "rgsw-acc-dm.h"
-#include "rgsw-acc-lmkcdey.h"
-#include "rgsw-acckey32.h"
-#include "rgsw-acckey.h"
-#include "rlwe-ciphertext.h"
-
+#include <cstdint>
 #include <cstdlib>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "binfhe-base-params.h"
+#include "lwe-pke.h"
+#include "rgsw-acc-cggi.h"
+#include "rgsw-acc-dm.h"
+#include "rgsw-acc-lmkcdey.h"
+#include "rgsw-acc.h"
+#include "rgsw-acckey.h"
+#include "rgsw-acckey32.h"
+#include "rlwe-ciphertext.h"
 
 namespace lbcrypto {
 
@@ -117,7 +118,7 @@ struct RingGSWBTKey {
  * https://eprint.iacr.org/2014/816, https://eprint.iacr.org/2020/086 and https://eprint.iacr.org/2022/198
  */
 class BinFHEScheme {
-public:
+  public:
     BinFHEScheme() = default;
 
     explicit BinFHEScheme(BINFHE_METHOD method) {
@@ -242,7 +243,7 @@ public:
                                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
                                           NativeInteger beta) const;
 
-private:
+  private:
     /**
    * Core bootstrapping operation
    *
@@ -292,7 +293,7 @@ private:
     LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, const RingGSWBTKey& EK,
                             ConstLWECiphertext& ct) const;
 
-protected:
+  protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};
     std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};
 
@@ -323,4 +324,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_BASE_SCHEME_H_

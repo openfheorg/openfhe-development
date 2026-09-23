@@ -29,8 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "config_core.h"
 #include "utils/memory.h"
+
+#include <cstdint>
+
+#include "config_core.h"
 
 #if defined(__APPLE__)
     #include <malloc/malloc.h>
@@ -41,11 +44,12 @@
 #endif
 
 #if defined(WITH_NUMA_INTERLEAVE) && defined(__linux__) && defined(PARALLEL)
-    #include <cstdlib>
-    #include <cstring>
     #include <omp.h>
     #include <sys/syscall.h>
     #include <unistd.h>
+
+    #include <cstdlib>
+    #include <cstring>
 #endif
 
 namespace lbcrypto {
@@ -99,10 +103,10 @@ namespace {
 namespace {
 using MemPolicyWord = unsigned long;  // NOLINT(runtime/int) -- kernel nodemask word
 
-constexpr int OPENFHE_MPOL_DEFAULT        = 0;
-constexpr int OPENFHE_MPOL_INTERLEAVE     = 3;
+constexpr int OPENFHE_MPOL_DEFAULT = 0;
+constexpr int OPENFHE_MPOL_INTERLEAVE = 3;
 constexpr int OPENFHE_MPOL_F_MEMS_ALLOWED = 4;
-constexpr MemPolicyWord OPENFHE_MAXNODE   = 1024;
+constexpr MemPolicyWord OPENFHE_MAXNODE = 1024;
 
 [[maybe_unused]] const bool ofheNumaInterleaved = []() noexcept {
     const char* opt = std::getenv("OPENFHE_NUMA_INTERLEAVE");

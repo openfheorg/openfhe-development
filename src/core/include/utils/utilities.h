@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_UTILITIES_H
-#define LBCRYPTO_UTILS_UTILITIES_H
+#ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
+#define SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
 
-#include "config_core.h"
-#include "utils/inttypes.h"
-
-#include <cmath>
 #include <climits>  // CHAR_BIT
+#include <cmath>
 #include <cstdint>
 #include <limits>  // std::numeric_limits
 #include <string>
 #include <type_traits>  // std::is_integral
+
+#include "config_core.h"
+#include "utils/inttypes.h"
 
 /**
  * @namespace lbcrypto
@@ -129,9 +129,9 @@ enum { MAX_DOUBLE_PRECISION = 52 };
  * @return value modulo modulus, in [0, modulus).
  */
 inline uint64_t SignedToResidue(int64_t value, uint64_t modulus) {
-    const bool negative      = value < 0;
+    const bool negative = value < 0;
     const uint64_t magnitude = negative ? uint64_t(0) - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
-    const uint64_t residue   = (magnitude < modulus) ? magnitude : magnitude % modulus;
+    const uint64_t residue = (magnitude < modulus) ? magnitude : magnitude % modulus;
     return (negative && residue != 0) ? modulus - residue : residue;
 }
 
@@ -165,4 +165,4 @@ inline bool isConvertableToNativeInt(double d) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_UTILITIES_H_

@@ -33,14 +33,14 @@
   API to generate BGVRNS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
-#define __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
-
-#include "encoding/encodingparams.h"
-#include "scheme/scheme-utils.h"
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_
 
 #include <memory>
+
+#include "encoding/encodingparams.h"
+#include "scheme/scheme-id.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 
@@ -50,13 +50,13 @@ class CCParams;
 
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
-    const CCParams<ContextGeneratorType>& parameters) {
-    using ParmType                   = typename Element::Params;
+        const CCParams<ContextGeneratorType>& parameters) {
+    using ParmType = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
     auto ep = std::make_shared<ParmType>();
     EncodingParams encodingParams(
-        std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
+            std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
 
     // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
@@ -113,4 +113,4 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_

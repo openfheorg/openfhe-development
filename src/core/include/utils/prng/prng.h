@@ -45,8 +45,8 @@
  * Abstract base class for any PRNG engine.
  */
 
-#ifndef __PRNG_H__
-#define __PRNG_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_PRNG_PRNG_H_
+#define SRC_CORE_INCLUDE_UTILS_PRNG_PRNG_H_
 
 #include <cstdint>
 #include <limits>
@@ -55,7 +55,7 @@
 //    for any engine class derived from the PRNG class there must be a C function named "createEngineInstance"
 //    returning a dynamically allocated object of that derived class (see how it is done in blake2engine.h)
 class PRNG {
-public:
+  public:
     // all C++11 distributions used in OpenFHE work with uint32_t by default.
     // a different data type can be specified if needed for a particular architecture
     using result_type = uint32_t;
@@ -77,9 +77,9 @@ public:
     }
 
     virtual result_type operator()() = 0;
-    virtual ~PRNG()                  = default;
+    virtual ~PRNG() = default;
 
-protected:
+  protected:
     PRNG() = default;
 };
-#endif  // __PRNG_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_PRNG_PRNG_H_

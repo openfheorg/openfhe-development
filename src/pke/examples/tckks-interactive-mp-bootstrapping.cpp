@@ -41,6 +41,12 @@
 
 #define PROFILE
 
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -49,7 +55,7 @@ using namespace lbcrypto;
  * A utility class defining a party that is involved in the collective bootstrapping protocol
  */
 struct Party {
-public:
+  public:
     uint32_t id;  // unique party identifier starting from 0
 
     std::vector<Ciphertext<DCRTPoly>> sharesPair;  // (h_{0,i}, h_{1,i}) = (masked decryption
@@ -218,7 +224,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Encryption
     Ciphertext<DCRTPoly> inCtxt = cryptoContext->Encrypt(kpMultiparty.publicKey, ptxt1);
-    DCRTPoly ptxtpoly           = ptxt1->GetElement<DCRTPoly>();
+    DCRTPoly ptxtpoly = ptxt1->GetElement<DCRTPoly>();
 
     std::cout << "Compressing ctxt to the smallest possible number of towers!\n";
     inCtxt = cryptoContext->IntMPBootAdjustScale(inCtxt);
@@ -265,7 +271,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     for (uint32_t i = 1; i < numParties; i++) {
         std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
         partialCiphertextVec.push_back(
-            cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
+                cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
     }
 
     // Checking the results

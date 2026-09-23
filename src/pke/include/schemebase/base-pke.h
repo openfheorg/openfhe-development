@@ -29,17 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PKE_H
-#define LBCRYPTO_CRYPTO_BASE_PKE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PKE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PKE_H_
+
+#include <memory>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "cryptocontext-fwd.h"
+#include "decrypt-result.h"
 #include "key/privatekey-fwd.h"
 #include "key/publickey-fwd.h"
-#include "decrypt-result.h"
-
-#include <vector>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -56,12 +56,12 @@ class KeyPair;
 template <class Element>
 class PKEBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     virtual ~PKEBase() = default;
 
     /**
@@ -132,15 +132,15 @@ public:
     // CORE OPERATIONS
     /////////////////////////////////////////
 
-    virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PrivateKey<Element> privateKey,
-                                                                   const std::shared_ptr<ParmType> params) const;
+    virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PrivateKey<Element> privateKey,
+                                                                  const std::shared_ptr<ParmType> params) const;
 
-    virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey,
-                                                                   const std::shared_ptr<ParmType> params) const;
+    virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey,
+                                                                  const std::shared_ptr<ParmType> params) const;
 
     virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_PKE_H_

@@ -29,24 +29,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
-#define LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
-
-#include "constants.h"
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-
-#include "math/hal/basicint.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
+#define SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
+#include <iomanip>
 #include <memory>
 #include <numeric>
+#include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "constants.h"
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+#include "math/hal/basicint.h"
 
 namespace lbcrypto {
 
@@ -59,20 +62,20 @@ namespace lbcrypto {
  */
 
 class CKKSPackedEncoding : public PlaintextImpl {
-private:
+  private:
     std::vector<std::complex<double>> value;
     double m_logError = 0.;
 
-public:
+  public:
     // these two constructors are used inside of Decrypt
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME) {
         ckksDataType = ckksdt;
-        slots        = GetDefaultSlotSize();
+        slots = GetDefaultSlotSize();
     }
 
     /*
@@ -82,17 +85,17 @@ public:
    *
    */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
-                                                      std::is_same<T, NativePoly::Params>::value ||
-                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                          std::is_same<T, NativePoly::Params>::value ||
+                                                          std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& v,
                        size_t nsdeg, uint32_t lvl, double scFact, uint32_t slts, CKKSDataType ckksdt = REAL)
         : PlaintextImpl(vp, ep, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
-        ckksDataType  = ckksdt;
+        ckksDataType = ckksdt;
         scalingFactor = scFact;
-        level         = lvl;
+        level = lvl;
         noiseScaleDeg = nsdeg;
-        slots         = GetDefaultSlotSize(slts, v.size());
+        slots = GetDefaultSlotSize(slts, v.size());
 
         if (ckksDataType == REAL) {
             auto* rvptr = reinterpret_cast<double*>(value.data()) + 1;
@@ -262,7 +265,7 @@ public:
         ss << "(";
 
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
-        size_t i       = value.size();
+        size_t i = value.size();
         bool allZeroes = true;
         while (i > 0) {
             if (value[--i] != std::complex<double>(0, 0)) {
@@ -275,8 +278,7 @@ public:
                 for (size_t j = 0; j <= i; ++j)
                     ss << std::setprecision(precision) << value[j].real() << ", ";
                 ss << "... ); Estimated precision: " << GetLogPrecision() << " bits";
-            }
-            else {
+            } else {
                 for (size_t j = 0; j <= i; ++j)
                     ss << std::setprecision(precision) << " (" << value[j].real() << ", " << value[j].imag() << "), ";
                 ss << "... )";
@@ -285,7 +287,7 @@ public:
         return ss.str();
     }
 
-protected:
+  protected:
     void PrintValue(std::ostream& out) const override {
         out << GetFormattedValues(8) << std::endl;
     }
@@ -293,7 +295,7 @@ protected:
     uint32_t GetDefaultSlotSize(uint32_t slots = 0, size_t vlen = 0) {
         if (slots == 0) {
             uint32_t batchSize = GetEncodingParams()->GetBatchSize();
-            slots              = (batchSize == 0) ? GetElementRingDimension() >> 1 : batchSize;
+            slots = (batchSize == 0) ? GetElementRingDimension() >> 1 : batchSize;
         }
         if ((slots & (slots - 1)) != 0)
             OPENFHE_THROW("The number of slots should be a power of two");
@@ -342,4 +344,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_CKKSPACKEDENCODING_H_

@@ -35,10 +35,14 @@ Example for CKKS bootstrapping with full packing
 
 */
 
-#include "openfhe.h"
-
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <iostream>
 #include <ostream>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -99,8 +103,8 @@ void SimpleBootstrapExample() {
     * below unless you are an FHE expert.
     */
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits               = 98;
-    uint32_t firstMod               = 100;
+    uint32_t dcrtBits = 98;
+    uint32_t firstMod = 100;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -154,10 +158,10 @@ void SimpleBootstrapExample() {
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    size_t encodedLength  = x.size();
+    size_t encodedLength = x.size();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
-    uint32_t compositeDegree   = cryptoParams->GetCompositeDegree();
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     // We start with a depleted ciphertext that has used up all of its levels.
     // Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, compositeDegree * (depth - 1));
@@ -195,7 +199,7 @@ void SimpleBootstrapExample() {
     std::cout << "Output after bootstrapping \n\t" << result << std::endl;
 
     auto actualResult = result->GetCKKSPackedValue();
-    double precision  = CalculateApproximationError(actualResult, ptxt->GetCKKSPackedValue());
+    double precision = CalculateApproximationError(actualResult, ptxt->GetCKKSPackedValue());
     std::cout << "Estimated precision: " << precision << std::endl;
 }
 
@@ -229,8 +233,8 @@ void SimpleBootstrapStCFirstExample() {
     * below unless you are an FHE expert.
     */
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits               = 98;
-    uint32_t firstMod               = 100;
+    uint32_t dcrtBits = 98;
+    uint32_t firstMod = 100;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -284,10 +288,10 @@ void SimpleBootstrapStCFirstExample() {
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    size_t encodedLength  = x.size();
+    size_t encodedLength = x.size();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
-    uint32_t compositeDegree   = cryptoParams->GetCompositeDegree();
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     // We start with a depleted ciphertext that has used up all of its levels.
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, compositeDegree * (depth - 1 - levelBudget[1]));
 
@@ -324,6 +328,6 @@ void SimpleBootstrapStCFirstExample() {
     std::cout << "Output after bootstrapping \n\t" << result << std::endl;
 
     auto actualResult = result->GetCKKSPackedValue();
-    double precision  = CalculateApproximationError(actualResult, ptxt->GetCKKSPackedValue());
+    double precision = CalculateApproximationError(actualResult, ptxt->GetCKKSPackedValue());
     std::cout << "Estimated precision: " << precision << std::endl;
 }

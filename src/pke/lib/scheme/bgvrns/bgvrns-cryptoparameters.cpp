@@ -37,6 +37,9 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 
+#include <cstdint>
+#include <vector>
+
 namespace lbcrypto {
 
 // Precomputation of CRT tables encryption, decryption, and  homomorphic
@@ -53,7 +56,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
     for (size_t i = 0; i < sizeQ; i++) {
         moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-        rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
+        rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
     }
 
     NativeInteger t(GetPlaintextModulus());
@@ -69,7 +72,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         m_tInvModq.resize(sizeQ);
         m_tInvModqPrecon.resize(sizeQ);
         for (uint32_t i = 0; i < sizeQ; i++) {
-            m_tInvModq[i]       = t.ModInverse(moduliQ[i]);
+            m_tInvModq[i] = t.ModInverse(moduliQ[i]);
             m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
         }
 
@@ -77,7 +80,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         m_tInvModp.resize(sizeP);
         m_tInvModpPrecon.resize(sizeP);
         for (uint32_t j = 0; j < sizeP; j++) {
-            m_tInvModp[j]       = t.ModInverse(moduliP[j]);
+            m_tInvModp[j] = t.ModInverse(moduliP[j]);
             m_tInvModpPrecon[j] = m_tInvModp[j].PrepModMulConst(moduliP[j]);
         }
     }
@@ -88,28 +91,28 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     m_qlInvModq.resize(sizeQ);
     m_qlInvModqPrecon.resize(sizeQ);
     for (uint32_t i = 0; i < sizeQ; i++) {
-        m_negtInvModq[i]       = moduliQ[i] - t.ModInverse(moduliQ[i]);
+        m_negtInvModq[i] = moduliQ[i] - t.ModInverse(moduliQ[i]);
         m_negtInvModqPrecon[i] = m_negtInvModq[i].PrepModMulConst(moduliQ[i]);
-        NativeInteger tModQi   = t.Mod(moduliQ[i]);
-        m_tModqPrecon[i]       = tModQi.PrepModMulConst(moduliQ[i]);
+        NativeInteger tModQi = t.Mod(moduliQ[i]);
+        m_tModqPrecon[i] = tModQi.PrepModMulConst(moduliQ[i]);
         m_qlInvModq[i].resize(i);
         m_qlInvModqPrecon[i].resize(i);
         for (uint32_t j = 0; j < i; ++j) {
-            m_qlInvModq[i][j]       = moduliQ[i].ModInverse(moduliQ[j]);
+            m_qlInvModq[i][j] = moduliQ[i].ModInverse(moduliQ[j]);
             m_qlInvModqPrecon[i][j] = m_qlInvModq[i][j].PrepModMulConst(moduliQ[j]);
         }
     }
 
     if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
         m_scalingFactorsInt.resize(sizeQ);
-        m_scalingFactorsInt[0]     = moduliQ[sizeQ - 1] % t;
+        m_scalingFactorsInt[0] = moduliQ[sizeQ - 1] % t;
         uint32_t isFlexibleAutoExt = (m_scalTechnique == FLEXIBLEAUTOEXT) ? 1 : 0;
         if (isFlexibleAutoExt) {
             m_scalingFactorsInt[1] = moduliQ[sizeQ - 2] % t;
         }
         for (uint32_t k = 1 + isFlexibleAutoExt; k < sizeQ - isFlexibleAutoExt; k++) {
-            NativeInteger prevSF   = m_scalingFactorsInt[k - 1];
-            NativeInteger qInv     = moduliQ[sizeQ - k].ModInverse(t);
+            NativeInteger prevSF = m_scalingFactorsInt[k - 1];
+            NativeInteger qInv = moduliQ[sizeQ - k].ModInverse(t);
             m_scalingFactorsInt[k] = prevSF.ModMul(prevSF, t).ModMul(qInv, t);
         }
 
@@ -118,8 +121,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         if (m_scalingFactorsIntBig.size() > 0) {
             if (m_scalTechnique == FLEXIBLEAUTO) {
                 m_scalingFactorsIntBig[0] = m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[0], t);
-            }
-            else {
+            } else {
                 m_scalingFactorsIntBig[0] = m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[1], t);
             }
             for (uint32_t k = 1; k < sizeQ - 1; k++) {
@@ -144,10 +146,10 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 }
 
 uint64_t CryptoParametersBGVRNS::FindAuxPrimeStep() const {
-    size_t n               = GetElementParams()->GetRingDimension();
+    size_t n = GetElementParams()->GetRingDimension();
     uint32_t plaintextModulus = GetPlaintextModulus();
-    uint32_t cyclOrder        = 2 * n;
-    uint32_t pow2ptm          = 1;
+    uint32_t cyclOrder = 2 * n;
+    uint32_t pow2ptm = 1;
 
     // The largest power of 2 dividing ptm
     // Check whether it is larger than cyclOrder or not

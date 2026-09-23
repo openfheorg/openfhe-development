@@ -33,25 +33,25 @@
   matrix strassen operations
  */
 
-#ifndef LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
-#define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
 
-#include "lattice/lat-hal.h"
-
-#include "utils/exception.h"
-#include "utils/parallel.h"
-
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <ostream>
 #include <utility>
 #include <vector>
 
+#include "lattice/lat-hal.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
+
 namespace lbcrypto {
 
 template <class Element>
 class MatrixStrassen {  // TODO : public Serializable {
-public:
+  public:
     typedef std::vector<std::vector<Element>> data_t;
     typedef std::vector<Element> lineardata_t;
     typedef typename std::vector<Element>::iterator it_lineardata_t;
@@ -476,7 +476,7 @@ public:
    */
     MatrixStrassen<Element> MultByRandomVector(std::vector<int> ranvec) const;
 
-private:
+  private:
     struct MatDescriptor {
         int lda;
         int nrec;
@@ -496,12 +496,12 @@ private:
     mutable int colpad = 0;
     alloc_func allocZero;
     mutable char* pattern = nullptr;
-    mutable int numAdd    = 0;
-    mutable int numMult   = 0;
-    mutable int numSub    = 0;
+    mutable int numAdd = 0;
+    mutable int numMult = 0;
+    mutable int numSub = 0;
     mutable MatDescriptor desc;
     mutable Element zeroUniquePtr = allocZero();
-    mutable int NUM_THREADS       = 1;
+    mutable int NUM_THREADS = 1;
 
     void multiplyInternalCAPS(it_lineardata_t A, it_lineardata_t B, it_lineardata_t C, MatDescriptor desc,
                               it_lineardata_t work) const;
@@ -641,4 +641,4 @@ inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(MatrixStrassen<int32_t
                                                           const std::shared_ptr<ILParams> params);
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_

@@ -33,11 +33,15 @@
   This file contains the vector manipulation functionality
  */
 
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #include "math/math-hal.h"
     #include "math/hal/bigintfxd/mubintvecfxd.h"
+    #include "math/math-hal.h"
     #include "math/nbtheory.h"
     #include "utils/debug.h"
     #include "utils/serializable.h"
@@ -46,23 +50,23 @@ namespace bigintfxd {
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT() {
-    this->m_length  = 0;
+    this->m_length = 0;
     this->m_modulus = 0;
-    m_data          = nullptr;
+    m_data = nullptr;
 }
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus) {
-    this->m_length  = length;
+    this->m_length = length;
     this->m_modulus = modulus;
-    this->m_data    = new IntegerType[m_length]();
+    this->m_data = new IntegerType[m_length]();
 }
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT(const BigVectorFixedT& bigVector) {
-    m_length  = bigVector.m_length;
+    m_length = bigVector.m_length;
     m_modulus = bigVector.m_modulus;
-    m_data    = new IntegerType[m_length];
+    m_data = new IntegerType[m_length];
     for (uint32_t i = 0; i < m_length; i++) {
         m_data[i] = bigVector.m_data[i];
     }
@@ -71,11 +75,11 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(const BigVectorFixedT& bigVector) 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT(BigVectorFixedT&& bigVector) {
     if (this != &bigVector) {
-        m_data              = bigVector.m_data;
-        m_length            = bigVector.m_length;
-        m_modulus           = bigVector.m_modulus;
-        bigVector.m_data    = nullptr;
-        bigVector.m_length  = 0;
+        m_data = bigVector.m_data;
+        m_length = bigVector.m_length;
+        m_modulus = bigVector.m_modulus;
+        bigVector.m_data = nullptr;
+        bigVector.m_length = 0;
         bigVector.m_modulus = 0;
     }
 }
@@ -83,15 +87,14 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(BigVectorFixedT&& bigVector) {
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus,
                                               std::initializer_list<std::string> rhs) {
-    this->m_length  = length;
+    this->m_length = length;
     this->m_modulus = modulus;
-    this->m_data    = new IntegerType[m_length]();
-    uint32_t len    = rhs.size();
+    this->m_data = new IntegerType[m_length]();
+    uint32_t len = rhs.size();
     for (uint32_t i = 0; i < m_length; i++) {  // this loops over each entry
         if (i < len) {
             m_data[i] = IntegerType(*(rhs.begin() + i)) % m_modulus;
-        }
-        else {
+        } else {
             m_data[i] = 0;
         }
     }
@@ -100,15 +103,14 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT(uint32_t length, const IntegerType& modulus,
                                               std::initializer_list<uint64_t> rhs) {
-    this->m_length  = length;
+    this->m_length = length;
     this->m_modulus = modulus;
-    this->m_data    = new IntegerType[m_length]();
-    uint32_t len    = rhs.size();
+    this->m_data = new IntegerType[m_length]();
+    uint32_t len = rhs.size();
     for (uint32_t i = 0; i < m_length; i++) {  // this loops over each entry
         if (i < len) {
             m_data[i] = IntegerType(*(rhs.begin() + i)) % m_modulus;
-        }
-        else {
+        } else {
             m_data[i] = 0;
         }
     }
@@ -121,12 +123,11 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(const BigV
             for (size_t i = 0; i < m_length; i++) {
                 this->m_data[i] = rhs.m_data[i];
             }
-        }
-        else {
+        } else {
             delete[] m_data;
-            m_length  = rhs.m_length;
+            m_length = rhs.m_length;
             m_modulus = rhs.m_modulus;
-            m_data    = new IntegerType[m_length];
+            m_data = new IntegerType[m_length];
             for (size_t i = 0; i < m_length; i++) {
                 m_data[i] = rhs.m_data[i];
             }
@@ -140,9 +141,9 @@ template <class IntegerType>
 BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(BigVectorFixedT&& rhs) {
     if (this != &rhs) {
         delete[] m_data;
-        m_data     = rhs.m_data;
-        m_length   = rhs.m_length;
-        m_modulus  = rhs.m_modulus;
+        m_data = rhs.m_data;
+        m_length = rhs.m_length;
+        m_modulus = rhs.m_modulus;
         rhs.m_data = nullptr;
     }
     return *this;
@@ -155,12 +156,10 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initi
         if (i < len) {
             if (m_modulus != 0) {
                 m_data[i] = IntegerType(*(rhs.begin() + i)) % m_modulus;
-            }
-            else {
+            } else {
                 m_data[i] = IntegerType(*(rhs.begin() + i));
             }
-        }
-        else {
+        } else {
             m_data[i] = 0;
         }
     }
@@ -174,12 +173,10 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initi
         if (i < len) {
             if (m_modulus != 0) {
                 m_data[i] = IntegerType(*(rhs.begin() + i)) % m_modulus;
-            }
-            else {
+            } else {
                 m_data[i] = IntegerType(*(rhs.begin() + i));
             }
-        }
-        else {
+        } else {
             m_data[i] = 0;
         }
     }
@@ -204,16 +201,13 @@ void BigVectorFixedT<IntegerType>::SwitchModulus(const IntegerType& newModulus) 
         if (oldModulus < newModulus) {
             if (n > oldModulusByTwo) {
                 this->at(i) = n.ModAdd(diff, newModulus);
-            }
-            else {
+            } else {
                 this->at(i) = n.Mod(newModulus);
             }
-        }
-        else {
+        } else {
             if (n > oldModulusByTwo) {
                 this->at(i) = n.ModSub(diff, newModulus);
-            }
-            else {
+            } else {
                 this->at(i) = n.Mod(newModulus);
             }
         }
@@ -241,14 +235,12 @@ template <class IntegerType>
 BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModEq(const IntegerType& modulus) {
     if (modulus == 2) {
         return this->ModByTwoEq();
-    }
-    else {
+    } else {
         IntegerType halfQ(m_modulus >> 1);
         for (uint32_t i = 0; i < m_length; i++) {
             if (this->m_data[i] > halfQ) {
                 this->m_data[i].ModSubEq(m_modulus, modulus);
-            }
-            else {
+            } else {
                 this->m_data[i].ModEq(modulus);
             }
         }
@@ -483,16 +475,13 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModByTwoEq() {
         if (this->m_data[i] > halfQ) {
             if (this->m_data[i].Mod(2) == 1) {
                 this->m_data[i] = IntegerType(0);
-            }
-            else {
+            } else {
                 this->m_data[i] = 1;
             }
-        }
-        else {
+        } else {
             if (this->m_data[i].Mod(2) == 1) {
                 this->m_data[i] = 1;
-            }
-            else {
+            } else {
                 this->m_data[i] = IntegerType(0);
             }
         }
@@ -533,10 +522,9 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(c
     IntegerType temp;
     for (uint32_t i = 0; i < this->m_length; i++) {
         if (this->m_data[i] > halfQ) {
-            temp            = this->m_modulus - this->m_data[i];
+            temp = this->m_modulus - this->m_data[i];
             this->m_data[i] = this->m_modulus - temp.MultiplyAndRound(p, q);
-        }
-        else {
+        } else {
             this->m_data[i].MultiplyAndRoundEq(p, q);
             this->m_data[i].ModEq(this->m_modulus);
         }
@@ -557,10 +545,9 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::DivideAndRoundEq(con
     IntegerType temp;
     for (uint32_t i = 0; i < this->m_length; i++) {
         if (this->m_data[i] > halfQ) {
-            temp            = this->m_modulus - this->m_data[i];
+            temp = this->m_modulus - this->m_data[i];
             this->m_data[i] = this->m_modulus - temp.DivideAndRound(q);
-        }
-        else {
+        } else {
             this->m_data[i].DivideAndRoundEq(q);
         }
     }

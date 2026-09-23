@@ -33,6 +33,13 @@
   Example for serializing and deserializing CKKS bootstrap evaluation keys.
  */
 
+#include <cstdint>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 // Header files needed for serialization
@@ -41,20 +48,14 @@
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
-
 using namespace lbcrypto;
 
-const std::string DATAFOLDER           = "demoData";
-const std::string ccLocation           = "/bootstrap-cryptocontext.txt";
-const std::string publicKeyLocation    = "/bootstrap-public-key.txt";
-const std::string secretKeyLocation    = "/bootstrap-secret-key.txt";
-const std::string ciphertextLocation   = "/bootstrap-ciphertext.txt";
-const std::string multKeyLocation      = "/bootstrap-eval-mult-keys.txt";
+const std::string DATAFOLDER = "demoData";
+const std::string ccLocation = "/bootstrap-cryptocontext.txt";
+const std::string publicKeyLocation = "/bootstrap-public-key.txt";
+const std::string secretKeyLocation = "/bootstrap-secret-key.txt";
+const std::string ciphertextLocation = "/bootstrap-ciphertext.txt";
+const std::string multKeyLocation = "/bootstrap-eval-mult-keys.txt";
 const std::string bootstrapKeyLocation = "/bootstrap-eval-keys.txt";
 
 void ErrorCheck(bool condition, const std::string& message) {
@@ -75,19 +76,19 @@ int main() {
 
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89;
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89;
 #else
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    std::vector<uint32_t> levelBudget      = {4, 4};
+    std::vector<uint32_t> levelBudget = {4, 4};
     uint32_t levelsAvailableAfterBootstrap = 10;
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -107,7 +108,7 @@ int main() {
     serverCC->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0};
-    auto plaintext        = serverCC->MakeCKKSPackedPlaintext(x, 1, depth - 1);
+    auto plaintext = serverCC->MakeCKKSPackedPlaintext(x, 1, depth - 1);
     plaintext->SetLength(x.size());
     auto ciphertext = serverCC->Encrypt(keyPair.publicKey, plaintext);
 
@@ -159,8 +160,8 @@ int main() {
 
     std::ifstream bootstrapKeyIn(DATAFOLDER + bootstrapKeyLocation, std::ios::in | std::ios::binary);
     ErrorCheck(bootstrapKeyIn.is_open(), "Error opening bootstrap eval-key input file");
-    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(bootstrapKeyIn, SerType::BINARY, clientCC,
-                                                     secretKey->GetKeyTag(), numSlots),
+    ErrorCheck(clientCC->DeserializeEvalBootstrapKey(bootstrapKeyIn, SerType::BINARY, clientCC, secretKey->GetKeyTag(),
+                                                     numSlots),
                "Error deserializing bootstrap eval keys");
     bootstrapKeyIn.close();
 

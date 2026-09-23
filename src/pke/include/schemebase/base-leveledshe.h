@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_H
-#define LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_LEVELEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_LEVELEDSHE_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "encoding/plaintext-fwd.h"
@@ -41,11 +48,6 @@
 #include "utils/caller_info.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -59,16 +61,16 @@ namespace lbcrypto {
 template <class Element>
 class LeveledSHEBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
     // TODO: should we use just one error message instead of two (see below)
     constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
-    constexpr static std::string_view NOT_SUPPORTED_ERROR   = "Not supported for this scheme";
+    constexpr static std::string_view NOT_SUPPORTED_ERROR = "Not supported for this scheme";
 
-public:
+  public:
     virtual ~LeveledSHEBase() = default;
 
     /////////////////////////////////////////
@@ -567,7 +569,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
     /**
    * Virtual function for evaluating automorphism of ciphertext at index i
@@ -621,7 +623,7 @@ public:
    * decomposition)
    */
     virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(
-        ConstCiphertext<Element>& ciphertext) const;
+            ConstCiphertext<Element>& ciphertext) const;
 
     virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
                                                     const std::shared_ptr<std::vector<Element>> expandedCiphertext,
@@ -640,7 +642,7 @@ public:
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     /**
    * Moves i-th slot to slot 0
@@ -802,7 +804,7 @@ public:
 
     virtual Ciphertext<Element> MorphPlaintext(ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext) const;
 
-protected:
+  protected:
     /////////////////////////////////////////
     // CORE OPERATIONS
     /////////////////////////////////////////
@@ -875,4 +877,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_LEVELEDSHE_H_

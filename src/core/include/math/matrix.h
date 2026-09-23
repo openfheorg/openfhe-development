@@ -33,28 +33,28 @@
   This code provide a templated matrix implementation
  */
 
-#ifndef LBCRYPTO_MATH_MATRIX_H
-#define LBCRYPTO_MATH_MATRIX_H
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_H_
+
+#include <cmath>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
-
 #include "math/distrgen.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
-
 #include "utils/inttypes.h"
 #include "utils/memory.h"
 #include "utils/parallel.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include <cmath>
-#include <functional>
-#include <memory>
-#include <ostream>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -63,7 +63,7 @@ class Field2n;
 
 template <class Element>
 class Matrix : public Serializable {
-public:
+  public:
     typedef std::vector<std::vector<Element>> data_t;
     typedef std::vector<Element> data_row_t;
     typedef std::function<Element(void)> alloc_func;
@@ -208,8 +208,7 @@ public:
             for (size_t col = 0; col < cols; ++col) {
                 if (row == col) {
                     data[row][col] = 1;
-                }
-                else {
+                } else {
                     data[row][col] = 0;
                 }
             }
@@ -223,16 +222,16 @@ public:
    * @param base is the base the digits of the matrix are represented in
    * @return the resulting matrix
    */
-    template <typename T                          = Element,
+    template <typename T = Element,
               typename std::enable_if<!std::is_same<T, M2DCRTPoly>::value && !std::is_same<T, M4DCRTPoly>::value &&
-                                          !std::is_same<T, M6DCRTPoly>::value,
+                                              !std::is_same<T, M6DCRTPoly>::value,
                                       bool>::type = true>
     Matrix<T> GadgetVector(int64_t base = 2) const {
         Matrix<T> g(allocZero, rows, cols);
         auto base_matrix = allocZero();
-        size_t k         = cols / rows;
-        base_matrix      = base;
-        g(0, 0)          = 1;
+        size_t k = cols / rows;
+        base_matrix = base;
+        g(0, 0) = 1;
         for (size_t i = 1; i < k; i++) {
             g(0, i) = g(0, i - 1) * base_matrix;
         }
@@ -244,15 +243,15 @@ public:
         return g;
     }
 
-    template <typename T                          = Element,
+    template <typename T = Element,
               typename std::enable_if<std::is_same<T, M2DCRTPoly>::value || std::is_same<T, M4DCRTPoly>::value ||
-                                          std::is_same<T, M6DCRTPoly>::value,
+                                              std::is_same<T, M6DCRTPoly>::value,
                                       bool>::type = true>
     Matrix<T> GadgetVector(int64_t base = 2) const {
         Matrix<T> g(allocZero, rows, cols);
         auto base_matrix = allocZero();
-        base_matrix      = base;
-        size_t bk        = 1;
+        base_matrix = base;
+        size_t bk = 1;
 
         auto params = g(0, 0).GetParams()->GetParams();
 
@@ -281,17 +280,17 @@ public:
    *
    * @return the norm in double format
    */
-    template <typename T                          = Element,
+    template <typename T = Element,
               typename std::enable_if<std::is_same<T, double>::value || std::is_same<T, int>::value ||
-                                          std::is_same<T, int64_t>::value || std::is_same<T, Field2n>::value,
+                                              std::is_same<T, int64_t>::value || std::is_same<T, Field2n>::value,
                                       bool>::type = true>
     double Norm() const {
         OPENFHE_THROW("Norm not defined for this type");
     }
 
-    template <typename T                          = Element,
+    template <typename T = Element,
               typename std::enable_if<!std::is_same<T, double>::value && !std::is_same<T, int>::value &&
-                                          !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
+                                              !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
                                       bool>::type = true>
     double Norm() const {
         double retVal = 0.0;
@@ -697,7 +696,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     data_t data;
     uint32_t rows;
     uint32_t cols;
@@ -808,7 +807,7 @@ Matrix<Element> SplitInt64IntoElements(Matrix<int64_t> const& other, size_t n,
     Matrix<T> SplitInt64IntoElements(Matrix<int64_t> const& other, size_t n,             \
                                      const std::shared_ptr<typename T::Params> params) { \
         auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                     \
-        size_t rows     = other.GetRows() / n;                                           \
+        size_t rows = other.GetRows() / n;                                               \
         Matrix<T> result(zero_alloc, rows, 1);                                           \
         for (size_t row = 0; row < rows; ++row) {                                        \
             std::vector<int64_t> values(n);                                              \
@@ -837,7 +836,7 @@ Matrix<Element> SplitInt32AltIntoElements(Matrix<int32_t> const& other, size_t n
     Matrix<T> SplitInt32AltIntoElements(Matrix<int32_t> const& other, size_t n,             \
                                         const std::shared_ptr<typename T::Params> params) { \
         auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                        \
-        size_t rows     = other.GetRows();                                                  \
+        size_t rows = other.GetRows();                                                      \
         Matrix<T> result(zero_alloc, rows, 1);                                              \
         for (size_t row = 0; row < rows; ++row) {                                           \
             std::vector<int32_t> values(n);                                                 \
@@ -866,7 +865,7 @@ Matrix<Element> SplitInt64AltIntoElements(Matrix<int64_t> const& other, size_t n
     Matrix<T> SplitInt64AltIntoElements(Matrix<int64_t> const& other, size_t n,             \
                                         const std::shared_ptr<typename T::Params> params) { \
         auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);                        \
-        size_t rows     = other.GetRows();                                                  \
+        size_t rows = other.GetRows();                                                      \
         Matrix<T> result(zero_alloc, rows, 1);                                              \
         for (size_t row = 0; row < rows; ++row) {                                           \
             std::vector<int64_t> values(n);                                                 \
@@ -878,4 +877,4 @@ Matrix<Element> SplitInt64AltIntoElements(Matrix<int64_t> const& other, size_t n
     }
 
 }  // namespace lbcrypto
-#endif  // LBCRYPTO_MATH_MATRIX_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_H_

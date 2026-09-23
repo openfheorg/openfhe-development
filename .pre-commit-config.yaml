@@ -1,28 +1,28 @@
-# To check files before committing them:
-#   pre-commit run --files [file1] [file2] ...
+# Tool versions are pinned here and downloaded by pre-commit itself, so nothing
+# has to be installed system-wide except pre-commit (pip3 install pre-commit).
+#   pre-commit install                        run the hooks on every commit
+#   pre-commit run --all-files                check/fix the whole tree
+#   pre-commit run --files [file1] [file2]    check/fix specific files
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v2.5.0
+      rev: v6.0.0
       hooks:
         - id: trailing-whitespace
         - id: end-of-file-fixer
         - id: check-merge-conflict
         - id: mixed-line-ending
-        - id: check-byte-order-marker
-    - repo: local
+        - id: fix-byte-order-marker
+    - repo: https://github.com/pre-commit/mirrors-clang-format
+      rev: v18.1.8
       hooks:
         - id: clang-format
-          name: clang-format
-          entry: clang-format
-          language: system
-          files: \.(c|cc|cxx|cpp|h|hpp|hxx|js|proto)$
-          args: ["-i"]
+          types_or: [c, c++]
+    - repo: https://github.com/cpplint/cpplint
+      rev: 2.0.2
+      hooks:
         - id: cpplint
-          name: cpplint
-          entry: cpplint
-          language: system
-          files: \.(c|cc|cxx|cpp|h|hpp|hxx)$
-          args: ["--recursive"]
+    - repo: local
+      hooks:
         - id: check-diagnostic-output
           name: no direct stdout/stderr in library code
           description: >

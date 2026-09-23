@@ -45,10 +45,14 @@ double the precision of a single bootstrapping.
 
 #define PROFILE
 
-#include "openfhe.h"
-
-#include <vector>
+#include <cmath>
+#include <complex>
+#include <cstdint>
 #include <iostream>
+#include <random>
+#include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -88,9 +92,9 @@ void IterativeBootstrapExample() {
     // All modes are supported for 64-bit CKKS bootstrapping.
     // For this configuration, 3 words per level will be used
     ScalingTechnique rescaleTech = COMPOSITESCALINGAUTO;
-    uint32_t dcrtBits               = 61;
-    uint32_t firstMod               = 66;
-    uint32_t registerWordSize       = 27;
+    uint32_t dcrtBits = 61;
+    uint32_t firstMod = 66;
+    uint32_t registerWordSize = 27;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -102,12 +106,12 @@ void IterativeBootstrapExample() {
     uint32_t numIterations = 2;
 
     std::vector<uint32_t> levelBudget = {3, 3};
-    std::vector<uint32_t> bsgsDim     = {0, 0};
+    std::vector<uint32_t> bsgsDim = {0, 0};
 
     uint32_t levelsAvailableAfterBootstrap = 10;
     // Each extra iteration on top of 1 requires an extra level to be consumed.
-    uint32_t depth =
-        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
+    uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) +
+                     (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.
@@ -124,7 +128,7 @@ void IterativeBootstrapExample() {
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
     const auto cryptoParamsCKKSRNS =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParamsCKKSRNS->GetCompositeDegree();
     std::cout << "compositeDegree=" << cryptoParamsCKKSRNS->GetCompositeDegree()
               << " modBitWidth=" << static_cast<float>(dcrtBits) / compositeDegree
@@ -174,7 +178,7 @@ void IterativeBootstrapExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
     uint32_t precision =
-        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+            std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << std::endl;
 
     // Set precision equal to empirically measured value after many test runs.
@@ -196,7 +200,7 @@ void IterativeBootstrapExample() {
     std::cout << "\nBootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
     std::cout << "Number of levels remaining after 2 bootstrappings: "
               << depth - ciphertextTwoIterations->GetLevel() / compositeDegree -
-                     (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
+                         (ciphertextTwoIterations->GetNoiseScaleDeg() - 1)
               << std::endl
               << std::endl;
 }

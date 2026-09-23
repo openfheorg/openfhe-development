@@ -35,17 +35,17 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_
+
+#include <cmath>
+#include <cstdint>
+#include <memory>
 
 #include "lattice/lat-hal.h"
 #include "lattice/trapdoor.h"
-
 #include "math/matrix-impl.h"
-
 #include "utils/debug.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -57,7 +57,7 @@ Matrix<Element> RLWETrapdoorUtility<Element>::GaussSampOnline(size_t n, size_t k
                                                               DggType& dgg, const std::shared_ptr<Matrix<Element>> pHat,
                                                               int64_t base) {
     const std::shared_ptr<ParmType> params = u.GetParams();
-    auto zero_alloc                        = Element::Allocator(params, Format::EVALUATION);
+    auto zero_alloc = Element::Allocator(params, Format::EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -100,7 +100,7 @@ std::shared_ptr<Matrix<Element>> RLWETrapdoorUtility<Element>::GaussSampOffline(
                                                                                 DggType& dgg, DggType& dggLargeSigma,
                                                                                 int64_t base) {
     const std::shared_ptr<ParmType> params = T.m_e(0, 0).GetParams();
-    auto zero_alloc                        = Element::Allocator(params, Format::EVALUATION);
+    auto zero_alloc = Element::Allocator(params, Format::EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -188,8 +188,7 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
         for (size_t i = 0; i < n * k; i++) {
             p2ZVector(i, 0) = dgg.GenerateIntegerKarney(0, sigmaLarge);
         }
-    }
-    else {
+    } else {
         // Peikert's inversion sampling method
         auto dggVector = dggLargeSigma.GenerateIntVector(n * k);
         for (size_t i = 0; i < n * k; i++)
@@ -254,4 +253,4 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_IMPL_H_

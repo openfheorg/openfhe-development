@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_ADVANCEDSHE_H
-
-#include "schemerns/rns-advancedshe.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_
 
 #include <complex>
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
+#include "schemerns/rns-advancedshe.h"
 
 /**
  * @namespace lbcrypto
@@ -46,7 +47,7 @@
 namespace lbcrypto {
 
 class AdvancedSHECKKSRNS : public AdvancedSHERNS {
-public:
+  public:
     virtual ~AdvancedSHECKKSRNS() = default;
 
     //------------------------------------------------------------------------------
@@ -76,7 +77,7 @@ public:
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(ConstCiphertext<DCRTPoly>& x,
                                                        const std::vector<double>& coefficients) const override;
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalPowers(
-        ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const override;
+            ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const override;
 
     Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly>& ciphertext,
                                   const std::vector<int64_t>& coefficients) const override;
@@ -135,8 +136,8 @@ public:
     Ciphertext<DCRTPoly> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<DCRTPoly>> polys,
                                                         const std::vector<double>& coefficients) const override;
     Ciphertext<DCRTPoly> EvalChebyshevSeriesWithPrecomp(
-        std::shared_ptr<seriesPowers<DCRTPoly>> polys,
-        const std::vector<std::complex<double>>& coefficients) const override;
+            std::shared_ptr<seriesPowers<DCRTPoly>> polys,
+            const std::vector<std::complex<double>>& coefficients) const override;
 
     Ciphertext<DCRTPoly> EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const std::vector<int64_t>& coefficients, double a,
@@ -183,4 +184,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_ADVANCEDSHE_H_

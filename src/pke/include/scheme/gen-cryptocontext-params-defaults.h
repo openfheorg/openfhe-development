@@ -33,133 +33,136 @@
   Collection of parameter default values for different schemes
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
-#define __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
+#define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_
 
-#include "lattice/stdlatticeparms.h"  // SecurityLevel
-#include "scheme/scheme-id.h"         // SCHEME
-#include "utils/inttypes.h"
+#include <cstdint>
+
 #include "constants.h"
+#include "lattice/constants-lattice.h"  // SecretKeyDist
+#include "lattice/stdlatticeparms.h"    // SecurityLevel
+#include "scheme/scheme-id.h"           // SCHEME
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
 namespace CKKSRNS_SCHEME_DEFAULTS {
-constexpr SCHEME scheme               = CKKSRNS_SCHEME;
-constexpr PlaintextModulus ptModulus  = 0;
-constexpr uint32_t digitSize          = 0;
-constexpr float standardDeviation     = 3.19f;
+constexpr SCHEME scheme = CKKSRNS_SCHEME;
+constexpr PlaintextModulus ptModulus = 0;
+constexpr uint32_t digitSize = 0;
+constexpr float standardDeviation = 3.19f;
 constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
-constexpr uint32_t maxRelinSkDeg      = 2;
-constexpr KeySwitchTechnique ksTech   = HYBRID;
+constexpr uint32_t maxRelinSkDeg = 2;
+constexpr KeySwitchTechnique ksTech = HYBRID;
 // Backend-specific settings for CKKS
 #if NATIVEINT == 128
 constexpr ScalingTechnique scalTech = FIXEDAUTO;
-constexpr uint32_t firstModSize     = 89;
-constexpr uint32_t scalingModSize   = 78;
+constexpr uint32_t firstModSize = 89;
+constexpr uint32_t scalingModSize = 78;
 #else
 constexpr ScalingTechnique scalTech = FLEXIBLEAUTOEXT;
-constexpr uint32_t firstModSize     = 60;
-constexpr uint32_t scalingModSize   = 50;
+constexpr uint32_t firstModSize = 60;
+constexpr uint32_t scalingModSize = 50;
 #endif
-constexpr uint32_t batchSize                               = 0;
-constexpr uint32_t numLargeDigits                          = 0;
-constexpr uint32_t multiplicativeDepth                     = 1;
-constexpr SecurityLevel securityLevel                      = HEStd_128_classic;
-constexpr uint32_t ringDim                                 = 0;
-constexpr uint32_t evalAddCount                            = 0;
-constexpr uint32_t keySwitchCount                          = 0;
-constexpr EncryptionTechnique encryptionTechnique          = STANDARD;
-constexpr MultiplicationTechnique multiplicationTechnique  = HPS;
-constexpr uint32_t PRENumHops                              = 0;
-constexpr ProxyReEncryptionMode PREMode                    = NOT_SET;
-constexpr MultipartyMode multipartyMode                    = FIXED_NOISE_MULTIPARTY;
-constexpr ExecutionMode executionMode                      = EXEC_EVALUATION;
-constexpr DecryptionNoiseMode decryptionNoiseMode          = FIXED_NOISE_DECRYPT;
-constexpr double noiseEstimate                             = 0.0;
-constexpr double desiredPrecision                          = 25.0;
-constexpr uint32_t statisticalSecurity                     = 30;
-constexpr uint32_t numAdversarialQueries                   = 1;
-constexpr uint32_t thresholdNumOfParties                   = 1;
+constexpr uint32_t batchSize = 0;
+constexpr uint32_t numLargeDigits = 0;
+constexpr uint32_t multiplicativeDepth = 1;
+constexpr SecurityLevel securityLevel = HEStd_128_classic;
+constexpr uint32_t ringDim = 0;
+constexpr uint32_t evalAddCount = 0;
+constexpr uint32_t keySwitchCount = 0;
+constexpr EncryptionTechnique encryptionTechnique = STANDARD;
+constexpr MultiplicationTechnique multiplicationTechnique = HPS;
+constexpr uint32_t PRENumHops = 0;
+constexpr ProxyReEncryptionMode PREMode = NOT_SET;
+constexpr MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY;
+constexpr ExecutionMode executionMode = EXEC_EVALUATION;
+constexpr DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT;
+constexpr double noiseEstimate = 0.0;
+constexpr double desiredPrecision = 25.0;
+constexpr uint32_t statisticalSecurity = 30;
+constexpr uint32_t numAdversarialQueries = 1;
+constexpr uint32_t thresholdNumOfParties = 1;
 constexpr CompressionLevel interactiveBootCompressionLevel = SLACK;
-constexpr uint32_t compositeDegree                         = 1;
-constexpr uint32_t registerWordSize                        = NATIVEINT;
-constexpr CKKSDataType ckksDataType                        = REAL;
+constexpr uint32_t compositeDegree = 1;
+constexpr uint32_t registerWordSize = NATIVEINT;
+constexpr CKKSDataType ckksDataType = REAL;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
-constexpr SCHEME scheme                                    = BFVRNS_SCHEME;
-constexpr PlaintextModulus ptModulus                       = 0;
-constexpr uint32_t digitSize                               = 0;
-constexpr float standardDeviation                          = 3.19f;
-constexpr SecretKeyDist secretKeyDist                      = UNIFORM_TERNARY;
-constexpr uint32_t maxRelinSkDeg                           = 2;
-constexpr KeySwitchTechnique ksTech                        = BV;
-constexpr ScalingTechnique scalTech                        = NORESCALE;
-constexpr uint32_t firstModSize                            = 0;
-constexpr uint32_t batchSize                               = 0;
-constexpr uint32_t numLargeDigits                          = 0;
-constexpr uint32_t multiplicativeDepth                     = 1;
-constexpr uint32_t scalingModSize                          = 60;
-constexpr SecurityLevel securityLevel                      = HEStd_128_classic;
-constexpr uint32_t ringDim                                 = 0;
-constexpr uint32_t evalAddCount                            = 0;
-constexpr uint32_t keySwitchCount                          = 0;
-constexpr EncryptionTechnique encryptionTechnique          = STANDARD;
-constexpr MultiplicationTechnique multiplicationTechnique  = HPSPOVERQLEVELED;
-constexpr uint32_t PRENumHops                              = 0;
-constexpr ProxyReEncryptionMode PREMode                    = NOT_SET;
-constexpr MultipartyMode multipartyMode                    = FIXED_NOISE_MULTIPARTY;
-constexpr ExecutionMode executionMode                      = EXEC_EVALUATION;
-constexpr DecryptionNoiseMode decryptionNoiseMode          = FIXED_NOISE_DECRYPT;
-constexpr double noiseEstimate                             = 0.0;
-constexpr double desiredPrecision                          = 0.0;
-constexpr uint32_t statisticalSecurity                     = 0;
-constexpr uint32_t numAdversarialQueries                   = 0;
-constexpr uint32_t thresholdNumOfParties                   = 1;
+constexpr SCHEME scheme = BFVRNS_SCHEME;
+constexpr PlaintextModulus ptModulus = 0;
+constexpr uint32_t digitSize = 0;
+constexpr float standardDeviation = 3.19f;
+constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
+constexpr uint32_t maxRelinSkDeg = 2;
+constexpr KeySwitchTechnique ksTech = BV;
+constexpr ScalingTechnique scalTech = NORESCALE;
+constexpr uint32_t firstModSize = 0;
+constexpr uint32_t batchSize = 0;
+constexpr uint32_t numLargeDigits = 0;
+constexpr uint32_t multiplicativeDepth = 1;
+constexpr uint32_t scalingModSize = 60;
+constexpr SecurityLevel securityLevel = HEStd_128_classic;
+constexpr uint32_t ringDim = 0;
+constexpr uint32_t evalAddCount = 0;
+constexpr uint32_t keySwitchCount = 0;
+constexpr EncryptionTechnique encryptionTechnique = STANDARD;
+constexpr MultiplicationTechnique multiplicationTechnique = HPSPOVERQLEVELED;
+constexpr uint32_t PRENumHops = 0;
+constexpr ProxyReEncryptionMode PREMode = NOT_SET;
+constexpr MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY;
+constexpr ExecutionMode executionMode = EXEC_EVALUATION;
+constexpr DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT;
+constexpr double noiseEstimate = 0.0;
+constexpr double desiredPrecision = 0.0;
+constexpr uint32_t statisticalSecurity = 0;
+constexpr uint32_t numAdversarialQueries = 0;
+constexpr uint32_t thresholdNumOfParties = 1;
 constexpr CompressionLevel interactiveBootCompressionLevel = SLACK;
-constexpr uint32_t compositeDegree                         = 1;
-constexpr uint32_t registerWordSize                        = NATIVEINT;
-constexpr CKKSDataType ckksDataType                        = REAL;
+constexpr uint32_t compositeDegree = 1;
+constexpr uint32_t registerWordSize = NATIVEINT;
+constexpr CKKSDataType ckksDataType = REAL;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
-constexpr SCHEME scheme                                    = BGVRNS_SCHEME;
-constexpr PlaintextModulus ptModulus                       = 0;
-constexpr uint32_t digitSize                               = 0;
-constexpr float standardDeviation                          = 3.19f;
-constexpr SecretKeyDist secretKeyDist                      = UNIFORM_TERNARY;
-constexpr uint32_t maxRelinSkDeg                           = 2;
-constexpr KeySwitchTechnique ksTech                        = HYBRID;
-constexpr ScalingTechnique scalTech                        = FLEXIBLEAUTOEXT;
-constexpr uint32_t firstModSize                            = 0;
-constexpr uint32_t batchSize                               = 0;
-constexpr uint32_t numLargeDigits                          = 0;
-constexpr uint32_t multiplicativeDepth                     = 1;
-constexpr uint32_t scalingModSize                          = 0;
-constexpr SecurityLevel securityLevel                      = HEStd_128_classic;
-constexpr uint32_t ringDim                                 = 0;
-constexpr uint32_t evalAddCount                            = 5;
-constexpr uint32_t keySwitchCount                          = 3;
-constexpr EncryptionTechnique encryptionTechnique          = STANDARD;
-constexpr MultiplicationTechnique multiplicationTechnique  = HPS;
-constexpr uint32_t PRENumHops                              = 0;
-constexpr ProxyReEncryptionMode PREMode                    = NOT_SET;
-constexpr MultipartyMode multipartyMode                    = FIXED_NOISE_MULTIPARTY;
-constexpr ExecutionMode executionMode                      = EXEC_EVALUATION;
-constexpr DecryptionNoiseMode decryptionNoiseMode          = FIXED_NOISE_DECRYPT;
-constexpr double noiseEstimate                             = 0.0;
-constexpr double desiredPrecision                          = 0.0;
-constexpr uint32_t statisticalSecurity                     = 30;
-constexpr uint32_t numAdversarialQueries                   = 1;
-constexpr uint32_t thresholdNumOfParties                   = 1;
+constexpr SCHEME scheme = BGVRNS_SCHEME;
+constexpr PlaintextModulus ptModulus = 0;
+constexpr uint32_t digitSize = 0;
+constexpr float standardDeviation = 3.19f;
+constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
+constexpr uint32_t maxRelinSkDeg = 2;
+constexpr KeySwitchTechnique ksTech = HYBRID;
+constexpr ScalingTechnique scalTech = FLEXIBLEAUTOEXT;
+constexpr uint32_t firstModSize = 0;
+constexpr uint32_t batchSize = 0;
+constexpr uint32_t numLargeDigits = 0;
+constexpr uint32_t multiplicativeDepth = 1;
+constexpr uint32_t scalingModSize = 0;
+constexpr SecurityLevel securityLevel = HEStd_128_classic;
+constexpr uint32_t ringDim = 0;
+constexpr uint32_t evalAddCount = 5;
+constexpr uint32_t keySwitchCount = 3;
+constexpr EncryptionTechnique encryptionTechnique = STANDARD;
+constexpr MultiplicationTechnique multiplicationTechnique = HPS;
+constexpr uint32_t PRENumHops = 0;
+constexpr ProxyReEncryptionMode PREMode = NOT_SET;
+constexpr MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY;
+constexpr ExecutionMode executionMode = EXEC_EVALUATION;
+constexpr DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT;
+constexpr double noiseEstimate = 0.0;
+constexpr double desiredPrecision = 0.0;
+constexpr uint32_t statisticalSecurity = 30;
+constexpr uint32_t numAdversarialQueries = 1;
+constexpr uint32_t thresholdNumOfParties = 1;
 constexpr CompressionLevel interactiveBootCompressionLevel = SLACK;
-constexpr uint32_t compositeDegree                         = 1;
-constexpr uint32_t registerWordSize                        = NATIVEINT;
-constexpr CKKSDataType ckksDataType                        = REAL;
+constexpr uint32_t compositeDegree = 1;
+constexpr uint32_t registerWordSize = NATIVEINT;
+constexpr CKKSDataType ckksDataType = REAL;
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_DEFAULTS_H_

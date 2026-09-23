@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_FHE_H_
-#define _RGSW_FHE_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_H_
+
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 #include "rgsw-acckey.h"
 #include "rgsw-acckey32.h"
 #include "rgsw-cryptoparameters.h"
 #include "rlwe-ciphertext.h"
-
-#include <memory>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -47,7 +48,7 @@ namespace lbcrypto {
  * https://eprint.iacr.org/2014/816, https://eprint.iacr.org/2020/086 and https://eprint.iacr.org/2022/198
  */
 class RingGSWAccumulator {
-public:
+  public:
     RingGSWAccumulator() = default;
 
     /**
@@ -126,4 +127,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_H_

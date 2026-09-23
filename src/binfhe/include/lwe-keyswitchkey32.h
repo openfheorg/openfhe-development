@@ -29,12 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_KEYSWITCHKEY32_H_
-#define _LWE_KEYSWITCHKEY32_H_
-
-#include "lwe-cryptoparameters.h"
-#include "lwe-keyswitchkey-fwd.h"
-#include "utils/serializable.h"
+#ifndef SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY32_H_
+#define SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY32_H_
 
 #include <algorithm>
 #include <cstdint>
@@ -42,12 +38,16 @@
 #include <string>
 #include <vector>
 
+#include "lwe-cryptoparameters.h"
+#include "lwe-keyswitchkey-fwd.h"
+#include "utils/serializable.h"
+
 namespace lbcrypto {
 
 #if NATIVEINT != 32
 
 class LWESwitchingKey32Impl;
-using LWESwitchingKey32      = std::shared_ptr<LWESwitchingKey32Impl>;
+using LWESwitchingKey32 = std::shared_ptr<LWESwitchingKey32Impl>;
 using ConstLWESwitchingKey32 = const std::shared_ptr<const LWESwitchingKey32Impl>;
 
 /**
@@ -63,7 +63,7 @@ using ConstLWESwitchingKey32 = const std::shared_ptr<const LWESwitchingKey32Impl
  * residues as the 64-bit path, so results are bit-identical.
  */
 class LWESwitchingKey32Impl : public Serializable {
-public:
+  public:
     LWESwitchingKey32Impl() = default;
 
     // generation runs on 32-bit kernels, exact up to MAX_MODULUS_SIZE32, and the key switch
@@ -189,7 +189,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // One flat array, in whichever form the archive takes: the binary archives move it as a block,
     // and the JSON archive, which has no binary support, takes it one element at a time. Both sides
     // call this, so the two representations stay paired.
@@ -198,15 +198,14 @@ private:
         if constexpr (::cereal::traits::is_output_serializable<::cereal::BinaryData<T*>, Archive>::value ||
                       ::cereal::traits::is_input_serializable<::cereal::BinaryData<T*>, Archive>::value) {
             ar(::cereal::binary_data(p, n * sizeof(T)));
-        }
-        else {
+        } else {
             for (uint64_t i = 0; i < n; ++i)
                 ar(p[i]);
         }
     }
 
     void Size() {
-        m_rows  = static_cast<uint64_t>(m_d - 1) * (m_m - 1) + (m_top - 1);
+        m_rows = static_cast<uint64_t>(m_d - 1) * (m_m - 1) + (m_top - 1);
         m_sizeA = static_cast<uint64_t>(m_N) * m_rows * m_n;
         m_sizeB = static_cast<uint64_t>(m_N) * m_rows;
     }
@@ -231,4 +230,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_KEYSWITCHKEY32_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY32_H_

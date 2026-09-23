@@ -37,6 +37,8 @@
   which is exercised here at the widths where it previously overflowed (issue #667).
 */
 
+#include <cstdint>
+
 #include "gtest/gtest.h"
 #include "math/distrgen.h"
 #include "math/math-hal.h"

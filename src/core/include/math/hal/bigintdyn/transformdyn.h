@@ -33,21 +33,23 @@
   This file contains the linear transform interface functionality for the dynamic math backend
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
+    #include <map>
+    #include <mutex>
+    #include <unordered_map>
+    #include <utility>
+    #include <vector>
 
-        #include <map>
-        #include <vector>
-        #include <unordered_map>
-        #include <mutex>
-        #include <utility>
-
-        #include "math/hal/transform.h"
-        #include "math/hal/bigintdyn/mubintvecdyn.h"
-        #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/bigintdyn/mubintvecdyn.h"
+    #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/transform.h"
 
 /**
  * @namespace bigintdyn
@@ -62,7 +64,7 @@ template <typename VecType>
 class NumberTheoreticTransformDyn {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Forward transform in the ring Z_q[X]/(X^n-1).
    *
@@ -237,7 +239,7 @@ template <typename VecType>
 class ChineseRemainderTransformFTTDyn final : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Copies \p element into \p result and calls NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    *
@@ -371,7 +373,7 @@ template <typename VecType>
 class BluesteinFFTDyn {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Forward transform.
    *
@@ -459,7 +461,7 @@ public:
     // unity as key.
     static std::map<ModulusRootPair<IntType>, VecType> m_RBTableByModulusRootPair;
 
-private:
+  private:
     // map to store the precomputed NTT modulus with modulus as key.
     static std::map<IntType, ModulusRoot<IntType>> m_defaultNTTModulusRoot;
 };
@@ -471,7 +473,7 @@ template <typename VecType>
 class ChineseRemainderTransformArbDyn final : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Sets the cyclotomic polynomial.
    *
@@ -555,7 +557,7 @@ public:
    */
     VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, uint32_t power);
 
-private:
+  private:
     /**
    * @brief Padding zeroes to a vector
    * @param &element is the input of type VecType to be padded with zeros.
@@ -616,5 +618,6 @@ extern template class bigintdyn::NumberTheoreticTransformDyn<bigintdyn::BigVecto
 extern template class bigintdyn::ChineseRemainderTransformFTTDyn<bigintdyn::BigVector>;
 extern template class bigintdyn::BluesteinFFTDyn<bigintdyn::BigVector>;
 extern template class bigintdyn::ChineseRemainderTransformArbDyn<bigintdyn::BigVector>;
-    #endif
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H_

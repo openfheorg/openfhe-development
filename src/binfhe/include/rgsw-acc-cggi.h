@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACC_CGGI_H_
-#define _RGSW_ACC_CGGI_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_
+
+#include <cstdint>
+#include <memory>
 
 #include "rgsw-acc.h"
 #include "rgsw-acckey32.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -44,7 +45,7 @@ namespace lbcrypto {
  * https://eprint.iacr.org/2018/421.pdf and https://eprint.iacr.org/2020/086
  */
 class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
-public:
+  public:
     RingGSWAccumulatorCGGI() = default;
 
     /**
@@ -81,7 +82,7 @@ public:
     void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
-private:
+  private:
     /**
    * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2020/086
    *
@@ -110,4 +111,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACC_CGGI_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_CGGI_H_

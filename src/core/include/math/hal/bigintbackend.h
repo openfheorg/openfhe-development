@@ -29,13 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __BIGINTBACKEND_H__
-#define __BIGINTBACKEND_H__
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_
 
 #include "config_core.h"
-
-#include "math/hal/bigintfxd/backendfxd.h"
 #include "math/hal/bigintdyn/backenddyn.h"
+#include "math/hal/bigintfxd/backendfxd.h"
 #include "math/hal/bigintntl/backendntl.h"
 
 /**
@@ -59,7 +58,7 @@ namespace bigintbackend {
 // Configurable maximum bit length and type of underlying integer
 
 using BigInteger = M2Integer;
-using BigVector  = M2Vector;
+using BigVector = M2Vector;
 
 #elif MATHBACKEND == 4
 // This uses bigintdyn:: definition as default
@@ -68,14 +67,14 @@ using BigVector  = M2Vector;
 // Configurable type of underlying integer (either 32 or 64 bit)
 
 using BigInteger = M4Integer;
-using BigVector  = M4Vector;
+using BigVector = M4Vector;
 
 #elif MATHBACKEND == 6
 //     This uses bigintntl:: definition as default
 //     GMP 6.1.2 / NTL 10.3.0 backend
 
 using BigInteger = M6Integer;
-using BigVector  = M6Vector;
+using BigVector = M6Vector;
 
 #else
 
@@ -85,4 +84,4 @@ using BigVector  = M6Vector;
 
 }  // namespace bigintbackend
 
-#endif  // __BIGINTBACKEND_H__
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTBACKEND_H_

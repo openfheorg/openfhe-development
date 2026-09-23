@@ -29,21 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestSer.h"
+#include "UnitTestUtils.h"
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "include/gtest/gtest.h"
 #include "key/key-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestSer.h"
-#include "UnitTestUtils.h"
 #include "utils/exception.h"
-
-#include <iostream>
-#include <sstream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -110,13 +113,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr uint32_t RING_DIM        = 32;
-constexpr uint32_t MULT_DEPTH      = 3;
-constexpr uint32_t MAX_RELIN_DEG   = 2;
-constexpr uint32_t DSIZE           = 4;
-constexpr uint32_t PTM             = 65537;
-constexpr uint32_t BATCH           = 16;
-constexpr uint32_t FIRST_MOD_SIZE  = 0;
+constexpr uint32_t RING_DIM = 32;
+constexpr uint32_t MULT_DEPTH = 3;
+constexpr uint32_t MAX_RELIN_DEG = 2;
+constexpr uint32_t DSIZE = 4;
+constexpr uint32_t PTM = 65537;
+constexpr uint32_t BATCH = 16;
+constexpr uint32_t FIRST_MOD_SIZE = 0;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
@@ -154,10 +157,10 @@ static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
 // clang-format on
 //===========================================================================================================
 class UTBGVRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SER> {
-    using Element    = DCRTPoly;
+    using Element = DCRTPoly;
     const double eps = EPSILON;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -208,10 +211,10 @@ protected:
 
             // Update the batchSize from the default value
             const auto cryptoParamsBGVrns =
-                std::dynamic_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
+                    std::dynamic_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
 
             EncodingParams encodingParamsNew(
-                std::make_shared<EncodingParamsImpl>(cc->GetEncodingParams()->GetPlaintextModulus(), vecSize));
+                    std::make_shared<EncodingParamsImpl>(cc->GetEncodingParams()->GetPlaintextModulus(), vecSize));
             cryptoParamsBGVrns->SetEncodingParams(encodingParamsNew);
 
             OPENFHE_DEBUG("step 1");
@@ -229,8 +232,8 @@ protected:
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
             OPENFHE_DEBUG("step 3");
-            std::vector<int64_t> vals       = {1, 3, 5, 7, 9, 2, 4, 6, 8, 11};
-            Plaintext plaintextShort        = cc->MakePackedPlaintext(vals);
+            std::vector<int64_t> vals = {1, 3, 5, 7, 9, 2, 4, 6, 8, 11};
+            Plaintext plaintextShort = cc->MakePackedPlaintext(vals);
             Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
 
             OPENFHE_DEBUG("step 4");
@@ -265,25 +268,25 @@ protected:
             // serialize a bunch of mult keys
             std::stringstream ser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser0, sertype, kp.secretKey->GetKeyTag()), true)
-                << "single eval mult key ser fails";
+                    << "single eval mult key ser fails";
             std::stringstream ser2a;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser2a, sertype, cc), true)
-                << "context 1 eval mult key ser fails";
+                    << "context 1 eval mult key ser fails";
             std::stringstream ser3;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser3, sertype), true)
-                << "all context eval mult key ser fails";
+                    << "all context eval mult key ser fails";
 
             OPENFHE_DEBUG("step 8");
             // serialize a bunch of sum keys
             std::stringstream aser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser0, sertype, kp.secretKey->GetKeyTag()), true)
-                << "single eval sum key ser fails";
+                    << "single eval sum key ser fails";
             std::stringstream aser2a;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser2a, sertype, cc), true)
-                << "single ctx eval sum key ser fails";
+                    << "single ctx eval sum key ser fails";
             std::stringstream aser3;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser3, sertype), true)
-                << "all eval sum key ser fails";
+                    << "all eval sum key ser fails";
 
             OPENFHE_DEBUG("step 9");
             cc.reset();
@@ -348,14 +351,12 @@ protected:
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             EnablePrecomputeCRTTablesAfterDeserializaton();
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }

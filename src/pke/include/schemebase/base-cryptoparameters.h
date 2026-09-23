@@ -28,15 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "encoding/encodings.h"
 #include "encoding/plaintext.h"
 #include "utils/serializable.h"
-
-#include <memory>
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -52,12 +53,12 @@ namespace lbcrypto {
 template <typename Element>
 class CryptoParametersBase : public Serializable {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     CryptoParametersBase() = default;
 
     virtual ~CryptoParametersBase() = default;
@@ -188,23 +189,23 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     explicit CryptoParametersBase(const PlaintextModulus& plaintextModulus) {
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, const PlaintextModulus& plaintextModulus) {
-        m_params         = params;
+        m_params = params;
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams) {
-        m_params         = params;
+        m_params = params;
         m_encodingParams = encodingParams;
     }
 
     CryptoParametersBase(CryptoParametersBase<Element>* from, std::shared_ptr<typename Element::Params> newElemParms) {
-        *this    = *from;
+        *this = *from;
         m_params = newElemParms;
     }
 
@@ -232,4 +233,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_CRYPTOPARAMETERS_H_

@@ -29,14 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 
-#include "schemerns/rns-cryptoparameters.h"
-#include "globals.h"
-
-#include <string>
+#include <cstdint>
 #include <memory>
+#include <string>
+
+#include "globals.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -46,9 +47,9 @@ namespace lbcrypto {
 
 class CryptoParametersBGVRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
-    #define DISABLED_FOR_BGVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BGVRNS.");
+#define DISABLED_FOR_BGVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BGVRNS.");
 
-public:
+  public:
     CryptoParametersBGVRNS() : CryptoParametersRNS() {}
 
     CryptoParametersBGVRNS(const CryptoParametersBGVRNS& rhs) : CryptoParametersRNS(rhs) {}
@@ -68,8 +69,8 @@ public:
                            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                            MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET,
-                           MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                           ExecutionMode executionMode             = EXEC_EVALUATION,
+                           MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                           ExecutionMode executionMode = EXEC_EVALUATION,
                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                            PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                            uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
@@ -124,4 +125,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_

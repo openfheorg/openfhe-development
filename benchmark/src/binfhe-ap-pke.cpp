@@ -70,7 +70,7 @@ void FHEW_PUBKEYGEN(benchmark::State& state, ParamSet param_set) {
     BinFHEContext cc = GenerateFHEWContext(param);
     for (auto _ : state) {
         LWEPrivateKey sk = cc.KeyGen();
-        LWEPublicKey pk  = cc.PubKeyGen(sk);
+        LWEPublicKey pk = cc.PubKeyGen(sk);
     }
 }
 

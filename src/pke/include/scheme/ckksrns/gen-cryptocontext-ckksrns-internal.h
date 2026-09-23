@@ -33,8 +33,12 @@
   API to generate CKKS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
-#define __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+
+#include <cmath>
+#include <cstdint>
+#include <memory>
 
 #include "constants.h"
 #include "cryptocontext-fwd.h"
@@ -42,8 +46,6 @@
 #include "scheme/scheme-id.h"
 #include "scheme/scheme-utils.h"
 #include "utils/exception.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -53,19 +55,19 @@ class CCParams;
 
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
-    const CCParams<ContextGeneratorType>& parameters) {
-    using ParmType                   = typename Element::Params;
+        const CCParams<ContextGeneratorType>& parameters) {
+    using ParmType = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
     auto ep = std::make_shared<ParmType>();
 
-    uint32_t scalingModSize    = parameters.GetScalingModSize();
-    uint32_t firstModSize      = parameters.GetFirstModSize();
+    uint32_t scalingModSize = parameters.GetScalingModSize();
+    uint32_t firstModSize = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
-        double logstd =
-            parameters.GetStatisticalSecurity() / 2 + std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
+        double logstd = parameters.GetStatisticalSecurity() / 2 +
+                        std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = std::pow(2, logstd + parameters.GetNoiseEstimate());
 #if NATIVEINT == 128
         scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +
@@ -73,7 +75,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         firstModSize = scalingModSize + 11;
 #else
         scalingModSize = MAX_MODULUS_SIZE - 1;
-        firstModSize   = MAX_MODULUS_SIZE;
+        firstModSize = MAX_MODULUS_SIZE;
         if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
             OPENFHE_THROW("Precision of less than 3 bits is not supported. logstd " + std::to_string(logstd) +
                           " + noiseEstimate " + std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
@@ -136,4 +138,4 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 }
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_

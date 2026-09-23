@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
@@ -36,13 +41,10 @@
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "utils/debug.h"
 
-#include <iostream>
-#include <vector>
-
 using namespace lbcrypto;
 
 class UTBFVRNS_DECRYPT : public ::testing::TestWithParam<std::tuple<uint32_t, uint32_t>> {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -52,7 +54,7 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-public:
+  public:
 };
 
 /**
@@ -67,7 +69,7 @@ static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64
     std::vector<uint32_t> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {
         allTrue[i] = 1;
-        tmp[i]     = (a[i] == b[i]);
+        tmp[i] = (a[i] == b[i]);
     }
     EXPECT_TRUE(tmp == allTrue) << failmsg;
 }
@@ -76,7 +78,7 @@ static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64
 // static std::vector<uint32_t> dcrtbit_args{30, 40, 50, 60};
 
 TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
-    uint32_t ptm      = std::get<0>(GetParam());
+    uint32_t ptm = std::get<0>(GetParam());
     uint32_t dcrtBits = std::get<1>(GetParam());
 
     CCParams<CryptoContextBFVRNS> parameters;
@@ -95,8 +97,7 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
     for (uint32_t i = 0; i < vecsize; ++i) {
         if (ptm == 2) {
             vectorOfInts[i] = rand() % ptm;  // NOLINT
-        }
-        else {
+        } else {
             vectorOfInts[i] = (rand() % ptm) / 2;  // NOLINT
         }
     }
@@ -114,8 +115,7 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
         auto tmp_a = plaintext->GetCoefPackedValue();
         auto tmp_b = result->GetCoefPackedValue();
         checkEquality(tmp_a, tmp_b, vecsize, "BFVrns Decrypt fails");
-    }
-    else {
+    } else {
         auto tmp_a = plaintext->GetPackedValue();
         auto tmp_b = result->GetPackedValue();
         checkEquality(tmp_a, tmp_b, vecsize, "BFVrns Decrypt fails");

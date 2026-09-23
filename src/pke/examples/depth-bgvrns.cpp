@@ -37,9 +37,12 @@
 #define PROFILE
 
 #include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "openfhe.h"
 
@@ -123,25 +126,25 @@ int main(int argc, char* argv[]) {
     ////////////////////////////////////////////////////////////
 
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
     std::vector<int64_t> vectorOfInts2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
     std::vector<int64_t> vectorOfInts3 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
+    Plaintext plaintext3 = cryptoContext->MakePackedPlaintext(vectorOfInts3);
 
     std::vector<int64_t> vectorOfInts4 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext4               = cryptoContext->MakePackedPlaintext(vectorOfInts4);
+    Plaintext plaintext4 = cryptoContext->MakePackedPlaintext(vectorOfInts4);
 
     std::vector<int64_t> vectorOfInts5 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext5               = cryptoContext->MakePackedPlaintext(vectorOfInts5);
+    Plaintext plaintext5 = cryptoContext->MakePackedPlaintext(vectorOfInts5);
 
     std::vector<int64_t> vectorOfInts6 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext6               = cryptoContext->MakePackedPlaintext(vectorOfInts6);
+    Plaintext plaintext6 = cryptoContext->MakePackedPlaintext(vectorOfInts6);
 
     std::vector<int64_t> vectorOfInts7 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext7               = cryptoContext->MakePackedPlaintext(vectorOfInts7);
+    Plaintext plaintext7 = cryptoContext->MakePackedPlaintext(vectorOfInts7);
 
     std::cout << "\nOriginal Plaintext #1: \n";
     std::cout << plaintext1 << std::endl;

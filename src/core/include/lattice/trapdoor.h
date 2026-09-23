@@ -35,17 +35,17 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_H
-#define LBCRYPTO_INC_LATTICE_TRAPDOOR_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
+#define SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_
 
-#include "lattice/dgsampling.h"
-#include "lattice/field2n.h"
-
-#include "math/matrix.h"
-
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <utility>
 
+#include "lattice/dgsampling.h"
+#include "lattice/field2n.h"
+#include "math/matrix.h"
 #include "utils/debug.h"
 
 namespace lbcrypto {
@@ -57,7 +57,7 @@ namespace lbcrypto {
  */
 template <class Element>
 class RLWETrapdoorPair {
-public:
+  public:
     // matrix of noise polynomials
     Matrix<Element> m_r;
     // matrix
@@ -89,10 +89,10 @@ public:
 template <class Element>
 class RLWETrapdoorUtility {
     using ParmType = typename Element::Params;
-    using DggType  = typename Element::DggType;
-    using IntType  = typename Element::Integer;
+    using DggType = typename Element::DggType;
+    using IntType = typename Element::Integer;
 
-public:
+  public:
     /**
    * Trapdoor generation method as described in Algorithm 1 of
    * https://eprint.iacr.org/2017/844.pdf
@@ -127,7 +127,7 @@ public:
     static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGenSquareMat(std::shared_ptr<ParmType> params,
                                                                                       double stddev, size_t dimension,
                                                                                       int64_t base = 2,
-                                                                                      bool bal     = false);
+                                                                                      bool bal = false);
 
     /**
    * Gaussian sampling as described in Alogorithm 2 of
@@ -285,8 +285,7 @@ public:
             for (size_t i = 0; i < n * k; i++) {
                 p2ZVector(i, 0) = dgg.GenerateIntegerKarney(0, sigmaLarge);
             }
-        }
-        else {
+        } else {
             // Peikert's inversion sampling method
             auto dggVector = dggLargeSigma.GenerateIntVector(n * k);
             for (size_t i = 0; i < n * k; i++)
@@ -385,8 +384,7 @@ public:
                     p2ZVector(i, j) = dgg.GenerateIntegerKarney(0, sigmaLarge);
                 }
             }
-        }
-        else {
+        } else {
             // Peikert's inversion sampling method
             auto dggVector = dggLargeSigma.GenerateIntVector(n * k * d);
             for (size_t i = 0; i < n * k; i++) {
@@ -454,7 +452,7 @@ public:
             Matrix<Field2n> c([&]() { return Field2n(n, Format::COEFFICIENT); }, 2 * d, 1);
 
             for (size_t i = 0; i < d; i++) {
-                c(i, 0)     = Field2n(Tp2(i, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));
+                c(i, 0) = Field2n(Tp2(i, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));
                 c(i + d, 0) = Field2n(Tp2(i + d, j)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));
             }
 
@@ -478,4 +476,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_TRAPDOOR_H_

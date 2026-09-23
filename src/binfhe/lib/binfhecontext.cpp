@@ -35,9 +35,12 @@
 
 #include "binfhecontext.h"
 
+#include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 static constexpr double STD_DEV = 3.19;
 
@@ -57,8 +60,8 @@ void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger 
                                           BINFHE_METHOD method, uint32_t numAutoKeys) {
     auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS, keyDist);
     auto rgswparams =
-        std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
-    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+            std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
+    m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
@@ -79,21 +82,18 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, bool arbFunc, uint3
     uint32_t baseG = 0;
     if (logQ > 25) {
         baseG = 1 << 14;
-    }
-    else if (logQ > 16) {
+    } else if (logQ > 16) {
         baseG = 1 << 18;
-    }
-    else if (logQ > 11) {
+    } else if (logQ > 11) {
         baseG = 1 << 27;
-    }
-    else {  // if (logQ == 11)
-        baseG     = 1 << 5;
+    } else {  // if (logQ == 11)
+        baseG = 1 << 5;
         logQprime = 27;
     }
 
     // choose minimum ringD satisfying sl and Q
     // if specified some larger N, security is also satisfied
-    auto minRingDim  = StdLatticeParm::FindRingDim(HEStd_ternary, HEStd_128_classic, logQprime);
+    auto minRingDim = StdLatticeParm::FindRingDim(HEStd_ternary, HEStd_128_classic, logQprime);
     uint32_t ringDim = N > minRingDim ? N : minRingDim;
 
     // find prime Q for NTT
@@ -104,13 +104,13 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, bool arbFunc, uint3
 
     uint64_t qKS = uint64_t(1) << 35;
 
-    uint32_t n      = (s == TOY) ? 32 : 1305;
-    auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, STD_DEV, 32);
+    uint32_t n = (s == TOY) ? 32 : 1305;
+    auto lweparams = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, STD_DEV, 32);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, STD_DEV, UNIFORM_TERNARY,
                                                             ((logQ != 11) && timeOptimization));
 
-    m_params           = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
-    m_binfhescheme     = std::make_shared<BinFHEScheme>(method);
+    m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme = std::make_shared<BinFHEScheme>(method);
     m_timeOptimization = timeOptimization;
 }
 
@@ -243,8 +243,8 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
 
     auto& params = search->second;
 
-    auto Q         = LastPrime<NativeInteger>(params.numberBits, params.cyclOrder);
-    auto ringDim   = params.cyclOrder >> 1;
+    auto Q = LastPrime<NativeInteger>(params.numberBits, params.cyclOrder);
+    auto ringDim = params.cyclOrder >> 1;
     auto lweparams = std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q,
                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,
                                                        params.baseKS, params.keyDist);
@@ -253,7 +253,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase,
                                                             params.gadgetBaseMap, params.baseRK, method, params.stdDev,
                                                             params.keyDist, false, params.numAutoKeys);
-    m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
 
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
@@ -261,25 +261,24 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET s, BINFHE_METHOD metho
 void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
 
-    auto Q         = LastPrime<NativeInteger>(params.numberBits, params.cyclOrder);
-    auto ringDim   = params.cyclOrder >> 1;
+    auto Q = LastPrime<NativeInteger>(params.numberBits, params.cyclOrder);
+    auto ringDim = params.cyclOrder >> 1;
     auto lweparams = std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q,
                                                        (params.modKS == PRIME ? Q : params.modKS), params.stdDev,
                                                        params.baseKS, params.keyDist);
     std::shared_ptr<RingGSWCryptoParams> rgswparams;
     if (params.gadgetBaseMap.empty()) {
         rgswparams =
-            std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
-                                                  params.stdDev, params.keyDist, false, params.numAutoKeys);
-    }
-    else {
+                std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
+                                                      params.stdDev, params.keyDist, false, params.numAutoKeys);
+    } else {
         VerifyGadgetBaseMapCoverage(params.gadgetBaseMap, params.latticeParam);
 
         rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase,
                                                            params.gadgetBaseMap, params.baseRK, method, params.stdDev,
                                                            params.keyDist, false, params.numAutoKeys);
     }
-    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_params = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
@@ -312,7 +311,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BIN
     if (sk == nullptr)
         OPENFHE_THROW("PrivateKey is empty");
     auto&& LWEParams = m_params->GetLWEParams();
-    auto ct          = m_LWEscheme->Encrypt(LWEParams, sk, m, p, (mod == 0 ? LWEParams->Getq() : mod));
+    auto ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p, (mod == 0 ? LWEParams->Getq() : mod));
 
     // BINFHE_OUTPUT is kept as it is for backward compatibility but
     // this logic is obsolete now and commented out
@@ -327,7 +326,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINF
     if (pk == nullptr)
         OPENFHE_THROW("PublicKey is empty");
     auto&& LWEParams = m_params->GetLWEParams();
-    auto ct          = m_LWEscheme->EncryptN(LWEParams, pk, m, p, (mod == 0 ? LWEParams->GetQ() : mod));
+    auto ct = m_LWEscheme->EncryptN(LWEParams, pk, m, p, (mod == 0 ? LWEParams->GetQ() : mod));
 
     // Switch from ct of modulus Q and dimension N to smaller q and n
     // This is done by default while calling Encrypt but the output could
@@ -377,7 +376,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode, boo
     if (sk == nullptr)
         OPENFHE_THROW("PrivateKey is empty");
     auto&& RGSWParams = m_params->GetRingGSWParams();
-    auto temp         = RGSWParams->GetBaseG();
+    auto temp = RGSWParams->GetBaseG();
 
     // the map is keyed by gadget base alone, but what it caches is only valid for the secret
     // key it was generated from; take a cached entry only when this call just regenerated it
@@ -388,9 +387,8 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode, boo
         }
         RGSWParams->Change_BaseG(temp);
         m_BTKey = m_BTKey_map[temp];
-    }
-    else {
-        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode, internal32);
+    } else {
+        m_BTKey = m_binfhescheme->KeyGen(m_params, sk, keygenMode, internal32);
         m_BTKey_map[temp] = m_BTKey;
     }
 

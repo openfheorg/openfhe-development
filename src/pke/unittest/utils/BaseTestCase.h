@@ -28,8 +28,12 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __BASETESTCASE_H__
-#define __BASETESTCASE_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_BASETESTCASE_H_
+#define SRC_PKE_UNITTEST_UTILS_BASETESTCASE_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "config_core.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
@@ -38,17 +42,13 @@
 #include "scheme/gen-cryptocontext-params.h"
 #include "utils/exception.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-
 struct BaseTestCase {
-private:
+  private:
     // std::shared_ptr<lbcrypto::Params> params;
     lbcrypto::SCHEME scheme;
     std::vector<std::string> paramOverrides;
 
-public:
+  public:
     // there are cases when we don't support some features depending on different conditions.
     // skipTest() is to check all those conditions, so we do not get our unit tests failed
     bool skipTest() const {
@@ -123,8 +123,7 @@ public:
         // get the subset of elements with the parameter override values
         try {
             paramOverrides = std::vector<std::string>(start, start + numOverrides);
-        }
-        catch (...) {
+        } catch (...) {
             std::string errMsg("Check the number of parameter overrides in the .csv file. It should be [" +
                                std::to_string(numOverrides) + "]");
             OPENFHE_THROW(errMsg);
@@ -133,4 +132,4 @@ public:
     }
 };
 
-#endif  // __BASETESTCASE_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_BASETESTCASE_H_

@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __RLWE_MP_H_
-#define __RLWE_MP_H_
+#ifndef SRC_PKE_INCLUDE_SCHEMELET_RLWE_MP_H_
+#define SRC_PKE_INCLUDE_SCHEMELET_RLWE_MP_H_
+
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 #include "ciphertext-fwd.h"
 #include "cryptocontext-fwd.h"
 #include "key/keypair.h"
 #include "openfhecore.h"
-
-#include <memory>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -46,7 +47,7 @@ class SchemeletRLWEMP {
     using DggType = typename DCRTPoly::DggType;
     using DugType = typename DCRTPoly::DugType;
 
-public:
+  public:
     ~SchemeletRLWEMP() = default;
 
     static std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> GetElementParams(const PrivateKey<DCRTPoly>& privateKey,
@@ -75,4 +76,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __RLWE_MP_H_
+#endif  // SRC_PKE_INCLUDE_SCHEMELET_RLWE_MP_H_

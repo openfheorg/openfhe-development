@@ -28,11 +28,11 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __DEMANGLE_H__
-#define __DEMANGLE_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_DEMANGLE_H_
+#define SRC_CORE_INCLUDE_UTILS_DEMANGLE_H_
 
 #include <string>
 
 std::string demangle(const char* name) noexcept;
 
-#endif  // __DEMANGLE_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_DEMANGLE_H_

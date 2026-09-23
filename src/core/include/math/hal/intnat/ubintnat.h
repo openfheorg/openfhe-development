@@ -33,17 +33,8 @@
  This file contains the main class for native integers. It implements the same methods as other mathematical backends.
 */
 
-#ifndef LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
-#define LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
-
-#include "math/hal/basicint.h"
-#include "math/hal/bigintbackend.h"
-#include "math/hal/integer.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_UBINTNAT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_UBINTNAT_H_
 
 #include <cstdint>
 #include <limits>
@@ -52,6 +43,14 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "math/hal/basicint.h"
+#include "math/hal/bigintbackend.h"
+#include "math/hal/integer.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
@@ -83,32 +82,32 @@ class NumberTheoreticTransformNat;
  */
 template <typename utype>
 struct DataTypes {
-    using SignedType       = void;
-    using DoubleType       = void;
+    using SignedType = void;
+    using DoubleType = void;
     using SignedDoubleType = void;
 };
 template <>
 struct DataTypes<uint32_t> {
-    using SignedType       = int32_t;
-    using DoubleType       = uint64_t;
+    using SignedType = int32_t;
+    using DoubleType = uint64_t;
     using SignedDoubleType = int64_t;
 };
 template <>
 struct DataTypes<uint64_t> {
     using SignedType = int64_t;
 #if defined(HAVE_INT128)
-    using DoubleType       = uint128_t;
+    using DoubleType = uint128_t;
     using SignedDoubleType = int128_t;
 #else
-    using DoubleType       = uint64_t;
+    using DoubleType = uint64_t;
     using SignedDoubleType = int64_t;
 #endif
 };
 #if defined(HAVE_INT128)
 template <>
 struct DataTypes<uint128_t> {
-    using SignedType       = int128_t;
-    using DoubleType       = uint128_t;
+    using SignedType = int128_t;
+    using DoubleType = uint128_t;
     using SignedDoubleType = int128_t;
 };
 #endif
@@ -139,7 +138,7 @@ struct MaxModulusBits<uint128_t> {
  */
 template <typename NativeInt>
 class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT<NativeInt>> {
-private:
+  private:
     NativeInt m_value{0};
 
     // bit width of the integral data type
@@ -148,7 +147,7 @@ private:
     friend class NativeVectorT<NativeIntegerT<NativeInt>>;
     friend class NumberTheoreticTransformNat<NativeVectorT<NativeIntegerT<NativeInt>>>;
 
-public:
+  public:
     using Integer = NativeInt;
 
     // Width conversion between native integer widths. Explicit; the caller guarantees value fits target.
@@ -156,8 +155,8 @@ public:
     explicit NativeIntegerT(const NativeIntegerT<OtherInt>& val) noexcept
         : m_value(static_cast<NativeInt>(val.template ConvertToInt<OtherInt>())) {}
     using SignedNativeInt = typename DataTypes<NativeInt>::SignedType;
-    using DNativeInt      = typename DataTypes<NativeInt>::DoubleType;
-    using SDNativeInt     = typename DataTypes<NativeInt>::SignedDoubleType;
+    using DNativeInt = typename DataTypes<NativeInt>::DoubleType;
+    using SDNativeInt = typename DataTypes<NativeInt>::SignedDoubleType;
 
     // data structure to represent a double-word integer as two single-word integers
     struct typeD {
@@ -193,7 +192,7 @@ public:
     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
-                                               std::is_same_v<T, M6Integer>,
+                                                   std::is_same_v<T, M6Integer>,
                                            bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value{val.template ConvertToInt<NativeInt>()} {}
 
@@ -229,7 +228,7 @@ public:
     }
 
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
-                                               std::is_same_v<T, M6Integer>,
+                                                   std::is_same_v<T, M6Integer>,
                                            bool> = true>
     constexpr NativeIntegerT& operator=(T val) noexcept {
         m_value = val.template ConvertToInt<NativeInt>();
@@ -555,8 +554,8 @@ public:
     NativeIntegerT& MultiplyAndRoundEq(const NativeIntegerT& p, const NativeIntegerT& q) {
         if (q.m_value == 0)
             OPENFHE_THROW("NativeIntegerT MultiplyAndRoundEq: Divide by zero");
-        return *this =
-                   static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
+        return *this = static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) +
+                                              0.5);
     }
 
     /**
@@ -894,8 +893,7 @@ public:
                 return ModMul(b, modulus, modulus.ComputeMu());
             auto& mv{modulus.m_value};
             return {ModMulD(m_value % mv, b.m_value % mv, mv)};
-        }
-        else {
+        } else {
             auto av{m_value};
             auto bv{b.m_value};
             auto& mv{modulus.m_value};
@@ -925,8 +923,7 @@ public:
             auto& mv{modulus.m_value};
             m_value = ModMulD(m_value % mv, b.m_value % mv, mv);
             return *this;
-        }
-        else {
+        } else {
             auto av{m_value};
             auto bv{b.m_value};
             auto& mv{modulus.m_value};
@@ -1009,8 +1006,7 @@ public:
             if (modulus.GetMSB() <= MAX_MODULUS_SIZE)
                 return ModMulFast(b, modulus, modulus.ComputeMu());
             return {ModMulD(m_value, b.m_value, modulus.m_value)};
-        }
-        else {
+        } else {
             DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
             DNativeInt dmv{modulus.m_value};
             if (rv >= dmv)
@@ -1033,8 +1029,7 @@ public:
                 return ModMulFastEq(b, modulus, modulus.ComputeMu());
             m_value = ModMulD(m_value, b.m_value, modulus.m_value);
             return *this;
-        }
-        else {
+        } else {
             DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
             DNativeInt dmv{modulus.m_value};
             if (rv >= dmv)
@@ -1153,7 +1148,7 @@ public:
                                       const NativeIntegerT& bInv) {
         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
-        m_value     = static_cast<NativeInt>(yprime >= 0 ? yprime : yprime + modulus.m_value);
+        m_value = static_cast<NativeInt>(yprime >= 0 ? yprime : yprime + modulus.m_value);
         return *this;
     }
 
@@ -1225,13 +1220,13 @@ public:
         SignedNativeInt y{0};
         SignedNativeInt x{1};
         while (a > 1) {
-            auto t  = modulus;
-            auto q  = a / t;
+            auto t = modulus;
+            auto q = a / t;
             modulus = a % t;
-            a       = t;
-            t       = y;
-            y       = x - q * y;
-            x       = t;
+            a = t;
+            t = y;
+            y = x - q * y;
+            x = t;
         }
         if (x < 0)
             x += mod.m_value;
@@ -1304,7 +1299,7 @@ public:
    *
    * @return the int representation of the value as uint32_t.
    */
-    template <typename T             = NativeInt,
+    template <typename T = NativeInt,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
     constexpr T ConvertToInt() const noexcept {
@@ -1433,7 +1428,7 @@ public:
 
     template <class Archive, typename T = void>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -1477,7 +1472,7 @@ public:
 
     template <class Archive, typename T = void>
     typename std::enable_if_t<std::is_same_v<NativeInt, uint64_t> || std::is_same_v<NativeInt, uint32_t>, T> save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
 
@@ -1523,7 +1518,7 @@ public:
         return true;
     }
 
-private:
+  private:
     /**
    * Right shifts a typeD integer by a specific number of bits
    * and stores the result as a single-word integer.
@@ -1551,8 +1546,7 @@ private:
     static NativeInt DivD(NativeInt hi, NativeInt lo, NativeInt divisor) {
         if constexpr (!std::is_same_v<NativeInt, DNativeInt>) {
             return static_cast<NativeInt>(((static_cast<DNativeInt>(hi) << MaxBits()) | lo) / divisor);
-        }
-        else {
+        } else {
             constexpr int64_t W{NativeIntegerT::MaxBits()};
             NativeInt q{0};
             NativeInt r{hi};
@@ -1670,7 +1664,7 @@ private:
         constexpr uint128_t divisor{0x38d7ea4c68000};  // 10**15
         std::string tmp(46, '0');
         auto msd_it = tmp.end() - 1;
-        auto it     = tmp.end();
+        auto it = tmp.end();
         for (auto i = 3; i != 0; --i, it -= maxChars) {
             auto part = static_cast<uint64_t>(value % divisor);
             value /= divisor;
@@ -1717,4 +1711,4 @@ template std::ostream& operator<< <uint64_t>(std::ostream& os, const std::vector
 
 }  // namespace intnat
 
-#endif  // LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_UBINTNAT_H_

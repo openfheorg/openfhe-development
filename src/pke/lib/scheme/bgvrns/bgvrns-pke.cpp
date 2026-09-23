@@ -35,9 +35,13 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
+#include "scheme/bgvrns/bgvrns-pke.h"
+
+#include <cstdint>
+#include <vector>
+
 #include "ciphertext.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "scheme/bgvrns/bgvrns-pke.h"
 
 namespace lbcrypto {
 
@@ -45,7 +49,7 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
                                  NativePoly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    size_t sizeQl                   = cv[0].GetParams()->GetParams().size();
+    size_t sizeQl = cv[0].GetParams()->GetParams().size();
 
     DCRTPoly b;
     NativeInteger scalingFactorInt = ciphertext->GetScalingFactorInt();
@@ -62,14 +66,13 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
                 cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
                 for (size_t i = 0; i < sizeQl - 1; ++i) {
-                    NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                    NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
                     NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
                     scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
                 }
             }
         }
-    }
-    else {
+    } else {
         std::vector<DCRTPoly> ct(cv);
         if (sizeQl > 0) {
             for (size_t j = sizeQl - 1; j > 0; j--) {
@@ -82,7 +85,7 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
                 cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
                 for (size_t i = 0; i < sizeQl - 1; i++) {
-                    NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                    NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
                     NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
                     scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
                 }

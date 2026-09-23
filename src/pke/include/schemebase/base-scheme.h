@@ -29,8 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_SCHEME_H
-#define LBCRYPTO_CRYPTO_BASE_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_SCHEME_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "ciphertext.h"
 #include "key/evalkey-fwd.h"
@@ -46,13 +55,6 @@
 #include "schemebase/base-pre.h"
 #include "utils/caller_info.h"
 #include "utils/exception.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <tuple>
-#include <utility>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -72,12 +74,12 @@ class KeyPair;
 template <typename Element>
 class SchemeBase {
     using ParmType = typename Element::Params;
-    using IntType  = typename Element::Integer;
-    using DugType  = typename Element::DugType;
-    using DggType  = typename Element::DggType;
-    using TugType  = typename Element::TugType;
+    using IntType = typename Element::Integer;
+    using DugType = typename Element::DugType;
+    using DggType = typename Element::DggType;
+    using TugType = typename Element::TugType;
 
-public:
+  public:
     SchemeBase() = default;
 
     virtual ~SchemeBase() = default;
@@ -286,7 +288,7 @@ public:
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-        const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+            const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         VerifyKeySwitchEnabled(__func__);
         return m_KeySwitch->EvalKeySwitchPrecomputeCore(c, cryptoParamsBase);
     }
@@ -640,7 +642,7 @@ public:
     /////////////////////////////////////////
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
     virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                                  const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
@@ -667,7 +669,7 @@ public:
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(
-        ConstCiphertext<Element> ciphertext) const {
+            ConstCiphertext<Element> ciphertext) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -721,7 +723,7 @@ public:
     }
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
+            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                             const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
@@ -950,14 +952,14 @@ public:
     /////////////////////////////////////
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
-        const PrivateKey<Element> privateKey) const;
+            const PrivateKey<Element> privateKey) const;
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
-        std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+            std::vector<uint32_t>& indices) const;
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
 
     virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
@@ -1053,18 +1055,18 @@ public:
                                                const EvalKey<Element> evalKey) const;
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
-        const std::vector<uint32_t>& indexList, const std::string& keyId);
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+            const std::vector<uint32_t>& indexList, const std::string& keyId);
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
-        const std::vector<int32_t>& indexList, const std::string& keyId);
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
+            const std::vector<int32_t>& indexList, const std::string& keyId);
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap,
-        const std::string& keyId = "");
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap, const std::string& keyId = "");
 
     virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                               const std::string& keyId);
@@ -1073,12 +1075,12 @@ public:
                                               const std::string& keyId);
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
 
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
 
     virtual PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
                                                const std::string& keyId);
@@ -1209,7 +1211,7 @@ public:
     }
 
     std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
-        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         VerifyFHEEnabled(__func__);
         return m_FHE->EvalFEFuncBootstrapPrecompute(ciphertext, coefficients);
     }
@@ -1456,8 +1458,7 @@ public:
         // m_FHE was added in v1.1.2
         try {
             ar(::cereal::make_nvp("fhe", m_FHE));
-        }
-        catch (cereal::Exception&) {
+        } catch (cereal::Exception&) {
             m_FHE = nullptr;
         }
 
@@ -1466,8 +1467,7 @@ public:
         // m_SchemeSwitch was added in v1.1.3
         try {
             ar(::cereal::make_nvp("schswitch", m_SchemeSwitch));
-        }
-        catch (cereal::Exception&) {
+        } catch (cereal::Exception&) {
             m_SchemeSwitch = nullptr;
         }
 
@@ -1530,8 +1530,8 @@ public:
     */
     inline void VerifyPKEEnabled(const std::string& functionName) const {
         if (m_PKE == nullptr) {
-            std::string errMsg =
-                std::string(functionName) + " operation has not been enabled. Enable(PKE) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(PKE) must be called to enable it.";
             OPENFHE_THROW(errMsg);
         }
     }
@@ -1542,8 +1542,8 @@ public:
     */
     inline void VerifyPREEnabled(const std::string& functionName) const {
         if (m_PRE == nullptr) {
-            std::string errMsg =
-                std::string(functionName) + " operation has not been enabled. Enable(PRE) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(PRE) must be called to enable it.";
             OPENFHE_THROW(errMsg);
         }
     }
@@ -1566,8 +1566,8 @@ public:
     */
     inline void VerifyFHEEnabled(const std::string& functionName) const {
         if (m_FHE == nullptr) {
-            std::string errMsg =
-                std::string(functionName) + " operation has not been enabled. Enable(FHE) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(FHE) must be called to enable it.";
             OPENFHE_THROW(errMsg);
         }
     }
@@ -1599,7 +1599,7 @@ public:
         return out;
     }
 
-protected:
+  protected:
     std::shared_ptr<ParameterGenerationBase<Element>> m_ParamsGen;
     std::shared_ptr<PKEBase<Element>> m_PKE;
     std::shared_ptr<KeySwitchBase<Element>> m_KeySwitch;
@@ -1622,4 +1622,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_SCHEME_H_

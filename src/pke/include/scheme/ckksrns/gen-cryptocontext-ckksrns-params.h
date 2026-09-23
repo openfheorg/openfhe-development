@@ -33,13 +33,14 @@
   Parameter class to generate CKKSRNS crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
-#define __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H_
 
-#include "scheme/gen-cryptocontext-params.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "scheme/gen-cryptocontext-params.h"
 
 namespace lbcrypto {
 
@@ -53,12 +54,12 @@ class CCParams;
 //====================================================================================================================
 template <>
 class CCParams<CryptoContextCKKSRNS> : public Params {
-public:
+  public:
     CCParams() : Params(CKKSRNS_SCHEME) {}
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj)     = default;
+    CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj) noexcept = default;
-    ~CCParams()                       = default;
+    ~CCParams() = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to CKKSRNS
@@ -99,4 +100,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H_

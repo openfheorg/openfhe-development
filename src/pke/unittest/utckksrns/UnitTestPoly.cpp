@@ -29,14 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <iterator>
-#include <vector>
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -130,10 +134,10 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_EVAL
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t RDIM       = 512;
-constexpr uint32_t RDIM_LRG   = 1024;
+constexpr uint32_t RDIM = 512;
+constexpr uint32_t RDIM_LRG = 1024;
 constexpr uint32_t MULT_DEPTH = 10;
-constexpr uint32_t BATCH      = 8;
+constexpr uint32_t BATCH = 8;
 
 #if NATIVEINT == 128
 constexpr uint32_t SMODSIZE = 78;
@@ -283,7 +287,7 @@ class UTCKKSRNS_EVAL_POLY : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_
     // This is necessary because CKKS works for approximate numbers.
     const double eps = 0.001;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -373,13 +377,11 @@ protected:
             results5->SetLength(encodedLength);
             checkEquality(plaintextResult5->GetCKKSPackedValue(), results5->GetCKKSPackedValue(), eps,
                           failmsg + " EvalPoly for low-degree polynomial fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -393,28 +395,28 @@ protected:
             size_t encodedLength = input.size();
 
             std::vector<double> coefficients(
-                {0.0625,       -0.0587121,    0.0551538,    -0.0518111,    0.0486711,    -0.0457213,
-                 0.0429503,    -0.0403473,    0.037902,     -0.0356049,    0.033447,     -0.0314199,
-                 0.0295157,    -0.0277269,    0.0260464,    -0.0244679,    0.022985,     -0.0215919,
-                 0.0202833,    -0.019054,     0.0178992,    -0.0168144,    0.0157954,    -0.0148381,
-                 0.0139388,    -0.013094,     0.0123004,    -0.011555,     0.0108546,    -0.0101968,
-                 0.00957879,   -0.00899825,   0.0084529,    -0.0079406,    0.00745934,   -0.00700726,
-                 0.00658257,   -0.00618362,   0.00580884,   -0.00545678,   0.00512606,   -0.00481538,
-                 0.00452353,   -0.00424937,   0.00399182,   -0.00374988,   0.0035226,    -0.00330909,
-                 0.00310853,   -0.00292012,   0.00274312,   -0.00257686,   0.00242066,   -0.00227394,
-                 0.0021361,    -0.00200662,   0.00188498,   -0.00177071,   0.00166337,   -0.00156253,
-                 0.0014678,    -0.00137881,   0.00129521,   -0.00121668,   0.0011429,    -0.00107359,
-                 0.00100848,   -0.000947312,  0.000889848,  -0.000835863,  0.000785147,  -0.000737501,
-                 0.000692739,  -0.000650685,  0.000611175,  -0.000574055,  0.00053918,   -0.000506413,
-                 0.000475626,  -0.000446699,  0.000419519,  -0.000393978,  0.000369979,  -0.000347425,
-                 0.000326231,  -0.000306312,  0.00028759,   -0.000269994,  0.000253452,  -0.000237902,
-                 0.000223282,  -0.000209536,  0.000196608,  -0.000184449,  0.000173012,  -0.00016225,
-                 0.000152124,  -0.000142592,  0.000133617,  -0.000125166,  0.000117203,  -0.000109699,
-                 0.000102624,  -0.0000959495, 0.0000896506, -0.0000837023, 0.0000780812, -0.0000727655,
-                 0.0000677343, -0.0000629679, 0.0000584477, -0.0000541561, 0.0000500762, -0.0000461921,
-                 0.0000424887, -0.0000389514, 0.0000355663, -0.0000323204, 0.0000292008, -0.0000261954,
-                 0.0000232924, -0.0000204805, 0.0000177487, -0.0000150862, 0.0000124828, -9.92817e-6,
-                 7.41236e-6,   -4.92553e-6,   2.45796e-6});
+                    {0.0625,       -0.0587121,    0.0551538,    -0.0518111,    0.0486711,    -0.0457213,
+                     0.0429503,    -0.0403473,    0.037902,     -0.0356049,    0.033447,     -0.0314199,
+                     0.0295157,    -0.0277269,    0.0260464,    -0.0244679,    0.022985,     -0.0215919,
+                     0.0202833,    -0.019054,     0.0178992,    -0.0168144,    0.0157954,    -0.0148381,
+                     0.0139388,    -0.013094,     0.0123004,    -0.011555,     0.0108546,    -0.0101968,
+                     0.00957879,   -0.00899825,   0.0084529,    -0.0079406,    0.00745934,   -0.00700726,
+                     0.00658257,   -0.00618362,   0.00580884,   -0.00545678,   0.00512606,   -0.00481538,
+                     0.00452353,   -0.00424937,   0.00399182,   -0.00374988,   0.0035226,    -0.00330909,
+                     0.00310853,   -0.00292012,   0.00274312,   -0.00257686,   0.00242066,   -0.00227394,
+                     0.0021361,    -0.00200662,   0.00188498,   -0.00177071,   0.00166337,   -0.00156253,
+                     0.0014678,    -0.00137881,   0.00129521,   -0.00121668,   0.0011429,    -0.00107359,
+                     0.00100848,   -0.000947312,  0.000889848,  -0.000835863,  0.000785147,  -0.000737501,
+                     0.000692739,  -0.000650685,  0.000611175,  -0.000574055,  0.00053918,   -0.000506413,
+                     0.000475626,  -0.000446699,  0.000419519,  -0.000393978,  0.000369979,  -0.000347425,
+                     0.000326231,  -0.000306312,  0.00028759,   -0.000269994,  0.000253452,  -0.000237902,
+                     0.000223282,  -0.000209536,  0.000196608,  -0.000184449,  0.000173012,  -0.00016225,
+                     0.000152124,  -0.000142592,  0.000133617,  -0.000125166,  0.000117203,  -0.000109699,
+                     0.000102624,  -0.0000959495, 0.0000896506, -0.0000837023, 0.0000780812, -0.0000727655,
+                     0.0000677343, -0.0000629679, 0.0000584477, -0.0000541561, 0.0000500762, -0.0000461921,
+                     0.0000424887, -0.0000389514, 0.0000355663, -0.0000323204, 0.0000292008, -0.0000261954,
+                     0.0000232924, -0.0000204805, 0.0000177487, -0.0000150862, 0.0000124828, -9.92817e-6,
+                     7.41236e-6,   -4.92553e-6,   2.45796e-6});
 
             std::vector<std::complex<double>> output1{0.500067, 0.0624609, 0.0156279, 0.00781142, 0.00195297};
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
@@ -423,10 +425,10 @@ protected:
             cc->EvalMultKeyGen(keyPair.secretKey);
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
-            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
-            double a    = 1;
-            double b    = 1024;
+            double a = 1;
+            double b = 1024;
             auto result = cc->EvalChebyshevSeries(ciphertext1, coefficients, a, b);
 
             Plaintext plaintextDec;
@@ -437,13 +439,11 @@ protected:
             finalResult.resize(encodedLength);
             checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
                           failmsg + " EvalChebyshevSeries approximation for division fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -459,17 +459,17 @@ protected:
             std::vector<double> coefficients({1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348, 0.0,
                                               0.00119324, 0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
             std::vector<std::complex<double>> output1(
-                {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
+                    {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
 
-            Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
 
             auto keyPair = cc->KeyGen();
             cc->EvalMultKeyGen(keyPair.secretKey);
             auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
-            double a    = -4;
-            double b    = 4;
+            double a = -4;
+            double b = 4;
             auto result = cc->EvalChebyshevSeries(ciphertext1, coefficients, a, b);
 
             Plaintext plaintextDec;
@@ -481,13 +481,11 @@ protected:
 
             checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
                           failmsg + " EvalChebyshevSeries approximation for logistic function fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -505,17 +503,17 @@ protected:
             std::vector<double> coefficients({1.0, 0.558971, 0.0, -0.0943712, 0.0, 0.0215023, 0.0, -0.00505348, 0.0,
                                               0.00119324, 0.0, -0.000281928, 0.0, 0.0000664347, 0.0, -0.0000148709});
             std::vector<std::complex<double>> output1(
-                {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
+                    {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
 
-            Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
 
             auto keyPair = cc->KeyGen();
             cc->EvalMultKeyGen(keyPair.secretKey);
             auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
-            double a    = -1;
-            double b    = 1;
+            double a = -1;
+            double b = 1;
             auto result = cc->EvalChebyshevSeries(ciphertext1, coefficients, a, b);
 
             Plaintext plaintextDec;
@@ -527,13 +525,11 @@ protected:
 
             checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
                           failmsg + " EvalChebyshevSeries approximation for logistic function fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -547,31 +543,31 @@ protected:
             size_t encodedLength = input.size();
 
             std::vector<double> coefficients{
-                0., -0.0178446,   0., -0.0171187,  0., -0.0155856,    0., -0.0131009,   0., -0.00949759,
-                0., -0.00465513,  0., 0.00139902,  0., 0.00836141,    0., 0.0155242,    0., 0.0217022,
-                0., 0.0253027,    0., 0.0246365,   0., 0.0185273,     0., 0.00714273,   0., -0.00725482,
-                0., -0.0201827,   0., -0.0260483,  0., -0.0207132,    0., -0.00473479,  0., 0.0147661,
-                0., 0.0261764,    0., 0.0203168,   0., -0.00103552,   0., -0.0225101,   0., -0.0248192,
-                0., -0.00315799,  0., 0.0226844,   0., 0.0238252,     0., -0.00403513,  0., -0.0276106,
-                0., -0.0133143,   0., 0.0213882,   0., 0.0230787,     0., -0.0143638,   0., -0.0270401,
-                0., 0.0116019,    0., 0.0278743,   0., -0.0149975,    0., -0.025194,    0., 0.0242296,
-                0., 0.0143133,    0., -0.0334779,  0., 0.00994475,    0., 0.0256291,    0., -0.0359815,
-                0., 0.0150778,    0., 0.0173112,   0., -0.0403029,    0., 0.0463332,    0., -0.039547,
-                0., 0.0277765,    0., -0.0168089,  0., 0.00899558,    0., -0.00433006,  0., 0.00189728,
-                0., -0.000763553, 0., 0.000284227, 0., -0.0000984182, 0., 0.0000318501, 0., -9.67162e-6,
-                0., 2.76517e-6,   0., -7.46488e-7, 0., 1.90362e-7,    0., -4.39544e-8,  0.};
+                    0., -0.0178446,   0., -0.0171187,  0., -0.0155856,    0., -0.0131009,   0., -0.00949759,
+                    0., -0.00465513,  0., 0.00139902,  0., 0.00836141,    0., 0.0155242,    0., 0.0217022,
+                    0., 0.0253027,    0., 0.0246365,   0., 0.0185273,     0., 0.00714273,   0., -0.00725482,
+                    0., -0.0201827,   0., -0.0260483,  0., -0.0207132,    0., -0.00473479,  0., 0.0147661,
+                    0., 0.0261764,    0., 0.0203168,   0., -0.00103552,   0., -0.0225101,   0., -0.0248192,
+                    0., -0.00315799,  0., 0.0226844,   0., 0.0238252,     0., -0.00403513,  0., -0.0276106,
+                    0., -0.0133143,   0., 0.0213882,   0., 0.0230787,     0., -0.0143638,   0., -0.0270401,
+                    0., 0.0116019,    0., 0.0278743,   0., -0.0149975,    0., -0.025194,    0., 0.0242296,
+                    0., 0.0143133,    0., -0.0334779,  0., 0.00994475,    0., 0.0256291,    0., -0.0359815,
+                    0., 0.0150778,    0., 0.0173112,   0., -0.0403029,    0., 0.0463332,    0., -0.039547,
+                    0., 0.0277765,    0., -0.0168089,  0., 0.00899558,    0., -0.00433006,  0., 0.00189728,
+                    0., -0.000763553, 0., 0.000284227, 0., -0.0000984182, 0., 0.0000318501, 0., -9.67162e-6,
+                    0., 2.76517e-6,   0., -7.46488e-7, 0., 1.90362e-7,    0., -4.39544e-8,  0.};
             std::vector<std::complex<double>> output1{6.80601e-09, 0.151365,  0.0935489,  -0.0935489, -0.151365,   0.,
                                                       0.151365,    0.0935489, -0.0935489, -0.151365,  -6.80601e-09};
 
-            Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
 
             auto keyPair = cc->KeyGen();
             cc->EvalMultKeyGen(keyPair.secretKey);
             auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
-            double a    = -1;
-            double b    = 1;
+            double a = -1;
+            double b = 1;
             auto result = cc->EvalChebyshevSeries(ciphertext1, coefficients, a, b);
 
             Plaintext plaintextDec;
@@ -583,13 +579,11 @@ protected:
 
             checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
                           failmsg + " EvalChebyshevSeries approximation for sine fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -605,15 +599,15 @@ protected:
             std::vector<double> coefficients{9, -17.25, 4.5, -6.75, -0};
             std::vector<std::complex<double>> output1{33, 10, 1, 0, 1, -2, -15};
 
-            Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
 
             auto keyPair = cc->KeyGen();
             cc->EvalMultKeyGen(keyPair.secretKey);
             auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
-            double a    = -3;
-            double b    = 3;
+            double a = -3;
+            double b = 3;
             auto result = cc->EvalChebyshevSeries(ciphertext1, coefficients, a, b);
 
             Plaintext plaintextDec;
@@ -625,13 +619,11 @@ protected:
 
             checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
                           failmsg + " EvalChebyshevSeries approximation for sine fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -650,12 +642,12 @@ protected:
             cc->EvalMultKeyGen(keyPair.secretKey);
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
-            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
-            double a        = 1;
-            double b        = 1024;
+            double a = 1;
+            double b = 1024;
             uint32_t degree = 129;
-            auto result     = cc->EvalDivide(ciphertext1, a, b, degree);
+            auto result = cc->EvalDivide(ciphertext1, a, b, degree);
 
             Plaintext plaintextDec;
             cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
@@ -663,13 +655,11 @@ protected:
 
             std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
             checkEquality(expectedOutput, finalResult, eps, failmsg + " EvalDivide Chebyshev approximation fails");
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -681,7 +671,7 @@ protected:
         size_t encodedLength = input.size();
 
         std::vector<std::complex<double>> expectedOutput(
-            {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
+                {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
 
         Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
 
@@ -689,10 +679,10 @@ protected:
         cc->EvalMultKeyGen(keyPair.secretKey);
         auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
-        double a        = -4;
-        double b        = 4;
+        double a = -4;
+        double b = 4;
         uint32_t degree = 16;
-        auto result     = cc->EvalLogistic(ciphertext, a, b, degree);
+        auto result = cc->EvalLogistic(ciphertext, a, b, degree);
 
         Plaintext plaintextDec;
         cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
@@ -717,10 +707,10 @@ protected:
         cc->EvalMultKeyGen(keyPair.secretKey);
         auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
-        double a        = -1;
-        double b        = 1;
+        double a = -1;
+        double b = 1;
         uint32_t degree = 129;
-        auto result     = cc->EvalSin(ciphertext, a, b, degree);
+        auto result = cc->EvalSin(ciphertext, a, b, degree);
 
         Plaintext plaintextDec;
         cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
@@ -745,10 +735,10 @@ protected:
         cc->EvalMultKeyGen(keyPair.secretKey);
         auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
-        double a        = -1;
-        double b        = 1;
+        double a = -1;
+        double b = 1;
         uint32_t degree = 129;
-        auto result     = cc->EvalCos(ciphertext, a, b, degree);
+        auto result = cc->EvalCos(ciphertext, a, b, degree);
 
         Plaintext plaintextDec;
         cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
@@ -796,7 +786,7 @@ protected:
                 };
 
                 auto ciphertext = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(input));
-                auto powers     = cc->EvalPowers(ciphertext, coefficientsA);
+                auto powers = cc->EvalPowers(ciphertext, coefficientsA);
 
                 auto check = [&](const std::vector<double>& coefficients, const std::string& label) {
                     auto result = cc->EvalPolyWithPrecomp(powers, coefficients);
@@ -819,15 +809,15 @@ protected:
                 auto evalPlain = [&](const std::vector<double>& coefficients) {
                     std::vector<std::complex<double>> values(input.size());
                     for (size_t i = 0; i < input.size(); ++i) {
-                        double y   = -1 + 2 * (input[i].real() - a) / (b - a);
-                        double t0  = 1;
-                        double t1  = y;
+                        double y = -1 + 2 * (input[i].real() - a) / (b - a);
+                        double t0 = 1;
+                        double t1 = y;
                         double sum = coefficients[0] / 2;
                         for (size_t j = 1; j < coefficients.size(); ++j) {
                             sum += coefficients[j] * t1;
                             double t2 = 2 * y * t1 - t0;
-                            t0        = t1;
-                            t1        = t2;
+                            t0 = t1;
+                            t1 = t2;
                         }
                         values[i] = sum;
                     }
@@ -835,25 +825,23 @@ protected:
                 };
 
                 auto ciphertext = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(input));
-                auto polys      = cc->EvalChebyPolys(ciphertext, coefficientsA, a, b);
+                auto polys = cc->EvalChebyPolys(ciphertext, coefficientsA, a, b);
 
                 auto check = [&](const std::vector<double>& coefficients, const std::string& label) {
                     auto result = cc->EvalChebyshevSeriesWithPrecomp(polys, coefficients);
-                    checkEquality(
-                        evalPlain(coefficients), decrypt(result, input.size()), eps,
-                        failmsg + " EvalChebyshevSeriesWithPrecomp on the reused polynomials fails for the " + label);
+                    checkEquality(evalPlain(coefficients), decrypt(result, input.size()), eps,
+                                  failmsg + " EvalChebyshevSeriesWithPrecomp on the reused polynomials fails for the " +
+                                          label);
                 };
                 check(coefficientsA, "first series");
                 check(coefficientsB, "second series");
                 check(coefficientsA, "first series evaluated again");
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

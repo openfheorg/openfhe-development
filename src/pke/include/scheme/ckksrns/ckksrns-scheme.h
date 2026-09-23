@@ -29,10 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEME_H_
 
-#include "schemerns/rns-scheme.h"
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
@@ -43,9 +45,7 @@
 #include "scheme/ckksrns/ckksrns-pke.h"
 #include "scheme/ckksrns/ckksrns-pre.h"
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"
-
-#include <memory>
-#include <string>
+#include "schemerns/rns-scheme.h"
 
 /**
  * @namespace lbcrypto
@@ -54,7 +54,7 @@
 namespace lbcrypto {
 
 class SchemeCKKSRNS : public SchemeRNS {
-public:
+  public:
     SchemeCKKSRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
     }
@@ -88,4 +88,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEME_H_

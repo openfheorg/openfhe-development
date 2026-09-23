@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_CIPHERTEXT_H_
-#define _RGSW_CIPHERTEXT_H_
+#ifndef SRC_BINFHE_INCLUDE_RLWE_CIPHERTEXT_H_
+#define SRC_BINFHE_INCLUDE_RLWE_CIPHERTEXT_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
@@ -42,16 +49,10 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 class RLWECiphertextImpl;
-using RLWECiphertext      = std::shared_ptr<RLWECiphertextImpl>;
+using RLWECiphertext = std::shared_ptr<RLWECiphertextImpl>;
 using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
 
 /**
@@ -59,12 +60,12 @@ using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
  * ring elements
  */
 class RLWECiphertextImpl : public Serializable {
-public:
+  public:
     RLWECiphertextImpl() = default;
 
-    RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
+    explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
-    RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
+    explicit RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
 
     RLWECiphertextImpl(const RLWECiphertextImpl& rhs) : m_elements(rhs.m_elements) {}
 
@@ -123,10 +124,10 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<NativePoly> m_elements;
 };
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_CIPHERTEXT_H_
+#endif  // SRC_BINFHE_INCLUDE_RLWE_CIPHERTEXT_H_

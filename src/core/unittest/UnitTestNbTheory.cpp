@@ -29,6 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -37,8 +43,6 @@
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -136,23 +140,23 @@ void method_factorize_returns_factors(const std::string& msg) {
 
 // NOLINTNEXTLINE
 TEST(UTNbTheory, method_factorize_returns_factors){
-    RUN_ALL_BACKENDS_INT(method_factorize_returns_factors, "method_factorize_returns_factors")}
+        RUN_ALL_BACKENDS_INT(method_factorize_returns_factors, "method_factorize_returns_factors")}
 
 TEST(UTNbTheory, first_prime_overflow) {
     // Failure case check
-    uint32_t m     = 512;
+    uint32_t m = 512;
     uint32_t nBits = NATIVEINT;
 
     EXPECT_THROW(FirstPrime<NativeInteger>(nBits, m), OpenFHEException)
-        << "did not detect overflow and throw exception for Native";
+            << "did not detect overflow and throw exception for Native";
     EXPECT_THROW(LastPrime<NativeInteger>(nBits, m), OpenFHEException)
-        << "did not detect overflow and throw exception for Native";
+            << "did not detect overflow and throw exception for Native";
 
 #ifdef WITH_BE2
     nBits = BigIntegerBitLength + 10;
 
     EXPECT_THROW(FirstPrime<M2Integer>(nBits, m), OpenFHEException)
-        << "did not detect overflow and throw exception for BE2";
+            << "did not detect overflow and throw exception for BE2";
 #endif
 }
 
@@ -161,7 +165,7 @@ void method_prime_modulus(const std::string& msg) {
     uint32_t m, nBits;
     {
         // TEST CASE TO FIND PRIME MODULUS
-        m     = 2048;
+        m = 2048;
         nBits = 30;
 
         T expectedResult("1073707009");
@@ -170,7 +174,7 @@ void method_prime_modulus(const std::string& msg) {
     }
     {
         // TEST CASE TO FIND PRIME MODULUS FOR A HIGHER BIT LENGTH
-        m     = 4096;
+        m = 4096;
         nBits = 49;
 
         T expectedResult("562949953392641");
@@ -187,10 +191,10 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
     {
         // TEST CASE TO ENSURE THE ROOT OF UNITY THAT IS FOUND IS A PRIMITIVE ROOT
         // OF UNTIY
-        uint32_t m     = 4096;
+        uint32_t m = 4096;
         uint32_t nBits = 33;
 
-        T primeModulus         = LastPrime<T>(nBits, m);
+        T primeModulus = LastPrime<T>(nBits, m);
         T primitiveRootOfUnity = RootOfUnity<T>(m, primeModulus);
 
         T M(std::to_string(m)), MbyTwo(M.DividedBy(2));
@@ -204,9 +208,9 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
     {
         // TEST CASE TO ENSURE THE ROOTS OF UNITY THAT ARE FOUND ARE
         // CONSISTENTLY THE PRIMITIVE ROOTS OF UNTIY
-        const uint32_t n        = 256;
-        const uint32_t m        = 2 * n;
-        const uint32_t nBits    = 43;
+        const uint32_t n = 256;
+        const uint32_t m = 2 * n;
+        const uint32_t nBits = 43;
         const int ITERATIONS = m * 2;
 
         T M(std::to_string(m)), MbyTwo(M.DividedBy(2)), MbyFour(MbyTwo.DividedBy(2));
@@ -215,7 +219,7 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
 
         for (int i = 0; i < ITERATIONS; i++) {
             T primitiveRootOfUnity = RootOfUnity<T>(m, primeModulus);
-            T wpowerm              = primitiveRootOfUnity.ModExp(M, primeModulus);
+            T wpowerm = primitiveRootOfUnity.ModExp(M, primeModulus);
             EXPECT_EQ(wpowerm, T(1)) << msg << " Failure single input iteration " << i << " equal_m";
             T wpowermbytwo = primitiveRootOfUnity.ModExp(MbyTwo, primeModulus);
             EXPECT_NE(wpowermbytwo, T(1)) << msg << " Failure single input  iteration " << i << " not_equal_mbytwo";
@@ -230,48 +234,48 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
         // ofstream fout;
         // fout.open ("primitiveRootsBug.log");
         uint32_t nqBitsArray[] = {
-            1,
-            1,
-            2,
-            4,
-            8,
-            20,
-            1024,
-            30,
-            2048,
-            31,
-            2048,
-            33,
-            2048,
-            40,
-            2048,
-            41
-            // const uint32_t BIT_LENGTH = 200 and const uint32_t FRAGMENTATION_FACTOR =
-            // 27 ,2048, 51
-            ,
-            4096,
-            32,
-            4096,
-            43
-            // ,4096, 53
-            ,
-            8192,
-            33,
-            8192,
-            44
-            // ,8192, 55
-            ,
-            16384,
-            34,
-            16384,
-            46
-            // ,16384, 57
-            ,
-            32768,
-            35,
-            32768,
-            47
-            // ,32768, 59
+                1,
+                1,
+                2,
+                4,
+                8,
+                20,
+                1024,
+                30,
+                2048,
+                31,
+                2048,
+                33,
+                2048,
+                40,
+                2048,
+                41
+                // const uint32_t BIT_LENGTH = 200 and const uint32_t FRAGMENTATION_FACTOR =
+                // 27 ,2048, 51
+                ,
+                4096,
+                32,
+                4096,
+                43
+                // ,4096, 53
+                ,
+                8192,
+                33,
+                8192,
+                44
+                // ,8192, 55
+                ,
+                16384,
+                34,
+                16384,
+                46
+                // ,16384, 57
+                ,
+                32768,
+                35,
+                32768,
+                47
+                // ,32768, 59
         };
         int length = sizeof(nqBitsArray) / sizeof(nqBitsArray[0]);
         // double diff, start, finish;
@@ -283,9 +287,9 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
             // fout <<
             // "----------------------------------------------------------------------------------------------------------------------------------"
             // << endl; fout << "i = " << i << endl;
-            n     = nqBitsArray[i];
+            n = nqBitsArray[i];
             qBits = nqBitsArray[i + 1];
-            m     = 2 * n;
+            m = 2 * n;
 
             T M(std::to_string(m)), MbyTwo(M.DividedBy(2)), MbyFour(MbyTwo.DividedBy(2));
 
@@ -346,21 +350,20 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
         int caught_error = 0;
         try {
             primitiveRootOfUnity1 = RootOfUnity<T>(m, modulus1);
-        }
-        catch (...) {
+        } catch (...) {
             caught_error = 1;
         }
         EXPECT_EQ(caught_error, 1) << msg << " RootOfUnity did not throw an error and should have";
 
         // the second way is to directly expect the throw.
         EXPECT_ANY_THROW(  // this call should throw
-            primitiveRootOfUnity1 = RootOfUnity<T>(m, modulus1);)
-            << msg << " RootOfUnity did not throw an error and should have";
+                primitiveRootOfUnity1 = RootOfUnity<T>(m, modulus1);)
+                << msg << " RootOfUnity did not throw an error and should have";
 
         T primitiveRootOfUnity2;
         EXPECT_NO_THROW(  // this call should NOT throw
-            primitiveRootOfUnity2 = RootOfUnity<T>(m, modulus2);)
-            << msg << " RootOfUnity threw an error and should not have";
+                primitiveRootOfUnity2 = RootOfUnity<T>(m, modulus2);)
+                << msg << " RootOfUnity threw an error and should not have";
 
         OPENFHE_DEBUG("RootOfUnity for " << modulus1 << " is " << primitiveRootOfUnity1);
         OPENFHE_DEBUG("RootOfUnity for " << modulus2 << " is " << primitiveRootOfUnity2);
@@ -373,7 +376,7 @@ TEST(UTNbTheory, method_primitive_root_of_unity_VERY_LONG) {
 
 template <typename T>
 void test_nextQ(const std::string& msg) {
-    uint32_t m    = 2048;
+    uint32_t m = 2048;
     uint32_t bits = 22;
 
     std::vector<T> moduliBBV = {T("4208641"), T("4263937"), T("4270081"), T("4274177"), T("4294657"),

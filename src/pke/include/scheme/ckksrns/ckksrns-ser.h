@@ -33,8 +33,8 @@
   serialize ckks; include this in any app that needs to serialize this scheme
  */
 
-#ifndef __CKKSRNS_SER_H__
-#define __CKKSRNS_SER_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SER_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SER_H_
 
 #include "scheme/ckksrns/ckksrns-scheme.h"
 #include "utils/serial.h"
@@ -49,4 +49,4 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::CryptoParametersRNS, lbcrypto::Cr
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHERNS, lbcrypto::FHECKKSRNS);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::FHERNS, lbcrypto::SWITCHCKKSRNS);
 
-#endif  // __CKKSRNS_SER_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SER_H_

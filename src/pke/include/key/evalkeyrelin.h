@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
-#define LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_
 
-#include "key/evalkey.h"
-#include "key/evalkeyrelin-fwd.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "key/evalkey.h"
+#include "key/evalkeyrelin-fwd.h"
 
 /**
  * @namespace lbcrypto
@@ -52,11 +53,11 @@ namespace lbcrypto {
  */
 template <class Element>
 class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
-private:
+  private:
     std::vector<Element> m_AKey;
     std::vector<Element> m_BKey;
 
-public:
+  public:
     /**
    * Basic constructor for setting crypto params
    *
@@ -95,8 +96,8 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
-        m_AKey        = rhs.m_AKey;
-        m_BKey        = rhs.m_BKey;
+        m_AKey = rhs.m_AKey;
+        m_BKey = rhs.m_BKey;
         return *this;
     }
 
@@ -107,8 +108,8 @@ public:
    */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
         this->context = std::move(rhs.context);
-        m_AKey        = std::move(rhs.m_AKey);
-        m_BKey        = std::move(rhs.m_BKey);
+        m_AKey = std::move(rhs.m_AKey);
+        m_BKey = std::move(rhs.m_BKey);
         return *this;
     }
 
@@ -211,4 +212,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_H_

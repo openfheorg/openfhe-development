@@ -33,6 +33,13 @@
   Examples of threshold FHE for BGVrns, BFVrns and CKKS
  */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -50,14 +57,14 @@ int main(int argc, char* argv[]) {
 }
 
 void RunBFVrns() {
-    int plaintextModulus                  = 65537;
-    double sigma                          = 3.2;
+    int plaintextModulus = 65537;
+    double sigma = 3.2;
     lbcrypto::SecurityLevel securityLevel = lbcrypto::SecurityLevel::HEStd_128_classic;
 
     uint32_t batchSize = 16;
     uint32_t multDepth = 4;
     uint32_t digitSize = 30;
-    uint32_t dcrtBits  = 60;
+    uint32_t dcrtBits = 60;
 
     lbcrypto::CCParams<lbcrypto::CryptoContextBFVRNS> parameters;
 
@@ -105,8 +112,8 @@ void RunBFVrns() {
 
     std::cout << "Round 1 (party A) started." << std::endl;
 
-    kp1      = cc->KeyGen();
-    kp2      = cc->MultipartyKeyGen(kp1.publicKey);
+    kp1 = cc->KeyGen();
+    kp2 = cc->MultipartyKeyGen(kp1.publicKey);
     auto kp3 = cc->MultipartyKeyGen(kp2.publicKey);
     auto kp4 = cc->MultipartyKeyGen(kp3.publicKey);
     auto kp5 = cc->MultipartyKeyGen(kp4.publicKey);
@@ -154,7 +161,7 @@ void RunBFVrns() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     auto evalSumKeysB = cc->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
 
@@ -204,13 +211,13 @@ void RunBFVrns() {
     Ciphertext<DCRTPoly> ciphertextAdd12;
     Ciphertext<DCRTPoly> ciphertextAdd123;
 
-    ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
+    ciphertextAdd12 = cc->EvalAdd(ciphertext1, ciphertext2);
     ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
     auto ciphertextMult1 = cc->EvalMult(ciphertext1, ciphertext1);
     auto ciphertextMult2 = cc->EvalMult(ciphertextMult1, ciphertext1);
     auto ciphertextMult3 = cc->EvalMult(ciphertextMult2, ciphertext1);
-    auto ciphertextMult  = cc->EvalMult(ciphertextMult3, ciphertext1);
+    auto ciphertextMult = cc->EvalMult(ciphertextMult3, ciphertext1);
 
     auto ciphertextEvalSum = cc->EvalSum(ciphertext3, batchSize);
 
@@ -229,7 +236,7 @@ void RunBFVrns() {
     Plaintext plaintextMultipartyNew;
 
     const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams = kp1.secretKey->GetCryptoParameters();
-    const std::shared_ptr<typename DCRTPoly::Params> elementParams     = cryptoParams->GetElementParams();
+    const std::shared_ptr<typename DCRTPoly::Params> elementParams = cryptoParams->GetElementParams();
 
     // Distributed decryption
     // partial decryption by party A

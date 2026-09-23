@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _CONSTANTS_LATTICE_H_
-#define _CONSTANTS_LATTICE_H_
+#ifndef SRC_CORE_INCLUDE_LATTICE_CONSTANTS_LATTICE_H_
+#define SRC_CORE_INCLUDE_LATTICE_CONSTANTS_LATTICE_H_
 
 #include <cstdint>
 #include <iosfwd>
@@ -42,9 +42,9 @@ namespace lbcrypto {
  * @brief Lists all modes for RLWE schemes, such as BGV and BFV, and for LWE schemes, such as DM and TFHE
  */
 enum SecretKeyDist {
-    GAUSSIAN            = 0,
-    UNIFORM_TERNARY     = 1,  // Default value, all schemes support this key distribution
-    SPARSE_TERNARY      = 2,
+    GAUSSIAN = 0,
+    UNIFORM_TERNARY = 1,  // Default value, all schemes support this key distribution
+    SPARSE_TERNARY = 2,
     SPARSE_ENCAPSULATED = 3,  // For more effient bootstrapping in SIMD schemes
                               // (has been used for CKKS and BFV bootstrapping in literature)
     // BINARY = X, // Future implementation
@@ -57,4 +57,4 @@ std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 }  // namespace lbcrypto
 
-#endif  // _CONSTANTS_LATTICE_H_
+#endif  // SRC_CORE_INCLUDE_LATTICE_CONSTANTS_LATTICE_H_

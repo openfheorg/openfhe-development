@@ -33,16 +33,17 @@
   helper function to test serialization
  */
 
-#ifndef __UNITTEST_SER_H__
-#define __UNITTEST_SER_H__
+#ifndef SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_
+#define SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_
 
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include "UnitTestException.h"
 #include "cryptocontext-ser.h"
 #include "globals.h"
 #include "gtest/gtest.h"
-#include "UnitTestException.h"
-
-#include <iostream>
-#include <string>
 
 using namespace lbcrypto;
 
@@ -69,11 +70,11 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
 
         EXPECT_EQ(*cc->GetScheme(), *newcc->GetScheme()) << failmsg << " Scheme mismatch after ser/deser";
         EXPECT_EQ(*cc->GetCryptoParameters(), *newcc->GetCryptoParameters())
-            << failmsg << " Crypto parms mismatch after ser/deser";
+                << failmsg << " Crypto parms mismatch after ser/deser";
         EXPECT_EQ(*cc->GetEncodingParams(), *newcc->GetEncodingParams())
-            << failmsg << " Encoding parms mismatch after ser/deser";
+                << failmsg << " Encoding parms mismatch after ser/deser";
         EXPECT_EQ(cc->GetScheme()->GetEnabled(), newcc->GetScheme()->GetEnabled())
-            << failmsg << " Enabled features mismatch after ser/deser";
+                << failmsg << " Enabled features mismatch after ser/deser";
 
         s.str("");
         s.clear();
@@ -88,19 +89,17 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
         CryptoContext<Element> newccFromkey = newPub->GetCryptoContext();
         EXPECT_EQ(*cc, *newccFromkey) << failmsg << " Key deser has wrong context";
         EnablePrecomputeCRTTablesAfterDeserializaton();
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         EnablePrecomputeCRTTablesAfterDeserializaton();
 
         std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
-    }
-    catch (...) {
+    } catch (...) {
         EnablePrecomputeCRTTablesAfterDeserializaton();
 
         UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
     }
 }
 
-#endif  // __UNITTEST_SER_H__
+#endif  // SRC_PKE_UNITTEST_UTILS_UNITTESTSER_H_

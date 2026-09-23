@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
-#include "utils/diagnostic_output.h"
-
 #include <ostream>
 #include <sstream>
 #include <string>
+
+#include "gtest/gtest.h"
+#include "utils/diagnostic_output.h"
 
 using namespace lbcrypto;
 
@@ -44,7 +44,7 @@ namespace {
 // when it goes out of scope, so a failing expectation cannot leave the channels
 // pointing at a destroyed stream.
 class ScopedDiagnosticCapture {
-public:
+  public:
     ScopedDiagnosticCapture() : m_previousErr(SetOpenFHEErrStream(m_err)), m_previousOut(SetOpenFHEOutStream(m_out)) {}
 
     ~ScopedDiagnosticCapture() {
@@ -59,7 +59,7 @@ public:
         return m_out.str();
     }
 
-private:
+  private:
     std::ostringstream m_err;
     std::ostringstream m_out;
     std::ostream& m_previousErr;

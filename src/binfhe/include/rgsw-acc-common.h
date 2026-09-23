@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACC_COMMON_H_
-#define _RGSW_ACC_COMMON_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_
 
-#include "rgsw-cryptoparameters.h"
-#include "utils/parallel.h"
-
+#include <cstdint>
 #include <memory>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+#include "rgsw-cryptoparameters.h"
+#include "utils/parallel.h"
 
 // Accumulator and key-generation bodies shared between the 64-bit accumulators and the 32-bit
 // internal path, templated on the polynomial type so each algorithm exists exactly once. P's
@@ -66,8 +67,8 @@ struct GadgetMonomial {
 // X^m for an exponent m given modulo q: scaled to the cyclotomic order 2N and folded past N into
 // a sign, since X^N = -1
 inline GadgetMonomial MonomialOf(const std::shared_ptr<RingGSWCryptoParams>& params, LWEPlaintext m) {
-    const int64_t q  = params->Getq().ConvertToInt<int64_t>();
-    const int64_t N  = params->GetN();
+    const int64_t q = params->Getq().ConvertToInt<int64_t>();
+    const int64_t N = params->GetN();
     const int64_t mm = (((m % q) + q) % q) * (2 * N / q);
     if (mm >= N)
         return {static_cast<uint32_t>(mm - N), GadgetTerm::SUB};
@@ -93,7 +94,7 @@ std::vector<std::vector<P>> RGSWEncrypt(const std::shared_ptr<RingGSWCryptoParam
     P tmp;
     for (uint32_t i = 0; i < digitsG2; ++i) {
         result[i][0] = P(dug, polyParams, Format::COEFFICIENT);
-        tmp          = result[i][0];
+        tmp = result[i][0];
         tmp.SetFormat(Format::EVALUATION);
         result[i][1] = P(dgg, polyParams, Format::COEFFICIENT);
         const Int g{AtWidth<Int>(Gpow[(i >> 1) + 1])};
@@ -231,11 +232,11 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
     using I = typename P::Integer::Integer;
     thread_local std::vector<P> ctScratch, dctScratch;
     thread_local std::vector<I> w0Scratch, w1Scratch;
-    auto& ct  = ctScratch;
+    auto& ct = ctScratch;
     auto& dct = dctScratch;
-    auto& w0  = w0Scratch;
-    auto& w1  = w1Scratch;
-    ct        = acc;
+    auto& w0 = w0Scratch;
+    auto& w1 = w1Scratch;
+    ct = acc;
 
     uint32_t N{acc[0].GetLength()};
     if (w0.size() != N) {
@@ -246,8 +247,7 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
     if (dct.size() < digitsG2 || dct[0].GetParams() != polyParams) {
         dct.assign(digitsG2, P(polyParams, Format::COEFFICIENT, true));
-    }
-    else {
+    } else {
         for (auto& d : dct)
             d.OverrideFormat(Format::COEFFICIENT);
     }
@@ -274,8 +274,7 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
         // more barrier, which only repays itself once the gadget is wide and the split deep
         if (digitsG2 >= 8 && nthreads >= 4) {
             ExcessHDigitDecomposeShared(Q, bp, ct, dct, w0, w1);
-        }
-        else {
+        } else {
 #pragma omp single
             ExcessHDigitDecompose(Q, bp, ct, dct);
         }
@@ -360,8 +359,7 @@ void AutomorphismKeySwitch(uint32_t a, const std::vector<uint32_t>& autoMap, con
     auto& dcta = dctaScratch;
     if (dcta.size() != digitsG || dcta[0].GetParams() != polyParams) {
         dcta.assign(digitsG, P(polyParams, Format::COEFFICIENT, true));
-    }
-    else {
+    } else {
         for (auto& d : dcta)
             d.OverrideFormat(Format::COEFFICIENT);
     }
@@ -454,15 +452,14 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
                                const std::vector<std::vector<NativePoly32>>& ev, std::vector<NativePoly32>& acc) {
     thread_local std::vector<NativePoly32> ctScratch, dctScratch;
     thread_local std::vector<uint32_t> w0Scratch, w1Scratch;
-    auto& ct  = ctScratch;
+    auto& ct = ctScratch;
     auto& dct = dctScratch;
-    ct        = acc;
+    ct = acc;
 
     uint32_t digitsG2{(bp.digitsG - 1) << 1};
     if (dct.size() < digitsG2 || dct[0].GetParams() != polyParams) {
         dct.assign(digitsG2, NativePoly32(polyParams, Format::COEFFICIENT, true));
-    }
-    else {
+    } else {
         for (auto& d : dct)
             d.OverrideFormat(Format::COEFFICIENT);
     }
@@ -497,8 +494,7 @@ inline void AddToAccNoMonomial(const std::shared_ptr<ILNativeParams32>& polyPara
     #pragma omp barrier
         if (digitsG2 >= 8 && nthreads >= 4) {
             ExcessHDigitDecomposeShared(Q, bp, ct, dct, w0, w1);
-        }
-        else {
+        } else {
     #pragma omp single
             ExcessHDigitDecompose(Q, bp, ct, dct);
         }
@@ -621,4 +617,4 @@ void LMKCDEYAccSchedule(NativeInteger q, uint32_t N, uint32_t numAutoKeys, const
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACC_COMMON_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_COMMON_H_

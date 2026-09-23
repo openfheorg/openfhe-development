@@ -29,14 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 #include "utils/prng/blake2engine.h"
-#include "utils/prng/blake2.h"
+
+#include <chrono>
+#include <cstdint>
+#include <random>
+#include <thread>
+
 #include "utils/diagnostic_output.h"
 #include "utils/exception.h"
 #include "utils/memory.h"
-
-#include <chrono>
-#include <random>
-#include <thread>
+#include "utils/prng/blake2.h"
 
 namespace default_prng {
 
@@ -103,7 +105,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
     #endif
     // heap variable; we are going to use up to 64 bits of its memory location as the counter.
     // This will increase the entropy of the PRNG sample
-    void* mem        = malloc(1);
+    void* mem = malloc(1);
     uint64_t counter = reinterpret_cast<uint64_t>(mem);
     free(mem);
 
@@ -113,7 +115,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
         s = distribution(gen);
 
     Blake2Engine::blake2_seed_array_t rdseed{};
-    size_t attempts  = 3;
+    size_t attempts = 3;
     bool rdGenPassed = false;
     for (size_t i = 0; i < attempts && !rdGenPassed; ++i) {
         try {
@@ -129,8 +131,7 @@ static void Blake2SeedGenerator(Blake2Engine::blake2_seed_array_t& seed) {
                 rds = distribution(genR);
             }
             rdGenPassed = true;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
         }
     }
     if (!rdGenPassed)

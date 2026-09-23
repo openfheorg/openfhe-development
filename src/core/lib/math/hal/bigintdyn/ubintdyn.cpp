@@ -35,18 +35,21 @@
   Currently implementation based on uint32_t and uint64_t is supported. a native double the base integer size is also needed.
  */
 
+#include <cmath>
+#include <cstdint>
+#include <utility>
+
 #include "config_core.h"
 #ifdef WITH_BE4
-
-    #include "math/math-hal.h"
-
-    #include "utils/exception.h"
-    #include "utils/inttypes.h"
-    #include "utils/serializable.h"
 
     #include <iostream>
     #include <string>
     #include <vector>
+
+    #include "math/math-hal.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 namespace bigintdyn {
 
@@ -54,9 +57,9 @@ namespace bigintdyn {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::Add(const ubint& b) const {
     const ubint* A = this;
-    auto sizeA     = m_value.size();
+    auto sizeA = m_value.size();
     const ubint* B = &b;
-    auto sizeB     = b.m_value.size();
+    auto sizeB = b.m_value.size();
     if (sizeA < sizeB) {
         std::swap(A, B);
         std::swap(sizeA, sizeB);
@@ -70,7 +73,7 @@ ubint<limb_t> ubint<limb_t>::Add(const ubint& b) const {
     for (size_t i = 0; i < sizeA; ++i, c >>= m_limbBitLength) {
         auto av = static_cast<Dlimb_t>(A->m_value[i]);
         auto bv = static_cast<Dlimb_t>(i < sizeB ? B->m_value[i] : 0);
-        r[i]    = static_cast<limb_t>(c += av + bv);
+        r[i] = static_cast<limb_t>(c += av + bv);
     }
     r[sizeA] = static_cast<limb_t>(c);
     return ubint(std::move(r));
@@ -79,9 +82,9 @@ ubint<limb_t> ubint<limb_t>::Add(const ubint& b) const {
 template <typename limb_t>
 ubint<limb_t>& ubint<limb_t>::AddEq(const ubint& b) {
     const ubint* A = this;
-    auto sizeA     = m_value.size();
+    auto sizeA = m_value.size();
     const ubint* B = &b;
-    auto sizeB     = B->m_value.size();
+    auto sizeB = B->m_value.size();
     if (sizeA < sizeB) {
         std::swap(A, B);
         std::swap(sizeA, sizeB);
@@ -95,10 +98,10 @@ ubint<limb_t>& ubint<limb_t>::AddEq(const ubint& b) {
     for (size_t i = 0; i < sizeA; ++i, c >>= m_limbBitLength) {
         auto av = static_cast<Dlimb_t>(A->m_value[i]);
         auto bv = static_cast<Dlimb_t>(i < sizeB ? B->m_value[i] : 0);
-        r[i]    = static_cast<limb_t>(c += av + bv);
+        r[i] = static_cast<limb_t>(c += av + bv);
     }
     r[sizeA] = static_cast<limb_t>(c);
-    m_value  = std::move(r);
+    m_value = std::move(r);
     ubint<limb_t>::NormalizeLimbs();
     return *this;
 }
@@ -120,8 +123,7 @@ ubint<limb_t> ubint<limb_t>::Sub(const ubint& b) const {
                 result.m_value[cntr] = m_MaxLimb;
             // and eventually borrow 1 from the first nonzero limb we find
             result.m_value[cntr]--;
-        }
-        else {  // usual subtraction condition
+        } else {  // usual subtraction condition
             result.m_value[i] -= b.m_value[i];
         }
     }
@@ -133,7 +135,7 @@ ubint<limb_t> ubint<limb_t>::Sub(const ubint& b) const {
 template <typename limb_t>
 ubint<limb_t>& ubint<limb_t>::SubEq(const ubint& b) {
     if (*this <= b) {
-        m_MSB      = 0;
+        m_MSB = 0;
         m_value[0] = 0;
         m_value.resize(1);
         return *this;
@@ -145,8 +147,7 @@ ubint<limb_t>& ubint<limb_t>::SubEq(const ubint& b) {
             while (0 == m_value[++cntr])
                 m_value[cntr] = m_MaxLimb;
             m_value[cntr]--;
-        }
-        else {
+        } else {
             m_value[i] -= b.m_value[i];
         }
     }
@@ -165,9 +166,9 @@ ubint<limb_t> ubint<limb_t>::Mul(const ubint& b) const {
         return b;
 
     const ubint* A = this;
-    auto aSize     = m_value.size();
+    auto aSize = m_value.size();
     const ubint* B = &b;
-    auto bSize     = b.m_value.size();
+    auto bSize = b.m_value.size();
     if (aSize < bSize) {
         std::swap(A, B);
         std::swap(aSize, bSize);
@@ -389,9 +390,9 @@ ubint<limb_t> ubint<limb_t>::ModMulFast(const ubint& b, const ubint& modulus) co
         return b;
 
     const ubint* A = this;
-    auto aSize     = m_value.size();
+    auto aSize = m_value.size();
     const ubint* B = &b;
-    auto bSize     = b.m_value.size();
+    auto bSize = b.m_value.size();
     if (aSize < bSize) {
         std::swap(A, B);
         std::swap(aSize, bSize);
@@ -443,7 +444,7 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
     // TODO: consider breaking out of the loop if this limit exceeded.
     //       loop counter would need to be a ubint.
     while (mod_back.m_MSB != 1) {
-        first  = second;
+        first = second;
         second = mod_back;
 
         ubint q;
@@ -452,12 +453,12 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
     }
 
     // SOUTH ALGORITHM
-    first  = ubint();
+    first = ubint();
     second = ubint(1);
     for (auto it = quotient.rbegin(); it != quotient.rend(); ++it) {
         mod_back = *it * second + first;
-        first    = second;
-        second   = mod_back;
+        first = second;
+        second = mod_back;
     }
     if (quotient.size() & 0x1)
         return modulus - mod_back;
@@ -598,8 +599,7 @@ float ubint<limb_t>::ConvertToFloat() const {
     float ans{-1.0f};
     try {
         ans = std::stof(ubint<limb_t>::ToString());
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         OPENFHE_THROW("ConvertToFloat() parse error converting to float");
     }
     return ans;
@@ -611,14 +611,13 @@ double ubint<limb_t>::ConvertToDouble() const {
     try {
         // ans = std::stod(this->ToString());
         uint32_t ceilInt = MSBToLimbs(m_MSB);
-        double factor    = std::pow(2, m_limbBitLength);
-        double power     = 1.0;
+        double factor = std::pow(2, m_limbBitLength);
+        double power = 1.0;
 
         ans = 0.0;
         for (uint32_t i = 0; i < ceilInt; ++i, power *= factor)
             ans += power * m_value[i];
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         OPENFHE_THROW("ConvertToDouble() parse error converting to double");
     }
     return ans;
@@ -635,15 +634,14 @@ ubint<limb_t> ubint<limb_t>::FromBinaryString(const std::string& vin) {
         return ubint();
     ubint value;
     value.m_value.clear();
-    uint32_t len  = v.length();
+    uint32_t len = v.length();
     uint32_t cntr = MSBToLimbs(len);
     std::string val;
     Dlimb_t partial_value = 0;
     for (uint32_t i = 0; i < cntr; i++) {
         if (len > ((i + 1) * m_limbBitLength)) {
             val = v.substr((len - (i + 1) * m_limbBitLength), m_limbBitLength);
-        }
-        else {
+        } else {
             val = v.substr(0, len % m_limbBitLength);
         }
         for (uint32_t j = 0; j < val.length(); j++) {
@@ -662,7 +660,7 @@ ubint<limb_t> ubint<limb_t>::FromBinaryString(const std::string& vin) {
 template <typename limb_t>
 uint32_t ubint<limb_t>::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
     uint32_t DigitLen = lbcrypto::GetMSB(base - 1);
-    uint32_t digit    = 0;
+    uint32_t digit = 0;
     uint32_t newIndex = 1 + (index - 1) * DigitLen;
     for (uint32_t i = 1; i < base; i <<= 1) {
         digit += GetBitAtIndex(newIndex++) * i;
@@ -714,9 +712,9 @@ const std::string ubint<limb_t>::ToString() const {
 template <typename limb_t>
 void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const ubint& vin) const noexcept {
     auto& u = uin.m_value;
-    int m   = u.size();
+    int m = u.size();
     auto& v = vin.m_value;
-    int n   = v.size();
+    int n = v.size();
     auto& q = qin.m_value;
     q.resize(m - n + 1);
     auto& r = rin.m_value;
@@ -724,14 +722,14 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
 
     if (n == 1) {
         for (int i = m - 1; i >= 0; --i) {
-            ofl  = (ofl << m_limbBitLength) | u[i];
+            ofl = (ofl << m_limbBitLength) | u[i];
             q[i] = static_cast<limb_t>(ofl / v[0]);
             ofl %= v[0];
         }
         qin.NormalizeLimbs();
 
         r.resize(1);
-        r[0]      = static_cast<limb_t>(ofl);
+        r[0] = static_cast<limb_t>(ofl);
         rin.m_MSB = lbcrypto::GetMSB(r[0]);
         return;
     }
@@ -756,7 +754,7 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
     un[m] = static_cast<limb_t>(ofl);
     Dlimb_t qhat, rhat, p;
     for (int j = m - n; j >= 0; --j) {
-        ofl  = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
+        ofl = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
         qhat = ofl / vn[n - 1];
         rhat = ofl % vn[n - 1];
         while ((qhat >> m_limbBitLength) || ((qhat * vn[n - 2]) > ((rhat << m_limbBitLength) | un[j + n - 2]))) {
@@ -767,21 +765,21 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
         }
         SDlimb_t k{0}, t;
         for (int i = 0; i < n; ++i) {
-            p         = qhat * vn[i];
-            t         = un[i + j] - k - (p & m_MaxLimb);
+            p = qhat * vn[i];
+            t = un[i + j] - k - (p & m_MaxLimb);
             un[i + j] = static_cast<limb_t>(t);
-            k         = (p >> m_limbBitLength) - (t >> m_limbBitLength);
+            k = (p >> m_limbBitLength) - (t >> m_limbBitLength);
         }
-        t         = un[j + n] - k;
+        t = un[j + n] - k;
         un[j + n] = static_cast<limb_t>(t);
-        q[j]      = qhat;
+        q[j] = qhat;
         if (t < 0) {
             q[j] -= 1;
             k = 0;
             for (int i = 0; i < n; ++i) {
-                t         = static_cast<Dlimb_t>(un[i + j]) + vn[i] + k;
+                t = static_cast<Dlimb_t>(un[i + j]) + vn[i] + k;
                 un[i + j] = static_cast<limb_t>(t);
-                k         = t >> m_limbBitLength;
+                k = t >> m_limbBitLength;
             }
             un[j + n] += k;
         }
@@ -802,16 +800,16 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
 template <typename limb_t>
 void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) const noexcept {
     auto& u = uin.m_value;
-    int m   = u.size();
+    int m = u.size();
     auto& v = vin.m_value;
-    int n   = v.size();
+    int n = v.size();
     auto& q = qin.m_value;
     q.resize(m - n + 1);
     Dlimb_t ofl{0};
 
     if (n == 1) {
         for (int i = m - 1; i >= 0; --i) {
-            ofl  = (ofl << m_limbBitLength) | u[i];
+            ofl = (ofl << m_limbBitLength) | u[i];
             q[i] = static_cast<limb_t>(ofl / v[0]);
             ofl %= v[0];
         }
@@ -835,7 +833,7 @@ void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) co
     un[m] = static_cast<limb_t>(ofl);
     Dlimb_t qhat, rhat, p;
     for (int j = m - n; j >= 0; --j) {
-        ofl  = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
+        ofl = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
         qhat = ofl / vn[n - 1];
         rhat = ofl % vn[n - 1];
         while ((qhat >> m_limbBitLength) || ((qhat * vn[n - 2]) > ((rhat << m_limbBitLength) | un[j + n - 2]))) {
@@ -846,21 +844,21 @@ void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) co
         }
         SDlimb_t k{0}, t;
         for (int i = 0; i < n; ++i) {
-            p         = qhat * vn[i];
-            t         = un[i + j] - k - (p & m_MaxLimb);
+            p = qhat * vn[i];
+            t = un[i + j] - k - (p & m_MaxLimb);
             un[i + j] = static_cast<limb_t>(t);
-            k         = (p >> m_limbBitLength) - (t >> m_limbBitLength);
+            k = (p >> m_limbBitLength) - (t >> m_limbBitLength);
         }
-        t         = un[j + n] - k;
+        t = un[j + n] - k;
         un[j + n] = static_cast<limb_t>(t);
-        q[j]      = qhat;
+        q[j] = qhat;
         if (t < 0) {
             q[j] -= 1;
             k = 0;
             for (int i = 0; i < n; ++i) {
-                t         = static_cast<Dlimb_t>(un[i + j]) + vn[i] + k;
+                t = static_cast<Dlimb_t>(un[i + j]) + vn[i] + k;
                 un[i + j] = static_cast<limb_t>(t);
-                k         = t >> m_limbBitLength;
+                k = t >> m_limbBitLength;
             }
             un[j + n] += k;
         }
@@ -871,20 +869,20 @@ void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) co
 template <typename limb_t>
 void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) const noexcept {
     auto& u = uin.m_value;
-    int m   = u.size();
+    int m = u.size();
     auto& v = vin.m_value;
-    int n   = v.size();
+    int n = v.size();
     auto& r = rin.m_value;
     Dlimb_t ofl{0};
 
     if (n == 1) {
         std::vector<limb_t> q(m - n + 1);
         for (int i = m - 1; i >= 0; --i) {
-            ofl  = (ofl << m_limbBitLength) | u[i];
+            ofl = (ofl << m_limbBitLength) | u[i];
             q[i] = static_cast<limb_t>(ofl / v[0]);
             ofl %= v[0];
         }
-        r[0]      = static_cast<limb_t>(ofl);
+        r[0] = static_cast<limb_t>(ofl);
         rin.m_MSB = lbcrypto::GetMSB(r[0]);
         return;
     }
@@ -905,7 +903,7 @@ void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) co
     un[m] = static_cast<limb_t>(ofl);
     Dlimb_t qhat, rhat, p;
     for (int j = m - n; j >= 0; --j) {
-        ofl  = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
+        ofl = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
         qhat = ofl / vn[n - 1];
         rhat = ofl % vn[n - 1];
         while ((qhat >> m_limbBitLength) || ((qhat * vn[n - 2]) > ((rhat << m_limbBitLength) | un[j + n - 2]))) {
@@ -916,19 +914,19 @@ void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) co
         }
         SDlimb_t k{0}, t;
         for (int i = 0; i < n; ++i) {
-            p         = qhat * vn[i];
-            t         = un[i + j] - k - (p & m_MaxLimb);
+            p = qhat * vn[i];
+            t = un[i + j] - k - (p & m_MaxLimb);
             un[i + j] = static_cast<limb_t>(t);
-            k         = (p >> m_limbBitLength) - (t >> m_limbBitLength);
+            k = (p >> m_limbBitLength) - (t >> m_limbBitLength);
         }
-        t         = un[j + n] - k;
+        t = un[j + n] - k;
         un[j + n] = static_cast<limb_t>(t);
         if (t < 0) {
             k = 0;
             for (int i = 0; i < n; ++i) {
-                t         = static_cast<Dlimb_t>(un[i + j]) + vn[i] + k;
+                t = static_cast<Dlimb_t>(un[i + j]) + vn[i] + k;
                 un[i + j] = static_cast<limb_t>(t);
-                k         = t >> m_limbBitLength;
+                k = t >> m_limbBitLength;
             }
             un[j + n] += k;
         }

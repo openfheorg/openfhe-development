@@ -33,18 +33,19 @@
   This file contains the functionality for parallel operation
  */
 
-#ifndef SRC_CORE_LIB_UTILS_PARALLEL_H_
-#define SRC_CORE_LIB_UTILS_PARALLEL_H_
+#ifndef SRC_CORE_INCLUDE_UTILS_PARALLEL_H_
+#define SRC_CORE_INCLUDE_UTILS_PARALLEL_H_
 
 #ifdef PARALLEL
-    #include <atomic>
     #include <omp.h>
+
+    #include <atomic>
 #endif
 
 namespace lbcrypto {
 
 class ParallelControls {
-public:
+  public:
     // @Brief CTOR, latches the number of machine threads the system reports
     // (can be overridden by environment variables) and allows all of them by default.
     ParallelControls() {
@@ -133,7 +134,7 @@ public:
 #endif
     }
 
-private:
+  private:
 #ifdef PARALLEL
     std::atomic<int> threadLimit{1};
     int savedLimit{1};
@@ -145,4 +146,4 @@ extern ParallelControls OpenFHEParallelControls;
 
 }  // namespace lbcrypto
 
-#endif /* SRC_CORE_LIB_UTILS_PARALLEL_H_ */
+#endif  // SRC_CORE_INCLUDE_UTILS_PARALLEL_H_

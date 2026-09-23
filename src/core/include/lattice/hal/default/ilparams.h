@@ -33,20 +33,19 @@
   Wraps parameters for integer lattice operations. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILPARAMS_H
-#define LBCRYPTO_INC_LATTICE_ILPARAMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
 
 #include "lattice/hal/elemparams.h"
-
 #include "math/hal/basicint.h"
 #include "math/math-hal.h"
 #include "math/nbtheory.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <string>
-#include <utility>
 
 namespace lbcrypto {
 
@@ -58,7 +57,7 @@ namespace lbcrypto {
  */
 template <typename IntType>
 class ILParamsImpl final : public ElemParams<IntType> {
-public:
+  public:
     using Integer = IntType;
 
     constexpr ILParamsImpl() : ElemParams<IntType>() {}
@@ -146,7 +145,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     std::ostream& doprint(std::ostream& out) const override {
         out << "ILParams ";
         ElemParams<IntType>::doprint(out);
@@ -156,4 +155,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILPARAMS_H_

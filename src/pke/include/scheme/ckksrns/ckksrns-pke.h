@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_PKE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_PKE_H
-
-#include "schemerns/rns-pke.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PKE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PKE_H_
 
 #include <string>
+
+#include "schemerns/rns-pke.h"
 
 /**
  * @namespace lbcrypto
@@ -44,12 +44,12 @@ namespace lbcrypto {
 
 class PKECKKSRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~PKECKKSRNS() = default;
 
     /**
@@ -95,4 +95,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PKE_H_

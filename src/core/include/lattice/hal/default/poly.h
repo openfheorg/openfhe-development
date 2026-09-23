@@ -33,26 +33,27 @@
   Creates Represents integer lattice elements
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_
 
-#include "lattice/hal/poly-interface.h"
-#include "lattice/hal/default/ildcrtparams.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/distrgen.h"
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/hal/default/ilparams.h"
+#include "lattice/hal/poly-interface.h"
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -63,18 +64,18 @@ namespace lbcrypto {
  */
 template <typename VecType>
 class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl> {
-public:
-    using Vector            = VecType;
-    using Integer           = typename VecType::Integer;
-    using Params            = ILParamsImpl<Integer>;
-    using PolyNative        = PolyImpl<NativeVector>;
-    using PolyType          = PolyImpl<VecType>;
-    using PolyLargeType     = PolyImpl<VecType>;
+  public:
+    using Vector = VecType;
+    using Integer = typename VecType::Integer;
+    using Params = ILParamsImpl<Integer>;
+    using PolyNative = PolyImpl<NativeVector>;
+    using PolyType = PolyImpl<VecType>;
+    using PolyLargeType = PolyImpl<VecType>;
     using PolyInterfaceType = PolyInterface<PolyImpl<VecType>, VecType, PolyImpl>;
-    using DggType           = typename PolyInterfaceType::DggType;
-    using DugType           = typename PolyInterfaceType::DugType;
-    using TugType           = typename PolyInterfaceType::TugType;
-    using BugType           = typename PolyInterfaceType::BugType;
+    using DggType = typename PolyInterfaceType::DggType;
+    using DugType = typename PolyInterfaceType::DugType;
+    using TugType = typename PolyInterfaceType::TugType;
+    using BugType = typename PolyInterfaceType::BugType;
 
     constexpr PolyImpl() = default;
 
@@ -413,7 +414,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     Format m_format{Format::EVALUATION};
     std::shared_ptr<Params> m_params{nullptr};
     std::unique_ptr<VecType> m_values{nullptr};
@@ -422,4 +423,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_H_

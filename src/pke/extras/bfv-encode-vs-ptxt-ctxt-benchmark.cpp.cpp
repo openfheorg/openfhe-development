@@ -37,6 +37,7 @@
 #define PROFILE
 
 #include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
@@ -78,7 +79,7 @@ int main() {
     std::vector<int64_t> payload = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     // Second plaintext vector is encoded
     std::vector<int64_t> payload2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext ptxt2               = cryptoContext->MakePackedPlaintext(payload2, 1, 3);
+    Plaintext ptxt2 = cryptoContext->MakePackedPlaintext(payload2, 1, 3);
 
     // Number of iterations for benchmarking
     int numIterations = 1000;
@@ -86,7 +87,7 @@ int main() {
     // Variables to store total times
     TimeVar t;
     double totalEncodeTime = 0.0;
-    double totalMultTime   = 0.0;
+    double totalMultTime = 0.0;
 
     auto ctxtGT = cryptoContext->Encrypt(keyPair.publicKey, ptxt2);
 
@@ -106,7 +107,7 @@ int main() {
 
     // Calculate and report average times
     double avgEncodeTime = totalEncodeTime / numIterations / 1e6;
-    double avgMultTime   = totalMultTime / numIterations / 1e6;
+    double avgMultTime = totalMultTime / numIterations / 1e6;
 
     // Average time to encode
     std::cout << "encode took: " << avgEncodeTime << " ms" << std::endl;

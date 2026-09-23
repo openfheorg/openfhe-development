@@ -36,13 +36,13 @@
   bootstrapping tests only feed non-negative coefficients, so the negative branch went untested.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-#include "schemelet/rlwe-mp.h"
-
 #include <cstdint>
 #include <limits>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "openfhe.h"
+#include "schemelet/rlwe-mp.h"
 
 using namespace lbcrypto;
 
@@ -52,7 +52,7 @@ namespace {
 constexpr int64_t PLAINTEXT_MODULUS = 256;
 
 class UTRLWEMP : public ::testing::Test {
-protected:
+  protected:
     void TearDown() override {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
@@ -74,15 +74,15 @@ TEST_F(UTRLWEMP, NegativeCoefficientsRoundTrip) {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
 
-    auto keys              = cc->KeyGen();
-    auto elementParams     = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
-    const BigInteger Q     = BigInteger(1) << 33;
-    const BigInteger p     = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
+    auto keys = cc->KeyGen();
+    auto elementParams = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
+    const BigInteger Q = BigInteger(1) << 33;
+    const BigInteger p = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
     const int64_t halfDown = PLAINTEXT_MODULUS / 2 - 1;
 
     const std::vector<int64_t> input{-1, -halfDown, -100, 0, 1, 100, halfDown, -42};
     auto ciphertext = SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams);
-    auto output     = SchemeletRLWEMP::DecryptCoeff(ciphertext, Q, p, keys.secretKey, elementParams, input.size());
+    auto output = SchemeletRLWEMP::DecryptCoeff(ciphertext, Q, p, keys.secretKey, elementParams, input.size());
 
     ASSERT_EQ(output.size(), input.size());
     for (size_t i = 0; i < input.size(); ++i)
@@ -105,23 +105,23 @@ TEST_F(UTRLWEMP, OutOfRangeCoefficientsAreReduced) {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
 
-    auto keys          = cc->KeyGen();
+    auto keys = cc->KeyGen();
     auto elementParams = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
     const BigInteger p = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
 
     // Q divides 2^63, so the signed minimum reduces to zero; the other coefficients sit one step
     // past a multiple of Q and must come back as that step.
-    const int64_t q    = int64_t(1) << 33;
+    const int64_t q = int64_t(1) << 33;
     const BigInteger Q = BigInteger(1) << 33;
 
     const std::vector<int64_t> input{
-        std::numeric_limits<int64_t>::min(), -(q + 5), -(3 * q + 7), q + 5, 3 * q + 7, -q, q, 0};
+            std::numeric_limits<int64_t>::min(), -(q + 5), -(3 * q + 7), q + 5, 3 * q + 7, -q, q, 0};
     const std::vector<int64_t> expected{0, -5, -7, 5, 7, 0, 0, 0};
 
     std::vector<int64_t> output;
     ASSERT_NO_THROW(output = SchemeletRLWEMP::DecryptCoeff(
-                        SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams), Q, p, keys.secretKey,
-                        elementParams, input.size()));
+                            SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams), Q, p,
+                            keys.secretKey, elementParams, input.size()));
     ASSERT_EQ(output.size(), expected.size());
     for (size_t i = 0; i < expected.size(); ++i)
         EXPECT_EQ(output[i], expected[i]) << "coefficient " << i << " (input " << input[i] << ")";

@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhecontext.h"
 #include "constants.h"
@@ -38,12 +46,6 @@
 #include "lwe-pke.h"
 #include "scheme/scheme-swch-params.h"
 #include "schemerns/rns-fhe.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -54,7 +56,7 @@ namespace lbcrypto {
 class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
-public:
+  public:
     virtual ~SWITCHCKKSRNS() = default;
 
     /**
@@ -99,7 +101,7 @@ public:
     LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
+            const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
 
     void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, double scaleSign,
                                      bool unit) override;
@@ -196,7 +198,7 @@ public:
         return "SWITCHCKKSRNS";
     }
 
-private:
+  private:
     std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                           const std::vector<std::vector<std::complex<double>>>& A,
                                                           uint32_t dim1, uint32_t L, double scale) const;
@@ -306,4 +308,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_

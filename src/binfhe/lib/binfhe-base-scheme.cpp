@@ -31,9 +31,11 @@
 
 #include "binfhe-base-scheme.h"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace lbcrypto {
@@ -52,13 +54,11 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams>& par
     LWEPrivateKey skN;
     if (keygenMode == SYM_ENCRYPT) {
         skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
-    }
-    else if (keygenMode == PUB_ENCRYPT) {
+    } else if (keygenMode == PUB_ENCRYPT) {
         ConstLWEKeyPair kpN = LWEscheme->KeyGenPair(LWEParams);
-        skN                 = kpN->secretKey;
-        ek.Pkey             = kpN->publicKey;
-    }
-    else {
+        skN = kpN->secretKey;
+        ek.Pkey = kpN->publicKey;
+    } else {
         OPENFHE_THROW("Invalid KeyGen mode");
     }
 
@@ -137,8 +137,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     if ((gate == XOR) || (gate == XNOR) || (gate == XOR_FAST) || (gate == XNOR_FAST)) {
         LWEscheme->EvalAddEq(cct1, cct2);
         LWEscheme->EvalAddEq(cct1, cct1);
-    }
-    else {
+    } else {
         // for all other gates, we simply compute (ct1 + ct2) mod 4
         // for AND: 0,1 -> 0 and 2,3 -> 1
         // for OR: 1,2 -> 1 and 3,0 -> 0
@@ -213,7 +212,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
                                                      std::make_shared<LWECiphertextImpl>(*ctvector[0]);
         for (uint32_t i = 1; i < expectedSize; ++i) {
             LWEscheme->EvalAddEq(
-                ct, (Q == ctvector[i]->GetModulus()) ? SwitchCTtoqn(LWEParams, EK, ctvector[i]) : ctvector[i]);
+                    ct, (Q == ctvector[i]->GetModulus()) ? SwitchCTtoqn(LWEParams, EK, ctvector[i]) : ctvector[i]);
         }
 
         auto p = ctvector[0]->GetptModulus();
@@ -237,13 +236,11 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
         ctExt->SetptModulus(p);
         return ctExt;
-    }
-    else if (gate == CMUX) {
+    } else if (gate == CMUX) {
         auto&& ctNAND1 = EvalBinGate(params, NAND, EK, ctvector[0], EvalNOT(params, ctvector[2]));
         auto&& ctNAND2 = EvalBinGate(params, NAND, EK, ctvector[1], ctvector[2]);
         return EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
-    }
-    else {
+    } else {
         OPENFHE_THROW("This gate is not implemented for vector of ciphertexts at this time");
     }
 }
@@ -452,8 +449,8 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
         OPENFHE_THROW("This function only for large precision. For small precision, use bootstrapping directly");
 
     const auto& RGSWParams = params->GetRingGSWParams();
-    const auto curBase     = RGSWParams->GetBaseG();
-    auto search            = EKs.find(curBase);
+    const auto curBase = RGSWParams->GetBaseG();
+    auto search = EKs.find(curBase);
     if (search == EKs.end())
         OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
     RingGSWBTKey curEK(search->second);
@@ -462,7 +459,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
     while (mod > q) {
         cttmp = EvalFloor(params, curEK, cttmp, beta);
         // round Q to 2betaQ/q
-        mod   = (mod << 1) * beta / q;
+        mod = (mod << 1) * beta / q;
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         // if dynamic
@@ -493,8 +490,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
         };
         cttmp = BootstrapFunc(params, curEK, cttmp, f3, q);  // this is 1/4q_small or -1/4q_small mod q
         LWEscheme->EvalSubConstEq(cttmp, q >> 2);
-    }
-    else {  // return the negated f3 and do not subtract q/4 for a more natural encoding in scheme switching
+    } else {  // return the negated f3 and do not subtract q/4 for a more natural encoding in scheme switching
         // if the ended q is smaller than q, we need to change the param for the final boostrapping
         auto f3 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
             return (x < q / 2) ? (Q - Q / 4) : (Q / 4);
@@ -514,8 +510,8 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     if (ct == nullptr)
         OPENFHE_THROW("Ciphertext is empty");
 
-    auto mod         = ct->GetModulus();
-    auto& LWEParams  = params->GetLWEParams();
+    auto mod = ct->GetModulus();
+    auto& LWEParams = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
     NativeInteger q = LWEParams->Getq();
@@ -523,7 +519,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
         OPENFHE_THROW("Function only for large precision. For small precision, use bootstrapping directly");
 
     const auto curBase = RGSWParams->GetBaseG();
-    auto search        = EKs.find(curBase);
+    auto search = EKs.find(curBase);
     if (search == EKs.end())
         OPENFHE_THROW("No key [" + std::to_string(curBase) + "] found in the map");
     RingGSWBTKey curEK(search->second);
@@ -538,12 +534,12 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
         // Floor the input sequentially to obtain the most significant bit
         cttmp = EvalFloor(params, curEK, cttmp, beta);
         // round Q to 2betaQ/q
-        mod   = (mod << 1) * beta / q;
+        mod = (mod << 1) * beta / q;
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
             uint32_t binLog = GetMSB(mod.ConvertToInt()) - 1;
-            uint32_t base   = 0;
+            uint32_t base = 0;
             if (binLog <= static_cast<uint32_t>(17))
                 base = static_cast<uint32_t>(1) << 27;
             else if (binLog <= static_cast<uint32_t>(26))
@@ -580,14 +576,14 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     const uint64_t qInt{q.ConvertToInt<uint64_t>()};
     if (qInt == 0 || (2 * static_cast<uint64_t>(params->GetLWEParams()->GetN())) % qInt != 0)
         OPENFHE_THROW("Ciphertext modulus must divide 2N");
-    auto qHalf       = q.ConvertToInt<uint32_t>() >> 1;
+    auto qHalf = q.ConvertToInt<uint32_t>() >> 1;
     auto& RGSWParams = params->GetRingGSWParams();
     NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<size_t>(gate)];
     NativeInteger q2 = q1.ModAddFast(NativeInteger(qHalf), q);
 
     bool swap = q1 >= q2;
-    auto lb   = swap ? q2 : q1;
-    auto ub   = swap ? q1 : q2;
+    auto lb = swap ? q2 : q1;
+    auto ub = swap ? q1 : q2;
 
     // depending on whether the value is the range, it will be set
     // to either Q/8 or -Q/8 to match binary arithmetic
@@ -598,7 +594,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     // the OUTPUT encoding, not the input's. The 2-input caller and Bootstrap both pass a
     // ciphertext whose copy or ModSwitch has reset this to 4 -- that reset is what re-spaces the
     // result to q/4 -- while the multi-input caller restores 6 or 8 just above.
-    NativeInteger Q2p    = Q / (ct->GetptModulus() * 2) + 1;
+    NativeInteger Q2p = Q / (ct->GetptModulus() * 2) + 1;
     NativeInteger Q2pNeg = Q - Q2p;
 
     auto lv = swap ? Q2p : Q2pNeg;
@@ -649,20 +645,20 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
     if (!EK.HasRefreshKey())
         OPENFHE_THROW("Bootstrapping keys not generated. Please call BTKeyGen before bootstrapping.");
 
-    auto& LWEParams  = params->GetLWEParams();
+    auto& LWEParams = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
-    auto polyParams  = RGSWParams->GetPolyParams();
+    auto polyParams = RGSWParams->GetPolyParams();
 
     NativeInteger Q = LWEParams->GetQ();
-    uint32_t N      = LWEParams->GetN();
+    uint32_t N = LWEParams->GetN();
     NativeVector m(N, Q);
     // For specific function evaluation instead of general bootstrapping
     NativeInteger ctMod = ct->GetModulus();
-    uint32_t factor     = (2 * N / ctMod.ConvertToInt());
-    NativeInteger b     = ct->GetB();
+    uint32_t factor = (2 * N / ctMod.ConvertToInt());
+    NativeInteger b = ct->GetB();
     for (size_t j = 0; j < (ctMod >> 1); ++j) {
         NativeInteger temp = b.ModSubFast(j, ctMod);
-        m[j * factor]      = Q.ConvertToInt() / fmod.ConvertToInt() * f(temp, ctMod, fmod);
+        m[j * factor] = Q.ConvertToInt() / fmod.ConvertToInt() * f(temp, ctMod, fmod);
     }
     std::vector<NativePoly> res(2);
     // no need to do NTT as all coefficients of this poly are zero

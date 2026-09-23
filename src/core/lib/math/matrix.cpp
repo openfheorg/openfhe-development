@@ -36,10 +36,12 @@
 #ifndef LBCRYPTO_LIB_MATH_MATRIX_CPP
 #define LBCRYPTO_LIB_MATH_MATRIX_CPP
 
+#include <cmath>
+#include <cstdint>
+
 #include "math/math-hal.h"
 #include "math/matrix-impl.h"
 #include "math/matrix-utils.h"
-
 #include "utils/exception.h"
 #include "utils/parallel.h"
 

@@ -35,9 +35,12 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
+#include "scheme/bgvrns/bgvrns-leveledshe.h"
+
+#include <cstdint>
+
 #include "ciphertext.h"
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "scheme/bgvrns/bgvrns-leveledshe.h"
 
 namespace lbcrypto {
 
@@ -46,7 +49,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
 
     const auto t = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
 
-    auto& cv      = ciphertext->GetElements();
+    auto& cv = ciphertext->GetElements();
     size_t sizeQl = cv[0].GetNumOfElements();
 
     if (sizeQl > levels && sizeQl > 0) {
@@ -57,8 +60,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
                             cryptoParams->GetqlInvModqPrecon(i));
             }
         }
-    }
-    else {
+    } else {
         OPENFHE_THROW("Too few towers to support ModReduce.");
     }
 
@@ -67,7 +69,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
 
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         for (size_t i = 0; i < levels; ++i) {
-            NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+            NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
             NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(t);
             ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(modReduceFactorInv, t));
         }
@@ -86,18 +88,18 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
 
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
-    uint32_t c1lvl   = ciphertext1->GetLevel();
-    uint32_t c2lvl   = ciphertext2->GetLevel();
+    uint32_t c1lvl = ciphertext1->GetLevel();
+    uint32_t c2lvl = ciphertext2->GetLevel();
     uint32_t c1depth = ciphertext1->GetNoiseScaleDeg();
     uint32_t c2depth = ciphertext2->GetNoiseScaleDeg();
-    auto sizeQl1     = ciphertext1->GetElements()[0].GetNumOfElements();
-    auto sizeQl2     = ciphertext2->GetElements()[0].GetNumOfElements();
+    auto sizeQl1 = ciphertext1->GetElements()[0].GetNumOfElements();
+    auto sizeQl2 = ciphertext2->GetElements()[0].GetNumOfElements();
 
     if (c1lvl < c2lvl) {
         if (c1depth == 2) {
             if (c2depth == 2) {
-                NativeInteger scf1    = ciphertext1->GetScalingFactorInt();
-                NativeInteger scf2    = ciphertext2->GetScalingFactorInt();
+                NativeInteger scf1 = ciphertext1->GetScalingFactorInt();
+                NativeInteger scf2 = ciphertext2->GetScalingFactorInt();
                 NativeInteger ql1Modt = cryptoParams->GetModReduceFactorInt(sizeQl1 - 1);
                 NativeInteger scf1Inv = scf1.ModInverse(t);
 
@@ -107,14 +109,12 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
                     LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 1);
                 }
                 ciphertext1->SetScalingFactorInt(ciphertext2->GetScalingFactorInt());
-            }
-            else {
+            } else {
                 if (c1lvl + 1 == c2lvl) {
                     ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
-                }
-                else {
-                    NativeInteger scf1    = ciphertext1->GetScalingFactorInt();
-                    NativeInteger scf2    = cryptoParams->GetScalingFactorIntBig(c2lvl - 1);
+                } else {
+                    NativeInteger scf1 = ciphertext1->GetScalingFactorInt();
+                    NativeInteger scf2 = cryptoParams->GetScalingFactorIntBig(c2lvl - 1);
                     NativeInteger ql1Modt = cryptoParams->GetModReduceFactorInt(sizeQl1 - 1);
                     NativeInteger scf1Inv = scf1.ModInverse(t);
 
@@ -127,20 +127,18 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
                     ciphertext1->SetScalingFactorInt(ciphertext2->GetScalingFactorInt());
                 }
             }
-        }
-        else {
+        } else {
             if (c2depth == 2) {
-                NativeInteger scf1    = ciphertext1->GetScalingFactorInt();
-                NativeInteger scf2    = ciphertext2->GetScalingFactorInt();
+                NativeInteger scf1 = ciphertext1->GetScalingFactorInt();
+                NativeInteger scf2 = ciphertext2->GetScalingFactorInt();
                 NativeInteger scf1Inv = scf1.ModInverse(t);
 
                 EvalMultCoreInPlace(ciphertext1, scf2.ModMul(scf1Inv, t).ConvertToInt());
                 LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl);
                 ciphertext1->SetScalingFactorInt(scf2);
-            }
-            else {
-                NativeInteger scf1    = ciphertext1->GetScalingFactorInt();
-                NativeInteger scf2    = cryptoParams->GetScalingFactorIntBig(c2lvl - 1);
+            } else {
+                NativeInteger scf1 = ciphertext1->GetScalingFactorInt();
+                NativeInteger scf2 = cryptoParams->GetScalingFactorIntBig(c2lvl - 1);
                 NativeInteger scf1Inv = scf1.ModInverse(t);
 
                 EvalMultCoreInPlace(ciphertext1, scf2.ModMul(scf1Inv, t).ConvertToInt());
@@ -151,12 +149,11 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
                 ciphertext1->SetScalingFactorInt(ciphertext2->GetScalingFactorInt());
             }
         }
-    }
-    else if (c1lvl > c2lvl) {
+    } else if (c1lvl > c2lvl) {
         if (c2depth == 2) {
             if (c1depth == 2) {
-                NativeInteger scf2    = ciphertext2->GetScalingFactorInt();
-                NativeInteger scf1    = ciphertext1->GetScalingFactorInt();
+                NativeInteger scf2 = ciphertext2->GetScalingFactorInt();
+                NativeInteger scf1 = ciphertext1->GetScalingFactorInt();
                 NativeInteger ql2Modt = cryptoParams->GetModReduceFactorInt(sizeQl2 - 1);
                 NativeInteger scf2Inv = scf2.ModInverse(t);
 
@@ -166,14 +163,12 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
                     LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 1);
                 }
                 ciphertext2->SetScalingFactorInt(ciphertext1->GetScalingFactorInt());
-            }
-            else {
+            } else {
                 if (c2lvl + 1 == c1lvl) {
                     ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
-                }
-                else {
-                    NativeInteger scf2    = ciphertext2->GetScalingFactorInt();
-                    NativeInteger scf1    = cryptoParams->GetScalingFactorIntBig(c1lvl - 1);
+                } else {
+                    NativeInteger scf2 = ciphertext2->GetScalingFactorInt();
+                    NativeInteger scf1 = cryptoParams->GetScalingFactorIntBig(c1lvl - 1);
                     NativeInteger ql2Modt = cryptoParams->GetModReduceFactorInt(sizeQl2 - 1);
                     NativeInteger scf2Inv = scf2.ModInverse(t);
 
@@ -186,20 +181,18 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
                     ciphertext2->SetScalingFactorInt(ciphertext1->GetScalingFactorInt());
                 }
             }
-        }
-        else {
+        } else {
             if (c1depth == 2) {
-                NativeInteger scf2    = ciphertext2->GetScalingFactorInt();
-                NativeInteger scf1    = ciphertext1->GetScalingFactorInt();
+                NativeInteger scf2 = ciphertext2->GetScalingFactorInt();
+                NativeInteger scf1 = ciphertext1->GetScalingFactorInt();
                 NativeInteger scf2Inv = scf2.ModInverse(t);
 
                 EvalMultCoreInPlace(ciphertext2, scf1.ModMul(scf2Inv, t).ConvertToInt());
                 LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl);
                 ciphertext2->SetScalingFactorInt(scf1);
-            }
-            else {
-                NativeInteger scf2    = ciphertext2->GetScalingFactorInt();
-                NativeInteger scf1    = cryptoParams->GetScalingFactorIntBig(c1lvl - 1);
+            } else {
+                NativeInteger scf2 = ciphertext2->GetScalingFactorInt();
+                NativeInteger scf1 = cryptoParams->GetScalingFactorIntBig(c1lvl - 1);
                 NativeInteger scf2Inv = scf2.ModInverse(t);
 
                 EvalMultCoreInPlace(ciphertext2, scf1.ModMul(scf2Inv, t).ConvertToInt());
@@ -210,13 +203,11 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
                 ciphertext2->SetScalingFactorInt(ciphertext1->GetScalingFactorInt());
             }
         }
-    }
-    else {
+    } else {
         if (c1depth < c2depth) {
             NativeInteger scf = ciphertext1->GetScalingFactorInt();
             EvalMultCoreInPlace(ciphertext1, scf.ConvertToInt());
-        }
-        else if (c2depth < c1depth) {
+        } else if (c2depth < c1depth) {
             NativeInteger scf = ciphertext2->GetScalingFactorInt();
             EvalMultCoreInPlace(ciphertext2, scf.ConvertToInt());
         }
@@ -252,7 +243,7 @@ void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPl
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
         ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
+                ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
     }
 }
 

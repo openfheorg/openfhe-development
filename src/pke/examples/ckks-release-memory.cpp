@@ -37,19 +37,21 @@
   local CryptoContext handle alive.
 */
 
-#include "openfhe.h"
-#include "utils/memory.h"
-
-#include <iostream>
-
-using namespace lbcrypto;
-
 #include <cstddef>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #if defined(__GLIBC__)
     #include <malloc.h>
 #elif defined(__APPLE__)
     #include <malloc/malloc.h>
 #endif
+
+#include "openfhe.h"
+#include "utils/memory.h"
+
+using namespace lbcrypto;
 
 std::size_t HeapInUseBytes() {
 #if defined(__GLIBC__)
@@ -76,7 +78,7 @@ static CryptoContext<DCRTPoly> BuildBootstrapContext() {
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
 
     std::vector<uint32_t> levelBudget = {4, 4};
-    uint32_t depth                    = 10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
+    uint32_t depth = 10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skDist);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -89,8 +91,8 @@ static CryptoContext<DCRTPoly> BuildBootstrapContext() {
 }
 
 int main() {
-    auto cc           = BuildBootstrapContext();
-    uint32_t ringDim  = cc->GetRingDimension();
+    auto cc = BuildBootstrapContext();
+    uint32_t ringDim = cc->GetRingDimension();
     uint32_t numSlots = ringDim / 2;
 
     std::cout << "ring dim = " << ringDim << "\n";

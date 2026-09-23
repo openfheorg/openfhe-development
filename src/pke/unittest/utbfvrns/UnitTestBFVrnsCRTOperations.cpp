@@ -29,23 +29,25 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
 class UTBFVRNS_CRT : public ::testing::Test {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -55,7 +57,7 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-public:
+  public:
 };
 
 void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplicationTechnique,
@@ -90,13 +92,13 @@ void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplica
 
     // First plaintext vector is encoded
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
     // Second plaintext vector is encoded
     std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
     size_t expectedResultSize =
-        (vectorOfInts1.size() < vectorOfInts2.size()) ? vectorOfInts1.size() : vectorOfInts2.size();
+            (vectorOfInts1.size() < vectorOfInts2.size()) ? vectorOfInts1.size() : vectorOfInts2.size();
     std::vector<int64_t> expectedResult(expectedResultSize);
     for (size_t i = 0; i < expectedResultSize; ++i) {
         expectedResult[i] = vectorOfInts1[i] * vectorOfInts2[i];
@@ -115,7 +117,7 @@ void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplica
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12, &plaintextMultResult);
     plaintextMultResult->SetLength(expectedResultSize);
     std::vector<int64_t> decvec = plaintextMultResult->GetPackedValue();
-    Plaintext dRes              = cryptoContext->MakePackedPlaintext(decvec);
+    Plaintext dRes = cryptoContext->MakePackedPlaintext(decvec);
 
     EXPECT_EQ(plaintextMultResult, expectedPlaintext);
 }
@@ -194,21 +196,21 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQLEVELED) 
 
 TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     UnitTestCCParams parameters;
-    parameters.schemeId                = BFVRNS_SCHEME;
-    parameters.plaintextModulus        = 65537;
-    parameters.standardDeviation       = 3.19;
-    parameters.maxRelinSkDeg           = 2;
-    parameters.scalTech                = NORESCALE;
-    parameters.numLargeDigits          = 0;
-    parameters.multiplicativeDepth     = 2;
-    parameters.scalingModSize          = 60;
-    parameters.ksTech                  = BV;
-    parameters.digitSize               = 20;
-    parameters.securityLevel           = HEStd_NotSet;
-    parameters.ringDimension           = 8;
-    parameters.firstModSize            = 60;
-    parameters.batchSize               = 8;
-    parameters.secretKeyDist           = UNIFORM_TERNARY;
+    parameters.schemeId = BFVRNS_SCHEME;
+    parameters.plaintextModulus = 65537;
+    parameters.standardDeviation = 3.19;
+    parameters.maxRelinSkDeg = 2;
+    parameters.scalTech = NORESCALE;
+    parameters.numLargeDigits = 0;
+    parameters.multiplicativeDepth = 2;
+    parameters.scalingModSize = 60;
+    parameters.ksTech = BV;
+    parameters.digitSize = 20;
+    parameters.securityLevel = HEStd_NotSet;
+    parameters.ringDimension = 8;
+    parameters.firstModSize = 60;
+    parameters.batchSize = 8;
+    parameters.secretKeyDist = UNIFORM_TERNARY;
     parameters.multiplicationTechnique = BEHZ;
 
     CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
@@ -220,7 +222,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::EVALUATION);
 
-    uint32_t m1               = 16;
+    uint32_t m1 = 16;
     NativeInteger modulus0 = 1152921504606846577;
     NativeInteger modulus1 = 1152921504606846097;
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -242,11 +244,11 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     a.SetElementAtIndex(1, poly1);
 
     a.FastBaseConvqToBskMontgomery(
-        cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
-        cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
-        cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetQHatModmtilde(),
-        cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(), cryptoParams->GetNegQInvModmtilde(),
-        cryptoParams->GetmtildeInvModbsk(), cryptoParams->GetmtildeInvModbskPrecon());
+            cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
+            cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
+            cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetQHatModmtilde(),
+            cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(), cryptoParams->GetNegQInvModmtilde(),
+            cryptoParams->GetmtildeInvModbsk(), cryptoParams->GetmtildeInvModbskPrecon());
 
     NativeInteger modulus2 = 1152921504606845777;
     NativeInteger modulus3 = 1152921504606845473;
@@ -306,7 +308,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::COEFFICIENT);
 
-    uint32_t m1               = 16;
+    uint32_t m1 = 16;
     NativeInteger modulus0 = NativeInteger("1152921504606846577");
     NativeInteger modulus1 = NativeInteger("1152921504606846097");
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -327,15 +329,15 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     a.SetElementAtIndex(0, poly0);
     a.SetElementAtIndex(1, poly1);
 
-    auto param1  = cryptoParamsBFVrns->GetParamsQlRl(sizeQ - 1);
-    auto param2  = cryptoParamsBFVrns->GetParamsRl(sizeQ - 1);
-    auto param3  = cryptoParamsBFVrns->GetParamsQl(sizeQ - 1);
-    auto param4  = cryptoParamsBFVrns->GetmNegRlQHatInvModq(sizeQ - 1);
-    auto param5  = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
-    auto param6  = cryptoParamsBFVrns->GetqInvModr();
-    auto param7  = cryptoParamsBFVrns->GetModrBarrettMu();
-    auto param8  = cryptoParamsBFVrns->GetRlHatInvModr(sizeQ - 1);
-    auto param9  = cryptoParamsBFVrns->GetRlHatInvModrPrecon(sizeQ - 1);
+    auto param1 = cryptoParamsBFVrns->GetParamsQlRl(sizeQ - 1);
+    auto param2 = cryptoParamsBFVrns->GetParamsRl(sizeQ - 1);
+    auto param3 = cryptoParamsBFVrns->GetParamsQl(sizeQ - 1);
+    auto param4 = cryptoParamsBFVrns->GetmNegRlQHatInvModq(sizeQ - 1);
+    auto param5 = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
+    auto param6 = cryptoParamsBFVrns->GetqInvModr();
+    auto param7 = cryptoParamsBFVrns->GetModrBarrettMu();
+    auto param8 = cryptoParamsBFVrns->GetRlHatInvModr(sizeQ - 1);
+    auto param9 = cryptoParamsBFVrns->GetRlHatInvModrPrecon(sizeQ - 1);
     auto param10 = cryptoParamsBFVrns->GetRlHatModq(sizeQ - 1);
     auto param11 = cryptoParamsBFVrns->GetalphaRlModq(sizeQ - 1);
     auto param12 = cryptoParamsBFVrns->GetModqBarrettMu();
@@ -399,7 +401,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> params = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -410,10 +412,10 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 
     Poly resultA = a.CRTInterpolate();
 
-    const DCRTPoly b =
-        a.SwitchCRTBasis(paramsR, cryptoParamsBFVrns->GetQlHatInvModq(), cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-                         cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-                         cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+    const DCRTPoly b = a.SwitchCRTBasis(paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+                                        cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+                                        cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
+                                        cryptoParamsBFVrns->GetqInv());
 
     Poly resultB = b.CRTInterpolate();
 
@@ -443,7 +445,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -532,8 +534,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     EXPECT_EQ(A0, B0) << "Results of multiprecision and CRT multiplication do not match";
 
     DCRTPoly rounded =
-        c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
+            c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
+                            cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
 
     DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
                                                cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
@@ -573,7 +575,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -665,8 +667,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     //      << "Results of multiprecision and CRT multiplication do not match";
 
     DCRTPoly rounded =
-        c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
+            c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
+                            cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
 
     DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
                                                cryptoParamsBFVrns->GetRlHatInvModrPrecon(),

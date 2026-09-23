@@ -33,18 +33,20 @@
   This file contains the interfaces for the math vector data types
  */
 
-#ifndef LBCRYPTO_MATH_VECTOR_H
-#define LBCRYPTO_MATH_VECTOR_H
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_VECTOR_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_VECTOR_H_
+
+#include <cstdint>
+#include <initializer_list>
+#include <string>
 
 #include "utils/inttypes.h"
-
-#include <string>
 
 namespace lbcrypto {
 
 template <typename T, typename I>
 class BigVectorInterface {
-public:
+  public:
     typedef I Integer;
 
     // CONSTRUCTORS
@@ -478,7 +480,7 @@ public:
    */
     T GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
-protected:
+  protected:
     ~BigVectorInterface() = default;
 
     // STRINGS & STREAMS
@@ -487,4 +489,4 @@ protected:
 };
 
 }  // namespace lbcrypto
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_VECTOR_H_

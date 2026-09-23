@@ -33,18 +33,23 @@
   This code exercises the encoding libraries of the OpenFHE lattice encryption library.
 */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "encoding/encodings.h"
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/math-hal.h"
 #include "utils/utilities.h"
 
-#include <iostream>
-
 using namespace lbcrypto;
 
 class UTGENERAL_ENCODING : public ::testing::Test {
-protected:
+  protected:
     virtual void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -56,7 +61,7 @@ protected:
 
 TEST_F(UTGENERAL_ENCODING, coef_packed_encoding) {
     std::vector<int64_t> value = {32, 17, 8, -12, -32, 22, -101, 6};
-    uint32_t m                 = 16;
+    uint32_t m = 16;
 
     auto lp = std::make_shared<ILParamsImpl<BigInteger>>(m);
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(256));
@@ -69,7 +74,7 @@ TEST_F(UTGENERAL_ENCODING, coef_packed_encoding) {
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding) {
-    uint32_t m         = 22;
+    uint32_t m = 22;
     PlaintextModulus p = 89;
     BigInteger modulusQ("955263939794561");
     BigInteger squareRootOfRoot("941018665059848");
@@ -92,7 +97,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding) {
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
-    uint32_t m         = 22;
+    uint32_t m = 22;
     PlaintextModulus p = 89;
     BigInteger modulusQ("955263939794561");
     BigInteger squareRootOfRoot("941018665059848");
@@ -116,7 +121,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
     uint32_t init_size = 3;
-    uint32_t dcrtBits  = 24;
+    uint32_t dcrtBits = 24;
     // Bluestein needs bigModulus > m * q^2 (about 2^58.8 for 24-bit towers at m = 1811)
     uint32_t dcrtBitsBig = 60;
 
@@ -133,11 +138,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     std::vector<NativeInteger> init_moduli(init_size);
     std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
-    init_moduli[0]       = LastPrime<NativeInteger>(dcrtBits, mArb);
+    init_moduli[0] = LastPrime<NativeInteger>(dcrtBits, mArb);
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
     for (uint32_t i = 1; i < init_size; ++i) {
-        init_moduli[i]       = PreviousPrime(init_moduli[i - 1], mArb);
+        init_moduli[i] = PreviousPrime(init_moduli[i - 1], mArb);
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
     }
 
@@ -146,11 +151,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     std::vector<NativeInteger> init_moduli_NTT(init_size);
     std::vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
 
-    init_moduli_NTT[0]       = LastPrime<NativeInteger>(dcrtBitsBig, mNTT);
+    init_moduli_NTT[0] = LastPrime<NativeInteger>(dcrtBitsBig, mNTT);
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
     for (uint32_t i = 1; i < init_size; ++i) {
-        init_moduli_NTT[i]       = PreviousPrime(init_moduli_NTT[i - 1], mNTT);
+        init_moduli_NTT[i] = PreviousPrime(init_moduli_NTT[i - 1], mNTT);
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
     }
 
@@ -179,7 +184,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative) {
     uint32_t init_size = 3;
-    uint32_t dcrtBits  = 24;
+    uint32_t dcrtBits = 24;
     // Bluestein needs bigModulus > m * q^2 (about 2^58.8 for 24-bit towers at m = 1811)
     uint32_t dcrtBitsBig = 60;
 
@@ -195,11 +200,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     std::vector<NativeInteger> init_moduli(init_size);
     std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
-    init_moduli[0]       = LastPrime<NativeInteger>(dcrtBits, mArb);
+    init_moduli[0] = LastPrime<NativeInteger>(dcrtBits, mArb);
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
     for (uint32_t i = 1; i < init_size; ++i) {
-        init_moduli[i]       = PreviousPrime(init_moduli[i - 1], mArb);
+        init_moduli[i] = PreviousPrime(init_moduli[i - 1], mArb);
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
     }
 
@@ -208,11 +213,11 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     std::vector<NativeInteger> init_moduli_NTT(init_size);
     std::vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
 
-    init_moduli_NTT[0]       = LastPrime<NativeInteger>(dcrtBitsBig, mNTT);
+    init_moduli_NTT[0] = LastPrime<NativeInteger>(dcrtBitsBig, mNTT);
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
     for (uint32_t i = 1; i < init_size; ++i) {
-        init_moduli_NTT[i]       = PreviousPrime(init_moduli_NTT[i - 1], mNTT);
+        init_moduli_NTT[i] = PreviousPrime(init_moduli_NTT[i - 1], mNTT);
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
     }
 
@@ -241,7 +246,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
 
 TEST_F(UTGENERAL_ENCODING, string_encoding) {
     std::string value = "Hello, world!";
-    uint32_t m        = 64;
+    uint32_t m = 64;
 
     auto lp = std::make_shared<ILParamsImpl<BigInteger>>(m);
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(256));

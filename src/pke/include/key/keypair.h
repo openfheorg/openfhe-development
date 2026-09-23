@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_KEYPAIR_H
-#define LBCRYPTO_CRYPTO_KEY_KEYPAIR_H
+#ifndef SRC_PKE_INCLUDE_KEY_KEYPAIR_H_
+#define SRC_PKE_INCLUDE_KEY_KEYPAIR_H_
 
 #include "key/privatekey.h"
 #include "key/publickey.h"
@@ -43,7 +43,7 @@ namespace lbcrypto {
 
 template <class Element>
 class KeyPair {
-public:
+  public:
     PublicKey<Element> publicKey;
     PrivateKey<Element> secretKey;
 
@@ -63,4 +63,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_KEYPAIR_H_

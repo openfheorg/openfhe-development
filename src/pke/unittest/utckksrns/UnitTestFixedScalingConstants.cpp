@@ -39,18 +39,20 @@
   recursion before the automatic rescale and lost about 4 bits of a degree-119 evaluation compared with
   FIXEDMANUAL (2^-24 instead of 2^-28 at ring dimension 2^12 with 50-bit primes).
 */
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <random>
+#include <string>
+#include <vector>
+
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "math/chebyshev.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestUtils.h"
-
-#include <cmath>
-#include <random>
-#include <string>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -62,8 +64,8 @@ long double EvalChebyshevSeriesExact(const std::vector<double>& coefficients, lo
     long double b2 = 0;
     for (size_t k = coefficients.size() - 1; k >= 1; --k) {
         long double b0 = 2 * x * b1 - b2 + coefficients[k];
-        b2             = b1;
-        b1             = b0;
+        b2 = b1;
+        b1 = b0;
     }
     return x * b1 - b2 + coefficients[0] / 2;
 }
@@ -75,14 +77,14 @@ TEST(UTCKKSRNS_FIXED_SCALING, DegreeTwoConstantsChebyshev119) {
     GTEST_SKIP() << "precision thresholds are calibrated for the 64-bit build";
 #else
     const uint32_t ringDim = 1 << 12;
-    const uint32_t slots   = ringDim / 2;
-    const uint32_t degree  = 119;
-    const double K         = 512;
+    const uint32_t slots = ringDim / 2;
+    const uint32_t degree = 119;
+    const double K = 512;
 
     // the interpolant of the uniform-secret bootstrapping table before the double-angle iterations
     std::vector<double> coefficients = EvalChebyshevCoefficients(
-        [K](double x) { return std::pow(2 * M_PI, -1.0 / 64) * std::cos(2 * M_PI * K * x / 64 - M_PI / 128); }, -1, 1,
-        degree);
+            [K](double x) { return std::pow(2 * M_PI, -1.0 / 64) * std::cos(2 * M_PI * K * x / 64 - M_PI / 128); }, -1,
+            1, degree);
 
     std::mt19937_64 gen(12345);
     std::uniform_real_distribution<double> uniform(-1.0, 1.0);
@@ -109,7 +111,7 @@ TEST(UTCKKSRNS_FIXED_SCALING, DegreeTwoConstantsChebyshev119) {
         cc->EvalMultKeyGen(keyPair.secretKey);
 
         auto ciphertext = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(input));
-        auto result     = cc->EvalChebyshevSeries(ciphertext, coefficients, -1, 1);
+        auto result = cc->EvalChebyshevSeries(ciphertext, coefficients, -1, 1);
 
         Plaintext decrypted;
         cc->Decrypt(keyPair.secretKey, result, &decrypted);
@@ -119,7 +121,8 @@ TEST(UTCKKSRNS_FIXED_SCALING, DegreeTwoConstantsChebyshev119) {
         double maxError = 0;
         for (uint32_t i = 0; i < slots; ++i)
             maxError = std::max(
-                maxError, static_cast<double>(std::fabs(values[i] - EvalChebyshevSeriesExact(coefficients, input[i]))));
+                    maxError,
+                    static_cast<double>(std::fabs(values[i] - EvalChebyshevSeriesExact(coefficients, input[i]))));
         const double precisionBits = -std::log2(maxError);
 
         // both techniques reach about 28 bits; FIXEDAUTO gave about 24 bits before the constants were fixed

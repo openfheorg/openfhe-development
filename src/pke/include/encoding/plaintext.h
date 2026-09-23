@@ -33,21 +33,23 @@
   Represents and defines plaintext objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_UTILS_PLAINTEXT_H
-#define LBCRYPTO_UTILS_PLAINTEXT_H
-
-#include "constants.h"
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext-fwd.h"
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
+#define SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_
 
 #include <algorithm>
+#include <complex>
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "constants.h"
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext-fwd.h"
+#include "scheme/scheme-id.h"
 
 namespace lbcrypto {
 
@@ -61,7 +63,7 @@ namespace lbcrypto {
  * It provides virtual methods for encoding and decoding of data.
  */
 class PlaintextImpl {
-protected:
+  protected:
     enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
 
     bool isEncoded{false};
@@ -96,7 +98,7 @@ protected:
     */
     virtual bool CompareTo(const PlaintextImpl& other) const = 0;
 
-public:
+  public:
     PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, PlaintextEncodings encoding,
                   SCHEME schemeTag = SCHEME::INVALID_SCHEME)
         : typeFlag(IsPoly),
@@ -473,4 +475,4 @@ inline DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_ENCODING_PLAINTEXT_H_

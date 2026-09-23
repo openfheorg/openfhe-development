@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_EVAL_KEY_H_
-#define _RGSW_EVAL_KEY_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_
+#define SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
@@ -42,16 +49,10 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 class RingGSWEvalKeyImpl;
-using RingGSWEvalKey      = std::shared_ptr<RingGSWEvalKeyImpl>;
+using RingGSWEvalKey = std::shared_ptr<RingGSWEvalKeyImpl>;
 using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
 
 /**
@@ -59,7 +60,7 @@ using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
  * ring elements
  */
 class RingGSWEvalKeyImpl : public Serializable {
-public:
+  public:
     RingGSWEvalKeyImpl() = default;
 
     RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) noexcept
@@ -157,10 +158,10 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<std::vector<NativePoly>> m_elements;
 };
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_EVAL_KEY_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_

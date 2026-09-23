@@ -33,23 +33,24 @@
  * This file contains the vector manipulation functionality for native integers
  */
 
-#ifndef LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
-#define LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_
+
+#include <algorithm>
+#include <cstdint>
+#include <initializer_list>
+#include <ostream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "math/hal/basicint.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
-
-#include <algorithm>
-#include <initializer_list>
-#include <ostream>
-#include <string>
-#include <utility>
-#include <vector>
 
 /**
  * @namespace intnat
@@ -59,9 +60,9 @@ namespace intnat {
 
 template <typename IntType>
 class NativeVectorT;
-using NativeVector    = NativeVectorT<NativeInteger>;
+using NativeVector = NativeVectorT<NativeInteger>;
 using NativeInteger32 = NativeIntegerT<uint32_t>;
-using NativeVector32  = NativeVectorT<NativeInteger32>;
+using NativeVector32 = NativeVectorT<NativeInteger32>;
 
 /**
  * @brief The class for representing vectors of native integers.
@@ -69,7 +70,7 @@ using NativeVector32  = NativeVectorT<NativeInteger32>;
 template <class IntegerType>
 class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
                             public lbcrypto::Serializable {
-private:
+  private:
     IntegerType m_modulus{0};
     std::vector<IntegerType> m_data{};
 
@@ -77,7 +78,7 @@ private:
         return length < m_data.size();
     }
 
-public:
+  public:
     using BasicInt = typename IntegerType::Integer;
 
     constexpr NativeVectorT() = default;
@@ -181,7 +182,7 @@ public:
    */
     NativeVectorT& operator=(NativeVectorT&& rhs) noexcept {
         m_modulus = std::move(rhs.m_modulus);
-        m_data    = std::move(rhs.m_data);
+        m_data = std::move(rhs.m_data);
         return *this;
     }
 
@@ -677,7 +678,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     /**
    * Generalized-Barrett multiply loop with the reduction constants hoisted out of the
    * loop. Uses the same shift structure and validity domain (operands < modulus) as
@@ -754,8 +755,8 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
     for (const auto& v : vec) {
         uint64_t vec[2];
         uint128_t v128 = v.ConvertToInt();
-        vec[0]         = v128 & mask;  // least significant word
-        vec[1]         = v128 >> 64;   // most significant word
+        vec[0] = v128 & mask;  // least significant word
+        vec[1] = v128 >> 64;   // most significant word
         ar(vec);
     }
 }
@@ -792,4 +793,4 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
 #endif
 }  // namespace cereal
 
-#endif  // LBCRYPTO_MATH_HAL_INTNAT_MUBINTVECNAT_H
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_MUBINTVECNAT_H_

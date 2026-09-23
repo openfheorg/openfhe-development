@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __SERIALIZABLE_H__
-#define __SERIALIZABLE_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_SERIALIZABLE_H_
+#define SRC_CORE_INCLUDE_UTILS_SERIALIZABLE_H_
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -83,8 +83,8 @@ namespace lbcrypto {
  * for serialization
  */
 class Serializable {
-public:
-    virtual ~Serializable()                          = default;
+  public:
+    virtual ~Serializable() = default;
     virtual std::string SerializedObjectName() const = 0;
 };
 
@@ -101,4 +101,4 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 
 }  // namespace lbcrypto
 
-#endif  // __SERIALIZABLE_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_SERIALIZABLE_H_

@@ -29,23 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACCKEY32_H_
-#define _RGSW_ACCKEY32_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_
 
-#include "rgsw-acckey.h"
-#include "rgsw-cryptoparameters.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "rgsw-acckey.h"
+#include "rgsw-cryptoparameters.h"
 
 namespace lbcrypto {
 
 #if NATIVEINT != 32
 
 class RingGSWACCKey32Impl;
-using RingGSWACCKey32      = std::shared_ptr<RingGSWACCKey32Impl>;
+using RingGSWACCKey32 = std::shared_ptr<RingGSWACCKey32Impl>;
 using ConstRingGSWACCKey32 = const std::shared_ptr<const RingGSWACCKey32Impl>;
 
 // exact conversions between the two widths: every value is below 2^28, so 32 -> 64 -> 32 is the
@@ -94,7 +95,7 @@ inline void WidenAcc32Into(const std::vector<NativePoly32>& acc32, std::vector<N
  * width produces bit-identical results.
  */
 class RingGSWACCKey32Impl : public Serializable {
-public:
+  public:
     RingGSWACCKey32Impl() = default;
 
     // one RGSW eval key: [digit][column]
@@ -168,7 +169,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     void Init(const std::shared_ptr<RingGSWCryptoParams>& params);
 
     std::shared_ptr<ILNativeParams32> m_polyParams;
@@ -180,4 +181,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACCKEY32_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACCKEY32_H_

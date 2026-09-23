@@ -34,19 +34,22 @@
  * using EvalMult and EvalSquare operations.
  */
 
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
+
+#include "benchmark/benchmark.h"
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
-
-#include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
 
 using namespace lbcrypto;
 
@@ -110,8 +113,8 @@ static void DepthArguments(benchmark::internal::Benchmark* b) {
  * EvalMult benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithMult_P2(benchmark::State& state) {
-    uint32_t ptm                  = 2;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 2;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -119,8 +122,8 @@ void BGVrns_EvalPo2WithMult_P2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -148,8 +151,8 @@ BENCHMARK(BGVrns_EvalPo2WithMult_P2)->Unit(benchmark::kMicrosecond)->Apply(Depth
  * EvalSquare benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
-    uint32_t ptm                  = 2;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 2;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -157,8 +160,8 @@ void BGVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -186,8 +189,8 @@ BENCHMARK(BGVrns_EvalPo2WithSquare_P2)->Unit(benchmark::kMicrosecond)->Apply(Dep
  * EvalMult benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithMult_P2(benchmark::State& state) {
-    uint32_t ptm                  = 2;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 2;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -195,8 +198,8 @@ void BFVrns_EvalPo2WithMult_P2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -224,8 +227,8 @@ BENCHMARK(BFVrns_EvalPo2WithMult_P2)->Unit(benchmark::kMicrosecond)->Apply(Depth
  * EvalSquare benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
-    uint32_t ptm                  = 2;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 2;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -233,8 +236,8 @@ void BFVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -262,8 +265,8 @@ BENCHMARK(BFVrns_EvalPo2WithSquare_P2)->Unit(benchmark::kMicrosecond)->Apply(Dep
  * EvalMult benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
-    uint32_t ptm                  = 65537;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 65537;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -271,8 +274,8 @@ void BGVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 1, 0, 0, 1, 1};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -300,8 +303,8 @@ BENCHMARK(BGVrns_EvalPo2WithMult_P65537)->Unit(benchmark::kMicrosecond)->Apply(D
  * EvalSquare benchmarks for Power of 2
  */
 void BGVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
-    uint32_t ptm                  = 65537;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 65537;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm, depth);
 
     // KeyGen
@@ -309,8 +312,8 @@ void BGVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 1, 0, 0, 1, 1};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -338,8 +341,8 @@ BENCHMARK(BGVrns_EvalPo2WithSquare_P65537)->Unit(benchmark::kMicrosecond)->Apply
  * EvalMult benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
-    uint32_t ptm                  = 65537;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 65537;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -347,8 +350,8 @@ void BFVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -376,8 +379,8 @@ BENCHMARK(BFVrns_EvalPo2WithMult_P65537)->Unit(benchmark::kMicrosecond)->Apply(D
  * EvalSquare benchmarks for Power of 2
  */
 void BFVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
-    uint32_t ptm                  = 65537;
-    uint32_t depth                = state.range(0);
+    uint32_t ptm = 65537;
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm, depth);
 
     // KeyGen
@@ -385,8 +388,8 @@ void BFVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
-    Ciphertext<DCRTPoly> ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -414,7 +417,7 @@ BENCHMARK(BFVrns_EvalPo2WithSquare_P65537)->Unit(benchmark::kMicrosecond)->Apply
  * EvalMult benchmarks for Power of 2
  */
 void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
-    uint32_t depth                = state.range(0);
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(depth);
 
     // KeyGen
@@ -422,8 +425,8 @@ void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<double> vectorOfDoubles = {1., 0., 0., 1., 0., 0., 1., 1.};
-    Plaintext plaintext                 = cc->MakeCKKSPackedPlaintext(vectorOfDoubles);
-    Ciphertext<DCRTPoly> ciphertext     = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(vectorOfDoubles);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 
@@ -456,7 +459,7 @@ BENCHMARK(CKKSrns_EvalPo2WithMult)->Unit(benchmark::kMicrosecond)->Apply(DepthAr
  * EvalSquare benchmarks for Power of 2
  */
 void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
-    uint32_t depth                = state.range(0);
+    uint32_t depth = state.range(0);
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext(depth);
 
     // KeyGen
@@ -464,8 +467,8 @@ void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<double> vectorOfDoubles = {1., 0., 0., 1., 0., 0., 1., 1.};
-    Plaintext plaintext                 = cc->MakeCKKSPackedPlaintext(vectorOfDoubles);
-    Ciphertext<DCRTPoly> ciphertext     = cc->Encrypt(keyPair.publicKey, plaintext);
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(vectorOfDoubles);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
     Ciphertext<DCRTPoly> ciphertextPo2;
 

@@ -29,6 +29,25 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <numeric>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -38,23 +57,7 @@
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "schemelet/rlwe-mp.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <algorithm>
-#include <chrono>
-#include <complex>
-#include <functional>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <numeric>
-#include <ostream>
-#include <string>
-#include <utility>
-#include <vector>
 
 // Define BENCH below to enable more fine-grained benchmarking.
 // The benchmarks using SPARSE_TERNARY distribution correspond exactly to Tables 2 and A.3 in
@@ -143,8 +146,8 @@ static uint32_t FirstModSize(uint32_t dcrtBits, ScalingTechnique st) {
 // is used.
 static uint32_t CompositeDegreeForTest(uint32_t dcrtBits, ScalingTechnique st, uint32_t registerWordSize) {
     return (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ?
-               (dcrtBits + registerWordSize - 1) / registerWordSize :
-               1;
+                   (dcrtBits + registerWordSize - 1) / registerWordSize :
+                   1;
 }
 
 static void SetScalingTechniqueParams(CCParams<CryptoContextCKKSRNS>& parameters, ScalingTechnique st,
@@ -553,8 +556,7 @@ static double MeasureNoiseBits(const std::vector<Poly>& input, const BigInteger&
         bPoly = bPoly.MultiplyAndRound(bigQPrime, Q);
         aPoly.SwitchModulus(bigQPrime, 1, 0, 0);
         aPoly = aPoly.MultiplyAndRound(bigQPrime, Q);
-    }
-    else {
+    } else {
         bPoly = bPoly.MultiplyAndRound(bigQPrime, Q);
         bPoly.SwitchModulus(bigQPrime, 1, 0, 0);
         aPoly = aPoly.MultiplyAndRound(bigQPrime, Q);
@@ -575,16 +577,15 @@ static double MeasureNoiseBits(const std::vector<Poly>& input, const BigInteger&
     if (Q < bigQPrime) {
         mPoly = mPoly.MultiplyAndRound(Q, bigQPrime);
         mPoly.SwitchModulus(Q, 1, 0, 0);
-    }
-    else {
+    } else {
         mPoly.SwitchModulus(Q, 1, 0, 0);
         mPoly = mPoly.MultiplyAndRound(Q, bigQPrime);
     }
 
     BigInteger delta = Q / p;
-    BigInteger half  = delta >> 1;
-    uint32_t gap     = mPoly.GetLength() / (2 * numSlots);
-    gap              = (gap == 0) ? 1 : gap;
+    BigInteger half = delta >> 1;
+    uint32_t gap = mPoly.GetLength() / (2 * numSlots);
+    gap = (gap == 0) ? 1 : gap;
 
     BigInteger maxNoise(0);
     for (uint32_t i = 0, idx = 0; i < length; ++i, idx += gap) {
@@ -598,7 +599,7 @@ static double MeasureNoiseBits(const std::vector<Poly>& input, const BigInteger&
 }
 
 class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     };
@@ -623,9 +624,14 @@ protected:
                 return (x % a - a / 2) % b;
             };
 
-            std::vector<int64_t> x = {
-                (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-                (t.PInput.ConvertToInt<int64_t>() - 1)};
+            std::vector<int64_t> x = {(t.PInput.ConvertToInt<int64_t>() / 2),
+                                      (t.PInput.ConvertToInt<int64_t>() / 2) + 1,
+                                      0,
+                                      3,
+                                      16,
+                                      33,
+                                      64,
+                                      (t.PInput.ConvertToInt<int64_t>() - 1)};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -701,8 +707,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -720,10 +726,10 @@ protected:
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
                 ctxtAfterFBT =
-                    cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                        cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
             else
                 ctxtAfterFBT =
-                    cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                        cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
 
             auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
@@ -733,8 +739,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto computed =
-                SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+            auto computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS,
+                                                          t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -756,12 +762,10 @@ protected:
             checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -786,8 +790,8 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                t.PInput.ConvertToInt<int64_t>() - 1};
+                    t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                    t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -802,10 +806,9 @@ protected:
             if (binaryLUT) {
                 coeffintMod = {funcMod(1),
                                funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
-            }
-            else {
-                coeffcompMod =
-                    GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
+            } else {
+                coeffcompMod = GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order,
+                                                          t.scaleTHI);  // divided by 2
                 coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
                                                            t.scaleStepTHI);  // divided by 2
             }
@@ -875,8 +878,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -897,19 +900,19 @@ protected:
 
             uint32_t QBFVBits = t.Q.GetMSB() - 1;
 
-            auto Q      = t.Q;       // Will get modified in the loop.
+            auto Q = t.Q;            // Will get modified in the loop.
             auto PInput = t.PInput;  // Will get modified in the loop.
 
             BigInteger QNew;
 
-            const bool checkeq2       = t.POutput.ConvertToInt() == 2;
-            const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+            const bool checkeq2 = t.POutput.ConvertToInt() == 2;
+            const bool checkgt2 = t.POutput.ConvertToInt() > 2;
             const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
 
-            uint64_t scaleTHI        = t.scaleTHI;
-            bool step                = false;
-            bool go                  = QBFVBits > dcrtBits;
-            size_t levelsToDrop      = 0;
+            uint64_t scaleTHI = t.scaleTHI;
+            bool step = false;
+            bool go = QBFVBits > dcrtBits;
+            size_t levelsToDrop = 0;
             uint32_t postScalingBits = 0;
 
             // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
@@ -922,8 +925,8 @@ protected:
                 encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
                 auto ctxt =
-                    SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                       depth - (t.levelsAvailableBeforeBootstrap > 0));
+                        SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -948,8 +951,7 @@ protected:
                     PInput >>= pDigitBits;
                     QBFVBits -= pDigitBits;
                     postScalingBits += pDigitBits;
-                }
-                else {
+                } else {
                     ctxtBFV[0] = std::move(polys[0]);
                     ctxtBFV[1] = std::move(polys[1]);
                 }
@@ -987,8 +989,8 @@ protected:
                     if (!binaryLUT)
                         coeffcomp = coeffcompStep;
                     scaleTHI = t.scaleStepTHI;
-                    step     = true;
-                    go       = true;
+                    step = true;
+                    go = true;
 
                     int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
                                          GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
@@ -998,12 +1000,10 @@ protected:
             }
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1026,8 +1026,8 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                t.PInput.ConvertToInt<int64_t>() - 1};
+                    t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                    t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -1110,16 +1110,16 @@ protected:
             // FLEXIBLEAUTOEXT and compositeDegree towers per level for composite scaling
             const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
             const uint32_t cd =
-                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
+                    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
 
             // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
             Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
-                Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
-                cd * (depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation) + extOff, nullptr,
-                numSlotsCKKS);
+                    Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
+                    cd * (depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation) + extOff, nullptr,
+                    numSlotsCKKS);
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             // Set bitReverse true to be able to perform correct rotations in CKKS
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep, flagBR);
@@ -1187,8 +1187,8 @@ protected:
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f(elem) % t.POutput.ConvertToInt();
+                               f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f(elem) % t.POutput.ConvertToInt();
             });
 
             // Apply a rotation
@@ -1209,8 +1209,8 @@ protected:
 
             std::transform(exact3.begin(), exact3.end(), exact.begin(), [&](int64_t elem) {
                 return (f(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f(elem) % t.POutput.ConvertToInt();
+                               f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f(elem) % t.POutput.ConvertToInt();
             });
 
             std::transform(exact.begin(), exact.end(), computed2.begin(), exact.begin(), std::minus<int64_t>());
@@ -1222,12 +1222,10 @@ protected:
             checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1241,8 +1239,8 @@ protected:
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
-            auto a  = t.PInput.ConvertToInt<int64_t>();
-            auto b  = t.POutput.ConvertToInt<int64_t>();
+            auto a = t.PInput.ConvertToInt<int64_t>();
+            auto b = t.POutput.ConvertToInt<int64_t>();
             auto f1 = [a, b](int64_t x) -> int64_t {
                 return (x % a - a / 2) % b;
             };
@@ -1251,8 +1249,8 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                t.PInput.ConvertToInt<int64_t>() - 1};
+                    t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                    t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -1264,8 +1262,7 @@ protected:
             if (binaryLUT) {
                 coeffint1 = {f1(1), f1(0) - f1(1)};
                 coeffint2 = {f2(1), f2(0) - f2(1)};
-            }
-            else {
+            } else {
                 coeffcomp1 = GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
                 coeffcomp2 = GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
             }
@@ -1334,8 +1331,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -1356,17 +1353,16 @@ protected:
             if (binaryLUT) {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
-                    cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                        cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
                 ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, t.scaleTHI,
                                             t.levelsComputation, t.order);
                 ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
                 ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
-            }
-            else {
+            } else {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
-                    cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                        cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
                 ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
                                             t.levelsComputation, t.order);
@@ -1384,11 +1380,11 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto computed1 =
-                SchemeletRLWEMP::DecryptCoeff(polys1, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+            auto computed1 = SchemeletRLWEMP::DecryptCoeff(polys1, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS,
+                                                           t.numSlots);
 
-            auto computed2 =
-                SchemeletRLWEMP::DecryptCoeff(polys2, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+            auto computed2 = SchemeletRLWEMP::DecryptCoeff(polys2, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS,
+                                                           t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1398,8 +1394,8 @@ protected:
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f1(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f1(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f1(elem);
+                               f1(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f1(elem);
             });
 
             std::transform(exact.begin(), exact.end(), computed1.begin(), exact.begin(), std::minus<int64_t>());
@@ -1412,8 +1408,8 @@ protected:
 
             std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f2(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f2(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f2(elem);
+                               f2(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f2(elem);
             });
 
             std::transform(exact.begin(), exact.end(), computed2.begin(), exact.begin(), std::minus<int64_t>());
@@ -1425,12 +1421,10 @@ protected:
             checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1442,7 +1436,7 @@ protected:
     void UnitTest_Noise(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
             auto runOnce = [&t](ScalingTechnique scalTech, int64_t& maxErr) -> double {
-                bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
+                bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
                 auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
                 auto a = t.PInput.ConvertToInt<int64_t>();
@@ -1516,16 +1510,16 @@ protected:
 
                 SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
 
-                auto ctxt =
-                    SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+                auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                               depth);
 
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
                 if (binaryLUT)
-                    ctxtAfterFBT =
-                        cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                               t.order);
                 else
-                    ctxtAfterFBT =
-                        cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                               t.order);
 
                 auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
@@ -1544,7 +1538,7 @@ protected:
                 maxErr = *std::max_element(exact.begin(), exact.end());
 
                 double noiseBits =
-                    MeasureNoiseBits(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+                        MeasureNoiseBits(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
 
                 cc->ClearStaticMapsAndVectors();
                 return noiseBits;
@@ -1553,22 +1547,22 @@ protected:
             // FBT_NOISE checks that t.scalTech yields less noise than FIXEDMANUAL; FBT_NOISE_VS_FLEXIBLE checks
             // that t.scalTech (composite scaling) yields roughly the same noise as FLEXIBLEAUTO. Both runs use
             // the same modulus sizes (see FirstModSize).
-            const bool vsFlexible        = (t.testCaseType == FBT_NOISE_VS_FLEXIBLE);
+            const bool vsFlexible = (t.testCaseType == FBT_NOISE_VS_FLEXIBLE);
             const ScalingTechnique refSt = vsFlexible ? FLEXIBLEAUTO : FIXEDMANUAL;
-            int64_t errRef               = -1;
-            int64_t errFlex              = -1;
-            double noiseRef              = runOnce(refSt, errRef);
-            double noiseFlex             = runOnce(t.scalTech, errFlex);
+            int64_t errRef = -1;
+            int64_t errFlex = -1;
+            double noiseRef = runOnce(refSt, errRef);
+            double noiseFlex = runOnce(t.scalTech, errFlex);
             if (vsFlexible) {
                 // The noise of a single run occasionally lands well below the typical value (the approximation
                 // error depends on the key-dependent mod-raise overflows), so the comparison uses the largest
                 // noise over several runs; row 1023 needs seven (it is bimodal, modes ~3 bits apart).
                 for (uint32_t run = 1; run < 7; ++run) {
                     int64_t err = -1;
-                    noiseRef    = std::max(noiseRef, runOnce(refSt, err));
-                    errRef      = std::max(errRef, err);
-                    noiseFlex   = std::max(noiseFlex, runOnce(t.scalTech, err));
-                    errFlex     = std::max(errFlex, err);
+                    noiseRef = std::max(noiseRef, runOnce(refSt, err));
+                    errRef = std::max(errRef, err);
+                    noiseFlex = std::max(noiseFlex, runOnce(t.scalTech, err));
+                    errFlex = std::max(errFlex, err);
                 }
             }
 
@@ -1578,21 +1572,18 @@ protected:
                           failmsg + " " + ScalTechName(t.scalTech) + " LUT evaluation fails");
             if (vsFlexible) {
                 // roughly the same noise: within 3 bits of FLEXIBLEAUTO
-                EXPECT_LE(noiseFlex, noiseRef + 3.0)
-                    << failmsg << " " << ScalTechName(t.scalTech) << " noise exceeds FLEXIBLEAUTO by more than 3 bits ("
-                    << noiseFlex << " vs " << noiseRef << " bits)";
+                EXPECT_LE(noiseFlex, noiseRef + 3.0) << failmsg << " " << ScalTechName(t.scalTech)
+                                                     << " noise exceeds FLEXIBLEAUTO by more than 3 bits (" << noiseFlex
+                                                     << " vs " << noiseRef << " bits)";
+            } else {
+                EXPECT_LT(noiseFlex, noiseRef) << failmsg << " " << ScalTechName(t.scalTech)
+                                               << " did not yield smaller noise than FIXEDMANUAL (" << noiseFlex
+                                               << " vs " << noiseRef << " bits)";
             }
-            else {
-                EXPECT_LT(noiseFlex, noiseRef)
-                    << failmsg << " " << ScalTechName(t.scalTech) << " did not yield smaller noise than FIXEDMANUAL ("
-                    << noiseFlex << " vs " << noiseRef << " bits)";
-            }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1605,11 +1596,11 @@ protected:
     // by Paterson-Stockmeyer (degree 5 and above).
     void UnitTest_MVBReuse(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
-            bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
+            bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
-            auto a  = t.PInput.ConvertToInt<int64_t>();
-            auto b  = t.POutput.ConvertToInt<int64_t>();
+            auto a = t.PInput.ConvertToInt<int64_t>();
+            auto b = t.POutput.ConvertToInt<int64_t>();
             auto f1 = [a, b](int64_t x) -> int64_t {
                 return (a - x % a) % b;
             };
@@ -1653,19 +1644,19 @@ protected:
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
 
-                auto ep      = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
+                auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
                 auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
                 SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
-                auto ctxt =
-                    SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+                auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                               depth);
 
                 auto powers =
-                    cc->EvalMVBPrecompute(ctxt, coefficients1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                        cc->EvalMVBPrecompute(ctxt, coefficients1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
 
                 auto evalAndCheck = [&](const auto& coefficients, const auto& f, const std::string& label) {
                     auto ctxtAfterFBT =
-                        cc->EvalMVB(powers, coefficients, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
-                    auto polys    = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
+                            cc->EvalMVB(powers, coefficients, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
+                    auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
                     auto computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
                                                                   numSlotsCKKS, t.numSlots);
 
@@ -1685,17 +1676,14 @@ protected:
 
             if ((a == 2) && (t.order == 1)) {
                 run(std::vector<int64_t>{f1(1), f1(0) - f1(1)}, std::vector<int64_t>{f2(1), f2(0) - f2(1)});
-            }
-            else {
+            } else {
                 run(GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI),
                     GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI));
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1706,7 +1694,7 @@ protected:
     // includes the extra modulus.
     void UnitTest_InvalidArgs(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
         try {
-            bool flagSP       = (t.numSlots <= t.ringDim / 2);  // sparse packing
+            bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
             auto a = t.PInput.ConvertToInt<int64_t>();
@@ -1717,9 +1705,9 @@ protected:
             std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
 
             const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-            uint32_t depth =
-                t.levelsAvailableAfterBootstrap +
-                FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd, FirstModSize(dcrtBits, t.scalTech));
+            uint32_t depth = t.levelsAvailableAfterBootstrap +
+                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                     FirstModSize(dcrtBits, t.scalTech));
 
             auto makeParams = [&](ScalingTechnique st) {
                 CCParams<CryptoContextCKKSRNS> parameters;
@@ -1745,7 +1733,7 @@ protected:
             {
                 // an oversized levelToReduce under FLEXIBLE* is rejected instead of silently zeroing the result
                 auto parameters = makeParams(FLEXIBLEAUTO);
-                auto cc         = GenCryptoContext(parameters);
+                auto cc = GenCryptoContext(parameters);
                 enableAll(cc);
                 auto keyPair = cc->KeyGen();
 
@@ -1755,21 +1743,21 @@ protected:
                 EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
                                               dim1, t.lvlb, depth + 1, 0, t.order),
                              OpenFHEException)
-                    << failmsg << " oversized lvlsAfterBoot not rejected";
+                        << failmsg << " oversized lvlsAfterBoot not rejected";
 
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
                                  t.levelsAvailableAfterBootstrap, 0, t.order);
                 std::vector<double> y(numSlotsCKKS, 0.5);
                 auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
                 EXPECT_THROW(cc->EvalHomDecoding(ctxt, 1, depth), OpenFHEException)
-                    << failmsg << " oversized levelToReduce not rejected";
+                        << failmsg << " oversized levelToReduce not rejected";
                 cc->ClearStaticMapsAndVectors();
             }
 
             {
                 // a FLEXIBLEAUTOEXT input that includes the extra modulus is rejected
                 auto parameters = makeParams(FLEXIBLEAUTOEXT);
-                auto cc         = GenCryptoContext(parameters);
+                auto cc = GenCryptoContext(parameters);
                 enableAll(cc);
                 auto keyPair = cc->KeyGen();
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
@@ -1781,15 +1769,13 @@ protected:
                 auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
                 EXPECT_THROW(cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, t.Bigq, t.scaleTHI, 0, t.order),
                              OpenFHEException)
-                    << failmsg << " FLEXIBLEAUTOEXT level-0 input not rejected";
+                        << failmsg << " FLEXIBLEAUTOEXT level-0 input not rejected";
                 cc->ClearStaticMapsAndVectors();
             }
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

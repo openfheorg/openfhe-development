@@ -29,25 +29,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemebase/base-pke.h"
+
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "key/keypair.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "schemebase/base-pke.h"
 #include "schemebase/rlwe-cryptoparameters.h"
-
-#include <memory>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme
 template <class Element>
 KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, bool makeSparse) const {
-    const auto cryptoParams  = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
     const auto elementParams = cryptoParams->GetElementParams();
-    const auto paramsPK      = cryptoParams->GetParamsPK();
+    const auto paramsPK = cryptoParams->GetParamsPK();
     if (!paramsPK)
         OPENFHE_THROW("PrecomputeCRTTables() must be called before using precomputed params.");
 
@@ -84,7 +86,7 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
     // b = ns * e - a * s
     Element b(std::move((e *= ns) -= (a * s)));
 
-    auto sizeQ  = elementParams->GetParams().size();
+    auto sizeQ = elementParams->GetParams().size();
     auto sizePK = paramsPK->GetParams().size();
     if (sizePK > sizeQ)
         s.DropLastElements(sizePK - sizeQ);
@@ -128,7 +130,7 @@ template <class Element>
 std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const PrivateKey<Element> privateKey,
                                                                         const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
     const auto elementParams = (params == nullptr) ? cryptoParams->GetElementParams() : params;
 
     DugType dug;
@@ -152,9 +154,9 @@ template <class Element>
 std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const PublicKey<Element> publicKey,
                                                                         const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(publicKey->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(publicKey->GetCryptoParameters());
 
-    const auto ns      = cryptoParams->GetNoiseScale();
+    const auto ns = cryptoParams->GetNoiseScale();
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
     TugType tug;
 
@@ -162,7 +164,7 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pu
 
     const std::vector<Element>& pk = publicKey->GetPublicElements();
 
-    uint32_t sizeQ  = elementParams->GetParams().size();
+    uint32_t sizeQ = elementParams->GetParams().size();
     uint32_t sizePK = pk[0].GetParams()->GetParams().size();
 
     // copy only the towers that are still needed, rather than the whole key followed by a drop
@@ -188,7 +190,7 @@ Element PKEBase<Element>::DecryptCore(const std::vector<Element>& cv, const Priv
     const Element& s = privateKey->GetPrivateElement();
 
     Element sPower = s;
-    Element b      = cv[0];
+    Element b = cv[0];
     b.SetFormat(Format::EVALUATION);
 
     Element ci;

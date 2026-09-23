@@ -31,9 +31,11 @@
 
 #include "rgsw-acc-dm.h"
 
-#include "rgsw-acc-common.h"
-
+#include <cstdint>
+#include <memory>
 #include <string>
+
+#include "rgsw-acc-common.h"
 
 namespace lbcrypto {
 
@@ -47,7 +49,7 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
     params->VerifyBaseGCoverage(n);
     int32_t baseR(params->GetBaseR());
     const auto& digitsR = params->GetDigitsR();
-    RingGSWACCKey ek    = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
+    RingGSWACCKey ek = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
 
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
     for (uint32_t i = 0; i < n; ++i) {
@@ -55,8 +57,8 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
             const int32_t extent = params->GetDigitExtentR(k);
             for (int32_t j = 1; j < extent; ++j) {
                 auto s{sv[i].ConvertToInt<int32_t>()};
-                (*ek)[i][j][k] =
-                    KeyGenDM(params, skNTT, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>(), i);
+                (*ek)[i][j][k] = KeyGenDM(params, skNTT,
+                                          (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>(), i);
             }
         }
     }
@@ -77,7 +79,7 @@ RingGSWACCKey32 RingGSWAccumulatorDM::KeyGenAcc32(const std::shared_ptr<RingGSWC
     auto acc = std::make_shared<RingGSWACCKey32Impl>(params, n, baseR, digitsR.size());
 
     const auto& polyParams32 = params->GetPolyParams32();
-    const auto skNTT32       = NarrowPoly32(skNTT, polyParams32);
+    const auto skNTT32 = NarrowPoly32(skNTT, polyParams32);
     DiscreteGaussianGeneratorImpl<NativeVector32> dgg32(params->GetDgg().GetStd());
 
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
@@ -87,7 +89,7 @@ RingGSWACCKey32 RingGSWAccumulatorDM::KeyGenAcc32(const std::shared_ptr<RingGSWC
             for (int32_t j = 1; j < extent; ++j) {
                 auto s{sv[i].ConvertToInt<int32_t>()};
                 const auto mono =
-                    MonomialOf(params, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>());
+                        MonomialOf(params, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>());
                 acc->SetEvalKey(i, j, k, RGSWEncrypt(params, polyParams32, skNTT32, dgg32, i, mono));
             }
         }
@@ -122,7 +124,7 @@ void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& p
 RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const NativePoly& skNTT, LWEPlaintext m, uint32_t index) const {
     return std::make_shared<RingGSWEvalKeyImpl>(
-        RGSWEncrypt(params, params->GetPolyParams(), skNTT, params->GetDgg(), index, MonomialOf(params, m)));
+            RGSWEncrypt(params, params->GetPolyParams(), skNTT, params->GetDgg(), index, MonomialOf(params, m)));
 }
 
 // AP Accumulation as described in https://eprint.iacr.org/2020/086

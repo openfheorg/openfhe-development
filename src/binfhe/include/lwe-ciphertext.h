@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CIPHERTEXT_H_
-#define _LWE_CIPHERTEXT_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+#define SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lwe-ciphertext-fwd.h"
 #include "math/math-hal.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -47,7 +48,7 @@ namespace lbcrypto {
  * and integer "b"
  */
 class LWECiphertextImpl : public Serializable {
-public:
+  public:
     LWECiphertextImpl() = default;
 
     LWECiphertextImpl(const NativeVector& a, NativeInteger b, NativeInteger p = 4) : m_a(a), m_b(b), m_p(p) {}
@@ -150,7 +151,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     NativeVector m_a;
     NativeInteger m_b;
     NativeInteger m_p{4};  // pt modulus; see the copy constructor for why copies reset it
@@ -158,4 +159,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CIPHERTEXT_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_

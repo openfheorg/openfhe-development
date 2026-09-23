@@ -37,25 +37,29 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+
+#include <cstdint>
+#include <type_traits>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
+    #include <NTL/SmartPtr.h>
+    #include <NTL/vec_ZZ.h>
+    #include <NTL/vector.h>
 
-        #include <NTL/SmartPtr.h>
-        #include <NTL/vec_ZZ.h>
-        #include <NTL/vector.h>
+    #include <initializer_list>
+    #include <ostream>
+    #include <string>
+    #include <vector>
 
-        #include "math/hal/bigintntl/ubintntl.h"
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <initializer_list>
-        #include <ostream>
-        #include <string>
-        #include <vector>
+    #include "math/hal/bigintntl/ubintntl.h"
+    #include "math/hal/vector.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 // defining this forces modulo when you write to the vector (except with at())
 // this is becuase NTL required inputs to modmath to be < modulus but BU does
@@ -89,7 +93,7 @@ template <typename myT>
 class myVecP : public NTL::Vec<myT>,
                public lbcrypto::BigVectorInterface<myVecP<myT>, myT>,
                public lbcrypto::Serializable {
-public:
+  public:
     // CONSTRUCTORS
 
     myVecP() : Vec<myT>() {
@@ -202,7 +206,7 @@ public:
         if (value == 0) {
             OPENFHE_THROW("SetModulus(uint64_t) cannot be zero");
         }
-        this->m_modulus       = myT(value);
+        this->m_modulus = myT(value);
         this->m_modulus_state = INITIALIZED;
     }
 
@@ -211,7 +215,7 @@ public:
         if (value == myT(0)) {
             OPENFHE_THROW("SetModulus(myT) cannot be zero");
         }
-        this->m_modulus       = value;
+        this->m_modulus = value;
         this->m_modulus_state = INITIALIZED;
     }
 
@@ -236,19 +240,17 @@ public:
     const myT& GetModulus() const {
         if (this->isModulusSet()) {
             return (this->m_modulus);
-        }
-        else {
+        } else {
             OPENFHE_THROW("modulus not set");
         }
     }
 
     inline int CopyModulus(const myVecP& rhs) {
-        this->m_modulus       = rhs.m_modulus;
+        this->m_modulus = rhs.m_modulus;
         this->m_modulus_state = rhs.m_modulus_state;
         if (isModulusSet()) {
             return (0);
-        }
-        else {
+        } else {
             this->m_modulus_state = GARBAGE;
             return (-1);
         }
@@ -616,7 +618,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         // YSP. This was seg-faulting in MINGW
         // ar( m_modulus.ToString() );
         // ar( m_modulus_state );
@@ -633,7 +635,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_modulus.ToString()));
         ar(::cereal::make_nvp("ms", m_modulus_state));
         ar(::cereal::make_nvp("l", this->GetLength()));
@@ -644,7 +646,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -676,7 +678,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -703,7 +705,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // utility function to warn if modulus is no good
     // use when argument to function is myT
     void ModulusCheck(std::string msg) const {
@@ -717,11 +719,9 @@ private:
     void ArgCheckVector(const myVecP& b, std::string fname) const {
         if (this->m_modulus != b.m_modulus) {
             OPENFHE_THROW(fname + " modulus vector modulus vector op of different moduli");
-        }
-        else if (!isModulusSet()) {
+        } else if (!isModulusSet()) {
             OPENFHE_THROW(fname + " modulus vector modulus vector op  GARBAGE  moduli");
-        }
-        else if (this->GetLength() != b.GetLength()) {
+        } else if (this->GetLength() != b.GetLength()) {
             OPENFHE_THROW(fname + " vectors of different lengths");
         }
     }
@@ -743,7 +743,7 @@ private:
     // enum to store the state of the
     ModulusState m_modulus_state;
 
-protected:
+  protected:
     bool IndexCheck(size_t index) const {
         return index < this->GetLength();
     }
@@ -752,6 +752,6 @@ protected:
 
 }  // namespace NTL
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_

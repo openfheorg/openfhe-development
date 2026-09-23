@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_RNS_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_CRYPTOPARAMETERS_H_
 
-#include "lattice/lat-hal.h"
-#include "schemebase/rlwe-cryptoparameters.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "schemebase/rlwe-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -56,7 +57,7 @@ namespace lbcrypto {
 class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
 
-protected:
+  protected:
     CryptoParametersRNS()
         : CryptoParametersRLWE<DCRTPoly>(),
           m_ksTechnique(BV),
@@ -102,18 +103,18 @@ protected:
                         uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode                        = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode                          = EXEC_EVALUATION,
-                        DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode = EXEC_EVALUATION,
+                        DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                         CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
         : CryptoParametersRLWE<DCRTPoly>(
-              std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
-              distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist, INDCPA,
-              multipartyMode, executionMode, decryptionNoiseMode) {
-        m_ksTechnique                         = ksTech;
-        m_scalTechnique                       = scalTech;
-        m_encTechnique                        = encTech;
-        m_multTechnique                       = multTech;
+                  std::move(params), EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
+                  distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
+                  INDCPA, multipartyMode, executionMode, decryptionNoiseMode) {
+        m_ksTechnique = ksTech;
+        m_scalTechnique = scalTech;
+        m_encTechnique = encTech;
+        m_multTechnique = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
@@ -122,11 +123,11 @@ protected:
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                         MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
-                        MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                        ExecutionMode executionMode             = EXEC_EVALUATION,
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
-                        uint32_t thresholdNumOfParties                       = 1,
+                        uint32_t thresholdNumOfParties = 1,
                         CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK,
                         uint32_t compositeDegree = BASE_NUM_LEVELS_TO_DROP, uint32_t registerWordSize = NATIVEINT,
                         CKKSDataType ckksDataType = REAL)
@@ -134,14 +135,14 @@ protected:
                                          assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist,
                                          PREMode, multipartyMode, executionMode, decryptionNoiseMode, noiseScale,
                                          statisticalSecurity, numAdversarialQueries, thresholdNumOfParties) {
-        m_ksTechnique                         = ksTech;
-        m_scalTechnique                       = scalTech;
-        m_encTechnique                        = encTech;
-        m_multTechnique                       = multTech;
+        m_ksTechnique = ksTech;
+        m_scalTechnique = scalTech;
+        m_encTechnique = encTech;
+        m_multTechnique = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        m_compositeDegree                     = compositeDegree;
-        m_registerWordSize                    = registerWordSize;
-        m_ckksDataType                        = ckksDataType;
+        m_compositeDegree = compositeDegree;
+        m_registerWordSize = registerWordSize;
+        m_ckksDataType = ckksDataType;
     }
 
     ~CryptoParametersRNS() override = default;
@@ -170,7 +171,7 @@ protected:
         CryptoParametersRLWE<DCRTPoly>::PrintParameters(os);
     }
 
-public:
+  public:
     /**
    * Computes all tables needed for decryption, homomorphic multiplication and key switching.
    * Even though this is a pure virtual function and must be overriden in all derived classes,
@@ -205,7 +206,7 @@ public:
                                                     double extraModulusSize, uint32_t numPrimes, uint32_t auxBits,
                                                     ScalingTechnique scalTech, bool addOne = false,
                                                     bool isNoiseFloodingMultiparty = false,
-                                                    uint32_t compositeDegree       = 1);
+                                                    uint32_t compositeDegree = 1);
 
     /*
    * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)
@@ -1380,7 +1381,7 @@ public:
         return m_ckksDataType;
     }
 
-protected:
+  protected:
     /////////////////////////////////////
     // PrecomputeCRTTables
     /////////////////////////////////////
@@ -1815,7 +1816,7 @@ protected:
     // CKKS Data Type
     CKKSDataType m_ckksDataType;
 
-public:
+  public:
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////
@@ -1855,8 +1856,7 @@ public:
         // m_MPIntBootCiphertextCompressionLevel was added in v1.1.0
         try {
             ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
-        }
-        catch (cereal::Exception&) {
+        } catch (cereal::Exception&) {
             m_MPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK;
         }
         ar(cereal::make_nvp("cd", m_compositeDegree));
@@ -1875,4 +1875,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_CRYPTOPARAMETERS_H_

@@ -35,31 +35,34 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
+#include <cmath>
+#include <cstdint>
+#include <memory>
+#include <utility>
+
 #include "lattice/dgsampling-impl.h"
 #include "lattice/lat-hal.h"
 #include "lattice/trapdoor-impl.h"
-
 #include "math/matrix-impl.h"
-
 #include "utils/debug.h"
 
 namespace lbcrypto {
 
 template <>
 std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::TrapdoorGen(
-    std::shared_ptr<typename Poly::Params> params, double stddev, int64_t base, bool bal) {
-    auto zero_alloc     = Poly::Allocator(params, EVALUATION);
+        std::shared_ptr<typename Poly::Params> params, double stddev, int64_t base, bool bal) {
+    auto zero_alloc = Poly::Allocator(params, EVALUATION);
     auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);
-    auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);
+    auto uniform_alloc = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
-    double val   = params->GetModulus().ConvertToDouble();
+    double val = params->GetModulus().ConvertToDouble();
     double nBits = std::floor(std::log2(val - 1.0) + 1.0);
 
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     auto a = uniform_alloc();
@@ -86,19 +89,19 @@ std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::Trapd
 
 template <>
 std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<NativePoly>::TrapdoorGen(
-    std::shared_ptr<typename NativePoly::Params> params, double stddev, int64_t base, bool bal) {
-    auto zero_alloc     = NativePoly::Allocator(params, EVALUATION);
+        std::shared_ptr<typename NativePoly::Params> params, double stddev, int64_t base, bool bal) {
+    auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
     auto gaussian_alloc = NativePoly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);
-    auto uniform_alloc  = NativePoly::MakeDiscreteUniformAllocator(params, EVALUATION);
+    auto uniform_alloc = NativePoly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
-    double val   = params->GetModulus().ConvertToDouble();
+    double val = params->GetModulus().ConvertToDouble();
     double nBits = std::floor(std::log2(val - 1.0) + 1.0);
 
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     auto a = uniform_alloc();
@@ -125,19 +128,19 @@ std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<
 
 template <>
 std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(
-    std::shared_ptr<typename Poly::Params> params, double stddev, size_t d, int64_t base, bool bal) {
-    auto zero_alloc     = Poly::Allocator(params, EVALUATION);
+        std::shared_ptr<typename Poly::Params> params, double stddev, size_t d, int64_t base, bool bal) {
+    auto zero_alloc = Poly::Allocator(params, EVALUATION);
     auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);
-    auto uniform_alloc  = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);
+    auto uniform_alloc = Poly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
-    double val   = params->GetModulus().ConvertToDouble();
+    double val = params->GetModulus().ConvertToDouble();
     double nBits = std::ceil(std::log2(val));
 
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     Matrix<Poly> R(zero_alloc, d, d * k, gaussian_alloc);
@@ -172,19 +175,19 @@ std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::Trapd
 
 template <>
 std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<NativePoly>::TrapdoorGenSquareMat(
-    std::shared_ptr<typename NativePoly::Params> params, double stddev, size_t d, int64_t base, bool bal) {
-    auto zero_alloc     = NativePoly::Allocator(params, EVALUATION);
+        std::shared_ptr<typename NativePoly::Params> params, double stddev, size_t d, int64_t base, bool bal) {
+    auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
     auto gaussian_alloc = NativePoly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);
-    auto uniform_alloc  = NativePoly::MakeDiscreteUniformAllocator(params, EVALUATION);
+    auto uniform_alloc = NativePoly::MakeDiscreteUniformAllocator(params, EVALUATION);
 
-    double val   = params->GetModulus().ConvertToDouble();
+    double val = params->GetModulus().ConvertToDouble();
     double nBits = std::ceil(std::log2(val));
 
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     Matrix<NativePoly> R(zero_alloc, d, d * k, gaussian_alloc);
@@ -230,7 +233,7 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSamp(size_t n, size_t k, const Matr
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<typename Poly::Params> params = u.GetParams();
-    auto zero_alloc                                     = Poly::Allocator(params, EVALUATION);
+    auto zero_alloc = Poly::Allocator(params, EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -300,7 +303,7 @@ Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSamp(size_t n, size_t k
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<typename NativePoly::Params> params = u.GetParams();
-    auto zero_alloc                                           = NativePoly::Allocator(params, EVALUATION);
+    auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -365,7 +368,7 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSampSquareMat(size_t n, size_t k, c
                                                            typename Poly::DggType& dgg,
                                                            typename Poly::DggType& dggLargeSigma, int64_t base) {
     const std::shared_ptr<typename Poly::Params> params = U(0, 0).GetParams();
-    auto zero_alloc                                     = Poly::Allocator(params, EVALUATION);
+    auto zero_alloc = Poly::Allocator(params, EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -416,7 +419,7 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSampSquareMat(size_t n, size_t k, c
 
     for (size_t j = 0; j < d; j++) {  // columns
         for (size_t i = 0; i < d; i++) {
-            zHatPrime(i, j)     = (*pHat)(i, j) + rZhat(i, j);
+            zHatPrime(i, j) = (*pHat)(i, j) + rZhat(i, j);
             zHatPrime(i + d, j) = (*pHat)(i + d, j) + eZhat(i, j);
 
             for (size_t p = 0; p < k; p++) {
@@ -429,11 +432,14 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSampSquareMat(size_t n, size_t k, c
 }
 
 template <>
-Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSampSquareMat(
-    size_t n, size_t k, const Matrix<NativePoly>& A, const RLWETrapdoorPair<NativePoly>& T, const Matrix<NativePoly>& U,
-    typename NativePoly::DggType& dgg, typename NativePoly::DggType& dggLargeSigma, int64_t base) {
+Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSampSquareMat(size_t n, size_t k, const Matrix<NativePoly>& A,
+                                                                       const RLWETrapdoorPair<NativePoly>& T,
+                                                                       const Matrix<NativePoly>& U,
+                                                                       typename NativePoly::DggType& dgg,
+                                                                       typename NativePoly::DggType& dggLargeSigma,
+                                                                       int64_t base) {
     const std::shared_ptr<typename NativePoly::Params> params = U(0, 0).GetParams();
-    auto zero_alloc                                           = NativePoly::Allocator(params, EVALUATION);
+    auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -484,7 +490,7 @@ Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSampSquareMat(
 
     for (size_t j = 0; j < d; j++) {  // columns
         for (size_t i = 0; i < d; i++) {
-            zHatPrime(i, j)     = (*pHat)(i, j) + rZhat(i, j);
+            zHatPrime(i, j) = (*pHat)(i, j) + rZhat(i, j);
             zHatPrime(i + d, j) = (*pHat)(i + d, j) + eZhat(i, j);
 
             for (size_t p = 0; p < k; p++) {

@@ -29,14 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_RNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_MULTIPARTY_H_
+
+#include <cstdint>
+#include <string>
 
 #include "lattice/lat-hal.h"
-
 #include "schemebase/base-multiparty.h"
-
-#include <string>
 
 /**
  * @namespace lbcrypto
@@ -72,12 +72,12 @@ namespace lbcrypto {
  */
 class MultipartyRNS : public MultipartyBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~MultipartyRNS() = default;
 
     Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
@@ -114,4 +114,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_MULTIPARTY_H_

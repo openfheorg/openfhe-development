@@ -63,16 +63,18 @@
  * It should be also noted that the memory requirement grows with the standard
  * deviation, therefore it is advised to use it with smaller deviations.   */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
-#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_H_
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include "math/distributiongenerator.h"
-
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
 
@@ -83,7 +85,7 @@ constexpr double KARNEY_THRESHOLD = 300.0;
  */
 template <typename VecType>
 class DiscreteGaussianGeneratorImpl {
-public:
+  public:
     /**
    * @brief         Basic constructor for specifying distribution parameter and
    * modulus.
@@ -189,7 +191,7 @@ public:
     static int64_t GenerateIntegerKarney(double mean, double stddev);
     static int64_t GenerateIntegerKarney(double mean, double stddev, PRNG& g);
 
-private:
+  private:
     // Gyana to add precomputation methods and data members
     // all parameters are set as int because it is assumed that they are used for
     // generating "small" polynomials only
@@ -258,4 +260,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATOR_H_

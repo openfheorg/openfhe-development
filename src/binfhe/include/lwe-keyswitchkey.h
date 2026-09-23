@@ -29,17 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_KEYSWITCHKEY_H_
-#define _LWE_KEYSWITCHKEY_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY_H_
+#define SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY_H_
 
-#include "lwe-keyswitchkey-fwd.h"
-#include "math/math-hal.h"
-#include "utils/serializable.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lwe-keyswitchkey-fwd.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -47,7 +48,7 @@ namespace lbcrypto {
  * @brief Class that stores the LWE scheme switching key
  */
 class LWESwitchingKeyImpl : public Serializable {
-public:
+  public:
     LWESwitchingKeyImpl() = default;
 
     LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
@@ -131,11 +132,11 @@ public:
         return 1;
     }
 
-private:
+  private:
     std::vector<std::vector<std::vector<NativeVector>>> m_keyA;
     std::vector<std::vector<std::vector<NativeInteger>>> m_keyB;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_LWE_KEYSWITCHKEY_H_

@@ -34,8 +34,8 @@
   which allows toggling of CRT precomputations during deserialization of a CryptoContext.
  */
 
-#ifndef __GLOBALS_H__
-#define __GLOBALS_H__
+#ifndef SRC_PKE_INCLUDE_GLOBALS_H_
+#define SRC_PKE_INCLUDE_GLOBALS_H_
 
 namespace lbcrypto {
 /**
@@ -56,4 +56,4 @@ void DisablePrecomputeCRTTablesAfterDeserializaton();
 
 }  // namespace lbcrypto
 
-#endif  // __GLOBALS_H__
+#endif  // SRC_PKE_INCLUDE_GLOBALS_H_

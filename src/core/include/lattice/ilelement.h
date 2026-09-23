@@ -33,17 +33,19 @@
   Represents and defines integer lattice element objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILELEMENT_H
-#define LBCRYPTO_INC_LATTICE_ILELEMENT_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
+#define SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_
+
+#include <cstdint>
+#include <initializer_list>
+#include <vector>
 
 #include "math/discretegaussiangenerator.h"
+#include "math/hal/nativeintbackend.h"  // NativeInteger
 #include "math/nbtheory.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
-
-#include <vector>
 
 namespace lbcrypto {
 
@@ -59,7 +61,7 @@ template <typename Element, typename VecType>
 class ILElement : public Serializable {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * @brief Clone the object by making a copy of it and returning the copy
    * @return new Element
@@ -454,4 +456,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_ILELEMENT_H_

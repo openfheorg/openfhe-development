@@ -34,20 +34,22 @@
   quickly enabled and disabled. It also contains functions for timing code
  */
 
+#include "utils/debug.h"
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
+
 #include "time.h"
-#include "utils/debug.h"
 
 double currentDateTime() {
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 
-    time_t tnow   = std::chrono::system_clock::to_time_t(now);
-    tm* date      = localtime(&tnow);  // todo: dperecated use localtime_s // NOLINT
+    time_t tnow = std::chrono::system_clock::to_time_t(now);
+    tm* date = localtime(&tnow);  // todo: dperecated use localtime_s // NOLINT
     date->tm_hour = 0;
-    date->tm_min  = 0;
-    date->tm_sec  = 0;
+    date->tm_min = 0;
+    date->tm_sec = 0;
 
     auto midnight = std::chrono::system_clock::from_time_t(mktime(date));
 

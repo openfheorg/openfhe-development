@@ -29,16 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_PKE_H
-#define LBCRYPTO_CRYPTO_RNS_PKE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_PKE_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_PKE_H_
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "lattice/lat-hal.h"
-
 #include "schemebase/base-pke.h"
-
-#include <string>
-#include <memory>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -52,12 +51,12 @@ namespace lbcrypto {
  */
 class PKERNS : public PKEBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~PKERNS() = default;
 
     /**
@@ -139,4 +138,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_PKE_H_

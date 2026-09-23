@@ -33,8 +33,8 @@
   Definition of serialization type
  */
 
-#ifndef LBCRYPTO_SERTYPE_H
-#define LBCRYPTO_SERTYPE_H
+#ifndef SRC_CORE_INCLUDE_UTILS_SERTYPE_H_
+#define SRC_CORE_INCLUDE_UTILS_SERTYPE_H_
 
 namespace lbcrypto {
 
@@ -50,4 +50,4 @@ static const SERBINARY BINARY;  // should be const static to avoid compilation f
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_SERTYPE_H_

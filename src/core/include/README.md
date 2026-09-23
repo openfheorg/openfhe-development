@@ -10,7 +10,7 @@ Contains the underlying primitives that are used in both `pke` and `binfhe`.
 
 ## [Lattice](lattice)
 
-- Contains files that support lattice/polynomial-layer operations in OpenFHE. This layer is used to represent polynomial rings and support operations over those rings. 
+- Contains files that support lattice/polynomial-layer operations in OpenFHE. This layer is used to represent polynomial rings and support operations over those rings.
 
 - As can be seen above, this is the "middle" layer between higher-level lattice cryptography elements, and the lower level math operations.
 

@@ -33,17 +33,20 @@
   Private key type for lattice crypto operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
-#define LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
+#define SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
 
-#include "key/key.h"
-#include "key/privatekey-fwd.h"
-
+#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <memory>
+#include <random>
+#include <sstream>
 #include <string>
 #include <utility>
+
+#include "key/key.h"
+#include "key/privatekey-fwd.h"
 
 /**
  * @namespace lbcrypto
@@ -71,10 +74,10 @@ inline std::string GenerateUniqueKeyID() {
  */
 template <class Element>
 class PrivateKeyImpl : public Key<Element> {
-private:
+  private:
     Element m_sk;
 
-public:
+  public:
     /**
    * Construct in context
    */
@@ -183,4 +186,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_

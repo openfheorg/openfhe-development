@@ -33,6 +33,13 @@
   Examples of threshold FHE for BGVrns, BFVrns and CKKS
  */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -150,7 +157,7 @@ void RunBGVrnsAdditive() {
     Ciphertext<DCRTPoly> ciphertextAdd12;
     Ciphertext<DCRTPoly> ciphertextAdd123;
 
-    ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
+    ciphertextAdd12 = cc->EvalAdd(ciphertext1, ciphertext2);
     ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
     ////////////////////////////////////////////////////////////
@@ -168,7 +175,7 @@ void RunBGVrnsAdditive() {
     Plaintext plaintextMultipartyNew;
 
     const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams = kp1.secretKey->GetCryptoParameters();
-    const std::shared_ptr<typename DCRTPoly::Params> elementParams     = cryptoParams->GetElementParams();
+    const std::shared_ptr<typename DCRTPoly::Params> elementParams = cryptoParams->GetElementParams();
 
     // partial decryption by first party
     auto ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextAdd123}, kp1.secretKey);
@@ -253,7 +260,7 @@ void RunBFVrns() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     std::cout << "Round 1 of key generation completed." << std::endl;
 
@@ -327,10 +334,10 @@ void RunBFVrns() {
     Ciphertext<DCRTPoly> ciphertextAdd12;
     Ciphertext<DCRTPoly> ciphertextAdd123;
 
-    ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
+    ciphertextAdd12 = cc->EvalAdd(ciphertext1, ciphertext2);
     ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
-    auto ciphertextMult    = cc->EvalMult(ciphertext1, ciphertext3);
+    auto ciphertextMult = cc->EvalMult(ciphertext1, ciphertext3);
     auto ciphertextEvalSum = cc->EvalSum(ciphertext3, batchSize);
 
     ////////////////////////////////////////////////////////////
@@ -348,7 +355,7 @@ void RunBFVrns() {
     Plaintext plaintextMultipartyNew;
 
     const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams = kp1.secretKey->GetCryptoParameters();
-    const std::shared_ptr<typename DCRTPoly::Params> elementParams     = cryptoParams->GetElementParams();
+    const std::shared_ptr<typename DCRTPoly::Params> elementParams = cryptoParams->GetElementParams();
 
     // Distributed decryption
 
@@ -466,7 +473,7 @@ void RunCKKS() {
     // Generate evalsum key part for A
     cc->EvalSumKeyGen(kp1.secretKey);
     auto evalSumKeys =
-        std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+            std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
     std::cout << "Round 1 of key generation completed." << std::endl;
 
@@ -540,12 +547,12 @@ void RunCKKS() {
     Ciphertext<DCRTPoly> ciphertextAdd12;
     Ciphertext<DCRTPoly> ciphertextAdd123;
 
-    ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
+    ciphertextAdd12 = cc->EvalAdd(ciphertext1, ciphertext2);
     ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
     auto ciphertextMultTemp = cc->EvalMult(ciphertext1, ciphertext3);
-    auto ciphertextMult     = cc->ModReduce(ciphertextMultTemp);
-    auto ciphertextEvalSum  = cc->EvalSum(ciphertext3, batchSize);
+    auto ciphertextMult = cc->ModReduce(ciphertextMultTemp);
+    auto ciphertextEvalSum = cc->EvalSum(ciphertext3, batchSize);
 
     ////////////////////////////////////////////////////////////
     // Decryption after Accumulation Operation on Encrypted Data with Multiparty
@@ -562,7 +569,7 @@ void RunCKKS() {
     Plaintext plaintextMultipartyNew;
 
     const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams = kp1.secretKey->GetCryptoParameters();
-    const std::shared_ptr<typename DCRTPoly::Params> elementParams     = cryptoParams->GetElementParams();
+    const std::shared_ptr<typename DCRTPoly::Params> elementParams = cryptoParams->GetElementParams();
 
     // distributed decryption
 

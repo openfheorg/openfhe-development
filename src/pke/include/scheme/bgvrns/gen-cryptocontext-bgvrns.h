@@ -33,16 +33,16 @@
   API to generate BGV crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_H__
-#define __GEN_CRYPTOCONTEXT_BGVRNS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_H_
 
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-params.h"
-#include "scheme/bgvrns/bgvrns-scheme.h"
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "scheme/gen-cryptocontext-params-validation.h"
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "scheme/bgvrns/bgvrns-scheme.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns-params.h"
+#include "scheme/gen-cryptocontext-params-validation.h"
 
 namespace lbcrypto {
 
@@ -52,11 +52,11 @@ class CryptoContextFactory;
 class CryptoContextBGVRNS {
     using Element = DCRTPoly;
 
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
+  public:
+    using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
+    using Factory = CryptoContextFactory<Element>;
     using PublicKeyEncryptionScheme = SchemeBGVRNS;
-    using CryptoParams              = CryptoParametersBGVRNS;
+    using CryptoParams = CryptoParametersBGVRNS;
 
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBGVRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
@@ -66,4 +66,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_H_

@@ -33,14 +33,10 @@
  This file contains the linear transform interface functionality for the native math backend
 */
 
-#ifndef LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
-#define LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_
 
-#include "math/hal/transform.h"
-#include "math/hal/intnat/mubintvecnat.h"
-
-#include "utils/inttypes.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -48,6 +44,10 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "math/hal/intnat/mubintvecnat.h"
+#include "math/hal/transform.h"
+#include "utils/inttypes.h"
 
 /**
  * @namespace intnat
@@ -76,7 +76,7 @@ template <typename VecType>
 class NumberTheoreticTransformNat {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Forward transform in the ring Z_q[X]/(X^n-1).
    *
@@ -269,7 +269,7 @@ template <typename VecType>
 class ChineseRemainderTransformFTTNat final : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Copies \p element into \p result and calls NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    *
@@ -391,7 +391,7 @@ public:
     static std::shared_ptr<const Tables> GetTables(const IntType& rootOfUnity, uint32_t CycloOrder,
                                                    const IntType& modulus);
 
-private:
+  private:
     static std::map<IntType, std::shared_ptr<const Tables>> m_tablesByModulus;
 
     static std::shared_mutex& TablesMutex() {
@@ -414,7 +414,7 @@ template <typename VecType>
 class BluesteinFFTNat {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Forward transform.
    *
@@ -511,7 +511,7 @@ public:
         return m;
     }
 
-private:
+  private:
     // map to store the precomputed NTT modulus with modulus as key.
     static std::map<IntType, ModulusRoot<IntType>> m_defaultNTTModulusRoot;
 };
@@ -523,7 +523,7 @@ template <typename VecType>
 class ChineseRemainderTransformArbNat final : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Sets the cyclotomic polynomial.
    *
@@ -607,7 +607,7 @@ public:
    */
     VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, uint32_t power);
 
-private:
+  private:
     /**
    * @brief Padding zeroes to a vector
    * @param &element is the input of type VecType to be padded with zeros.
@@ -698,4 +698,4 @@ EXTERN_TRANSFORM_TYPES
 EXTERN_TRANSFORM_TYPES32
 #endif
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_INTNAT_TRANSFORMNAT_H_

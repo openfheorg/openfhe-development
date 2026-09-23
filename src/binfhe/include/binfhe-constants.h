@@ -29,18 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _BINFHE_CONSTANTS_H_
-#define _BINFHE_CONSTANTS_H_
-
-#include "lattice/constants-lattice.h"
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_CONSTANTS_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_CONSTANTS_H_
 
 #include <cstdint>
 #include <iosfwd>
 #include <string>
 
+#include "lattice/constants-lattice.h"
+
 namespace lbcrypto {
 
-using LWEPlaintext        = int64_t;
+using LWEPlaintext = int64_t;
 using LWEPlaintextModulus = uint64_t;
 
 /**
@@ -58,9 +58,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
  * @brief Bootstrapping methods a predefined parameter set is configured for, one bit per BINFHE_METHOD
  */
 enum BINFHE_METHOD_SET : uint32_t {
-    FOR_AP         = 1u << AP,
-    FOR_GINX       = 1u << GINX,
-    FOR_LMKCDEY    = 1u << LMKCDEY,
+    FOR_AP = 1u << AP,
+    FOR_GINX = 1u << GINX,
+    FOR_LMKCDEY = 1u << LMKCDEY,
     FOR_ANY_METHOD = FOR_GINX | FOR_LMKCDEY | FOR_AP,
 };
 
@@ -227,4 +227,4 @@ void isMethodCompatible(BINFHE_METHOD m, BINFHE_PARAMSET p);
 
 }  // namespace lbcrypto
 
-#endif  // _BINFHE_CONSTANTS_H_
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_CONSTANTS_H_

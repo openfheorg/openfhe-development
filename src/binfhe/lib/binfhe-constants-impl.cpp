@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
@@ -41,13 +42,13 @@ namespace {
 
 constexpr const char* const kParamSetNames[] = {
 #define BINFHE_PARAMSET_NAME(name, methods) #name,
-    BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_NAME)
+        BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_NAME)
 #undef BINFHE_PARAMSET_NAME
 };
 
 constexpr uint32_t kParamSetMethods[] = {
 #define BINFHE_PARAMSET_METHODS(name, methods) methods,
-    BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_METHODS)
+        BINFHE_PARAMSET_LIST(BINFHE_PARAMSET_METHODS)
 #undef BINFHE_PARAMSET_METHODS
 };
 

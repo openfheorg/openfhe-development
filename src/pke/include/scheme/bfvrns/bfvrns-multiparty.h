@@ -29,13 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BFVRNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_
 
-#include "schemerns/rns-multiparty.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
@@ -44,12 +45,12 @@
 namespace lbcrypto {
 class MultipartyBFVRNS : public MultipartyRNS {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~MultipartyBFVRNS() {}
 
     KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
@@ -78,4 +79,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_MULTIPARTY_H_

@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_CRYPTOPARAMETERS_H_
 
-#include "globals.h"
-#include "schemerns/rns-cryptoparameters.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "globals.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -49,9 +50,9 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
 #define DISABLED_FOR_CKKSRNS_PARAMS OPENFHE_THROW("This parameter is not available for CKKSRNS.");
 
-public:
-    CryptoParametersCKKSRNS()                                       = default;
-    CryptoParametersCKKSRNS(const CryptoParametersCKKSRNS& rhs)     = default;
+  public:
+    CryptoParametersCKKSRNS() = default;
+    CryptoParametersCKKSRNS(const CryptoParametersCKKSRNS& rhs) = default;
     CryptoParametersCKKSRNS(CryptoParametersCKKSRNS&& rhs) noexcept = default;
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
@@ -59,9 +60,9 @@ public:
                             uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                            MultipartyMode multipartyMode                        = FIXED_NOISE_MULTIPARTY,
-                            ExecutionMode executionMode                          = EXEC_EVALUATION,
-                            DecryptionNoiseMode decryptionNoiseMode              = FIXED_NOISE_DECRYPT,
+                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode = EXEC_EVALUATION,
+                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                             CompressionLevel mPIntBootCiphertextCompressionLevel = CompressionLevel::SLACK)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
@@ -73,9 +74,9 @@ public:
                             uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                            ProxyReEncryptionMode PREMode           = NOT_SET,
-                            MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                            ExecutionMode executionMode             = EXEC_EVALUATION,
+                            ProxyReEncryptionMode PREMode = NOT_SET,
+                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode = EXEC_EVALUATION,
                             DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                             PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                             uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1,
@@ -348,7 +349,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // Params for the extension basis ComplQl
     std::shared_ptr<ParmType> m_paramsModRaiseComplQl;
     // [(Ql/q_i)^{-1}]_{q_i}, q_i in Ql
@@ -404,4 +405,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_CRYPTOPARAMETERS_H_

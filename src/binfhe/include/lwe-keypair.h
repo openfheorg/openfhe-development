@@ -29,8 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_KEYTRIPLE_H_
-#define _LWE_KEYTRIPLE_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_KEYPAIR_H_
+#define SRC_BINFHE_INCLUDE_LWE_KEYPAIR_H_
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lwe-keypair-fwd.h"
 #include "lwe-keyswitchkey.h"
@@ -39,18 +44,13 @@
 #include "math/math-hal.h"
 #include "utils/serializable.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 /**
  * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
  */
 class LWEKeyPairImpl {
-public:
+  public:
     LWEPublicKey publicKey{nullptr};
     LWEPrivateKey secretKey{nullptr};
 
@@ -64,4 +64,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_KEYPAIR_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_KEYPAIR_H_

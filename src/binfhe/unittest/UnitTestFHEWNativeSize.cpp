@@ -29,11 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "binfhecontext-ser.h"
-#include "gtest/gtest.h"
-
+#include <cstdint>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
+
+#include "binfhecontext-ser.h"
+#include "gtest/gtest.h"
 
 using namespace lbcrypto;
 
@@ -73,7 +76,7 @@ void ExpectTruthTables(BinFHEContext& cc, ConstLWEPrivateKey& sk, const std::str
                 LWEPlaintext result;
                 cc.Decrypt(sk, ct, &result);
                 EXPECT_EQ(g.truth[2 * a + b], static_cast<int>(result))
-                    << msg << " " << g.name << "(" << a << "," << b << ")";
+                        << msg << " " << g.name << "(" << a << "," << b << ")";
             }
         }
     }
@@ -168,7 +171,7 @@ TEST(UnitTestFHEWNativeSize, PartialQualification) {
     const std::string msg("UnitTestFHEWNativeSize.PartialQualification:");
     BinFHEContext cc;
     cc.GenerateBinFHEContext(
-        BinFHEContextParams{37, 4096, 821, 2048, 32768, 32, 8192, 64, 10, UNIFORM_TERNARY, 3.19, {}}, GINX);
+            BinFHEContextParams{37, 4096, 821, 2048, 32768, 32, 8192, 64, 10, UNIFORM_TERNARY, 3.19, {}}, GINX);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk, SYM_ENCRYPT, /*internal32=*/true);
     EXPECT_FALSE(cc.HasInternal32RefreshKey()) << msg << " a 37-bit modulus must not yield a 32-bit refresh key";
@@ -238,17 +241,17 @@ TEST(UnitTestFHEWNativeSize, SwitchingKeyTopPositionCompact) {
     const std::string msg("UnitTestFHEWNativeSize.SwitchingKeyTopPositionCompact:");
     BinFHEContext cc;
     cc.GenerateBinFHEContext(STD128, GINX);
-    auto&& lwe            = cc.GetParams()->GetLWEParams();
-    const uint32_t d      = lwe->GetDigitCountKS();
+    auto&& lwe = cc.GetParams()->GetLWEParams();
+    const uint32_t d = lwe->GetDigitCountKS();
     const uint32_t baseKS = lwe->GetBaseKS();
-    const uint32_t top    = lwe->GetDigitExtentKS(d - 1);
+    const uint32_t top = lwe->GetDigitExtentKS(d - 1);
     ASSERT_EQ(2u, d) << msg;
     EXPECT_EQ(baseKS, lwe->GetDigitExtentKS(0)) << msg;
     EXPECT_EQ(128u, top) << msg << " qKS = 2^15 in base 256 reaches 128 values at the top position";
 
-    auto sk       = cc.KeyGen();
-    auto skN      = cc.KeyGenN();
-    auto ksk      = cc.KeySwitchGen(sk, skN);
+    auto sk = cc.KeyGen();
+    auto skN = cc.KeyGenN();
+    auto ksk = cc.KeySwitchGen(sk, skN);
     const auto& A = ksk->GetElementsA();
     ASSERT_EQ(lwe->GetN(), A.size()) << msg;
     ASSERT_EQ(baseKS - 1, A[0].size()) << msg << " no row for digit value 0";
@@ -267,7 +270,7 @@ TEST(UnitTestFHEWNativeSize, SwitchingKeyTopPositionCompact) {
 }
 
 TEST(UnitTestFHEWNativeSize, SwitchingKey32FitsCapsModulus) {
-    auto Q    = LastPrime<NativeInteger>(27, 1024);
+    auto Q = LastPrime<NativeInteger>(27, 1024);
     auto fits = [&](uint64_t qKS) {
         return LWESwitchingKey32Impl::Fits(LWECryptoParams(64, 512, 512, Q, qKS, 3.19, 32));
     };
@@ -283,10 +286,10 @@ TEST(UnitTestFHEWNativeSize, SwitchingKey32RejectsCiphertextAboveKeySwitchingMod
     cc.GenerateBinFHEContext(BinFHEContextParams{27, 1024, 64, 512, 16384, 32, 512, 23, 9, UNIFORM_TERNARY, 3.19, {}},
                              GINX);
     auto&& lwe = cc.GetParams()->GetLWEParams();
-    auto sk    = cc.KeyGen();
-    auto skN   = cc.KeyGenN();
-    auto ksk   = std::make_shared<LWESwitchingKey32Impl>(*lwe, *cc.KeySwitchGen(sk, skN));
-    auto ctQ   = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());
+    auto sk = cc.KeyGen();
+    auto skN = cc.KeyGenN();
+    auto ksk = std::make_shared<LWESwitchingKey32Impl>(*lwe, *cc.KeySwitchGen(sk, skN));
+    auto ctQ = cc.Encrypt(skN, 1, LARGE_DIM, 4, lwe->GetQ());
     EXPECT_THROW(cc.GetLWEScheme()->KeySwitch(lwe, ksk, ctQ), OpenFHEException) << msg;
 
     LWEPlaintext result;

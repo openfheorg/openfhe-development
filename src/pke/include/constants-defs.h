@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __CONSTANTS_DEFS_H__
-#define __CONSTANTS_DEFS_H__
+#ifndef SRC_PKE_INCLUDE_CONSTANTS_DEFS_H_
+#define SRC_PKE_INCLUDE_CONSTANTS_DEFS_H_
 
 #include "math/hal/basicint.h"  // for MAX_MODULUS_SIZE
 
@@ -39,13 +39,13 @@ namespace lbcrypto {
  * @brief Lists all features supported by public key encryption schemes
  */
 enum PKESchemeFeature {
-    PKE          = 0x01,
-    KEYSWITCH    = 0x02,
-    PRE          = 0x04,
-    LEVELEDSHE   = 0x08,
-    ADVANCEDSHE  = 0x10,
-    MULTIPARTY   = 0x20,
-    FHE          = 0x40,
+    PKE = 0x01,
+    KEYSWITCH = 0x02,
+    PRE = 0x04,
+    LEVELEDSHE = 0x08,
+    ADVANCEDSHE = 0x10,
+    MULTIPARTY = 0x20,
+    FHE = 0x40,
     SCHEMESWITCH = 0x80,
 };
 
@@ -111,7 +111,7 @@ enum PlaintextEncodings {
 
 enum LargeScalingFactorConstants {
     MAX_BITS_IN_WORD = 61,
-    MAX_LOG_STEP     = 60,
+    MAX_LOG_STEP = 60,
 };
 
 enum CKKSDataType {
@@ -150,9 +150,9 @@ enum CompressionLevel {
     // do not change values here
 
     COMPACT = 2,  // more efficient with stronger security assumption
-    SLACK   = 3   // less efficient with weaker security assumption
+    SLACK = 3     // less efficient with weaker security assumption
 };
 
 }  // namespace lbcrypto
 
-#endif  // __CONSTANTS_DEFS_H__
+#endif  // SRC_PKE_INCLUDE_CONSTANTS_DEFS_H_

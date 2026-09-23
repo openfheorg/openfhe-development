@@ -44,14 +44,15 @@
 
 #include "math/discretegaussiangeneratorgeneric.h"
 
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -63,13 +64,13 @@ namespace lbcrypto {
 // const int32_t DDG_DEPTH = 13;
 const int32_t MAX_TREE_DEPTH = 64;
 
-const int32_t PRECISION       = 53;
+const int32_t PRECISION = 53;
 const int32_t BERNOULLI_FLIPS = 23;
 
 BaseSampler::BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType type = PEIKERT)
     : b_mean(mean), b_std(std), bg(generator), b_type(type) {
     double acc = 1e-17;
-    fin        = static_cast<int>(std::ceil(b_std * std::sqrt(-2 * std::log(acc))));
+    fin = static_cast<int>(std::ceil(b_std * std::sqrt(-2 * std::log(acc))));
     if (mean >= 0)
         b_mean = std::floor(mean);
     else
@@ -100,8 +101,8 @@ void BaseSampler::GenerateProbMatrix(double stddev, double mean) {
     hammingWeights.resize(64, 0);
     probMatrix.resize(b_matrixSize);
     std::vector<double> probs(b_matrixSize);
-    double S     = 0.0;
-    b_std        = stddev;
+    double S = 0.0;
+    b_std = stddev;
     double error = 1.0;
     for (int i = -1 * fin; i <= fin; i++) {
         double prob = std::pow(M_E, -std::pow((i - mean), 2) / (2. * stddev * stddev));
@@ -126,12 +127,12 @@ void BaseSampler::GenerateDDGTree(const std::vector<uint64_t>& probMatrix) {
     for (int i = 0; i < 64 && firstNonZero == -1; i++)
         if (hammingWeights[i] != 0)
             firstNonZero = i;
-    endIndex           = firstNonZero;
+    endIndex = firstNonZero;
     int32_t iNodeCount = 1;
     for (int i = 0; i < firstNonZero; i++) {
         iNodeCount *= 2;
     }
-    bool end                  = false;
+    bool end = false;
     unsigned int maxNodeCount = iNodeCount;
     for (int i = firstNonZero; i < MAX_TREE_DEPTH && !end; i++) {
         iNodeCount *= 2;
@@ -176,7 +177,7 @@ void BaseSampler::GenerateDDGTree(const std::vector<uint64_t>& probMatrix) {
 
 int64_t BaseSampler::GenerateIntegerKnuthYao() {
     int64_t ans = -1;
-    bool hit    = false;
+    bool hit = false;
 
     while (!hit) {
         uint32_t nodeIndex = 0;
@@ -198,8 +199,7 @@ int64_t BaseSampler::GenerateIntegerKnuthYao() {
                         hit = true;
                     else
                         error = true;
-                }
-                else {
+                } else {
                     if (ans == -2) {
                         error = true;
                     }
@@ -252,10 +252,9 @@ int64_t BaseSampler::GenerateIntegerPeikert() const {
         // we need to use the binary uniform generator rathen than regular
         // continuous distribution; see DG14 for details
         seed = distribution(PseudoRandomNumberGenerator::GetPRNG());
-        val  = FindInVector(m_vals, seed);
-        ans  = val;
-    }
-    catch (std::exception& e) {
+        val = FindInVector(m_vals, seed);
+        ans = val;
+    } catch (std::exception& e) {
     }
     return ans - fin + b_mean;
 }
@@ -273,27 +272,27 @@ DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler**
                                                                    const int b, double N) {
     // Precomputations for sigma bar
     int x1, x2;
-    base_samplers        = samplers;
-    log_base             = b;
+    base_samplers = samplers;
+    log_base = b;
     double base_variance = std * std;
     // SampleI Non-base case
-    wide_sampler  = samplers[0];
+    wide_sampler = samplers[0];
     wide_variance = base_variance;
     for (int i = 1; i < MAX_LEVELS; ++i) {
-        x1               = static_cast<int>(std::floor(std::sqrt(wide_variance / (2 * N * N))));
-        x2               = std::max(x1 - 1, 1);
+        x1 = static_cast<int>(std::floor(std::sqrt(wide_variance / (2 * N * N))));
+        x2 = std::max(x1 - 1, 1);
         combiners[i - 1] = std::make_unique<SamplerCombiner>(wide_sampler, wide_sampler, x1, x2);
-        wide_sampler     = combiners[i - 1].get();
-        wide_variance    = (x1 * x1 + x2 * x2) * wide_variance;
+        wide_sampler = combiners[i - 1].get();
+        wide_variance = (x1 * x1 + x2 * x2) * wide_variance;
     }
 
-    k    = static_cast<int>(std::ceil(static_cast<double>(PRECISION - BERNOULLI_FLIPS) / log_base));
+    k = static_cast<int>(std::ceil(static_cast<double>(PRECISION - BERNOULLI_FLIPS) / log_base));
     mask = (1UL << log_base) - 1;
 
     // compute rr_sigma2
     sampler_variance = 1;
-    long double t    = 1.0 / (1UL << (2 * log_base));
-    long double s    = 1;
+    long double t = 1.0 / (1UL << (2 * log_base));
+    long double s = 1;
     for (int i = 1; i < k; ++i) {
         s *= t;
         sampler_variance += s;
@@ -319,7 +318,7 @@ int64_t DiscreteGaussianGeneratorGeneric::GenerateInteger(double center, double 
 }
 // Part of SampleC
 int64_t DiscreteGaussianGeneratorGeneric::flipAndRound(double center) {
-    int64_t c      = (int64_t)(center * (1ULL << PRECISION));
+    int64_t c = (int64_t)(center * (1ULL << PRECISION));
     int64_t base_c = (c >> BERNOULLI_FLIPS);
     short randomBit;  // NOLINT
 

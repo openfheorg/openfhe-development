@@ -33,13 +33,27 @@
   Control for encryption operations
  */
 
-#ifndef __CRYPTOCONTEXT_H__
-#define __CRYPTOCONTEXT_H__
+#ifndef SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_
+#define SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_
+
+#include <algorithm>
+#include <complex>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "binfhecontext.h"
 #include "ciphertext.h"
-#include "cryptocontextfactory.h"
 #include "cryptocontext-fwd.h"
+#include "cryptocontextfactory.h"
 #include "encoding/plaintextfactory.h"
 #include "key/evalkey.h"
 #include "key/keypair.h"
@@ -50,18 +64,6 @@
 #include "utils/caller_info.h"
 #include "utils/diagnostic_output.h"
 #include "utils/type_name.h"
-
-#include <algorithm>
-#include <complex>
-#include <functional>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <tuple>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #ifdef DEBUG_KEY
     #include <iostream>
@@ -83,7 +85,7 @@ namespace lbcrypto {
  */
 template <typename Element>
 class CryptoContextImpl : public Serializable {
-    using IntType  = typename Element::Integer;
+    using IntType = typename Element::Integer;
     using ParmType = typename Element::Params;
 
     /**
@@ -109,7 +111,7 @@ class CryptoContextImpl : public Serializable {
     inline void VerifyCKKSRealDataType(const std::string& functionName) const {
         if (GetCKKSDataType() != REAL) {
             std::string errMsg =
-                "Function " + std::string(functionName) + " is available for the real CKKS data types only.";
+                    "Function " + std::string(functionName) + " is available for the real CKKS data types only.";
             OPENFHE_THROW(errMsg);
         }
     }
@@ -146,31 +148,31 @@ class CryptoContextImpl : public Serializable {
                 // we throw an exception if level >= numModuli. However, we use multiplicativeDepth in the error message,
                 // so the user can understand the error more easily.
                 if (level >= numModuli) {
-                    uint32_t multiplicativeDepth =
-                        (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+                    uint32_t multiplicativeDepth = (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ?
+                                                           (numModuli - 2) :
+                                                           (numModuli - 1);
                     std::string errorMsg{"The level value should be less than or equal to "};
                     errorMsg +=
-                        ((cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? "(multiplicativeDepth + 1)." :
-                                                                                    "multiplicativeDepth.");
+                            ((cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? "(multiplicativeDepth + 1)." :
+                                                                                        "multiplicativeDepth.");
                     errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
                                 std::to_string(multiplicativeDepth) + "]";
                     OPENFHE_THROW(errorMsg);
                 }
-            }
-            else {
+            } else {
                 if ((cryptoParams->GetMultiplicationTechnique() == BEHZ) ||
                     (cryptoParams->GetMultiplicationTechnique() == HPS)) {
                     OPENFHE_THROW(
-                        "BFV: Encoding at level > 0 is not currently supported for BEHZ or HPS. Use one of the HPSPOVERQ* methods instead.");
+                            "BFV: Encoding at level > 0 is not currently supported for BEHZ or HPS. Use one of the HPSPOVERQ* methods instead.");
                 }
 
                 if ((cryptoParams->GetEncryptionTechnique() == EXTENDED)) {
                     OPENFHE_THROW(
-                        "BFV: Encoding at level > 0 is not currently supported for the EXTENDED encryption method. Use the STANDARD encryption method instead.");
+                            "BFV: Encoding at level > 0 is not currently supported for the EXTENDED encryption method. Use the STANDARD encryption method instead.");
                 }
                 if (level >= numModuli) {
                     std::string errorMsg =
-                        "The level value should be less the current number of RNS limbs in the cryptocontext.";
+                            "The level value should be less the current number of RNS limbs in the cryptocontext.";
                     errorMsg += " Currently: level is [" + std::to_string(level) + "] and number of RNS limbs is [" +
                                 std::to_string(numModuli) + "]";
                     OPENFHE_THROW(errorMsg);
@@ -186,21 +188,19 @@ class CryptoContextImpl : public Serializable {
                 elemParams.PopLastParam();
             }
             elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
-        }
-        else {
+        } else {
             elemParamsPtr = cryptoParams->GetElementParams();
         }
 
         NativeInteger scf{1};
         bool setNoiseScaleDeg = false;
-        auto scaleTech        = cryptoParams->GetScalingTechnique();
+        auto scaleTech = cryptoParams->GetScalingTechnique();
         if (isBGVRNS(m_schemeId) && (scaleTech == FLEXIBLEAUTO || scaleTech == FLEXIBLEAUTOEXT)) {
             if (scaleTech == FLEXIBLEAUTOEXT && level == 0) {
-                scf              = cryptoParams->GetScalingFactorIntBig(level);
-                depth            = 1;
+                scf = cryptoParams->GetScalingFactorIntBig(level);
+                depth = 1;
                 setNoiseScaleDeg = true;
-            }
-            else
+            } else
                 scf = cryptoParams->GetScalingFactorInt(level);
         }
 
@@ -240,14 +240,14 @@ class CryptoContextImpl : public Serializable {
     * @return shared_ptr to std::map where the map key/data pair is index/automorphism key
     */
     static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetPartialEvalAutomorphismKeyMapPtr(
-        const std::string& keyTag, const std::vector<uint32_t>& indexList);
+            const std::string& keyTag, const std::vector<uint32_t>& indexList);
 
     // cached evalmult keys, by secret key UID
     static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
     // cached evalautomorphism keys, by secret key UID
     static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
 
-protected:
+  protected:
     // crypto parameters
     std::shared_ptr<CryptoParametersBase<Element>> m_params{nullptr};
     // algorithm used; accesses all crypto methods
@@ -353,7 +353,7 @@ protected:
             OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
         if (cryptoParams->GetKeySwitchTechnique() == HYBRID && cryptoParams->GetPREMode() == NOT_SET)
             OPENFHE_THROW(
-                "PRE is disabled (default = NOT_SET). Enable with SetPREMode() before generating cryptocontext.");
+                    "PRE is disabled (default = NOT_SET). Enable with SetPREMode() before generating cryptocontext.");
     }
 
     void ValidateSeriesPowers(std::shared_ptr<seriesPowers<Element>> powers, CALLER_INFO_ARGS_HDR) const {
@@ -384,7 +384,7 @@ protected:
             // readily available. so, what we get is numModuli and use it for calculations
             size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
             uint32_t multiplicativeDepth =
-                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+                    (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
             // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
             // so the user can understand the error more easily.
             if (level >= numModuli) {
@@ -406,8 +406,7 @@ protected:
             // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg in our encoding function,
             // so we set it to 1 to make sure it has no effect on the encoding.
             noiseScaleDeg = 1;
-        }
-        else {
+        } else {
             scFact = cryptoParams->GetScalingFactorReal(level);
         }
 
@@ -420,8 +419,7 @@ protected:
                     elemParams.PopLastParam();
                 }
                 elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
-            }
-            else {
+            } else {
                 elemParamsPtr = cryptoParams->GetElementParams();
             }
             // Check if plaintext has got enough slots for data (value)
@@ -436,8 +434,7 @@ protected:
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
                                                                noiseScaleDeg, level, scFact, slots,
                                                                this->GetCKKSDataType()));
-        }
-        else {
+        } else {
             // Check if plaintext has got enough slots for data (value)
             uint32_t ringDim = params->GetRingDimension();
             size_t valueSize = value.size();
@@ -475,7 +472,7 @@ protected:
     PrivateKey<Element> m_privateKey;
 #endif
 
-public:
+  public:
 #ifdef DEBUG_KEY
     /**
     * SetPrivateKey() stores the private key in the crypto context.
@@ -529,7 +526,7 @@ public:
         m_params.reset(params);
         m_scheme.reset(scheme);
         m_keyGenLevel = 0;
-        m_schemeId    = schemeId;
+        m_schemeId = schemeId;
     }
 
     /**
@@ -541,10 +538,10 @@ public:
     */
     CryptoContextImpl(std::shared_ptr<CryptoParametersBase<Element>> params,
                       std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME) {
-        m_params      = params;
-        m_scheme      = scheme;
+        m_params = params;
+        m_scheme = scheme;
         m_keyGenLevel = 0;
-        m_schemeId    = schemeId;
+        m_schemeId = schemeId;
     }
 
     /**
@@ -552,10 +549,10 @@ public:
     * @param other cryptocontext to copy from
     */
     CryptoContextImpl(const CryptoContextImpl<Element>& other) {
-        m_params      = other.m_params;
-        m_scheme      = other.m_scheme;
+        m_params = other.m_params;
+        m_scheme = other.m_scheme;
         m_keyGenLevel = 0;
-        m_schemeId    = other.m_schemeId;
+        m_schemeId = other.m_schemeId;
     }
 
     /**
@@ -564,10 +561,10 @@ public:
     * @return this
     */
     CryptoContextImpl<Element>& operator=(const CryptoContextImpl<Element>& rhs) {
-        m_params      = rhs.m_params;
-        m_scheme      = rhs.m_scheme;
+        m_params = rhs.m_params;
+        m_scheme = rhs.m_scheme;
         m_keyGenLevel = rhs.m_keyGenLevel;
-        m_schemeId    = rhs.m_schemeId;
+        m_schemeId = rhs.m_schemeId;
         return *this;
     }
 
@@ -592,8 +589,7 @@ public:
         // same object, OR the same type and the same values
         if (a.m_params.get() == b.m_params.get()) {
             return true;
-        }
-        else {
+        } else {
             if (typeid(*a.m_params.get()) != typeid(*b.m_params.get())) {
                 return false;
             }
@@ -603,8 +599,7 @@ public:
 
         if (a.m_scheme.get() == b.m_scheme.get()) {
             return true;
-        }
-        else {
+        } else {
             if (typeid(*a.m_scheme.get()) != typeid(*b.m_scheme.get())) {
                 return false;
             }
@@ -673,8 +668,7 @@ public:
         const auto& evalMultKeys = CryptoContextImpl<Element>::GetAllEvalMultKeys();
         if (keyTag.length() == 0) {
             Serial::Serialize(evalMultKeys, ser, sertype);
-        }
-        else {
+        } else {
             const auto it = evalMultKeys.find(keyTag);
             if (it == evalMultKeys.end())
                 return false;  // no such keyTag
@@ -841,11 +835,10 @@ public:
         std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> omap;
         if (keyTag.length() == 0) {
             smap = &CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys();
-        }
-        else {
+        } else {
             const auto keys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyTag);
-            omap[keyTag]    = keys;
-            smap            = &omap;
+            omap[keyTag] = keys;
+            smap = &omap;
         }
         Serial::Serialize(*smap, ser, sertype);
         return true;
@@ -888,7 +881,7 @@ public:
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyTag,
                                              const std::vector<uint32_t>& indexList) {
         std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> keyMap = {
-            {keyTag, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyTag, indexList)}};
+                {keyTag, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyTag, indexList)}};
 
         Serial::Serialize(keyMap, ser, sertype);
         return true;
@@ -931,7 +924,7 @@ public:
         }
 
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
-            std::make_shared<std::map<uint32_t, EvalKey<Element>>>(newMap), keyTag);
+                std::make_shared<std::map<uint32_t, EvalKey<Element>>>(newMap), keyTag);
 
         return true;
     }
@@ -950,7 +943,7 @@ public:
                                           const std::string& keyTag, uint32_t slots) {
         const auto indexList = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, slots);
         std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> keyMap = {
-            {keyTag, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyTag, indexList)}};
+                {keyTag, CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(keyTag, indexList)}};
 
         Serial::Serialize(keyMap, ser, sertype);
 
@@ -1180,7 +1173,7 @@ public:
     * @return shared_ptr to EvalAutomorphismKey map
     */
     static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(
-        const std::string& keyTag);
+            const std::string& keyTag);
 
     /**
     * @brief Gets a map of EvalAutomorphism keys for the given keyTag
@@ -1524,8 +1517,8 @@ public:
     }
 
     void EvalAddInPlaceNoCheck(Ciphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
-        auto& cv1  = ctxt1->GetElements();
-        auto& cv2  = ctxt2->GetElements();
+        auto& cv1 = ctxt1->GetElements();
+        auto& cv2 = ctxt2->GetElements();
         uint32_t n = cv1.size();
         for (uint32_t i = 0; i < n; ++i)
             cv1[i] += cv2[i];
@@ -1809,8 +1802,8 @@ public:
     */
     Ciphertext<Element> EvalSubMutable(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         Ciphertext<Element> negated = EvalNegate(ciphertext);
-        Ciphertext<Element> result  = EvalAddMutable(negated, plaintext);
-        ciphertext                  = EvalNegate(negated);
+        Ciphertext<Element> result = EvalAddMutable(negated, plaintext);
+        ciphertext = EvalNegate(negated);
         return result;
     }
 
@@ -2076,8 +2069,7 @@ public:
             cvr.emplace_back(cv1[0] * cv2[0]);
             cvr.emplace_back((cv1[0] * cv2[1]) += (cv1[1] * cv2[0]));
             cvr.emplace_back(cv1[1] * cv2[1]);
-        }
-        else {
+        } else {
             uint32_t m = 0;
             for (uint32_t i = 0; i < n1; ++i) {
                 auto& cv1i = cv1[i];
@@ -2085,8 +2077,7 @@ public:
                     if (k == m) {
                         cvr.emplace_back(cv1i * cv2[j]);
                         ++m;
-                    }
-                    else {
+                    } else {
                         cvr[k] += (cv1i * cv2[j]);
                     }
                 }
@@ -2098,7 +2089,7 @@ public:
         result->SetNoiseScaleDeg(ctxt1->GetNoiseScaleDeg() + ctxt2->GetNoiseScaleDeg());
         result->SetScalingFactor(ctxt1->GetScalingFactor() * ctxt2->GetScalingFactor());
         result->SetScalingFactorInt(ctxt1->GetScalingFactorInt().ModMul(
-            ctxt2->GetScalingFactorInt(), ctxt1->GetCryptoParameters()->GetPlaintextModulus()));
+                ctxt2->GetScalingFactorInt(), ctxt1->GetCryptoParameters()->GetPlaintextModulus()));
         return result;
     }
 
@@ -2162,8 +2153,8 @@ public:
 
     Ciphertext<Element> EvalMultNoCheck(ConstCiphertext<Element>& ctxt, NativeInteger k) const {
         auto result = ctxt->Clone();
-        auto& cv    = result->GetElements();
-        uint32_t n  = cv.size();
+        auto& cv = result->GetElements();
+        uint32_t n = cv.size();
         for (uint32_t i = 0; i < n; ++i)
             cv[i] *= k;
         return result;
@@ -2319,7 +2310,7 @@ public:
     * @return Map of generated evaluation keys.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
         ValidateKey(privateKey);
         if (indexList.empty())
             OPENFHE_THROW("Input index vector is empty");
@@ -2361,9 +2352,9 @@ public:
     * @return Corresponding automorphism index.
     */
     uint32_t FindAutomorphismIndex(const uint32_t idx) const {
-        const auto cryptoParams  = m_params;
+        const auto cryptoParams = m_params;
         const auto elementParams = cryptoParams->GetElementParams();
-        uint32_t m               = elementParams->GetCyclotomicOrder();
+        uint32_t m = elementParams->GetCyclotomicOrder();
         return m_scheme->FindAutomorphismIndex(idx, m);
     }
 
@@ -3049,13 +3040,13 @@ public:
     * @return Map of generated evaluation keys.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
-                                                                            uint32_t rowSize    = 0,
+                                                                            uint32_t rowSize = 0,
                                                                             uint32_t subringDim = 0);
 
     // TODO: this is here for backwards compatibility; should remove in v2.0
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                             const PublicKey<Element> publicKey,
-                                                                            uint32_t rowSize    = 0,
+                                                                            uint32_t rowSize = 0,
                                                                             uint32_t subringDim = 0);
 
     /**
@@ -3164,7 +3155,7 @@ public:
     */
     EvalKey<Element> ReKeyGen(const PrivateKey<Element> originalPrivateKey,
                               const PrivateKey<Element> newPrivateKey) const
-        __attribute__((deprecated("functionality removed from OpenFHE")));
+            __attribute__((deprecated("functionality removed from OpenFHE")));
 
     /**
     * @brief Re-encrypts a ciphertext using a re-encryption key for Proxy Re-Encryption.
@@ -3294,8 +3285,9 @@ public:
     * @return Map of updated joined automorphism keys.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
-        const std::vector<uint32_t>& indexList, const std::string& keyTag = "") {
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+            const std::vector<uint32_t>& indexList, const std::string& keyTag = "") {
         if (!privateKey)
             OPENFHE_THROW("Input private key is nullptr");
         if (!evalKeyMap)
@@ -3315,8 +3307,9 @@ public:
     * @return Map of updated joined rotation keys.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
-        const std::vector<int32_t>& indexList, const std::string& keyTag = "") {
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
+            const std::vector<int32_t>& indexList, const std::string& keyTag = "") {
         if (!privateKey)
             OPENFHE_THROW("Input private key is nullptr");
         if (!evalKeyMap)
@@ -3335,8 +3328,8 @@ public:
     * @return Map of updated summation evaluation keys.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
-        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
-        const std::string& keyTag = "") {
+            const PrivateKey<Element> privateKey,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap, const std::string& keyTag = "") {
         if (!privateKey)
             OPENFHE_THROW("Input private key is nullptr");
         if (!evalKeyMap)
@@ -3387,8 +3380,8 @@ public:
     * @return Combined summation evaluation key set.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
         if (!evalKeyMap1)
             OPENFHE_THROW("Input first evaluation key map is nullptr");
         if (!evalKeyMap2)
@@ -3405,8 +3398,8 @@ public:
     * @return Combined automorphism evaluation key set.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
-        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
+            const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
         if (!evalKeyMap1)
             OPENFHE_THROW("Input first evaluation key map is nullptr");
         if (!evalKeyMap2)
@@ -3720,7 +3713,7 @@ public:
     * @return Powers of the complex exponential, to be passed to EvalFEFuncBootstrapWithPrecomp.
     */
     std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
-        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         ValidateCiphertext(ciphertext);
         return GetScheme()->EvalFEFuncBootstrapPrecompute(ciphertext, coefficients);
     }
@@ -4217,7 +4210,7 @@ public:
 // Member function specializations. Their implementations are in cryptocontext.cpp
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec, Plaintext* plaintext) const;
+        const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec, Plaintext* plaintext) const;
 template <>
 std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk,
                                                                               uint32_t N, uint32_t threshold,
@@ -4225,4 +4218,4 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                                                                               const std::string& shareType) const;
 }  // namespace lbcrypto
 
-#endif  // __CRYPTOCONTEXT_H__
+#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_

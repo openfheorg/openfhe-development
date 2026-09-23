@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <complex>
+#include <memory>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/field2n.h"
 #include "math/dftransform.h"
 #include "math/nbtheory.h"
 #include "utils/debug.h"
-
-#include <cmath>
-#include <memory>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -458,13 +459,13 @@ TEST(UTField2n, poly_large_centered_coefficients) {
 
 TEST(UTField2n, poly_magnitudes_beyond_uint64) {
     const BigInteger q = FirstPrime<BigInteger>(100, 8);
-    auto params        = std::make_shared<ILParams>(8, q, RootOfUnity<BigInteger>(8, q));
+    auto params = std::make_shared<ILParams>(8, q, RootOfUnity<BigInteger>(8, q));
     Poly poly(params, Format::COEFFICIENT, true);
     const BigInteger magnitude = BigInteger(1) << 80;
-    poly[0]                    = magnitude;
-    poly[1]                    = q - magnitude;
-    poly[2]                    = BigInteger(1);
-    poly[3]                    = q - BigInteger(1);
+    poly[0] = magnitude;
+    poly[1] = q - magnitude;
+    poly[2] = BigInteger(1);
+    poly[3] = q - BigInteger(1);
     Field2n field(poly);
     EXPECT_DOUBLE_EQ(field[0].real(), std::ldexp(1.0, 80));
     EXPECT_DOUBLE_EQ(field[1].real(), -std::ldexp(1.0, 80));
@@ -475,16 +476,16 @@ TEST(UTField2n, poly_magnitudes_beyond_uint64) {
 TEST(UTField2n, native_and_dcrt_centered_coefficients) {
     // Also cover large native magnitudes when native integers are 128 bits wide.
 #if NATIVEINT == 128
-    const NativeInteger q         = FirstPrime<NativeInteger>(100, 8);
+    const NativeInteger q = FirstPrime<NativeInteger>(100, 8);
     const NativeInteger magnitude = NativeInteger(1) << 80;
-    const double expected         = std::ldexp(1.0, 80);
+    const double expected = std::ldexp(1.0, 80);
 #else
     const NativeInteger q(97);
     const NativeInteger magnitude(48);
     const double expected = 48.0;
 #endif
     const NativeInteger root = RootOfUnity<NativeInteger>(8, q);
-    auto params              = std::make_shared<ILNativeParams>(8, q, root);
+    auto params = std::make_shared<ILNativeParams>(8, q, root);
     NativePoly poly(params, Format::COEFFICIENT, true);
     poly[0] = magnitude;
     poly[1] = q - magnitude;
@@ -498,8 +499,8 @@ TEST(UTField2n, native_and_dcrt_centered_coefficients) {
     EXPECT_DOUBLE_EQ(nativeField[2].real(), 0.0);
     EXPECT_DOUBLE_EQ(nativeField[3].real(), -1.0);
 
-    auto crtParams =
-        std::make_shared<ILDCRTParams<BigInteger>>(8, std::vector<NativeInteger>{q}, std::vector<NativeInteger>{root});
+    auto crtParams = std::make_shared<ILDCRTParams<BigInteger>>(8, std::vector<NativeInteger>{q},
+                                                                std::vector<NativeInteger>{root});
     DCRTPoly crt(crtParams, Format::COEFFICIENT, true);
     crt.SetElementAtIndex(0, poly);
     Field2n crtField(crt);
@@ -512,8 +513,8 @@ TEST(UTField2n, native_and_dcrt_centered_coefficients) {
 TEST(UTField2n, dcrt_coefficients_exceeding_first_tower) {
     // A coefficient larger than the first tower cannot be recovered from that tower alone, so the
     // constructor must fall back to CRT interpolation instead of reporting the tower-0 residue.
-    auto crtParams         = std::make_shared<ILDCRTParams<BigInteger>>(8, 2, 50);
-    const BigInteger Q     = crtParams->GetModulus();
+    auto crtParams = std::make_shared<ILDCRTParams<BigInteger>>(8, 2, 50);
+    const BigInteger Q = crtParams->GetModulus();
     const NativeInteger q0 = crtParams->GetParams()[0]->GetModulus();
     ASSERT_GT(Q, BigInteger(q0));
 
@@ -548,7 +549,7 @@ TEST(UTField2n, poly_uint64_boundary_magnitudes) {
     // Magnitudes straddling the 64-bit boundary, where the narrowing conversion of issue #1253
     // used to lose the sign or the value.
     const BigInteger q = FirstPrime<BigInteger>(100, 8);
-    auto params        = std::make_shared<ILParams>(8, q, RootOfUnity<BigInteger>(8, q));
+    auto params = std::make_shared<ILParams>(8, q, RootOfUnity<BigInteger>(8, q));
     Poly poly(params, Format::COEFFICIENT, true);
     poly[0] = BigInteger(1) << 63;                    // one above INT64_MAX
     poly[1] = (BigInteger(1) << 64) - BigInteger(1);  // largest value a uint64_t holds

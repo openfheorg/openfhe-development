@@ -33,20 +33,19 @@
   implementation of the power-of-2 fields
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
-#define LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
+
+#include <complex>
+#include <cstdint>
+#include <vector>
 
 #include "lattice/field2n.h"
 #include "lattice/lat-hal.h"
-
 #include "math/dftransform.h"
 #include "math/math-hal.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <complex>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -91,12 +90,12 @@ Field2n::Field2n(const DCRTPoly& DCRTelement) : format(Format::COEFFICIENT) {
     // is what this constructor's callers produce (products of small trapdoor samples). Check that
     // against the remaining towers rather than assuming it, and interpolate when it does not hold.
     const typename DCRTPoly::PolyType& element = DCRTelement.GetElementAtIndex(0);
-    const NativeInteger& q0                    = element.GetModulus();
+    const NativeInteger& q0 = element.GetModulus();
     const NativeInteger negativeThreshold(q0 / 2);
     size_t size = element.GetLength();
     for (uint32_t t = 1; t < DCRTelement.GetNumOfElements(); ++t) {
         const typename DCRTPoly::PolyType& tower = DCRTelement.GetElementAtIndex(t);
-        const NativeInteger& qt                  = tower.GetModulus();
+        const NativeInteger& qt = tower.GetModulus();
         for (size_t i = 0; i < size; ++i) {
             bool negative = element[i] > negativeThreshold;
             NativeInteger residue((negative ? q0 - element[i] : element[i]).Mod(qt));
@@ -252,7 +251,7 @@ Field2n Field2n::Permute() const {
     size_t evenPtr{0}, oddPtr{size / 2};
     for (size_t i = 0; i < size;) {
         permuted[evenPtr++] = this->std::vector<std::complex<double>>::operator[](i++);
-        permuted[oddPtr++]  = this->std::vector<std::complex<double>>::operator[](i++);
+        permuted[oddPtr++] = this->std::vector<std::complex<double>>::operator[](i++);
     }
     return permuted;
 }
@@ -292,4 +291,4 @@ void Field2n::SwitchFormat() {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_

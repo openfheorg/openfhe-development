@@ -16,7 +16,7 @@ We provide a brief overview of the files below. However, we recommend referring 
 - Describes the CKKS packing. Accepts a `std::vector<double>` unlike the other schemes.
 
 [Coef Packed Encoding](coefpackedencoding.h)
-- Accepts plaintext data and packs the data into coefficients of a polynomial. 
+- Accepts plaintext data and packs the data into coefficients of a polynomial.
 - Note: is rarely used
 - Note: only supports element-wise addition, so ensure that you need this before using
 

@@ -36,18 +36,22 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
     #define _SECURE_SCL 0  // to speed up VS
 
-    #include "math/hal/basicint.h"
-    #include "math/math-hal.h"
-    #include "math/hal/bigintntl/ubintntl.h"
-
     #include <fstream>
     #include <iostream>
     #include <sstream>
+
+    #include "math/hal/basicint.h"
+    #include "math/hal/bigintntl/ubintntl.h"
+    #include "math/math-hal.h"
 
 namespace NTL {
 
@@ -133,8 +137,7 @@ myZZ myZZ::DivideAndRound(const myZZ& q) const {
     if (*this < q) {
         if (*this <= halfQ) {
             return myZZ(0);
-        }
-        else {
+        } else {
             return myZZ(1);
         }
     }
@@ -157,8 +160,7 @@ myZZ& myZZ::DivideAndRoundEq(const myZZ& q) {
     if (*this < q) {
         if (*this <= halfQ) {
             return *this = myZZ(0);
-        }
-        else {
+        } else {
             return *this = myZZ(1);
         }
     }
@@ -238,7 +240,7 @@ uint32_t myZZ::GetMSB() const {
     MSB = (sz - 1) * NTL_ZZ_NBITS;  // figure out bit location of all but last
                                     // limb
     const ZZ_limb_t* zlp = ZZ_limbs_get(*this);
-    uint32_t tmp         = GetMSBLimb_t(zlp[sz - 1]);  // add the value of that last limb.
+    uint32_t tmp = GetMSBLimb_t(zlp[sz - 1]);  // add the value of that last limb.
 
     MSB += tmp;
     m_MSB = MSB;
@@ -249,8 +251,7 @@ void myZZ::SetMSB() {
     size_t sz = this->size();
     if (sz == 0) {  // special case for empty data
         m_MSB = 0;
-    }
-    else {
+    } else {
         m_MSB = (sz - 1) * NTL_ZZ_NBITS;  // figure out bit location of all but last limb
         // could also try
         // m_MSB = NumBytes(*this)*8;
@@ -319,9 +320,9 @@ uint32_t myZZ::GetBitRangeAtIndex(uint32_t ppo, uint32_t length) const {
 
 uint32_t myZZ::GetDigitAtIndexForBase(uint32_t index, uint32_t base) const {
     uint32_t DigitLen = lbcrypto::GetMSB(base - 1);
-    uint32_t digit    = 0;
+    uint32_t digit = 0;
     uint32_t newIndex = 1 + (index - 1) * DigitLen;
-    digit             = GetBitRangeAtIndex(newIndex, DigitLen);
+    digit = GetBitRangeAtIndex(newIndex, DigitLen);
     return digit;
 }
 
@@ -344,8 +345,7 @@ uint32_t myZZ::ceilIntByUInt(const ZZ_limb_t Number) {
 
     if ((Number & mask) != 0) {
         return (Number >> m_log2LimbBitLength) + 1;
-    }
-    else {
+    } else {
         return Number >> m_log2LimbBitLength;
     }
 }

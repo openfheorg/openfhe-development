@@ -33,24 +33,25 @@
   This file contains mubintvecdyn, a <vector> of buintdyn, with associated modulus and modulo math operators
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H_
+
+#include <cstdint>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
-        #define LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
+    #include <initializer_list>
+    #include <ostream>
+    #include <string>
+    #include <utility>
+    #include <vector>
 
-        #include "math/hal/vector.h"
-        #include "math/hal/bigintdyn/ubintdyn.h"
-
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <initializer_list>
-        #include <ostream>
-        #include <string>
-        #include <utility>
-        #include <vector>
+    #include "math/hal/bigintdyn/ubintdyn.h"
+    #include "math/hal/vector.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 /**
  * @namespace bigintdyn
@@ -63,7 +64,7 @@ class mubintvec;
 
 /** Define the mapping for modulo Big Integer Vector */
 using xmubintvec = mubintvec<BigInteger>;
-using BigVector  = xmubintvec;
+using BigVector = xmubintvec;
 
 /**
  * @brief The class for representing vectors of ubint with associated modulo
@@ -73,7 +74,7 @@ using BigVector  = xmubintvec;
 template <class ubint_el_t>
 class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t>,
                         public lbcrypto::Serializable {
-public:
+  public:
     mubintvec() = default;
 
     static mubintvec Single(const ubint_el_t& val, const ubint_el_t& modulus) {
@@ -177,9 +178,9 @@ public:
    * @return the return value.
    */
     mubintvec& operator=(mubintvec&& rhs) noexcept {
-        m_modulus       = std::move(rhs.m_modulus);
+        m_modulus = std::move(rhs.m_modulus);
         m_modulus_state = rhs.m_modulus_state;
-        m_data          = std::move(rhs.m_data);
+        m_data = std::move(rhs.m_data);
         return *this;
     }
 
@@ -280,12 +281,12 @@ public:
    * @param value is the value to set.
    */
     void SetModulus(const ubint_el_t& value) noexcept {
-        m_modulus       = value;
+        m_modulus = value;
         m_modulus_state = State::INITIALIZED;
     }
 
     void SetModulus(ubint_el_t&& value) noexcept {
-        m_modulus       = std::move(value);
+        m_modulus = std::move(value);
         m_modulus_state = State::INITIALIZED;
     }
 
@@ -295,7 +296,7 @@ public:
    * @param value is the value to set.
    */
     void SetModulus(const std::string& value) {
-        m_modulus       = ubint_el_t(value);
+        m_modulus = ubint_el_t(value);
         m_modulus_state = State::INITIALIZED;
     }
 
@@ -305,7 +306,7 @@ public:
    * @param value is the vector whose modulus to use.
    */
     void SetModulus(const mubintvec& value) {
-        m_modulus       = value.GetModulus();
+        m_modulus = value.GetModulus();
         m_modulus_state = State::INITIALIZED;
     }
 
@@ -586,14 +587,14 @@ public:
    * @return is the ostream object.
    */
     friend std::ostream& operator<<(std::ostream& os, const mubintvec& ptr_obj) {
-        #if 0  // old way
+    #if 0  // old way
     os << std::endl;
     for (uint32_t i = 0; i < ptr_obj.m_data.size(); i++) {
       os << ptr_obj.m_data[i] << std::endl;
     }
     os << "modulus: " << ptr_obj.m_modulus;
     os << std::endl;
-        #else
+    #else
         auto len = ptr_obj.m_data.size();
         os << "[";
         for (uint32_t i = 0; i < len; i++) {
@@ -601,7 +602,7 @@ public:
             os << ((i == (len - 1)) ? "]" : " ");
         }
         os << " modulus: " << ptr_obj.m_modulus;
-        #endif
+    #endif
         return os;
     }
 
@@ -633,7 +634,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     enum State { GARBAGE, INITIALIZED };
 
     ubint_el_t m_modulus{};
@@ -649,6 +650,6 @@ private:
 };
 
 }  // namespace bigintdyn
-
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H_

@@ -38,23 +38,23 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
-        #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
-
-        #include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
-        #include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
-        #include "math/hal/bigintntl/transformntl.h"  // transforms for NTL
+    #include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
+    #include "math/hal/bigintntl/transformntl.h"  // transforms for NTL
+    #include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
 
 // Global alias for MATHBACKEND 6 Integer
 using M6Integer = NTL::BigInteger;
 
 // Global alias for MATHBACKEND 6 Vector
 using M6Vector = NTL::BigVector;
-
-    #endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
 #else
 using M6Integer = void;
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_

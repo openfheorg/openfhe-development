@@ -33,6 +33,9 @@
   Example for FHEW with JSON serialization
  */
 
+#include <iostream>
+#include <string>
+
 #include "binfhecontext-ser.h"
 
 using namespace lbcrypto;

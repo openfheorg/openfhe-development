@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_BFVRNS_ADVANCEDSHE_H
-
-#include "schemerns/rns-advancedshe.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_ADVANCEDSHE_H_
 
 #include <string>
+
+#include "schemerns/rns-advancedshe.h"
 
 /**
  * @namespace lbcrypto
@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 class AdvancedSHEBFVRNS : public AdvancedSHERNS {
-public:
+  public:
     virtual ~AdvancedSHEBFVRNS() {}
 
     /////////////////////////////////////
@@ -66,4 +66,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_ADVANCEDSHE_H_

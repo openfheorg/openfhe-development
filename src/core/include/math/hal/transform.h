@@ -33,15 +33,16 @@
   This file contains the interface for the transforms in each math backend
  */
 
-#ifndef LBCRYPTO_MATH_TRANSFORM_H
-#define LBCRYPTO_MATH_TRANSFORM_H
-
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_
 
 #include <complex>
+#include <cstdint>
 #include <map>
 #include <utility>
 #include <vector>
+
+#include "utils/inttypes.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -60,7 +61,7 @@ template <typename VecType>
 class ChineseRemainderTransformFTTInterface {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Copies \p element into \p result and calls NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    *
@@ -170,7 +171,7 @@ template <typename VecType>
 class ChineseRemainderTransformArbInterface {
     using IntType = typename VecType::Integer;
 
-public:
+  public:
     /**
    * Sets the cyclotomic polynomial.
    *
@@ -254,7 +255,7 @@ public:
    */
     virtual VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, uint32_t power) = 0;
 
-private:
+  private:
     /**
    * @brief Padding zeroes to a vector
    * @param &element is the input of type VecType to be padded with zeros.
@@ -280,4 +281,4 @@ private:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_TRANSFORM_H_

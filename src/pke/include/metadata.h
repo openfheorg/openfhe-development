@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_METADATA_H
-#define LBCRYPTO_CRYPTO_METADATA_H
+#ifndef SRC_PKE_INCLUDE_METADATA_H_
+#define SRC_PKE_INCLUDE_METADATA_H_
 
-#include "utils/exception.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <string>
 #include <ostream>
+#include <string>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -48,7 +49,7 @@ using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metada
  * @brief Empty metadata container
  */
 class Metadata {
-public:
+  public:
     /**
    * Default constructor
    */
@@ -131,7 +132,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     /**
     * A method that prints the contents of metadata objects.
     * Please override in subclasses to print all members.
@@ -143,4 +144,4 @@ protected:
 
 }  // end namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_METADATA_H_

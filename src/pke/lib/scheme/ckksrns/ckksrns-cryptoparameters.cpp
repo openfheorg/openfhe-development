@@ -35,14 +35,16 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #define PROFILE
 
-#include "math/dftransform.h"
-
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 
@@ -52,7 +54,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                                                   uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
     CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
-    size_t sizeQ             = GetElementParams()->GetParams().size();
+    size_t sizeQ = GetElementParams()->GetParams().size();
     uint32_t compositeDegree = m_compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
@@ -60,7 +62,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
     for (size_t i = 0; i < sizeQ; i++) {
         moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-        rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
+        rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
     }
 
     // Pre-compute values for rescaling
@@ -71,7 +73,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_qlInvModq[k].resize(l);
         m_qlInvModqPrecon[k].resize(l);
         for (uint32_t i = 0; i < l; i++) {
-            m_qlInvModq[k][i]       = moduliQ[l].ModInverse(moduliQ[i]);
+            m_qlInvModq[k][i] = moduliQ[l].ModInverse(moduliQ[i]);
             m_qlInvModqPrecon[k][i] = m_qlInvModq[k][i].PrepModMulConst(moduliQ[i]);
         }
     }
@@ -87,47 +89,42 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             // when multiplicative depth = 0, we use the scaling mod size instead of modulus size
             // Plaintext modulus is used in EncodingParamsImpl to store the exponent p of the scaling factor
             m_scalingFactorsReal[0] = std::pow(2, GetPlaintextModulus());
-        }
-        else if ((sizeQ == 2) && (extraBits > 0) && (m_scalTechnique != COMPOSITESCALINGAUTO) &&
-                 (m_scalTechnique != COMPOSITESCALINGMANUAL)) {
+        } else if ((sizeQ == 2) && (extraBits > 0) && (m_scalTechnique != COMPOSITESCALINGAUTO) &&
+                   (m_scalTechnique != COMPOSITESCALINGMANUAL)) {
             // mult depth = 0 and FLEXIBLEAUTOEXT
             // when multiplicative depth = 0, we use the scaling mod size instead of modulus size
             // Plaintext modulus is used in EncodingParamsImpl to store the exponent p of the scaling factor
             m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
             m_scalingFactorsReal[1] = std::pow(2, GetPlaintextModulus());
-        }
-        else {
+        } else {
             m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
             if (m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
                 for (uint32_t j = 1; j < compositeDegree; j++) {
                     m_scalingFactorsReal[0] *= moduliQ[sizeQ - j - 1].ConvertToDouble();
                 }
-            }
-            else if (extraBits > 0)
+            } else if (extraBits > 0)
                 m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
 
             const double lastPresetFactor = (extraBits == 0) ? m_scalingFactorsReal[0] : m_scalingFactorsReal[1];
             // number of levels with pre-calculated factors
             const size_t numPresetFactors = (extraBits == 0 || (m_scalTechnique == COMPOSITESCALINGAUTO ||
                                                                 m_scalTechnique == COMPOSITESCALINGMANUAL)) ?
-                                                1 :
-                                                2;
+                                                    1 :
+                                                    2;
 
             for (size_t k = numPresetFactors; k < sizeQ; k++) {
                 if (m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
                     if (k % compositeDegree == 0) {
-                        double prevSF           = m_scalingFactorsReal[k - compositeDegree];
+                        double prevSF = m_scalingFactorsReal[k - compositeDegree];
                         m_scalingFactorsReal[k] = prevSF * prevSF;
                         for (uint32_t j = 0; j < compositeDegree; j++) {
                             m_scalingFactorsReal[k] /= moduliQ[sizeQ - k + j].ConvertToDouble();
                         }
-                    }
-                    else {
+                    } else {
                         m_scalingFactorsReal[k] = 1;
                     }
-                }
-                else {
-                    double prevSF           = m_scalingFactorsReal[k - 1];
+                } else {
+                    double prevSF = m_scalingFactorsReal[k - 1];
                     m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
 
                     if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
@@ -147,8 +144,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         if (m_scalingFactorsRealBig.size() > 0) {
             if (extraBits == 0) {
                 m_scalingFactorsRealBig[0] = m_scalingFactorsReal[0] * m_scalingFactorsReal[0];
-            }
-            else {
+            } else {
                 m_scalingFactorsRealBig[0] = m_scalingFactorsReal[0] * m_scalingFactorsReal[1];
             }
             for (uint32_t k = 1; k < sizeQ - 1; k++) {
@@ -161,10 +157,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         for (uint32_t i = 0; i < sizeQ; ++i) {
             m_dmoduliQ[i] = moduliQ[i].ConvertToDouble();
         }
-    }
-    else {
+    } else {
         const auto p = GetPlaintextModulus();
-        m_approxSF   = std::pow(2, p);
+        m_approxSF = std::pow(2, p);
     }
     if (m_ksTechnique == HYBRID) {
         const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
@@ -183,7 +178,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     // (no multiprecision arithmetic at runtime).
     /////////////////////////////////////
     if (compositeDegree > 1 && sizeQ > compositeDegree) {
-        uint32_t sizeQl      = compositeDegree;
+        uint32_t sizeQl = compositeDegree;
         uint32_t sizeComplQl = sizeQ - sizeQl;
 
         std::vector<NativeInteger> moduliComplQl(moduliQ.begin() + sizeQl, moduliQ.end());
@@ -204,7 +199,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_modRaiseQlHatInvModq.resize(sizeQl);
         m_modRaiseQlHatInvModqPrecon.resize(sizeQl);
         for (uint32_t i = 0; i < sizeQl; ++i) {
-            m_modRaiseQlHatInvModq[i]       = QlHat[i].ModInverse(BigInteger(moduliQ[i])).ConvertToInt();
+            m_modRaiseQlHatInvModq[i] = QlHat[i].ModInverse(BigInteger(moduliQ[i])).ConvertToInt();
             m_modRaiseQlHatInvModqPrecon[i] = m_modRaiseQlHatInvModq[i].PrepModMulConst(moduliQ[i]);
         }
 
@@ -219,19 +214,18 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             NativeInteger QlModqj = modulusQl.Mod(qj).ConvertToInt();
             for (uint32_t a = 1; a <= sizeQl; ++a)
                 m_modRaiseAlphaQlModComplq[a][j] =
-                    m_modRaiseAlphaQlModComplq[a - 1][j].ModAddFast(QlModqj, moduliComplQl[j]);
+                        m_modRaiseAlphaQlModComplq[a - 1][j].ModAddFast(QlModqj, moduliComplQl[j]);
         }
 
         if (m_modqBarrettMu.size() == sizeQ) {
             // reuse the Barrett constants computed for HYBRID above
             m_modRaiseModComplqBarrettMu.assign(m_modqBarrettMu.begin() + sizeQl, m_modqBarrettMu.end());
-        }
-        else {
+        } else {
             m_modRaiseModComplqBarrettMu.resize(sizeComplQl);
             const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
             for (uint32_t j = 0; j < sizeComplQl; ++j)
                 m_modRaiseModComplqBarrettMu[j] =
-                    (BarrettBase128Bit / BigInteger(moduliComplQl[j])).ConvertToInt<DoubleNativeInt>();
+                        (BarrettBase128Bit / BigInteger(moduliComplQl[j])).ConvertToInt<DoubleNativeInt>();
         }
 
         // 1./q_i for q_i in Ql (used for the fractional part of the overflow correction)
@@ -273,8 +267,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         const uint32_t bitsQl = modulusQl.GetMSB();
         if (bitsQl > 121)
             OPENFHE_THROW(
-                "SPARSE_ENCAPSULATED supports a bottom (first) modulus of at most 121 bits; the current one has " +
-                std::to_string(bitsQl) + " bits.");
+                    "SPARSE_ENCAPSULATED supports a bottom (first) modulus of at most 121 bits; the current one has " +
+                    std::to_string(bitsQl) + " bits.");
 
         // total size of P' and the number/size of its primes: with composite scaling ~66 bits, or ~127 bits
         // for a bottom modulus above 60 bits (whose sparse secret is denser as well); otherwise unchanged.
@@ -282,17 +276,17 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         // firstModSize the primes were generated for (CompositePrimeModuliGen for composite scaling), so that
         // the rule matches SparseKSHammingWeight(firstModSize) used by the depth estimates.
         constexpr uint32_t auxBitsPlain = 2 * (MAX_MODULUS_SIZE / 2 + 3);
-        const bool isComposite          = (compositeDegree > 1);
-        uint32_t firstModSize           = 0;
+        const bool isComposite = (compositeDegree > 1);
+        uint32_t firstModSize = 0;
         for (uint32_t i = 0; i < sizeQl; ++i)
             firstModSize += moduliQ[i].GetMSB();
-        m_sparseKSHammingWeight      = SparseKSHammingWeight(firstModSize);
-        const bool largeBottom       = (m_sparseKSHammingWeight > 32);
+        m_sparseKSHammingWeight = SparseKSHammingWeight(firstModSize);
+        const bool largeBottom = (m_sparseKSHammingWeight > 32);
         const uint32_t auxBitsSparse = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
-        const uint32_t registerBits  = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
-        const uint32_t maxPrimeBits  = std::min<uint32_t>(registerBits, MAX_MODULUS_SIZE);
-        uint32_t sizePSparse         = 2;
-        uint32_t bitsPSparse         = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
+        const uint32_t registerBits = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
+        const uint32_t maxPrimeBits = std::min<uint32_t>(registerBits, MAX_MODULUS_SIZE);
+        uint32_t sizePSparse = 2;
+        uint32_t bitsPSparse = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
         // the primes have to fit (strictly) in the register word size and in a native integer
         while (bitsPSparse >= registerBits || bitsPSparse > MAX_MODULUS_SIZE) {
             ++sizePSparse;
@@ -301,7 +295,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         // the original configuration (two 33-bit primes searched downwards) is kept for the non-composite case
         const bool searchDown = (!isComposite && sizePSparse == 2);
 
-        uint32_t n         = GetElementParams()->GetRingDimension();
+        uint32_t n = GetElementParams()->GetRingDimension();
         uint64_t primeStep = FindAuxPrimeStep();
 
         // the auxiliary primes must differ from all moduli in Q and in the hybrid key
@@ -325,15 +319,15 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         for (uint32_t j = 0; j < sizePSparse; ++j) {
             bool found = false;
             do {
-                pCur  = (searchDown) ? PreviousPrime<NativeInteger>(pCur, primeStep) :
-                                       NextPrime<NativeInteger>(pCur, primeStep);
+                pCur = (searchDown) ? PreviousPrime<NativeInteger>(pCur, primeStep) :
+                                      NextPrime<NativeInteger>(pCur, primeStep);
                 found = (std::find(moduliToAvoid.begin(), moduliToAvoid.end(), pCur) != moduliToAvoid.end());
             } while (found);
             if (pCur.GetMSB() > maxPrimeBits)
                 OPENFHE_THROW("Could not find enough auxiliary primes of at most " + std::to_string(maxPrimeBits) +
                               " bits for SPARSE_ENCAPSULATED at this ring dimension.");
             moduliPSparse[j] = pCur;
-            rootsPSparse[j]  = RootOfUnity<NativeInteger>(2 * n, moduliPSparse[j]);
+            rootsPSparse[j] = RootOfUnity<NativeInteger>(2 * n, moduliPSparse[j]);
             modulusPSparse *= BigInteger(moduliPSparse[j]);
         }
 
@@ -362,7 +356,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_sparseKSModqBarrettMu.resize(sizeQl);
         for (uint32_t i = 0; i < sizeQl; ++i) {
             BigInteger qi(moduliQ[i]);
-            m_sparseKSPModq[i]    = modulusPSparse.Mod(qi).ConvertToInt();
+            m_sparseKSPModq[i] = modulusPSparse.Mod(qi).ConvertToInt();
             m_sparseKSPInvModq[i] = modulusPSparse.ModInverse(qi).ConvertToInt();
             for (uint32_t j = 0; j < sizePSparse; ++j)
                 m_sparseKSPHatModq[i][j] = (modulusPSparse / BigInteger(moduliPSparse[j])).Mod(qi).ConvertToInt();
@@ -371,8 +365,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 m_sparseKSAlphaPModq[a][i] = m_sparseKSAlphaPModq[a - 1][i].ModAddFast(m_sparseKSPModq[i], moduliQ[i]);
             // reuse the Barrett constants computed for HYBRID above when available
             m_sparseKSModqBarrettMu[i] = (m_modqBarrettMu.size() > i) ?
-                                             m_modqBarrettMu[i] :
-                                             (BarrettBase128Bit / qi).ConvertToInt<DoubleNativeInt>();
+                                                 m_modqBarrettMu[i] :
+                                                 (BarrettBase128Bit / qi).ConvertToInt<DoubleNativeInt>();
         }
         // [(P'/p'_j)^{-1}]_{p'_j} and 1./p'_j
         m_sparseKSPHatInvModp.resize(sizePSparse);
@@ -380,10 +374,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_sparseKSpInv.resize(sizePSparse);
         for (uint32_t j = 0; j < sizePSparse; ++j) {
             BigInteger pj(moduliPSparse[j]);
-            BigInteger PHatj               = modulusPSparse / pj;
-            m_sparseKSPHatInvModp[j]       = PHatj.ModInverse(pj).ConvertToInt();
+            BigInteger PHatj = modulusPSparse / pj;
+            m_sparseKSPHatInvModp[j] = PHatj.ModInverse(pj).ConvertToInt();
             m_sparseKSPHatInvModpPrecon[j] = m_sparseKSPHatInvModp[j].PrepModMulConst(moduliPSparse[j]);
-            m_sparseKSpInv[j]              = 1.0 / moduliPSparse[j].ConvertToDouble();
+            m_sparseKSpInv[j] = 1.0 / moduliPSparse[j].ConvertToDouble();
         }
 
         // ---- tables for the switch from Ql to P' (extending the ciphertext and the keys) ----
@@ -416,20 +410,19 @@ void CryptoParametersCKKSRNS::ConfigureCompositeDegree(uint32_t scalingModSize) 
         if (registerWordSize <= 64) {
             if (registerWordSize < scalingModSize) {
                 uint32_t compositeDegree =
-                    static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
+                        static_cast<uint32_t>(std::ceil(static_cast<float>(scalingModSize) / registerWordSize));
                 // Assert minimum allowed moduli size on composite scaling mode
                 // @fdiasmor TODO: make it more robust for a range of multiplicative depth
                 if (static_cast<float>(scalingModSize) / compositeDegree < 19) {
                     std::string errMsg = "Moduli size (";
                     errMsg += std::to_string(static_cast<float>(scalingModSize) / compositeDegree);
                     errMsg +=
-                        ") is too short (< 19) for target multiplicative depth. Consider increasing the scaling factor or the register word size.";
+                            ") is too short (< 19) for target multiplicative depth. Consider increasing the scaling factor or the register word size.";
                     OPENFHE_THROW(errMsg);
                 }
                 m_compositeDegree = compositeDegree;
             }  // else composite degree remains set to 1
-        }
-        else {
+        } else {
             OPENFHE_THROW("COMPOSITESCALING scaling technique only supports register word size <= 64.");
         }
     }

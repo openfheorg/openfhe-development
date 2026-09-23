@@ -38,6 +38,11 @@
   3. Math layer operations such as functions in nbtheory
   */
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -46,15 +51,13 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-#include <iostream>
-
 using namespace lbcrypto;
 
 template <typename Element>
 void switch_format_simple_single_crt(const std::string& msg) {
     using ParmType = typename Element::Params;
 
-    uint32_t m1   = 16;
+    uint32_t m1 = 16;
     uint32_t bits = 16;
 
     auto x1p = std::make_shared<ParmType>(m1, bits);
@@ -92,7 +95,7 @@ TEST(UTNTT, switch_format_simple_single_crt) {
 
 template <typename Element>
 void switch_format_simple_double_crt(const std::string& msg) {
-    uint32_t init_m    = 16;
+    uint32_t init_m = 16;
     uint32_t init_size = 2;
     uint32_t init_bits = 28;
 

@@ -29,14 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "gtest/gtest.h"
-#include "utils/exception.h"
+#include <cstdint>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <vector>
+#include "gtest/gtest.h"
+#include "utils/exception.h"
 
 using namespace lbcrypto;
 
@@ -93,7 +96,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_REEN
 const uint32_t PTMOD = 256;
 const uint32_t BATCH = 16;
 const uint32_t SCALE = 60;
-const uint32_t DSIZ  = 20;
+const uint32_t DSIZ = 20;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_REENCRYPT> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech,         EncTech,  PREMode
@@ -120,7 +123,7 @@ static std::vector<TEST_CASE_UTGENERAL_REENCRYPT> testCases = {
 class UTGENERAL_REENCRYPT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_REENCRYPT> {
     using Element = DCRTPoly;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -138,9 +141,9 @@ protected:
 
             auto randchar = []() -> char {
                 const char charset[] =
-                    "0123456789"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    "abcdefghijklmnopqrstuvwxyz";
+                        "0123456789"
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                        "abcdefghijklmnopqrstuvwxyz";
                 const size_t max_index = (sizeof(charset) - 1);
                 return charset[rand() % max_index];
             };
@@ -173,51 +176,49 @@ protected:
             Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
             Plaintext plaintextShortNew;
             Ciphertext<Element> reCiphertext = cc->ReEncrypt(ciphertext, evalKey);
-            DecryptResult result             = cc->Decrypt(newKp.secretKey, reCiphertext, &plaintextShortNew);
+            DecryptResult result = cc->Decrypt(newKp.secretKey, reCiphertext, &plaintextShortNew);
             EXPECT_EQ(plaintextShortNew->GetStringValue(), plaintextShort->GetStringValue())
-                << failmsg << " ReEncrypt short string plaintext with padding";
+                    << failmsg << " ReEncrypt short string plaintext with padding";
 
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintextFull);
             Plaintext plaintextFullNew;
             Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(ciphertext2, evalKey);
-            result                            = cc->Decrypt(newKp.secretKey, reCiphertext2, &plaintextFullNew);
+            result = cc->Decrypt(newKp.secretKey, reCiphertext2, &plaintextFullNew);
             EXPECT_EQ(plaintextFullNew->GetStringValue(), plaintextFull->GetStringValue())
-                << failmsg << " ReEncrypt full string plaintext";
+                    << failmsg << " ReEncrypt full string plaintext";
 
             Ciphertext<Element> ciphertext4 = cc->Encrypt(kp.publicKey, plaintextInt);
             Plaintext plaintextIntNew;
             Ciphertext<Element> reCiphertext4 = cc->ReEncrypt(ciphertext4, evalKey);
-            result                            = cc->Decrypt(newKp.secretKey, reCiphertext4, &plaintextIntNew);
+            result = cc->Decrypt(newKp.secretKey, reCiphertext4, &plaintextIntNew);
             EXPECT_EQ(plaintextIntNew->GetCoefPackedValue(), plaintextInt->GetCoefPackedValue())
-                << failmsg << " ReEncrypt integer plaintext";
+                    << failmsg << " ReEncrypt integer plaintext";
 
             Ciphertext<Element> ciphertext5 = cc->Encrypt(kp.publicKey, plaintextShort);
             Plaintext plaintextShortNew2;
             Ciphertext<Element> reCiphertext5 = cc->ReEncrypt(ciphertext5, evalKey, kp.publicKey);
-            result                            = cc->Decrypt(newKp.secretKey, reCiphertext5, &plaintextShortNew2);
+            result = cc->Decrypt(newKp.secretKey, reCiphertext5, &plaintextShortNew2);
             EXPECT_EQ(plaintextShortNew2->GetStringValue(), plaintextShort->GetStringValue())
-                << failmsg << " HRA-secure ReEncrypt short string plaintext with padding";
+                    << failmsg << " HRA-secure ReEncrypt short string plaintext with padding";
 
             Ciphertext<Element> ciphertext6 = cc->Encrypt(kp.publicKey, plaintextFull);
             Plaintext plaintextFullNew2;
             Ciphertext<Element> reCiphertext6 = cc->ReEncrypt(ciphertext6, evalKey, kp.publicKey);
-            result                            = cc->Decrypt(newKp.secretKey, reCiphertext6, &plaintextFullNew2);
+            result = cc->Decrypt(newKp.secretKey, reCiphertext6, &plaintextFullNew2);
             EXPECT_EQ(plaintextFullNew2->GetStringValue(), plaintextFull->GetStringValue())
-                << failmsg << " HRA-secure ReEncrypt full string plaintext";
+                    << failmsg << " HRA-secure ReEncrypt full string plaintext";
 
             Ciphertext<Element> ciphertext7 = cc->Encrypt(kp.publicKey, plaintextInt);
             Plaintext plaintextIntNew2;
             Ciphertext<Element> reCiphertext7 = cc->ReEncrypt(ciphertext7, evalKey, kp.publicKey);
-            result                            = cc->Decrypt(newKp.secretKey, reCiphertext7, &plaintextIntNew2);
+            result = cc->Decrypt(newKp.secretKey, reCiphertext7, &plaintextIntNew2);
             EXPECT_EQ(plaintextIntNew2->GetCoefPackedValue(), plaintextInt->GetCoefPackedValue())
-                << failmsg << " HRA-secure ReEncrypt integer plaintext";
-        }
-        catch (std::exception& e) {
+                    << failmsg << " HRA-secure ReEncrypt integer plaintext";
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }

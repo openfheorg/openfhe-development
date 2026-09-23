@@ -36,18 +36,19 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
 using namespace lbcrypto;
 
@@ -102,7 +103,7 @@ void BFVrns_EvalMultManyP2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
@@ -135,7 +136,7 @@ void BGVrns_EvalMultManyP2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
@@ -172,7 +173,7 @@ void BFVrns_EvalMultManyP65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
@@ -205,7 +206,7 @@ void BGVrns_EvalMultManyP65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)

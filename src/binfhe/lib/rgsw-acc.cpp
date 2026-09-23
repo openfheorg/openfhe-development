@@ -44,13 +44,14 @@
     note = {\url{https://eprint.iacr.org/2014/816}},
  */
 
-#include "lattice/lat-hal.h"
 #include "rgsw-acc.h"
 
-#include "rgsw-acc-common.h"
-
+#include <cstdint>
 #include <memory>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "rgsw-acc-common.h"
 
 namespace lbcrypto {
 

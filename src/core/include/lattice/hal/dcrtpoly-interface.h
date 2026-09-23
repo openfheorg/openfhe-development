@@ -33,24 +33,24 @@
   Defines an interface that any DCRT Polynomial implmentation must implement in order to work in OpenFHE.
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H
-#define LBCRYPTO_INC_LATTICE_HAL_DCRTPOLYINTERFACE_H
-
-#include "lattice/hal/default/ildcrtparams.h"
-#include "lattice/ilelement.h"
-
-#include "math/math-hal.h"
-#include "math/distrgen.h"
-
-#include "utils/inttypes.h"
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DCRTPOLY_INTERFACE_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DCRTPOLY_INTERFACE_H_
 
 #include <algorithm>
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/ilelement.h"
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -86,16 +86,16 @@ template <typename DerivedType, typename BigVecType, typename LilVecType,
 class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "This function is not implemented for DCRTPoly";
 
-public:
-    using BigIntType    = typename BigVecType::Integer;
-    using Params        = ILDCRTParams<BigIntType>;
-    using LilIntType    = typename LilVecType::Integer;
-    using TowerType     = RNSContainerType<LilVecType>;
+  public:
+    using BigIntType = typename BigVecType::Integer;
+    using Params = ILDCRTParams<BigIntType>;
+    using LilIntType = typename LilVecType::Integer;
+    using TowerType = RNSContainerType<LilVecType>;
     using PolyLargeType = RNSContainerType<BigVecType>;
-    using DggType       = DiscreteGaussianGeneratorImpl<LilVecType>;
-    using DugType       = DiscreteUniformGeneratorImpl<LilVecType>;
-    using TugType       = TernaryUniformGeneratorImpl<LilVecType>;
-    using BugType       = BinaryUniformGeneratorImpl<LilVecType>;
+    using DggType = DiscreteGaussianGeneratorImpl<LilVecType>;
+    using DugType = DiscreteUniformGeneratorImpl<LilVecType>;
+    using TugType = TernaryUniformGeneratorImpl<LilVecType>;
+    using BugType = BinaryUniformGeneratorImpl<LilVecType>;
 
     // measured team widths for the loops over the ring dimension
     static constexpr uint32_t THREADS_SCALE_TO_POLY{8};
@@ -107,9 +107,9 @@ public:
     // team width for ApproxSwitchCRTBasis and the format switches beside it, from the work in its loop
     static uint32_t ApproxSwitchCRTBasisThreads(uint32_t ringDim, uint32_t sizeQ, uint32_t sizeP) {
         const uint64_t threads =
-            static_cast<uint64_t>(ringDim) * sizeQ * sizeP / APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD;
+                static_cast<uint64_t>(ringDim) * sizeQ * sizeP / APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD;
         return static_cast<uint32_t>(
-            std::clamp<uint64_t>(threads, THREADS_APPROX_CRT_BASIS_SWITCH_MIN, THREADS_APPROX_CRT_BASIS_SWITCH));
+                std::clamp<uint64_t>(threads, THREADS_APPROX_CRT_BASIS_SWITCH_MIN, THREADS_APPROX_CRT_BASIS_SWITCH));
     }
 
     /**
@@ -683,7 +683,7 @@ public:
     virtual DerivedType Negate() const = 0;
 
     DerivedType& operator+=(const BigIntType& rhs) override = 0;
-    virtual DerivedType& operator+=(const LilIntType& rhs)  = 0;
+    virtual DerivedType& operator+=(const LilIntType& rhs) = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -692,7 +692,7 @@ public:
    * @return is the result of the subtraction.
    */
     DerivedType& operator-=(const BigIntType& rhs) override = 0;
-    virtual DerivedType& operator-=(const LilIntType& rhs)  = 0;
+    virtual DerivedType& operator-=(const LilIntType& rhs) = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -701,7 +701,7 @@ public:
    * @return is the result of the multiplication.
    */
     DerivedType& operator*=(const BigIntType& rhs) override = 0;
-    virtual DerivedType& operator*=(const LilIntType& rhs)  = 0;
+    virtual DerivedType& operator*=(const LilIntType& rhs) = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -985,12 +985,12 @@ public:
    * @return the representation of {\approx(X/P)}_{Q}
    */
     virtual DerivedType ApproxModDown(
-        const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
-        const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
-        const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
-        const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
-        const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
-        const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const = 0;
+            const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
+            const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
+            const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
+            const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
+            const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
+            const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const = 0;
 
     /**
    * @brief Performs CRT basis switching:
@@ -1291,13 +1291,14 @@ public:
    * @param &mtildeInvModbskPrecon NTL-specific precomputations
    */
     virtual void FastBaseConvqToBskMontgomery(
-        const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
-        const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
-        const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
-        const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
-        const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-        uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
-        const std::vector<NativeInteger>& mtildeInvModbskPrecon) = 0;
+            const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
+            const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
+            const std::vector<NativeInteger>& mtildeQHatInvModq,
+            const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
+            const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
+            uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+            const std::vector<NativeInteger>& mtildeInvModbskPrecon) = 0;
 
     /**
    * @brief Computes scale and floor:
@@ -1323,12 +1324,15 @@ public:
    * @param &tQInvModbsk: [t*Q^{-1}]_{bsk_j}
    * @param &tQInvModbskPrecon: NTL-specific precomputations
    */
-    virtual void FastRNSFloorq(
-        const NativeInteger& t, const std::vector<NativeInteger>& moduliQ, const std::vector<NativeInteger>& moduliBsk,
-        const std::vector<DoubleNativeInt>& modbskBarrettMu, const std::vector<NativeInteger>& tQHatInvModq,
-        const std::vector<NativeInteger>& tQHatInvModqPrecon, const std::vector<std::vector<NativeInteger>>& QHatModbsk,
-        const std::vector<std::vector<NativeInteger>>& qInvModbsk, const std::vector<NativeInteger>& tQInvModbsk,
-        const std::vector<NativeInteger>& tQInvModbskPrecon) = 0;
+    virtual void FastRNSFloorq(const NativeInteger& t, const std::vector<NativeInteger>& moduliQ,
+                               const std::vector<NativeInteger>& moduliBsk,
+                               const std::vector<DoubleNativeInt>& modbskBarrettMu,
+                               const std::vector<NativeInteger>& tQHatInvModq,
+                               const std::vector<NativeInteger>& tQHatInvModqPrecon,
+                               const std::vector<std::vector<NativeInteger>>& QHatModbsk,
+                               const std::vector<std::vector<NativeInteger>>& qInvModbsk,
+                               const std::vector<NativeInteger>& tQInvModbsk,
+                               const std::vector<NativeInteger>& tQInvModbskPrecon) = 0;
 
     /**
    * @brief @brief Converts basis:
@@ -1359,12 +1363,12 @@ public:
    * @param &BModqPrecon NTL precomptations for [B]_{q_i}
    */
     virtual void FastBaseConvSK(
-        const std::shared_ptr<Params>& paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
-        const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
-        const std::vector<NativeInteger>& BHatInvModb, const std::vector<NativeInteger>& BHatInvModbPrecon,
-        const std::vector<NativeInteger>& BHatModmsk, const NativeInteger& BInvModmsk,
-        const NativeInteger& BInvModmskPrecon, const std::vector<std::vector<NativeInteger>>& BHatModq,
-        const std::vector<NativeInteger>& BModq, const std::vector<NativeInteger>& BModqPrecon) = 0;
+            const std::shared_ptr<Params>& paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
+            const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
+            const std::vector<NativeInteger>& BHatInvModb, const std::vector<NativeInteger>& BHatInvModbPrecon,
+            const std::vector<NativeInteger>& BHatModmsk, const NativeInteger& BInvModmsk,
+            const NativeInteger& BInvModmskPrecon, const std::vector<std::vector<NativeInteger>>& BHatModq,
+            const std::vector<NativeInteger>& BModq, const std::vector<NativeInteger>& BModqPrecon) = 0;
 
     /**
    * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
@@ -1428,7 +1432,7 @@ public:
         return this->GetDerived().GetElementName();
     }
 
-protected:
+  protected:
     /**
    * @brief ostream operator
    * @param os the input preceding output stream
@@ -1598,4 +1602,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_LATTICE_HAL_DCRTPOLYINTERFACE_H
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DCRTPOLY_INTERFACE_H_

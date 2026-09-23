@@ -33,6 +33,11 @@
   Simple example for BFVrns (integer arithmetic)
  */
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -68,10 +73,10 @@ int main() {
 
     // First plaintext vector is encoded
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
     // Second plaintext vector is encoded
     std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
     // The encoded vectors are encrypted
     auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
@@ -85,14 +90,14 @@ int main() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12, &plaintextMultResult);
     plaintextMultResult->SetLength(vectorOfInts1.size());
     std::vector<int64_t> decvec = plaintextMultResult->GetPackedValue();
-    Plaintext dRes              = cryptoContext->MakePackedPlaintext(decvec);
+    Plaintext dRes = cryptoContext->MakePackedPlaintext(decvec);
 
     // Decrypt the result of 1 and 2
     Plaintext plaintext1Result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertext1, &plaintext1Result);
     plaintext1Result->SetLength(vectorOfInts1.size());
     std::vector<int64_t> decvec1 = plaintext1Result->GetPackedValue();
-    Plaintext dRes1              = cryptoContext->MakePackedPlaintext(decvec1);
+    Plaintext dRes1 = cryptoContext->MakePackedPlaintext(decvec1);
 
     std::cout << "Plaintext #1: " << plaintext1 << std::endl;
     std::cout << "Plaintext #2: " << plaintext2 << std::endl;
@@ -113,7 +118,7 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
     const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    DCRTPoly s                      = privateKey->GetPrivateElement();
+    DCRTPoly s = privateKey->GetPrivateElement();
 
     size_t sizeQl = cv[0].GetParams()->GetParams().size();
     size_t sizeQs = s.GetParams()->GetParams().size();
@@ -137,10 +142,10 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
         sPower *= scopy;
     }
 
-    const auto encParams                = cryptoParams->GetElementParams();
-    NativeInteger NegQModt              = cryptoParams->GetNegQModt();
-    NativeInteger NegQModtPrecon        = cryptoParams->GetNegQModtPrecon();
-    const NativeInteger t               = cryptoParams->GetPlaintextModulus();
+    const auto encParams = cryptoParams->GetElementParams();
+    NativeInteger NegQModt = cryptoParams->GetNegQModt();
+    NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
+    const NativeInteger t = cryptoParams->GetPlaintextModulus();
     std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
 
     DCRTPoly plain = ptxt->GetElement<DCRTPoly>();
@@ -153,7 +158,7 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
     // Converts back to coefficient representation
     res.SetFormat(Format::COEFFICIENT);
     size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-    noise        = (std::log2(res.Norm()));
+    noise = (std::log2(res.Norm()));
 
     logQ = 0;
     for (uint32_t i = 0; i < sizeQ; i++) {

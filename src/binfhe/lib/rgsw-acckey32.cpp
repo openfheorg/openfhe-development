@@ -31,10 +31,12 @@
 
 #include "rgsw-acckey32.h"
 
-#include "utils/exception.h"
-
+#include <cstdint>
+#include <memory>
 #include <utility>
 #include <vector>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -93,7 +95,7 @@ void RingGSWACCKey32Impl::Init(const std::shared_ptr<RingGSWCryptoParams>& param
     if (!Fits(*params))
         OPENFHE_THROW("parameters do not qualify for the 32-bit internal path");
 
-    m_N          = params->GetN();
+    m_N = params->GetN();
     m_polyParams = params->GetPolyParams32();
     // force the lazy monomial build now: construction is single-threaded, gates may not be
     if (params->GetMethod() == BINFHE_METHOD::GINX)
@@ -102,7 +104,7 @@ void RingGSWACCKey32Impl::Init(const std::shared_ptr<RingGSWCryptoParams>& param
 
 void RingGSWACCKey32Impl::SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const RingGSWEvalKeyImpl& ek) {
     const auto& el = ek.GetElements();
-    auto& dst      = m_key[i][j][k];
+    auto& dst = m_key[i][j][k];
     dst.resize(el.size());
     for (size_t d = 0; d < el.size(); ++d) {
         dst[d].clear();
@@ -114,7 +116,7 @@ void RingGSWACCKey32Impl::SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const R
 
 RingGSWACCKey RingGSWACCKey32Impl::Widen(const std::shared_ptr<RingGSWCryptoParams>& params) const {
     const auto& polyParams = params->GetPolyParams();
-    auto ek                = std::make_shared<RingGSWACCKeyImpl>(m_key.size(), m_key[0].size(), m_key[0][0].size());
+    auto ek = std::make_shared<RingGSWACCKeyImpl>(m_key.size(), m_key[0].size(), m_key[0][0].size());
     for (size_t i = 0; i < m_key.size(); ++i) {
         for (size_t j = 0; j < m_key[i].size(); ++j) {
             for (size_t k = 0; k < m_key[i][j].size(); ++k) {

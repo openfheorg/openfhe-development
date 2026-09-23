@@ -31,8 +31,9 @@
 
 // Built-in diagnostic sink; see diagnostic_output.h for the interface contract.
 
-#include "config_core.h"
 #include "utils/diagnostic_output.h"
+
+#include "config_core.h"
 
 #ifdef WITH_DEFAULT_DIAGNOSTIC_SINK
 
@@ -58,12 +59,12 @@ std::ostream& OpenFHEOutStream() {
 
 std::ostream& SetOpenFHEErrStream(std::ostream& os) {
     std::ostream& previous = *g_errStream;
-    g_errStream            = &os;
+    g_errStream = &os;
     return previous;
 }
 std::ostream& SetOpenFHEOutStream(std::ostream& os) {
     std::ostream& previous = *g_outStream;
-    g_outStream            = &os;
+    g_outStream = &os;
     return previous;
 }
 

@@ -33,21 +33,20 @@
   Represents and defines power-of-2 fields
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_H
-#define LBCRYPTO_INC_LATTICE_FIELD2N_H
-
-#include "lattice/lat-hal.h"
-
-#include "math/matrix.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_
+#define SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_
 
 #include <complex>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
+
+#include "lattice/lat-hal.h"
+#include "math/matrix.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 /**
@@ -55,11 +54,11 @@ namespace lbcrypto {
  * @brief A class to represent field elements with power-of-2 dimension.
  */
 class Field2n : public std::vector<std::complex<double>>, public Serializable {
-private:
+  private:
     // Format of the field element
     Format format{Format::COEFFICIENT};
 
-public:
+  public:
     /**
    * @brief Default Constructor
    */
@@ -370,4 +369,4 @@ inline std::ostream& operator<<(std::ostream& os, const Field2n& m) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_FIELD2N_H_

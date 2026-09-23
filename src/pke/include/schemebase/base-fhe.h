@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BASE_FHE_H
-#define LBCRYPTO_CRYPTO_BASE_FHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "binfhecontext.h"
 #include "ciphertext-fwd.h"
@@ -40,12 +48,6 @@
 #include "key/privatekey-fwd.h"
 #include "scheme/scheme-swch-params.h"
 #include "utils/exception.h"
-
-#include <map>
-#include <memory>
-#include <tuple>
-#include <utility>
-#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -60,11 +62,11 @@ namespace lbcrypto {
 template <class Element>
 class FHEBase {
     // TODO: should we use just one error message instead of a few (see below)
-    constexpr static std::string_view NOT_IMPLEMENTED_ERROR      = "Not implemented for this scheme";
-    constexpr static std::string_view NOT_SUPPORTED_ERROR        = "Not supported for this scheme";
+    constexpr static std::string_view NOT_IMPLEMENTED_ERROR = "Not implemented for this scheme";
+    constexpr static std::string_view NOT_SUPPORTED_ERROR = "Not supported for this scheme";
     constexpr static std::string_view NOT_SUPPORTED_SIMPLE_ERROR = "Not supported";
 
-public:
+  public:
     virtual ~FHEBase() = default;
 
     /**
@@ -115,7 +117,7 @@ public:
    * @return the dictionary of evaluation key indices.
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalBootstrapKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t slots) {
+            const PrivateKey<Element> privateKey, uint32_t slots) {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 
@@ -176,13 +178,13 @@ public:
     }
 
     virtual std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
-        ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
+            ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 
     virtual Ciphertext<Element> EvalFEFuncBootstrapWithPrecomp(
-        const std::shared_ptr<seriesPowers<Element>>& powers,
-        const std::vector<std::complex<double>>& coefficients) const {
+            const std::shared_ptr<seriesPowers<Element>>& powers,
+            const std::vector<std::complex<double>>& coefficients) const {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 
@@ -363,8 +365,8 @@ public:
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0, uint32_t numCtxts = 0,
-        uint32_t dim1 = 0, uint32_t L = 0) {
+            const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0, uint32_t numCtxts = 0,
+            uint32_t dim1 = 0, uint32_t L = 0) {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -421,7 +423,7 @@ public:
    * @param lwesk FHEW secret key
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
+            const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
@@ -545,4 +547,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_BASE_FHE_H_

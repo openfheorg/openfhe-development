@@ -33,16 +33,15 @@
   This code provide a templated matrix implementation
  */
 
-#ifndef LBCRYPTO_INC_MATH_MATRIX_IMP_H
-#define LBCRYPTO_INC_MATH_MATRIX_IMP_H
-
-#include "math/matrix.h"
-
-#include "utils/exception.h"
-#include "utils/parallel.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_IMPL_H_
 
 #include <utility>
 #include <vector>
+
+#include "math/matrix.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -91,8 +90,7 @@ Matrix<Element> Matrix<Element>::Mult(Matrix<Element> const& other) const {
                 result.data[0][col] += data[0][i] * other.data[i][col];
             }
         }
-    }
-    else {
+    } else {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.rows))
         for (size_t row = 0; row < result.rows; ++row) {
             for (size_t i = 0; i < cols; ++i) {
@@ -162,11 +160,9 @@ void Matrix<Element>::Determinant(Element* determinant) const {
 
     if (rows == 1) {
         *determinant = data[0][0];
-    }
-    else if (rows == 2) {
+    } else if (rows == 2) {
         *determinant = data[0][0] * (data[1][1]) - data[1][0] * (data[0][1]);
-    }
-    else {
+    } else {
         size_t j1, j2;
         size_t n = rows;
 
@@ -333,4 +329,4 @@ Matrix<Element> Matrix<Element>::MultByRandomVector(std::vector<int> ranvec) con
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_IMPL_H_

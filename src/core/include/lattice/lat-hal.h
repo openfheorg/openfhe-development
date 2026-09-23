@@ -29,9 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_INC_LATTICE_LAT_HAL_H
-#define LBCRYPTO_INC_LATTICE_LAT_HAL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_LAT_HAL_H_
+#define SRC_CORE_INCLUDE_LATTICE_LAT_HAL_H_
 
 #include "lattice/hal/lat-backend.h"
 
-#endif  // __LAT_HAL_H__
+#endif  // SRC_CORE_INCLUDE_LATTICE_LAT_HAL_H_

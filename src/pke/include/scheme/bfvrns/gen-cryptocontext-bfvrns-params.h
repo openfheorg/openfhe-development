@@ -33,13 +33,14 @@
   Parameter class to generate BFVRNS crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
-#define __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H_
 
-#include "scheme/gen-cryptocontext-params.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "scheme/gen-cryptocontext-params.h"
 
 namespace lbcrypto {
 
@@ -54,12 +55,12 @@ class CCParams;
 //====================================================================================================================
 template <>
 class CCParams<CryptoContextBFVRNS> : public Params {
-public:
+  public:
     CCParams() : Params(BFVRNS_SCHEME) {}
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj)      = default;
-    ~CCParams()                   = default;
+    CCParams(CCParams&& obj) = default;
+    ~CCParams() = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to BFVRNS
@@ -108,4 +109,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_GEN_CRYPTOCONTEXT_BFVRNS_PARAMS_H_

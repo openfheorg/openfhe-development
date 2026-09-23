@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __LWE_PUBLICKEY_FWD_H__
-#define __LWE_PUBLICKEY_FWD_H__
+#ifndef SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_FWD_H_
+#define SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_FWD_H_
 
 #include <memory>
 
@@ -37,9 +37,9 @@ namespace lbcrypto {
 
 class LWEPublicKeyImpl;
 
-using LWEPublicKey      = std::shared_ptr<LWEPublicKeyImpl>;
+using LWEPublicKey = std::shared_ptr<LWEPublicKeyImpl>;
 using ConstLWEPublicKey = const std::shared_ptr<const LWEPublicKeyImpl>;
 
 }  // namespace lbcrypto
 
-#endif  // __LWE_PUBLICKEY_FWD_H__
+#endif  // SRC_BINFHE_INCLUDE_LWE_PUBLICKEY_FWD_H_

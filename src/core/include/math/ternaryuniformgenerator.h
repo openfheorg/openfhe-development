@@ -33,15 +33,16 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
 
-#include "math/distributiongenerator.h"
-#include "math/math-hal.h"
-
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/distributiongenerator.h"
+#include "math/math-hal.h"
 
 namespace lbcrypto {
 
@@ -50,11 +51,11 @@ namespace lbcrypto {
  */
 template <typename VecType>
 class TernaryUniformGeneratorImpl {
-public:
+  public:
     /**
    * @brief Basic constructor for Binary Uniform Generator.
    */
-    TernaryUniformGeneratorImpl()  = default;
+    TernaryUniformGeneratorImpl() = default;
     ~TernaryUniformGeneratorImpl() = default;
 
     typename VecType::Integer GenerateInteger(const typename VecType::Integer&) const {
@@ -81,10 +82,10 @@ public:
    */
     std::vector<int32_t> GenerateIntVector(uint32_t size, uint32_t h = 0) const;
 
-private:
+  private:
     static std::uniform_int_distribution<int32_t> m_distribution;
 };
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_

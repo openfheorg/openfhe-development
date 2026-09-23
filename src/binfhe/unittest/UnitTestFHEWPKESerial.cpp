@@ -29,6 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <sstream>
+#include <string>
+
 #include "binfhecontext-ser.h"
 #include "gtest/gtest.h"
 
@@ -109,7 +112,7 @@ void UnitTestFHEWPKESerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_M
         EXPECT_EQ(*ct1, *ct2) << errMsg << " Ciphertext mismatch";
     }
 
-    auto ctNew    = cc2.Encrypt(pk2, val);
+    auto ctNew = cc2.Encrypt(pk2, val);
     auto ctResult = cc2.EvalBinGate(AND, ct2, ctNew);
     LWEPlaintext result;
     cc2.Decrypt(sk2, ctResult, &result);

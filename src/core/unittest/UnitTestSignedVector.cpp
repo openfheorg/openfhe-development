@@ -36,17 +36,19 @@
   operand that is an exact multiple of the modulus was stored as the modulus itself.
 */
 
+#include <cstdint>
+#include <limits>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/nbtheory.h"
-#include "utils/utilities.h"
 #include "testdefs.h"
-
-#include <cstdint>
-#include <limits>
-#include <string>
-#include <vector>
+#include "utils/utilities.h"
 
 using namespace lbcrypto;
 
@@ -58,7 +60,7 @@ constexpr uint32_t CYCLOTOMIC_ORDER = 8;
 // the range of Signed is dropped rather than truncated into a different value.
 template <typename Signed>
 std::vector<std::vector<Signed>> SignedCases(int64_t modulus) {
-    constexpr int64_t lowest  = static_cast<int64_t>(std::numeric_limits<Signed>::min());
+    constexpr int64_t lowest = static_cast<int64_t>(std::numeric_limits<Signed>::min());
     constexpr int64_t highest = static_cast<int64_t>(std::numeric_limits<Signed>::max());
     const std::vector<std::vector<int64_t>> candidates{{lowest, lowest + 1, highest, -1},
                                                        {-modulus, modulus, -2 * modulus, 2 * modulus},
@@ -88,7 +90,7 @@ int64_t ExpectedResidue(int64_t value, int64_t modulus) {
 // away from the parameters the element was built with.
 template <typename Element, typename Signed>
 void CheckSignedAssignment(Element& poly) {
-    using Integer         = typename Element::Integer;
+    using Integer = typename Element::Integer;
     const int64_t modulus = static_cast<int64_t>(poly.GetModulus().ConvertToInt());
     SCOPED_TRACE("modulus " + std::to_string(modulus));
     for (const auto& values : SignedCases<Signed>(modulus)) {
@@ -136,7 +138,7 @@ void CheckSignedDCRTAssignment(Element& poly) {
             EXPECT_EQ(tower.GetFormat(), Format::COEFFICIENT);
             for (size_t i = 0; i < tower.GetLength(); ++i) {
                 const int64_t expected =
-                    i < values.size() ? ExpectedResidue(static_cast<int64_t>(values[i]), towerModulus) : 0;
+                        i < values.size() ? ExpectedResidue(static_cast<int64_t>(values[i]), towerModulus) : 0;
                 EXPECT_EQ(tower[i], NativeInteger(static_cast<uint64_t>(expected))) << "coefficient " << i;
             }
         }
@@ -176,8 +178,8 @@ void CheckSignedToResidue(uint64_t modulusValue, const std::string& msg) {
     SCOPED_TRACE(msg + ", modulus " + std::to_string(modulusValue));
     const IntType modulus{modulusValue};
     const int64_t signedModulus = static_cast<int64_t>(modulusValue);
-    constexpr int64_t lowest    = std::numeric_limits<int64_t>::min();
-    constexpr int64_t highest   = std::numeric_limits<int64_t>::max();
+    constexpr int64_t lowest = std::numeric_limits<int64_t>::min();
+    constexpr int64_t highest = std::numeric_limits<int64_t>::max();
     // 2^32 + 1 and its negation are wider than a 32-bit destination but reduce to small residues.
     for (int64_t value : {lowest, lowest + 1, highest, int64_t(-4294967297), int64_t(4294967297), -signedModulus,
                           signedModulus, int64_t(-1), int64_t(0), int64_t(1), int64_t(42)}) {

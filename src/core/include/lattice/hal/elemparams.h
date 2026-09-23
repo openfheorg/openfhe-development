@@ -33,19 +33,19 @@
   base class for parameters for a lattice element
  */
 
-#ifndef LBCRYPTO_LATTICE_ELEMPARAMS_H
-#define LBCRYPTO_LATTICE_ELEMPARAMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
 
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
-
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <utility>
+
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
@@ -57,9 +57,9 @@ namespace lbcrypto {
  */
 template <typename IntegerType>
 class ElemParams : public Serializable {
-public:
+  public:
     constexpr ElemParams() = default;
-    virtual ~ElemParams()  = default;
+    virtual ~ElemParams() = default;
 
     ElemParams(uint32_t order, const IntegerType& ctModulus)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
@@ -92,9 +92,9 @@ public:
           m_bigCiphertextModulus(bigCtModulus),
           m_bigRootOfUnity(bigRUnity) {}
 
-    ElemParams(const ElemParams& rhs)                = default;
-    ElemParams(ElemParams&& rhs) noexcept            = default;
-    ElemParams& operator=(const ElemParams& rhs)     = default;
+    ElemParams(const ElemParams& rhs) = default;
+    ElemParams(ElemParams&& rhs) noexcept = default;
+    ElemParams& operator=(const ElemParams& rhs) = default;
     ElemParams& operator=(ElemParams&& rhs) noexcept = default;
 
     /**
@@ -209,7 +209,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     uint32_t m_ringDimension{0};
     uint32_t m_cyclotomicOrder{0};
     IntegerType m_ciphertextModulus{0};
@@ -231,4 +231,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_

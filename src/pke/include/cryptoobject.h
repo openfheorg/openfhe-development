@@ -29,18 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
-#define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
-
-#include "cryptocontext-fwd.h"
-#include "encoding/encodingparams.h"
-#include "schemebase/base-cryptoparameters.h"
-#include "cryptocontextfactory.h"
+#ifndef SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
+#define SRC_PKE_INCLUDE_CRYPTOOBJECT_H_
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "cryptocontext-fwd.h"
+#include "cryptocontextfactory.h"
+#include "encoding/encodingparams.h"
+#include "schemebase/base-cryptoparameters.h"
 
 namespace lbcrypto {
 
@@ -51,12 +52,12 @@ namespace lbcrypto {
  */
 template <typename Element>
 class CryptoObject {
-protected:
+  protected:
     CryptoContext<Element> context;  // crypto context belongs to the tag used to find the evaluation key needed
                                      // for SHE/FHE operations
     std::string keyTag;
 
-public:
+  public:
     CryptoObject() = default;
 
     explicit CryptoObject(const CryptoContext<Element>& cc, const std::string& tag = "") : context(cc), keyTag(tag) {}
@@ -69,13 +70,13 @@ public:
 
     CryptoObject& operator=(const CryptoObject& rhs) {
         context = rhs.context;
-        keyTag  = rhs.keyTag;
+        keyTag = rhs.keyTag;
         return *this;
     }
 
     CryptoObject& operator=(CryptoObject&& rhs) noexcept {
         context = std::move(rhs.context);
-        keyTag  = std::move(rhs.keyTag);
+        keyTag = std::move(rhs.keyTag);
         return *this;
     }
 
@@ -125,4 +126,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CRYPTOOBJECT_H_

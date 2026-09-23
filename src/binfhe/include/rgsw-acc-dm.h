@@ -29,12 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_ACC_DM_H_
-#define _RGSW_ACC_DM_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_ACC_DM_H_
+#define SRC_BINFHE_INCLUDE_RGSW_ACC_DM_H_
+
+#include <cstdint>
+#include <memory>
 
 #include "rgsw-acc.h"
-
-#include <memory>
 
 namespace lbcrypto {
 
@@ -43,7 +44,7 @@ namespace lbcrypto {
  * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
  */
 class RingGSWAccumulatorDM final : public RingGSWAccumulator {
-public:
+  public:
     RingGSWAccumulatorDM() = default;
 
     /**
@@ -76,7 +77,7 @@ public:
     void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
-private:
+  private:
     /**
    * DM Key generation for internal Ring GSW as described in https://eprint.iacr.org/2014/816
    *
@@ -104,4 +105,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACC_DM_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_ACC_DM_H_

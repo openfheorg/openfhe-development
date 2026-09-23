@@ -35,12 +35,14 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
+#include <cstdint>
+#include <memory>
+#include <utility>
+
 #include "lattice/dgsampling-impl.h"
 #include "lattice/lat-hal.h"
 #include "lattice/trapdoor-impl.h"
-
 #include "math/matrix-impl.h"
-
 #include "utils/debug.h"
 
 namespace lbcrypto {
@@ -50,10 +52,10 @@ namespace lbcrypto {
 // "Implementing Token-Based Obfuscation under (Ring) LWE"
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(
-    std::shared_ptr<ParmType> params, double stddev, int64_t base, bool bal) {
-    auto zero_alloc     = DCRTPoly::Allocator(params, Format::EVALUATION);
+        std::shared_ptr<ParmType> params, double stddev, int64_t base, bool bal) {
+    auto zero_alloc = DCRTPoly::Allocator(params, Format::EVALUATION);
     auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, Format::COEFFICIENT, stddev);
-    auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
+    auto uniform_alloc = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
 
     NativeInteger q = params->GetParams()[0]->GetModulus();
 
@@ -62,8 +64,8 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
     size_t k = params->GetParams().size() * digitCount;
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     auto a = uniform_alloc();
@@ -90,10 +92,10 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
 
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(
-    std::shared_ptr<ParmType> params, double stddev, size_t d, int64_t base, bool bal) {
-    auto zero_alloc     = DCRTPoly::Allocator(params, Format::EVALUATION);
+        std::shared_ptr<ParmType> params, double stddev, size_t d, int64_t base, bool bal) {
+    auto zero_alloc = DCRTPoly::Allocator(params, Format::EVALUATION);
     auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, Format::COEFFICIENT, stddev);
-    auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
+    auto uniform_alloc = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
 
     NativeInteger q = params->GetParams()[0]->GetModulus();
 
@@ -102,8 +104,8 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
     size_t k = params->GetParams().size() * digitCount;
 
     if (bal == true) {
-        k++;  // for a balanced digit representation, there is an extra digit
-              // required
+        k++;    // for a balanced digit representation, there is an extra digit
+                // required
     }
 
     Matrix<DCRTPoly> R(zero_alloc, d, d * k, gaussian_alloc);
@@ -148,7 +150,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<ParmType> params = u.GetParams();
-    auto zero_alloc                        = DCRTPoly::Allocator(params, Format::EVALUATION);
+    auto zero_alloc = DCRTPoly::Allocator(params, Format::EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -228,7 +230,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(size_t n, siz
                                                                    const Matrix<DCRTPoly>& U, DggType& dgg,
                                                                    DggType& dggLargeSigma, int64_t base) {
     const std::shared_ptr<ParmType> params = U(0, 0).GetParams();
-    auto zero_alloc                        = DCRTPoly::Allocator(params, Format::EVALUATION);
+    auto zero_alloc = DCRTPoly::Allocator(params, Format::EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -293,7 +295,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(size_t n, siz
 
     for (size_t j = 0; j < d; j++) {  // columns
         for (size_t i = 0; i < d; i++) {
-            zHatPrime(i, j)     = (*pHat)(i, j) + rZhat(i, j);
+            zHatPrime(i, j) = (*pHat)(i, j) + rZhat(i, j);
             zHatPrime(i + d, j) = (*pHat)(i + d, j) + eZhat(i, j);
 
             for (size_t p = 0; p < k; p++) {

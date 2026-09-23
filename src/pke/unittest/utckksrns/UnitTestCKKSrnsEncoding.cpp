@@ -39,23 +39,24 @@
   wrapped into a different plaintext instead of being rejected.
 */
 
-#include "openfhe.h"
-#include "gtest/gtest.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
-
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
+
+#include "gtest/gtest.h"
+#include "openfhe.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 
 using namespace lbcrypto;
 
 #if NATIVEINT == 128
 namespace {
 constexpr uint32_t SCALING_MOD_SIZE = 90;
-constexpr uint32_t SLOTS            = 8;
+constexpr uint32_t SLOTS = 8;
 
 // A constant slot vector encodes into the constant and X^(N/2) coefficients only: FitToNativeVector
 // places the 2 * SLOTS scaled values at a stride of N / (2 * SLOTS), and the inverse transform of a
@@ -92,10 +93,10 @@ Plaintext EncodeConstant(const CryptoContext<DCRTPoly>& cc, bool auxiliary, std:
 NativeInteger ExpectedUnits(double magnitude) {
     if (magnitude == 0.0)
         return NativeInteger(0);
-    int32_t exponent      = 0;
+    int32_t exponent = 0;
     const double mantissa = std::frexp(std::fabs(magnitude), &exponent);
-    const uint64_t units  = static_cast<uint64_t>(std::ldexp(mantissa, 53));
-    const int32_t shift   = exponent - 53 + static_cast<int32_t>(SCALING_MOD_SIZE);
+    const uint64_t units = static_cast<uint64_t>(std::ldexp(mantissa, 53));
+    const int32_t shift = exponent - 53 + static_cast<int32_t>(SCALING_MOD_SIZE);
     if (shift >= 0)
         return NativeInteger(units) << shift;
     return (shift <= -64) ? NativeInteger(0) : NativeInteger(units >> (-shift));
@@ -112,7 +113,7 @@ NativeInteger ExpectedUnits(double magnitude) {
     poly.SetFormat(Format::COEFFICIENT);
     for (const auto& tower : poly.GetAllElements()) {
         const auto& modulus = tower.GetModulus();
-        auto scaled         = units.Mod(modulus);
+        auto scaled = units.Mod(modulus);
         for (uint32_t d = 1; d < depth; ++d)
             scaled = scaled.ModMul(NativeInteger(1) << SCALING_MOD_SIZE, modulus);
         auto signedValue = [&](int sign) {
@@ -160,7 +161,7 @@ void CheckExactEncoding(const CryptoContext<DCRTPoly>& cc, bool auxiliary, doubl
 }
 
 class UTCKKSRNS_ENCODING : public ::testing::TestWithParam<bool> {
-protected:
+  protected:
     void TearDown() override {
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
@@ -209,8 +210,8 @@ TEST_P(UTCKKSRNS_ENCODING, OverflowBoundary) {
     // The limit is Max128BitValue() / 2, which the mantissa reaches one ulp below
     // 2^(126 - SCALING_MOD_SIZE): the largest accepted magnitude and the smallest rejected one are
     // adjacent doubles, so this pins the guard rather than bracketing it by a factor of two.
-    const double firstRejected  = std::ldexp(1.0, 126 - static_cast<int32_t>(SCALING_MOD_SIZE));
-    const double lastAccepted   = std::nextafter(std::nextafter(firstRejected, 0.0), 0.0);
+    const double firstRejected = std::ldexp(1.0, 126 - static_cast<int32_t>(SCALING_MOD_SIZE));
+    const double lastAccepted = std::nextafter(std::nextafter(firstRejected, 0.0), 0.0);
     const double oneUlpRejected = std::nextafter(firstRejected, 0.0);
 
     for (double magnitude : {lastAccepted, std::ldexp(1.0, 20), 1.0}) {

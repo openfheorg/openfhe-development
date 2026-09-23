@@ -27,16 +27,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_MATH_MATRIX_UTILS_H
-#define LBCRYPTO_MATH_MATRIX_UTILS_H
-
-#include "math/math-hal.h"
-
-#include "utils/exception.h"
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_
 
 #include <cstdint>
 #include <limits>
 #include <string>
+
+#include "math/math-hal.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -50,7 +49,7 @@ namespace lbcrypto {
  */
 template <typename IntType>
 class CenteredToInt32ConverterImpl {
-public:
+  public:
     explicit CenteredToInt32ConverterImpl(const IntType& modulus)
         : m_modulus(modulus), m_native(modulus.GetMSB() <= 64) {
         const IntType int32Max(int32MaxValue);
@@ -68,7 +67,7 @@ public:
         }
 
         if (m_native) {
-            m_modulus64     = modulus.template ConvertToInt<uint64_t>();
+            m_modulus64 = modulus.template ConvertToInt<uint64_t>();
             m_maxPositive64 = m_maxPositive.template ConvertToInt<uint64_t>();
         }
     }
@@ -84,19 +83,18 @@ public:
             const uint64_t magnitude{m_modulus64 - v};
             if (magnitude <= int32MinMagnitude)
                 return static_cast<int32_t>(-static_cast<int64_t>(magnitude));
-        }
-        else {
+        } else {
             if (value <= m_maxPositive)
                 return static_cast<int32_t>(value.template ConvertToInt<uint64_t>());
             if (value >= m_minNegative && value < m_modulus)
                 return static_cast<int32_t>(
-                    -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
+                        -static_cast<int64_t>((m_modulus - value).template ConvertToInt<uint64_t>()));
         }
         OPENFHE_THROW("The centered representative of " + value.ToString() + " mod " + m_modulus.ToString() +
                       " cannot be represented as int32_t");
     }
 
-private:
+  private:
     static constexpr uint64_t int32MaxValue{static_cast<uint64_t>(std::numeric_limits<int32_t>::max())};
     static constexpr uint64_t int32MinMagnitude{int32MaxValue + 1};  // abs(INT32_MIN)
 
@@ -112,4 +110,4 @@ using CenteredToInt32Converter = CenteredToInt32ConverterImpl<BigInteger>;
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_MATRIX_UTILS_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIX_UTILS_H_

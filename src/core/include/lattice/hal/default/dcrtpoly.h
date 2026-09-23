@@ -33,43 +33,43 @@
   Represents integer lattice elements with double-CRT
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_DCRTPOLY_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_DCRTPOLY_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_
 
-#include "lattice/hal/default/ildcrtparams.h"
-#include "lattice/hal/default/poly.h"
-#include "lattice/hal/dcrtpoly-interface.h"
-
-#include "math/math-hal.h"
-#include "math/distrgen.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/parallel.h"
-
+#include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "lattice/hal/dcrtpoly-interface.h"
+#include "lattice/hal/default/ildcrtparams.h"
+#include "lattice/hal/default/poly.h"
+#include "math/distrgen.h"
+#include "math/math-hal.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/parallel.h"
+
 namespace lbcrypto {
 
 template <typename VecType>
 class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, NativeVector, PolyImpl> {
-public:
-    using Vector                = VecType;
-    using Integer               = typename VecType::Integer;
-    using Params                = ILDCRTParams<Integer>;
-    using PolyType              = PolyImpl<NativeVector>;
-    using PolyLargeType         = PolyImpl<VecType>;
-    using DCRTPolyType          = DCRTPolyImpl<VecType>;
+  public:
+    using Vector = VecType;
+    using Integer = typename VecType::Integer;
+    using Params = ILDCRTParams<Integer>;
+    using PolyType = PolyImpl<NativeVector>;
+    using PolyLargeType = PolyImpl<VecType>;
+    using DCRTPolyType = DCRTPolyImpl<VecType>;
     using DCRTPolyInterfaceType = DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, NativeVector, PolyImpl>;
-    using Precomputations       = typename DCRTPolyInterfaceType::CRTBasisExtensionPrecomputations;
-    using DggType               = typename DCRTPolyInterfaceType::DggType;
-    using DugType               = typename DCRTPolyInterfaceType::DugType;
-    using TugType               = typename DCRTPolyInterfaceType::TugType;
-    using BugType               = typename DCRTPolyInterfaceType::BugType;
+    using Precomputations = typename DCRTPolyInterfaceType::CRTBasisExtensionPrecomputations;
+    using DggType = typename DCRTPolyInterfaceType::DggType;
+    using DugType = typename DCRTPolyInterfaceType::DugType;
+    using TugType = typename DCRTPolyInterfaceType::TugType;
+    using BugType = typename DCRTPolyInterfaceType::BugType;
 
     using DCRTPolyInterfaceType::ApproxSwitchCRTBasisThreads;
     using DCRTPolyInterfaceType::THREADS_CRT_BASIS_SWITCH;
@@ -79,8 +79,8 @@ public:
 
     DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}
     DCRTPolyType& operator=(const DCRTPolyType& rhs) noexcept override {
-        m_params  = rhs.m_params;
-        m_format  = rhs.m_format;
+        m_params = rhs.m_params;
+        m_format = rhs.m_format;
         m_vectors = rhs.m_vectors;
         return *this;
     }
@@ -94,8 +94,8 @@ public:
     DCRTPolyImpl(DCRTPolyType&& e) noexcept
         : m_params{std::move(e.m_params)}, m_format{e.m_format}, m_vectors{std::move(e.m_vectors)} {}
     DCRTPolyType& operator=(DCRTPolyType&& rhs) noexcept override {
-        m_params  = std::move(rhs.m_params);
-        m_format  = std::move(rhs.m_format);
+        m_params = std::move(rhs.m_params);
+        m_format = std::move(rhs.m_format);
         m_vectors = std::move(rhs.m_vectors);
         return *this;
     }
@@ -315,12 +315,12 @@ public:
                      const std::vector<DoubleNativeInt>& modpBarrettMu) override;
 
     DCRTPolyType ApproxModDown(
-        const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
-        const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
-        const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
-        const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
-        const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
-        const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
+            const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
+            const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
+            const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
+            const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
+            const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
+            const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
 
     DCRTPolyType SwitchCRTBasis(const std::shared_ptr<Params>& paramsP, const std::vector<NativeInteger>& QHatInvModq,
                                 const std::vector<NativeInteger>& QHatInvModqPrecon,
@@ -376,13 +376,14 @@ public:
                              const std::vector<NativeInteger>& pInvModq) override;
 
     void FastBaseConvqToBskMontgomery(
-        const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
-        const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
-        const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
-        const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
-        const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-        uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
-        const std::vector<NativeInteger>& mtildeInvModbskPrecon) override;
+            const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
+            const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
+            const std::vector<NativeInteger>& mtildeQHatInvModq,
+            const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
+            const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
+            const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
+            uint64_t negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+            const std::vector<NativeInteger>& mtildeInvModbskPrecon) override;
 
     void FastRNSFloorq(const NativeInteger& t, const std::vector<NativeInteger>& moduliQ,
                        const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
@@ -465,7 +466,7 @@ public:
         m_vectors[index] = std::move(element);
     }
 
-protected:
+  protected:
     std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>()};
     Format m_format{Format::EVALUATION};
     std::vector<PolyType> m_vectors;
@@ -473,4 +474,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_DCRTPOLY_H_

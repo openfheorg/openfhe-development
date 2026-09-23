@@ -29,8 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CRYPTOPARAMETERS_H_
-#define _LWE_CRYPTOPARAMETERS_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+#define SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "math/discretegaussiangenerator.h"
@@ -38,17 +43,13 @@
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 /**
  * @brief Class that stores all parameters for the LWE scheme
  */
 class LWECryptoParams : public Serializable {
-public:
+  public:
     LWECryptoParams() = default;
 
     /**
@@ -97,12 +98,12 @@ public:
     }
 
     LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        m_q       = rhs.m_q;
-        m_Q       = rhs.m_Q;
-        m_qKS     = rhs.m_qKS;
-        m_n       = rhs.m_n;
-        m_N       = rhs.m_N;
-        m_baseKS  = rhs.m_baseKS;
+        m_q = rhs.m_q;
+        m_Q = rhs.m_Q;
+        m_qKS = rhs.m_qKS;
+        m_n = rhs.m_n;
+        m_N = rhs.m_N;
+        m_baseKS = rhs.m_baseKS;
         m_keyDist = rhs.m_keyDist;
         m_dgg.SetStd(rhs.m_dgg.GetStd());
         m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
@@ -214,7 +215,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // modulus for the additive LWE scheme
     NativeInteger m_q;
     // modulus for the RingGSW/RingLWE scheme
@@ -237,4 +238,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CRYPTOPARAMETERS_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_

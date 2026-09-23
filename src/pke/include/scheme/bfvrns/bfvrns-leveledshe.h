@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_LEVELEDSHE_H
-#define LBCRYPTO_CRYPTO_BFVRNS_LEVELEDSHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_LEVELEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_LEVELEDSHE_H_
 
-#include "schemerns/rns-leveledshe.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-leveledshe.h"
 
 /**
  * @namespace lbcrypto
@@ -46,7 +47,7 @@
 namespace lbcrypto {
 
 class LeveledSHEBFVRNS : public LeveledSHERNS {
-public:
+  public:
     virtual ~LeveledSHEBFVRNS() = default;
 
     using LeveledSHERNS::EvalAddInPlace;
@@ -138,7 +139,7 @@ public:
                                           const std::shared_ptr<std::vector<DCRTPoly>> digits) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EvalFastRotationPrecompute(
-        ConstCiphertext<DCRTPoly>& ciphertext) const override;
+            ConstCiphertext<DCRTPoly>& ciphertext) const override;
 
     uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
 
@@ -163,9 +164,9 @@ public:
         return "LeveledSHEBFVRNS";
     }
 
-private:
+  private:
     void RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const;
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_LEVELEDSHE_H_
