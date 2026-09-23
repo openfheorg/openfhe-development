@@ -118,6 +118,9 @@ exhale_args = {
         PREDEFINED += NAMESPACE_BEGIN(arbitrary)="namespace arbitrary {"
         PREDEFINED += NAMESPACE_END(arbitrary)="}"
         PREDEFINED += WITH_NTL
+        # Expand the packed-struct macro of the bundled BLAKE2 code to its body: with the attribute
+        # left in place Doxygen emits the struct members without a source location, which Breathe rejects.
+        PREDEFINED += BLAKE2_PACKED(x)=x
         EXTRACT_ANON_NSPACES = NO
         EXTRACT_LOCAL_CLASSES = NO
         EXTRACT_LOCAL_METHODS = NO
