@@ -87,9 +87,7 @@ template <typename VecType>
 class DiscreteGaussianGeneratorImpl {
   public:
     /**
-   * @brief         Basic constructor for specifying distribution parameter and
-   * modulus.
-   * @param modulus The modulus to use to generate discrete values.
+   * @brief         Basic constructor for specifying the distribution parameter.
    * @param std     The standard deviation for this Gaussian Distribution.
    */
     explicit DiscreteGaussianGeneratorImpl(double std = 1.0);
@@ -130,20 +128,24 @@ class DiscreteGaussianGeneratorImpl {
 
     /**
    * @brief      Returns a generated integer vector. Uses Peikert's inversion method
+   * if enabled at initialization, and Karney's method otherwise.
    * @param size The number of values to return.
    * @return     vector of integer values generated with the distribution
    */
     std::vector<int64_t> GenerateIntVector(uint32_t size) const;
 
     /**
-   * @brief  Returns a generated integer. Uses Peikert's inversion method.
+   * @brief  Returns a generated integer. Uses Peikert's inversion method
+   * if enabled at initialization, and Karney's method otherwise.
+   * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
    * @return A random value within this Discrete Gaussian Distribution.
    */
     typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const;
 
     /**
    * @brief           Generates a vector of random values within this Discrete
-   * Gaussian Distribution. Uses Peikert's inversion method.
+   * Gaussian Distribution. Uses Peikert's inversion method if enabled at
+   * initialization, and Karney's method otherwise.
    *
    * @param  size     The number of values to return.
    * @param  modulus  modulus of the polynomial ring.
@@ -157,7 +159,7 @@ class DiscreteGaussianGeneratorImpl {
    * @param mean center of discrete Gaussian distribution.
    * @param stddev standard deviatin of discrete Gaussian distribution.
    * @param n is ring dimension
-   * param modulus modulus
+   * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
    * @return A random value within this Discrete Gaussian Distribution.
    */
     typename VecType::Integer GenerateInteger(double mean, double stddev, size_t n,

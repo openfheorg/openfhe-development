@@ -45,7 +45,6 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract interface class for LBC PRE algorithms
- * @tparam Element a ring element.
  */
 class PRERNS : public PREBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;

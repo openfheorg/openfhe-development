@@ -56,8 +56,7 @@ using RLWECiphertext = std::shared_ptr<RLWECiphertextImpl>;
 using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
 
 /**
- * @brief Class that stores a RingGSW ciphertext; a two-dimensional vector of
- * ring elements
+ * @brief Class that stores an RLWE ciphertext; a vector of ring elements
  */
 class RLWECiphertextImpl : public Serializable {
   public:

@@ -111,8 +111,8 @@ class CoefPackedEncoding : public PlaintextImpl {
     ~CoefPackedEncoding() override = default;
 
     /**
-   * GetCoeffsValue
-   * @return the un-encoded scalar
+   * GetCoefPackedValue
+   * @return the un-encoded integer vector
    */
     const std::vector<int64_t>& GetCoefPackedValue() const override {
         return value;
@@ -149,7 +149,7 @@ class CoefPackedEncoding : public PlaintextImpl {
 
     /**
    * SetLength of the plaintext to the given size
-   * @param siz
+   * @param siz the new number of elements
    */
     void SetLength(size_t siz) override {
         value.resize(siz);

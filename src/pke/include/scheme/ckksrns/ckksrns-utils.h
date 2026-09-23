@@ -86,6 +86,7 @@ inline double ToReal(std::complex<double> val) {
  * @brief Gets the degree of a polynomial specified by its coefficients, which is the index of
  * the last non-zero element in the coefficients. If all the coefficients are zero, it returns 0.
  * @param coefficients vector of coefficients of a polynomial (can not be empty)
+ * @param delta tolerance below which a coefficient is treated as zero (0 = exact comparison).
  * @return the integer degree of the polynomial.
  */
 template <typename VecDType>
@@ -103,8 +104,8 @@ uint32_t Degree(const std::vector<VecDType>& coefficients, double delta = 0.0) {
 /**
  * Computes the quotient and remainder of the long division of two polynomials in the power series basis.
  *
- * @param &f the vector of coefficients of the dividend.
- * @param &g the vector of coefficients of the divisor.
+ * @param f the vector of coefficients of the dividend.
+ * @param g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
 template <typename VecDType>
@@ -113,8 +114,8 @@ std::shared_ptr<longDiv<VecDType>> LongDivisionPoly(const std::vector<VecDType>&
 /**
  * Computes the quotient and remainder of the long division of two polynomials in the Chebyshev series basis
  *
- * @param &f the vector of coefficients of the dividend.
- * @param &g the vector of coefficients of the divisor.
+ * @param f the vector of coefficients of the dividend.
+ * @param g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
 template <typename VecDType>
@@ -123,7 +124,7 @@ std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(const std::vector<VecDT
 
 /**
  * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
- * such that k(2^m - 1} > n and k close to sqrt(n/2).
+ * such that k(2^m - 1) > n and k close to sqrt(n/2).
  *
  * @param n the degree of a polynomial.
  * @return a vector containing k and m.
@@ -150,8 +151,8 @@ uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<VecDType>& vec, b
 /**
  * Extracts shifted diagonal of matrix A.
  *
- * @param &A square linear map.
- * @param index the index by which the diagonal shifted.
+ * @param A square linear map.
+ * @param i the index by which the diagonal is shifted.
  *
  * @return the vector corresponding to the shifted diagonal
  */
@@ -161,7 +162,7 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::
 /**
  * Rotates a vector by an index - left rotation
  *
- * @param &a square linear map.
+ * @param a input vector.
  * @param index rotation index.
  *
  * @return the rotated vector
@@ -170,9 +171,9 @@ template <typename VecDType>
 std::vector<VecDType> Rotate(const std::vector<VecDType>& a, int32_t index);
 
 /**
- * Rotates a vector by an index - left rotation
+ * Rotates each half of a vector separately by an index - left rotation
  *
- * @param &a vector map.
+ * @param a input vector.
  * @param index rotation index.
  *
  * @return the rotated vector, mimicking the BFV subring rotations
@@ -183,7 +184,7 @@ std::vector<VecDType> RotateTwoHalves(const std::vector<VecDType>& a, int32_t in
 /**
  * Clones the current vector up to the size indicated by the 'slots' variable
  *
- * @param &a square linear map.
+ * @param a input vector.
  * @param slots the new size of the vector.
  *
  * @return the vector with cloned values
@@ -292,7 +293,7 @@ uint32_t getRatioBSGSLT(uint32_t slots);
  * linear transform in scheme switching (needs to be ran once to each LT).
  * @param dim1 baby-step dimension
  * @param m cyclotomic order
- * @param blockdimension dimension related to the linear transform computation matrix
+ * @param blockDimension dimension related to the linear transform computation matrix
  * @return vector of rotation indices necessary
 */
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension);
@@ -301,7 +302,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
  * Assembles a list of rotation indices necessary to perform all the
  * linear transforms in argmin.
  * @param m cyclotomic order
- * @param blockdimension dimension related to the linear transform computation matrix
+ * @param blockDimension dimension related to the linear transform computation matrix
  * @param cols dimension of columns of the linear transform
  * @return vector of rotation indices necessary
 */

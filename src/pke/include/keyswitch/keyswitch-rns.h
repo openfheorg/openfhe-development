@@ -48,7 +48,6 @@ namespace lbcrypto {
 
 /**
  * @brief A child of KeySwitchBase for use with RNS keyswitching
- * @tparam Element a ring element.
  */
 class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
   public:

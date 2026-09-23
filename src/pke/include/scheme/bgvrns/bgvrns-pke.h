@@ -55,9 +55,9 @@ class PKEBGVRNS : public PKERNS {
     /**
    * Method for decrypting plaintext using LBC
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
@@ -66,9 +66,9 @@ class PKEBGVRNS : public PKERNS {
     /**
    * Method for decrypting plaintext using LBC
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,

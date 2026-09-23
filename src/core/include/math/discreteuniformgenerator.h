@@ -60,19 +60,22 @@ class DiscreteUniformGeneratorImpl {
     explicit DiscreteUniformGeneratorImpl(const typename VecType::Integer& modulus);
 
     /**
-   * @brief         Sets the modulus. Overrides parent function
+   * @brief         Sets the modulus.
    * @param modulus The new modulus.
    */
     void SetModulus(const typename VecType::Integer& modulus);
 
     /**
    * @brief Generates a random integer based on the modulus set for the Discrete
-   * Uniform Generator object. Required by DistributionGenerator.
+   * Uniform Generator object.
+   * @return A random integer uniformly distributed in [0, modulus).
    */
     typename VecType::Integer GenerateInteger() const;
 
     /**
    * @brief Generates a vector of random integers using GenerateInteger()
+   * @param size The number of values to generate.
+   * @return A vector of random integers uniformly distributed in [0, modulus).
    */
     VecType GenerateVector(const uint32_t size) const;
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus);

@@ -93,8 +93,8 @@ class SchemeBase {
     }
 
     /**
-   * Enable features with a bit mast of PKESchemeFeature codes
-   * @param mask
+   * Enable features with a bit mask of PKESchemeFeature codes
+   * @param mask bitwise OR of PKESchemeFeature codes to enable
    */
     void Enable(uint32_t mask) {
         if (mask & PKE)
@@ -692,8 +692,9 @@ class SchemeBase {
    *
    * @param ciphertext input ciphertext
    * @param index the rotation index.
-   * @param precomp the precomputed digits for the ciphertext
-   * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
+   * @param digits the precomputed digits for the ciphertext
+   * @param addFirst if true, the first element c0 is also computed (otherwise ignored)
+   * @param evalKeys the map of automorphism keys
    * @return resulting ciphertext
    */
     virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
@@ -1489,7 +1490,7 @@ class SchemeBase {
     //=================================================================================================================
     /**
     * @brief VerifyAdvancedSHEEnabled is to check if Enable(ADVANCEDSHE) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyAdvancedSHEEnabled(const std::string& functionName) const {
@@ -1501,7 +1502,7 @@ class SchemeBase {
     }
     /**
     * @brief VerifyMultipartyEnabled is to check if Enable(MULTIPARTY) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyMultipartyEnabled(const std::string& functionName) const {
@@ -1513,7 +1514,7 @@ class SchemeBase {
     }
     /**
     * @brief VerifyLeveledSHEEnabled is to check if Enable(LEVELEDSHE) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyLeveledSHEEnabled(const std::string& functionName) const {
@@ -1525,7 +1526,7 @@ class SchemeBase {
     }
     /**
     * @brief VerifyPKEEnabled is to check if Enable(PKE) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyPKEEnabled(const std::string& functionName) const {
@@ -1537,7 +1538,7 @@ class SchemeBase {
     }
     /**
     * @brief VerifyPREEnabled is to check if Enable(PRE) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyPREEnabled(const std::string& functionName) const {
@@ -1549,7 +1550,7 @@ class SchemeBase {
     }
     /**
     * @brief VerifyKeySwitchEnabled is to check if Enable(KEYSWITCH) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyKeySwitchEnabled(const std::string& functionName) const {
@@ -1561,7 +1562,7 @@ class SchemeBase {
     }
     /**
     * @brief VerifyFHEEnabled is to check if Enable(FHE) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifyFHEEnabled(const std::string& functionName) const {
@@ -1574,7 +1575,7 @@ class SchemeBase {
 
     /**
     * @brief VerifySchemeSwitchEnabled is to check if Enable(SCHEMESWITCH) has been called and if it has not
-    *        it will thow an exception
+    *        it will throw an exception
     * @param functionName is the calling function name. __func__ can be used instead
     */
     inline void VerifySchemeSwitchEnabled(const std::string& functionName) const {

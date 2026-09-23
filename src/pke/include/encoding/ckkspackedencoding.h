@@ -55,10 +55,9 @@ namespace lbcrypto {
 
 /**
  * @class CKKSPackedEncoding
- * @brief Type used for representing IntArray types.
- * Provides conversion functions to encode and decode plaintext data as type
- * vector<uint64_t>. This class uses bit packing techniques to enable efficient
- * computing on vectors of integers. It is NOT supported for DCRTPoly
+ * @brief Type used for representing CKKS packed plaintexts.
+ * Provides conversion functions to encode and decode vectors of complex (or real)
+ * numbers into the plaintext slots using the CKKS canonical embedding.
  */
 
 class CKKSPackedEncoding : public PlaintextImpl {
@@ -109,6 +108,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @brief Constructs a container with a copy of each of the elements in v,
    * in the same order.
    * @param v - The input object to copy.
+   * @param s - The number of slots (0 selects the default slot count for the size of v).
    */
     explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& v, uint32_t s)
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
@@ -163,7 +163,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    *
    * @param a is the first number in CRT representation.
    * @param b is the second number in CRT representation.
-   * @param m
+   * @param m is the vector of CRT moduli.
    * @return the product of the two numbers in CRT representation.
    */
     static std::vector<DCRTPoly::Integer> CRTMult(const std::vector<DCRTPoly::Integer>& a,
@@ -219,7 +219,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Get method to return the length of plaintext
    *
-   * @return the length of the plaintext in terms of the number of bits.
+   * @return the length of the plaintext in terms of the number of elements.
    */
     size_t GetLength() const override {
         return value.size();
@@ -244,7 +244,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
     /**
    * SetLength of the plaintext to the given size
-   * @param siz
+   * @param siz the new number of elements
    */
     void SetLength(size_t siz) override {
         value.resize(siz);
@@ -324,9 +324,9 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     void FitToNativeVector(const std::vector<int64_t>& vec, int64_t bigBound, NativeVector* nativeVec) const;
 
@@ -334,9 +334,9 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     void FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound, NativeVector* nativeVec) const;
 #endif

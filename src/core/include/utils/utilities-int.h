@@ -55,9 +55,9 @@ inline DoubleNativeInt Mul128(uint64_t a, uint64_t b) {
  * Alfred; Oorschot, Paul; Vanstone, Scott. Handbook of Applied Cryptography,
  * Section 14.3.3.
  * @param a: operand (128-bit)
- * @param m: modulus (64-bit)
+ * @param modulus: modulus (64-bit)
  * @param mu: 2^128/modulus (128-bit)
- * @return result: 64-bit result = a mod m
+ * @return result: 64-bit result = a mod modulus
  */
 inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt& a, uint64_t modulus, const DoubleNativeInt& mu) {
     // (a * mu)/2^128 // we need the upper 128-bit of (256-bit product)

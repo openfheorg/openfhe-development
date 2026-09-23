@@ -71,8 +71,8 @@ class AdvancedSHEBase {
     /**
    * Virtual function for evaluating addition of a list of ciphertexts.
    *
-   * @param ciphertextVec
-   * @return
+   * @param ciphertextVec is the ciphertext list.
+   * @return the new resulting ciphertext.
    */
     virtual Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
@@ -80,8 +80,8 @@ class AdvancedSHEBase {
    * Virtual function for evaluating addition of a list of ciphertexts.
    * This version uses no additional space, other than the vector provided.
    *
-   * @param ciphertextVec  is the ciphertext list.
-   * @param *newCiphertext the new resulting ciphertext.
+   * @param ciphertextVec  is the ciphertext list (modified in place to store intermediate results).
+   * @return the new resulting ciphertext.
    */
     virtual Ciphertext<Element> EvalAddManyInPlace(std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
@@ -89,10 +89,10 @@ class AdvancedSHEBase {
    * Virtual function for evaluating multiplication of a ciphertext list which
    * each multiplication is followed by relinearization operation.
    *
-   * @param cipherTextList  is the ciphertext list.
-   * @param evalKeys is the evaluation key to make the newCiphertext
+   * @param ciphertextVec  is the ciphertext list.
+   * @param evalKeyVec are the evaluation keys to make the new ciphertext
    *  decryptable by the same secret key as that of ciphertext list.
-   * @param *newCiphertext the new resulting ciphertext.
+   * @return the new resulting ciphertext.
    */
     virtual Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                              const std::vector<EvalKey<Element>>& evalKeyVec) const;
@@ -105,8 +105,8 @@ class AdvancedSHEBase {
    * Virtual function for computing the linear weighted sum of a
    * vector of ciphertexts.
    *
-   * @param ciphertexts vector of input ciphertexts.
-   * @param constants vector containing double weights.
+   * @param ciphertextVec vector of input ciphertexts.
+   * @param weights vector containing the weights.
    * @return A ciphertext containing the linear weighted sum.
    */
     virtual Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
@@ -127,8 +127,8 @@ class AdvancedSHEBase {
    * vector of ciphertexts. This is a mutable method,
    * meaning that the level/depth of input ciphertexts may change.
    *
-   * @param ciphertexts vector of input ciphertexts.
-   * @param constants vector containing double weights.
+   * @param ciphertextVec vector of input ciphertexts.
+   * @param weights vector containing the weights.
    * @return A ciphertext containing the linear weighted sum.
    */
     virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
@@ -149,14 +149,14 @@ class AdvancedSHEBase {
     //------------------------------------------------------------------------------
 
     /**
-   * Method for computing the powers for polynomials represented in the power
-   * series. This uses a binary tree computation of
-   * the polynomial powers.
+   * Method for computing the powers of a ciphertext to be used when evaluating a polynomial
+   * represented in the power series. Uses a binary tree computation of the powers for low
+   * polynomial degrees (degree < 5), or the Paterson-Stockmeyer power basis for higher degrees.
    *
-   * @param &cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * @param ciphertext input ciphertext
+   * @param coefficients is the vector of coefficients in the polynomial; the
    * size of the vector is the degree of the polynomial + 1
-   * @return the result of polynomial evaluation.
+   * @return the resulting data structure of powers.
    */
     virtual std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
                                                               const std::vector<int64_t>& coefficients) const {
@@ -172,13 +172,13 @@ class AdvancedSHEBase {
     }
 
     /**
-   * Method for computing the powers of a ciphertext to be used when evaluating a polynomial.
-   * Uses EvalPowersLinear() for low polynomial degrees (degree < 5), or EvalPowersPS() for higher degrees.
+   * Method for polynomial evaluation for polynomials represented in the power series.
+   * Uses EvalPolyLinear() for low polynomial degrees (degree < 5), or EvalPolyPS() for higher degrees.
    *
-   * @param &cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * @param ciphertext input ciphertext
+   * @param coefficients is the vector of coefficients in the polynomial; the
    * size of the vector is the degree of the polynomial + 1
-   * @return the resulting data structure of powers.
+   * @return the result of polynomial evaluation.
    */
     virtual Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
                                          const std::vector<int64_t>& coefficients) const {
@@ -211,8 +211,8 @@ class AdvancedSHEBase {
    * series. This uses a binary tree computation of
    * the polynomial powers.
    *
-   * @param &cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * @param ciphertext input ciphertext
+   * @param coefficients is the vector of coefficients in the polynomial; the
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
@@ -231,10 +231,10 @@ class AdvancedSHEBase {
 
     /**
    * Method for polynomial evaluation for polynomials represented in the power
-   * series. This uses the Paterson-Stockmeyer algorith,.
+   * series. This uses the Paterson-Stockmeyer algorithm.
    *
-   * @param &cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * @param x input ciphertext
+   * @param coefficients is the vector of coefficients in the polynomial; the
    * size of the vector is the degree of the polynomial + 1
    * @return the result of polynomial evaluation.
    */
@@ -256,14 +256,15 @@ class AdvancedSHEBase {
 
     /**
    * Method for computing the Chebyshev polynomials to be used in polynomial interpolation via the Chebyshev series.
-   * This uses a binary tree computation of the Chebyshev polynomials.
+   * Uses a binary tree computation of the Chebyshev polynomials for low degrees (degree < 5),
+   * or the Paterson-Stockmeyer Chebyshev basis for higher degrees.
    *
-   * @param &cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * @param ciphertext input ciphertext
+   * @param coefficients is the vector of coefficients in the Chebyshev series; the
    * size of the vector is the degree of the polynomial + 1
    * @param a - lower bound of argument for which the coefficients were found
    * @param b - upper bound of argument for which the coefficients were found
-   * @return the result of polynomial evaluation.
+   * @return the resulting data structure of Chebyshev polynomials.
    */
     virtual std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
                                                                   const std::vector<int64_t>& coefficients, double a,
@@ -287,8 +288,8 @@ class AdvancedSHEBase {
    * (x-a)/(b-a) If the degree of the polynomial is less than 5, use
    * EvalChebyshevSeriesLinear, otherwise, use EvalChebyshevSeriesPS.
    *
-   * @param &cipherText input ciphertext
-   * @param &coefficients is the vector of coefficients in Chebyshev expansion
+   * @param ciphertext input ciphertext
+   * @param coefficients is the vector of coefficients in Chebyshev expansion
    * @param a - lower bound of argument for which the coefficients were found
    * @param b - upper bound of argument for which the coefficients were found
    * @return the result of polynomial evaluation.
@@ -372,9 +373,10 @@ class AdvancedSHEBase {
    * only for packed encoding
    *
    * @param privateKey private key.
-   * @param publicKey public key.
    * @param rowSize size of rows in the matrix
    * @param subringDim subring dimension (set to cyclotomic order if set to 0)
+   * @param indices automorphism indices to generate keys for; the indices needed for
+   * EvalSumRows are appended to it
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
@@ -386,17 +388,18 @@ class AdvancedSHEBase {
    * only for packed encoding
    *
    * @param privateKey private key.
-   * @param publicKey public key.
+   * @param indices automorphism indices to generate keys for; the indices needed for
+   * EvalSumCols and EvalSum are appended to it
    * @return returns the evaluation keys
    */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
             const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
 
     /**
-    * @brief Sums all elements in log (batch size) time - works only with packedvencoding
+    * @brief Sums all elements in log (batch size) time - works only with packed encoding
     * @param ciphertext the input ciphertext.
     * @param batchSize size of the batch to be summed up
-    * @param evalKeys - reference to the map of evaluation keys generated by EvalAutomorphismKeyGen.
+    * @param evalSumKeyMap - reference to the map of evaluation keys generated by EvalSumKeyGen.
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
@@ -406,7 +409,7 @@ class AdvancedSHEBase {
     * @brief Sums all elements over row-vectors in a matrix - works only with packed encoding.
     * @param ciphertext the input ciphertext.
     * @param numRows number of rows in the matrix
-    * @param evalSumKeys - reference to the map of evaluation keys generated by EvalAutomorphismKeyGen.
+    * @param evalSumKeys - reference to the map of evaluation keys generated by EvalSumRowsKeyGen.
     * @param subringDim the current cyclotomic order/subring dimension. If set to 0, we use the full cyclotomic order.
     * @return resulting ciphertext
     */
@@ -418,9 +421,9 @@ class AdvancedSHEBase {
     * @brief Sums all elements over column-vectors in a matrix - works only with packed encoding. The code is
     *        implemented according to the specifications in https://eprint.iacr.org/2018/662.pdf
     * @param ciphertext the input ciphertext.
-    * @param numCols number of columns in the matrixs
-    * @param evalSumKeys - reference to the map of evaluation keys generated by EvalAutomorphismKeyGen.
-    * @param rightEvalKeys - reference to the map of
+    * @param numCols number of columns in the matrix
+    * @param evalSumKeys - reference to the map of evaluation keys generated by EvalSumKeyGen.
+    * @param rightEvalKeys - reference to the map of evaluation keys generated by EvalSumColsKeyGen.
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalSumCols(ConstCiphertext<Element> ciphertext, uint32_t numCols,
@@ -436,7 +439,7 @@ class AdvancedSHEBase {
     * @param ciphertext1 first vector.
     * @param ciphertext2 second vector.
     * @param batchSize size of the batch to be summed up
-    * @param evalSumKeys - reference to the map of evaluation keys generated by EvalAutomorphismKeyGen.
+    * @param evalKeyMap - reference to the map of evaluation keys generated by EvalSumKeyGen.
     * @param evalMultKey - reference to the evaluation key generated by EvalMultKeyGen.
     * @return resulting ciphertext
     */
@@ -450,7 +453,7 @@ class AdvancedSHEBase {
     * @param ciphertext first vector.
     * @param plaintext plaintext.
     * @param batchSize size of the batch to be summed up
-    * @param evalSumKeys - reference to the map of evaluation keys generated by EvalAutomorphismKeyGen.
+    * @param evalKeyMap - reference to the map of evaluation keys generated by EvalSumKeyGen.
     * @return resulting ciphertext
     */
     virtual Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext,
@@ -461,7 +464,7 @@ class AdvancedSHEBase {
    * Function to add random noise to all plaintext slots except for the first
    * one; used in EvalInnerProduct
    *
-   * @param &ciphertext the input ciphertext.
+   * @param ciphertext the input ciphertext.
    * @return modified ciphertext
    */
     virtual Ciphertext<Element> AddRandomNoise(ConstCiphertext<Element> ciphertext) const;
@@ -472,7 +475,7 @@ class AdvancedSHEBase {
    * ciphertexts in the vector
    *
    * @param ciphertextVector vector of ciphertexts to be merged.
-   * @param &evalKeys - reference to the map of evaluation keys generated by
+   * @param evalKeyMap - reference to the map of evaluation keys generated by
    * EvalAutomorphismKeyGen.
    * @return resulting ciphertext
    */

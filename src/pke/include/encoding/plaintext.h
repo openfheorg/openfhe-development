@@ -85,7 +85,7 @@ class PlaintextImpl {
 
     /**
     * @brief PrintValue() is called by operator<<
-    * @param out
+    * @param out stream to print to
     */
     virtual void PrintValue(std::ostream& out) const = 0;
 
@@ -148,6 +148,7 @@ class PlaintextImpl {
 
     /**
    * Set the scaling factor of the plaintext for CKKS-based plaintexts.
+   * @param sf the scaling factor
    */
     void SetScalingFactor(double sf) {
         scalingFactor = sf;
@@ -162,13 +163,14 @@ class PlaintextImpl {
 
     /**
    * Set the scaling factor of the plaintext for BGV-based plaintexts.
+   * @param sf the integer scaling factor
    */
     void SetScalingFactorInt(NativeInteger sf) {
         scalingFactorInt = sf;
     }
 
     /**
-   * Get the encryption technique of the plaintext for BFV-based plaintexts.
+   * Get the scheme ID the plaintext was created for.
    */
     SCHEME GetSchemeID() const {
         return schemeID;
@@ -200,7 +202,7 @@ class PlaintextImpl {
 
     /**
    * SetCKKSDataType
-   * @return Set CKKS data type to be used with this plaintext
+   * @param cdt CKKS data type to be used with this plaintext
    */
     void SetCKKSDataType(CKKSDataType cdt) {
         ckksDataType = cdt;
@@ -214,7 +216,7 @@ class PlaintextImpl {
 
     /**
    * @brief Decode the polynomial into the plaintext
-   * @return
+   * @return true on success
    */
     virtual bool Decode() = 0;
     virtual bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) {
@@ -243,7 +245,7 @@ class PlaintextImpl {
     /**
    * SetFormat - allows format to be changed for PlaintextImpl evaluations
    *
-   * @param fmt
+   * @param fmt the format (COEFFICIENT or EVALUATION) to switch the encoded element to
    */
     void SetFormat(Format fmt) {
         if (typeFlag == IsPoly)
@@ -280,7 +282,7 @@ class PlaintextImpl {
 
     /**
    * GetElementModulus
-   * @return modulus on the underlying elemenbt
+   * @return modulus on the underlying element
    */
     BigInteger GetElementModulus() const {
         return typeFlag == IsPoly ? encodedVector.GetModulus() :
@@ -291,14 +293,14 @@ class PlaintextImpl {
     /**
    * Get method to return the length of plaintext
    *
-   * @return the length of the plaintext in terms of the number of bits.
+   * @return the length of the plaintext in terms of the number of elements.
    */
     virtual size_t GetLength() const = 0;
 
     /**
    * resize the plaintext; only works for plaintexts that support a resizable
    * vector (coefpacked)
-   * @param newSize
+   * @param newSize the new number of elements
    */
     virtual void SetLength(size_t newSize) {
         OPENFHE_THROW("resize not supported");
@@ -399,9 +401,9 @@ class PlaintextImpl {
 
     /**
     * @brief operator<< for ostream integration - calls PrintValue()
-    * @param out
-    * @param item
-    * @return
+    * @param out the output stream
+    * @param item the plaintext to print
+    * @return the output stream
     */
     friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
         item.PrintValue(out);

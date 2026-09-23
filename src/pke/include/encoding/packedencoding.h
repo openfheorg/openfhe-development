@@ -97,7 +97,7 @@ class PackedEncoding : public PlaintextImpl {
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(rhs) {}
 
     /**
-   * @brief Constructs a container with a copy of each of the elements in il, in
+   * @brief Constructs a container with a copy of each of the elements in arr, in
    * the same order.
    * @param arr the list to copy.
    */
@@ -132,7 +132,7 @@ class PackedEncoding : public PlaintextImpl {
     /**
    * Get method to return the length of plaintext
    *
-   * @return the length of the plaintext in terms of the number of bits.
+   * @return the length of the plaintext in terms of the number of elements.
    */
     size_t GetLength() const override {
         return value.size();
@@ -141,7 +141,7 @@ class PackedEncoding : public PlaintextImpl {
     /**
    * @brief Method to set encoding params
    * @param m the encoding cyclotomic order.
-   * @params params data structure storing encoding parameters
+   * @param params data structure storing encoding parameters
    */
     static void SetParams(uint32_t m, EncodingParams params);
 
@@ -149,14 +149,14 @@ class PackedEncoding : public PlaintextImpl {
    * @brief Method to set encoding params (this method should eventually be
    * replaced by void SetParams(uint32_t m, EncodingParams params);)
    * @param m the encoding cyclotomic order.
-   * @params modulus is the plaintext modulus
+   * @param modulus is the plaintext modulus
    */
     static void SetParams(uint32_t m, const PlaintextModulus& modulus)
             __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
 
     /**
    * SetLength of the plaintext to the given size
-   * @param siz
+   * @param siz the new number of elements
    */
     void SetLength(size_t siz) override {
         value.resize(siz);

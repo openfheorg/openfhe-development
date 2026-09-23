@@ -80,25 +80,25 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
 
     /**
    * @brief Constructor from ring element
-   * @param & element ring element
+   * @param element ring element
    */
     explicit Field2n(const Poly& element);
 
     /**
    * @brief Constructor from ring element
-   * @param & element ring element
+   * @param element ring element
    */
     explicit Field2n(const NativePoly& element);
 
     /**
    * @brief Constructor from DCRTPoly ring element
-   * @param & element ring element
+   * @param element ring element
    */
     explicit Field2n(const DCRTPoly& element);
 
     /**
    * @brief Constructor from a ring element matrix
-   * @param &element ring element matrix
+   * @param element ring element matrix
    */
     explicit Field2n(const Matrix<int64_t>& element);
 
@@ -121,7 +121,7 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Addition operation for field elements
    *
-   * @param &rhs right hand side element for operation
+   * @param rhs right hand side element for operation
    * @return result of the operation
    */
     Field2n Plus(const Field2n& rhs) const;
@@ -129,15 +129,15 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Scalar addition operation for field elements
    *
-   * @param &rhs right hand side element for operation
+   * @param rhs right hand side element for operation
    * @return result of the operation
    */
     Field2n Plus(double rhs) const;
 
     /**
-   * @brief Substraction operation for field elements
+   * @brief Subtraction operation for field elements
    *
-   * @param &rhs right hand side element for operation
+   * @param rhs right hand side element for operation
    * @return result of the operation
    */
     Field2n Minus(const Field2n& rhs) const;
@@ -145,7 +145,7 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Multiplication operation for field elements
    *
-   * @param &rhs right hand side element for operation
+   * @param rhs right hand side element for operation
    * @return result of the operation
    */
     Field2n Times(const Field2n& rhs) const;
@@ -160,7 +160,7 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Performs an automorphism transform operation and returns the result.
    *
-   * @param &i is the element to perform the automorphism transform with.
+   * @param i is the automorphism index (an odd integer) to apply.
    * @return is the result of the automorphism transform.
    */
     Field2n AutomorphismTransform(size_t i) const;
@@ -219,7 +219,7 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Sets the evaluation or coefficient representation of the field
    * elements
-   * @param &format the enum value corresponding to coefficient or evaluation
+   * @param f the enum value corresponding to coefficient or evaluation
    * representation
    */
     inline void SetFormat(Format f) {
@@ -259,7 +259,7 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief In-place addition operation for field elements
    *
-   * @param &element  right hand side element for operation
+   * @param element  right hand side element for operation
    * @return result of the operation
    */
     Field2n& operator+=(const Field2n& element) {
@@ -269,7 +269,7 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief In-place subtraction operation for field elements
    *
-   * @param &element  right hand side element for operation
+   * @param element  right hand side element for operation
    * @return result of the operation
    */
     Field2n& operator-=(const Field2n& element) {
@@ -285,11 +285,11 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     }
 
     /**
-   * @brief Substraction operator for field elements
+   * @brief Subtraction operator for field elements
    *
-   * @param &a left hand side field element
-   * @param &b right hand side field element
-   * @return result of the substraction operation
+   * @param a left hand side field element
+   * @param b right hand side field element
+   * @return result of the subtraction operation
    */
     friend inline Field2n operator-(const Field2n& a, const Field2n& b) {
         return a.Minus(b);
@@ -298,8 +298,8 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Addition operator for field elements
    *
-   * @param &a left hand side field element
-   * @param &b right hand side field element
+   * @param a left hand side field element
+   * @param b right hand side field element
    * @return result of the addition operation
    */
     friend inline Field2n operator+(const Field2n& a, const Field2n& b) {
@@ -309,8 +309,8 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Scalar addition operator for field elements
    *
-   * @param &a left hand side field element
-   * @param &b  the scalar to be added
+   * @param a left hand side field element
+   * @param scalar the scalar to be added
    * @return result of the addition operation
    */
     friend inline Field2n operator+(const Field2n& a, double scalar) {
@@ -320,8 +320,8 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
     /**
    * @brief Multiplication operator for field elements
    *
-   * @param &a left hand side field element
-   * @param &b right hand side field element
+   * @param a left hand side field element
+   * @param b right hand side field element
    * @return result of the multiplication operation
    */
     friend inline Field2n operator*(const Field2n& a, const Field2n& b) {
@@ -355,8 +355,8 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
 /**
  * @brief Stream output operator
  *
- * @param &os stream
- * @param &m matrix to be outputted
+ * @param os stream
+ * @param m field element to be outputted
  * @return the chained stream
  */
 inline std::ostream& operator<<(std::ostream& os, const Field2n& m) {

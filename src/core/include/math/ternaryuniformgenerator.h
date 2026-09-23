@@ -53,7 +53,7 @@ template <typename VecType>
 class TernaryUniformGeneratorImpl {
   public:
     /**
-   * @brief Basic constructor for Binary Uniform Generator.
+   * @brief Basic constructor for Ternary Uniform Generator.
    */
     TernaryUniformGeneratorImpl() = default;
     ~TernaryUniformGeneratorImpl() = default;

@@ -219,7 +219,7 @@ class ElemParams : public Serializable {
 
     /**
    * @brief Pretty print operator for the ElemParams type.
-   * @param out the ElemParams to output
+   * @param out the output stream to print to
    * @return the resulting output stream.
    */
     virtual std::ostream& doprint(std::ostream& out) const {

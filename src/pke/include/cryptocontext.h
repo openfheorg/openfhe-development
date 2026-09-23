@@ -937,6 +937,7 @@ class CryptoContextImpl : public Serializable {
     * @param cc crypto context
     * @param keyTag secret key tag
     * @param slots number of slots for which the bootstrapping is performed
+    * @return true on success
     */
     template <typename ST>
     static bool SerializeEvalBootstrapKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element>& cc,
@@ -1078,6 +1079,7 @@ class CryptoContextImpl : public Serializable {
 
     /**
     * @brief Setter for the level at which evaluation keys should be generated
+    * @param level the level at which evaluation keys should be generated
     * @attention For future use
     */
     void SetKeyGenLevel(size_t level) {
@@ -1821,8 +1823,8 @@ class CryptoContextImpl : public Serializable {
     /**
     * @brief In-place subtraction of a ciphertext from a plaintext.
     *
-    * @param plaintext  Minuend (may be modified).
-    * @param ciphertext  Ciphertext to modify.
+    * @param plaintext   Minuend (may be modified).
+    * @param ciphertext  Subtrahend (modified in place to hold the result).
     */
     void EvalSubInPlace(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
@@ -1940,7 +1942,7 @@ class CryptoContextImpl : public Serializable {
     *
     * @note 1st key (for s^2) is used for multiplication of ciphertexts of depth 1,
     * 2nd key (for s^3) is used for multiplication of ciphertexts of depth 2, etc.
-    * A vector of new evaluation keys is stored in crytpocontext
+    * A vector of new evaluation keys is stored in cryptocontext
     */
     void EvalMultKeysGen(const PrivateKey<Element>& key);
 
@@ -2196,10 +2198,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of a mutable plaintext and a ciphertext.
+    * @brief Homomorphic multiplication of a plaintext and a mutable ciphertext.
     *
     * @param plaintext   Multiplier.
-    * @param ciphertext  Multiplicand.
+    * @param ciphertext  Multiplicand (may be modified).
     * @return Resulting ciphertext.
     */
     Ciphertext<Element> EvalMultMutable(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
@@ -2622,10 +2624,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Reduces the number of RNS limbs (levels) in a ciphertext and evaluation key.
+    * @brief Reduces the number of RNS limbs (levels) in a ciphertext.
     *
     * @param ciphertext  Input ciphertext.
-    * @param evalKey     Evaluation key (modified in place).
+    * @param evalKey     Evaluation key (currently unused; kept for API compatibility).
     * @param levels      Number of levels to drop.
     * @return Ciphertext with reduced levels.
     *
@@ -2638,10 +2640,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place reduction of RNS limbs (levels) in a ciphertext and evaluation key.
+    * @brief In-place reduction of RNS limbs (levels) in a ciphertext.
     *
     * @param ciphertext  Ciphertext to modify.
-    * @param evalKey     Evaluation key (modified in place).
+    * @param evalKey     Evaluation key (currently unused; kept for API compatibility).
     * @param levels      Number of levels to drop.
     *
     * @note Supported in BGV and CKKS. In CKKS with COMPOSITESCALING*, levels are scaled by the composite degree.
@@ -2655,8 +2657,9 @@ class CryptoContextImpl : public Serializable {
     /**
     * @brief Compresses a ciphertext by reducing its modulus to lower communication cost.
     *
-    * @param ciphertext  Input ciphertext.
-    * @param towersLeft  Number of RNS limbs to retain.
+    * @param ciphertext     Input ciphertext.
+    * @param towersLeft     Number of RNS limbs to retain.
+    * @param noiseScaleDeg  Noise scale degree the ciphertext is reduced to before dropping limbs (must not exceed towersLeft).
     * @return Compressed ciphertext.
     */
     Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, uint32_t towersLeft = 1,
@@ -2708,7 +2711,7 @@ class CryptoContextImpl : public Serializable {
     * @return Resulting ciphertext.
     *
     * @note Assumes each multiplication produces a ciphertext within the supported ring size
-    *       (for the secret key degree used by EvalMultsKeyGen).
+    *       (for the secret key degree used by EvalMultKeysGen).
     *       Otherwise, it throws an error
     */
     Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
@@ -2742,7 +2745,7 @@ class CryptoContextImpl : public Serializable {
     /**
     * @brief Computes a linear weighted sum of ciphertexts (CKKS only).
     *
-    * @param constantVec    Corresponding weights.
+    * @param constantsVec   Corresponding weights.
     * @param ciphertextVec  List of ciphertexts.
     * @return Weighted sum as a ciphertext.
     */
@@ -2836,7 +2839,7 @@ class CryptoContextImpl : public Serializable {
     *        Polynomials are given as a power series. Supported only in CKKS.
     *
     * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = degree).
+    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
     * @return Resulting ciphertext.
     */
     template <typename VectorDataType = double>
@@ -2851,7 +2854,7 @@ class CryptoContextImpl : public Serializable {
     *        Supported only in CKKS.
     *
     * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = degree).
+    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
     * @return Resulting ciphertext.
     */
     template <typename VectorDataType = double>
@@ -2866,10 +2869,9 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Computes the Chebyshev polynomials for a ciphertext to be used when evaluating a polynomial (CKKS only).
-    *        Uses EvalChebyPolyLinear() for low polynomial degrees (degree < 5), or EvalChebyPolyPS() for higher degrees.
-    *        Uses a linear transformation to map [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a),
-    *        then applies either EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS depending on degree.
+    * @brief Computes the Chebyshev polynomials for a ciphertext to be used when evaluating a Chebyshev series (CKKS only).
+    *        Maps [a, b] to [-1, 1] using the linear transformation 1 + 2(x-a)/(b-a), then computes the polynomials
+    *        needed by EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS (higher degrees) depending on degree.
     *
     * @param ciphertext    Input ciphertext.
     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
@@ -3034,7 +3036,6 @@ class CryptoContextImpl : public Serializable {
     * @brief Generates automorphism keys for EvalSumRows (only for packed encoding).
     *
     * @param privateKey    Private key used for key generation.
-    * @param publicKey     Public key (used in NTRU schemes; unused now).
     * @param rowSize       Number of slots per row in the packed matrix.
     * @param subringDim    Subring dimension (use cyclotomic order if 0).
     * @return Map of generated evaluation keys.
@@ -3053,7 +3054,6 @@ class CryptoContextImpl : public Serializable {
     * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
     *
     * @param privateKey  Private key used for key generation.
-    * @param publicKey   Public key (used in NTRU schemes; unused now).
     * @return Map of generated evaluation keys.
     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
@@ -3148,7 +3148,7 @@ class CryptoContextImpl : public Serializable {
     /**
     * @brief Produces an Eval Key that OpenFHE can use for Proxy Re-Encryption
     *
-    * @param oldPrivateKey original secret key
+    * @param originalPrivateKey original secret key
     * @param newPrivateKey new secret key
     * @return new evaluation key
     * @attention This functionality has been completely removed from OpenFHE
@@ -3475,7 +3475,7 @@ class CryptoContextImpl : public Serializable {
 
     /**
     * @brief Combines encrypted and unencrypted masked decryptions in 2-party interactive bootstrapping.
-    *        It is the last step in the boostrapping.
+    *        It is the last step in the bootstrapping.
     *
     * @param ciphertext1  Encrypted masked decryption.
     * @param ciphertext2  Unencrypted masked decryption.
@@ -3596,7 +3596,7 @@ class CryptoContextImpl : public Serializable {
 
     /**
     * Bootstrap functionality:
-    * There are three methods that have to be called in this specific order:
+    * There are four methods that have to be called in this specific order:
     * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
     * decoding and stores the necessary parameters
     * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
@@ -3812,7 +3812,7 @@ class CryptoContextImpl : public Serializable {
     * the coefficients for encoding and decoding and stores the necessary parameters
     * 2. EvalCKKStoFHEWKeyGen: computes and stores the keys for rotations and conjugation
     * 3. EvalCKKStoFHEW: returns the FHEW/CGGI ciphertext
-    * 1'. EvalFHEWtoCKKSwitchetup: takes in the CKKS cryptocontext and sets the parameters
+    * 1'. EvalFHEWtoCKKSSetup: takes in the CKKS cryptocontext and sets the parameters
     * 2'. EvalFHEWtoCKKSKeyGen: computes and stores the switching key and the keys for rotations and conjugation
     * 3'. EvalFHEWtoCKKS: returns the CKKS ciphertext
     * 1''. EvalSchemeSwitchingSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
@@ -4146,7 +4146,7 @@ class CryptoContextImpl : public Serializable {
     * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
     *
     * @param keyTag secret key tag
-    * @param indexList array of specific indices to check the key map against
+    * @param indices set of specific indices to check the key map against
     * @return indices that do not have automorphism keys associated with
     */
     static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,

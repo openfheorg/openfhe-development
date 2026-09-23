@@ -76,9 +76,10 @@ namespace Serial {
  * CryptoContextImpl OpenFHE doesn't want multiple copies of the same crypto
  * context floating around, and it enforces that here
  *
+ * The unnamed third argument selects JSON serialization.
+ *
  * @param obj - the target for the deserialization
  * @param stream - where the serialization is coming from
- * @param sertype - JSON serialization type
  */
 template <typename T>
 void Deserialize(CryptoContext<T>& obj, std::istream& stream, const SerType::SERJSON&) {
@@ -134,9 +135,10 @@ namespace Serial {
  * CryptoContextImpl OpenFHE doesn't want multiple copies of the same crypto
  * context floating around, and it enforces that here
  *
+ * The unnamed third argument selects BINARY serialization.
+ *
  * @param obj - the target for the deserialization
  * @param stream - where the serialization is coming from
- * @param sertype - BINARY serialization type
  */
 template <typename T>
 void Deserialize(CryptoContext<T>& obj, std::istream& stream, const SerType::SERBINARY&) {

@@ -78,7 +78,7 @@ class StringEncoding : public PlaintextImpl {
 
     /**
    * SetStringValue
-   * @param val to initialize the Plaintext
+   * @param value string to initialize the Plaintext with
    */
     void SetStringValue(const std::string& value) override {
         ptx = value;
@@ -123,7 +123,7 @@ class StringEncoding : public PlaintextImpl {
 
     /**
     * PrintValue - used by operator<< for this object
-    * @param out
+    * @param out stream to print to
     */
     void PrintValue(std::ostream& out) const override {
         out << ptx;

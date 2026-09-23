@@ -49,28 +49,28 @@ namespace lbcrypto {
 /**
  * Method for calculating Chebyshev coefficients for an input function
  * over the range [a,b]. These coefficents are used in EValChebyshevSeries
- * to approximate the function func as
- *   func(x) ~ coeffs[0]/2 + sum_{i=1}^{degree} coeffs[i] * T_{i}(x),
+ * to approximate the function f as
+ *   f(x) ~ coeffs[0]/2 + sum_{i=1}^{d} coeffs[i] * T_{i}(x),
  * where T_{i}(x) are Chebyshev polynomials of the first kind. (Note that
  * the 1st coeffiicent is divided by two.)
- * @param func is the function to be approximated
+ * @param f is the function to be approximated
  * @param a - lower bound of argument for which the coefficients were found
  * @param b - upper bound of argument for which the coefficients were found
- * @param degree Desired degree of approximation
+ * @param d Desired degree of approximation
  * @return the coefficients of the Chebyshev approximation.
  */
 std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> f, double a, double b, uint32_t d);
 
 /**
  * A cleartext version of CryptoContext<...>::EvalChebyshevFunction(...).
- * It evaluates an approximation of func via Chebyshev polynomials of a
+ * It evaluates an approximation of f via Chebyshev polynomials of a
  * bounded degree, over a specified interval [a,b].
  *
- * @param func is the function to be approximated
+ * @param f is the function to be approximated
  * @param ptxt is a vector of plaintext inputs
- * @param a is the bottom of the interval over chichfunc is approximated
- * @param b is the top of the interval over chichfunc is approximated
- * @param degree is the desired degree of approximation
+ * @param a is the bottom of the interval over which f is approximated
+ * @param b is the top of the interval over which f is approximated
+ * @param d is the desired degree of approximation
  * @return Evaluation of the approximated function over the plaintexts.
  */
 std::vector<double> EvalChebyshevFunctionPtxt(std::function<double(double)> f, const std::vector<double>& ptxt,

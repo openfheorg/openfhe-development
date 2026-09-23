@@ -67,8 +67,6 @@ namespace lbcrypto {
  * All other clients run a regular "Main" multiparty decryption with their own
  * secret key. The resulting partially decrypted ciphertext are then fully
  * decrypted with the decryption fusion algorithms.
- *
- * @tparam Element a ring element.
  */
 class MultipartyRNS : public MultipartyBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;

@@ -60,9 +60,9 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Constructor that initializes matrix values using a zero allocator
    *
-   * @param &allocZero lambda function for zero initialization.
-   * @param &rows number of rows.
-   * @param &rows number of columns.
+   * @param allocZero lambda function for zero initialization.
+   * @param rows number of rows.
+   * @param cols number of columns.
    */
     MatrixStrassen(alloc_func allocZero, size_t rows, size_t cols)
         : data(), rows(rows), cols(cols), allocZero(allocZero) {
@@ -79,11 +79,11 @@ class MatrixStrassen {  // TODO : public Serializable {
    * Constructor that initializes matrix values using a distribution generation
    * allocator
    *
-   * @param &allocZero lambda function for zero initialization (used for
+   * @param allocZero lambda function for zero initialization (used for
    * initializing derived matrix objects)
-   * @param &rows number of rows.
-   * @param &rows number of columns.
-   * @param &allocGen lambda function for intialization using a distribution
+   * @param rows number of rows.
+   * @param cols number of columns.
+   * @param allocGen lambda function for initialization using a distribution
    * generator.
    */
     MatrixStrassen(alloc_func allocZero, size_t rows, size_t cols, alloc_func allocGen);
@@ -92,7 +92,7 @@ class MatrixStrassen {  // TODO : public Serializable {
    * Constructor of an empty matrix; SetSize must be called on this matrix to
    * use it Basically this exists to support deserializing
    *
-   * @param &allocZero lambda function for zero initialization.
+   * @param allocZero lambda function for zero initialization.
    */
     explicit MatrixStrassen(alloc_func allocZero) : data(), rows(0), cols(0), allocZero(allocZero) {}
 
@@ -116,7 +116,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Copy constructor
    *
-   * @param &other the matrix object to be copied
+   * @param other the matrix object to be copied
    */
     MatrixStrassen(const MatrixStrassen<Element>& other)
         : data(), rows(other.rows), cols(other.cols), allocZero(other.allocZero) {
@@ -126,7 +126,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Assignment operator
    *
-   * @param &other the matrix object whose values are to be copied
+   * @param other the matrix object whose values are to be copied
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element>& operator=(const MatrixStrassen<Element>& other);
@@ -141,7 +141,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Fill matrix using the same element
    *
-   * @param &val the element the matrix is filled by
+   * @param val the element the matrix is filled by
    *
    * @return the resulting matrix
    */
@@ -155,8 +155,9 @@ class MatrixStrassen {  // TODO : public Serializable {
     inline MatrixStrassen<Element>& Identity();
 
     /**
-   * Sets the first row to be powers of two
+   * Sets the first row to be powers of the base
    *
+   * @param base is the base the digits of the matrix are represented in
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element> GadgetVector(int32_t base = 2) const;
@@ -171,7 +172,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Operator for matrix multiplication
    *
-   * @param &other the multiplier matrix
+   * @param other the multiplier matrix
    * @return the result of multiplication
    */
     inline MatrixStrassen<Element> operator*(MatrixStrassen<Element> const& other) const {
@@ -181,7 +182,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Multiplication of matrix by a scalar
    *
-   * @param &other the multiplier element
+   * @param other the multiplier element
    * @return the result of multiplication
    */
     inline MatrixStrassen<Element> ScalarMult(Element const& other) const {
@@ -198,7 +199,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Operator for scalar multiplication
    *
-   * @param &other the multiplier element
+   * @param other the multiplier element
    * @return the result of multiplication
    */
     inline MatrixStrassen<Element> operator*(Element const& other) const {
@@ -208,7 +209,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Equality check
    *
-   * @param &other the matrix object to compare to
+   * @param other the matrix object to compare to
    * @return the boolean result
    */
     inline bool Equal(MatrixStrassen<Element> const& other) const {
@@ -229,7 +230,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Operator for equality check
    *
-   * @param &other the matrix object to compare to
+   * @param other the matrix object to compare to
    * @return the boolean result
    */
     inline bool operator==(MatrixStrassen<Element> const& other) const {
@@ -239,7 +240,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Operator for non-equality check
    *
-   * @param &other the matrix object to compare to
+   * @param other the matrix object to compare to
    * @return the boolean result
    */
     inline bool operator!=(MatrixStrassen<Element> const& other) const {
@@ -286,7 +287,7 @@ class MatrixStrassen {  // TODO : public Serializable {
    * Sets the evaluation or coefficient representation for all ring elements
    * that support the SetFormat method
    *
-   * @param &format the enum value corresponding to coefficient or evaluation
+   * @param format the enum value corresponding to coefficient or evaluation
    * representation
    */
     void SetFormat(Format format);
@@ -294,7 +295,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * MatrixStrassen addition
    *
-   * @param &other the matrix to be added
+   * @param other the matrix to be added
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element> Add(MatrixStrassen<Element> const& other) const {
@@ -315,7 +316,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Operator for matrix addition
    *
-   * @param &other the matrix to be added
+   * @param other the matrix to be added
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element> operator+(MatrixStrassen<Element> const& other) const {
@@ -325,15 +326,15 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Operator for in-place addition
    *
-   * @param &other the matrix to be added
+   * @param other the matrix to be added
    * @return the resulting matrix (same object)
    */
     inline MatrixStrassen<Element>& operator+=(MatrixStrassen<Element> const& other);
 
     /**
-   * MatrixStrassen substraction
+   * MatrixStrassen subtraction
    *
-   * @param &other the matrix to be substracted
+   * @param other the matrix to be subtracted
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element> Sub(MatrixStrassen<Element> const& other) const {
@@ -352,9 +353,9 @@ class MatrixStrassen {  // TODO : public Serializable {
     }
 
     /**
-   * Operator for matrix substraction
+   * Operator for matrix subtraction
    *
-   * @param &other the matrix to be substracted
+   * @param other the matrix to be subtracted
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element> operator-(MatrixStrassen<Element> const& other) const {
@@ -362,9 +363,9 @@ class MatrixStrassen {  // TODO : public Serializable {
     }
 
     /**
-   * Operator for in-place matrix substraction
+   * Operator for in-place matrix subtraction
    *
-   * @param &other the matrix to be substracted
+   * @param other the matrix to be subtracted
    * @return the resulting matrix (same object)
    */
     inline MatrixStrassen<Element>& operator-=(MatrixStrassen<Element> const& other);
@@ -381,7 +382,7 @@ class MatrixStrassen {  // TODO : public Serializable {
    * MatrixStrassen determinant - found using Laplace formula with complexity
    * O(d!), where d is the dimension
    *
-   * @param *result where the result is stored
+   * @param result where the result is stored
    */
     inline void Determinant(Element* result) const;
 
@@ -396,7 +397,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Add rows to bottom of the matrix
    *
-   * @param &other the matrix to be added to the bottom of current matrix
+   * @param other the matrix to be added to the bottom of current matrix
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element>& VStack(MatrixStrassen<Element> const& other);
@@ -404,7 +405,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * Add columns the right of the matrix
    *
-   * @param &other the matrix to be added to the right of current matrix
+   * @param other the matrix to be added to the right of current matrix
    * @return the resulting matrix
    */
     inline MatrixStrassen<Element>& HStack(MatrixStrassen<Element> const& other);
@@ -412,8 +413,8 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * MatrixStrassen indexing operator - writeable instance of the element
    *
-   * @param &row row index
-   * @param &col column index
+   * @param row row index
+   * @param col column index
    * @return the element at the index
    */
     inline Element& operator()(size_t row, size_t col) {
@@ -423,8 +424,8 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * MatrixStrassen indexing operator - read-only instance of the element
    *
-   * @param &row row index
-   * @param &col column index
+   * @param row row index
+   * @param col column index
    * @return the element at the index
    */
     inline Element const& operator()(size_t row, size_t col) const {
@@ -434,7 +435,7 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * MatrixStrassen row extractor
    *
-   * @param &row row index
+   * @param row row index
    * @return the row at the index
    */
     inline MatrixStrassen<Element> ExtractRow(size_t row) const {
@@ -457,7 +458,9 @@ class MatrixStrassen {  // TODO : public Serializable {
     /**
    * MatrixStrassen multiplication
    *
-   * @param &other the multiplier matrix
+   * @param other the multiplier matrix
+   * @param nrec number of levels of Strassen recursion
+   * @param pad number of padding rows and columns; -1 computes the padding needed for nrec levels
    * @return the result of multiplication
    */
     MatrixStrassen<Element> Mult(const MatrixStrassen<Element>& other, int nrec = 0, int pad = -1) const;
@@ -543,8 +546,8 @@ class MatrixStrassen {  // TODO : public Serializable {
 /**
  * Operator for scalar multiplication of matrix
  *
- * @param &e element
- * @param &M matrix
+ * @param e element
+ * @param M matrix
  * @return the resulting matrix
  */
 template <class Element>
@@ -556,7 +559,7 @@ inline MatrixStrassen<Element> operator*(Element const& e, MatrixStrassen<Elemen
  * Generates a matrix of rotations. See pages 7-8 of
  * https://eprint.iacr.org/2013/297
  *
- * @param &inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
+ * @param inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
  * @return the resulting matrix of big binary integers
  */
 inline MatrixStrassen<BigInteger> Rotate(MatrixStrassen<Poly> const& inMat);
@@ -566,29 +569,29 @@ inline MatrixStrassen<BigInteger> Rotate(MatrixStrassen<Poly> const& inMat);
  *  rotations in coefficient form. See pages 7-8 of
  * https://eprint.iacr.org/2013/297
  *
- * @param &inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
- * @return the resulting matrix of big binary integers
+ * @param inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
+ * @return the resulting matrix of big binary vectors
  */
 inline MatrixStrassen<BigVector> RotateVecResult(MatrixStrassen<Poly> const& inMat);
 
 /**
  *  Stream output operator
  *
- * @param &os stream
- * @param &m matrix to be outputted
+ * @param os stream
+ * @param m matrix to be outputted
  * @return the chained stream
  */
 template <class Element>
 inline std::ostream& operator<<(std::ostream& os, const MatrixStrassen<Element>& m);
 
 /**
- * Gives the Choleshky decomposition of the input matrix.
+ * Gives the Cholesky decomposition of the input matrix.
  * The assumption is that covariance matrix does not have large coefficients
  * because it is formed by discrete gaussians e and s; this implies int32_t can
  * be used This algorithm can be further improved - see the Darmstadt paper
  * section 4.4 http://eprint.iacr.org/2013/297.pdf
  *
- * @param &input the matrix for which the Cholesky decomposition is to be
+ * @param input the matrix for which the Cholesky decomposition is to be
  * computed
  * @return the resulting matrix of floating-point numbers
  */
@@ -598,8 +601,8 @@ inline MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input);
  * Convert a matrix of integers from BigInteger to int32_t
  * Convert from Z_q to (-q/2, q/2]
  *
- * @param &input the input matrix
- * @param &modulus the ring modulus
+ * @param input the input matrix
+ * @param modulus the ring modulus
  * @return the resulting matrix of int32_t
  * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
@@ -609,8 +612,8 @@ inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& 
  * Convert a matrix of BigVector to int32_t
  * Convert from Z_q to (-q/2, q/2]
  *
- * @param &input the input matrix
- * @param &modulus the ring modulus
+ * @param input the input matrix
+ * @param modulus the ring modulus
  * @return the resulting matrix of int32_t
  * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
@@ -620,9 +623,9 @@ inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& i
  * Split a vector of int32_t into a vector of ring elements with ring dimension
  * n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,
@@ -632,9 +635,9 @@ inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(MatrixStrassen<int32_t> c
  * Another method for splitting a vector of int32_t into a vector of ring
  * elements with ring dimension n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,

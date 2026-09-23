@@ -54,7 +54,7 @@ namespace lbcrypto {
 class DiscreteFourierTransform {
   public:
     /**
-   * Virtual FFT forward transform.
+   * FFT forward transform.
    *
    * @param A is the element to perform the transform on.
    * @return is the output result of the transform.
@@ -62,7 +62,7 @@ class DiscreteFourierTransform {
     static std::vector<std::complex<double>> FFTForwardTransform(std::vector<std::complex<double>>& A);
 
     /**
-   * Virtual FFT inverse transform.
+   * FFT inverse transform.
    *
    * @param A is the element to perform the inverse transform on.
    * @return is the output result of the inverse transform.
@@ -70,7 +70,7 @@ class DiscreteFourierTransform {
     static std::vector<std::complex<double>> FFTInverseTransform(std::vector<std::complex<double>>& A);
 
     /**
-   * Virtual forward transform.
+   * Forward transform.
    *
    * @param A is the element to perform the transform on.
    * @return is the output result of the transform.
@@ -78,7 +78,7 @@ class DiscreteFourierTransform {
     static std::vector<std::complex<double>> ForwardTransform(std::vector<std::complex<double>> A);
 
     /**
-   * Virtual inverse transform.
+   * Inverse transform.
    *
    * @param A is the element to perform the inverse transform on.
    * @return is the output result of the inverse transform.
@@ -90,6 +90,7 @@ class DiscreteFourierTransform {
    * see Algorithm 1 in https://eprint.iacr.org/2018/1043.pdf.
    *
    * @param vals is a vector of complex numbers.
+   * @param cyclOrder is the cyclotomic order for which Initialize() precomputed the tables.
    */
     static void FFTSpecialInv(std::vector<std::complex<double>>& vals, uint32_t cyclOrder);
 
@@ -98,6 +99,7 @@ class DiscreteFourierTransform {
    * see Algorithm 1 in https://eprint.iacr.org/2018/1043.pdf.
    *
    * @param vals is a vector of complex numbers.
+   * @param cyclOrder is the cyclotomic order for which Initialize() precomputed the tables.
    */
     static void FFTSpecial(std::vector<std::complex<double>>& vals, uint32_t cyclOrder);
 

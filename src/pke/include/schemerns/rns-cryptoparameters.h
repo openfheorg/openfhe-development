@@ -52,7 +52,6 @@ namespace lbcrypto {
  * any LBC system.
  * As CryptoParametersRNS is not an abstract class and we don't want to
  * instantiate, then we make all its constructors and the destructor protected
- * @tparam Element a ring element.
  */
 class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
@@ -86,7 +85,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * pre-computed for initial settings.
    *
    * @param params element parameters.
-   * @param &plaintextModulus plaintext modulus.
+   * @param plaintextModulus plaintext modulus.
    * @param distributionParameter noise distribution parameter.
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
@@ -96,7 +95,13 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * relinearization key is generated
    * @param ksTech key switching method
    * @param scalTech scaling method
-   * @param mPIntBootCiphertextCompressionLevel compression level
+   * @param encTech encryption method
+   * @param multTech multiplication method
+   * @param multipartyMode security mode for multiparty decryption
+   * @param executionMode execution mode for CKKS noise flooding
+   * @param decryptionNoiseMode decryption noise mode for CKKS noise flooding
+   * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in
+   * multi-party interactive bootstrapping
    */
     CryptoParametersRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
@@ -179,6 +184,11 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * derived classes' PrecomputeCRTTables() only and must not be called from CryptoParametersRNS::load().
    * @param ksTech the technique to use for key switching (e.g., BV or GHS).
    * @param scalTech the technique to use for scaling (e.g., FLEXIBLEAUTO or FIXEDMANUAL).
+   * @param encTech the technique to use for encryption (STANDARD or EXTENDED).
+   * @param multTech the technique to use for homomorphic multiplication (e.g., HPS or BEHZ).
+   * @param numPartQ the number of digits (partitions of Q) for HYBRID key switching.
+   * @param auxBits the number of bits in the auxiliary (special) prime moduli.
+   * @param extraBits the number of extra bits reserved for the auxiliary modulus in HYBRID key switching.
    */
     virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
                                      MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
@@ -240,18 +250,18 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Method to retrieve the technique to be used for rescaling.
+   * Method to retrieve the technique to be used for encryption.
    *
-   * @return the rescaling technique.
+   * @return the encryption technique.
    */
     EncryptionTechnique GetEncryptionTechnique() const {
         return m_encTechnique;
     }
 
     /**
-   * Method to retrieve the technique to be used for rescaling.
+   * Method to retrieve the technique to be used for homomorphic multiplication.
    *
-   * @return the rescaling technique.
+   * @return the multiplication technique.
    */
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return m_multTechnique;
@@ -287,18 +297,20 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Get the precomputed table of [-t^{-1}]_{q_i}
+   * Get the precomputed value [-t^{-1}]_{q_l}
    *
-   * @return the pre-computed values.
+   * @param l index of the tower q_l.
+   * @return the pre-computed value.
    */
     NativeInteger GetNegtInvModq(uint32_t l) const {
         return m_negtInvModq[l];
     }
 
     /**
-   * Method that returns the NTL precomputions for [-t^{-1}]_{q_i}
+   * Method that returns the NTL precomputions for [-t^{-1}]_{q_l}
    *
-   * @return the pre-computed values.
+   * @param l index of the tower q_l.
+   * @return the pre-computed value.
    */
     NativeInteger GetNegtInvModqPrecon(uint32_t l) const {
         return m_negtInvModqPrecon[l];
@@ -311,6 +323,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
    * Gets the precomputed table of [q_i^{-1}]_{q_j}
    *
+   * @param i index of the tower q_i being dropped.
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetqlInvModq(size_t i) const {
@@ -320,6 +333,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
    * Gets the NTL precomputions for [q_i^{-1}]_{q_j}
    *
+   * @param i index of the tower q_i being dropped.
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetqlInvModqPrecon(size_t i) const {
@@ -409,6 +423,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * partitions {Q_j} of Q.
    * Used in Hybrid key switching
    *
+   * @param part index of the partition (digit).
    * @return the pre-computed values.
    */
     const std::shared_ptr<ILDCRTParams<BigInteger>>& GetParamsPartQ(uint32_t part) const {
@@ -435,6 +450,8 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * Method that returns the precomputed values for QHat^-1 mod qj within a
    * partition of towers, used in HYBRID.
    *
+   * @param part index of the partition (digit).
+   * @param sublvl number of towers in the partition minus 1.
    * @return the pre-computed values.
    */
     const std::vector<NativeInteger>& GetPartQlHatInvModq(uint32_t part, uint32_t sublvl) const {
@@ -445,9 +462,10 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Barrett multiplication precomputations getter.
+   * NTL precomputations getter for QHat^-1 mod qj within a partition of towers, used in HYBRID.
    *
-   * @param index The number of towers in the ciphertext.
+   * @param part index of the partition (digit).
+   * @param sublvl number of towers in the partition minus 1.
    * @return the pre-computed values.
    */
     const std::vector<NativeInteger>& GetPartQlHatInvModqPrecon(uint32_t part, uint32_t sublvl) const {
@@ -458,9 +476,10 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Barrett multiplication precomputations getter.
+   * Getter for the table containing [PartQHat]_{p_j}, used in HYBRID.
    *
-   * @param index The table containing [PartQHat]_{p_j}
+   * @param lvl number of towers in the ciphertext minus 1.
+   * @param part index of the partition (digit).
    * @return the pre-computed values.
    */
     const std::vector<std::vector<NativeInteger>>& GetPartQlHatModp(uint32_t lvl, uint32_t part) const {
@@ -471,9 +490,10 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Barrett multiplication precomputations getter.
+   * Barrett multiplication precomputations getter for the complementary partition basis, used in HYBRID.
    *
-   * @param index The number of towers in the ciphertext.
+   * @param lvl number of towers in the ciphertext minus 1.
+   * @param part index of the partition (digit).
    * @return the pre-computed values.
    */
     const std::vector<DoubleNativeInt>& GetmodComplPartqBarrettMu(uint32_t lvl, uint32_t part) const {
@@ -649,7 +669,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
      * Returns the composite scaling degree d. Its values is determined at runtime based on
      * input scaling factor and architecture register size (e.g., 32 bits, 48 bits, 64 bits).
-     * This parameter is only relevant when using the CKKS scheme and .
+     * This parameter is only relevant when using the CKKS scheme with the COMPOSITESCALING scaling techniques.
      *
      * @return the composite degree value for COMPOSITESCALING scaling technique
      **/
@@ -718,6 +738,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * Gets the Auxiliary CRT basis {R} = {r_1,...,r_k}
    * used in homomorphic multiplication
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed CRT params
    */
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(uint32_t l = 0) const {
@@ -728,6 +749,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
    * Gets the Auxiliary expanded CRT basis {S} = {Q*R} =
    * {{q_i},{r_k}} used in homomorphic multiplication
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed CRT params
    */
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(uint32_t l = 0) const {
@@ -735,8 +757,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [(Q/q_i)^{-1}]_{q_i}
+   * Gets the precomputed table of [(Q_l/q_i)^{-1}]_{q_i}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetQlHatInvModq(uint32_t l = 0) const {
@@ -744,8 +767,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the NTL precomputations for [(Q/q_i)^{-1}]_{q_i}
+   * Gets the NTL precomputations for [(Q_l/q_i)^{-1}]_{q_i}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetQlHatInvModqPrecon(uint32_t l = 0) const {
@@ -753,8 +777,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [Q/q_i]_{r_k}
+   * Gets the precomputed table of [Q_l/q_i]_{r_k}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetQlHatModr(uint32_t l = 0) const {
@@ -762,8 +787,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [\alpha*Q]_{r_k}
+   * Gets the precomputed table of [\alpha*Q_l]_{r_k}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetalphaQlModr(uint32_t l = 0) const {
@@ -837,8 +863,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /////////////////////////////////////
 
     /**
-   * Gets the precomputed table of [(R/r_k)^{-1}]_{r_k}
+   * Gets the precomputed table of [(R_l/r_k)^{-1}]_{r_k}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetRlHatInvModr(uint32_t l = 0) const {
@@ -846,8 +873,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the NTL precomputation for [(R/r_k)^{-1}]_{r_k}
+   * Gets the NTL precomputation for [(R_l/r_k)^{-1}]_{r_k}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetRlHatInvModrPrecon(uint32_t l = 0) const {
@@ -855,8 +883,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [R/r_k]_{q_i}
+   * Gets the precomputed table of [R_l/r_k]_{q_i}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetRlHatModq(uint32_t l = 0) const {
@@ -864,8 +893,9 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [\alpha*P]_{q_i}
+   * Gets the precomputed table of [\alpha*R_l]_{q_i}
    *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetalphaRlModq(uint32_t l = 0) const {
@@ -889,7 +919,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of 1./p_j
+   * Gets the precomputed table of 1./r_k
    *
    * @return the precomputed table
    */
@@ -995,7 +1025,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /////////////////////////////////////
 
     /**
-   * Gets the precomputed table of 1./p_{q_i}
+   * Gets the precomputed table of [r^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
@@ -1310,6 +1340,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
    * Gets the precomputed table of [*(Q/q_i/q_0)^{-1}]_{q_i}
    *
+   * @param l index of the leveled parameter set (number of towers in the ciphertext minus 2).
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetMultipartyQHatInvModqAtIndex(uint32_t l) const {
@@ -1319,6 +1350,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
    * Gets the NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}
    *
+   * @param l index of the leveled parameter set (number of towers in the ciphertext minus 2).
    * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetMultipartyQHatInvModqPreconAtIndex(uint32_t l) const {
@@ -1328,6 +1360,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
    * Gets the precomputed table of [Q/q_i/q_0]_{q_0}
    *
+   * @param l index of the leveled parameter set (number of towers in the ciphertext minus 2).
    * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetMultipartyQHatModq0AtIndex(uint32_t l) const {
@@ -1337,6 +1370,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /**
    * Gets the precomputed table of [\alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
    *
+   * @param l index of the leveled parameter set (number of towers in the ciphertext minus 2).
    * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetMultipartyAlphaQModq0AtIndex(uint32_t l) const {

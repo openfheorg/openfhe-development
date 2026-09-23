@@ -59,9 +59,9 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
 
   public:
     /**
-   * Basic constructor for setting crypto params
+   * Basic constructor for setting the crypto context
    *
-   * @param &cryptoParams is the reference to cryptoParams
+   * @param cc the crypto context the key belongs to
    */
     explicit EvalKeyRelinImpl(const CryptoContext<Element>& cc) : EvalKeyImpl<Element>(cc) {}
 
@@ -72,7 +72,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     /**
    * Copy constructor
    *
-   *@param &rhs key to copy from
+   *@param rhs key to copy from
    */
     EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
         : EvalKeyImpl<Element>(rhs.context), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
@@ -80,7 +80,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     /**
    * Move constructor
    *
-   *@param &rhs key to move from
+   *@param rhs key to move from
    */
     EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
         : EvalKeyImpl<Element>(rhs.context), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
@@ -92,7 +92,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     /**
    * Assignment Operator.
    *
-   * @param &rhs key to copy from
+   * @param rhs key to copy from
    */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
@@ -104,7 +104,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     /**
    * Move Assignment Operator.
    *
-   * @param &rhs key to move from
+   * @param rhs key to move from
    */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
         this->context = std::move(rhs.context);
@@ -117,7 +117,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
    * Setter function to store Relinearization Element Vector A.
    * Overrides base class implementation.
    *
-   * @param &a is the Element vector to be copied.
+   * @param a is the Element vector to be copied.
    */
     void SetAVector(const std::vector<Element>& a) override {
         m_AKey = a;
@@ -127,7 +127,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
    * Setter function to store Relinearization Element Vector A.
    * Overrides base class implementation.
    *
-   * @param &&a is the Element vector to be moved.
+   * @param a is the Element vector to be moved.
    */
     void SetAVector(std::vector<Element>&& a) noexcept override {
         m_AKey = std::move(a);
@@ -147,7 +147,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
    * Setter function to store Relinearization Element Vector B.
    * Overrides base class implementation.
    *
-   * @param &b is the Element vector to be copied.
+   * @param b is the Element vector to be copied.
    */
     void SetBVector(const std::vector<Element>& b) override {
         m_BKey = b;
@@ -157,7 +157,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
    * Setter function to store Relinearization Element Vector B.
    * Overrides base class implementation.
    *
-   * @param &&b is the Element vector to be moved.
+   * @param b is the Element vector to be moved.
    */
     void SetBVector(std::vector<Element>&& b) noexcept override {
         m_BKey = std::move(b);

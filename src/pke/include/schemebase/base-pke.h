@@ -67,9 +67,9 @@ class PKEBase {
     /**
    * Function to generate public and private keys
    *
-   * @param &publicKey private key used for decryption.
-   * @param &privateKey private key used for decryption.
-   * @return function ran correctly.
+   * @param cc the crypto context the keys are generated for.
+   * @param makeSparse set to true to generate a sparse (ring-reduction) key; no longer supported.
+   * @return the generated key pair.
    */
     virtual KeyPair<Element> KeyGenInternal(CryptoContext<Element> cc, bool makeSparse) const;
 
@@ -79,35 +79,31 @@ class PKEBase {
     // publicKey);
 
     /**
-   * Method for encrypting plaintex using LBC
+   * Method for encrypting plaintext using LBC
    *
-   * @param privateKey private key used for encryption.
    * @param plaintext copy of the plaintext input. NOTE a copy is passed! That
    * is NOT an error!
-   * @param doEncryption encrypts if true, embeds (encodes) the plaintext into
-   * cryptocontext if false
-   * @param *ciphertext ciphertext which results from encryption.
+   * @param privateKey private key used for encryption.
+   * @return ciphertext which results from encryption.
    */
     virtual Ciphertext<Element> Encrypt(Element plaintext, const PrivateKey<Element> privateKey) const;
 
     /**
    * Method for encrypting plaintext using LBC
    *
-   * @param&publicKey public key used for encryption.
    * @param plaintext copy of the plaintext element. NOTE a copy is passed!
    * That is NOT an error!
-   * @param doEncryption encrypts if true, embeds (encodes) the plaintext into
-   * cryptocontext if false
-   * @param *ciphertext ciphertext which results from encryption.
+   * @param publicKey public key used for encryption.
+   * @return ciphertext which results from encryption.
    */
     virtual Ciphertext<Element> Encrypt(Element plaintext, const PublicKey<Element> publicKey) const;
 
     /**
    * Method for decrypting plaintext using LBC
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
@@ -118,9 +114,9 @@ class PKEBase {
     /**
    * Method for decrypting plaintext using LBC
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,

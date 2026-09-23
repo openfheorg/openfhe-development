@@ -74,7 +74,7 @@ class PublicKeyImpl : public Key<Element> {
     /**
    * Copy constructor
    *
-   *@param &rhs PublicKeyImpl to copy from
+   *@param rhs PublicKeyImpl to copy from
    */
     PublicKeyImpl(const PublicKeyImpl<Element>& rhs)
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_h(rhs.m_h) {}
@@ -82,7 +82,7 @@ class PublicKeyImpl : public Key<Element> {
     /**
    * Move constructor
    *
-   *@param &rhs PublicKeyImpl to move from
+   *@param rhs PublicKeyImpl to move from
    */
     PublicKeyImpl(PublicKeyImpl<Element>&& rhs) noexcept
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_h(std::move(rhs.m_h)) {}
@@ -94,7 +94,7 @@ class PublicKeyImpl : public Key<Element> {
     /**
    * Assignment Operator.
    *
-   * @param &rhs PublicKeyImpl to copy from
+   * @param rhs PublicKeyImpl to copy from
    */
     PublicKeyImpl<Element>& operator=(const PublicKeyImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
@@ -105,7 +105,7 @@ class PublicKeyImpl : public Key<Element> {
     /**
    * Move Assignment Operator.
    *
-   * @param &rhs PublicKeyImpl to copy from
+   * @param rhs PublicKeyImpl to move from
    */
     PublicKeyImpl<Element>& operator=(PublicKeyImpl<Element>&& rhs) noexcept {
         CryptoObject<Element>::operator=(std::move(rhs));
@@ -127,7 +127,7 @@ class PublicKeyImpl : public Key<Element> {
 
     /**
    * Sets the public key vector of Element.
-   * @param &element is the public key Element vector to be copied.
+   * @param element is the public key Element vector to be copied.
    */
     void SetPublicElements(const std::vector<Element>& element) {
         m_h = element;
@@ -135,7 +135,7 @@ class PublicKeyImpl : public Key<Element> {
 
     /**
    * Sets the public key vector of Element.
-   * @param &&element is the public key Element vector to be moved.
+   * @param element is the public key Element vector to be moved.
    */
     void SetPublicElements(std::vector<Element>&& element) noexcept {
         m_h = std::move(element);

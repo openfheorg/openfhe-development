@@ -68,7 +68,9 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * Construct a new ciphertext in the given context
    *
-   * @param cc
+   * @param cc the crypto context the ciphertext belongs to
+   * @param id key tag of the key used to encrypt the ciphertext
+   * @param encType encoding type of the plaintext the ciphertext was created from
    */
     explicit CiphertextImpl(const CryptoContext<Element>& cc, const std::string& id = "",
                             PlaintextEncodings encType = INVALID_ENCODING)
@@ -124,7 +126,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * Assignment Operator.
    *
-   * @param &rhs the CiphertextImpl to assign from
+   * @param rhs the CiphertextImpl to assign from
    * @return this CiphertextImpl
    */
     CiphertextImpl<Element>& operator=(const CiphertextImpl<Element>& rhs) = default;
@@ -132,7 +134,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * Move Assignment Operator.
    *
-   * @param &rhs the CiphertextImpl to move from
+   * @param rhs the CiphertextImpl to move from
    * @return this CiphertextImpl
    */
     CiphertextImpl<Element>& operator=(CiphertextImpl<Element>&& rhs) noexcept = default;
@@ -185,7 +187,7 @@ class CiphertextImpl : public CryptoObject<Element> {
    * SetElement - sets the ring element for the cases that use only one element
    * in the vector this method will throw an exception if it's ever called in
    * cases with other than 1 element
-   * @param &element is a polynomial ring element.
+   * @param element is a polynomial ring element.
    */
     void SetElement(const Element& element) {
         if (m_elements.size() == 0)
@@ -199,7 +201,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * Sets the data element by std::move.
    *
-   * @param &&element is a polynomial ring element.
+   * @param element is a polynomial ring element.
    */
     void SetElement(Element&& element) {
         if (m_elements.size() == 0)
@@ -213,7 +215,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * Sets the data elements.
    *
-   * @param &element is a polynomial ring element.
+   * @param elements is a vector of polynomial ring elements.
    */
     void SetElements(const std::vector<Element>& elements) {
         m_elements = elements;
@@ -222,7 +224,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * Sets the data elements by std::move.
    *
-   * @param &&element is a polynomial ring element.
+   * @param elements is a vector of polynomial ring elements.
    */
     void SetElements(std::vector<Element>&& elements) noexcept {
         m_elements = std::move(elements);
@@ -237,6 +239,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set the degree of the scaling factor for the encrypted message.
+   * @param noiseScaleDeg the degree of the scaling factor
    */
     void SetNoiseScaleDeg(size_t noiseScaleDeg) {
         m_noiseScaleDeg = noiseScaleDeg;
@@ -251,6 +254,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set the number of scalings
+   * @param level the number of scalings (level) of the ciphertext
    */
     // Generic case: no multiplicativeDepth validation. SetLevel() has a specialization for DCRTPoly
     void SetLevel(size_t level) {
@@ -266,6 +270,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set the re-encryption level of the ciphertext.
+   * @param hoplevel the re-encryption (hop) level
    */
     void SetHopLevel(size_t hoplevel) {
         m_hopslevel = hoplevel;
@@ -280,20 +285,22 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set the scaling factor of the ciphertext.
+   * @param sf the scaling factor
    */
     void SetScalingFactor(double sf) {
         m_scalingFactor = sf;
     }
 
     /**
-   * Get the scaling factor of the ciphertext.
+   * Get the integer scaling factor of the ciphertext.
    */
     NativeInteger GetScalingFactorInt() const {
         return m_scalingFactorInt;
     }
 
     /**
-   * Set the scaling factor of the ciphertext.
+   * Set the integer scaling factor of the ciphertext.
+   * @param sf the integer scaling factor
    */
     void SetScalingFactorInt(NativeInteger sf) {
         m_scalingFactorInt = sf;
@@ -308,6 +315,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set the number of slots of the ciphertext.
+   * @param slots the number of slots
    */
     void SetSlots(uint32_t slots) {
         m_slots = slots;
@@ -325,7 +333,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     /**
    * SetEncodingType - after Encrypt, remember the CiphertextImpl's encoding
    * type
-   * @param et
+   * @param et the encoding type of the plaintext the ciphertext was created from
    */
     void SetEncodingType(PlaintextEncodings et) {
         m_encodingType = et;
@@ -340,6 +348,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set the Metadata map of the ciphertext.
+   * @param mdata the metadata map
    */
     void SetMetadataMap(const MetadataMap& mdata) {
         m_metadataMap = mdata;
@@ -382,6 +391,8 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get a Metadata element from the Metadata map of the ciphertext.
+   * @param key the string key of the metadata element
+   * @return the metadata element, or nullptr if the key is not found
    */
     std::shared_ptr<Metadata> GetMetadataByKey(const std::string& key) const {
         auto it = m_metadataMap->find(key);
@@ -392,6 +403,8 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Set a Metadata element in the Metadata map of the ciphertext.
+   * @param key the string key of the metadata element
+   * @param value the metadata element to store
    */
     void SetMetadataByKey(const std::string& key, const std::shared_ptr<Metadata>& value) {
         (*m_metadataMap)[key] = value;
@@ -540,8 +553,8 @@ void CiphertextImpl<DCRTPoly>::SetLevel(size_t level);
  * operator+ overload for Ciphertexts.  Performs EvalAdd.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext operand
- * @param &b ciphertext operand
+ * @param a ciphertext operand
+ * @param b ciphertext operand
  *
  * @return The result of addition.
  */
@@ -554,10 +567,10 @@ Ciphertext<Element> operator+(const Ciphertext<Element>& a, const Ciphertext<Ele
  * operator+= overload for Ciphertexts.  Performs EvalAdd.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext to be added to
- * @param &b ciphertext to add to &a
+ * @param a ciphertext to be added to
+ * @param b ciphertext to add to a
  *
- * @return &a
+ * @return a
  */
 template <class Element>
 Ciphertext<Element>& operator+=(Ciphertext<Element>& a, const Ciphertext<Element>& b) {
@@ -567,7 +580,7 @@ Ciphertext<Element>& operator+=(Ciphertext<Element>& a, const Ciphertext<Element
 /**
  * Unary negation operator.
  *
- * @param &a ciphertext operand
+ * @param a ciphertext operand
  * @return the result of the negation.
  */
 template <class Element>
@@ -579,8 +592,8 @@ Ciphertext<Element> operator-(const Ciphertext<Element>& a) {
  * operator- overload.  Performs EvalSub.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext operand
- * @param &b ciphertext operand
+ * @param a ciphertext operand
+ * @param b ciphertext operand
  *
  * @return The result of subtraction.
  */
@@ -590,13 +603,13 @@ Ciphertext<Element> operator-(const Ciphertext<Element>& a, const Ciphertext<Ele
 }
 
 /**
- * operator-= overload for Ciphertexts.  Performs EvalAdd.
+ * operator-= overload for Ciphertexts.  Performs EvalSub.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext to be subtracted from
- * @param &b ciphertext to subtract from &a
+ * @param a ciphertext to be subtracted from
+ * @param b ciphertext to subtract from a
  *
- * @return &a
+ * @return a
  */
 template <class Element>
 Ciphertext<Element>& operator-=(Ciphertext<Element>& a, const Ciphertext<Element>& b) {
@@ -607,8 +620,8 @@ Ciphertext<Element>& operator-=(Ciphertext<Element>& a, const Ciphertext<Element
  * operator* overload.  Performs EvalMult.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext operand
- * @param &b ciphertext operand
+ * @param a ciphertext operand
+ * @param b ciphertext operand
  *
  * @return The result of multiplication.
  */
@@ -621,10 +634,10 @@ Ciphertext<Element> operator*(const Ciphertext<Element>& a, const Ciphertext<Ele
  * operator*= overload for Ciphertexts.  Performs EvalMult.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext to be multiplied
- * @param &b ciphertext to multiply by &a
+ * @param a ciphertext to be multiplied
+ * @param b ciphertext to multiply a by
  *
- * @return &a
+ * @return a
  */
 template <class Element>
 Ciphertext<Element>& operator*=(Ciphertext<Element>& a, const Ciphertext<Element>& b) {

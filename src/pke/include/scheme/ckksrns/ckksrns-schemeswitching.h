@@ -249,9 +249,10 @@ class SWITCHCKKSRNS : public FHERNS {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param ringDim ring dimension (number of coefficients to fit).
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                            NativeVector* nativeVec) const;
@@ -260,9 +261,10 @@ class SWITCHCKKSRNS : public FHERNS {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param ringDim ring dimension (number of coefficients to fit).
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                            NativeVector* nativeVec) const;

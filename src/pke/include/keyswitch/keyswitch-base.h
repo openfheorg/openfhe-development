@@ -71,10 +71,9 @@ class KeySwitchBase {
     /**
    * Method for KeySwitchGen
    *
-   * @param &originalPrivateKey Original private key used for encryption.
-   * @param &newPrivateKey New private key to generate the keyswitch hint.
-   * @param *KeySwitchHint is where the resulting keySwitchHint will be
-   * placed.
+   * @param oldPrivateKey Original private key the ciphertext is encrypted under.
+   * @param newPrivateKey New private key to generate the key switching key for.
+   * @return the key switching key
    */
     virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
                                                   const PrivateKey<Element> newPrivateKey) const {

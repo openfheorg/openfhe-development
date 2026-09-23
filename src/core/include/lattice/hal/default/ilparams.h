@@ -83,14 +83,14 @@ class ILParamsImpl final : public ElemParams<IntType> {
     /**
    * @brief Copy constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is copied.
    */
     ILParamsImpl(const ILParamsImpl& rhs) : ElemParams<IntType>(rhs) {}
 
     /**
    * @brief Copy Assignment Operator.
    *
-   * @param &rhs the params to be copied.
+   * @param rhs the params to be copied.
    * @return this object
    */
     ILParamsImpl& operator=(const ILParamsImpl& rhs) {
@@ -101,7 +101,7 @@ class ILParamsImpl final : public ElemParams<IntType> {
     /**
    * @brief Move constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is moved.
    */
     ILParamsImpl(ILParamsImpl&& rhs) noexcept : ElemParams<IntType>(std::move(rhs)) {}
 

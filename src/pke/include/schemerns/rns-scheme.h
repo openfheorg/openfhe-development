@@ -57,8 +57,7 @@
 namespace lbcrypto {
 
 /**
- * @brief Abstract interface class for LBC PRE algorithms
- * @tparam Element a ring element.
+ * @brief RNS implementation of the scheme interface (all crypto components for DCRTPoly)
  */
 class SchemeRNS : public SchemeBase<DCRTPoly> {
   public:

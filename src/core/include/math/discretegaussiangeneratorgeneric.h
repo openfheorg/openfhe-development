@@ -245,14 +245,13 @@ class BaseSampler {
     /**
    * @brief Generates the probability matrix of given distribution, which is
    * used in Knuth-Yao method
-   * @param sttdev standard deviation of Discrete Gaussian Distribution
+   * @param stddev standard deviation of Discrete Gaussian Distribution
    * @param mean Center of the distribution
-   * @param tableCount Number of probability tables to be generated
    */
     void GenerateProbMatrix(double stddev, double mean);
     /**
-   * @ brief Returns a generated integer. Uses Naive Knuth-Yao method
-   * @ return A random value within the Discrete Gaussian Distribution
+   * @brief Returns a generated integer. Uses Naive Knuth-Yao method
+   * @return A random value within the Discrete Gaussian Distribution
    */
     int64_t GenerateIntegerKnuthYao();
     /**
@@ -303,7 +302,7 @@ class DiscreteGaussianGeneratorGeneric {
    * @brief Basic constructor which does the precomputations.
    * @param samplers Array containing the base samplers
    * @param std Standard deviation of the base samplers
-   * @param base Log of number of centers that are used for calculating base
+   * @param b Log of number of centers that are used for calculating base
    * samplers (Recall that base samplers are centered from 0 to (2^b-1)/2^b)
    * @param N smoothing parameter
    */
@@ -313,11 +312,11 @@ class DiscreteGaussianGeneratorGeneric {
     DiscreteGaussianGeneratorGeneric& operator=(const DiscreteGaussianGeneratorGeneric&) = delete;
 
     /**
-   * @ brief Returns a generated integer. Uses generic algorithm in UCSD paper,
+   * @brief Returns a generated integer. Uses generic algorithm in UCSD paper,
    * based on Sample Z
-   * @ param mean Mean of the distribution
-   * @ param variance Variance of the desired distribution
-   * @ return A random value within the Discrete Gaussian Distribution
+   * @param mean Mean of the distribution
+   * @param std Standard deviation of the desired distribution
+   * @return A random value within the Discrete Gaussian Distribution
    */
     int64_t GenerateInteger(double mean, double std);
     int64_t GenerateInteger() {

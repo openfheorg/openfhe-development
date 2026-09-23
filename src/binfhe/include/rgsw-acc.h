@@ -51,14 +51,6 @@ class RingGSWAccumulator {
   public:
     RingGSWAccumulator() = default;
 
-    /**
-   * Key generation for internal Ring GSW
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param skNTT secret key polynomial in the EVALUATION representation
-   * @param LWEsk the secret key
-   * @return a shared pointer to the resulting keys
-   */
 #if NATIVEINT != 32
     // Generate the refreshing key directly in 32-bit internal form. Returns nullptr where the
     // accumulator does not implement it, so callers fall back to KeyGenAcc.
@@ -75,6 +67,14 @@ class RingGSWAccumulator {
     }
 #endif
 
+    /**
+   * Key generation for internal Ring GSW
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param skNTT secret key polynomial in the EVALUATION representation
+   * @param LWEsk the secret key
+   * @return a shared pointer to the resulting keys
+   */
     virtual RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                     ConstLWEPrivateKey& LWEsk) const {
         OPENFHE_THROW("Operation not supported");
@@ -100,11 +100,19 @@ class RingGSWAccumulator {
    * @param params a shared pointer to RingGSW scheme parameters
    * @param input input RLWE ciphertext
    * @param output output RLWE' ciphertext
-   * @param index optional LWE secret-key coefficient index
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
                               std::vector<NativePoly>& output) const;
 
+    /**
+   * The signed digit decomposition which takes an RLWE ciphertext input and outputs a vector of its digits, i.e., an
+   * RLWE' ciphertext, using the gadget base associated with the given LWE secret-key coefficient index.
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param input input RLWE ciphertext
+   * @param output output RLWE' ciphertext
+   * @param index LWE secret-key coefficient index
+   */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
                               std::vector<NativePoly>& output, uint32_t index) const;
 

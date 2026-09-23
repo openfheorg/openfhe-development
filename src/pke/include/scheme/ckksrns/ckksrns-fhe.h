@@ -481,7 +481,7 @@ class FHECKKSRNS : public FHERNS {
    * The function-independent part of FE functional bootstrapping: SlotsToCoeffs, modulus raise,
    * CoeffsToSlots and the complex exponential.
    *
-   * @param &ciphertext input ciphertext, with slot values in [-1/2, 1/2)
+   * @param ciphertext input ciphertext, with slot values in [-1/2, 1/2)
    * @return a ciphertext of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message
    */
     Ciphertext<DCRTPoly> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
@@ -489,7 +489,7 @@ class FHECKKSRNS : public FHERNS {
     /**
    * Twice the real part of an evaluated Fourier series, obtained by adding its conjugate to it.
    *
-   * @param &ctxtSeries the evaluated series
+   * @param ctxtSeries the evaluated series
    * @return the real-valued FE functional bootstrapping output
    */
     static Ciphertext<DCRTPoly> TwiceRealPart(const Ciphertext<DCRTPoly>& ctxtSeries);
@@ -497,9 +497,10 @@ class FHECKKSRNS : public FHERNS {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param ringDim ring dimension (number of coefficients to fit).
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     static void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                                   NativeVector* nativeVec);
@@ -508,9 +509,10 @@ class FHECKKSRNS : public FHERNS {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param ringDim ring dimension (number of coefficients to fit).
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     static void FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                                   NativeVector* nativeVec);

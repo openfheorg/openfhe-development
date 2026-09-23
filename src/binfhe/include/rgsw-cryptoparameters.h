@@ -69,7 +69,7 @@ class RingGSWCryptoParams : public Serializable {
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
-   * @param std standar deviation
+   * @param std standard deviation
    * @param keyDist secret key distribution
    * @param signEval flag if sign evaluation is needed
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping

@@ -46,7 +46,6 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract interface class for LBC SHE algorithms
- * @tparam Element a ring element.
  */
 class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   public:
@@ -110,10 +109,10 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
 
     /**
-   * Virtual function to define the interface for homomorphic addition of
-   * ciphertexts.
+   * Virtual function to define the interface for in-place homomorphic addition of
+   * a ciphertext and a plaintext.
    *
-   * @param ciphertext the input ciphertext.
+   * @param ciphertext the input/output ciphertext.
    * @param plaintext the input plaintext.
    */
     void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
@@ -130,13 +129,12 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
     /**
-   * Virtual function to define the interface for homomorphic addition of
-   * ciphertexts. This is the mutable version - input ciphertext may change
+   * Virtual function to define the interface for in-place homomorphic addition of
+   * a ciphertext and a plaintext. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
    *
-   * @param ciphertext the input ciphertext.
+   * @param ciphertext the input/output ciphertext.
    * @param plaintext the input plaintext.
-   * @return the new ciphertext.
    */
     void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
@@ -161,10 +159,10 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
                                  ConstCiphertext<DCRTPoly>& ciphertext2) const override;
 
     /**
-   * Virtual function to define the interface for homomorphic subtraction of
+   * Virtual function to define the interface for in-place homomorphic subtraction of
    * ciphertexts.
    *
-   * @param ciphertext1 the input ciphertext.
+   * @param ciphertext1 the input/output ciphertext.
    * @param ciphertext2 the input ciphertext.
    */
     void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly>& ciphertext2) const override;
@@ -182,13 +180,12 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
                                         Ciphertext<DCRTPoly>& ciphertext2) const override;
 
     /**
-   * Virtual function to define the interface for homomorphic subtraction of
-   * ciphertexts. This is the mutable version - input ciphertext may change
+   * Virtual function to define the interface for in-place homomorphic subtraction of
+   * ciphertexts. This is the mutable version - input ciphertexts may change
    * (automatically rescaled, or towers dropped).
    *
-   * @param ciphertext1 the input ciphertext.
+   * @param ciphertext1 the input/output ciphertext.
    * @param ciphertext2 the input ciphertext.
-   * @return the new ciphertext.
    */
     void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
@@ -216,13 +213,12 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
     /**
-   * Virtual function to define the interface for homomorphic subtraction of
-   * ciphertexts. This is the mutable version - input ciphertext may change
+   * Virtual function to define the interface for in-place homomorphic subtraction of
+   * a plaintext from a ciphertext. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
    *
-   * @param ciphertext the input ciphertext.
+   * @param ciphertext the input/output ciphertext.
    * @param plaintext the input plaintext.
-   * @return the new ciphertext.
    */
     void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext& plaintext) const override;
 
@@ -270,7 +266,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     /**
    * Method for In-place Modulus Reduction.
    *
-   * @param &cipherText Ciphertext to perform mod reduce on.
+   * @param ciphertext Ciphertext to perform mod reduce on.
    * @param levels the number of towers to drop.
    */
     void ModReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
@@ -310,7 +306,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     /**
    * Method for rescaling.
    *
-   * @param cipherText is the ciphertext to perform modreduce on.
+   * @param ciphertext is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @return ciphertext after the modulus reduction performed.
    */
@@ -319,9 +315,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     /**
    * Method for rescaling in-place.
    *
-   * @param cipherText is the ciphertext to perform modreduce on.
+   * @param ciphertext is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
-   * @details \p cipherText will have modulus reduction performed in-place.
+   * @details \p ciphertext will have modulus reduction performed in-place.
    */
     void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override {
         OPENFHE_THROW("Not supported for this scheme");
@@ -332,7 +328,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * number of the towers of the ciphertext without changing the underlying
    * plaintext.
    *
-   * @param cipherText1 is the original ciphertext to be level reduced.
+   * @param ciphertext is the original ciphertext to be level reduced.
    * @param levels the number of towers to drop.
    * @return resulting ciphertext.
    */
@@ -343,8 +339,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * "levels" number of the towers of the ciphertext without changing the
    * underlying plaintext.
    *
-   * @param cipherText1 is the ciphertext to be level reduced in-place
-   * @param linearKeySwitchHint not used in the CKKS scheme.
+   * @param ciphertext is the ciphertext to be level reduced in-place
    * @param levels the number of towers to drop.
    */
     void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override {

@@ -132,7 +132,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Move constructor for moving a vector
    *
-   * @param &&rhs is the mubintvec to be moved.
+   * @param rhs is the mubintvec to be moved.
    */
     mubintvec(mubintvec&& rhs) noexcept
         : m_modulus{std::move(rhs.m_modulus)}, m_modulus_state{rhs.m_modulus_state}, m_data(std::move(rhs.m_data)) {}
@@ -143,7 +143,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    *
    * @param length initial size in terms of the number of entries.
    * @param modulus ubint associated with entries in the vector.
-   * @param rhs initialier list of strings
+   * @param rhs initializer list of strings
    */
     explicit mubintvec(uint32_t length, const ubint_el_t& modulus, std::initializer_list<std::string> rhs) noexcept;
 
@@ -153,7 +153,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    *
    * @param length initial size in terms of the number of entries.
    * @param modulus ubint associated with entries in the vector.
-   * @param rhs initialier list of usints
+   * @param rhs initializer list of uint64_t
    */
     explicit mubintvec(uint32_t length, const ubint_el_t& modulus, std::initializer_list<uint64_t> rhs) noexcept;
 
@@ -166,7 +166,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Assignment operator
    *
-   * @param &rhs is the mubintvec to be assigned from.
+   * @param rhs is the mubintvec to be assigned from.
    * @return assigned mubintvec ref.
    */
     mubintvec& operator=(const mubintvec& rhs) noexcept;
@@ -174,7 +174,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * move assignment contructor
    *
-   * @param &rhs is the mubintvec to move
+   * @param rhs is the mubintvec to move
    * @return the return value.
    */
     mubintvec& operator=(mubintvec&& rhs) noexcept {
@@ -187,7 +187,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Initializer list for mubintvec.
    *
-   * @param &&rhs is the list of strings to be assigned to the mubintvec.
+   * @param rhs is the list of strings to be assigned to the mubintvec.
    * @return mubintvec object
    * note if  modulus is set then mod(input) is stored
    * note modulus remains unchanged.
@@ -197,7 +197,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Initializer list for mubintvec.
    *
-   * @param &&rhs is the list of usints to be assigned to the mubintvec.
+   * @param rhs is the list of uint64_t to be assigned to the mubintvec.
    * @return mubintvec object
    * note if  modulus is set then mod(input) is stored
    * note modulus remains unchanged.
@@ -205,7 +205,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     mubintvec& operator=(std::initializer_list<uint64_t> rhs) noexcept;
 
     /**
-   * @param &&rhs is the uint32_t value to assign to the zeroth entry
+   * @param val is the uint64_t value to assign to the zeroth entry
    * @return resulting mubintvec
    * note that modulus remains untouched.
    */
@@ -217,7 +217,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     }
 
     /**
-   * @param &&rhs is the ubint value to assign to the zeroth entry
+   * @param val is the ubint value to assign to the zeroth entry
    * @return resulting mubintvec
    */
     mubintvec& operator=(const ubint_el_t& val) {
@@ -235,7 +235,8 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Sets/gets a value at an index.
    * This method is slower than operator[] as it checks if index out of range
    *
-   * @param index is the index to set a value at.
+   * @param i is the index of the entry to access.
+   * @return is a reference to the entry at the index.
    */
     ubint_el_t& at(size_t i) {
         if (!mubintvec::IndexCheck(i))
@@ -258,8 +259,8 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     }
 
     /**
-   * checks the vector modulus state.
-   * always returns true
+   * Checks the vector modulus state.
+   * @return true if the modulus has been set.
    */
     bool isModulusSet() const {
         return m_modulus_state == State::INITIALIZED;
@@ -337,19 +338,17 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     }
 
     /**
-   * Vector modulus operator.
-   * Side effect it resets the vector modulus to modulus
+   * Vector modulus operator. The vector modulus itself is left unchanged.
    *
-   * @param &modulus is the modulus to perform on the current vector entries.
+   * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
     mubintvec Mod(const ubint_el_t& modulus) const;
 
     /**
-   * Vector modulus operator. In-place variant.
-   * Side effect it resets the vector modulus to modulus
+   * Vector modulus operator. In-place variant. The vector modulus itself is left unchanged.
    *
-   * @param &modulus is the modulus to perform on the current vector entries.
+   * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
     mubintvec& ModEq(const ubint_el_t& modulus);
@@ -357,7 +356,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar-to-vector modulus addition operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
     mubintvec ModAdd(const ubint_el_t& b) const;
@@ -365,7 +364,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar-to-vector modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
     mubintvec& ModAddEq(const ubint_el_t& b);
@@ -374,7 +373,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Scalar modulus addition at a particular index.
    *
    * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
+   * @param b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
     mubintvec ModAddAtIndex(size_t i, const ubint_el_t& b) const;
@@ -383,7 +382,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Scalar modulus addition at a particular index. In-place variant.
    *
    * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
+   * @param b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
     mubintvec& ModAddAtIndexEq(size_t i, const ubint_el_t& b);
@@ -391,7 +390,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Vector component wise modulus addition.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
     mubintvec ModAdd(const mubintvec& b) const;
@@ -399,7 +398,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Vector component wise modulus addition. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
     mubintvec& ModAddEq(const mubintvec& b);
@@ -408,7 +407,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar-from-vector modulus subtraction operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
     mubintvec ModSub(const ubint_el_t& b) const;
@@ -416,7 +415,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar-from-vector modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
     mubintvec& ModSubEq(const ubint_el_t& b);
@@ -424,7 +423,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Vector component wise modulus subtraction.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
     mubintvec ModSub(const mubintvec& b) const;
@@ -432,7 +431,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Vector component wise modulus subtraction. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
     mubintvec& ModSubEq(const mubintvec& b);
@@ -440,7 +439,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar-to-vector modulus multiplication operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
     mubintvec ModMul(const ubint_el_t& b) const;
@@ -448,7 +447,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar-to-vector modulus multiplication operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
     mubintvec& ModMulEq(const ubint_el_t& b);
@@ -456,7 +455,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Vector component wise modulus multiplication.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
@@ -465,7 +464,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Vector component wise modulus multiplication. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
@@ -475,7 +474,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar modulus exponentiation operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     mubintvec ModExp(const ubint_el_t& b) const;
@@ -483,7 +482,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     /**
    * Scalar modulus exponentiation operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     mubintvec& ModExpEq(const ubint_el_t& b);
@@ -522,8 +521,8 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     mubintvec MultiplyAndRound(const ubint_el_t& p, const ubint_el_t& q) const;
@@ -532,8 +531,8 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     mubintvec& MultiplyAndRoundEq(const ubint_el_t& p, const ubint_el_t& q);
@@ -542,7 +541,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     mubintvec DivideAndRound(const ubint_el_t& q) const;
@@ -551,7 +550,7 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     mubintvec& DivideAndRoundEq(const ubint_el_t& q);

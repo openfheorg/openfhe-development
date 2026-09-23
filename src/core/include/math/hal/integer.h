@@ -67,7 +67,7 @@ class BigIntegerInterface {
     /**
    * Addition operation.
    *
-   * @param &b is the value to add.
+   * @param b is the value to add.
    * @return result of the addition operation.
    */
     T Add(const T& b) const;
@@ -84,7 +84,7 @@ class BigIntegerInterface {
     /**
    * Subtraction operation.
    *
-   * @param &b is the value to subtract.
+   * @param b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
     T Sub(const T& b) const;
@@ -101,7 +101,7 @@ class BigIntegerInterface {
     /**
    * Multiplication operation.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     T Mul(const T& b) const;
@@ -109,7 +109,7 @@ class BigIntegerInterface {
     /**
    * Multiplication operation. In-place variant.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     T& MulEq(const T& b);
@@ -125,7 +125,7 @@ class BigIntegerInterface {
     /**
    * Division operation.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     T DividedBy(const T& b) const;
@@ -133,7 +133,7 @@ class BigIntegerInterface {
     /**
    * Division operation. In-place variant.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     T& DividedByEq(const T& b);
@@ -150,8 +150,8 @@ class BigIntegerInterface {
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     T MultiplyAndRound(const T& p, const T& q) const;
@@ -161,7 +161,7 @@ class BigIntegerInterface {
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     T DivideAndRound(const T& q) const;
@@ -172,7 +172,7 @@ class BigIntegerInterface {
     /**
    * Naive modulus operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
     T Mod(const T& modulus) const;
@@ -198,8 +198,8 @@ class BigIntegerInterface {
    * Implements generalized Barrett modular reduction algorithm. Uses one
    * precomputed value of mu.
    *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
     T Mod(const T& modulus, const T& mu) const;
@@ -208,8 +208,8 @@ class BigIntegerInterface {
     /**
    * Modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     T ModAdd(const T& b, const T& modulus) const;
@@ -218,8 +218,8 @@ class BigIntegerInterface {
     /**
    * Modulus addition where operands are < modulus.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     T ModAddFast(const T& b, const T& modulus) const;
@@ -228,9 +228,9 @@ class BigIntegerInterface {
     /**
    * Barrett modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
     T ModAdd(const T& b, const T& modulus, const T& mu) const;
@@ -239,8 +239,8 @@ class BigIntegerInterface {
     /**
    * Modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     T ModSub(const T& b, const T& modulus) const;
@@ -249,8 +249,8 @@ class BigIntegerInterface {
     /**
    * Modulus subtraction where operands are < modulus.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     T ModSubFast(const T& b, const T& modulus) const;
@@ -259,9 +259,9 @@ class BigIntegerInterface {
     /**
    * Barrett modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
     T ModSub(const T& b, const T& modulus, const T& mu) const;
@@ -270,8 +270,8 @@ class BigIntegerInterface {
     /**
    * Modulus multiplication operation.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     T ModMul(const T& b, const T& modulus) const;
@@ -280,9 +280,9 @@ class BigIntegerInterface {
     /**
    * Barrett modulus multiplication.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     T ModMul(const T& b, const T& modulus, const T& mu) const;
@@ -291,8 +291,8 @@ class BigIntegerInterface {
     /**
    * Modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     T ModMulFast(const T& b, const T& modulus) const;
@@ -301,9 +301,9 @@ class BigIntegerInterface {
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     T ModMulFast(const T& b, const T& modulus, const T& mu) const;
@@ -313,9 +313,9 @@ class BigIntegerInterface {
    * NTL-optimized modular multiplication using a precomputation for the
    * multiplicand. Assumes operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &bInv NTL precomputation for b.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param bInv NTL precomputation for b.
    * @return is the result of the modulus multiplication operation.
    */
     T ModMulFastConst(const T& b, const T& modulus, const T& bInv) const;
@@ -324,8 +324,8 @@ class BigIntegerInterface {
     /**
    * Modulus exponentiation operation.
    *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the exponent.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
     T ModExp(const T& b, const T& modulus) const;
@@ -334,7 +334,7 @@ class BigIntegerInterface {
     /**
    * Modulus inverse operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
     T ModInverse(const T& modulus) const;
@@ -381,7 +381,7 @@ class BigIntegerInterface {
    *
    * @param a is the BigInteger to be compared with.
    * @return  -1 for strictly less than, 0 for equal to and 1 for strictly
-   * greater than conditons.
+   * greater than conditions.
    */
     int Compare(const T& a) const;
 
@@ -431,7 +431,7 @@ class BigIntegerInterface {
     uint32_t GetLengthForBase(uint32_t base) const;
 
     /**
-   * Get the number of digits using a specific base - support for arbitrary base
+   * Get the digit at a specific index using a specific base - support for arbitrary base
    * may be needed. Example: for number 83, index 2 and base 4 we have:
    *
    *                         index:0,1,2,3
@@ -440,8 +440,8 @@ class BigIntegerInterface {
    * The return number is 1.
    *
    * @param index is the location to return value from in the specific base.
-   * @param base is the base with which to determine length in.
-   * @return the length of the representation in a specific base.
+   * @param base is the base of the digit decomposition.
+   * @return the digit at the specific index in the specific base.
    */
     uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 

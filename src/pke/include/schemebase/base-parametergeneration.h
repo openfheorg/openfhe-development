@@ -65,7 +65,7 @@ class ParameterGenerationBase {
    * Method for computing all derived parameters based on chosen primitive
    * parameters
    *
-   * @param *cryptoParams the crypto parameters object to be populated with
+   * @param cryptoParams the crypto parameters object to be populated with
    * parameters.
    * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch
    * operations are performed.
@@ -88,13 +88,15 @@ class ParameterGenerationBase {
    * Method for computing all derived parameters based on chosen primitive
    * parameters.
    *
-   * @param *cryptoParams the crypto parameters object to be populated with
+   * @param cryptoParams the crypto parameters object to be populated with
    * parameters.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
    * @param firstModSize the bit-size of the first modulus
    * @param numPartQ number of partitions of Q for HYBRID key switching
+   * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in
+   * multi-party interactive bootstrapping
    */
     virtual bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                                           uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
@@ -106,7 +108,7 @@ class ParameterGenerationBase {
     /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters. This is intended for BGVrns
-   * @param *cryptoParams the crypto parameters object to be populated with
+   * @param cryptoParams the crypto parameters object to be populated with
    * parameters.
    * @param evalAddCount number of EvalAdds per level.
    * @param keySwitchCount number of KeySwitch operations per level.

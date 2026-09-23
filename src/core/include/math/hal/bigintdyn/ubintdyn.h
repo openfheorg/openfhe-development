@@ -166,7 +166,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 
     /**
    * Copy constructor.
-   * @param &val is the ubint to be copied.
+   * @param val is the ubint to be copied.
    */
     ubint(const ubint& val) noexcept : m_MSB{val.m_MSB}, m_value{val.m_value} {}
 
@@ -176,7 +176,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 
     /**
    * Move constructor.
-   * @param &&val is the ubint to be copied.
+   * @param val is the ubint to be moved.
    */
     ubint(ubint&& val) noexcept : m_MSB{std::move(val.m_MSB)}, m_value{std::move(val.m_value)} {}
 
@@ -186,7 +186,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 
     /**
    * Constructor from a string.
-   * @param &strval is the initial integer represented as a string.
+   * @param strval is the initial integer represented as a string.
    */
     explicit ubint(const std::string& strval) {
         this->ubint::SetValue(strval);
@@ -197,8 +197,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     explicit ubint(const char strval) : ubint(limb_t(strval - '0')) {}
 
     /**
-   * Constructor from an unsigned integer.
-   * @param val is the initial integer represented as a uint64_t.
+   * Constructor from an integer.
+   * @param val is the initial integer represented as an integral type T.
    */
     template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
     ubint(T val) : m_MSB{lbcrypto::GetMSB(val)}, m_value{limb_t(val)} {
@@ -220,7 +220,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Copy assignment operator
    *
-   * @param &val is the ubint to be assigned from.
+   * @param val is the ubint to be assigned from.
    * @return assigned ubint ref.
    */
     ubint& operator=(const ubint& val) noexcept {
@@ -247,7 +247,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Assignment operator for all other types that have not already got their own
    * assignment operators.
-   * @param &val is the value to be assign from
+   * @param val is the value to be assign from
    * @return the assigned BigInteger ref.
    */
     template <typename T, std::enable_if_t<!std::is_same_v<T, const ubint>, bool> = true>
@@ -279,7 +279,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Addition operation.
    *
-   * @param &b is the value to add.
+   * @param b is the value to add.
    * @return result of the addition operation.
    */
     ubint Add(const ubint& b) const;
@@ -288,7 +288,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Subtraction operation.
    *
-   * @param &b is the value to subtract.
+   * @param b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
     ubint Sub(const ubint& b) const;
@@ -304,7 +304,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Multiplication operation.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     ubint Mul(const ubint& b) const;
@@ -315,7 +315,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Division operation.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     ubint DividedBy(const ubint& b) const;
@@ -336,8 +336,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     ubint MultiplyAndRound(const ubint& p, const ubint& q) const;
@@ -349,7 +349,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     ubint DivideAndRound(const ubint& q) const;
@@ -360,7 +360,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Naive modulus operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
     ubint Mod(const ubint& modulus) const;
@@ -380,8 +380,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * Implements generalized Barrett modular reduction algorithm. Uses one
    * precomputed value of mu.
    *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
     template <typename T = limb_t>
@@ -431,8 +431,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     ubint ModAdd(const ubint& b, const ubint& modulus) const;
@@ -441,8 +441,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus addition where operands are < modulus.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     ubint ModAddFast(const ubint& b, const ubint& modulus) const;
@@ -451,9 +451,9 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Barrett modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
     template <typename T = limb_t>
@@ -483,8 +483,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     ubint ModSub(const ubint& b, const ubint& modulus) const;
@@ -493,8 +493,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus subtraction where operands are < modulus.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     ubint ModSubFast(const ubint& b, const ubint& modulus) const;
@@ -503,9 +503,9 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Barrett modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
     template <typename T = limb_t>
@@ -550,8 +550,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus multiplication operation.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     template <typename T = limb_t>
@@ -592,9 +592,9 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Barrett modulus multiplication.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     ubint ModMul(const ubint& b, const ubint& modulus, const ubint& mu) const {
@@ -619,8 +619,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     ubint ModMulFast(const ubint& b, const ubint& modulus) const;
@@ -631,9 +631,9 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     ubint ModMulFast(const ubint& b, const ubint& modulus, const ubint& mu) const {
@@ -654,8 +654,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus exponentiation operation. Square-and-multiply algorithm is used.
    *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the exponent.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
     ubint ModExp(const ubint& b, const ubint& modulus) const;
@@ -666,7 +666,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Modulus inverse operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
     ubint ModInverse(const ubint& modulus) const;
@@ -760,7 +760,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
         return m_value.size();
     }
 
-    /**
+    /*
    * Tests whether the ubint is a power of 2.
    *
    * @param x is the value to check.
@@ -795,7 +795,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     }
 
     /**
-   * Get the number of digits using a specific base.
+   * Get a specific digit at "digit" index; big integer is seen as an array of
+   * digits, where a 0 <= digit < base.
    * Warning: only power-of-2 bases are currently supported.
    * Example: for number 83, index 2 and base 4 we have:
    *
@@ -806,7 +807,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    *
    * @param index is the location to return value from in the specific base.
    * @param base is the base with which to determine length in.
-   * @return the length of the representation in a specific base.
+   * @return is the requested digit.
    */
     uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
@@ -849,7 +850,7 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     /**
    * Delivers value of the internal limb storage
    * Used primarily for debugging
-   * @return STL vector of uint_type
+   * @return string with the space-separated limb values, least significant limb first
    */
     std::string GetInternalRepresentation() const {
         std::string ret{};
@@ -911,8 +912,6 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * Normalize limb storage of the ubint by making sure the most
    * significant limb is non-zero (all higher zero limbs are
    * removed).
-   *
-   * @return resulting bit.
    */
     void NormalizeLimbs() {
         auto size = m_value.size() - 1;
@@ -923,8 +922,11 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     }
 
     /**
-   * helper function for Div
-   * @param defined in ubint.cpp
+   * helper function for Div; computes the quotient and remainder of u divided by v
+   * @param[out] q is the quotient u/v.
+   * @param[out] r is the remainder u mod v.
+   * @param u is the dividend.
+   * @param v is the divisor.
    */
     void divqr_vect(ubint& q, ubint& r, const ubint& u, const ubint& v) const noexcept;
     void divq_vect(ubint& q, const ubint& u, const ubint& v) const noexcept;
@@ -934,8 +936,8 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * function to return the ceiling of the input number divided by
    * the number of bits in the limb data type.  DBC this is to
    * determine how many limbs are needed for an input bitsize.
-   * @param Number is the number to be divided.
-   * @return the ceiling of Number/(bits in the limb data type)
+   * @param msb is the number of bits to be divided.
+   * @return the ceiling of msb/(bits in the limb data type)
    */
     static constexpr uint32_t MSBToLimbs(uint32_t msb) noexcept {
         constexpr uint32_t mask{m_limbBitLength - 1};

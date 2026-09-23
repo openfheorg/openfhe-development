@@ -48,7 +48,6 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract interface for parameter generation algorithm
- * @tparam Element a ring element.
  */
 class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
   public:

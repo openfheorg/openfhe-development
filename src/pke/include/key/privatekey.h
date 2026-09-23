@@ -87,14 +87,14 @@ class PrivateKeyImpl : public Key<Element> {
 
     /**
    * Copy constructor
-   *@param &rhs the PrivateKeyImpl to copy from
+   *@param rhs the PrivateKeyImpl to copy from
    */
     PrivateKeyImpl(const PrivateKeyImpl<Element>& rhs)
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(rhs.m_sk) {}
 
     /**
    * Move constructor
-   *@param &rhs the PrivateKeyImpl to move from
+   *@param rhs the PrivateKeyImpl to move from
    */
     PrivateKeyImpl(PrivateKeyImpl<Element>&& rhs) noexcept
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(std::move(rhs.m_sk)) {}
@@ -106,7 +106,7 @@ class PrivateKeyImpl : public Key<Element> {
     /**
    * Assignment Operator.
    *
-   * @param &rhs PrivateKeyto assign from.
+   * @param rhs PrivateKeyImpl to assign from.
    * @return the resulting PrivateKeyImpl
    */
     PrivateKeyImpl<Element>& operator=(const PrivateKeyImpl<Element>& rhs) {
@@ -118,7 +118,7 @@ class PrivateKeyImpl : public Key<Element> {
     /**
    * Move Assignment Operator.
    *
-   * @param &rhs PrivateKeyImpl to assign from.
+   * @param rhs PrivateKeyImpl to assign from.
    * @return the resulting PrivateKeyImpl
    */
     PrivateKeyImpl<Element>& operator=(PrivateKeyImpl<Element>&& rhs) noexcept {
@@ -137,7 +137,7 @@ class PrivateKeyImpl : public Key<Element> {
 
     /**
    * Set accessor for private element.
-   * @private &x private element to set to.
+   * @param x private element to set to.
    */
     void SetPrivateElement(const Element& x) {
         m_sk = x;
@@ -145,7 +145,7 @@ class PrivateKeyImpl : public Key<Element> {
 
     /**
    * Set accessor for private element.
-   * @private &x private element to set to.
+   * @param x private element to move from.
    */
     void SetPrivateElement(Element&& x) noexcept {
         m_sk = std::move(x);

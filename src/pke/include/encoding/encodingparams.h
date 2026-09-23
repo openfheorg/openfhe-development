@@ -62,11 +62,14 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
    * parameters set. All of the private members not explicitly included as
    * arguments will be initialized to zero.
    *
-   * @param plaintextModulus plainext modulus (used by all encodings)
-   * @param plaintextGenerator (used by packed encoding for plaintext slot
-   * rotation)
+   * @param plaintextModulus plaintext modulus (used by all encodings)
    * @param batchSize sets the maximum batch size (as a power of 2) needed for
    * EvalSum
+   * @param plaintextGenerator (used by packed encoding for plaintext slot
+   * rotation)
+   * @param plaintextRootOfUnity root of unity for the plaintext modulus (used by packed encoding)
+   * @param plaintextBigModulus big plaintext modulus used for arbitrary cyclotomics (used by packed encoding)
+   * @param plaintextBigRootOfUnity root of unity for the big plaintext modulus (used by packed encoding)
    */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
                        NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
@@ -81,7 +84,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     /**
    * Copy constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is copied.
    */
     EncodingParamsImpl(const EncodingParamsImpl& rhs) {
         m_plaintextModulus = rhs.m_plaintextModulus;
@@ -95,7 +98,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     /**
    * Move constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is moved.
    */
     EncodingParamsImpl(EncodingParamsImpl&& rhs) noexcept {
         m_plaintextModulus = std::move(rhs.m_plaintextModulus);
@@ -109,7 +112,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     /**
    * Assignment Operator.
    *
-   * @param &rhs the EncodingParamsImpl to be copied.
+   * @param rhs the EncodingParamsImpl to be copied.
    * @return the resulting EncodingParamsImpl.
    */
     const EncodingParamsImpl& operator=(const EncodingParamsImpl& rhs) {
@@ -141,6 +144,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the plaintext modulus.
+   * @param plaintextModulus the plaintext modulus.
    */
     void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_plaintextModulus = plaintextModulus;
@@ -156,6 +160,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the plaintext modulus root of unity.
+   * @param plaintextRootOfUnity the plaintext modulus root of unity.
    */
     void SetPlaintextRootOfUnity(NativeInteger plaintextRootOfUnity) {
         m_plaintextRootOfUnity = plaintextRootOfUnity;
@@ -163,7 +168,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Getter for the big plaintext modulus.
-   * @return The plaintext modulus.
+   * @return The big plaintext modulus.
    */
     NativeInteger GetPlaintextBigModulus() const {
         return m_plaintextBigModulus;
@@ -171,6 +176,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the big plaintext modulus.
+   * @param plaintextBigModulus the big plaintext modulus.
    */
     void SetPlaintextBigModulus(NativeInteger plaintextBigModulus) {
         m_plaintextBigModulus = plaintextBigModulus;
@@ -186,6 +192,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the big plaintext modulus root of unity.
+   * @param plaintextBigRootOfUnity the big plaintext modulus root of unity.
    */
     void SetPlaintextBigRootOfUnity(NativeInteger plaintextBigRootOfUnity) {
         m_plaintextBigRootOfUnity = plaintextBigRootOfUnity;
@@ -201,6 +208,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the plaintext generator.
+   * @param plaintextGenerator the plaintext generator.
    */
     void SetPlaintextGenerator(uint32_t plaintextGenerator) {
         m_plaintextGenerator = plaintextGenerator;
@@ -216,6 +224,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the batch size
+   * @param batchSize the batch size.
    */
     void SetBatchSize(uint32_t batchSize) {
         m_batchSize = batchSize;

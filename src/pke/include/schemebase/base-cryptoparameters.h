@@ -104,6 +104,7 @@ class CryptoParametersBase : public Serializable {
 
     /**
    * Sets the value of plaintext modulus p
+   * @param plaintextModulus the plaintext modulus
    */
     void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
@@ -150,6 +151,7 @@ class CryptoParametersBase : public Serializable {
 
     /**
    * Sets the reference to element params
+   * @param params the ring element parameters
    */
     virtual void SetElementParams(std::shared_ptr<typename Element::Params> params) {
         m_params = params;
@@ -157,6 +159,7 @@ class CryptoParametersBase : public Serializable {
 
     /**
    * Sets the reference to encoding params
+   * @param encodingParams the encoding parameters
    */
     virtual void SetEncodingParams(EncodingParams encodingParams) {
         m_encodingParams = encodingParams;

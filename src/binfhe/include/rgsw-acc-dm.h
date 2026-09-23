@@ -97,7 +97,6 @@ class RingGSWAccumulatorDM final : public RingGSWAccumulator {
    * @param ek evaluation key for Ring GSW
    * @param acc previous value of the accumulator
    * @param index LWE secret-key coefficient index
-   * @return
    */
     void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek, RLWECiphertext& acc,
                     uint32_t index) const;

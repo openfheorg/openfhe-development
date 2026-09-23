@@ -109,7 +109,6 @@ class BinFHEContext : public Serializable {
    * @param keyDist secret key distribution
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
-   * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std, uint32_t baseKS,
                                uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
@@ -126,7 +125,6 @@ class BinFHEContext : public Serializable {
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
    * @param timeOptimization whether to use dynamic bootstrapping technique
-   * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ = 11, uint32_t N = 0,
                                BINFHE_METHOD method = GINX, bool timeOptimization = false);
@@ -137,7 +135,6 @@ class BinFHEContext : public Serializable {
    *
    * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   * @return create the cryptocontext
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
@@ -146,7 +143,6 @@ class BinFHEContext : public Serializable {
    *
    * @param params the parameter context
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   * @return create the cryptocontext
    */
     void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
 
@@ -234,6 +230,7 @@ class BinFHEContext : public Serializable {
     /**
    * Generates a public key for a secret key for the main LWE scheme
    *
+   * @param sk the secret key
    * @return a shared pointer to the public key
    */
     LWEPublicKey PubKeyGen(ConstLWEPrivateKey& sk) const;
@@ -378,6 +375,7 @@ class BinFHEContext : public Serializable {
    * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
    * @param ct1 first ciphertext
    * @param ct2 second ciphertext
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
@@ -388,6 +386,7 @@ class BinFHEContext : public Serializable {
    *
    * @param gate the gate; can be MAJORITY, AND3, OR3, AND4, OR4, or CMUX
    * @param ctvector vector of ciphertexts
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
@@ -396,6 +395,7 @@ class BinFHEContext : public Serializable {
    * Bootstraps a ciphertext (without peforming any operation)
    *
    * @param ct ciphertext to be bootstrapped
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext Bootstrap(ConstLWECiphertext& ct, bool extended = false) const;
@@ -414,7 +414,7 @@ class BinFHEContext : public Serializable {
    *
    * @param f the to-be-evaluated function on an integer message and a plaintext modulus
    * @param p plaintext modulus
-   * @return a shared pointer to the resulting ciphertext
+   * @return the look-up table (vector of function values) for the function
    */
     std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
                                                       NativeInteger p);
@@ -463,7 +463,7 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for params
-   * @return
+   * @return a shared pointer to the BinFHE crypto parameters
    */
     const std::shared_ptr<BinFHECryptoParams>& GetParams() {
         return m_params;
@@ -471,15 +471,15 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for LWE scheme
-   * @return
+   * @return a shared pointer to the LWE encryption scheme
    */
     const std::shared_ptr<LWEEncryptionScheme>& GetLWEScheme() {
         return m_LWEscheme;
     }
 
     /**
-   * Getter for BinFHE scheme params
-   * @return
+   * Getter for BinFHE scheme
+   * @return a shared pointer to the BinFHE scheme
    */
     const std::shared_ptr<BinFHEScheme>& GetBinFHEScheme() {
         return m_binfhescheme;
@@ -510,7 +510,7 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for maximum plaintext modulus
-   * @return
+   * @return the maximum plaintext modulus supported by the parameters
    */
     NativeInteger GetMaxPlaintextSpace() const {
         // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
@@ -519,7 +519,7 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for the beta security parameter
-   * @return
+   * @return the error bound beta
    */
     constexpr NativeInteger GetBeta() const {
         return NativeInteger(128);

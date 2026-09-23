@@ -48,14 +48,6 @@ class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
   public:
     RingGSWAccumulatorCGGI() = default;
 
-    /**
-   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param skNTT secret key polynomial in the EVALUATION representation
-   * @param LWEsk the secret key
-   * @return a shared pointer to the resulting keys
-   */
 #if NATIVEINT != 32
     /**
    * Generate the refreshing key directly in its 32-bit internal form, on 32-bit words, so the
@@ -68,6 +60,14 @@ class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
                    const NativeVector& a) const override;
 #endif
 
+    /**
+   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param skNTT secret key polynomial in the EVALUATION representation
+   * @param LWEsk the secret key
+   * @return a shared pointer to the resulting keys
+   */
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
 
@@ -100,7 +100,8 @@ class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
    * with ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param ek1, ek2 evaluation keys for Ring GSW
+   * @param ek1 first evaluation key for Ring GSW (for secret-key coefficient +1)
+   * @param ek2 second evaluation key for Ring GSW (for secret-key coefficient -1)
    * @param a a value to add to the accumulator
    * @param acc previous value of the accumulator
    * @param index LWE secret-key coefficient index

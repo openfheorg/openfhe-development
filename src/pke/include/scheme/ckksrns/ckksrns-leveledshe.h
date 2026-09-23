@@ -138,9 +138,9 @@ class LeveledSHECKKSRNS : public LeveledSHERNS {
     /**
    * Method for scaling in-place.
    *
-   * @param cipherText is the ciphertext to perform modreduce on.
+   * @param ciphertext is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
-   * @details \p cipherText will have modulus reduction performed in-place.
+   * @details \p ciphertext will have modulus reduction performed in-place.
    */
     void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
@@ -153,7 +153,7 @@ class LeveledSHECKKSRNS : public LeveledSHERNS {
    * "levels" number of the towers of the ciphertext without changing the
    * underlying plaintext.
    *
-   * @param cipherText1 is the ciphertext to be level reduced in-place
+   * @param ciphertext is the ciphertext to be level reduced in-place
    * @param levels the number of towers to drop.
    */
     void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;

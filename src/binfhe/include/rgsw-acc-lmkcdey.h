@@ -95,7 +95,7 @@ class RingGSWAccumulatorLMKCDEY final : public RingGSWAccumulator {
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param skNTT secret key polynomial in the EVALUATION representation
-   * @param k a plaintext
+   * @param k the automorphism index
    * @return a shared pointer to the resulting keys
    */
     RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
@@ -108,7 +108,6 @@ class RingGSWAccumulatorLMKCDEY final : public RingGSWAccumulator {
    * @param ek evaluation key for Ring GSW
    * @param acc previous value of the accumulator
    * @param index LWE secret-key coefficient index
-   * @return
    */
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
                          RLWECiphertext& acc, uint32_t index) const;
@@ -120,7 +119,6 @@ class RingGSWAccumulatorLMKCDEY final : public RingGSWAccumulator {
    * @param a index
    * @param ak evaluation key for Ring GSW
    * @param acc previous value of the accumulator
-   * @return
    */
     void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, NativeInteger a, ConstRingGSWEvalKey& ak,
                       RLWECiphertext& acc) const;

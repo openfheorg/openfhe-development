@@ -56,9 +56,7 @@ class EvalKeyImpl : public Key<Element> {
 
   public:
     /**
-   * Basic constructor for setting crypto params
-   *
-   * @param &cryptoParams is the reference to cryptoParams
+   * Default constructor
    */
     EvalKeyImpl() = default;
 
@@ -70,7 +68,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &a is the Element vector to be copied.
+   * @param a is the Element vector to be copied.
    */
 
     virtual void SetAVector(const std::vector<Element>& a) {
@@ -81,7 +79,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &&a is the Element vector to be moved.
+   * @param a is the Element vector to be moved.
    */
 
     virtual void SetAVector(std::vector<Element>&& a) {
@@ -103,7 +101,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &b is the Element vector to be copied.
+   * @param b is the Element vector to be copied.
    */
 
     virtual void SetBVector(const std::vector<Element>& b) {
@@ -114,7 +112,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &&b is the Element vector to be moved.
+   * @param b is the Element vector to be moved.
    */
 
     virtual void SetBVector(std::vector<Element>&& b) {
