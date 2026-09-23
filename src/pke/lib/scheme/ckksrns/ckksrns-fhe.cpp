@@ -2119,7 +2119,14 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
 
         if (flagRem == 1) {
             const int32_t shiftScaleRem = 1 << (smax * p.layersCollapse);
-            const int32_t rotScale      = shiftScaleRem * static_cast<int32_t>(p.g);
+            // The remainder block is evaluated with baby rotations j*shiftScaleRem and Horner giant
+            // stride tRem = shiftScaleRem * p.gRem (see EvalSlotsToCoeffs). The plaintexts must
+            // therefore be pre-rotated with the SAME giant stride so that the giant accumulation in
+            // the evaluator cancels the diagonal twist exactly. Using p.g leaves an i-dependent twist
+            // of the remainder diagonals that only matters once the +i phase factor (m==slots) lives
+            // in the remainder rows; with the phase factor on the wide phase this corrupted the
+            // SlotsToCoeffs transform. p.gRem is also what the fully-packed branch uses.
+            const int32_t rotScale      = shiftScaleRem * static_cast<int32_t>(p.gRem);
             const uint32_t limit        = p.bRem * p.gRem;
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
     #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(limit))

@@ -459,7 +459,7 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
         auto& coeff1 = coeff[(s += log2slots)];
         auto& coeff2 = coeff[(s += log2slots)];
 
-        const std::complex<double> b = flag_i && (m == 2) ? neg_exp_M_PI : 1;
+        const std::complex<double> b = flag_i && (m == slots) ? neg_exp_M_PI : 1;
         for (uint32_t k = 0; k < slots; k += m) {
             const uint32_t lenq  = m << 2;
             const uint32_t lenh  = m >> 1;
@@ -501,7 +501,7 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
         auto& coeff1 = coeff[(s += log2slots)];
         auto& coeff2 = coeff[(s += log2slots)];
 
-        const std::complex<double> b = flag_i && (m == 2) ? pos_exp_M_PI : 1;
+        const std::complex<double> b = flag_i && (m == slots) ? pos_exp_M_PI : 1;
         for (uint32_t k = 0; k < slots; k += m) {
             const uint32_t lenq  = m << 2;
             const uint32_t lenh  = m >> 1;
