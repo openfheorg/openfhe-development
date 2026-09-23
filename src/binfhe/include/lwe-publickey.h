@@ -51,8 +51,20 @@ class LWEPublicKeyImpl : public Serializable {
   public:
     LWEPublicKeyImpl() = default;
 
+    /**
+   * Constructs an LWE public key (A, v) from its components
+   *
+   * @param A the uniformly random matrix, stored by rows: N vectors of dimension N with modulus Q
+   * @param v the vector v = A s + e, i.e. v[j] = <A[j], s> + e_j mod Q, for the secret key s
+   */
     LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
 
+    /**
+   * Constructs an LWE public key (A, v) from its components, moving them
+   *
+   * @param A the uniformly random matrix, stored by rows: N vectors of dimension N with modulus Q
+   * @param v the vector v = A s + e, i.e. v[j] = <A[j], s> + e_j mod Q, for the secret key s
+   */
     LWEPublicKeyImpl(std::vector<NativeVector>&& A, NativeVector&& v) noexcept : m_A(std::move(A)), m_v(std::move(v)) {}
 
     LWEPublicKeyImpl(const LWEPublicKeyImpl& rhs) : m_A(rhs.m_A), m_v(rhs.m_v) {}
@@ -95,18 +107,32 @@ class LWEPublicKeyImpl : public Serializable {
         m_v = std::move(v);
     }
 
+    /**
+   * @return the dimension of the key (the length of v)
+   */
     uint32_t GetLength() const {
         return m_v.GetLength();
     }
 
+    /**
+   * @return the modulus of the key (the modulus of v)
+   */
     NativeInteger GetModulus() const {
         return m_v.GetModulus();
     }
 
+    /**
+   * @param other the public key to compare with
+   * @return true if both keys have the same A and v
+   */
     bool operator==(const LWEPublicKeyImpl& other) const {
         return (m_A == other.m_A) && (m_v == other.m_v);
     }
 
+    /**
+   * @param other the public key to compare with
+   * @return true if the keys differ in A or v
+   */
     bool operator!=(const LWEPublicKeyImpl& other) const {
         return !(*this == other);
     }
@@ -136,8 +162,8 @@ class LWEPublicKeyImpl : public Serializable {
     }
 
   private:
-    std::vector<NativeVector> m_A;
-    NativeVector m_v;
+    std::vector<NativeVector> m_A;  ///< the uniformly random matrix A, stored by rows
+    NativeVector m_v;               ///< the vector v = A s + e
 };
 
 }  // namespace lbcrypto

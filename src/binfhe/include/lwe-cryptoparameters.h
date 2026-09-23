@@ -134,12 +134,22 @@ class LWECryptoParams : public Serializable {
         return m_baseKS;
     }
 
+    /**
+   * Gets the number of base-baseKS digits needed to represent a value below the key-switching modulus qKS
+   *
+   * @return the digit count
+   */
     uint32_t GetDigitCountKS() const {
         return GetDigitCount(m_qKS.ConvertToInt(), m_baseKS);
     }
 
-    // number of values the digit at position pos can take when a value below qKS is written in
-    // base baseKS: every position spans the whole base except the top one
+    /**
+   * Gets the number of values the digit at position pos can take when a value below qKS is written in base baseKS:
+   * every position spans the whole base except the top one
+   *
+   * @param pos digit position, 0 being the least significant
+   * @return the number of values the digit can take
+   */
     uint32_t GetDigitExtentKS(uint32_t pos) const {
         const uint32_t digits = GetDigitCountKS();
         if (pos + 1 < digits)

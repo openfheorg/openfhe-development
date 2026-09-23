@@ -218,12 +218,42 @@ class LWEEncryptionScheme {
                             ConstLWECiphertext& ctQN) const;
 
 #if NATIVEINT != 32
+    /**
+   * Generates the switching key from (Q,N) to (q,n) directly in its 32-bit internal form, used when the
+   * key-switching modulus qKS fits a 32-bit word (LWESwitchingKey32Impl::Fits). The whole key is sampled on 32-bit
+   * words, so the 64-bit key is never materialised; the outputs follow the same distributions as KeySwitchGen, but
+   * the sampling sequence differs, so keys are not bit-comparable across widths
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param sk new secret key
+   * @param skN old secret key
+   * @return a shared pointer to the 32-bit switching key
+   */
     LWESwitchingKey32 KeySwitchGen32(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk,
                                      ConstLWEPrivateKey& skN) const;
 
+    /**
+   * Switches ciphertext from (qKS,N) to (qKS,n) using the 32-bit internal switching key. Rows are accumulated
+   * unreduced in 64-bit words and reduced once per output coefficient, so the result is bit-identical to the key
+   * switch on the 64-bit key
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param K the 32-bit switching key
+   * @param ctQN input ciphertext of dimension N whose modulus does not exceed qKS
+   * @return a shared pointer to the resulting ciphertext
+   */
     LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& K,
                             ConstLWECiphertext& ctQN) const;
 
+    /**
+   * Converts a ciphertext with modulus Q and dimension N to a ciphertext with q and n using the 32-bit internal
+   * switching key: modulus switch to qKS, key switch to dimension n, modulus switch to q
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param ksk the 32-bit key switching key from the secret key of dimension N to the secret key of dimension n
+   * @param ct the ciphertext to convert
+   * @return a shared pointer to the ciphertext
+   */
     LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& ksk,
                                ConstLWECiphertext& ct) const;
 #endif

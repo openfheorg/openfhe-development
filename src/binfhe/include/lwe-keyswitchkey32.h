@@ -66,8 +66,14 @@ class LWESwitchingKey32Impl : public Serializable {
   public:
     LWESwitchingKey32Impl() = default;
 
-    // generation runs on 32-bit kernels, exact up to MAX_MODULUS_SIZE32, and the key switch
-    // accumulates N*digitCount unreduced rows in uint64
+    /**
+   * Checks whether the parameters qualify for the 32-bit switching key: generation runs on 32-bit kernels, exact up
+   * to MAX_MODULUS_SIZE32 bits of qKS, and the key switch accumulates N*digitCount unreduced rows below qKS in a
+   * 64-bit word
+   *
+   * @param params LWE scheme parameters
+   * @return true if qKS fits MAX_MODULUS_SIZE32 bits and N*digitCount*qKS does not overflow a uint64
+   */
     static bool Fits(const LWECryptoParams& params) {
         const auto& qKS = params.GetqKS();
         if (qKS.GetMSB() > MAX_MODULUS_SIZE32)
@@ -76,11 +82,18 @@ class LWESwitchingKey32Impl : public Serializable {
         return rows <= static_cast<uint64_t>(-1) / qKS.ConvertToInt<uint64_t>();
     }
 
-    // storage is deliberately left uninitialized: both generation paths write every element, and
-    // value-initialization would fault and zero the whole key on the constructing thread before
-    // the parallel fill re-touches it
-    // Each LWE index holds baseKS-1 rows (digit values 1..baseKS-1) per digit position except the
-    // top position, which holds topExtent-1: the values a coefficient below qKS can reach there.
+    /**
+   * Allocates a key of the given shape with its storage deliberately left uninitialized: both generation paths write
+   * every element, and value-initialization would fault and zero the whole key on the constructing thread before
+   * the parallel fill re-touches it. Each LWE index holds baseKS-1 rows (digit values 1..baseKS-1) per digit
+   * position except the top position, which holds topExtent-1: the values a coefficient below qKS can reach there
+   *
+   * @param N dimension of the source (old) secret key, the number of LWE indices
+   * @param baseKS key-switching base
+   * @param digitCount number of base-baseKS digits of a value below qKS
+   * @param topExtent number of values the top digit can take (LWECryptoParams::GetDigitExtentKS(digitCount - 1))
+   * @param n dimension of the target (new) secret key, the length of each row
+   */
     LWESwitchingKey32Impl(uint32_t N, uint32_t baseKS, uint32_t digitCount, uint32_t topExtent, uint32_t n)
         : m_N(N),
           m_m(baseKS),
@@ -93,30 +106,79 @@ class LWESwitchingKey32Impl : public Serializable {
           m_keyA(new uint32_t[m_sizeA]),
           m_keyB(new uint32_t[m_sizeB]) {}
 
-    // Narrow an existing 64-bit key. Peak memory holds both forms; the released pages come back
-    // only after AllocTrim(). Prefer KeySwitchGen32, which never materialises the 64-bit key.
+    /**
+   * Narrows an existing 64-bit key, taking the shape from the parameters and copying only the reachable digit rows.
+   * Peak memory holds both forms; the released pages come back only after AllocTrim(). Prefer
+   * LWEEncryptionScheme::KeySwitchGen32, which never materialises the 64-bit key
+   *
+   * @param params LWE scheme parameters the key was generated with
+   * @param K the 64-bit switching key, which must have N entries with baseKS-1 digit-value rows each
+   */
     LWESwitchingKey32Impl(const LWECryptoParams& params, const LWESwitchingKeyImpl& K);
 
-    // exact 64-bit copy for serialization: every value fits, so 32 -> 64 -> 32 is the identity
+    /**
+   * Produces an exact 64-bit copy of the key for serialization: every value fits, so 32 -> 64 -> 32 is the identity
+   *
+   * @param params LWE scheme parameters, supplying the key-switching modulus of the 64-bit vectors
+   * @return a shared pointer to the 64-bit switching key
+   */
     LWESwitchingKey Widen(const LWECryptoParams& params) const;
 
-    // val >= 1: the value-0 row is not stored
+    /**
+   * Accesses the A part of the encryption of val * baseKS^pos * skN[i]: a row of n residues mod qKS
+   *
+   * @param i LWE index of the source secret-key coefficient, in [0, N)
+   * @param val digit value, in [1, GetDigitExtent(pos)); the value-0 row is not stored
+   * @param pos digit position, in [0, digitCount)
+   * @return pointer to the n words of the row
+   */
     uint32_t* RowA(uint32_t i, uint32_t val, uint32_t pos) {
         return m_keyA.get() + Slot(i, val, pos) * m_n;
     }
 
+    /**
+   * Accesses the A part of the encryption of val * baseKS^pos * skN[i]: a row of n residues mod qKS
+   *
+   * @param i LWE index of the source secret-key coefficient, in [0, N)
+   * @param val digit value, in [1, GetDigitExtent(pos)); the value-0 row is not stored
+   * @param pos digit position, in [0, digitCount)
+   * @return pointer to the n words of the row
+   */
     const uint32_t* RowA(uint32_t i, uint32_t val, uint32_t pos) const {
         return m_keyA.get() + Slot(i, val, pos) * m_n;
     }
 
+    /**
+   * Accesses the B part of the encryption of val * baseKS^pos * skN[i]: one residue mod qKS
+   *
+   * @param i LWE index of the source secret-key coefficient, in [0, N)
+   * @param val digit value, in [1, GetDigitExtent(pos)); the value-0 row is not stored
+   * @param pos digit position, in [0, digitCount)
+   * @return reference to the stored word
+   */
     uint32_t& B(uint32_t i, uint32_t val, uint32_t pos) {
         return m_keyB[Slot(i, val, pos)];
     }
 
+    /**
+   * Reads the B part of the encryption of val * baseKS^pos * skN[i]: one residue mod qKS
+   *
+   * @param i LWE index of the source secret-key coefficient, in [0, N)
+   * @param val digit value, in [1, GetDigitExtent(pos)); the value-0 row is not stored
+   * @param pos digit position, in [0, digitCount)
+   * @return the stored word
+   */
     uint32_t B(uint32_t i, uint32_t val, uint32_t pos) const {
         return m_keyB[Slot(i, val, pos)];
     }
 
+    /**
+   * Gets the number of digit values stored for a digit position: baseKS for every position except the top one,
+   * which holds topExtent
+   *
+   * @param pos digit position, in [0, digitCount)
+   * @return the digit extent; rows exist for values 1..extent-1
+   */
     uint32_t GetDigitExtent(uint32_t pos) const {
         return pos + 1 < m_d ? m_m : m_top;
     }
@@ -137,6 +199,11 @@ class LWESwitchingKey32Impl : public Serializable {
         return m_n;
     }
 
+    /**
+   * Gets the resident bytes of key material (the A rows and the B words), for memory accounting
+   *
+   * @return the size of the two flat arrays in bytes
+   */
     uint64_t KeyBytes() const {
         return (m_sizeA + m_sizeB) * sizeof(uint32_t);
     }

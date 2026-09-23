@@ -52,15 +52,25 @@ class RingGSWAccumulator {
     RingGSWAccumulator() = default;
 
 #if NATIVEINT != 32
-    // Generate the refreshing key directly in 32-bit internal form. Returns nullptr where the
-    // accumulator does not implement it, so callers fall back to KeyGenAcc.
+    /**
+   * Key generation for internal Ring GSW directly in the 32-bit internal key representation, used when the modulus Q
+   * fits a 32-bit word. Takes the same arguments as KeyGenAcc: the RingGSW scheme parameters, the secret key
+   * polynomial in the EVALUATION representation, and the LWE secret key. The base implementation returns nullptr,
+   * meaning the accumulator does not implement it, so callers fall back to KeyGenAcc
+   *
+   * @return a shared pointer to the 32-bit refreshing key, or nullptr when not implemented
+   */
     virtual RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>&, const NativePoly&,
                                         ConstLWEPrivateKey&) const {
         return nullptr;
     }
 
-    // Blind rotation on the 32-bit internal key; bit-identical to EvalAcc on the 64-bit key.
-    // Implemented by every accumulator that implements KeyGenAcc32.
+    /**
+   * Main accumulator function (blind rotation) on the 32-bit internal key, bit-identical to EvalAcc on the 64-bit
+   * key. Takes the same arguments as EvalAcc: the RingGSW scheme parameters, the 32-bit accumulator key, the
+   * accumulator to update, and the value to update it with. Implemented by every accumulator that implements
+   * KeyGenAcc32; the base implementation throws
+   */
     virtual void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>&, ConstRingGSWACCKey32&, RLWECiphertext&,
                            const NativeVector&) const {
         OPENFHE_THROW("32-bit internal evaluation is not supported by this accumulator");
@@ -116,6 +126,16 @@ class RingGSWAccumulator {
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params, const std::vector<NativePoly>& input,
                               std::vector<NativePoly>& output, uint32_t index) const;
 
+    /**
+   * The signed digit decomposition of an RLWE ciphertext into an RLWE' ciphertext with explicit gadget parameters.
+   * Both overloads of SignedDigitDecompose for RLWE ciphertexts forward here. The excess-H decomposition produces
+   * 2(digitsG - 1) digit polynomials, the first digit being dropped by the approximate gadget decomposition
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param input input RLWE ciphertext
+   * @param output output RLWE' ciphertext, sized by the caller to 2(digitsG - 1) polynomials
+   * @param bp the gadget parameters (base, digit count, digit width) to decompose with
+   */
     void SignedDigitDecomposeImpl(const std::shared_ptr<RingGSWCryptoParams>& params,
                                   const std::vector<NativePoly>& input, std::vector<NativePoly>& output,
                                   const RingGSWCryptoParams::BaseGParams& bp) const;

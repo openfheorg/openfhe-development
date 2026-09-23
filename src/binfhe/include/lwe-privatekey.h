@@ -51,8 +51,20 @@ class LWEPrivateKeyImpl : public Serializable {
   public:
     LWEPrivateKeyImpl() = default;
 
+    /**
+   * Constructs an LWE secret key from its vector
+   *
+   * @param s the secret key vector; its length is the LWE dimension and its entries (ternary or Gaussian
+   * secrets) are stored as residues modulo the LWE modulus
+   */
     explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
 
+    /**
+   * Constructs an LWE secret key from its vector, moving it
+   *
+   * @param s the secret key vector; its length is the LWE dimension and its entries (ternary or Gaussian
+   * secrets) are stored as residues modulo the LWE modulus
+   */
     explicit LWEPrivateKeyImpl(NativeVector&& s) noexcept : m_s(std::move(s)) {}
 
     LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) : m_s(rhs.m_s) {}
@@ -81,18 +93,32 @@ class LWEPrivateKeyImpl : public Serializable {
         m_s = std::move(s);
     }
 
+    /**
+   * @return the LWE dimension (the length of the secret key vector)
+   */
     uint32_t GetLength() const {
         return m_s.GetLength();
     }
 
+    /**
+   * @return the modulus of the secret key vector
+   */
     NativeInteger GetModulus() const {
         return m_s.GetModulus();
     }
 
+    /**
+   * @param other the secret key to compare with
+   * @return true if both keys have the same vector
+   */
     bool operator==(const LWEPrivateKeyImpl& other) const {
         return m_s == other.m_s;
     }
 
+    /**
+   * @param other the secret key to compare with
+   * @return true if the key vectors differ
+   */
     bool operator!=(const LWEPrivateKeyImpl& other) const {
         return !(*this == other);
     }

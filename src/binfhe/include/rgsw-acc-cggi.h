@@ -50,12 +50,28 @@ class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
 
 #if NATIVEINT != 32
     /**
-   * Generate the refreshing key directly in its 32-bit internal form, on 32-bit words, so the
-   * 64-bit key is never materialised.
+   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf, producing the
+   * refreshing key directly in its 32-bit internal form: the RGSW encryptions are sampled on 32-bit words, so the
+   * 64-bit key is never materialised. Used when Q fits a 32-bit word (RingGSWACCKey32Impl::Fits)
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param skNTT secret key polynomial in the EVALUATION representation
+   * @param LWEsk the secret key, which must be ternary
+   * @return a shared pointer to the resulting 32-bit keys, laid out as [1][2][n] like the 64-bit key
    */
     RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                 ConstLWEPrivateKey& LWEsk) const override;
 
+    /**
+   * Main accumulator function used in bootstrapping - GINX variant on the 32-bit internal key. The accumulator is
+   * narrowed to 32 bits, updated with 32-bit external products and the 32-bit monomial table, and widened back;
+   * the result is bit-identical to EvalAcc on the 64-bit key
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param ek the 32-bit accumulator key
+   * @param acc previous value of the accumulator
+   * @param a value to update the accumulator with
+   */
     void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
                    const NativeVector& a) const override;
 #endif

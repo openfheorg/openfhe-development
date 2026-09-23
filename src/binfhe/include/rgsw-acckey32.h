@@ -98,24 +98,63 @@ class RingGSWACCKey32Impl : public Serializable {
   public:
     RingGSWACCKey32Impl() = default;
 
-    // one RGSW eval key: [digit][column]
+    /**
+   * @brief One RGSW eval key at 32 bits, indexed [digit][column]: 2(digitsG - 1) rows of two polynomials in
+   * EVALUATION format (digitsG - 1 rows for the LMKCDEY automorphism keys)
+   */
     using EvalKey32 = std::vector<std::vector<NativePoly32>>;
 
-    // The complete qualification predicate: a false return means KeyGen falls back to the
-    // 64-bit key; construction never throws on a params object this accepted.
+    /**
+   * The complete qualification predicate for the 32-bit internal path: the method is GINX, AP or LMKCDEY, Q fits
+   * MAX_MODULUS_SIZE32 bits, and for every gadget base in use the biased digit value stays inside a 32-bit word
+   * (digitsG * gBits + 1 <= 32) and the lazy inner product 2(digitsG - 1) * (Q - 1)^2 fits a uint64. A false
+   * return means KeyGen falls back to the 64-bit key; construction never throws on a params object this accepted
+   *
+   * @param params RingGSW scheme parameters
+   * @return true if the refreshing key can be generated and evaluated in the 32-bit internal form
+   */
     static bool Fits(const RingGSWCryptoParams& params);
 
-    // Narrow an existing 64-bit key of any method's shape. Peak memory holds both forms; the
-    // released pages come back only after AllocTrim(). Prefer the incremental form below.
+    /**
+   * Narrows an existing 64-bit key of any method's shape, copying the slots that are set. Peak memory holds both
+   * forms; the released pages come back only after AllocTrim(). Prefer the incremental constructor below
+   *
+   * @param params RingGSW scheme parameters, which must satisfy Fits()
+   * @param ek the non-empty 64-bit refreshing key
+   */
     RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWACCKeyImpl& ek);
 
-    // Incremental construction: size the 32-bit store up front (d1 x d2 x d3, matching the
-    // method's 64-bit key shape), then hand it one 64-bit eval key at a time. The caller lets
-    // each 64-bit key die immediately, so the full 64-bit refreshing key is never materialised.
+    /**
+   * Incremental construction: sizes the 32-bit store up front to d1 x d2 x d3 empty slots, matching the method's
+   * 64-bit key shape, so that SetEvalKey can then fill one eval key at a time and the full 64-bit refreshing key
+   * is never materialised. For GINX the 32-bit monomial table is built here, while construction is single-threaded
+   *
+   * @param params RingGSW scheme parameters, which must satisfy Fits()
+   * @param d1 size of the first dimension (n for AP, 1 for GINX and LMKCDEY)
+   * @param d2 size of the second dimension (baseR for AP, 2 for GINX and LMKCDEY)
+   * @param d3 size of the third dimension (the number of baseR digits for AP, n for GINX and LMKCDEY)
+   */
     RingGSWACCKey32Impl(const std::shared_ptr<RingGSWCryptoParams>& params, uint32_t d1, uint32_t d2, uint32_t d3);
+
+    /**
+   * Narrows one 64-bit RGSW eval key into a slot of the 32-bit store
+   *
+   * @param i index in the first dimension
+   * @param j index in the second dimension
+   * @param k index in the third dimension
+   * @param ek the 64-bit eval key to narrow
+   */
     void SetEvalKey(uint32_t i, uint32_t j, uint32_t k, const RingGSWEvalKeyImpl& ek);
 
-    // native 32-bit form, for key generation that never materialises a 64-bit key
+    /**
+   * Moves an eval key already in the native 32-bit form into a slot of the store, for key generation that never
+   * materialises a 64-bit key
+   *
+   * @param i index in the first dimension
+   * @param j index in the second dimension
+   * @param k index in the third dimension
+   * @param ek the 32-bit eval key to move in
+   */
     void SetEvalKey(uint32_t i, uint32_t j, uint32_t k, EvalKey32&& ek) {
         m_key[i][j][k] = std::move(ek);
     }
@@ -129,10 +168,19 @@ class RingGSWACCKey32Impl : public Serializable {
         return m_key[i];
     }
 
-    // exact 64-bit copy for serialization
+    /**
+   * Produces an exact 64-bit copy of the key for serialization, leaving unset slots null
+   *
+   * @param params RingGSW scheme parameters, supplying the 64-bit polynomial parameters
+   * @return a shared pointer to the 64-bit refreshing key
+   */
     RingGSWACCKey Widen(const std::shared_ptr<RingGSWCryptoParams>& params) const;
 
-    // resident bytes of key material, for the halved-key measurement
+    /**
+   * Gets the resident bytes of key material, for the halved-key measurement
+   *
+   * @return the number of stored polynomials times N times the 32-bit word size
+   */
     uint64_t KeyBytes() const;
 
     bool operator==(const RingGSWACCKey32Impl& other) const {

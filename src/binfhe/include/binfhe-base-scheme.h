@@ -51,23 +51,27 @@
 
 namespace lbcrypto {
 
-// The struct for storing bootstrapping keys
+/**
+ * @brief The struct for storing bootstrapping keys
+ *
+ * The 32-bit members hold the internal forms generated directly by KeyGen with internal32 requested, or narrowed by
+ * BTKeyGen or BTKeyLoad. When one is set, the corresponding 64-bit member stays null (or is released) and the
+ * 32-bit copy is the only resident one, so the key material is half size.
+ */
 struct RingGSWBTKey {
-    // refreshing key
-    RingGSWACCKey BSkey;
-    // switching key
-    LWESwitchingKey KSkey;
-    // public key
-    LWEPublicKey Pkey;
+    RingGSWACCKey BSkey;    ///< refreshing key (64-bit form)
+    LWESwitchingKey KSkey;  ///< switching key (64-bit form)
+    LWEPublicKey Pkey;      ///< public key
 #if NATIVEINT != 32
-    // 32-bit internal forms, generated directly by KeyGen(internal32) or narrowed by
-    // BTKeyGen or BTKeyLoad with internal32 requested. When set, the 64-bit member stays null (or is released)
-    // and the 32-bit copy is the only resident one, so the key material is half size.
-    RingGSWACCKey32 BSkey32;
-    LWESwitchingKey32 KSkey32;
+    RingGSWACCKey32 BSkey32;    ///< refreshing key in the 32-bit internal form, null when BSkey is resident
+    LWESwitchingKey32 KSkey32;  ///< switching key in the 32-bit internal form, null when KSkey is resident
 #endif
 
-    // a refreshing key is present in either representation
+    /**
+   * Checks whether a refreshing key is present in either representation
+   *
+   * @return true if the 64-bit or the 32-bit refreshing key is set
+   */
     bool HasRefreshKey() const {
 #if NATIVEINT != 32
         return (BSkey != nullptr) || (BSkey32 != nullptr);
@@ -121,6 +125,12 @@ class BinFHEScheme {
   public:
     BinFHEScheme() = default;
 
+    /**
+   * Constructs the scheme for a bootstrapping method, instantiating the matching accumulator (DM for AP, CGGI for
+   * GINX, and LMKCDEY)
+   *
+   * @param method the bootstrapping method; any other value throws
+   */
     explicit BinFHEScheme(BINFHE_METHOD method) {
         if (method == AP)
             ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
@@ -299,8 +309,8 @@ class BinFHEScheme {
                             ConstLWECiphertext& ct) const;
 
   protected:
-    std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};
-    std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};
+    std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};  ///< the LWE scheme
+    std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};  ///< the accumulator selected by the bootstrapping method
 
     /**
    * Checks type of input function
