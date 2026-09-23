@@ -49,6 +49,18 @@ template <typename T>
 class CCParams;
 
 template <typename ContextGeneratorType, typename Element>
+/**
+ * Builds a BGV crypto context from the parameters: creates the crypto parameters object (with the noise
+ * scale set to the plaintext modulus), computes the number of HYBRID digits, creates the scheme object
+ * with the requested key switching technique, runs the BGV parameter generation for multiplicativeDepth + 1
+ * primes and registers the context with the factory. MUST NOT be used without the wrapper
+ * CryptoContextBGVRNS::genCryptoContext(), which validates the parameters first.
+ *
+ * @tparam ContextGeneratorType the context generator class (CryptoContextBGVRNS).
+ * @tparam Element the ring element type (DCRTPoly).
+ * @param parameters the BGV parameters.
+ * @return the generated crypto context.
+ */
 typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
         const CCParams<ContextGeneratorType>& parameters) {
     using ParmType = typename Element::Params;

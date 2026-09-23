@@ -42,6 +42,10 @@ namespace lbcrypto {
 template <typename Element>
 class PublicKeyImpl;
 
+/**
+ * @brief Shared pointer to a public key; this is the type the public API passes around
+ * @tparam Element a ring element.
+ */
 template <typename Element>
 using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
 

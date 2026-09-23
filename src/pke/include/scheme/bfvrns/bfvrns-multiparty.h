@@ -43,6 +43,9 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+/**
+ * @brief BFV implementation of the threshold-FHE (multiparty) operations in the RNS representation.
+ */
 class MultipartyBFVRNS : public MultipartyRNS {
     using ParmType = typename DCRTPoly::Params;
     using IntType = typename DCRTPoly::Integer;
@@ -53,13 +56,44 @@ class MultipartyBFVRNS : public MultipartyRNS {
   public:
     virtual ~MultipartyBFVRNS() {}
 
+    /**
+   * Threshold FHE: Generates a public key from a vector of secret shares (the joint secret key is the sum of
+   * the shares). ONLY FOR DEBUGGING PURPOSES. SHOULD NOT BE USED IN PRODUCTION. The keys are generated over
+   * the key basis of BFV (Qr for EXTENDED encryption).
+   *
+   * @param cc cryptocontext for the keys to be generated.
+   * @param privateKeyVec secret key shares.
+   * @param makeSparse not used by this scheme.
+   * @return key pair including the joint private key and the joint public key.
+   */
     KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
                                        const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
                                        bool makeSparse) override;
 
+    /**
+   * Threshold FHE: Generation of a public key derived from a previous joined public key (for prior secret
+   * shares) and a fresh secret key share of the current party. The same public random polynomial a is reused
+   * and the new b is added to the prior one unless fresh is set.
+   *
+   * @param cc cryptocontext for the keys to be generated.
+   * @param publicKey joined public key from prior parties.
+   * @param makeSparse not used by this scheme.
+   * @param fresh set to true if proxy re-encryption is used in the multi-party protocol or star topology is
+   * used (the prior b is then not added).
+   * @return key pair including the secret share for the current party and joined public key.
+   */
     KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey, bool makeSparse,
                                        bool fresh) override;
 
+    /**
+   * Threshold FHE: Combines the partial decryptions and scales the result by t/Q with rounding using the RNS
+   * procedures of the configured multiplication technique (or CRT interpolation if the ciphertext had been
+   * compressed to fewer towers).
+   *
+   * @param ciphertextVec vector of "partial" decryptions.
+   * @param plaintext the plaintext output as a NativePoly.
+   * @return the decoding result.
+   */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           NativePoly* plaintext) const override;
 

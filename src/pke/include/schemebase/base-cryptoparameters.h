@@ -91,6 +91,13 @@ class CryptoParametersBase : public Serializable {
         return m_params->GetRingDimension();
     }
 
+    /**
+   * Returns the element parameters used for public key generation and public-key encryption; a scheme
+   * may extend the ciphertext parameters here (e.g., with the auxiliary or extra moduli needed by
+   * HRA-secure PRE or by the EXTENDED encryption technique).
+   *
+   * @return the element parameters for the public key.
+   */
     virtual const std::shared_ptr<typename Element::Params> GetParamsPK() const = 0;
 
     /**
@@ -193,20 +200,45 @@ class CryptoParametersBase : public Serializable {
     }
 
   protected:
+    /**
+   * Constructor that creates default encoding parameters for the given plaintext modulus; the element
+   * parameters are left unset.
+   *
+   * @param plaintextModulus the plaintext modulus.
+   */
     explicit CryptoParametersBase(const PlaintextModulus& plaintextModulus) {
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
+    /**
+   * Constructor that sets the element parameters and creates default encoding parameters for the
+   * given plaintext modulus.
+   *
+   * @param params the ring element parameters.
+   * @param plaintextModulus the plaintext modulus.
+   */
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, const PlaintextModulus& plaintextModulus) {
         m_params = params;
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
+    /**
+   * Constructor that sets the element parameters and the encoding parameters.
+   *
+   * @param params the ring element parameters.
+   * @param encodingParams the encoding parameters.
+   */
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams) {
         m_params = params;
         m_encodingParams = encodingParams;
     }
 
+    /**
+   * Constructor that copies the parameters of another object and replaces its element parameters.
+   *
+   * @param from the parameters to copy.
+   * @param newElemParms the ring element parameters of the new object.
+   */
     CryptoParametersBase(CryptoParametersBase<Element>* from, std::shared_ptr<typename Element::Params> newElemParms) {
         *this = *from;
         m_params = newElemParms;
@@ -222,15 +254,21 @@ class CryptoParametersBase : public Serializable {
         return (*m_encodingParams == *(rhs.m_encodingParams) && *m_params == *(rhs.m_params));
     }
 
+    /**
+   * Prints the element parameters and the encoding parameters to the stream; called by operator<<
+   * and extended by derived classes.
+   *
+   * @param out the stream to print to.
+   */
     virtual void PrintParameters(std::ostream& out) const {
         out << "Element Parameters: " << *m_params << std::endl;
         out << "Encoding Parameters: " << *m_encodingParams << std::endl;
     }
 
-    // element-specific parameters
+    /// element-specific parameters
     std::shared_ptr<typename Element::Params> m_params;
 
-    // encoding-specific parameters
+    /// encoding-specific parameters
     EncodingParams m_encodingParams;
 };
 

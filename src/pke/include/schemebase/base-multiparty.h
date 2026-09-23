@@ -373,6 +373,15 @@ class MultipartyBase {
                                                           const PublicKey<Element> publicKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
+    /**
+    * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping,
+    * using an existing ciphertext to derive the crypto context, key tag and element parameters,
+    * so that no public key has to be supplied.
+    *
+    * @param params CKKS crypto parameters
+    * @param ciphertext reference ciphertext whose metadata and element parameters are used
+    * @return Resulting ring element, wrapped in a single-element ciphertext
+    */
     virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                           ConstCiphertext<Element>& ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);

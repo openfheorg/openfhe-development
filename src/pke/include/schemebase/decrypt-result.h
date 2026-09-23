@@ -38,14 +38,24 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Encryption result. This represents whether the encryption of a plaintext was performed
+ * correctly and how many plaintext bytes were encrypted.
+ */
 struct EncryptResult {
+    /**
+   * Default constructor; the fields are left uninitialized.
+   */
     EncryptResult() = default;
 
+    /**
+   * Constructor for a successful encryption.
+   * @param len the number of plaintext bytes that were encrypted.
+   */
     explicit EncryptResult(uint32_t len) : isValid(true), numBytesEncrypted(len) {}
 
-    bool isValid;  // whether the encryption was successful
-    // count of the number of plaintext bytes that were encrypted
-    uint32_t numBytesEncrypted;
+    bool isValid;               /**< whether the encryption was successful */
+    uint32_t numBytesEncrypted; /**< count of the number of plaintext bytes that were encrypted */
 };
 
 /**

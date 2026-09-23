@@ -128,12 +128,39 @@ class PKEBase {
     // CORE OPERATIONS
     /////////////////////////////////////////
 
+    /**
+   * Generates a fresh encryption of zero under the secret key: {b = ns*e - a*s, a}, where a is uniform,
+   * e is sampled from the discrete Gaussian generator and ns is the noise scale of the crypto parameters.
+   *
+   * @param privateKey the private key s.
+   * @param params the element parameters of the encryption (nullptr = the element parameters of the
+   * crypto parameters).
+   * @return the two elements {b, a} of the encryption of zero in EVALUATION format.
+   */
     virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PrivateKey<Element> privateKey,
                                                                   const std::shared_ptr<ParmType> params) const;
 
+    /**
+   * Generates a fresh encryption of zero under the public key {p0, p1}: {p0*v + ns*e0, p1*v + ns*e1},
+   * where v is sampled from the secret key distribution, e0 and e1 from the discrete Gaussian generator
+   * and ns is the noise scale. Towers of the public key beyond those in \p params are dropped.
+   *
+   * @param publicKey the public key.
+   * @param params the element parameters of the encryption (nullptr = the element parameters of the
+   * crypto parameters).
+   * @return the two elements of the encryption of zero in EVALUATION format.
+   */
     virtual std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey,
                                                                   const std::shared_ptr<ParmType> params) const;
 
+    /**
+   * Computes the raw decryption polynomial c0 + c1*s + c2*s^2 + ... of a ciphertext with any number of
+   * elements, in EVALUATION format; the scheme-specific Decrypt then scales and rounds it.
+   *
+   * @param cv the elements of the ciphertext.
+   * @param privateKey the private key s.
+   * @return the decryption polynomial (message plus noise, still scaled).
+   */
     virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };
 

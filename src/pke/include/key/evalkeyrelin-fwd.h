@@ -42,6 +42,11 @@ namespace lbcrypto {
 template <typename Element>
 class EvalKeyRelinImpl;
 
+/**
+ * @brief Shared pointer to a relinearization (key-switching) evaluation key; this is the type the public API
+ * passes around
+ * @tparam Element a ring element.
+ */
 template <typename Element>
 using EvalKeyRelin = std::shared_ptr<EvalKeyRelinImpl<Element>>;
 

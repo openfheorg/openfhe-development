@@ -43,48 +43,252 @@
 namespace lbcrypto {
 
 //======================================================================================================================
+/**
+ * Prints the name of a PKESchemeFeature enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param f the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 //======================================================================================================================
+/**
+ * Converts the name of a ScalingTechnique enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 ScalingTechnique convertToScalingTechnique(const std::string& str);
+/**
+ * Converts an integer to a ScalingTechnique enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 ScalingTechnique convertToScalingTechnique(uint32_t num);
+/**
+ * Prints the name of a ScalingTechnique enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 //======================================================================================================================
+/**
+ * Converts the name of a ProxyReEncryptionMode enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str);
+/**
+ * Converts an integer to a ProxyReEncryptionMode enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num);
+/**
+ * Prints the name of a ProxyReEncryptionMode enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param p the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 //======================================================================================================================
+/**
+ * Converts the name of a MultipartyMode enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 MultipartyMode convertToMultipartyMode(const std::string& str);
+/**
+ * Converts an integer to a MultipartyMode enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 MultipartyMode convertToMultipartyMode(uint32_t num);
+/**
+ * Prints the name of a MultipartyMode enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, MultipartyMode t);
 //======================================================================================================================
+/**
+ * Converts the name of a ExecutionMode enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 ExecutionMode convertToExecutionMode(const std::string& str);
+/**
+ * Converts an integer to a ExecutionMode enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 ExecutionMode convertToExecutionMode(uint32_t num);
+/**
+ * Prints the name of a ExecutionMode enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, ExecutionMode t);
 //======================================================================================================================
+/**
+ * Converts the name of a DecryptionNoiseMode enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 DecryptionNoiseMode convertToDecryptionNoiseMode(const std::string& str);
+/**
+ * Converts an integer to a DecryptionNoiseMode enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num);
+/**
+ * Prints the name of a DecryptionNoiseMode enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
 //======================================================================================================================
+/**
+ * Converts the name of a KeySwitchTechnique enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 KeySwitchTechnique convertToKeySwitchTechnique(const std::string& str);
+/**
+ * Converts an integer to a KeySwitchTechnique enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num);
+/**
+ * Prints the name of a KeySwitchTechnique enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 //======================================================================================================================
+/**
+ * Converts the name of a EncryptionTechnique enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 EncryptionTechnique convertToEncryptionTechnique(const std::string& str);
+/**
+ * Converts an integer to a EncryptionTechnique enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 EncryptionTechnique convertToEncryptionTechnique(uint32_t num);
+/**
+ * Prints the name of a EncryptionTechnique enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 //======================================================================================================================
+/**
+ * Converts the name of a MultiplicationTechnique enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 MultiplicationTechnique convertToMultiplicationTechnique(const std::string& str);
+/**
+ * Converts an integer to a MultiplicationTechnique enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num);
+/**
+ * Prints the name of a MultiplicationTechnique enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 //======================================================================================================================
+/**
+ * Prints the name of a PlaintextEncodings enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param p the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, PlaintextEncodings p);
 //======================================================================================================================
+/**
+ * Converts the name of a CompressionLevel enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 CompressionLevel convertToCompressionLevel(const std::string& str);
+/**
+ * Converts an integer to a CompressionLevel enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 CompressionLevel convertToCompressionLevel(uint32_t num);
+/**
+ * Prints the name of a CompressionLevel enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, CompressionLevel t);
 //======================================================================================================================
+/**
+ * Converts the name of a CKKSDataType enumerator (as spelled in constants-defs.h) to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding enumerator; throws an exception if the name is unknown
+ */
 CKKSDataType convertToCKKSDataType(const std::string& str);
+/**
+ * Converts an integer to a CKKSDataType enumerator, checking that it is a defined enumerator value.
+ *
+ * @param num the integer value of the enumerator
+ * @return the corresponding enumerator; throws an exception if the value is not a defined enumerator
+ */
 CKKSDataType convertToCKKSDataType(uint32_t num);
+/**
+ * Prints the name of a CKKSDataType enumerator ("UNKNOWN" for a value that is not a defined enumerator).
+ *
+ * @param s the output stream
+ * @param t the enumerator to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, CKKSDataType t);
 //======================================================================================================================
 

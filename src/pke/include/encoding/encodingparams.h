@@ -48,6 +48,7 @@
 namespace lbcrypto {
 class EncodingParamsImpl;
 
+/// shared pointer to the encoding parameters
 typedef std::shared_ptr<EncodingParamsImpl> EncodingParams;
 
 /**
@@ -295,6 +296,11 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     }
 
   protected:
+    /**
+   * @brief Prints all parameters to a stream; called by operator<<.
+   * @param out the output stream
+   * @return the output stream
+   */
     std::ostream& doprint(std::ostream& out) const {
         out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
             << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
@@ -318,11 +324,24 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     uint32_t m_batchSize;
 };
 
+/**
+ * @brief Output stream operator for a shared pointer to encoding parameters; prints nothing for a null pointer.
+ * @param out the output stream
+ * @param o the encoding parameters
+ * @return the output stream
+ */
 inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<EncodingParamsImpl>& o) {
     if (o)
         out << *o;
     return out;
 }
+/**
+ * @brief Equality operator for shared pointers to encoding parameters: two null pointers are equal, a null and a
+ * non-null pointer are not, and two non-null pointers compare the parameters they point to.
+ * @param o1 the first encoding parameters
+ * @param o2 the second encoding parameters
+ * @return true if both are null or both point to equal parameters
+ */
 inline bool operator==(const std::shared_ptr<EncodingParamsImpl>& o1, const std::shared_ptr<EncodingParamsImpl>& o2) {
     if (o1 && o2)
         return *o1 == *o2;

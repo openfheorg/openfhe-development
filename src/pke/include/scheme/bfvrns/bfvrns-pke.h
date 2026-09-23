@@ -42,6 +42,9 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief BFV implementation of key generation, encryption and decryption in the RNS representation.
+ */
 class PKEBFVRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
     using IntType = typename DCRTPoly::Integer;
@@ -52,6 +55,15 @@ class PKEBFVRNS : public PKERNS {
   public:
     virtual ~PKEBFVRNS() {}
 
+    /**
+   * Generates a BFV key pair. The keys are generated over the key basis returned by GetParamsPK() (Q, Qr for
+   * EXTENDED encryption, or QP for HYBRID key switching with PRE) and the secret key is then truncated to the
+   * ciphertext basis.
+   *
+   * @param cc the crypto context the keys are generated for.
+   * @param makeSparse set to true to generate a sparse (ring-reduction) key; no longer supported.
+   * @return the generated key pair.
+   */
     KeyPair<DCRTPoly> KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) const override;
 
     /**

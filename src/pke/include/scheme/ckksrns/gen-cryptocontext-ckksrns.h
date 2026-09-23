@@ -46,15 +46,24 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Generator of CKKS cryptocontexts; used as the template argument of CCParams and GenCryptoContext.
+ */
 class CryptoContextCKKSRNS {
     using Element = DCRTPoly;
 
   public:
-    using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory = CryptoContextFactory<Element>;
-    using PublicKeyEncryptionScheme = SchemeCKKSRNS;
-    using CryptoParams = CryptoParametersCKKSRNS;
+    using ContextType = CryptoContext<Element>;       ///< the generated context type; required by GenCryptoContext()
+    using Factory = CryptoContextFactory<Element>;    ///< the factory that creates and caches the contexts
+    using PublicKeyEncryptionScheme = SchemeCKKSRNS;  ///< the scheme instantiated in the context
+    using CryptoParams = CryptoParametersCKKSRNS;     ///< the crypto parameters instantiated in the context
 
+    /**
+   * Validates the parameters and generates a CKKS cryptocontext from them.
+   *
+   * @param parameters the CKKS parameters
+   * @return the cryptocontext
+   */
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextCKKSRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
         return genCryptoContextCKKSRNSInternal<CryptoContextCKKSRNS, Element>(parameters);

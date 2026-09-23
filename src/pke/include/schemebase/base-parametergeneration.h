@@ -77,6 +77,7 @@ class ParameterGenerationBase {
    * @param n ring dimension in case the user wants to use a custom ring
    * dimension
    * @param numPartQ number of partitions of Q for HYBRID key switching
+   * @return true if the parameters were generated successfully (errors are reported by throwing).
    */
     virtual bool ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                                          uint32_t evalAddCount, uint32_t multiplicativeDepth, uint32_t keySwitchCount,
@@ -97,6 +98,7 @@ class ParameterGenerationBase {
    * @param numPartQ number of partitions of Q for HYBRID key switching
    * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in
    * multi-party interactive bootstrapping
+   * @return true if the parameters were generated successfully (errors are reported by throwing).
    */
     virtual bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                                           uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
@@ -118,6 +120,7 @@ class ParameterGenerationBase {
    * @param dcrtBits the bit-width of moduli
    * @param numPartQ number of partitions of Q for HYBRID key switching
    * @param PRENumHops bound for the HRA-secure mode of PRE
+   * @return true if the parameters were generated successfully (errors are reported by throwing).
    */
     virtual bool ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                          uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder,

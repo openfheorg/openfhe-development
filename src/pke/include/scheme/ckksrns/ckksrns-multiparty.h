@@ -45,6 +45,11 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+/**
+ * @brief CKKS implementation of the multiparty (threshold FHE) capability: fusion of the partial decryptions and
+ * the interactive multi-party bootstrapping protocol (common random element, masked decryption shares and their
+ * re-encryption, with the scale adjustments CKKS needs).
+ */
 class MultipartyCKKSRNS : public MultipartyRNS {
   public:
     virtual ~MultipartyCKKSRNS() = default;
@@ -62,6 +67,14 @@ class MultipartyCKKSRNS : public MultipartyRNS {
     Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                    const PublicKey<DCRTPoly> publicKey) const override;
 
+    /**
+   * Threshold FHE: generates a common random polynomial for multi-party interactive bootstrapping with the element
+   * parameters (modulus chain) of the given ciphertext, and wraps it in a ciphertext with the same metadata.
+   *
+   * @param params CKKS crypto parameters (unused; the parameters of the ciphertext are used instead)
+   * @param ciphertext the ciphertext to be bootstrapped, which sets the modulus chain of the random element
+   * @return a ciphertext holding the common random polynomial as its single element
+   */
     Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                    ConstCiphertext<DCRTPoly>& ciphertext) const override;
 

@@ -42,6 +42,10 @@ namespace lbcrypto {
 template <typename Element>
 class EvalKeyImpl;
 
+/**
+ * @brief Shared pointer to an evaluation key; this is the type the public API passes around
+ * @tparam Element a ring element.
+ */
 template <typename Element>
 using EvalKey = std::shared_ptr<EvalKeyImpl<Element>>;
 

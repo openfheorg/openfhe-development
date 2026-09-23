@@ -104,12 +104,39 @@ class PKERNS : public PKEBase<DCRTPoly> {
     // CORE OPERATIONS
     /////////////////////////////////////
 
+    /**
+   * Generates a secret-key encryption of zero, i.e., the pair (a*s + ns*e, -a) for a uniformly random a and a
+   * Gaussian error e, where ns is the noise scale of the scheme.
+   *
+   * @param privateKey the secret key.
+   * @param params the element parameters of the ciphertext; if fewer towers than the key has are requested,
+   * only the needed towers of the key are used. nullptr selects the full modulus chain.
+   * @return the two ciphertext polynomials.
+   */
     std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PrivateKey<DCRTPoly> privateKey,
                                                            const std::shared_ptr<ParmType> params) const override;
 
+    /**
+   * Generates a public-key encryption of zero, i.e., the pair (p0*v + ns*e0, p1*v + ns*e1) for a fresh
+   * ephemeral key v drawn from the secret key distribution and Gaussian errors e0, e1, where ns is the noise
+   * scale of the scheme.
+   *
+   * @param publicKey the public key (p0, p1).
+   * @param params the element parameters of the ciphertext; if fewer towers than the key has are requested,
+   * only the needed towers of the public key are used. nullptr selects the full modulus chain.
+   * @return the two ciphertext polynomials.
+   */
     std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
                                                            const std::shared_ptr<ParmType> params) const override;
 
+    /**
+   * Computes the decryption polynomial c_0 + c_1*s + c_2*s^2 + ... in EVALUATION format, using only the
+   * towers of the secret key that the ciphertext still has.
+   *
+   * @param cv the ciphertext polynomials.
+   * @param privateKey the secret key.
+   * @return the noisy scaled plaintext polynomial.
+   */
     DCRTPoly DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const override;
 
     /////////////////////////////////////

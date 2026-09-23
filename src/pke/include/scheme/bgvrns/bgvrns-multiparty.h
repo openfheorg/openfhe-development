@@ -43,13 +43,33 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+/**
+ * @brief BGV implementation of the threshold-FHE (multiparty) operations in the RNS representation.
+ */
 class MultipartyBGVRNS : public MultipartyRNS {
   public:
     virtual ~MultipartyBGVRNS() {}
 
+    /**
+   * Threshold FHE: Combines the partial decryptions, modulus switches the sum down to a single tower and
+   * reduces it modulo the plaintext modulus. For FLEXIBLEAUTO and FLEXIBLEAUTOEXT the scaling factor modulo
+   * t is adjusted for the dropped towers and returned in the result.
+   *
+   * @param ciphertextVec vector of "partial" decryptions.
+   * @param plaintext the plaintext output as a NativePoly.
+   * @return the decoding result (including the scaling factor modulo t).
+   */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           NativePoly* plaintext) const override;
 
+    /**
+   * Threshold FHE: Combines the partial decryptions, CRT-interpolates the sum to a large-integer polynomial
+   * and reduces it modulo the plaintext modulus.
+   *
+   * @param ciphertextVec vector of "partial" decryptions.
+   * @param plaintext the plaintext output as a Poly.
+   * @return the decoding result.
+   */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           Poly* plaintext) const override;
 

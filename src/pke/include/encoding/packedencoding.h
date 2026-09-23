@@ -52,7 +52,7 @@
 
 namespace lbcrypto {
 
-// STL pair used as a key for some tables in PackedEncoding
+/// STL pair (plaintext modulus, cyclotomic order) used as a key for some tables in PackedEncoding
 using ModulusM = std::pair<NativeInteger, uint64_t>;
 
 /**
@@ -68,12 +68,23 @@ class PackedEncoding : public PlaintextImpl {
 
   public:
     // these two constructors are used inside of Decrypt
+    /**
+   * @brief Constructs an empty packed plaintext over the given element parameters.
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
+    /**
+   * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param coeffs the slot values
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -81,6 +92,12 @@ class PackedEncoding : public PlaintextImpl {
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
+    /**
+   * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param coeffs the slot values
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -109,14 +126,34 @@ class PackedEncoding : public PlaintextImpl {
    */
     PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value() {}
 
+    /**
+   * @brief Gets the generator of the automorphism group used for slot rotations of the packed encoding with the
+   * given cyclotomic order (set by SetParams).
+   * @param m the cyclotomic order
+   * @return the generator
+   */
     static uint32_t GetAutomorphismGenerator(uint32_t m) {
         return m_automorphismGenerator[m];
     }
 
+    /**
+   * @brief Encodes the slot values into the polynomial (inverse number-theoretic transform modulo the plaintext
+   * modulus, with the CRT permutation of the slots).
+   * @return true on success
+   */
     bool Encode() override;
 
+    /**
+   * @brief Decodes the polynomial into the slot values (number-theoretic transform modulo the plaintext
+   * modulus), mapping them to the centered range [-p/2, p/2).
+   * @return true on success
+   */
     bool Decode() override;
 
+    /**
+   * @brief Gets the decoded (or to be encoded) slot values.
+   * @return the integer vector
+   */
     const std::vector<int64_t>& GetPackedValue() const override {
         return value;
     }

@@ -42,6 +42,10 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief BGV implementation of encryption and decryption in the RNS representation. Decryption modulus
+ * switches the ciphertext down to a single tower before reducing modulo the plaintext modulus.
+ */
 class PKEBGVRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
     using IntType = typename DCRTPoly::Integer;

@@ -53,18 +53,39 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief The CKKS scheme in RNS form: assembles the CKKS parameter generation, PKE, key switching, PRE,
+ * leveled SHE, advanced SHE, multiparty, FHE (bootstrapping) and scheme switching capabilities. Capabilities
+ * other than parameter generation are instantiated on demand by Enable.
+ */
 class SchemeCKKSRNS : public SchemeRNS {
   public:
+    /**
+   * Constructs the scheme with its parameter generation capability; the other capabilities are created by
+   * Enable.
+   */
     SchemeCKKSRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
     }
 
     virtual ~SchemeCKKSRNS() = default;
 
+    /**
+   * Compares two schemes by type: any two SchemeCKKSRNS objects are equal.
+   *
+   * @param sch the scheme to compare to
+   * @return true if sch is a SchemeCKKSRNS
+   */
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
         return (typeid(sch) == typeid(SchemeCKKSRNS));
     }
 
+    /**
+   * Enables a feature by instantiating the corresponding CKKS capability object (PKE, KEYSWITCH, PRE,
+   * LEVELEDSHE, ADVANCEDSHE, MULTIPARTY, FHE or SCHEMESWITCH) if it is not enabled yet.
+   *
+   * @param feature the feature to enable
+   */
     void Enable(PKESchemeFeature feature) override;
 
     /////////////////////////////////////

@@ -55,7 +55,9 @@
 namespace lbcrypto {
 
 /**
- * Generates a random 128-bit hash
+ * Generates a random 128-bit identifier, used as the key tag of freshly generated private keys.
+ *
+ * @return the identifier as a 32-character lowercase hexadecimal string
  */
 inline std::string GenerateUniqueKeyID() {
     const size_t intsInID = 128 / (sizeof(uint32_t) * 8);
@@ -79,10 +81,16 @@ class PrivateKeyImpl : public Key<Element> {
 
   public:
     /**
-   * Construct in context
+   * Default constructor
    */
     PrivateKeyImpl() = default;
 
+    /**
+   * Constructs an empty private key in the given crypto context and assigns it a freshly generated
+   * random key tag (see GenerateUniqueKeyID()).
+   *
+   * @param cc the crypto context the key belongs to
+   */
     explicit PrivateKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc, GenerateUniqueKeyID()) {}
 
     /**
@@ -99,6 +107,11 @@ class PrivateKeyImpl : public Key<Element> {
     PrivateKeyImpl(PrivateKeyImpl<Element>&& rhs) noexcept
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(std::move(rhs.m_sk)) {}
 
+    /**
+   * Checks whether the key is attached to a crypto context.
+   *
+   * @return true if the key has a crypto context
+   */
     operator bool() const {
         return this->context != nullptr;
     }
@@ -151,10 +164,22 @@ class PrivateKeyImpl : public Key<Element> {
         m_sk = std::move(x);
     }
 
+    /**
+   * Equality: same crypto context (by pointer), same key tag and equal private elements.
+   *
+   * @param other the private key to compare with
+   * @return true if the keys are equal
+   */
     bool operator==(const PrivateKeyImpl& other) const {
         return CryptoObject<Element>::operator==(other) && m_sk == other.m_sk;
     }
 
+    /**
+   * Inequality: negation of operator==.
+   *
+   * @param other the private key to compare with
+   * @return true if the keys differ
+   */
     bool operator!=(const PrivateKeyImpl& other) const {
         return !(*this == other);
     }

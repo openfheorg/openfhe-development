@@ -48,36 +48,98 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Quotient and remainder of a polynomial long division (LongDivisionPoly, LongDivisionChebyshev).
+ */
 template <typename VecDType>
 struct longDiv {
-    std::vector<VecDType> q;
-    std::vector<VecDType> r;
+    std::vector<VecDType> q;  ///< coefficients of the quotient
+    std::vector<VecDType> r;  ///< coefficients of the remainder
     longDiv() = default;
+    /**
+   * Constructs the result from the quotient and remainder coefficients.
+   *
+   * @param q0 coefficients of the quotient
+   * @param r0 coefficients of the remainder
+   */
     longDiv(const std::vector<VecDType>& q0, const std::vector<VecDType>& r0) : q(q0), r(r0) {}
 };
 
+/**
+ * Checks whether a real value differs from 1 by more than a tolerance.
+ *
+ * @param v the value
+ * @param delta the tolerance
+ * @return true if |v - 1| > delta
+ */
 inline bool IsNotEqualOne(double v, double delta = 0x1p-44) {
     return std::abs(v - 1.0) > delta;
 }
+/**
+ * Checks whether a real value differs from 0 by more than a tolerance.
+ *
+ * @param v the value
+ * @param delta the tolerance
+ * @return true if |v| > delta
+ */
 inline bool IsNotEqualZero(double v, double delta = 0x1p-44) {
     return std::abs(v) > delta;
 }
+/**
+ * Checks whether a real value differs from -1 by more than a tolerance.
+ *
+ * @param v the value
+ * @param delta the tolerance
+ * @return true if |v + 1| > delta
+ */
 inline bool IsNotEqualNegOne(double v, double delta = 0x1p-44) {
     return std::abs(v + 1.0) > delta;
 }
+/**
+ * Checks whether a complex value differs from 1 by more than a tolerance in its real or imaginary part.
+ *
+ * @param val the value
+ * @param delta the tolerance
+ * @return true if |Re(val) - 1| > delta or |Im(val)| > delta
+ */
 inline bool IsNotEqualOne(std::complex<double> val, double delta = 0x1p-44) {
     return IsNotEqualOne(val.real(), delta) || IsNotEqualZero(val.imag(), delta);
 }
+/**
+ * Checks whether a complex value differs from 0 by more than a tolerance in its real or imaginary part.
+ *
+ * @param val the value
+ * @param delta the tolerance
+ * @return true if |Re(val)| > delta or |Im(val)| > delta
+ */
 inline bool IsNotEqualZero(std::complex<double> val, double delta = 0x1p-44) {
     return IsNotEqualZero(val.real(), delta) || IsNotEqualZero(val.imag(), delta);
 }
 
+/**
+ * Converts a coefficient to a real number (identity for doubles); used by the templated coefficient utilities.
+ *
+ * @param val the value
+ * @return the value itself
+ */
 inline double ToReal(double val) {
     return val;
 }
+/**
+ * Converts an integer coefficient to a real number.
+ *
+ * @param val the value
+ * @return the value as a double
+ */
 inline double ToReal(int64_t val) {
     return static_cast<double>(val);
 }
+/**
+ * Converts a complex coefficient to a real number by taking its real part.
+ *
+ * @param val the value
+ * @return the real part of the value
+ */
 inline double ToReal(std::complex<double> val) {
     return val.real();
 }
@@ -131,6 +193,14 @@ std::shared_ptr<longDiv<VecDType>> LongDivisionChebyshev(const std::vector<VecDT
  */
 std::vector<uint32_t> ComputeDegreesPS(uint32_t n);
 
+/**
+ * Gets the multiplicative depth of evaluating a polynomial of the given degree from a table that covers degrees
+ * up to 261631 (see src/pke/examples/FUNCTION_EVALUATION.md): degrees below 5 are evaluated with a binary tree
+ * of powers, higher degrees with the Paterson-Stockmeyer algorithm.
+ *
+ * @param degree degree of the polynomial
+ * @return the multiplicative depth
+ */
 uint32_t GetDepthByDegree(size_t degree);
 
 /**
@@ -192,6 +262,14 @@ std::vector<VecDType> RotateTwoHalves(const std::vector<VecDType>& a, int32_t in
 template <typename VecDType = std::vector<std::complex<double>>>
 std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots);
 
+/**
+ * Clones the values of an initializer list up to the size indicated by the 'slots' variable
+ *
+ * @param a input values.
+ * @param slots the new size of the vector.
+ *
+ * @return the vector with cloned values
+ */
 template <typename VecDType = std::vector<std::complex<double>>>
 std::vector<VecDType> Fill(std::initializer_list<VecDType> a, uint32_t slots);
 
@@ -207,6 +285,7 @@ std::vector<VecDType> Fill(const std::vector<VecDType>& a, uint32_t slots);
  * @param pows vector of roots of unity powers.
  * @param rotGroup rotation group indices to appropriately choose the elements of pows to compute iFFT.
  * @param flag_i flag that is 0 when we compute the coefficients for conj(U_0^T) and is 1 for conj(i*U_0^T).
+ * @return the coefficients of each layer of the iFFT (one vector per layer)
  */
 std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::vector<std::complex<double>>& pows,
                                                                      const std::vector<uint32_t>& rotGroup,
@@ -219,6 +298,7 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(const std::
  * @param pows vector of roots of unity powers.
  * @param rotGroup rotation group indices to appropriately choose the elements of pows to compute iFFT.
  * @param flag_i flag that is 0 when we compute the coefficients for U_0 and is 1 for i*U_0.
+ * @return the coefficients of each layer of the FFT (one vector per layer)
  */
 std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::vector<std::complex<double>>& pows,
                                                                      const std::vector<uint32_t>& rotGroup,
@@ -232,6 +312,7 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(const std::
  * @param rotGroup rotation group indices to appropriately choose the elements of pows to compute iFFT.
  * @param levelBudget the user specified budget for levels.
  * @param flag_i flag that is 0 when we compute the coefficients for conj(U_0^T) and is 1 for conj(i*U_0^T).
+ * @return the coefficients of each level of the collapsed iFFT (one vector of diagonals per level)
  */
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollapse(
         const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
@@ -245,39 +326,46 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
  * @param rotGroup rotation group indices to appropriately choose the elements of pows to compute FFT.
  * @param levelBudget the user specified budget for levels.
  * @param flag_i flag that is 0 when we compute the coefficients for U_0 and is 1 for i*U_0.
+ * @return the coefficients of each level of the collapsed FFT (one vector of diagonals per level)
  */
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
         const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
         bool flag_i);
 
 /**
- * Ensures that the index for rotation is positive and between 1 and slots.
+ * Ensures that the index for rotation is positive and between 0 and slots - 1.
  *
  * @param index signed rotation amount.
  * @param slots number of slots and size of vector that is rotated.
+ * @return the equivalent non-negative rotation index modulo slots
  */
 uint32_t ReduceRotation(int32_t index, uint32_t slots);
 
 /**
+ * @brief Parameters of the homomorphic encoding or decoding (FFT-like linear transform) in bootstrapping.
+ */
+struct ckks_boot_params {
+    uint32_t lvlb;             ///< level budget
+    uint32_t layersCollapse;   ///< layers to collapse in one level
+    uint32_t remCollapse;      ///< remaining layers to collapse
+    uint32_t numRotations;     ///< number of rotations in one level
+    uint32_t b;                ///< baby step in the baby-step giant-step strategy
+    uint32_t g;                ///< giant step in the baby-step giant-step strategy
+    uint32_t numRotationsRem;  ///< number of rotations in the remaining level
+    uint32_t bRem;             ///< baby step in the baby-step giant-step strategy for the remaining level
+    uint32_t gRem;             ///< giant step in the baby-step giant-step strategy for the remaining level
+};
+
+/**
  * Computes all parameters needed for the homomorphic encoding and decoding in the bootstrapping
- * operation and returns them as a struct.
+ * operation and returns them as a struct: how many FFT layers are collapsed in each level of the budget (the
+ * last level takes the remainder), the number of rotations per level, and the baby and giant steps.
  *
  * @param slots number of slots
  * @param levelBudget the allocated level budget for the computation.
- * @param dim1 the value for the inner dimension in the baby-step giant-step strategy
+ * @param dim1 the value for the inner dimension in the baby-step giant-step strategy (0 = chosen automatically)
  * @return struct with parameters for the homomorphic encoding and decoding in bootstrapping
  */
-struct ckks_boot_params {
-    uint32_t lvlb;             // level budget
-    uint32_t layersCollapse;   // layers to collapse in one level
-    uint32_t remCollapse;      // remaining layers to collapse
-    uint32_t numRotations;     // umber of rotations in one level
-    uint32_t b;                // baby step in the baby-step giant-step strategy
-    uint32_t g;                // giant step in the baby-step giant-step strategy
-    uint32_t numRotationsRem;  // number of rotations in the remaining level
-    uint32_t bRem;             // baby step in the baby-step giant-step strategy for the remaining level
-    uint32_t gRem;             // giant step in the baby-step giant-step strategy for the remaining level
-};
 struct ckks_boot_params GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget = 4, uint32_t dim1 = 0);
 
 /**

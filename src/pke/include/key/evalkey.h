@@ -60,6 +60,11 @@ class EvalKeyImpl : public Key<Element> {
    */
     EvalKeyImpl() = default;
 
+    /**
+   * Constructs an evaluation key in the given crypto context with an empty key tag.
+   *
+   * @param cc the crypto context the key belongs to
+   */
     explicit EvalKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc) {}
 
     virtual ~EvalKeyImpl() = default;
@@ -130,18 +135,43 @@ class EvalKeyImpl : public Key<Element> {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
+    /**
+   * Releases the key material held by the evaluation key.
+   * Throws exception, to be overridden by derived class.
+   */
     virtual void ClearKeys() {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
+    /**
+   * Equality of evaluation keys, delegated to the virtual key_compare() of the left operand.
+   *
+   * @param a left operand
+   * @param b right operand
+   * @return true if a.key_compare(b) reports equality
+   */
     friend bool operator==(const EvalKeyImpl& a, const EvalKeyImpl& b) {
         return a.key_compare(b);
     }
 
+    /**
+   * Inequality of evaluation keys: negation of operator==.
+   *
+   * @param a left operand
+   * @param b right operand
+   * @return true if the keys differ
+   */
     friend bool operator!=(const EvalKeyImpl& a, EvalKeyImpl& b) {
         return !(a == b);
     }
 
+    /**
+   * Compares this key with another evaluation key.
+   * The base implementation always reports inequality; derived classes override it.
+   *
+   * @param other the evaluation key to compare with
+   * @return true if the keys are equal
+   */
     virtual bool key_compare(const EvalKeyImpl& other) const {
         return false;
     }

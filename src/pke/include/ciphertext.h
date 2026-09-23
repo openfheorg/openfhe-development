@@ -86,9 +86,16 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Copy constructor
+   *
+   * @param ct the ciphertext to copy from
    */
     CiphertextImpl(const CiphertextImpl<Element>& ct) = default;
 
+    /**
+   * Copy constructor from a shared pointer: copies all elements and metadata of the pointed-to ciphertext.
+   *
+   * @param ct shared pointer to the ciphertext to copy from
+   */
     explicit CiphertextImpl(const Ciphertext<Element>& ct)
         : CryptoObject<Element>(*ct),
           m_elements(ct->m_elements),
@@ -103,9 +110,17 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Move constructor
+   *
+   * @param ct the ciphertext to move from
    */
     CiphertextImpl(CiphertextImpl<Element>&& ct) noexcept = default;
 
+    /**
+   * Move constructor from a shared pointer: moves all elements and metadata out of the pointed-to ciphertext,
+   * leaving that ciphertext in an unspecified state.
+   *
+   * @param ct shared pointer to the ciphertext to move from
+   */
     explicit CiphertextImpl(Ciphertext<Element>&& ct) noexcept
         : CryptoObject<Element>(std::move(*ct)),
           m_elements(std::move(ct->m_elements)),
@@ -179,6 +194,12 @@ class CiphertextImpl : public CryptoObject<Element> {
         return m_elements;
     }
 
+    /**
+   * Returns the number of ring elements (polynomials) in the ciphertext, e.g. 2 for a fresh encryption and 3
+   * after a multiplication without relinearization.
+   *
+   * @return the number of ring elements
+   */
     size_t NumberCiphertextElements() const {
         return m_elements.size();
     }
@@ -232,6 +253,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get the degree of the scaling factor for the encrypted message.
+   * @return the degree of the scaling factor (1 for a fresh ciphertext, 2 after a multiplication)
    */
     size_t GetNoiseScaleDeg() const {
         return m_noiseScaleDeg;
@@ -247,22 +269,26 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get the number of scalings performed
+   * @return the level (number of RNS limbs dropped so far) of the ciphertext
    */
     size_t GetLevel() const {
         return m_level;
     }
 
     /**
-   * Set the number of scalings
+   * Set the number of scalings.
+   * This generic version performs no validation. The DCRTPoly specialization additionally checks, for CKKS,
+   * that the ciphertext still has at least as many RNS limbs as its noise scale degree and throws an exception
+   * asking for a larger multiplicative depth otherwise.
    * @param level the number of scalings (level) of the ciphertext
    */
-    // Generic case: no multiplicativeDepth validation. SetLevel() has a specialization for DCRTPoly
     void SetLevel(size_t level) {
         m_level = level;
     }
 
     /**
    * Get the re-encryption level of the ciphertext.
+   * @return the number of times the ciphertext has been re-encrypted (proxy re-encryption hops)
    */
     size_t GetHopLevel() const {
         return m_hopslevel;
@@ -278,6 +304,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get the scaling factor of the ciphertext.
+   * @return the (approximate, double-precision) scaling factor of the encrypted message
    */
     double GetScalingFactor() const {
         return m_scalingFactor;
@@ -293,6 +320,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get the integer scaling factor of the ciphertext.
+   * @return the exact integer scaling factor of the encrypted message (used by BGV)
    */
     NativeInteger GetScalingFactorInt() const {
         return m_scalingFactorInt;
@@ -308,6 +336,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get the number of slots of the ciphertext.
+   * @return the number of plaintext slots the ciphertext encrypts
    */
     uint32_t GetSlots() const {
         return m_slots;
@@ -341,6 +370,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
     /**
    * Get the Metadata map of the ciphertext.
+   * @return shared pointer to the map of metadata objects keyed by name
    */
     MetadataMap GetMetadataMap() const {
         return m_metadataMap;
@@ -390,9 +420,9 @@ class CiphertextImpl : public CryptoObject<Element> {
     }
 
     /**
-   * Get a Metadata element from the Metadata map of the ciphertext.
+   * Get a copy of a Metadata element from the Metadata map of the ciphertext.
    * @param key the string key of the metadata element
-   * @return the metadata element, or nullptr if the key is not found
+   * @return a new shared pointer to a copy of the metadata element; throws an exception if the key is not found
    */
     std::shared_ptr<Metadata> GetMetadataByKey(const std::string& key) const {
         auto it = m_metadataMap->find(key);
@@ -414,6 +444,7 @@ class CiphertextImpl : public CryptoObject<Element> {
    * This method creates a copy of this, skipping the actual encrypted
    * elements. This means it copies parameters, key tags, encoding type,
    * and metadata.
+   * @return a new ciphertext with the same context, key tag, level/scaling data and metadata but no elements
    */
     virtual Ciphertext<Element> CloneEmpty() const {
         auto ct(std::make_shared<CiphertextImpl<Element>>(this->GetCryptoContext(), this->GetKeyTag(), m_encodingType));
@@ -427,12 +458,23 @@ class CiphertextImpl : public CryptoObject<Element> {
         return ct;
     }
 
+    /**
+   * Creates a deep copy of this ciphertext, including the encrypted elements.
+   * @return a new ciphertext equal to this one
+   */
     virtual Ciphertext<Element> Clone() const {
         auto ct = this->CloneEmpty();
         ct->m_elements = m_elements;
         return ct;
     }
 
+    /**
+   * Equality: same crypto context (by pointer) and key tag, equal slots, level, hop level, noise scale degree,
+   * scaling factors, encoding type, metadata entries and ring elements.
+   *
+   * @param rhs the ciphertext to compare with
+   * @return true if the ciphertexts are equal
+   */
     bool operator==(const CiphertextImpl<Element>& rhs) const {
         if (!CryptoObject<Element>::operator==(rhs))
             return false;
@@ -460,10 +502,23 @@ class CiphertextImpl : public CryptoObject<Element> {
         return true;
     }
 
+    /**
+   * Inequality: negation of operator==.
+   *
+   * @param rhs the ciphertext to compare with
+   * @return true if the ciphertexts differ
+   */
     bool operator!=(const CiphertextImpl<Element>& rhs) const {
         return !(*this == rhs);
     }
 
+    /**
+   * Prints the encoding type, noise scale degree, metadata entries and every ring element of the ciphertext.
+   *
+   * @param out the output stream
+   * @param c the ciphertext to print
+   * @return the output stream
+   */
     friend std::ostream& operator<<(std::ostream& out, const CiphertextImpl<Element>& c) {
         out << "enc=" << c.m_encodingType << " noiseScaleDeg=" << c.m_noiseScaleDeg << std::endl;
         out << "metadata: [ ";
@@ -478,6 +533,13 @@ class CiphertextImpl : public CryptoObject<Element> {
         return out;
     }
 
+    /**
+   * Prints the ciphertext a shared pointer refers to (see the reference overload).
+   *
+   * @param out the output stream
+   * @param c shared pointer to the ciphertext to print
+   * @return the output stream
+   */
     friend std::ostream& operator<<(std::ostream& out, Ciphertext<Element> c) {
         return out << *c;
     }
@@ -546,6 +608,13 @@ class CiphertextImpl : public CryptoObject<Element> {
     MetadataMap m_metadataMap{std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>()};
 };
 
+/**
+ * DCRTPoly specialization of SetLevel(): stores the level and, for CKKS, checks that the ciphertext still has at
+ * least as many RNS limbs as its noise scale degree, throwing an exception that asks for a larger multiplicative
+ * depth otherwise.
+ *
+ * @param level the number of scalings (level) of the ciphertext
+ */
 template <>
 void CiphertextImpl<DCRTPoly>::SetLevel(size_t level);
 

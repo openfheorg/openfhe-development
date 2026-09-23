@@ -248,14 +248,14 @@ class CryptoContextImpl : public Serializable {
     static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
 
   protected:
-    // crypto parameters
+    /// crypto parameters
     std::shared_ptr<CryptoParametersBase<Element>> m_params{nullptr};
-    // algorithm used; accesses all crypto methods
+    /// algorithm used; accesses all crypto methods
     std::shared_ptr<SchemeBase<Element>> m_scheme{nullptr};
 
-    SCHEME m_schemeId{SCHEME::INVALID_SCHEME};
+    SCHEME m_schemeId{SCHEME::INVALID_SCHEME};  ///< identifier of the scheme this crypto context implements
 
-    uint32_t m_keyGenLevel{0};
+    uint32_t m_keyGenLevel{0};  ///< level at which evaluation keys should be generated (for future use)
 
     /**
     * @brief TypeCheck makes sure that an operation between two ciphertexts is permitted
@@ -319,10 +319,21 @@ class CryptoContextImpl : public Serializable {
         }
     }
 
+    /**
+    * @brief Checks whether a crypto context is a different object than this one.
+    *
+    * @param a the crypto context to compare with
+    * @return true if a is not this crypto context
+    */
     bool Mismatched(const CryptoContext<Element> a) const {
         return a.get() != this;
     }
 
+    /**
+    * @brief Throws if a key is null or was not generated with this crypto context.
+    *
+    * @param key the key to validate (any key type with GetCryptoContext())
+    */
     template <typename T>
     void ValidateKey(const T& key, CALLER_INFO_ARGS_HDR) const {
         if (key == nullptr) {
@@ -335,6 +346,11 @@ class CryptoContextImpl : public Serializable {
         }
     }
 
+    /**
+    * @brief Throws if a ciphertext is null or was not generated with this crypto context.
+    *
+    * @param ciphertext the ciphertext to validate
+    */
     void ValidateCiphertext(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
         if (ciphertext == nullptr) {
             std::string errorMsg(std::string("Ciphertext is nullptr") + CALLER_INFO);
@@ -347,6 +363,10 @@ class CryptoContextImpl : public Serializable {
         }
     }
 
+    /**
+    * @brief Throws if proxy re-encryption is disabled for this crypto context, i.e., HYBRID key switching is
+    * used and the PRE mode is NOT_SET.
+    */
     void ValidatePREMode(CALLER_INFO_ARGS_HDR) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
         if (cryptoParams == nullptr)
@@ -356,6 +376,11 @@ class CryptoContextImpl : public Serializable {
                     "PRE is disabled (default = NOT_SET). Enable with SetPREMode() before generating cryptocontext.");
     }
 
+    /**
+    * @brief Throws if a precomputed set of powers is null, empty, or was not generated with this crypto context.
+    *
+    * @param powers the powers to validate
+    */
     void ValidateSeriesPowers(std::shared_ptr<seriesPowers<Element>> powers, CALLER_INFO_ARGS_HDR) const {
         if (powers == nullptr) {
             std::string errorMsg(std::string("The object for powers is nullptr") + CALLER_INFO);
@@ -372,6 +397,18 @@ class CryptoContextImpl : public Serializable {
         }
     }
 
+    /**
+    * @brief Creates and encodes a CKKS plaintext from complex values at a given level and noise scale degree,
+    * validating the level against the modulus chain and choosing the element parameters (the towers remaining at
+    * that level) and the scaling factor of the level when params is null.
+    *
+    * @param value the complex values to encode
+    * @param noiseScaleDeg noise scale degree of the plaintext
+    * @param level level of the plaintext (must be below the number of RNS moduli)
+    * @param params element parameters to encode with (null = derived from the level)
+    * @param slots number of slots (0 = default)
+    * @return the encoded plaintext
+    */
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, uint32_t slots) const {
@@ -504,10 +541,20 @@ class CryptoContextImpl : public Serializable {
     }
 #endif
 
+    /**
+    * @brief Sets the identifier of the scheme this crypto context implements.
+    *
+    * @param schemeTag the scheme identifier
+    */
     void setSchemeId(SCHEME schemeTag) {
         m_schemeId = schemeTag;
     }
 
+    /**
+    * @brief Gets the identifier of the scheme this crypto context implements.
+    *
+    * @return the scheme identifier
+    */
     SCHEME getSchemeId() const {
         return m_schemeId;
     }
@@ -1518,6 +1565,13 @@ class CryptoContextImpl : public Serializable {
         m_scheme->EvalAddInPlace(ciphertext1, ciphertext2);
     }
 
+    /**
+    * @brief In-place element-wise addition of two ciphertexts without any type, level or scaling factor checks;
+    * the ciphertexts must already have the same number of elements, level and noise scale degree.
+    *
+    * @param ctxt1  First addend (modified in place).
+    * @param ctxt2  Second addend.
+    */
     void EvalAddInPlaceNoCheck(Ciphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
         auto& cv1 = ctxt1->GetElements();
         auto& cv2 = ctxt2->GetElements();
@@ -2056,6 +2110,16 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalMult(ciphertext1, ciphertext2);
     }
 
+    /**
+    * @brief Homomorphic multiplication of two ciphertexts without relinearization and without any type, level
+    * or scaling factor checks: the tensor product of the ciphertext elements is computed directly, so the
+    * ciphertexts must already have the same level and scaling factor. The result carries the summed noise scale
+    * degree and the product of the scaling factors.
+    *
+    * @param ctxt1  Multiplier.
+    * @param ctxt2  Multiplicand.
+    * @return Resulting ciphertext.
+    */
     Ciphertext<Element> EvalMultNoRelinNoCheck(ConstCiphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
         auto& cv1 = ctxt1->GetElements();
         auto& cv2 = ctxt2->GetElements();
@@ -2153,6 +2217,14 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalMultAndRelinearize(ciphertext1, ciphertext2, evalKeyVec);
     }
 
+    /**
+    * @brief Multiplies all ciphertext elements by an unscaled integer without any checks; the level, noise scale
+    * degree and scaling factor of the ciphertext are unchanged.
+    *
+    * @param ctxt  Input ciphertext.
+    * @param k     Integer to multiply by.
+    * @return Resulting ciphertext.
+    */
     Ciphertext<Element> EvalMultNoCheck(ConstCiphertext<Element>& ctxt, NativeInteger k) const {
         auto result = ctxt->Clone();
         auto& cv = result->GetElements();
@@ -3044,6 +3116,16 @@ class CryptoContextImpl : public Serializable {
                                                                             uint32_t rowSize = 0,
                                                                             uint32_t subringDim = 0);
 
+    /**
+    * @brief Generates automorphism keys for EvalSumRows (only for packed encoding). Kept for backwards
+    * compatibility; the public key is unused.
+    *
+    * @param privateKey    Private key used for key generation.
+    * @param publicKey     Unused.
+    * @param rowSize       Number of slots per row in the packed matrix.
+    * @param subringDim    Subring dimension (use cyclotomic order if 0).
+    * @return Map of generated evaluation keys.
+    */
     // TODO: this is here for backwards compatibility; should remove in v2.0
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                             const PublicKey<Element> publicKey,
@@ -3654,6 +3736,17 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalBootstrap(ciphertext, numIterations, precision);
     }
 
+    /**
+    * @brief Evaluates the slots-encoding variant of CKKS bootstrapping (SlotsToCoeffs first, then modulus raise,
+    *        CoeffsToSlots and the approximate modular reduction over the message values). EvalBootstrap dispatches
+    *        here automatically when EvalBootstrapSetup was called with BTSlotsEncoding = true. Supported only in
+    *        CKKS.
+    *
+    * @param ciphertext     Input ciphertext.
+    * @param numIterations  Number of Meta-BTS iterations to improve precision (1 or 2).
+    * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
+    * @return Refreshed ciphertext.
+    */
     Ciphertext<Element> EvalBootstrapStCFirst(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
                                               uint32_t precision = 0) const {
         return m_scheme->EvalBootstrapStCFirst(ciphertext, numIterations, precision);
@@ -3732,6 +3825,27 @@ class CryptoContextImpl : public Serializable {
         return GetScheme()->EvalFEFuncBootstrapWithPrecomp(powers, coefficients);
     }
 
+    /**
+    * @brief Sets up CKKS functional bootstrapping of a look-up table (see CKKS_FUNCTIONAL_BOOTSTRAPING.md):
+    *        computes its depth and precomputes the homomorphic encoding and decoding matrices with the required
+    *        scalings folded in. Supported only in CKKS with HYBRID key switching (64-bit build). Shares the
+    *        precomputation entry for @p numSlots with EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
+    *
+    * @param coeffs                   Trigonometric Hermite interpolation coefficients of the look-up table
+    *                                 (complex, or integer for a Boolean function of order 1); only their number
+    *                                 is used here.
+    * @param numSlots                 Number of slots to be bootstrapped (0 = full packing).
+    * @param PIn                      Plaintext modulus of the RLWE input.
+    * @param POut                     Plaintext modulus of the RLWE output.
+    * @param Bigq                     Ciphertext modulus of the RLWE scheme the input is converted from.
+    * @param pubKey                   Public key (its element parameters define the modulus chain).
+    * @param dim1                     Baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = automatic).
+    * @param levelBudget              Levels spent on CoeffsToSlots and SlotsToCoeffs (each in [1, log2(slots)]).
+    * @param lvlsAfterBoot            Number of levels remaining after functional bootstrapping.
+    * @param depthLeveledComputation  Depth reserved for a leveled computation between EvalFBTNoDecoding and
+    *                                 EvalHomDecoding.
+    * @param order                    Order of the trigonometric Hermite interpolation (1, 2 or 3).
+    */
     template <typename VectorDataType>
     void EvalFBTSetup(const std::vector<VectorDataType>& coeffs, uint32_t numSlots, const BigInteger& PIn,
                       const BigInteger& POut, const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
@@ -3741,6 +3855,24 @@ class CryptoContextImpl : public Serializable {
                                depthLeveledComputation, order);
     }
 
+    /**
+    * @brief Functional bootstrapping of a look-up table on a CKKS ciphertext imported from RLWE
+    *        (SchemeletRLWEMP::ConvertRLWEToCKKS): modulus raise, CoeffsToSlots, complex exponential (or cosine
+    *        for a Boolean function of order 1), trigonometric Hermite series, SlotsToCoeffs and scalings.
+    *        Supported only in CKKS.
+    *
+    * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
+    * @param coeffs          Trigonometric Hermite interpolation coefficients of the look-up table (complex, or
+    *                        integer for a Boolean function of order 1), scaled to magnitude at most one.
+    * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
+    * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
+    * @param postScaling     Integer the result is multiplied by after SlotsToCoeffs (typically the scale the
+    *                        coefficients were divided by; values of at most 1 are ignored).
+    * @param levelToReduce   Number of levels to drop before SlotsToCoeffs.
+    * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
+    * @return Ciphertext holding the look-up table outputs in its coefficients, ready for
+    *         SchemeletRLWEMP::ConvertCKKSToRLWE.
+    */
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
@@ -3748,6 +3880,18 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalFBT(ciphertext, coeffs, digitBitSize, initialScaling, postScaling, levelToReduce, order);
     }
 
+    /**
+    * @brief Functional bootstrapping of a look-up table without the final homomorphic decoding: the outputs stay
+    *        in the slots so that a leveled computation can be applied before EvalHomDecoding. Supported only in
+    *        CKKS.
+    *
+    * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
+    * @param coeffs          Trigonometric Hermite interpolation coefficients of the look-up table.
+    * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
+    * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
+    * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
+    * @return Ciphertext holding the look-up table outputs in its slots.
+    */
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBTNoDecoding(ConstCiphertext<Element>& ciphertext,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
@@ -3755,14 +3899,34 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalFBTNoDecoding(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
+    /**
+    * @brief Homomorphic decoding step of functional bootstrapping: drops levels if requested, applies
+    *        SlotsToCoeffs, multiplies by postScaling and rescales to noise scale degree 1. Supported only in CKKS.
+    *
+    * @param ciphertext     Ciphertext with the look-up table outputs in its slots.
+    * @param postScaling    Integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are
+    *                       ignored).
+    * @param levelToReduce  Number of levels to drop before SlotsToCoeffs.
+    * @return Ciphertext holding the outputs in its coefficients, at noise scale degree 1.
+    */
     Ciphertext<Element> EvalHomDecoding(ConstCiphertext<Element>& ciphertext, uint64_t postScaling,
                                         uint32_t levelToReduce = 0) {
         return m_scheme->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
     }
 
-    // Precomputes the complex-exponential powers for multi-value bootstrapping. Every LUT later evaluated on the
-    // result (EvalMVB, EvalMVBNoDecoding) must be interpolated with the same shape (same plaintext modulus and
-    // order) as coeffs, since those determine which powers are computed.
+    /**
+    * @brief Precomputes the complex-exponential powers for multi-value bootstrapping (modulus raise,
+    *        CoeffsToSlots, complex exponential and its powers). Every look-up table later evaluated on the
+    *        result (EvalMVB, EvalMVBNoDecoding) must be interpolated with the same shape (same plaintext modulus
+    *        and order) as @p coeffs, since those determine which powers are computed. Supported only in CKKS.
+    *
+    * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
+    * @param coeffs          Trigonometric Hermite interpolation coefficients of one of the look-up tables.
+    * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
+    * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
+    * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
+    * @return Powers of the complex exponential.
+    */
     template <typename VectorDataType>
     std::shared_ptr<seriesPowers<Element>> EvalMVBPrecompute(ConstCiphertext<Element>& ciphertext,
                                                              const std::vector<VectorDataType>& coeffs,
@@ -3771,6 +3935,20 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalMVBPrecompute(ciphertext, coeffs, digitBitSize, initialScaling, order);
     }
 
+    /**
+    * @brief Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the
+    *        powers from EvalMVBPrecompute and applies the homomorphic decoding. Supported only in CKKS.
+    *
+    * @param ciphertexts    Powers of the complex exponential from EvalMVBPrecompute.
+    * @param coeffs         Trigonometric Hermite interpolation coefficients of the look-up table (same shape as
+    *                       in EvalMVBPrecompute).
+    * @param digitBitSize   Bit size of the look-up table input (log2 of the input plaintext modulus).
+    * @param postScaling    Integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are
+    *                       ignored).
+    * @param levelToReduce  Number of levels to drop before SlotsToCoeffs.
+    * @param order          Order of the trigonometric Hermite interpolation (1, 2 or 3).
+    * @return Ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1.
+    */
     template <typename VectorDataType>
     Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                 const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
@@ -3778,6 +3956,18 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalMVB(ciphertexts, coeffs, digitBitSize, postScaling, levelToReduce, order);
     }
 
+    /**
+    * @brief Multi-value bootstrapping without the final homomorphic decoding: the look-up table outputs stay in
+    *        the slots so that a leveled computation can be applied before EvalHomDecoding. Supported only in
+    *        CKKS.
+    *
+    * @param ciphertexts   Powers of the complex exponential from EvalMVBPrecompute.
+    * @param coeffs        Trigonometric Hermite interpolation coefficients of the look-up table (same shape as in
+    *                      EvalMVBPrecompute).
+    * @param digitBitSize  Bit size of the look-up table input (log2 of the input plaintext modulus).
+    * @param order         Order of the trigonometric Hermite interpolation (1, 2 or 3).
+    * @return Ciphertext holding the look-up table outputs in its slots.
+    */
     template <typename VectorDataType>
     Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
@@ -3785,6 +3975,21 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalMVBNoDecoding(ciphertexts, coeffs, digitBitSize, order);
     }
 
+    /**
+    * @brief Evaluates a trigonometric Hermite series: approximates exp(i*Pi/2*x) with the given Chebyshev series
+    *        over [a, b], squares it twice to get exp(2*Pi*i*x), evaluates the Hermite series in the power basis of
+    *        the exponential and returns its real part. The exponential can be cached in the bootstrapping
+    *        precomputation for the ciphertext's slot count and reused. Supported only in CKKS.
+    *
+    * @param ciphertext        Input ciphertext.
+    * @param coefficientsCheb  Chebyshev coefficients of exp(i*Pi/2*x) over [a, b].
+    * @param a                 Lower bound of the Chebyshev interpolation interval.
+    * @param b                 Upper bound of the Chebyshev interpolation interval.
+    * @param coefficientsHerm  Hermite series coefficients in the power basis of the exponential, divided by 2.
+    * @param precomp           0 or 1: compute the exponential and cache it in the first or second slot; 2: reuse
+    *                          the first cached exponential; any other value: reuse the second one.
+    * @return The real part of the evaluated series.
+    */
     template <typename VectorDataType>
     Ciphertext<Element> EvalHermiteTrigSeries(ConstCiphertext<Element>& ciphertext,
                                               const std::vector<std::complex<double>>& coefficientsCheb, double a,
@@ -3793,10 +3998,22 @@ class CryptoContextImpl : public Serializable {
         return m_scheme->EvalHermiteTrigSeries(ciphertext, coefficientsCheb, a, b, coefficientsHerm, precomp);
     }
 
+    /**
+    * @brief Gets the correction factor of CKKS bootstrapping (the number of bits the message is scaled down by in
+    *        total before the approximate modular reduction to improve precision), as set by EvalBootstrapSetup.
+    *        Supported only in CKKS.
+    *
+    * @return The correction factor.
+    */
     uint32_t GetCKKSBootCorrectionFactor() {
         return m_scheme->GetCKKSBootCorrectionFactor();
     }
 
+    /**
+    * @brief Sets the correction factor of CKKS bootstrapping. Supported only in CKKS.
+    *
+    * @param cf  The correction factor.
+    */
     void SetCKKSBootCorrectionFactor(uint32_t cf) {
         return m_scheme->SetCKKSBootCorrectionFactor(cf);
     }
@@ -4208,6 +4425,7 @@ class CryptoContextImpl : public Serializable {
 };
 
 // Member function specializations. Their implementations are in cryptocontext.cpp
+/// @cond INTERNAL
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
         const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec, Plaintext* plaintext) const;
@@ -4216,6 +4434,7 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                                                                               uint32_t N, uint32_t threshold,
                                                                               uint32_t index,
                                                                               const std::string& shareType) const;
+/// @endcond
 }  // namespace lbcrypto
 
 #endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_

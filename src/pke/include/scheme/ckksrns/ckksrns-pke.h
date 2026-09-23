@@ -42,6 +42,10 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of the public key encryption capability; adds the noise flooding used by the
+ * NOISE_FLOODING_DECRYPT mode to the RNS decryption.
+ */
 class PKECKKSRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
     using IntType = typename DCRTPoly::Integer;

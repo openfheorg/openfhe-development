@@ -54,6 +54,16 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief Precomputations of CKKS bootstrapping for one number of slots.
+ *
+ * Holds the baby-step giant-step parameters of the homomorphic encoding (CoeffsToSlots) and decoding
+ * (SlotsToCoeffs) linear transforms, the encoded plaintexts of their matrices (either a single linear
+ * transform or one set of plaintexts per level of the FFT-like decomposition), the cached complex
+ * exponentials of EvalHermiteTrigSeries, and the flag selecting the bootstrapping variant.
+ * FHECKKSRNS keeps one instance per number of slots set up by EvalBootstrapSetup, EvalFBTSetup or
+ * EvalFEFuncBootstrapSetup.
+ */
 class CKKSBootstrapPrecom {
   public:
     CKKSBootstrapPrecom() = default;
@@ -64,41 +74,41 @@ class CKKSBootstrapPrecom {
 
     CKKSBootstrapPrecom(CKKSBootstrapPrecom&& rhs) noexcept = default;
 
-    // level budget for homomorphic encoding, number of layers to collapse in one level,
-    // number of layers remaining to be collapsed in one level to have exactly the number
-    // of levels specified in the level budget, the number of rotations in one level,
-    // the baby step and giant step in the baby-step giant-step strategy, the number of
-    // rotations in the remaining level, the baby step and giant step in the baby-step
-    // giant-step strategy for the remaining level
+    /// level budget for homomorphic encoding, number of layers to collapse in one level,
+    /// number of layers remaining to be collapsed in one level to have exactly the number
+    /// of levels specified in the level budget, the number of rotations in one level,
+    /// the baby step and giant step in the baby-step giant-step strategy, the number of
+    /// rotations in the remaining level, the baby step and giant step in the baby-step
+    /// giant-step strategy for the remaining level
     struct ckks_boot_params m_paramsEnc;
 
-    // level budget for homomorphic decoding, number of layers to collapse in one level,
-    // number of layers remaining to be collapsed in one level to have exactly the number
-    // of levels specified in the level budget, the number of rotations in one level,
-    // the baby step and giant step in the baby-step giant-step strategy, the number of
-    // rotations in the remaining level, the baby step and giant step in the baby-step
-    // giant-step strategy for the remaining level
+    /// level budget for homomorphic decoding, number of layers to collapse in one level,
+    /// number of layers remaining to be collapsed in one level to have exactly the number
+    /// of levels specified in the level budget, the number of rotations in one level,
+    /// the baby step and giant step in the baby-step giant-step strategy, the number of
+    /// rotations in the remaining level, the baby step and giant step in the baby-step
+    /// giant-step strategy for the remaining level
     struct ckks_boot_params m_paramsDec;
 
-    // number of slots for which the bootstrapping is performed
+    /// number of slots for which the bootstrapping is performed
     uint32_t m_slots;
 
-    // Linear map U0; used in decoding
+    /// Linear map U0; used in decoding
     std::vector<ReadOnlyPlaintext> m_U0Pre;
 
-    // Conj(U0^T); used in encoding
+    /// Conj(U0^T); used in encoding
     std::vector<ReadOnlyPlaintext> m_U0hatTPre;
 
-    // coefficients corresponding to U0; used in decoding
+    /// coefficients corresponding to U0; used in decoding
     std::vector<std::vector<ReadOnlyPlaintext>> m_U0PreFFT;
 
-    // coefficients corresponding to conj(U0^T); used in encoding
+    /// coefficients corresponding to conj(U0^T); used in encoding
     std::vector<std::vector<ReadOnlyPlaintext>> m_U0hatTPreFFT;
 
-    Ciphertext<DCRTPoly> m_precompExp;
-    Ciphertext<DCRTPoly> m_precompExpI;
+    Ciphertext<DCRTPoly> m_precompExp;   ///< first cached complex exponential of EvalHermiteTrigSeries
+    Ciphertext<DCRTPoly> m_precompExpI;  ///< second cached complex exponential of EvalHermiteTrigSeries
 
-    // flag indicating whether we perform StC before ModRaise
+    /// flag indicating whether we perform StC before ModRaise
     bool BTSlotsEncoding;
 
     template <class Archive>
@@ -124,6 +134,15 @@ class CKKSBootstrapPrecom {
 
 using namespace std::literals::complex_literals;
 
+/**
+ * @brief CKKS implementation of the FHE (bootstrapping) capability.
+ *
+ * Provides regular CKKS bootstrapping (EvalBootstrap, in the coefficients-encoding and slots-encoding
+ * variants), functional bootstrapping of look-up tables imported from an RLWE scheme (EvalFBT and the
+ * multi-value flavor EvalMVB), FE functional bootstrapping of Fourier series (EvalFEFuncBootstrap), the
+ * homomorphic encoding/decoding linear transforms they share, and the static helpers that estimate the
+ * multiplicative depth these procedures consume. All bootstrapping flavors require HYBRID key switching.
+ */
 class FHECKKSRNS : public FHERNS {
   private:
     // correction factor, which we scale the message by to improve precision
@@ -148,6 +167,25 @@ class FHECKKSRNS : public FHERNS {
     // Bootstrap Wrapper
     //------------------------------------------------------------------------------
 
+    /**
+   * Sets up the CKKS bootstrapping parameters for a given number of slots and, optionally, precomputes the
+   * plaintexts of the homomorphic encoding and decoding linear transforms. Requires HYBRID key switching.
+   *
+   * @param cc the crypto context the bootstrapping parameters are set up for
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively; each must be between 1
+   * and log2(slots)
+   * @param dim1 baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = chosen automatically)
+   * @param slots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+   * @param correctionFactor number of bits the message is scaled down by in total before the approximate modular
+   * reduction, emulating a larger first modulus to improve precision: the modulus raise contributes
+   * log2(q_0/Delta) bits and the remaining 2^-(correctionFactor - log2(q_0/Delta)) is applied explicitly before
+   * the modulus raise and undone afterwards (0 = heuristic default depending on the ring dimension, the number of
+   * slots and the scaling technique; used only in the 64-bit build)
+   * @param precompute whether to encode the linear transform plaintexts now (otherwise EvalBootstrapPrecompute
+   * has to be called before EvalBootstrap)
+   * @param BTSlotsEncoding true to select the slots-encoding variant (EvalBootstrapStCFirst), in which the
+   * approximate modular reduction is applied to the message values themselves; false for the regular variant
+   */
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor, bool precompute,
                             bool BTSlotsEncoding) override;
@@ -159,83 +197,389 @@ class FHECKKSRNS : public FHERNS {
 
     void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots) override;
 
+    /**
+   * Refreshes a CKKS ciphertext: modulus raise, CoeffsToSlots, approximate modular reduction (Chebyshev
+   * interpolation of the scaled cosine or sine followed by double-angle iterations) and SlotsToCoeffs. Dispatches
+   * to EvalBootstrapStCFirst when the precomputation for the ciphertext's slot count was set up with
+   * BTSlotsEncoding = true. The input should be scaled to [-1, 1] for the best precision; if the input has at
+   * least as many towers as bootstrapping produces, a copy of the input is returned.
+   *
+   * @param ciphertext the input ciphertext
+   * @param numIterations number of Meta-BTS iterations (1 or 2); two iterations refine the precision of the
+   * first one
+   * @param precision precision (in bits) of a single bootstrapping round, used by the second iteration; unused
+   * when numIterations = 1
+   * @return the refreshed ciphertext
+   */
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
 
+    /**
+   * Slots-encoding variant of CKKS bootstrapping, selected by BTSlotsEncoding = true in EvalBootstrapSetup:
+   * SlotsToCoeffs is applied first to the depleted ciphertext, then the modulus is raised, CoeffsToSlots moves
+   * the coefficients back to the slots and the approximate modular reduction is evaluated over the message values
+   * themselves, so no final SlotsToCoeffs is needed. Requires HYBRID key switching. Note that for FIXEDMANUAL the
+   * noise scale degree of the output differs from that of EvalBootstrap.
+   *
+   * @param ciphertext the input ciphertext
+   * @param numIterations number of Meta-BTS iterations (1 or 2)
+   * @param precision precision (in bits) of a single bootstrapping round, used by the second iteration; unused
+   * when numIterations = 1
+   * @return the refreshed ciphertext
+   */
     Ciphertext<DCRTPoly> EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const override;
 
+    /**
+   * Sets up FE (Fourier extension) functional bootstrapping for a given number of slots and precomputes the
+   * plaintexts of its SlotsToCoeffs and CoeffsToSlots transforms. Requires HYBRID key switching and the 64-bit
+   * build. The precomputation occupies the same slot-count entry as EvalBootstrapSetup and EvalFBTSetup, so a
+   * context holds the precomputation of only one of them per number of slots.
+   *
+   * @param cc the crypto context the parameters are set up for
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+   * @param dim1 baby-step dimensions for the two linear transforms (0 = chosen automatically)
+   * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+   */
     void EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<uint32_t>& levelBudget,
                                   const std::vector<uint32_t>& dim1, uint32_t numSlots) override;
 
+    /**
+   * Refreshes a ciphertext and evaluates a function on it in one pass by evaluating the Fourier extension of
+   * the function over the bootstrapped message: SlotsToCoeffs, modulus raise, CoeffsToSlots, the complex
+   * exponential exp(2*Pi*i*t) with t = m/2 (the message is embedded into half of the period), the series
+   * sum_j c_j exp(2*Pi*i*j*t) and twice its real part. The result is real-valued; with CKKSDataType COMPLEX the
+   * imaginary parts of the input slots are discarded.
+   *
+   * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2)
+   * @param coefficients Fourier coefficients c_j of the target function over [-1/2, 1/2), c_0 first
+   * @return the refreshed ciphertext holding the function values
+   */
     Ciphertext<DCRTPoly> EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
                                              const std::vector<std::complex<double>>& coefficients) const override;
 
+    /**
+   * Runs the function-independent part of FE functional bootstrapping (SlotsToCoeffs, modulus raise,
+   * CoeffsToSlots and the complex exponential) and returns the powers of the complex exponential, so that
+   * several functions can be evaluated on one bootstrapped ciphertext with EvalFEFuncBootstrapWithPrecomp.
+   *
+   * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2)
+   * @param coefficients Fourier coefficients of the longest series to be evaluated against the powers (their
+   * number fixes the Paterson-Stockmeyer shape; a degree of at least 5 is required for that shape)
+   * @return the powers of the complex exponential
+   */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalFEFuncBootstrapPrecompute(
             ConstCiphertext<DCRTPoly>& ciphertext,
             const std::vector<std::complex<double>>& coefficients) const override;
 
+    /**
+   * Evaluates one function's Fourier series against the powers of the complex exponential returned by
+   * EvalFEFuncBootstrapPrecompute and returns twice the real part of the series.
+   *
+   * @param powers powers of the complex exponential from EvalFEFuncBootstrapPrecompute
+   * @param coefficients Fourier coefficients c_j of this function, c_0 first; the degree may not exceed the
+   * capacity of the shape the powers were computed for
+   * @return the refreshed ciphertext holding the function values
+   */
     Ciphertext<DCRTPoly> EvalFEFuncBootstrapWithPrecomp(
             const std::shared_ptr<seriesPowers<DCRTPoly>>& powers,
             const std::vector<std::complex<double>>& coefficients) const override;
 
+    /**
+   * Sets up CKKS functional bootstrapping of a look-up table for a given number of slots: computes the depth of
+   * the procedure, the scalings folded into the homomorphic encoding and decoding matrices (including the
+   * division by the modulus-raise overflow bound K) and precomputes the plaintexts of those matrices. Requires
+   * HYBRID key switching, the 64-bit build and one of the FIXED*, FLEXIBLE* or COMPOSITESCALING* techniques. The
+   * precomputation occupies the same slot-count entry as EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
+   *
+   * @param cc the crypto context the parameters are set up for
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table (only their number
+   * is used here, to compute the depth of the series evaluation)
+   * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+   * @param PIn plaintext modulus of the RLWE input (the size of the look-up table domain)
+   * @param POut plaintext modulus of the RLWE output
+   * @param Bigq ciphertext modulus of the RLWE scheme the input is converted from
+   * @param pubKey public key, whose element parameters define the modulus chain of the output
+   * @param dim1 baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = chosen automatically)
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively; each must be between 1 and
+   * log2(slots)
+   * @param lvlsAfterBoot number of levels that remain available after functional bootstrapping
+   * @param depthLeveledComputation multiplicative depth reserved for a leveled computation applied between
+   * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   */
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
                       uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
+    /**
+   * Sets up CKKS functional bootstrapping of a look-up table for a given number of slots: computes the depth of
+   * the procedure, the scalings folded into the homomorphic encoding and decoding matrices (including the
+   * division by the modulus-raise overflow bound K) and precomputes the plaintexts of those matrices. Requires
+   * HYBRID key switching, the 64-bit build and one of the FIXED*, FLEXIBLE* or COMPOSITESCALING* techniques. The
+   * precomputation occupies the same slot-count entry as EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
+   *
+   * @param cc the crypto context the parameters are set up for
+   * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, e.g., [f(1),
+   * f(0) - f(1)] for a Boolean function of order 1 (only their number is used here, to compute the depth of the
+   * series evaluation)
+   * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+   * @param PIn plaintext modulus of the RLWE input (the size of the look-up table domain)
+   * @param POut plaintext modulus of the RLWE output
+   * @param Bigq ciphertext modulus of the RLWE scheme the input is converted from
+   * @param pubKey public key, whose element parameters define the modulus chain of the output
+   * @param dim1 baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = chosen automatically)
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively; each must be between 1 and
+   * log2(slots)
+   * @param lvlsAfterBoot number of levels that remain available after functional bootstrapping
+   * @param depthLeveledComputation multiplicative depth reserved for a leveled computation applied between
+   * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   */
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
                       uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
+    /**
+   * Functional bootstrapping of a look-up table: modulus raise, CoeffsToSlots, approximation of the complex
+   * exponential (or of the cosine for a Boolean function of order 1) with double-angle iterations, evaluation of
+   * the trigonometric Hermite series of the look-up table in the power basis, SlotsToCoeffs and the final
+   * scalings. Equivalent to EvalMVBPrecompute followed by EvalMVBNoDecoding and EvalHomDecoding.
+   *
+   * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients (from
+   * SchemeletRLWEMP::ConvertRLWEToCKKS)
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table, scaled so that
+   * their magnitude is at most one
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+   * under); the ratio between the CKKS scaling factor and this value is corrected after the modulus raise
+   * @param postScaling integer the result is multiplied by after SlotsToCoeffs, typically the scale the Hermite
+   * coefficients were divided by (values of at most 1 are ignored)
+   * @param levelToReduce number of levels to drop before SlotsToCoeffs
+   * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+   */
     Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
                                  const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                  const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
                                  size_t order = 1) override;
+    /**
+   * Functional bootstrapping of a look-up table: modulus raise, CoeffsToSlots, approximation of the complex
+   * exponential (or of the cosine for a Boolean function of order 1) with double-angle iterations, evaluation of
+   * the trigonometric Hermite series of the look-up table in the power basis, SlotsToCoeffs and the final
+   * scalings. Equivalent to EvalMVBPrecompute followed by EvalMVBNoDecoding and EvalHomDecoding.
+   *
+   * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients (from
+   * SchemeletRLWEMP::ConvertRLWEToCKKS)
+   * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, e.g., [f(1),
+   * f(0) - f(1)] for a Boolean function of order 1
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+   * under); the ratio between the CKKS scaling factor and this value is corrected after the modulus raise
+   * @param postScaling integer the result is multiplied by after SlotsToCoeffs, typically the scale the Hermite
+   * coefficients were divided by (values of at most 1 are ignored)
+   * @param levelToReduce number of levels to drop before SlotsToCoeffs
+   * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+   */
     Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
                                  uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
                                  uint32_t levelToReduce = 0, size_t order = 1) override;
 
+    /**
+   * Functional bootstrapping of a look-up table without the final homomorphic decoding: the output stays in
+   * the slots, so a leveled computation can be applied to it before EvalHomDecoding. Equivalent to
+   * EvalMVBPrecompute followed by EvalMVBNoDecoding.
+   *
+   * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+   * under)
+   * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its slots
+   */
     Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                            const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                            const BigInteger& initialScaling, size_t order = 1) override;
+    /**
+   * Functional bootstrapping of a look-up table without the final homomorphic decoding: the output stays in
+   * the slots, so a leveled computation can be applied to it before EvalHomDecoding. Equivalent to
+   * EvalMVBPrecompute followed by EvalMVBNoDecoding.
+   *
+   * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+   * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+   * under)
+   * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its slots
+   */
     Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                            const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
                                            const BigInteger& initialScaling, size_t order = 1) override;
 
+    /**
+   * Homomorphic decoding step of functional bootstrapping: optionally drops levels, applies SlotsToCoeffs (with
+   * the folding of the two halves for sparse packing), multiplies by postScaling and rescales to noise scale
+   * degree 1, so the result can be converted back to RLWE.
+   *
+   * @param ciphertext CKKS ciphertext with the look-up table outputs in its slots (from EvalFBTNoDecoding or
+   * EvalMVBNoDecoding, possibly after a leveled computation)
+   * @param postScaling integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are ignored)
+   * @param levelToReduce number of levels to drop before SlotsToCoeffs
+   * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+   */
     Ciphertext<DCRTPoly> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                          uint32_t levelToReduce = 0) override;
 
+    /**
+   * Function-independent part of functional bootstrapping, shared by all look-up tables evaluated on the same
+   * input (multi-value bootstrapping): modulus raise, CoeffsToSlots, approximation of the complex exponential
+   * (or of the cosine for a Boolean function of order 1) with double-angle iterations, and the powers of the
+   * complex exponential needed by the Hermite series.
+   *
+   * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+   * @param coeffs trigonometric Hermite interpolation coefficients of one of the look-up tables; their number
+   * (and, below degree 5, their sparsity) fixes which powers are computed, so every look-up table later
+   * evaluated on the result must have the same shape
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+   * under)
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @return the powers of the complex exponential (real and imaginary parts for full packing)
+   */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<std::complex<double>>& coeffs,
                                                               uint32_t digitBitSize, const BigInteger& initialScaling,
                                                               size_t order = 1) override;
+    /**
+   * Function-independent part of functional bootstrapping, shared by all look-up tables evaluated on the same
+   * input (multi-value bootstrapping): modulus raise, CoeffsToSlots, approximation of the complex exponential
+   * (or of the cosine for a Boolean function of order 1) with double-angle iterations, and the powers of the
+   * complex exponential needed by the Hermite series.
+   *
+   * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+   * @param coeffs integer trigonometric Hermite interpolation coefficients of one of the look-up tables; their number
+   * (and, below degree 5, their sparsity) fixes which powers are computed, so every look-up table later
+   * evaluated on the result must have the same shape
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+   * under)
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @return the powers of the complex exponential (real and imaginary parts for full packing)
+   */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
                                                               const BigInteger& initialScaling,
                                                               size_t order = 1) override;
 
+    /**
+   * Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the powers of
+   * the complex exponential from EvalMVBPrecompute and applies the homomorphic decoding (EvalHomDecoding).
+   *
+   * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+   * @param coeffs trigonometric Hermite interpolation coefficients of the look-up table, with the same shape as
+   * the ones passed to EvalMVBPrecompute
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param postScaling integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are ignored)
+   * @param levelToReduce number of levels to drop before SlotsToCoeffs
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+   */
     Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                  const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
                                  const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) override;
+    /**
+   * Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the powers of
+   * the complex exponential from EvalMVBPrecompute and applies the homomorphic decoding (EvalHomDecoding).
+   *
+   * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+   * @param coeffs integer trigonometric Hermite interpolation coefficients of the look-up table, with the same shape as
+   * the ones passed to EvalMVBPrecompute
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param postScaling integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are ignored)
+   * @param levelToReduce number of levels to drop before SlotsToCoeffs
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+   */
     Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                  const std::vector<int64_t>& coeffs, uint32_t digitBitSize, const uint64_t postScaling,
                                  uint32_t levelToReduce = 0, size_t order = 1) override;
 
+    /**
+   * Multi-value bootstrapping without the final homomorphic decoding: evaluates the trigonometric Hermite series
+   * of a look-up table on the powers of the complex exponential from EvalMVBPrecompute and leaves the outputs in
+   * the slots, so a leveled computation can be applied before EvalHomDecoding.
+   *
+   * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table, with the same shape
+   * as the ones passed to EvalMVBPrecompute
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its slots
+   */
     Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                            const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                            size_t order = 1) override;
+    /**
+   * Multi-value bootstrapping without the final homomorphic decoding: evaluates the trigonometric Hermite series
+   * of a look-up table on the powers of the complex exponential from EvalMVBPrecompute and leaves the outputs in
+   * the slots, so a leveled computation can be applied before EvalHomDecoding.
+   *
+   * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+   * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, with the same
+   * shape as the ones passed to EvalMVBPrecompute
+   * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @return CKKS ciphertext holding the look-up table outputs in its slots
+   */
     Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                            const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
                                            size_t order = 1) override;
 
+    /**
+   * Evaluates a trigonometric Hermite series on a ciphertext: approximates exp(i*Pi/2*x) by the Chebyshev
+   * series given over [a, b], squares the result twice (with rescaling) to obtain exp(2*Pi*i*x), evaluates the
+   * Hermite series in the power basis of that exponential and returns its real part (by adding the conjugate; the
+   * Hermite coefficients are expected to be already divided by 2). The complex exponential can be cached in the
+   * bootstrapping precomputation for the ciphertext's slot count and reused by later calls.
+   *
+   * @param ciphertext the input ciphertext
+   * @param coefficientsCheb Chebyshev series coefficients of exp(i*Pi/2*x) over [a, b]
+   * @param a lower bound of the Chebyshev interpolation interval
+   * @param b upper bound of the Chebyshev interpolation interval
+   * @param coefficientsHerm coefficients of the trigonometric Hermite series in the power basis of the complex
+   * exponential, divided by 2
+   * @param precomp 0 or 1: compute the complex exponential and cache it in the first or second cache slot of the
+   * precomputation, respectively; 2: reuse the first cached exponential; any other value: reuse the second one
+   * @return the real part of the evaluated series
+   */
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
                                                double b, const std::vector<std::complex<double>>& coefficientsHerm,
                                                size_t precomp) override;
+    /**
+   * Evaluates a trigonometric Hermite series on a ciphertext: approximates exp(i*Pi/2*x) by the Chebyshev
+   * series given over [a, b], squares the result twice (with rescaling) to obtain exp(2*Pi*i*x), evaluates the
+   * Hermite series in the power basis of that exponential and returns its real part (by adding the conjugate; the
+   * Hermite coefficients are expected to be already divided by 2). The complex exponential can be cached in the
+   * bootstrapping precomputation for the ciphertext's slot count and reused by later calls.
+   *
+   * @param ciphertext the input ciphertext
+   * @param coefficientsCheb Chebyshev series coefficients of exp(i*Pi/2*x) over [a, b]
+   * @param a lower bound of the Chebyshev interpolation interval
+   * @param b upper bound of the Chebyshev interpolation interval
+   * @param coefficientsHerm integer coefficients of the trigonometric Hermite series in the power basis of the complex
+   * exponential, divided by 2
+   * @param precomp 0 or 1: compute the complex exponential and cache it in the first or second cache slot of the
+   * precomputation, respectively; 2: reuse the first cached exponential; any other value: reuse the second one
+   * @return the real part of the evaluated series
+   */
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
                                                double b, const std::vector<int64_t>& coefficientsHerm,
@@ -245,15 +589,55 @@ class FHECKKSRNS : public FHERNS {
     // Precomputations for CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
+    /**
+   * Encodes the shifted diagonals of a square linear map into the plaintexts used by EvalLinearTransform (the
+   * single-level CoeffsToSlots/SlotsToCoeffs): each diagonal is scaled, rotated according to the baby-step
+   * giant-step decomposition of the precomputation for A.size() slots, and encoded over the extended basis Q*P.
+   *
+   * @param cc the crypto context
+   * @param A square matrix of the linear map (slots x slots)
+   * @param scale factor all matrix entries are multiplied by before encoding
+   * @param L number of towers the plaintexts are encoded with (0 = all towers of the modulus chain)
+   * @return the encoded shifted diagonals, one plaintext per rotation index
+   */
     std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(
             const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
             double scale = 1., uint32_t L = 0) const;
 
+    /**
+   * Encodes the shifted diagonals of the concatenation of two square linear maps, used for sparse packing
+   * where the encoding and decoding maps act on the two halves of the slots.
+   *
+   * @param cc the crypto context
+   * @param A first square matrix (slots x slots)
+   * @param B second square matrix (slots x slots)
+   * @param orientation 0 to concatenate A and B vertically (homomorphic encoding), 1 to concatenate them
+   * horizontally into a slots x 2*slots map (homomorphic decoding)
+   * @param scale factor all matrix entries are multiplied by before encoding
+   * @param L number of towers the plaintexts are encoded with (0 = all towers of the modulus chain)
+   * @return the encoded shifted diagonals, one plaintext per rotation index
+   */
     std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(
             const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
             const std::vector<std::vector<std::complex<double>>>& B, uint32_t orientation = 0, double scale = 1,
             uint32_t L = 0) const;
 
+    /**
+   * Precomputes the plaintexts of the FFT-like homomorphic encoding (CoeffsToSlots): the layers of the inverse
+   * FFT are collapsed into as many levels as the encoding level budget of the precomputation for rotGroup.size()
+   * slots, and the coefficients of each level are rotated according to its baby-step giant-step decomposition
+   * and encoded with one fewer tower per level.
+   *
+   * @param cc the crypto context
+   * @param A powers of the primitive 4*slots-th root of unity
+   * @param rotGroup indices of the primitive roots of unity used by the canonical embedding (powers of 5)
+   * @param flag_i false to compute the coefficients for conj(U_0^T), true for conj(i*U_0^T)
+   * @param scale factor folded into the first level of the transform
+   * @param L number of towers the plaintexts of the first level are encoded with (0 = all towers)
+   * @param flagStCComplex true when the transform packs both the real and the imaginary parts of a complex
+   * message (slots-encoding bootstrapping of complex data)
+   * @return the encoded plaintexts, one inner vector per level of the transform
+   */
     std::vector<std::vector<ReadOnlyPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                             const std::vector<std::complex<double>>& A,
                                                                             const std::vector<uint32_t>& rotGroup,
@@ -261,6 +645,22 @@ class FHECKKSRNS : public FHERNS {
                                                                             uint32_t L = 0,
                                                                             bool flagStCComplex = false) const;
 
+    /**
+   * Precomputes the plaintexts of the FFT-like homomorphic decoding (SlotsToCoeffs): the layers of the FFT are
+   * collapsed into as many levels as the decoding level budget of the precomputation for rotGroup.size() slots,
+   * and the coefficients of each level are rotated according to its baby-step giant-step decomposition and
+   * encoded with one fewer tower per level.
+   *
+   * @param cc the crypto context
+   * @param A powers of the primitive 4*slots-th root of unity
+   * @param rotGroup indices of the primitive roots of unity used by the canonical embedding (powers of 5)
+   * @param flag_i false to compute the coefficients for U_0, true for i*U_0
+   * @param scale factor folded into the first level of the transform
+   * @param L number of towers the plaintexts of the first level are encoded with (0 = all towers)
+   * @param flagStCComplex true when the transform unpacks both the real and the imaginary parts of a complex
+   * message (slots-encoding bootstrapping of complex data)
+   * @return the encoded plaintexts, one inner vector per level of the transform
+   */
     std::vector<std::vector<ReadOnlyPlaintext>> EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                             const std::vector<std::complex<double>>& A,
                                                                             const std::vector<uint32_t>& rotGroup,
@@ -282,6 +682,7 @@ class FHECKKSRNS : public FHERNS {
    * level budget is 1. Evaluated with a BSGS decomposition (Horner giant steps).
    * @param A precomputed diagonal plaintexts of the linear transform
    * @param ct input ciphertext
+   * @return the transformed ciphertext
    */
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A,
                                              ConstCiphertext<DCRTPoly>& ct) const;
@@ -291,6 +692,7 @@ class FHECKKSRNS : public FHERNS {
    * with Horner giant steps to minimize the number of rotation keys.
    * @param A precomputed encoding plaintexts, one inner vector per BSGS level
    * @param ctxt input ciphertext
+   * @return the ciphertext with the coefficients of the input moved to its slots
    */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt) const;
@@ -300,6 +702,7 @@ class FHECKKSRNS : public FHERNS {
    * evaluated with the same Horner giant-step BSGS structure.
    * @param A precomputed decoding plaintexts, one inner vector per BSGS level
    * @param ctxt input ciphertext
+   * @return the ciphertext with the slot values of the input moved to its coefficients
    */
     Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt) const;
@@ -354,81 +757,236 @@ class FHECKKSRNS : public FHERNS {
         ar(cereal::make_nvp("corFactor", m_correctionFactor));
     }
 
-    // To be deprecated; left for backwards compatibility
+    /**
+   * Multiplicative depth of CKKS bootstrapping for a user-supplied depth of the approximate modular reduction.
+   * To be deprecated; left for backwards compatibility. Prefer GetBootstrapDepth(levelBudget, secretKeyDist).
+   *
+   * @param approxModDepth depth of the Chebyshev interpolation of the approximate modular reduction; the
+   * double-angle iterations of UNIFORM_TERNARY are added internally
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+   * @param secretKeyDist secret key distribution of the cryptocontext
+   * @return the multiplicative depth consumed by EvalBootstrap
+   */
     static uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                       SecretKeyDist secretKeyDist);
 
+    /**
+   * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
+   * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
+   * and SlotsToCoeffs level budgets. Add the number of levels needed after bootstrapping to obtain the
+   * multiplicative depth of the cryptocontext.
+   *
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+   * @param secretKeyDist secret key distribution of the cryptocontext
+   * @return the multiplicative depth consumed by EvalBootstrap
+   */
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
-    // For SPARSE_ENCAPSULATED, firstModSize (the size of the first modulus in bits) selects the approximation tables:
-    // a first modulus above 60 bits gives the sparse secret Hamming weight 64 and uses the K = 28 tables of
-    // SPARSE_TERNARY, which need one more level than the K = 16 tables of the default Hamming weight 32
-    // (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
+    /**
+   * Multiplicative depth consumed by functional bootstrapping (EvalFBT): the CoeffsToSlots and SlotsToCoeffs
+   * level budgets plus AdjustDepthFBT. For SPARSE_ENCAPSULATED, firstModSize (the size of the first modulus in
+   * bits) selects the approximation tables: a first modulus above 60 bits gives the sparse secret Hamming weight
+   * 64 and uses the K = 28 tables of SPARSE_TERNARY, which need one more level than the K = 16 tables of the
+   * default Hamming weight 32 (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
+   *
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+   * @param PInput plaintext modulus of the RLWE input
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @param skd secret key distribution of the cryptocontext
+   * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED)
+   * @return the multiplicative depth consumed by EvalFBT
+   */
     template <typename VectorDataType>
     static uint32_t GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
                                 SecretKeyDist skd, uint32_t firstModSize = 60);
 
+    /**
+   * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
+   * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
+   * by the secret key distribution and, for SPARSE_ENCAPSULATED, by firstModSize as in GetFBTDepth), and the
+   * evaluation of the Fourier series.
+   *
+   * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+   * @param coefficients Fourier coefficients of the function to be evaluated
+   * @param skd secret key distribution of the cryptocontext
+   * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED)
+   * @return the multiplicative depth consumed by EvalFEFuncBootstrap
+   */
     template <typename VectorDataType>
     static uint32_t GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
                                   const std::vector<VectorDataType>& coefficients, SecretKeyDist skd = SPARSE_TERNARY,
                                   uint32_t firstModSize = 60);
 
+    /**
+   * Multiplicative depth of the look-up table evaluation in functional bootstrapping, excluding the linear
+   * transforms: the approximation of the complex exponential (or of the cosine for a Boolean function of order
+   * 1), the double-angle iterations and the trigonometric Hermite series.
+   *
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+   * @param PInput plaintext modulus of the RLWE input
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @param skd secret key distribution of the cryptocontext
+   * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED, see GetFBTDepth)
+   * @return the multiplicative depth of the look-up table evaluation
+   */
     template <typename VectorDataType>
     static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                    size_t order, SecretKeyDist skd = SPARSE_TERNARY, uint32_t firstModSize = 60);
 
-    // same as AdjustDepthFBT, with the approximation tables of SPARSE_ENCAPSULATED selected directly by the Hamming
-    // weight of its sparse secret (32 or 64; see CryptoParametersCKKSRNS::GetSparseKSHammingWeight)
+    /**
+   * Same as AdjustDepthFBT, with the approximation tables of SPARSE_ENCAPSULATED selected directly by the Hamming
+   * weight of its sparse secret (32 or 64; see CryptoParametersCKKSRNS::GetSparseKSHammingWeight).
+   *
+   * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+   * @param PInput plaintext modulus of the RLWE input
+   * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+   * @param skd secret key distribution of the cryptocontext
+   * @param sparseKSHammingWeight Hamming weight of the sparse secret of SPARSE_ENCAPSULATED (32 or 64)
+   * @return the multiplicative depth of the look-up table evaluation
+   */
     template <typename VectorDataType>
     static uint32_t AdjustDepthFBTInternal(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                            size_t order, SecretKeyDist skd, uint32_t sparseKSHammingWeight);
 
-    // generates a key going from a denser secret to a sparser one
+    /**
+   * Generates the switching key of sparse secret encapsulation, going from a denser secret to a sparser one.
+   * The GHS-style key is generated over Ql*P', where Ql is the bottom basis of the modulus chain and P' the
+   * auxiliary modulus precomputed in CryptoParametersCKKSRNS for SPARSE_ENCAPSULATED.
+   *
+   * @param oldPrivateKey the (dense) secret the ciphertexts are currently encrypted under
+   * @param newPrivateKey the (sparse) secret to switch to
+   * @return the switching key
+   */
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
                                                 const PrivateKey<DCRTPoly>& newPrivateKey);
 
-    // generates a key going from a denser secret to a sparser one
+    /**
+   * Switches the bottom basis Ql of a ciphertext to the secret of a key generated by KeySwitchGenSparse: the
+   * second ciphertext element is extended to Ql*P', multiplied by the key and switched back to Ql with an exact
+   * CRT basis switch. Only the bottom basis of the input is used; the other towers are dropped.
+   *
+   * @param ciphertext the input ciphertext
+   * @param ek the switching key from KeySwitchGenSparse
+   * @return the ciphertext over Ql under the new secret
+   */
     static Ciphertext<DCRTPoly> KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly>& ek);
 
     std::string SerializedObjectName() const {
         return "FHECKKSRNS";
     }
 
+    /**
+   * Gets the correction factor of CKKS bootstrapping, i.e., the number of bits the message is scaled down by in
+   * total before the approximate modular reduction to improve precision (set by EvalBootstrapSetup).
+   *
+   * @return the correction factor
+   */
     uint32_t GetCKKSBootCorrectionFactor() const override {
         return m_correctionFactor;
     }
 
+    /**
+   * Sets the correction factor of CKKS bootstrapping.
+   *
+   * @param cf the correction factor
+   */
     void SetCKKSBootCorrectionFactor(uint32_t cf) override {
         m_correctionFactor = cf;
     }
 
+    /**
+   * Encodes a complex vector into a CKKS plaintext over arbitrary element parameters, which may include the
+   * auxiliary basis P of HYBRID key switching so that the plaintext can multiply ciphertexts in the extended
+   * basis (EvalMultExt). The vector is encoded at the scaling factor of the given level. Used for the matrices
+   * of the homomorphic encoding and decoding linear transforms.
+   *
+   * @param cc the crypto context
+   * @param params element parameters (moduli) the plaintext is encoded over
+   * @param value the complex values to encode
+   * @param noiseScaleDeg noise scale degree of the plaintext
+   * @param level level of the plaintext (selects its scaling factor)
+   * @param slots number of slots
+   * @return the encoded plaintext
+   */
     static Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                       const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
                                       uint32_t level, uint32_t slots);
 
+    /**
+   * Multiplies a ciphertext in the extended basis Ql*P (as produced by hoisted rotations) by a plaintext encoded
+   * over the same basis (MakeAuxPlaintext), without rescaling; the noise scale degree and the scaling factor of
+   * the result are the products of those of the operands.
+   *
+   * @param ciphertext the input ciphertext in the extended basis
+   * @param plaintext the plaintext encoded over the extended basis
+   * @return the product
+   */
     static Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext);
 
+    /**
+   * Adds two ciphertexts in the extended basis Ql*P element-wise, without any level or scaling factor checks.
+   *
+   * @param ciphertext1 the first addend, replaced by the sum
+   * @param ciphertext2 the second addend
+   */
     static void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2);
 
+    /**
+   * Adds two ciphertexts in the extended basis Ql*P element-wise, without any level or scaling factor checks.
+   *
+   * @param ciphertext1 the first addend
+   * @param ciphertext2 the second addend
+   * @return the sum
+   */
     static Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,
                                            ConstCiphertext<DCRTPoly> ciphertext2);
 
-    // Loads the loop-invariant automorphism key, index and O(N) permutation map for a constant
-    // Horner giant stride, so they are built once instead of re-derived inside the BSGS
-    // accumulation loop. Shared by the bootstrapping and scheme-switching linear transforms.
+    /**
+   * Loads the loop-invariant automorphism key, index and O(N) permutation map for a constant Horner giant
+   * stride, so they are built once instead of re-derived inside the BSGS accumulation loop. Shared by the
+   * bootstrapping and scheme-switching linear transforms.
+   *
+   * @param ct a ciphertext of the linear transform (provides the crypto context and the key tag)
+   * @param stride slot rotation of the giant step
+   * @param autoIndex output: the automorphism index of the rotation by stride
+   * @param map output: the coefficient permutation of that automorphism
+   * @return the automorphism key for autoIndex
+   */
     static EvalKey<DCRTPoly> GetGiantStepRotation(ConstCiphertext<DCRTPoly> ct, int32_t stride, uint32_t& autoIndex,
                                                   std::vector<uint32_t>& map);
 
-    // Inlined giant-step rotation for the Horner accumulation: equivalent to
-    // EvalFastRotationExt(KeySwitchDown(outer), stride, precompute(.), addFirst=true), reusing the
-    // caller-supplied loop-invariant (autoIndex, map, giantKey) from GetGiantStepRotation.
+    /**
+   * Inlined giant-step rotation for the Horner accumulation: equivalent to
+   * EvalFastRotationExt(KeySwitchDown(outer), stride, precompute(.), addFirst=true), reusing the caller-supplied
+   * loop-invariant (autoIndex, map, giantKey) from GetGiantStepRotation.
+   *
+   * @param outer the accumulated ciphertext in the extended basis Ql*P
+   * @param autoIndex automorphism index of the giant step
+   * @param map coefficient permutation of that automorphism
+   * @param giantKey automorphism key of the giant step
+   * @return the rotated ciphertext in the extended basis
+   */
     static Ciphertext<DCRTPoly> EvalHornerGiantRotate(ConstCiphertext<DCRTPoly> outer, uint32_t autoIndex,
                                                       const std::vector<uint32_t>& map,
                                                       const EvalKey<DCRTPoly>& giantKey);
 
+    /**
+   * Generates the automorphism key for complex conjugation (automorphism index 2N - 1).
+   *
+   * @param privateKey the private key
+   * @return the conjugation key
+   */
     static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey);
 
+    /**
+   * Conjugates the slot values of a ciphertext (automorphism index 2N - 1).
+   *
+   * @param ciphertext the input ciphertext
+   * @param evalKeys map of automorphism keys containing the conjugation key from ConjugateKeyGen
+   * @return the conjugated ciphertext
+   */
     static Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys);
 
@@ -582,7 +1140,8 @@ class FHECKKSRNS : public FHERNS {
     // matches the intervals of coeff_exp_28_double_* / coeff_exp_16_double_46 and the corresponding cos tables.
     // Must be static because it is used in a static function.
     static constexpr uint32_t R_SPARSE_FBT = 2;
-    // number of double-angle iterations in CKKS functional bootstrapping. Must be static because it is used in a static function.
+    // number of double-angle iterations in CKKS functional bootstrapping. Must be static because it is used in a static
+    // function.
     // for SPARSE_TERNARY secret key distribution (K_SPARSE)
     static const uint32_t R_func_28_double_48 = 3;
     // for SPARSE_ENCAPSULATED secret key distribution
@@ -631,9 +1190,9 @@ class FHECKKSRNS : public FHERNS {
             2.3973045543634602219e-12,  -2.306346026629356268e-12,  -8.5029643608477862378e-14,
             7.9314691251993335928e-14};
 
-    // Chebyshev series coefficients for the UNIFORM_TERNARY case with K = K_UNIFORM = 648 (degree 104): interpolation of
-    // (2 Pi)^(-1/64) cos(2 Pi K x / 64 - Pi/128) on [-1, 1], followed by R_UNIFORM = 6 scaled double-angle iterations
-    // (ApplyDoubleAngleIterations) to get sin(2 Pi K x) / (2 Pi); the approximation error is about 2^-36
+    // Chebyshev series coefficients for the UNIFORM_TERNARY case with K = K_UNIFORM = 648 (degree 104): interpolation
+    // of (2 Pi)^(-1/64) cos(2 Pi K x / 64 - Pi/128) on [-1, 1], followed by R_UNIFORM = 6 scaled double-angle
+    // iterations (ApplyDoubleAngleIterations) to get sin(2 Pi K x) / (2 Pi); the approximation error is about 2^-36
     static const inline std::vector<double> g_coefficientsUniform{
             0.19434469187614321534,      0.000028121235020924102279,  0.19430867862208346732,
             0.00032804053246704692819,   0.19304837049242552267,      0.0009239885061941122757,

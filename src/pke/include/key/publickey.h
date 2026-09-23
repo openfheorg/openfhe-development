@@ -87,6 +87,11 @@ class PublicKeyImpl : public Key<Element> {
     PublicKeyImpl(PublicKeyImpl<Element>&& rhs) noexcept
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_h(std::move(rhs.m_h)) {}
 
+    /**
+   * Checks whether the key is usable: it has a crypto context and a non-empty public element vector.
+   *
+   * @return true if the key has a crypto context and at least one public element
+   */
     operator bool() const {
         return static_cast<bool>(this->context) && m_h.size() != 0;
     }
@@ -95,6 +100,7 @@ class PublicKeyImpl : public Key<Element> {
    * Assignment Operator.
    *
    * @param rhs PublicKeyImpl to copy from
+   * @return the resulting PublicKeyImpl
    */
     PublicKeyImpl<Element>& operator=(const PublicKeyImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
@@ -106,6 +112,7 @@ class PublicKeyImpl : public Key<Element> {
    * Move Assignment Operator.
    *
    * @param rhs PublicKeyImpl to move from
+   * @return the resulting PublicKeyImpl
    */
     PublicKeyImpl<Element>& operator=(PublicKeyImpl<Element>&& rhs) noexcept {
         CryptoObject<Element>::operator=(std::move(rhs));
@@ -141,10 +148,22 @@ class PublicKeyImpl : public Key<Element> {
         m_h = std::move(element);
     }
 
+    /**
+   * Equality: same crypto context (by pointer), same key tag and equal public element vectors.
+   *
+   * @param rhs the public key to compare with
+   * @return true if the keys are equal
+   */
     bool operator==(const PublicKeyImpl& rhs) const {
         return CryptoObject<Element>::operator==(rhs) && m_h == rhs.m_h;
     }
 
+    /**
+   * Inequality: negation of operator==.
+   *
+   * @param other the public key to compare with
+   * @return true if the keys differ
+   */
     bool operator!=(const PublicKeyImpl& other) const {
         return !(*this == other);
     }

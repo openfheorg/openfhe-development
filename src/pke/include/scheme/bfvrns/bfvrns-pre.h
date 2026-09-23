@@ -42,6 +42,9 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief BFV instantiation of the proxy re-encryption component; it inherits the RNS implementation without changes.
+ */
 class PREBFVRNS : public PRERNS {
   public:
     virtual ~PREBFVRNS() {}

@@ -42,25 +42,65 @@
 namespace lbcrypto {
 
 //====================================================================================================================
+/**
+ * @brief Identifiers of the homomorphic encryption schemes implemented in the PKE module
+ */
 enum SCHEME {
-    INVALID_SCHEME = 0,
-    CKKSRNS_SCHEME,
-    BFVRNS_SCHEME,
-    BGVRNS_SCHEME,
+    INVALID_SCHEME = 0, /**< no scheme selected */
+    CKKSRNS_SCHEME,     /**< CKKS scheme (approximate arithmetic) in the RNS representation */
+    BFVRNS_SCHEME,      /**< BFV scheme (exact integer arithmetic) in the RNS representation */
+    BGVRNS_SCHEME,      /**< BGV scheme (exact integer arithmetic) in the RNS representation */
 };
 //====================================================================================================================
+/**
+ * Converts the name of a SCHEME enumerator ("CKKSRNS_SCHEME", "BFVRNS_SCHEME" or "BGVRNS_SCHEME") to its value.
+ *
+ * @param str the enumerator name
+ * @return the corresponding scheme identifier; throws an exception if the name is unknown
+ */
 SCHEME convertToSCHEME(const std::string& str);
 //====================================================================================================================
+/**
+ * Converts a scheme identifier to its enumerator name.
+ *
+ * @param schemeId the scheme identifier
+ * @return the enumerator name, or "INVALID_SCHEME[<value>]" for a value that is not a valid scheme
+ */
 std::string convertToString(SCHEME schemeId) noexcept;
 //====================================================================================================================
+/**
+ * Prints the short scheme name ("CKKSRNS", "BFVRNS" or "BGVRNS").
+ *
+ * @param os the output stream
+ * @param schemeId the scheme identifier to print; an invalid identifier causes an exception
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& os, SCHEME schemeId);
 //====================================================================================================================
+/**
+ * Checks whether a scheme identifier denotes the CKKS scheme.
+ *
+ * @param schemeId the scheme identifier
+ * @return true if schemeId is CKKSRNS_SCHEME
+ */
 inline bool isCKKS(SCHEME schemeId) {
     return (schemeId == CKKSRNS_SCHEME);
 }
+/**
+ * Checks whether a scheme identifier denotes the BFV scheme.
+ *
+ * @param schemeId the scheme identifier
+ * @return true if schemeId is BFVRNS_SCHEME
+ */
 inline bool isBFVRNS(SCHEME schemeId) {
     return (schemeId == BFVRNS_SCHEME);
 }
+/**
+ * Checks whether a scheme identifier denotes the BGV scheme.
+ *
+ * @param schemeId the scheme identifier
+ * @return true if schemeId is BGVRNS_SCHEME
+ */
 inline bool isBGVRNS(SCHEME schemeId) {
     return (schemeId == BGVRNS_SCHEME);
 }

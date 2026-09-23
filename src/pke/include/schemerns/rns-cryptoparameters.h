@@ -123,6 +123,39 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
     }
 
+    /**
+   * Constructor that initializes all RNS crypto parameters from explicit encoding parameters. In addition to the
+   * RLWE parameters it stores the RNS-specific techniques (key switching, scaling, encryption, multiplication),
+   * the threshold-FHE and noise-flooding settings, and the CKKS composite scaling settings.
+   *
+   * @param params element parameters (the DCRT modulus chain).
+   * @param encodingParams encoding parameters (plaintext modulus, batch size).
+   * @param distributionParameter standard deviation of the error distribution.
+   * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+   * @param securityLevel security level from the homomorphic encryption standard.
+   * @param digitSize the size of the digit (relinearization window) for BV key switching.
+   * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
+   * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+   * @param ksTech key switching technique (BV or HYBRID).
+   * @param scalTech scaling (rescaling/modulus switching) technique.
+   * @param encTech encryption technique (STANDARD or EXTENDED; EXTENDED is BFV-specific).
+   * @param multTech BFV homomorphic multiplication technique (HPS, BEHZ, HPSPOVERQ or HPSPOVERQLEVELED).
+   * @param PREMode security mode for proxy re-encryption.
+   * @param multipartyMode security mode for multiparty (threshold) decryption.
+   * @param executionMode execution mode for CKKS noise flooding (EXEC_EVALUATION or EXEC_NOISE_ESTIMATION).
+   * @param decryptionNoiseMode decryption noise mode for CKKS noise flooding.
+   * @param noiseScale multiplier applied to the fresh encryption noise (1 for BFV/CKKS, the plaintext modulus
+   * for BGV).
+   * @param statisticalSecurity statistical security parameter (in bits) for CKKS noise flooding.
+   * @param numAdversarialQueries number of adversarial decryption queries assumed for CKKS noise flooding.
+   * @param thresholdNumOfParties number of parties in a threshold-FHE application (bounds the joint secret key).
+   * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in multi-party
+   * interactive bootstrapping (SLACK or COMPACT).
+   * @param compositeDegree composite scaling degree d for the CKKS COMPOSITESCALING techniques (1 otherwise).
+   * @param registerWordSize register word size in bits (32, 48 or 64) used to size the primes in CKKS composite
+   * scaling mode.
+   * @param ckksDataType CKKS data type (REAL or COMPLEX).
+   */
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
                         float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
@@ -172,6 +205,11 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
                m_ckksDataType == el->m_ckksDataType;
     }
 
+    /**
+   * Prints the RLWE parameters to the given output stream.
+   *
+   * @param os the output stream.
+   */
     void PrintParameters(std::ostream& os) const override {
         CryptoParametersRLWE<DCRTPoly>::PrintParameters(os);
     }
@@ -194,10 +232,18 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
                                      MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
                                      uint32_t extraBits) = 0;
 
+    /**
+   * Returns the step used when searching for the auxiliary (special) primes of HYBRID key switching: every
+   * auxiliary prime p is chosen such that p = 1 (mod step) so that the required roots of unity exist. The base
+   * implementation returns the ring dimension; the schemes override it (2n for BFV, lcm(2n, t) for BGV).
+   *
+   * @return the modulus step for the auxiliary prime search.
+   */
     virtual uint64_t FindAuxPrimeStep() const;
 
-    /*
-   * Estimates the extra modulus bitsize needed for hybrid key swithing (used for finding the minimum secure ring dimension).
+    /**
+   * Estimates the extra modulus bitsize needed for hybrid key switching (used for finding the minimum secure
+   * ring dimension).
    *
    * @param numPartQ number of digits in hybrid key switching
    * @param firstModulusSize bit size of first modulus
@@ -218,7 +264,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
                                                     bool isNoiseFloodingMultiparty = false,
                                                     uint32_t compositeDegree = 1);
 
-    /*
+    /**
    * Estimates the extra modulus bitsize needed for threshold FHE noise flooding (only for BGV and BFV)
    *
    * @return number of extra bits needed for noise flooding
@@ -267,14 +313,32 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_multTechnique;
     }
 
+    /**
+   * Returns the bit size of the auxiliary (special) primes P used in HYBRID key switching.
+   *
+   * @return the number of bits in each auxiliary prime.
+   */
     uint32_t GetAuxBits() const {
         return m_auxBits;
     }
 
+    /**
+   * Returns the number of extra bits reserved in the auxiliary modulus of HYBRID key switching (used by the
+   * FLEXIBLEAUTOEXT technique to lower the key switching noise).
+   *
+   * @return the number of extra bits.
+   */
     uint32_t GetExtraBits() const {
         return m_extraBits;
     }
 
+    /**
+   * Returns the element parameters used for public/secret key generation. These are the extended basis QP when
+   * HYBRID key switching is used with proxy re-encryption enabled, the basis Qr when BFV EXTENDED encryption is
+   * used, and the ciphertext basis Q otherwise.
+   *
+   * @return the CRT parameters of the key basis.
+   */
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
         if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET))
             return m_paramsQP;
@@ -408,7 +472,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_numPerPartQ;
     }
 
-    /*
+    /**
    * Method that returns the number of partitions.
    * Used in Hybrid key switching
    *
@@ -430,14 +494,13 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_paramsPartQ[part];
     }
 
-    /*
+    /**
    * Method that returns the element parameters corresponding to the
    * complementary basis of a single digit j, i.e., the basis consisting of
-   * all other digits plus the special primes. Note that numTowers should be
-   * up to l (where l is the number of towers).
+   * all other digits plus the special primes.
    *
-   * @param numTowers is the total number of towers there are in the
-   * ciphertext.
+   * @param numTowers number of towers in the ciphertext minus 1 (the table is
+   * indexed by sizeQl - 1).
    * @param digit is the index of the digit we want to get the complementary
    * partition from.
    * @return the partitions.
@@ -633,6 +696,15 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_approxSF;
     }
 
+    /**
+   * Method to retrieve the scaling factor of a ciphertext of noise scale degree 2 at level l, i.e., the product
+   * of the scaling factors of the two multiplied operands (used for CKKS FLEXIBLEAUTO, FLEXIBLEAUTOEXT and
+   * COMPOSITESCALING). For the other scaling techniques it returns the square of the fixed scaling factor 2^p.
+   *
+   * @param l the level (levels start from 0 with all towers present); if l is beyond the precomputed table,
+   * the fixed scaling factor is returned.
+   * @return the scaling factor of a degree-2 ciphertext.
+   */
     double GetScalingFactorRealBig(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
@@ -692,18 +764,41 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     // BFVrns : Encrypt : POverQ
     /////////////////////////////////////
 
+    /**
+   * Gets the precomputed value [-Q_l]_t, where Q_l is the ciphertext modulus with the last i towers dropped.
+   * Used in BFV encryption and plaintext addition to scale the plaintext by Q_l/t.
+   *
+   * @param i number of RNS limbs dropped from the full modulus Q (0 for a fresh full-modulus ciphertext).
+   * @return the precomputed value.
+   */
     NativeInteger GetNegQModt(uint32_t i = 0) const {
         return m_negQModt[i];
     }
 
+    /**
+   * Gets the NTL precomputation for [-Q_l]_t.
+   *
+   * @param i number of RNS limbs dropped from the full modulus Q (0 for a fresh full-modulus ciphertext).
+   * @return the precomputed value.
+   */
     NativeInteger GetNegQModtPrecon(uint32_t i = 0) const {
         return m_negQModtPrecon[i];
     }
 
+    /**
+   * Gets the precomputed value [-Q*r]_t used in BFV encryption in EXTENDED mode, where r is the extra prime.
+   *
+   * @return the precomputed value.
+   */
     NativeInteger GetNegQrModt() const {
         return m_negQrModt;
     }
 
+    /**
+   * Gets the NTL precomputation for [-Q*r]_t used in BFV encryption in EXTENDED mode.
+   *
+   * @return the precomputed value.
+   */
     NativeInteger GetNegQrModtPrecon() const {
         return m_negQrModtPrecon;
     }
@@ -722,14 +817,36 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     // BFVrns : Mult : ExpandCRTBasis
     /////////////////////////////////////
 
+    /**
+   * Gets the CRT basis {Q_l} = {q_0,...,q_l} used in BFV homomorphic multiplication. For HPS only index 0
+   * (the full basis Q) is available.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
+   * @return the precomputed CRT params.
+   */
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(uint32_t l = 0) const {
         return m_paramsQl[l];
     }
 
+    /**
+   * Gets the precomputed fractional parts {[Q_l*(Q/q_j)^{-1}]_{q_j}/q_j} for the moduli q_j of Q that are not
+   * in Q_l. Used to scale a polynomial from basis Q down to Q_l in HPSPOVERQLEVELED.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<double>& GetQlQHatInvModqDivqFrac(uint32_t l) const {
         return m_QlQHatInvModqDivqFrac[l];
     }
 
+    /**
+   * Gets the precomputed table of [floor(Q_l*(Q/q_j)^{-1}/q_j)]_{q_i} for q_i in Q_l and q_j in Q (the last
+   * entry of each row corresponds to q_j = q_i). Used to scale a polynomial from basis Q down to Q_l in
+   * HPSPOVERQLEVELED.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(uint32_t l) const {
         return m_QlQHatInvModqDivqModq[l];
     }
@@ -787,7 +904,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [\alpha*Q_l]_{r_k}
+   * Gets the precomputed table of [alpha*Q_l]_{r_k}
    *
    * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
@@ -796,22 +913,54 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_alphaQlModr[l];
     }
 
+    /**
+   * Gets the precomputed table of [-R_l*(Q/q_i)^{-1}]_{q_i} used for the fast basis extension from Q to R_l
+   * (HPSPOVERQ and HPSPOVERQLEVELED).
+   *
+   * @param l index of the leveled parameter set (number of towers in R_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<NativeInteger>& GetmNegRlQHatInvModq(uint32_t l = 0) const {
         return m_negRlQHatInvModq[l];
     }
 
+    /**
+   * Gets the NTL precomputations for [-R_l*(Q/q_i)^{-1}]_{q_i}.
+   *
+   * @param l index of the leveled parameter set (number of towers in R_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(uint32_t l = 0) const {
         return m_negRlQHatInvModqPrecon[l];
     }
 
+    /**
+   * Gets the precomputed table of [-R_l*(Q_l/q_i)^{-1}]_{q_i} used for the fast basis extension from Q_l to R_l
+   * when the ciphertext has already been compressed to Q_l (HPSPOVERQ and HPSPOVERQLEVELED).
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l and R_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<NativeInteger>& GetmNegRlQlHatInvModq(uint32_t l = 0) const {
         return m_negRlQlHatInvModq[l];
     }
 
+    /**
+   * Gets the NTL precomputations for [-R_l*(Q_l/q_i)^{-1}]_{q_i}.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l and R_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<NativeInteger>& GetmNegRlQlHatInvModqPrecon(uint32_t l = 0) const {
         return m_negRlQlHatInvModqPrecon[l];
     }
 
+    /**
+   * Gets the precomputed table of [q_i^{-1}]_{r_j} (indexed as [i][j]) used for the fast basis extension
+   * from Q to R in BFV homomorphic multiplication.
+   *
+   * @return the precomputed table.
+   */
     const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
         return m_qInvModr;
     }
@@ -840,7 +989,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
 
     /**
    * For S = QR
-   * Gets the precomputed table of \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}
+   * Gets the precomputed table of frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}
    *
    * @return the precomputed table
    */
@@ -850,7 +999,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
 
     /**
    * For S = QR
-   * Gets the precomputed table of [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}
+   * Gets the precomputed table of [floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}
    *
    * @return the precomputed table
    */
@@ -893,7 +1042,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [\alpha*R_l]_{q_i}
+   * Gets the precomputed table of [alpha*R_l]_{q_i}
    *
    * @param l index of the leveled parameter set (number of towers in Q_l minus 1; used in HPSPOVERQLEVELED).
    * @return the precomputed table
@@ -902,18 +1051,45 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_alphaRlModq[l];
     }
 
+    /**
+   * For S_l = Q_l*R_l, gets the precomputed fractional parts {[t*Q_l*(S_l/r_j)^{-1}]_{r_j}/r_j} used to scale
+   * the product by t/R_l and round it back to basis Q_l (HPS, HPSPOVERQ and HPSPOVERQLEVELED).
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; only 0 for HPS).
+   * @return the precomputed table.
+   */
     const std::vector<double>& GettQlSlHatInvModsDivsFrac(uint32_t l) const {
         return m_tQlSlHatInvModsDivsFrac[l];
     }
 
+    /**
+   * For S_l = Q_l*R_l, gets the precomputed table of [floor(t*Q_l*(S_l/s_m)^{-1}/s_m)]_{q_i} (the last entry
+   * of each row corresponds to s_m = q_i) used to scale the product by t/R_l and round it back to basis Q_l.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1; only 0 for HPS).
+   * @return the precomputed table.
+   */
     const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(uint32_t l) const {
         return m_tQlSlHatInvModsDivsModq[l];
     }
 
+    /**
+   * Gets the precomputed table of [Q/Q_l]_{q_i} for q_i in Q_l, used to expand a polynomial from basis Q_l
+   * back to the full basis Q in HPSPOVERQLEVELED.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<NativeInteger>& GetQlHatModq(uint32_t l) const {
         return m_QlHatModq[l];
     }
 
+    /**
+   * Gets the NTL precomputations for [Q/Q_l]_{q_i}.
+   *
+   * @param l index of the leveled parameter set (number of towers in Q_l minus 1).
+   * @return the precomputed table.
+   */
     const std::vector<NativeInteger>& GetQlHatModqPrecon(uint32_t l) const {
         return m_QlHatModqPrecon[l];
     }
@@ -932,7 +1108,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     /////////////////////////////////////
 
     /**
-   * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}/q_i}
+   * Gets the precomputed table of frac{t*{Q/q_i}^{-1}/q_i}
    *
    * @return the precomputed table
    */
@@ -941,8 +1117,8 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-   * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}*B/q_i}
+   * When log2(q_i) >= 45 bits, B = floor[2^{ceil{log2(q_i)/2}}
+   * Gets the precomputed table of frac{t*{Q/q_i}^{-1}*B/q_i}
    *
    * @return the precomputed table
    */
@@ -951,7 +1127,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+   * Gets the precomputed table of [floor{t*{Q/q_i}^{-1}/q_i}]_t
    *
    * @return the precomputed table
    */
@@ -960,7 +1136,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+   * Gets the NTL precomputations for [floor{t*{Q/q_i}^{-1}/q_i}]_t
    *
    * @return the precomputed table
    */
@@ -969,8 +1145,8 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-   * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
+   * When log2(q_i) >= 45 bits, B = floor[2^{ceil{log2(q_i)/2}}
+   * Gets the precomputed table of [floor{t*{Q/q_i}^{-1}*B/q_i}]_t
    *
    * @return the precomputed table
    */
@@ -979,8 +1155,8 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-   * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
+   * When log2(q_i) >= 45 bits, B = floor[2^{ceil{log2(q_i)/2}}
+   * Gets the NTL precomputations for [floor{t*{Q/q_i}^{-1}*B/q_i}]_t
    *
    * @return the precomputed table
    */
@@ -988,6 +1164,15 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_tQHatInvModqBDivqModtPrecon;
     }
 
+    /**
+   * Method to retrieve the BGV scaling factor (modulo the plaintext modulus t) of a ciphertext of noise scale
+   * degree 1 at level l. For FLEXIBLEAUTO and FLEXIBLEAUTOEXT the value is read from the precomputed table;
+   * for the other scaling techniques the fixed value 1 is returned.
+   *
+   * @param l the level (levels start from 0 with all towers present); if l is beyond the precomputed table,
+   * the fixed scaling factor is returned.
+   * @return the scaling factor modulo t.
+   */
     NativeInteger GetScalingFactorInt(uint32_t l) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
@@ -1000,6 +1185,15 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_fixedSF;
     }
 
+    /**
+   * Method to retrieve the BGV scaling factor (modulo t) of a ciphertext of noise scale degree 2 at level l,
+   * i.e., the product of the scaling factors of the two multiplied operands (FLEXIBLEAUTO and FLEXIBLEAUTOEXT).
+   * For the other scaling techniques the fixed value 1 is returned.
+   *
+   * @param l the level (levels start from 0 with all towers present); if l is beyond the precomputed table,
+   * the fixed scaling factor is returned.
+   * @return the scaling factor modulo t.
+   */
     NativeInteger GetScalingFactorIntBig(uint32_t l) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
@@ -1012,6 +1206,14 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return m_fixedSF;
     }
 
+    /**
+   * Method to retrieve [q_l]_t, the factor by which the BGV scaling factor is divided when tower q_l is dropped
+   * by modulus switching (FLEXIBLEAUTO and FLEXIBLEAUTOEXT). For the other scaling techniques the fixed value 1
+   * is returned.
+   *
+   * @param l index of the tower q_l being dropped.
+   * @return the modulus reduction factor modulo t.
+   */
     NativeInteger GetModReduceFactorInt(uint32_t l = 0) const {
         if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT ||
             m_scalTechnique == COMPOSITESCALINGAUTO || m_scalTechnique == COMPOSITESCALINGMANUAL) {
@@ -1368,7 +1570,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of [\alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
+   * Gets the precomputed table of [alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
    *
    * @param l index of the leveled parameter set (number of towers in the ciphertext minus 2).
    * @return the precomputed table
@@ -1387,7 +1589,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-   * Gets the precomputed table of \frac{1/q_i}
+   * Gets the precomputed table of frac{1/q_i}
    *
    * @return the precomputed table
    */

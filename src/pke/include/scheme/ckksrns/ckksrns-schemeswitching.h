@@ -53,6 +53,15 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of scheme switching between CKKS and FHEW (Boolean) ciphertexts.
+ *
+ * Provides the setup, key generation, precomputation and evaluation of the CKKS to FHEW switching (a
+ * homomorphic linear transform followed by the extraction of LWE ciphertexts), of the FHEW to CKKS switching
+ * (homomorphic decryption of LWE ciphertexts inside CKKS), and of the comparison, minimum and maximum
+ * operations that combine both directions. The precomputations and the FHEW cryptocontext are stored in this
+ * object, one instance per CKKS cryptocontext.
+ */
 class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
@@ -131,21 +140,57 @@ class SWITCHCKKSRNS : public FHERNS {
                                                                 uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
+    /**
+   * Gets the FHEW (binary FHE) cryptocontext used for scheme switching.
+   *
+   * @return the FHEW cryptocontext
+   */
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
         return m_ccLWE;
     }
+
+    /**
+   * Sets the FHEW (binary FHE) cryptocontext used for scheme switching (e.g., after deserialization).
+   *
+   * @param ccLWE the FHEW cryptocontext
+   */
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override {
         m_ccLWE = ccLWE;
     }
+
+    /**
+   * Gets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key.
+   *
+   * @return the switching key
+   */
     Ciphertext<DCRTPoly> GetSwkFC() override {
         return m_FHEWtoCKKSswk;
     }
+
+    /**
+   * Sets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key (it is not serialized
+   * with this object, so it has to be restored after deserialization).
+   *
+   * @param FHEWtoCKKSswk the switching key
+   */
     void SetSwkFC(Ciphertext<DCRTPoly> FHEWtoCKKSswk) override {
         m_FHEWtoCKKSswk = FHEWtoCKKSswk;
     }
+
+    /**
+   * Gets the number of values (LWE ciphertexts) the scheme switching was set up for.
+   *
+   * @return the number of ciphertexts to switch
+   */
     uint32_t GetNumCtxtsToSwitch() {
         return m_numCtxts;
     }
+
+    /**
+   * Gets the LWE ciphertext modulus the CKKS ciphertexts are switched to.
+   *
+   * @return the LWE modulus
+   */
     NativeInteger GetModulusLWEToSwitch() {
         return m_modulus_LWE;
     }
