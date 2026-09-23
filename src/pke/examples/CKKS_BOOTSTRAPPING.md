@@ -26,6 +26,17 @@ There are a few main differences between the two versions:
 - In the case of full real packing, internally, the SlotsToCoeffs-first version requires a single ciphertext internally to store all information, while the ModRaise-first version requires using two ciphertexts internally (corresponding to the real and imaginary parts). In single-threaded computation, this makes the SlotsToCoeffs-first substantially faster than the ModRaise-first.
 - The SlotsToCoeffs-first version has a slightly better precision than the ModRaise-first one.
 
+## Secret Key Distribution
+The secret key distribution (`SetSecretKeyDist`) determines the bound $K$ on the number of mod-raise overflows and hence the probability that bootstrapping fails (an overflow coefficient exceeding $K$ corrupts the output). The failure probabilities below are for fully packed ciphertexts ($N/2$ slots) and were computed with the Irwin-Hall model of Appendix A of the [Security Guidelines for Implementing Homomorphic Encryption](https://cic.iacr.org/p/1/4/26/pdf); halving the number of slots lowers them by one bit.
+
+| Distribution | $K$ | $N = 2^{16}$ | $N = 2^{17}$ | Notes |
+|---|---|---|---|---|
+| `SPARSE_ENCAPSULATED` (recommended) | 16 | $2^{-138}$ | $2^{-137}$ | Hamming weight 32 for the key used in bootstrapping and 192 otherwise ([https://eprint.iacr.org/2022/024](https://eprint.iacr.org/2022/024)). For first moduli above 60 bits (composite scaling), Hamming weight 64 and $K = 28$ are used (failure probability below $2^{-142}$). |
+| `UNIFORM_TERNARY` | 648 | $2^{-67}$ | $2^{-27}$ | Distribution recommended by the homomorphic encryption security guidelines; requires a larger multiplicative depth for bootstrapping. |
+| `SPARSE_TERNARY` (not recommended) | 28 | $2^{-23}$ | $2^{-22}$ | Hamming weight 192, as in the original CKKS paper. |
+
+`SPARSE_ENCAPSULATED` is recommended for all flavors of CKKS bootstrapping (ModRaise-first, SlotsToCoeffs-first, iterative, composite scaling, and functional bootstrapping), as it achieves a failure probability below $2^{-128}$ for all supported ring dimensions. `UNIFORM_TERNARY` can be used when uniform ternary secrets are required for compliance with the security guidelines; note the failure probability at $N = 2^{17}$. `SPARSE_TERNARY` is discouraged because of its high failure probability.
+
 ## OpenFHE functions
 In order to perform bootstrapping, the user needs to run `Enable(FHE)` and call:
 - `EvalBootstrapSetup` (and if precomputations are not enabled, call `EvalBootstrapPrecompute`) which performs all precomputations and stores the plaintexts necessary for the linear transforms for a specified number of CKKS slots.

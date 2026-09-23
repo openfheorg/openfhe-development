@@ -217,6 +217,8 @@ int main() {
     const std::vector<uint32_t> bsgsDim = {0, 0};
     const usint dcrtBits = 59;
     const usint firstMod = 60;
+    // SPARSE_ENCAPSULATED is recommended (probability of failure below 2^-128); SPARSE_TERNARY is used here
+    // for testing only (about 2^-23 for N = 2^16). UNIFORM_TERNARY: 2^-79 for N = 2^16, 2^-33 for N = 2^17.
     const SecretKeyDist skd = SPARSE_TERNARY;
 
     // GetFEFBTDepth covers the functional bootstrapping itself, for the longest of the three series; the
