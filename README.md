@@ -20,7 +20,7 @@ OpenFHE also includes the following multiparty extensions of FHE:
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
 OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above. To achieve the best runtime performance, we recommend following the
-guidelines outlined in [building OpenFHE for best performance](https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Best_Performance.md).
+guidelines outlined in [building OpenFHE for best performance](docs/static_docs/Best_Performance.md).
 
 ## Links and Resources
 
@@ -28,7 +28,7 @@ guidelines outlined in [building OpenFHE for best performance](https://github.co
  * [Design paper for OpenFHE](https://eprint.iacr.org/2022/915)
  * [OpenFHE website](https://openfhe.org)
  * [Community forum for OpenFHE](https://openfhe.discourse.group/)
- * [OpenFHE Release Notes](https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Release_Notes.md)
+ * [OpenFHE Release Notes](docs/static_docs/Release_Notes.md)
  * [Quickstart](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
  * [BSD 2-Clause License](LICENSE)
  * [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
@@ -92,7 +92,7 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
 ## Main API
 
 - [PKE CryptoContext API (BGV/BFV/CKKS)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1CryptoContextImpl.html)
-- [Description of CryptoContext Parameters for BGV, BFV, and CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples#description-of-the-cryptocontext-parameters-and-their-restrictions)
+- [Description of CryptoContext Parameters for BGV, BFV, and CKKS](src/pke/examples#description-of-the-cryptocontext-parameters-and-their-restrictions)
 
 - [BinFHE Context API (FHEW/TFHE)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1BinFHEContext.html)
 
