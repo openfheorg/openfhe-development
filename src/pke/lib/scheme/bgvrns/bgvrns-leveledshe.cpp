@@ -219,7 +219,8 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ci
     AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
     if (ciphertext1->GetNoiseScaleDeg() == 2) {
         ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
-        ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
+        if (ciphertext2 != ciphertext1)
+            ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
     }
 }
 

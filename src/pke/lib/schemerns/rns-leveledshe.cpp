@@ -222,6 +222,8 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(ConstCiphertext<DCRTPoly>& cipherte
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1,
                                                     Ciphertext<DCRTPoly>& ciphertext2) const {
+    if (ciphertext1 == ciphertext2)
+        return EvalSquareMutable(ciphertext1);
     AdjustForMultInPlace(ciphertext1, ciphertext2);
     return EvalMultCore(ciphertext1, ciphertext2);
 }
