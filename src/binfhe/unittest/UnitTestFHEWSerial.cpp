@@ -34,6 +34,7 @@
 
 #include "binfhecontext-ser.h"
 #include "gtest/gtest.h"
+#include "lwe-keyswitchkey.h"
 
 using namespace lbcrypto;
 
@@ -145,4 +146,9 @@ TEST(UnitTestFHEWSerialGaussian, BINARY) {
     std::string msg = "UnitTestFHEWSerialGaussian.BINARY serialization test failed: ";
     BinFHEContextParams p{27, 1024, 64, 512, 0, 25, 512, 23, 9, GAUSSIAN, 3.19, {}};
     UnitTestFHEWSerial(SerType::BINARY, p, LMKCDEY, SMALL_DIM, msg);
+}
+
+TEST(UnitTestFHEWSerial, SwitchingKeyHasCorrectSerializedName) {
+    LWESwitchingKeyImpl key;
+    EXPECT_EQ("LWESwitchingKey", key.SerializedObjectName());
 }

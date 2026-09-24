@@ -455,3 +455,27 @@ TEST(UNITTestFHEWExtended, LweParamsEqualityCoversKeySwitchingFields) {
     LWECryptoParams d(64, 512, 512, Q, 4096, 3.19, 32, GAUSSIAN);
     EXPECT_TRUE(a != d) << "keyDist must take part in the comparison";
 }
+
+TEST(UNITTestFHEWExtended, RingGSWParamsEqualityCoversSemanticFields) {
+    constexpr uint32_t N = 64;
+    constexpr uint32_t baseG = 1 << 9;
+    constexpr uint32_t baseR = 32;
+    constexpr uint32_t numAutoKeys = 10;
+    constexpr double stdDev = 3.19;
+    const NativeInteger Q = LastPrime<NativeInteger>(27, 2 * N);
+    const NativeInteger q = 128;
+
+    const RingGSWCryptoParams reference(N, Q, q, baseG, baseR, AP, stdDev, UNIFORM_TERNARY, false, numAutoKeys);
+    const RingGSWCryptoParams same(N, Q, q, baseG, baseR, AP, stdDev, UNIFORM_TERNARY, false, numAutoKeys);
+    EXPECT_EQ(reference, same);
+
+    EXPECT_NE(reference,
+              RingGSWCryptoParams(N, Q, q / 2, baseG, baseR, AP, stdDev, UNIFORM_TERNARY, false, numAutoKeys));
+    EXPECT_NE(reference,
+              RingGSWCryptoParams(N, Q, q, baseG, baseR, LMKCDEY, stdDev, UNIFORM_TERNARY, false, numAutoKeys));
+    EXPECT_NE(reference, RingGSWCryptoParams(N, Q, q, baseG, baseR, AP, stdDev, GAUSSIAN, false, numAutoKeys));
+    EXPECT_NE(reference,
+              RingGSWCryptoParams(N, Q, q, baseG, baseR, AP, stdDev + 0.01, UNIFORM_TERNARY, false, numAutoKeys));
+    EXPECT_NE(reference,
+              RingGSWCryptoParams(N, Q, q, baseG, baseR, AP, stdDev, UNIFORM_TERNARY, false, numAutoKeys - 1));
+}

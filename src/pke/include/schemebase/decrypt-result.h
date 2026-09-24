@@ -44,7 +44,7 @@ namespace lbcrypto {
  */
 struct EncryptResult {
     /**
-     * Default constructor; the fields are left uninitialized.
+     * Default constructor for an invalid result with no bytes encrypted.
      */
     EncryptResult() = default;
 
@@ -54,8 +54,8 @@ struct EncryptResult {
      */
     explicit EncryptResult(uint32_t len) : isValid(true), numBytesEncrypted(len) {}
 
-    bool isValid;               /**< whether the encryption was successful */
-    uint32_t numBytesEncrypted; /**< count of the number of plaintext bytes that were encrypted */
+    bool isValid{false};           /**< whether the encryption was successful */
+    uint32_t numBytesEncrypted{0}; /**< count of the number of plaintext bytes that were encrypted */
 };
 
 /**
@@ -74,7 +74,7 @@ struct EncryptResult {
  */
 struct DecryptResult {
     /**
-     * Constructor that initializes all message lengths to 0.
+     * Default constructor for an invalid result with a message length of 0.
      */
     DecryptResult() = default;
 
@@ -91,8 +91,8 @@ struct DecryptResult {
      */
     DecryptResult(uint32_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
 
-    bool isValid;                      /**< whether the decryption was successful */
-    uint32_t messageLength;            /**< the length of the decrypted plaintext message */
+    bool isValid{false};               /**< whether the decryption was successful */
+    uint32_t messageLength{0};         /**< the length of the decrypted plaintext message */
     NativeInteger scalingFactorInt{1}; /**< Scaling factor for BGV FlexibleAuto mode. */
 };
 
