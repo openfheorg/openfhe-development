@@ -108,8 +108,24 @@ class DiscreteFourierTransform {
    */
     static void Reset();
 
+    /**
+   * Resets and rebuilds the table of the s complex roots of unity exp(-2*pi*i*j/s),
+   * j = 0..s-1.
+   *
+   * @param s is the size of the table (the transform length).
+   */
     static void PreComputeTable(uint32_t s);
 
+    /**
+   * Precomputes, once per cyclotomic order, the rotation group, the powers of the primitive
+   * m-th root of unity, and the per-stage butterfly twiddles used by FFTSpecial() and
+   * FFTSpecialInv() on vectors of length nh. Thread-safe; a no-op if the order is already
+   * initialized.
+   *
+   * @param m is the cyclotomic order.
+   * @param nh is the number of slots (half the ring dimension), the length of the vectors
+   * passed to FFTSpecial() and FFTSpecialInv().
+   */
     static void Initialize(uint32_t m, uint32_t nh);
 
   private:

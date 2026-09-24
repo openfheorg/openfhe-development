@@ -55,7 +55,16 @@
  */
 namespace intnat {
 
+/**
+ * @brief Hash functor for std::pair keys, used by the unordered maps of the transforms.
+ */
 struct HashPair {
+    /**
+   * Hashes a pair by combining the std::hash values of its two members.
+   *
+   * @param p is the pair to hash.
+   * @return the combined hash.
+   */
     template <class T1, class T2>
     size_t operator()(const std::pair<T1, T2>& p) const {
         auto hash1 = std::hash<T1>{}(std::get<0>(p));
@@ -63,6 +72,13 @@ struct HashPair {
         return HashCombine(hash1, hash2);
     }
 
+    /**
+   * Combines two hash values (boost::hash_combine formula).
+   *
+   * @param lhs is the first hash.
+   * @param rhs is the second hash.
+   * @return the combined hash.
+   */
     static size_t HashCombine(size_t lhs, size_t rhs) {
         lhs ^= rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2);
         return lhs;
@@ -101,12 +117,29 @@ class NumberTheoreticTransformNat {
     void InverseTransformIterative(const VecType& element, const VecType& rootOfUnityInverseTable, VecType* result);
 
     /**
-   * Cyclic-ring (X^n-1) variants of the two transforms above taking Shoup
-   * precomputations for the root tables; outputs are bit-identical to the
-   * two-table forms.
+   * Forward transform in the ring Z_q[X]/(X^n-1) taking the Shoup precomputations for the
+   * root table; the output is bit-identical to the two-table form.
+   *
+   * @param[in] element is the input to the transform of type VecType and length n.
+   * @param rootOfUnityTable is the table with the root of unity powers.
+   * @param preconRootOfUnityTable is the table of Shoup precomputations for rootOfUnityTable.
+   * @param[out] result is the result of the transform, a VecType should be of the same
+   * size as input or a throw if an error occurs.
    */
     void ForwardTransformIterative(const VecType& element, const VecType& rootOfUnityTable,
                                    const VecType& preconRootOfUnityTable, VecType* result);
+
+    /**
+   * Inverse transform in the ring Z_q[X]/(X^n-1) taking the Shoup precomputations for the
+   * inverse root table; the output is bit-identical to the two-table form.
+   *
+   * @param[in] element is the input to the transform of type VecType and length n.
+   * @param rootOfUnityInverseTable is the table with the inverse n-th root of unity powers.
+   * @param preconRootOfUnityInverseTable is the table of Shoup precomputations for
+   * rootOfUnityInverseTable.
+   * @param[out] result is the result of the transform, a VecType should be of the same
+   * size as input or a throw if an error occurs.
+   */
     void InverseTransformIterative(const VecType& element, const VecType& rootOfUnityInverseTable,
                                    const VecType& preconRootOfUnityInverseTable, VecType* result);
 
@@ -364,17 +397,29 @@ class ChineseRemainderTransformFTTNat final : public lbcrypto::ChineseRemainderT
    * unaffected by a concurrent rebuild for the same modulus.
    */
     struct Tables {
+        /// forward roots of unity in bit-reversed order
         VecType rootReverse;
+        /// Shoup precomputations for rootReverse
         VecType preconRootReverse;
+        /// inverse roots of unity in bit-reversed order
         VecType rootInverseReverse;
+        /// Shoup precomputations for rootInverseReverse
         VecType preconRootInverseReverse;
+        /// inverses of the transform sizes, indexed by log2 of the size
         VecType cycloOrderInverse;
+        /// Shoup precomputations for cycloOrderInverse
         VecType preconCycloOrderInverse;
     };
 
     /**
    * Single lookup-or-build entry for the tables of one modulus: one map traversal
-   * per transform instead of one per table, with reads and fills synchronized.
+   * per transform instead of one per table, with reads and fills synchronized. The cached
+   * bundle is reused when its size matches cycloOrder/2 and rebuilt otherwise.
+   *
+   * @param rootOfUnity is the 2n-th root of unity modulo modulus used to build the tables.
+   * @param CycloOrder is the cyclotomic order (twice the transform size).
+   * @param modulus is the modulus the tables are keyed on.
+   * @return the immutable table bundle for the modulus.
    */
     static std::shared_ptr<const Tables> GetTables(const IntType& rootOfUnity, uint32_t CycloOrder,
                                                    const IntType& modulus);
@@ -388,10 +433,11 @@ class ChineseRemainderTransformFTTNat final : public lbcrypto::ChineseRemainderT
     }
 };
 
-// struct used as a key in BlueStein transform
+/// (modulus, root of unity) pair used as a key in the Bluestein transform caches
 template <typename IntType>
 using ModulusRoot = std::pair<IntType, IntType>;
 
+/// ((modulus, root), (NTT modulus, NTT root)) pair used as a key in the Bluestein transform caches
 template <typename IntType>
 using ModulusRootPair = std::pair<ModulusRoot<IntType>, ModulusRoot<IntType>>;
 
@@ -412,6 +458,18 @@ class BluesteinFFTNat {
    * @return is the output result of the transform.
    */
     VecType ForwardTransform(const VecType& element, const IntType& root, const uint32_t cycloOrder);
+
+    /**
+   * Forward transform with an explicit NTT modulus and root; all tables for (modulus of
+   * element, root), nttModulusRoot and their pair must have been precomputed by the
+   * PreCompute* methods.
+   *
+   * @param element is the element to perform the transform on; its length must equal cycloOrder.
+   * @param root is the root of unity w.r.t. the modulus of element used to compute the power table.
+   * @param cycloOrder is the cyclotomic order.
+   * @param nttModulusRoot is the (modulus, root of unity) pair of the NTT used internally.
+   * @return is the output result of the transform.
+   */
     VecType ForwardTransform(const VecType& element, const IntType& root, const uint32_t cycloOrder,
                              const ModulusRoot<IntType>& nttModulusRoot);
 
@@ -473,27 +531,32 @@ class BluesteinFFTNat {
    */
     void Reset();
 
-    // map to store the root of unity table with modulus as key.
+    /// map to store the root of unity table with modulus as key.
     static std::map<ModulusRoot<IntType>, VecType> m_rootOfUnityTableByModulusRoot;
 
-    // map to store the root of unity inverse table with modulus as key.
+    /// map to store the root of unity inverse table with modulus as key.
     static std::map<ModulusRoot<IntType>, VecType> m_rootOfUnityInverseTableByModulusRoot;
 
-    // map to store the power of roots as a table with modulus + root of unity as
-    // key.
+    /// map to store the power of roots as a table with modulus + root of unity as
+    /// key.
     static std::map<ModulusRoot<IntType>, VecType> m_powersTableByModulusRoot;
 
-    // map to store the forward transform of power table with modulus + root of
-    // unity as key.
+    /// map to store the forward transform of power table with modulus + root of
+    /// unity as key.
     static std::map<ModulusRootPair<IntType>, VecType> m_RBTableByModulusRootPair;
 
-    // Shoup precomputations matching the two root-of-unity tables above.
+    /// Shoup precomputations matching m_rootOfUnityTableByModulusRoot.
     static std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityTableByModulusRoot;
+    /// Shoup precomputations matching m_rootOfUnityInverseTableByModulusRoot.
     static std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityInverseTableByModulusRoot;
 
-    // Guards every Bluestein/arbitrary-cyclotomic static cache: fills are lazy and the
-    // tower loops run in parallel, so lookups must lock as well (references into a
-    // std::map stay valid after the lock is released; the map structure does not).
+    /**
+   * Mutex guarding every Bluestein/arbitrary-cyclotomic static cache: fills are lazy and the
+   * tower loops run in parallel, so lookups must lock as well (references into a std::map
+   * stay valid after the lock is released; the map structure does not).
+   *
+   * @return the shared recursive mutex.
+   */
     static std::recursive_mutex& CacheMutex() {
         static std::recursive_mutex m;
         return m;

@@ -50,9 +50,25 @@ enum SecretKeyDist {
     // BINARY = X, // Future implementation
 };
 
+/**
+ * @brief Converts the name of a secret key distribution (e.g. "UNIFORM_TERNARY") to the enum value.
+ * @param str the name of the distribution, spelled as the enumerator.
+ * @return the corresponding SecretKeyDist; throws if the name is unknown.
+ */
 SecretKeyDist convertToSecretKeyDist(const std::string& str);
+/**
+ * @brief Converts the numeric value of a secret key distribution to the enum value.
+ * @param num the numeric value of the distribution.
+ * @return the corresponding SecretKeyDist; throws if the value is not a valid enumerator.
+ */
 SecretKeyDist convertToSecretKeyDist(uint32_t num);
 
+/**
+ * @brief Writes the name of a secret key distribution to an output stream.
+ * @param s the output stream.
+ * @param m the distribution to print.
+ * @return the output stream.
+ */
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 }  // namespace lbcrypto

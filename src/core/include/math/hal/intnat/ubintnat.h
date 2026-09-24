@@ -68,6 +68,7 @@ namespace intnat {
 // Forward declare class and give it an alias for the expected type
 template <typename IntType>
 class NativeIntegerT;
+/// the native integer of the default word width of the build (NATIVEINT bits)
 using NativeInteger = NativeIntegerT<BasicInteger>;
 
 template <typename IntType>
@@ -82,51 +83,79 @@ class NumberTheoreticTransformNat;
  */
 template <typename utype>
 struct DataTypes {
+    /// signed integer of the same width as utype
     using SignedType = void;
+    /// unsigned integer of twice the width of utype
     using DoubleType = void;
+    /// signed integer of twice the width of utype
     using SignedDoubleType = void;
 };
+/// @brief Companion types of a 32-bit word: 32-bit signed, 64-bit double-width.
 template <>
 struct DataTypes<uint32_t> {
+    /// signed integer of the same width
     using SignedType = int32_t;
+    /// unsigned integer of twice the width
     using DoubleType = uint64_t;
+    /// signed integer of twice the width
     using SignedDoubleType = int64_t;
 };
+/// @brief Companion types of a 64-bit word: 64-bit signed and, when a 128-bit type is
+/// available (HAVE_INT128), 128-bit double-width; otherwise the double-width types fall back
+/// to 64 bits and the kernels use portable two-word arithmetic.
 template <>
 struct DataTypes<uint64_t> {
+    /// signed integer of the same width
     using SignedType = int64_t;
 #if defined(HAVE_INT128)
+    /// unsigned integer of twice the width
     using DoubleType = uint128_t;
+    /// signed integer of twice the width
     using SignedDoubleType = int128_t;
 #else
+    /// no wider type available: falls back to the same width
     using DoubleType = uint64_t;
+    /// no wider type available: falls back to the same width
     using SignedDoubleType = int64_t;
 #endif
 };
 #if defined(HAVE_INT128)
+/// @brief Companion types of a 128-bit word; no wider type exists, so double-width is 128 bits.
 template <>
 struct DataTypes<uint128_t> {
+    /// signed integer of the same width
     using SignedType = int128_t;
+    /// no wider type available: falls back to the same width
     using DoubleType = uint128_t;
+    /// no wider type available: falls back to the same width
     using SignedDoubleType = int128_t;
 };
 #endif
 
-// Largest modulus bit-width the generalized-Barrett kernels are exact for,
-// keyed on the word type rather than on the build.
+/**
+ * @brief Largest modulus bit-width the generalized-Barrett kernels are exact for, keyed on
+ * the word type rather than on the build.
+ * @tparam NativeInt native unsigned integer type
+ */
 template <typename NativeInt>
 struct MaxModulusBits;
+/// @brief Modulus cap for 32-bit words (MAX_MODULUS_SIZE32).
 template <>
 struct MaxModulusBits<uint32_t> {
+    /// the modulus cap in bits
     static constexpr uint32_t value{MAX_MODULUS_SIZE32};
 };
+/// @brief Modulus cap for 64-bit words (MAX_MODULUS_SIZE64).
 template <>
 struct MaxModulusBits<uint64_t> {
+    /// the modulus cap in bits
     static constexpr uint32_t value{MAX_MODULUS_SIZE64};
 };
 #if defined(HAVE_INT128) || NATIVEINT == 128
+/// @brief Modulus cap for 128-bit words (MAX_MODULUS_SIZE128).
 template <>
 struct MaxModulusBits<uint128_t> {
+    /// the modulus cap in bits
     static constexpr uint32_t value{MAX_MODULUS_SIZE128};
 };
 #endif
@@ -148,28 +177,58 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     friend class NumberTheoreticTransformNat<NativeVectorT<NativeIntegerT<NativeInt>>>;
 
   public:
+    /// the underlying native word type
     using Integer = NativeInt;
 
-    // Width conversion between native integer widths. Explicit; the caller guarantees value fits target.
+    /**
+   * Width conversion between native integer widths. Explicit; the caller guarantees that the
+   * value fits the target width (no check is performed).
+   *
+   * @param val is the native integer of another width to convert.
+   */
     template <typename OtherInt, typename = std::enable_if_t<!std::is_same_v<OtherInt, NativeInt>>>
     explicit NativeIntegerT(const NativeIntegerT<OtherInt>& val) noexcept
         : m_value(static_cast<NativeInt>(val.template ConvertToInt<OtherInt>())) {}
+    /// signed integer of the same width as NativeInt
     using SignedNativeInt = typename DataTypes<NativeInt>::SignedType;
+    /// unsigned integer of twice the width of NativeInt (NativeInt itself when none exists)
     using DNativeInt = typename DataTypes<NativeInt>::DoubleType;
+    /// signed integer of twice the width of NativeInt (SignedNativeInt when none exists)
     using SDNativeInt = typename DataTypes<NativeInt>::SignedDoubleType;
 
-    // data structure to represent a double-word integer as two single-word integers
+    /**
+   * @brief Double-word integer represented as two single-word integers.
+   */
     struct typeD {
+        /// most significant word
         NativeInt hi{0};
+        /// least significant word
         NativeInt lo{0};
+
+        /**
+       * Formats both words in base 10 for debugging output.
+       *
+       * @return the string "hi [<hi>], lo [<lo>]".
+       */
         inline std::string ConvertToString() const {
             return std::string("hi [" + toString(hi) + "], lo [" + toString(lo) + "]");
         }
     };
 
+    /**
+   * Explicit conversion to the underlying native word.
+   *
+   * @return the stored value.
+   */
     explicit operator NativeInt() const {
         return m_value;
     }
+
+    /**
+   * Explicit conversion to bool.
+   *
+   * @return true if the value is nonzero.
+   */
     explicit operator bool() const {
         return m_value != 0;
     }
@@ -178,19 +237,43 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     constexpr NativeIntegerT(const NativeIntegerT& val) noexcept : m_value{val.m_value} {}
     constexpr NativeIntegerT(NativeIntegerT&& val) noexcept : m_value{std::move(val.m_value)} {}
 
+    /**
+   * Constructor from a decimal string; throws if the string contains a non-digit or the
+   * value does not fit in NativeInt.
+   *
+   * @param val is the decimal representation of the value.
+   */
     NativeIntegerT(const std::string& val) {
         this->NativeIntegerT::SetValue(val);
     }
 
+    /**
+   * Constructor from a decimal C string; throws if the string contains a non-digit or the
+   * value does not fit in NativeInt.
+   *
+   * @param strval is the decimal representation of the value.
+   */
     explicit NativeIntegerT(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
     }
 
+    /**
+   * Constructor from a built-in integer type (including the 128-bit types); the value is
+   * converted to NativeInt without a range check.
+   *
+   * @param val is the integer value.
+   */
     template <typename T,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
+    /**
+   * Constructor from a multiprecision integer of one of the big-integer backends; the caller
+   * guarantees that the value fits in NativeInt.
+   *
+   * @param val is the multiprecision integer.
+   */
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
                                                    std::is_same_v<T, M6Integer>,
                                            bool> = true>
@@ -209,16 +292,37 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return *this;
     }
 
+    /**
+   * Assignment from a decimal string; throws if the string contains a non-digit or the value
+   * does not fit in NativeInt.
+   *
+   * @param val is the decimal representation of the value.
+   * @return *this.
+   */
     NativeIntegerT& operator=(const std::string& val) {
         this->NativeIntegerT::SetValue(val);
         return *this;
     }
 
+    /**
+   * Assignment from a decimal C string; throws if the string contains a non-digit or the
+   * value does not fit in NativeInt.
+   *
+   * @param strval is the decimal representation of the value.
+   * @return *this.
+   */
     NativeIntegerT& operator=(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
         return *this;
     }
 
+    /**
+   * Assignment from a built-in integer type (including the 128-bit types); the value is
+   * converted to NativeInt without a range check.
+   *
+   * @param val is the integer value.
+   * @return *this.
+   */
     template <typename T,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
@@ -227,6 +331,13 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return *this;
     }
 
+    /**
+   * Assignment from a multiprecision integer of one of the big-integer backends; the caller
+   * guarantees that the value fits in NativeInt.
+   *
+   * @param val is the multiprecision integer.
+   * @return *this.
+   */
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
                                                    std::is_same_v<T, M6Integer>,
                                            bool> = true>
@@ -406,6 +517,12 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return *this = m_value - b.m_value;
     }
 
+    /**
+   * Unary minus: computes 0 - *this with the checking behavior of Sub (saturates to 0 when
+   * bounds checking is enabled, wraps modulo 2^MaxBits() otherwise).
+   *
+   * @return the negated value.
+   */
     NativeIntegerT operator-() const {
         return NativeIntegerT().Sub(*this);
     }
@@ -1393,6 +1510,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * A zero allocator that is called by the Matrix class.
    * It is used to initialize a Matrix of NativeIntegerT objects.
+   *
+   * @return a NativeIntegerT holding zero.
    */
     static constexpr NativeIntegerT Allocator() noexcept {
         return NativeIntegerT();
@@ -1410,6 +1529,11 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return toString(m_value);
     }
 
+    /**
+   * Name identifying this integer backend.
+   *
+   * @return the string "UBNATINT".
+   */
     static const std::string IntegerTypeName() {
         return "UBNATINT";
     }
@@ -1510,10 +1634,20 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return 1;
     }
 
+    /**
+   * Bit width of the native word.
+   *
+   * @return the number of bits in NativeInt.
+   */
     static constexpr uint32_t MaxBits() noexcept {
         return m_uintBitLength;
     }
 
+    /**
+   * Tells whether this integer type is a native (single-word) integer.
+   *
+   * @return always true for this class.
+   */
     static constexpr bool IsNativeInt() noexcept {
         return true;
     }
@@ -1697,7 +1831,14 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     }
 };
 
-// helper template to stream vector contents provided T has an stream operator<<
+/**
+ * Streams the contents of a std::vector as "[ v0 v1 ... ]", provided T has a stream
+ * operator<<.
+ *
+ * @param os is the output stream.
+ * @param v is the vector to print.
+ * @return the output stream.
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "[";
@@ -1706,7 +1847,13 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << " ]";
     return os;
 }
-// to stream internal representation
+/**
+ * Explicit instantiation used to stream the internal representation of a vector of words.
+ *
+ * @param os is the output stream.
+ * @param v is the vector to print.
+ * @return the output stream.
+ */
 template std::ostream& operator<< <uint64_t>(std::ostream& os, const std::vector<uint64_t>& v);
 
 }  // namespace intnat

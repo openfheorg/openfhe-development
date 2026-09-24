@@ -43,6 +43,14 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Interface (CRTP base) implemented by every big-integer backend; T is the derived
+ * integer type. Naming conventions: the plain method returns a new value, the "Eq" suffix
+ * performs the operation in place on *this and returns *this, and "Fast" variants skip the
+ * reduction of their inputs (the operands must already be < modulus). The "Barrett"
+ * overloads take mu, the value precomputed by ComputeMu() for the modulus.
+ * @tparam T the derived big-integer type
+ */
 template <typename T>
 class BigIntegerInterface {
   public:
@@ -71,12 +79,20 @@ class BigIntegerInterface {
    * @return result of the addition operation.
    */
     T Add(const T& b) const;
+
+    /**
+   * Addition operation. In-place variant.
+   *
+   * @param b is the value to add.
+   * @return result of the addition operation.
+   */
     T& AddEq(const T& b);
 
     /// inline operators for the addition operation.
     friend T operator+(const T& a, const T& b) {
         return a.Add(b);
     }
+    /// inline in-place operator for the addition operation.
     friend T& operator+=(T& a, const T& b) {
         return a.AddEq(b);
     }
@@ -88,12 +104,20 @@ class BigIntegerInterface {
    * @return is the result of the subtraction operation.
    */
     T Sub(const T& b) const;
+
+    /**
+   * Subtraction operation. In-place variant.
+   *
+   * @param b is the value to subtract.
+   * @return is the result of the subtraction operation.
+   */
     T& SubEq(const T& b);
 
     /// inline operators for the subtraction operation.
     friend T operator-(const T& a, const T& b) {
         return a.Sub(b);
     }
+    /// inline in-place operator for the subtraction operation.
     friend T& operator-=(T& a, const T& b) {
         return a.SubEq(b);
     }
@@ -118,6 +142,7 @@ class BigIntegerInterface {
     friend T operator*(const T& a, const T& b) {
         return a.Mul(b);
     }
+    /// inline in-place operator for the multiplication operation.
     friend T& operator*=(T& a, const T& b) {
         return a.MulEq(b);
     }
@@ -142,6 +167,7 @@ class BigIntegerInterface {
     friend T operator/(const T& a, const T& b) {
         return a.DividedBy(b);
     }
+    /// inline in-place operator for the division operation.
     friend T& operator/=(T& a, const T& b) {
         return a.DividedByEq(b);
     }
@@ -155,6 +181,15 @@ class BigIntegerInterface {
    * @return is the result of multiply and round operation.
    */
     T MultiplyAndRound(const T& p, const T& q) const;
+
+    /**
+   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+   * operation. In-place variant.
+   *
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
+   * @return is the result of multiply and round operation.
+   */
     T& MultiplyAndRoundEq(const T& p, const T& q);
 
     /**
@@ -165,6 +200,14 @@ class BigIntegerInterface {
    * @return is the result of divide and round operation.
    */
     T DivideAndRound(const T& q) const;
+
+    /**
+   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+   * operation. In-place variant.
+   *
+   * @param q is the denominator to be divided.
+   * @return is the result of divide and round operation.
+   */
     T& DivideAndRoundEq(const T& q);
 
     // MODULAR ARITHMETIC OPERATIONS
@@ -176,12 +219,20 @@ class BigIntegerInterface {
    * @return is the result of the modulus operation.
    */
     T Mod(const T& modulus) const;
+
+    /**
+   * Naive modulus operation. In-place variant.
+   *
+   * @param modulus is the modulus to perform.
+   * @return is the result of the modulus operation.
+   */
     T& ModEq(const T& modulus);
 
-    // inline operators for the modulus operation.
+    /// inline operators for the modulus operation.
     friend T operator%(const T& a, const T& b) {
         return a.Mod(b);
     }
+    /// inline in-place operator for the modulus operation.
     friend T& operator%=(T& a, const T& b) {
         return a.ModEq(b);
     }
@@ -203,6 +254,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus operation.
    */
     T Mod(const T& modulus, const T& mu) const;
+
+    /**
+   * Barrett modulus operation using the precomputed value mu. In-place variant.
+   *
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
+   * @return is the result of the modulus operation.
+   */
     T& ModEq(const T& modulus, const T& mu);
 
     /**
@@ -213,6 +272,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus addition operation.
    */
     T ModAdd(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus addition operation. In-place variant.
+   *
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus addition operation.
+   */
     T& ModAddEq(const T& b, const T& modulus);
 
     /**
@@ -223,6 +290,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus addition operation.
    */
     T ModAddFast(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus addition where operands are < modulus. In-place variant.
+   *
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus addition operation.
+   */
     T& ModAddFastEq(const T& b, const T& modulus);
 
     /**
@@ -234,6 +309,15 @@ class BigIntegerInterface {
    * @return is the result of the modulus addition operation.
    */
     T ModAdd(const T& b, const T& modulus, const T& mu) const;
+
+    /**
+   * Barrett modulus addition operation. In-place variant.
+   *
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
+   * @return is the result of the modulus addition operation.
+   */
     T& ModAddEq(const T& b, const T& modulus, const T& mu);
 
     /**
@@ -244,6 +328,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus subtraction operation.
    */
     T ModSub(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus subtraction operation. In-place variant.
+   *
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus subtraction operation.
+   */
     T& ModSubEq(const T& b, const T& modulus);
 
     /**
@@ -254,6 +346,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus subtraction operation.
    */
     T ModSubFast(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus subtraction where operands are < modulus. In-place variant.
+   *
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus subtraction operation.
+   */
     T& ModSubFastEq(const T& b, const T& modulus);
 
     /**
@@ -265,6 +365,15 @@ class BigIntegerInterface {
    * @return is the result of the modulus subtraction operation.
    */
     T ModSub(const T& b, const T& modulus, const T& mu) const;
+
+    /**
+   * Barrett modulus subtraction operation. In-place variant.
+   *
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
+   * @return is the result of the modulus subtraction operation.
+   */
     T& ModSubEq(const T& b, const T& modulus, const T& mu);
 
     /**
@@ -275,6 +384,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus multiplication operation.
    */
     T ModMul(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus multiplication operation. In-place variant.
+   *
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus multiplication operation.
+   */
     T& ModMulEq(const T& b, const T& modulus);
 
     /**
@@ -286,6 +403,15 @@ class BigIntegerInterface {
    * @return is the result of the modulus multiplication operation.
    */
     T ModMul(const T& b, const T& modulus, const T& mu) const;
+
+    /**
+   * Barrett modulus multiplication. In-place variant.
+   *
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
+   * @return is the result of the modulus multiplication operation.
+   */
     T& ModMulEq(const T& b, const T& modulus, const T& mu);
 
     /**
@@ -296,6 +422,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus multiplication operation.
    */
     T ModMulFast(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus multiplication that assumes the operands are < modulus. In-place variant.
+   *
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus multiplication operation.
+   */
     T& ModMulFastEq(const T& b, const T& modulus);
 
     /**
@@ -307,6 +441,15 @@ class BigIntegerInterface {
    * @return is the result of the modulus multiplication operation.
    */
     T ModMulFast(const T& b, const T& modulus, const T& mu) const;
+
+    /**
+   * Barrett modulus multiplication that assumes the operands are < modulus. In-place variant.
+   *
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
+   * @return is the result of the modulus multiplication operation.
+   */
     T& ModMulFastEq(const T& b, const T& modulus, const T& mu);
 
     /**
@@ -319,6 +462,16 @@ class BigIntegerInterface {
    * @return is the result of the modulus multiplication operation.
    */
     T ModMulFastConst(const T& b, const T& modulus, const T& bInv) const;
+
+    /**
+   * NTL-optimized modular multiplication using a precomputation for the
+   * multiplicand. Assumes operands are < modulus. In-place variant.
+   *
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param bInv NTL precomputation for b.
+   * @return is the result of the modulus multiplication operation.
+   */
     T& ModMulFastConstEq(const T& b, const T& modulus, const T& bInv);
 
     /**
@@ -329,6 +482,14 @@ class BigIntegerInterface {
    * @return is the result of the modulus exponentiation operation.
    */
     T ModExp(const T& b, const T& modulus) const;
+
+    /**
+   * Modulus exponentiation operation. In-place variant.
+   *
+   * @param b is the exponent.
+   * @param modulus is the modulus to perform operations with.
+   * @return is the result of the modulus exponentiation operation.
+   */
     T& ModExpEq(const T& b, const T& modulus);
 
     /**
@@ -338,6 +499,13 @@ class BigIntegerInterface {
    * @return is the result of the modulus inverse operation.
    */
     T ModInverse(const T& modulus) const;
+
+    /**
+   * Modulus inverse operation. In-place variant.
+   *
+   * @param modulus is the modulus to perform.
+   * @return is the result of the modulus inverse operation.
+   */
     T& ModInverseEq(const T& modulus);
 
     // SHIFT OPERATIONS
@@ -349,12 +517,20 @@ class BigIntegerInterface {
    * @return result of the shift operation.
    */
     T LShift(uint16_t shift) const;
+
+    /**
+   * Left shift operation. In-place variant.
+   *
+   * @param shift # of bits.
+   * @return result of the shift operation.
+   */
     T& LShiftEq(uint16_t shift);
 
     /// inline operators for the left shift operations.
     friend T operator<<(const T& a, uint16_t shift) {
         return a.LShift(shift);
     }
+    /// inline in-place operator for the left shift operation.
     friend T& operator<<=(T& a, uint16_t shift) {
         return a.LShiftEq(shift);
     }
@@ -366,12 +542,20 @@ class BigIntegerInterface {
    * @return result of the shift operation.
    */
     T RShift(uint16_t shift) const;
+
+    /**
+   * Right shift operation. In-place variant.
+   *
+   * @param shift # of bits.
+   * @return result of the shift operation.
+   */
     T& RShiftEq(uint16_t shift);
 
     /// inline operators for the right shift operations.
     friend T operator>>(const T& a, uint16_t shift) {
         return a.RShift(shift);
     }
+    /// inline in-place operator for the right shift operation.
     friend T& operator>>=(T& a, uint16_t shift) {
         return a.RShiftEq(shift);
     }
@@ -386,21 +570,27 @@ class BigIntegerInterface {
     int Compare(const T& a) const;
 
     //// relational operators, using Compare
+    /// equality, using Compare
     friend bool operator==(const T& a, const T& b) {
         return a.Compare(b) == 0;
     }
+    /// inequality, using Compare
     friend bool operator!=(const T& a, const T& b) {
         return a.Compare(b) != 0;
     }
+    /// strictly greater than, using Compare
     friend bool operator>(const T& a, const T& b) {
         return a.Compare(b) > 0;
     }
+    /// greater than or equal to, using Compare
     friend bool operator>=(const T& a, const T& b) {
         return a.Compare(b) >= 0;
     }
+    /// strictly less than, using Compare
     friend bool operator<(const T& a, const T& b) {
         return a.Compare(b) < 0;
     }
+    /// less than or equal to, using Compare
     friend bool operator<=(const T& a, const T& b) {
         return a.Compare(b) <= 0;
     }

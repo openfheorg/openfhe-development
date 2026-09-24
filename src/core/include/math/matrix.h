@@ -61,11 +61,22 @@ namespace lbcrypto {
 // Forward declaration
 class Field2n;
 
+/**
+ * @brief Dense row-major matrix of Element values. Elements are created through a
+ * caller-supplied zero allocator so that ring elements carrying parameters can be
+ * constructed; arithmetic is element-wise or the usual matrix product, and the class
+ * provides the gadget, rotation, stacking, and decomposition helpers of the lattice
+ * trapdoor code.
+ * @tparam Element the element type (integer, floating point, or ring element)
+ */
 template <class Element>
 class Matrix : public Serializable {
   public:
+    /// storage: a vector of rows
     typedef std::vector<std::vector<Element>> data_t;
+    /// one row of the matrix
     typedef std::vector<Element> data_row_t;
+    /// function returning a freshly allocated element (typically zero)
     typedef std::function<Element(void)> alloc_func;
 
     /**
@@ -246,6 +257,14 @@ class Matrix : public Serializable {
         return g;
     }
 
+    /**
+   * Gadget matrix for DCRTPoly elements: the digits of every CRT modulus are handled
+   * separately, so the first row holds, for each tower i, the powers of the base embedded
+   * in tower i only; the other rows are shifted copies of the first row.
+   *
+   * @param base is the base the digits of the matrix are represented in
+   * @return the resulting matrix
+   */
     template <typename T = Element,
               typename std::enable_if<std::is_same<T, M2DCRTPoly>::value || std::is_same<T, M4DCRTPoly>::value ||
                                               std::is_same<T, M6DCRTPoly>::value,
@@ -279,9 +298,10 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Computes the infinity norm
+   * Computes the infinity norm; not defined for scalar (double, int, int64_t) and Field2n
+   * element types, for which this overload always throws.
    *
-   * @return the norm in double format
+   * @return never returns; throws.
    */
     template <typename T = Element,
               typename std::enable_if<std::is_same<T, double>::value || std::is_same<T, int>::value ||
@@ -291,6 +311,11 @@ class Matrix : public Serializable {
         OPENFHE_THROW("Norm not defined for this type");
     }
 
+    /**
+   * Computes the infinity norm: the largest Norm() over all elements
+   *
+   * @return the norm in double format
+   */
     template <typename T = Element,
               typename std::enable_if<!std::is_same<T, double>::value && !std::is_same<T, int>::value &&
                                               !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
@@ -659,17 +684,22 @@ class Matrix : public Serializable {
         OPENFHE_THROW("Not a matrix of Elements"); \
     }
 
-    /*
+    /**
    * Multiply the matrix by a vector whose elements are all 1's.  This causes
    * the elements of each row of the matrix to be added and placed into the
    * corresponding position in the output vector.
+   *
+   * @return the rows x 1 matrix of row sums
    */
     Matrix<Element> MultByUnityVector() const;
 
-    /*
+    /**
    * Multiply the matrix by a vector of random 1's and 0's, which is the same as
    * adding select elements in each row together. Return a vector that is a rows
    * x 1 matrix.
+   *
+   * @param ranvec the 0/1 vector of length cols selecting the columns to add
+   * @return the rows x 1 matrix of selected row sums
    */
     Matrix<Element> MultByRandomVector(std::vector<int> ranvec) const;
 
@@ -769,6 +799,14 @@ std::ostream& operator<<(std::ostream& os, const Matrix<Element>& m);
  */
 Matrix<double> Cholesky(const Matrix<int32_t>& input);
 
+/**
+ * Gives the Cholesky decomposition of the input matrix, writing the lower-triangular factor
+ * into a caller-provided matrix of the same size (the upper triangle is zeroed). See the
+ * single-argument overload for the assumptions.
+ *
+ * @param input the square matrix for which the Cholesky decomposition is to be computed
+ * @param result the preallocated rows x rows matrix receiving the factor
+ */
 void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result);
 
 /**

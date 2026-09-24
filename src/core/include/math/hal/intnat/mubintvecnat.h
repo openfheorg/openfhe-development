@@ -60,8 +60,11 @@ namespace intnat {
 
 template <typename IntType>
 class NativeVectorT;
+/// vector of native integers of the default word width of the build
 using NativeVector = NativeVectorT<NativeInteger>;
+/// native integer with a 32-bit word
 using NativeInteger32 = NativeIntegerT<uint32_t>;
+/// vector of 32-bit native integers
 using NativeVector32 = NativeVectorT<NativeInteger32>;
 
 /**
@@ -79,10 +82,18 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
     }
 
   public:
+    /// the native word type underlying IntegerType
     using BasicInt = typename IntegerType::Integer;
 
     constexpr NativeVectorT() = default;
 
+    /**
+   * Creates a vector of length 1 holding val reduced modulo modulus.
+   *
+   * @param val is the single entry.
+   * @param modulus is the modulus of the vector.
+   * @return the one-entry vector.
+   */
     static constexpr NativeVectorT Single(const IntegerType& val, const IntegerType& modulus) noexcept {
         return NativeVectorT(1, modulus, val);
     }
@@ -105,6 +116,14 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
     constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept
         : m_modulus{modulus}, m_data(length) {}
 
+    /**
+   * Constructor for specifying the length, the modulus, and one value for every entry.
+   *
+   * @param length is the length of the native vector, in terms of the number of
+   * entries.
+   * @param modulus is the modulus of the ring.
+   * @param val is the value assigned to every entry, reduced modulo modulus.
+   */
     constexpr NativeVectorT(uint32_t length, const IntegerType& modulus, const IntegerType& val) noexcept
         : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {}
 
@@ -229,6 +248,11 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
         return m_data[i];
     }
 
+    /**
+   * operators to get a value at an index.
+   * @param i is the index to get a value at.
+   * @return is the value at the index; throws if i is out of range.
+   */
     const IntegerType& at(size_t i) const {
         if (!NativeVectorT::IndexCheck(i))
             OPENFHE_THROW("NativeVectorT index out of range");
@@ -244,6 +268,11 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
         return m_data[idx];
     }
 
+    /**
+   * operators to get a value at an index.
+   * @param idx is the index to get a value at.
+   * @return is the value at the index; no range check is performed.
+   */
     const IntegerType& operator[](size_t idx) const {
         return m_data[idx];
     }
@@ -266,6 +295,13 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
    * @param value is the modulus value to set.
    */
     void SwitchModulus(const IntegerType& value);
+
+    /**
+   * Sets the vector modulus and reduces every entry modulo the new modulus as a non-negative
+   * integer, without the centered (signed) adjustment performed by SwitchModulus.
+   *
+   * @param value is the modulus value to set.
+   */
     void LazySwitchModulus(const IntegerType& value);
 
     /**
@@ -357,6 +393,15 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
    * @return is the result of the modulus addition operation.
    */
     NativeVectorT& ModAddEq(const NativeVectorT& b);
+
+    /**
+   * vector modulus addition. In-place variant that skips the length and modulus
+   * compatibility check of ModAddEq; b must have the same length and modulus, and the
+   * entries of both vectors must be reduced (ModAddFast per entry).
+   *
+   * @param b is the vector to add at all locations.
+   * @return is the result of the modulus addition operation.
+   */
     NativeVectorT& ModAddNoCheckEq(const NativeVectorT& b) {
         size_t size{m_data.size()};
         auto mv{m_modulus};
@@ -432,6 +477,15 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
    * @return is the result of the modulus multiplication operation.
    */
     NativeVectorT& ModMulEq(const NativeVectorT& b);
+
+    /**
+   * Vector modulus multiplication. In-place variant that skips the length and modulus
+   * compatibility check of ModMulEq; b must have the same length and modulus, and the
+   * entries of both vectors must be reduced (Barrett kernel with hoisted constants).
+   *
+   * @param b is the vector to multiply.
+   * @return is the result of the modulus multiplication operation.
+   */
     NativeVectorT& ModMulNoCheckEq(const NativeVectorT& b);
 
     /**
@@ -444,6 +498,7 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
    *
    * @param V is the vector to multiply and accumulate.
    * @param I is the scalar multiplier.
+   * @return *this after the accumulation.
    */
     NativeVectorT& MultAccEqNoCheck(const NativeVectorT& V, const IntegerType& I);
 
@@ -455,6 +510,7 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
    *
    * @param a is the vector of first operands.
    * @param b is the vector of second operands.
+   * @return *this after the accumulation.
    */
     NativeVectorT& MultAccEqNoCheck(const NativeVectorT& a, const NativeVectorT& b);
 

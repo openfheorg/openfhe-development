@@ -44,9 +44,19 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Interface (CRTP base) implemented by every vector-of-integers backend: a vector of
+ * residues sharing one modulus. T is the derived vector type and I its integer type. Naming
+ * conventions: the plain method returns a new vector, the "Eq" suffix performs the
+ * operation in place on *this and returns *this, and "NoCheck" variants skip the length and
+ * modulus compatibility checks of the checked forms.
+ * @tparam T the derived vector type
+ * @tparam I the integer type of the entries
+ */
 template <typename T, typename I>
 class BigVectorInterface {
   public:
+    /// the integer type of the vector entries
     typedef I Integer;
 
     // CONSTRUCTORS
@@ -133,9 +143,37 @@ class BigVectorInterface {
     // ACCESSORS
 
     // The derived class must implement at and operator[]
+
+    /**
+   * Range-checked access to an entry.
+   *
+   * @param idx is the index of the entry.
+   * @return reference to the entry at the index; throws if idx is out of range.
+   */
     I& at(size_t idx);
+
+    /**
+   * Range-checked read access to an entry.
+   *
+   * @param idx is the index of the entry.
+   * @return const reference to the entry at the index; throws if idx is out of range.
+   */
     const I& at(size_t idx) const;
+
+    /**
+   * Unchecked access to an entry.
+   *
+   * @param idx is the index of the entry.
+   * @return reference to the entry at the index; no range check is performed.
+   */
     I& operator[](size_t idx);
+
+    /**
+   * Unchecked read access to an entry.
+   *
+   * @param idx is the index of the entry.
+   * @return const reference to the entry at the index; no range check is performed.
+   */
     const I& operator[](size_t idx) const;
 
     /**
@@ -151,8 +189,24 @@ class BigVectorInterface {
    * @param value is the modulus value to set.
    */
     void SwitchModulus(const I& value);
+
+    /**
+   * Sets the vector modulus and reduces every entry modulo the new modulus as a non-negative
+   * integer, without the centered (signed) adjustment performed by SwitchModulus.
+   *
+   * @param value is the modulus value to set.
+   */
     void LazySwitchModulus(const I& value);
 
+    /**
+   * Fused multiply-accumulate: *this += vec * value (mod the vector modulus), without length
+   * or modulus validation. The entries of *this must be reduced; the entries of vec need not
+   * be reduced, and value is reduced internally.
+   *
+   * @param vec is the vector to multiply and accumulate.
+   * @param value is the scalar multiplier.
+   * @return *this after the accumulation.
+   */
     T& MultAccEqNoCheck(const T& vec, const I& value);
 
     /**
@@ -191,6 +245,7 @@ class BigVectorInterface {
     friend T operator%(const T& a, const I& b) {
         return a.Mod(b);
     }
+    /// inline in-place operator for the modulus operation.
     friend T& operator%=(T& a, const I& b) {
         return a.ModEq(b);
     }
@@ -215,6 +270,7 @@ class BigVectorInterface {
     friend T operator+(const T& a, const I& b) {
         return a.ModAdd(b);
     }
+    /// inline in-place operator for the scalar-to-vector modulus addition.
     friend T& operator+=(T& a, const I& b) {
         return a.ModAddEq(b);
     }
@@ -252,6 +308,14 @@ class BigVectorInterface {
    * @return is the result of the component wise modulus addition operation.
    */
     T& ModAddEq(const T& b);
+
+    /**
+   * Vector component wise modulus addition. In-place variant that skips the length and
+   * modulus compatibility check of ModAddEq; b must have the same length and modulus.
+   *
+   * @param b is the vector to perform operation with.
+   * @return is the result of the component wise modulus addition operation.
+   */
     T& ModAddNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus addition
@@ -259,6 +323,7 @@ class BigVectorInterface {
     friend T operator+(const T& a, const T& b) {
         return a.ModAdd(b);
     }
+    /// inline in-place operator for the vector component wise modulus addition.
     friend T& operator+=(T& a, const T& b) {
         return a.ModAddEq(b);
     }
@@ -284,6 +349,7 @@ class BigVectorInterface {
     friend T operator-(const T& a, const I& b) {
         return a.ModSub(b);
     }
+    /// inline in-place operator for the scalar-from-vector modulus subtraction.
     friend T& operator-=(T& a, const I& b) {
         return a.ModSubEq(b);
     }
@@ -309,6 +375,7 @@ class BigVectorInterface {
     inline friend T operator-(const T& a, const T& b) {
         return a.ModSub(b);
     }
+    /// inline in-place operator for the vector component wise modulus subtraction.
     inline friend const T& operator-=(T& a, const T& b) {
         return a.ModSubEq(b);
     }
@@ -339,6 +406,7 @@ class BigVectorInterface {
     friend T operator*(const T& a, const I& b) {
         return a.ModMul(b);
     }
+    /// inline in-place operator for the scalar-to-vector modulus multiplication.
     friend T& operator*=(T& a, const I& b) {
         return a.ModMulEq(b);
     }
@@ -360,6 +428,14 @@ class BigVectorInterface {
    * operation.
    */
     T& ModMulEq(const T& b);
+
+    /**
+   * Vector component wise modulus multiplication. In-place variant that skips the length and
+   * modulus compatibility check of ModMulEq; b must have the same length and modulus.
+   *
+   * @param b is the vector to perform operation with.
+   * @return is the result of the component wise modulus multiplication operation.
+   */
     T& ModMulNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus multiplication
@@ -367,6 +443,7 @@ class BigVectorInterface {
     friend T operator*(const T& a, const T& b) {
         return a.ModMul(b);
     }
+    /// inline in-place operator for the vector component wise modulus multiplication.
     friend T& operator*=(T& a, const T& b) {
         return a.ModMulEq(b);
     }

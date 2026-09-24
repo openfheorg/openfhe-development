@@ -52,13 +52,33 @@ namespace lbcrypto {
 // outlive any subsequent OpenFHE diagnostic. Intended to be called once during
 // initialization; concurrent use with library diagnostics is the
 // caller's responsibility.
+/**
+ * @brief Redirects the diagnostic error channel (OPENFHE_DIAGNOSTIC_ERR, std::cerr by default) to another
+ * stream. The stream must outlive any later OpenFHE diagnostic; call once during initialization.
+ * @param os stream to install
+ * @return the stream that was previously installed, so the caller can restore it
+ */
 std::ostream& SetOpenFHEErrStream(std::ostream& os);
+/**
+ * @brief Redirects the diagnostic output channel (OPENFHE_DIAGNOSTIC_OUT, std::cout by default) to another
+ * stream. The stream must outlive any later OpenFHE diagnostic; call once during initialization.
+ * @param os stream to install
+ * @return the stream that was previously installed, so the caller can restore it
+ */
 std::ostream& SetOpenFHEOutStream(std::ostream& os);
 
 namespace internal_diagnostics {
 
 // Implementation hooks; use the logging macros to emit diagnostics.
+/**
+ * @brief Implementation hook behind OPENFHE_DIAGNOSTIC_ERR; use the macro rather than calling this directly.
+ * @return the currently installed diagnostic error stream
+ */
 std::ostream& OpenFHEErrStream();
+/**
+ * @brief Implementation hook behind OPENFHE_DIAGNOSTIC_OUT; use the macro rather than calling this directly.
+ * @return the currently installed diagnostic output stream
+ */
 std::ostream& OpenFHEOutStream();
 
 }  // namespace internal_diagnostics

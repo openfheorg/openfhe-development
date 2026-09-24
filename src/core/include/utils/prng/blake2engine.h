@@ -51,23 +51,32 @@ class Blake2Engine : public PRNG {
  public:
     // typed constants rather than an unscoped enum: these are compared against and used to
     // initialise size_t, so an int-typed enumerator needed a cast at every use
+    /** number of 32-bit words in the seed (a 512-bit seed) */
     static constexpr size_t MAX_SEED_GENS{16};
-    // number of PRNG::result_type samples held per blake2 invocation
+    /** number of PRNG::result_type samples produced per blake2xb invocation */
     static constexpr size_t PRNG_BUFFER_SIZE{1024};
 
+    /** seed array type: MAX_SEED_GENS 32-bit words */
     using blake2_seed_array_t = std::array<PRNG::result_type, MAX_SEED_GENS>;
+    /** output buffer type: PRNG_BUFFER_SIZE 32-bit samples */
     using blake2_buff_array_t = std::array<PRNG::result_type, PRNG_BUFFER_SIZE>;
 
     /**
      * @brief Main constructor taking an array of integers as a seed and a counter.
-     *        If there is no value for the counter, then pass zero as the counter value
+     *        If there is no value for the counter, then pass zero as the counter value.
+     *        Each block of PRNG_BUFFER_SIZE samples is blake2xb(key = seed, input = counter); the counter is
+     *        incremented after every block, so the same seed and counter reproduce the same sample stream.
+     * @param seed the 512-bit seed, used as the BLAKE2 key; wiped from the object by the destructor
+     * @param counter initial value of the block counter hashed as the input message
      */
     explicit Blake2Engine(const blake2_seed_array_t& seed, uint64_t counter) : m_seed{seed}, m_counter{counter} {}
 
     ~Blake2Engine();
 
     /**
-     * @brief main call to the PRNG
+     * @brief main call to the PRNG; returns the next sample from the buffer, refilling it from blake2xb
+     *        when all PRNG_BUFFER_SIZE samples have been consumed
+     * @return the next 32-bit pseudorandom sample
      */
     PRNG::result_type operator()() override {
         if (m_bufferIndex == PRNG_BUFFER_SIZE) {

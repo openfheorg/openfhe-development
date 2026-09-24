@@ -64,6 +64,8 @@ class PseudoRandomNumberGenerator {
 
     /**
      * @brief Returns a reference to the PRNG engine
+     *
+     * @return the PRNG engine used by the distribution generators (created on first use)
      */
     static PRNG& GetPRNG();
 

@@ -44,6 +44,12 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Moves the elements of src onto the end of dst, leaving src empty; when dst is empty the whole vector
+ * is moved instead of element by element.
+ * @param dst vector receiving the elements
+ * @param src vector whose elements are moved out; empty on return
+ */
 template <class X>
 void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
     if (dst.empty()) {
@@ -59,6 +65,9 @@ void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
  * @brief secure_memset() is a function with the same functionality provided by std::memset.
  *        Usually, the compiler optimizes a call to std::memset out if it is called for a memory which goes out of scope.
  *        This function is never optimized out and used to re-initialize a memory for security reasons.
+ * @param mem start of the memory block to overwrite
+ * @param c byte value written to every position
+ * @param len number of bytes to overwrite
  */
 void secure_memset(volatile void* mem, uint8_t c, size_t len);
 

@@ -49,12 +49,22 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Dense matrix of Element values whose product uses Strassen's recursive algorithm
+ * with padding to the block size; otherwise mirrors the interface of Matrix (zero-allocator
+ * construction, element-wise arithmetic, gadget and stacking helpers).
+ * @tparam Element the element type
+ */
 template <class Element>
 class MatrixStrassen {  // TODO : public Serializable {
   public:
+    /// storage: a vector of rows
     typedef std::vector<std::vector<Element>> data_t;
+    /// a matrix stored as one contiguous row-major vector
     typedef std::vector<Element> lineardata_t;
+    /// iterator into a lineardata_t
     typedef typename std::vector<Element>::iterator it_lineardata_t;
+    /// function returning a freshly allocated element (typically zero)
     typedef std::function<Element(void)> alloc_func;
 
     /**
@@ -96,6 +106,13 @@ class MatrixStrassen {  // TODO : public Serializable {
    */
     explicit MatrixStrassen(alloc_func allocZero) : data(), rows(0), cols(0), allocZero(allocZero) {}
 
+    /**
+   * Set the size of an empty matrix and fill it with zero elements; throws if the matrix is
+   * not empty.
+   *
+   * @param rows number of rows
+   * @param cols number of columns
+   */
     void SetSize(size_t rows, size_t cols) {
         if (this->rows != 0 || this->cols != 0) {
             OPENFHE_THROW("You cannot SetSize on a non-empty matrix");
@@ -465,17 +482,22 @@ class MatrixStrassen {  // TODO : public Serializable {
    */
     MatrixStrassen<Element> Mult(const MatrixStrassen<Element>& other, int nrec = 0, int pad = -1) const;
 
-    /*
+    /**
    * Multiply the matrix by a vector whose elements are all 1's.  This causes
    * the elements of each row of the matrix to be added and placed into the
    * corresponding position in the output vector.
+   *
+   * @return the rows x 1 matrix of row sums
    */
     MatrixStrassen<Element> MultByUnityVector() const;
 
-    /*
+    /**
    * Multiply the matrix by a vector of random 1's and 0's, which is the same as
    * adding select elements in each row together. Return a vector that is a rows
    * x 1 matrix.
+   *
+   * @param ranvec the 0/1 vector of length cols selecting the columns to add
+   * @return the rows x 1 matrix of selected row sums
    */
     MatrixStrassen<Element> MultByRandomVector(std::vector<int> ranvec) const;
 

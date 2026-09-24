@@ -55,6 +55,14 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Constructs an element whose coefficients are sampled from a discrete Gaussian distribution and converted
+ * to the requested format.
+ *
+ * @param dgg the discrete Gaussian generator.
+ * @param params the element parameters.
+ * @param format the format of the resulting element.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const DggType& dgg, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{Format::COEFFICIENT},
@@ -63,12 +71,28 @@ PolyImpl<VecType>::PolyImpl(const DggType& dgg, const std::shared_ptr<PolyImpl::
     PolyImpl<VecType>::SetFormat(format);
 }
 
+/**
+ * @brief Constructs an element with values sampled uniformly modulo the modulus, recorded as already being in the
+ * requested format (no transform is applied).
+ *
+ * @param dug the discrete uniform generator.
+ * @param params the element parameters.
+ * @param format the format recorded for the resulting element.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(DugType& dug, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{format},
       m_params{params},
       m_values{std::make_unique<VecType>(dug.GenerateVector(params->GetRingDimension(), params->GetModulus()))} {}
 
+/**
+ * @brief Constructs an element whose coefficients are sampled from the binary uniform distribution and converted
+ * to the requested format.
+ *
+ * @param bug the binary uniform generator.
+ * @param params the element parameters.
+ * @param format the format of the resulting element.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{Format::COEFFICIENT},
@@ -77,6 +101,16 @@ PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::
     PolyImpl<VecType>::SetFormat(format);
 }
 
+/**
+ * @brief Constructs an element whose coefficients are sampled from the ternary uniform distribution and converted
+ * to the requested format.
+ *
+ * @param tug the ternary uniform generator.
+ * @param params the element parameters.
+ * @param format the format of the resulting element.
+ * @param h the Hamming weight (number of nonzero coefficients) for the sparse distribution; 0 samples every
+ * coefficient uniformly.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format,
                             uint32_t h)
@@ -458,6 +492,13 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
     }
 }
 
+/**
+ * @brief Writes the values and modulus of a polynomial, followed by its root of unity, to an output stream.
+ *
+ * @param os the output stream.
+ * @param p the polynomial to print.
+ * @return the output stream.
+ */
 template <typename VecType>
 std::ostream& operator<<(std::ostream& os, const PolyImpl<VecType>& p) {
     if (p.m_values != nullptr) {

@@ -45,8 +45,11 @@
 
 namespace lbcrypto {
 
+/// smallest value of one 32-bit chunk drawn from the PRNG
 constexpr uint32_t DUG_CHUNK_MIN{0};
+/// width in bits of one chunk drawn from the PRNG
 constexpr uint32_t DUG_CHUNK_WIDTH{std::numeric_limits<uint32_t>::digits};
+/// largest value of one 32-bit chunk drawn from the PRNG
 constexpr uint32_t DUG_CHUNK_MAX{std::numeric_limits<uint32_t>::max()};
 
 /**
@@ -57,6 +60,11 @@ class DiscreteUniformGeneratorImpl {
   public:
     DiscreteUniformGeneratorImpl() = default;
     ~DiscreteUniformGeneratorImpl() = default;
+
+    /**
+   * @brief         Constructor that sets the modulus (see SetModulus).
+   * @param modulus The modulus of the distribution.
+   */
     explicit DiscreteUniformGeneratorImpl(const typename VecType::Integer& modulus);
 
     /**
@@ -78,6 +86,14 @@ class DiscreteUniformGeneratorImpl {
    * @return A vector of random integers uniformly distributed in [0, modulus).
    */
     VecType GenerateVector(const uint32_t size) const;
+
+    /**
+   * @brief Sets the modulus of the generator and then generates a vector of random integers
+   * using GenerateInteger()
+   * @param size The number of values to generate.
+   * @param modulus The new modulus, kept by the generator for subsequent calls.
+   * @return A vector of random integers uniformly distributed in [0, modulus).
+   */
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus);
 
   private:

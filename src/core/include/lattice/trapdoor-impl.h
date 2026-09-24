@@ -114,6 +114,19 @@ std::shared_ptr<Matrix<Element>> RLWETrapdoorUtility<Element>::GaussSampOffline(
     return result;
 }
 
+/**
+ * @brief Perturbation generation (Algorithm 4 of https://eprint.iacr.org/2017/844.pdf) specialized for DCRTPoly:
+ * the covariance polynomials and the trapdoor products are computed on the first CRT tower as NativePoly, and the
+ * sampled integer vectors are split back into DCRTPoly elements.
+ * @param n ring dimension
+ * @param s spectral bound (Gaussian parameter of the preimage)
+ * @param sigma standard deviation of the trapdoor noise, (base + 1) * SIGMA
+ * @param Tprime trapdoor pair (r, e)
+ * @param dgg discrete Gaussian generator for the 2x2 sampling and for Karney sampling above KARNEY_THRESHOLD
+ * @param dggLargeSigma discrete Gaussian generator with parameter sqrt(s^2 - sigma^2), used for the k lower
+ * entries when that parameter is at most KARNEY_THRESHOLD
+ * @param perturbationVector output: (k + 2) x 1 perturbation vector in evaluation representation
+ */
 template <>
 inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, double sigma,
                                                          const RLWETrapdoorPair<DCRTPoly>& Tprime,

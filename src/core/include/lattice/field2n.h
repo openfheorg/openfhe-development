@@ -64,6 +64,10 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
    */
     Field2n() noexcept = default;
 
+    /**
+   * @brief Constructor for an empty field element (no values) in the given format.
+   * @param f format/representation of the element.
+   */
     explicit Field2n(Format f) : format(f) {}
 
     /**

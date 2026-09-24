@@ -58,15 +58,20 @@ namespace lbcrypto {
 template <class Element>
 class RLWETrapdoorPair {
   public:
-    // matrix of noise polynomials
+    /** 1 x k row of discrete Gaussian polynomials r; the public key columns are g_i - (a * r_i + e_i) */
     Matrix<Element> m_r;
-    // matrix
+    /** 1 x k row of discrete Gaussian polynomials e; the public key columns are g_i - (a * r_i + e_i) */
     Matrix<Element> m_e;
     // CTOR with empty trapdoor pair for deserialization
     RLWETrapdoorPair()
         : m_r(Matrix<Element>([]() { return Element(); }, 0, 0)),
           m_e(Matrix<Element>([]() { return Element(); }, 0, 0)) {}
 
+    /**
+   * @brief Constructs the trapdoor pair from the two rows sampled by TrapdoorGen.
+   * @param r row of noise polynomials r
+   * @param e row of noise polynomials e
+   */
     RLWETrapdoorPair(const Matrix<Element>& r, const Matrix<Element>& e) : m_r(r), m_e(e) {}
 
     template <class Archive>

@@ -151,6 +151,7 @@ class LatticeGaussSampUtility {
    * @param c field element in Coefficient format
    * @param dgg discrete Gaussian generator
    * @param n ring dimension used for rejection sampling
+   * @return the sampled integer vector as a column matrix
    */
     static std::shared_ptr<Matrix<int64_t>> ZSampleF(const Field2n& f, const Field2n& c,
                                                      const typename Element::DggType& dgg, size_t n);

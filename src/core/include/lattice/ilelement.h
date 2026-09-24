@@ -97,16 +97,19 @@ class ILElement : public Serializable {
     /**
    * @brief Assignment operator that copies elements.
    * @param rhs the element to copy
+   * @return the resulting element.
    */
     virtual const Element& operator=(const Element& rhs) = 0;
     /**
    * @brief Move assignment operator.
    * @param rhs the element to move from
+   * @return the resulting element.
    */
     virtual const Element& operator=(Element&& rhs) = 0;
     /**
    * @brief Assignment operator from an initializer list of values.
    * @param rhs the list of values to assign
+   * @return the resulting element.
    */
     virtual const Element& operator=(std::initializer_list<uint64_t> rhs) = 0;
 
@@ -157,12 +160,30 @@ class ILElement : public Serializable {
     virtual IntType& at(uint32_t i) {
         OPENFHE_THROW("at() not implemented");
     }
+    /**
+   * @brief Const version of at(); the default implementation throws an exception.
+   *
+   * @param i is the index.
+   * @return will throw an error.
+   */
     virtual const IntType& at(uint32_t i) const {
         OPENFHE_THROW("const at() not implemented");
     }
+    /**
+   * @brief Unchecked access to the value at index i; the default implementation throws an exception.
+   *
+   * @param i is the index.
+   * @return will throw an error.
+   */
     virtual IntType& operator[](uint32_t i) {
         OPENFHE_THROW("[] not implemented");
     }
+    /**
+   * @brief Const version of operator[](); the default implementation throws an exception.
+   *
+   * @param i is the index.
+   * @return will throw an error.
+   */
     virtual const IntType& operator[](uint32_t i) const {
         OPENFHE_THROW("const [] not implemented");
     }
@@ -286,12 +307,14 @@ class ILElement : public Serializable {
     /**
    * @brief Equality operator.  Compares values of element to be compared to.
    * @param element the element to compare to.
+   * @return true if the elements are equal, false otherwise.
    */
     virtual bool operator==(const Element& element) const = 0;
 
     /**
    * @brief Inequality operator.  Compares values of element to be compared to.
    * @param element the element to compare to.
+   * @return true if the elements differ, false otherwise.
    */
     inline bool operator!=(const Element& element) const {
         return !(*this == element);
