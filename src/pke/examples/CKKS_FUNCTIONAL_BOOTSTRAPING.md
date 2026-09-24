@@ -135,6 +135,14 @@ multiplicative depth of functional bootstrapping by 5 levels. In addition, since
 before the homomorphic encoding, larger scaling factors (roughly 5-9 more bits, depending on the parameters) are needed to
 achieve the same output noise as for the sparse distributions.
 
+**Scaling techniques**
+All scaling techniques (FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and
+COMPOSITESCALINGMANUAL) are supported. The FLEXIBLEAUTO, FLEXIBLEAUTOEXT, and COMPOSITESCALING* modes track the exact
+level-specific scaling factors, which removes the scaling-factor drift of the FIXED* modes; hence they achieve smaller noise
+for the same parameters (equivalently, correctness can be achieved with a smaller CKKS scaling factor). The noise of the
+COMPOSITESCALING* modes is roughly the same as that of FLEXIBLEAUTO for the same parameters, and all secret key
+distributions are supported in these modes.
+
 **Current limitations**
 - There is no automated selection of parameters and approximation orders. The user needs to choose appropriate RLWE and CKKS
 cryptoparameters, trigonometric Hermite interpolation order and the scaling for the Hermite coefficients. These parameters
@@ -146,19 +154,9 @@ security.
 factors (e.g., 90 bits) are supported with the COMPOSITESCALING* modes, which represent the scaling factor as a product
 of several smaller primes.
 - The current multiprecision sign evaluation implementation requires that the digit bit size divides the input bit size.
-- The supported secret key distributions are SPARSE_ENCAPSULATED (recommended; probability of failure below 2^-128),
-UNIFORM_TERNARY (probability of failure below 2^-73 for N = 2^16 and 2^-30 for N = 2^17, at the cost of a larger
-multiplicative depth and larger scaling factors), and SPARSE_TERNARY (discouraged; larger probability of failure).
-- The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL
-modes for rescaling are supported (for the 64-bit build).
-The FLEXIBLEAUTO, FLEXIBLEAUTOEXT, and COMPOSITESCALING* modes track the exact level-specific scaling factors, which
-removes the scaling-factor drift of the FIXED* modes; hence they achieve smaller noise for the same parameters
-(equivalently, correctness can be achieved with a smaller CKKS scaling factor). The noise of the COMPOSITESCALING*
-modes is roughly the same as that of FLEXIBLEAUTO for the same parameters, and all secret key distributions are supported.
-Note that the parameter generation for
-composite scaling requires the first modulus to be larger than the scaling factor (whose bit length matches the RLWE
-ciphertext modulus), so in these modes the first modulus has to be at least one bit larger.
-- The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFBTSetup` rejects it.
+- In the COMPOSITESCALING* modes, the first modulus has to be at least one bit larger than the scaling factor (whose bit
+length matches the RLWE ciphertext modulus), as required by the parameter generation for composite scaling.
+- The 128-bit build (`NATIVE_SIZE == 128`) is not supported; `EvalFBTSetup` rejects it.
 - MULTIPARTY is not supported.
 
 Fourier-Extension Functional Bootstrapping
@@ -192,9 +190,9 @@ series (the conjugate terms are added internally). The output is always real-val
 parts of the input slots are discarded, so CKKSDataType REAL should be used unless complex values are needed elsewhere in the
 computation.
 
-The coefficients are computed offline, for example by a least-squares fit of g over [-1/2, 1/2) in the basis
-$\{e^{\pi i j m}\}_{j=0}^{d}$. OpenFHE does not include a generator for them; the example contains the coefficient vectors for
-its three functions.
+The coefficients are computed offline with the Python scripts in [fefbt-python](https://github.com/openfheorg/fefbt-python),
+which take the target function f, the interval [-B, B] and the degree d, and print the coefficient vector as a C++
+declaration together with the precision it achieves. The example contains the coefficient vectors for its three functions.
 
 **OpenFHE functions**
 The features that need to be enabled are PKE, KEYSWITCH, LEVELEDSHE, ADVANCEDSHE and FHE. Then:
@@ -231,16 +229,18 @@ ternary secrets are required for compliance with the homomorphic encryption secu
 multiplicative depth (9 double-angle iterations instead of 3-4).
 - SPARSE_TERNARY (discouraged): K = 28, probability of failure about 2^-23 for N = 2^16.
 
+**Scaling techniques and packing**
+All scaling techniques (FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and
+COMPOSITESCALINGMANUAL) are supported, for both full and sparse packing.
+
 **Current limitations**
 - The first modulus has to be exactly one bit larger than the scaling factor (`FirstModSize = ScalingModSize + 1`), since the
 message is embedded into half of the period of the series; `EvalFEFuncBootstrap` and `EvalFEFuncBootstrapPrecompute`
 throw otherwise.
 - Only HYBRID key switching is supported.
-- The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL modes for
-rescaling are supported. Both full and sparse packing are supported.
 - There is no correction factor and no iterative (Meta-BTS) mode, and there is no automated selection of the number of
 Fourier coefficients: the user needs to choose it (and the domain [-B, B]) so that the approximation error of the series is
-below the desired precision.
+below the desired precision, for example using the precision reported by the coefficient generator.
 - If the output is decrypted under CKKS, noise flooding should be applied in order to achieve $\textsf{IND}-\textsf{CPA}^{D}$
 security.
-- The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFEFuncBootstrapSetup` rejects it.
+- The 128-bit build (`NATIVE_SIZE == 128`) is not supported; `EvalFEFuncBootstrapSetup` rejects it.
