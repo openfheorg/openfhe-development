@@ -53,9 +53,9 @@ namespace lbcrypto {
 class ParallelControls {
   public:
     /**
-   * @brief Constructor; latches the number of machine threads the system reports (can be overridden by the
-   * OpenMP environment variables) and allows all of them by default.
-   */
+     * @brief Constructor; latches the number of machine threads the system reports (can be overridden by the
+     * OpenMP environment variables) and allows all of them by default.
+     */
     ParallelControls() {
 #ifdef PARALLEL
         machineThreads = omp_get_max_threads();
@@ -64,31 +64,31 @@ class ParallelControls {
     }
 
     /**
-   * @brief Enables parallel operation by setting the thread limit to the number of machine threads.
-   */
+     * @brief Enables parallel operation by setting the thread limit to the number of machine threads.
+     */
     void Enable() {
         SetNumThreads(machineThreads);
     }
 
     /**
-   * @brief Disables parallel operation by setting the thread limit to 1.
-   */
+     * @brief Disables parallel operation by setting the thread limit to 1.
+     */
     void Disable() {
         SetNumThreads(1);
     }
 
     /**
-   * @brief Returns the number of machine threads latched at construction.
-   * @return number of machine threads (1 without PARALLEL)
-   */
+     * @brief Returns the number of machine threads latched at construction.
+     * @return number of machine threads (1 without PARALLEL)
+     */
     int GetMachineThreads() const {
         return machineThreads;
     }
 
     /**
-   * @brief Returns the number of processors available to the process, as reported by OpenMP.
-   * @return number of processors (1 without PARALLEL)
-   */
+     * @brief Returns the number of processors available to the process, as reported by OpenMP.
+     * @return number of processors (1 without PARALLEL)
+     */
     static int GetNumProcs() {
 #ifdef PARALLEL
         return omp_get_num_procs();
@@ -98,9 +98,9 @@ class ParallelControls {
     }
 
     /**
-   * @brief Returns the current thread limit.
-   * @return number of threads the library may currently use (1 without PARALLEL)
-   */
+     * @brief Returns the current thread limit.
+     * @return number of threads the library may currently use (1 without PARALLEL)
+     */
     int GetNumThreads() const {
 #ifdef PARALLEL
         return threadLimit.load(std::memory_order_relaxed);
@@ -110,10 +110,10 @@ class ParallelControls {
     }
 
     /**
-   * @brief Reports whether the caller is inside an active OpenMP parallel region, where a nested region would
-   * get one thread.
-   * @return true inside an active parallel region; false otherwise and without PARALLEL
-   */
+     * @brief Reports whether the caller is inside an active OpenMP parallel region, where a nested region would
+     * get one thread.
+     * @return true inside an active parallel region; false otherwise and without PARALLEL
+     */
     static bool InParallelRegion() {
 #ifdef PARALLEL
         return omp_in_parallel() != 0;
@@ -123,11 +123,11 @@ class ParallelControls {
     }
 
     /**
-   * @brief Clamps a requested thread count to [1, current thread limit]; used as the num_threads value of the
-   * library's parallel regions.
-   * @param n requested number of threads (typically the amount of independent work available)
-   * @return n clamped to [1, current thread limit] (1 without PARALLEL)
-   */
+     * @brief Clamps a requested thread count to [1, current thread limit]; used as the num_threads value of the
+     * library's parallel regions.
+     * @param n requested number of threads (typically the amount of independent work available)
+     * @return n clamped to [1, current thread limit] (1 without PARALLEL)
+     */
     int GetThreadLimit(int n) const {
 #ifdef PARALLEL
         int lim = threadLimit.load(std::memory_order_relaxed);
@@ -138,9 +138,9 @@ class ParallelControls {
     }
 
     /**
-   * @brief Sets the thread limit, clamped to [1, machine threads], and passes it to omp_set_num_threads().
-   * @param nthreads requested number of threads
-   */
+     * @brief Sets the thread limit, clamped to [1, machine threads], and passes it to omp_set_num_threads().
+     * @param nthreads requested number of threads
+     */
     void SetNumThreads(int nthreads) {
 #ifdef PARALLEL
         if (nthreads < 1)
@@ -153,9 +153,9 @@ class ParallelControls {
     }
 
     /**
-   * @brief Saves the current thread limit and caps it at half the processors for the duration of unit tests;
-   * the saved value is restored by UnitTestStop().
-   */
+     * @brief Saves the current thread limit and caps it at half the processors for the duration of unit tests;
+     * the saved value is restored by UnitTestStop().
+     */
     void UnitTestStart() {
 #ifdef PARALLEL
         savedLimit = threadLimit.load(std::memory_order_relaxed);
@@ -164,8 +164,8 @@ class ParallelControls {
     }
 
     /**
-   * @brief Restores the thread limit saved by UnitTestStart().
-   */
+     * @brief Restores the thread limit saved by UnitTestStart().
+     */
     void UnitTestStop() {
 #ifdef PARALLEL
         SetNumThreads(savedLimit);

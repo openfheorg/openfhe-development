@@ -53,22 +53,22 @@ class ParameterGenerationBFVRNS : public ParameterGenerationRNS {
     virtual ~ParameterGenerationBFVRNS() {}
 
     /**
-   * Generates the BFV element parameters (ring dimension and CRT moduli) for the requested computation. The
-   * ciphertext modulus is sized from the BFV noise bounds for the given numbers of additions, multiplications
-   * and key switches, the ring dimension is chosen to satisfy the security level (unless a custom one is
-   * given), the encoding batch size is set to n when not specified, and the CRT tables are precomputed.
-   *
-   * @param cryptoParams the crypto parameters object to be populated with parameters.
-   * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch operations are performed.
-   * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and KeySwitch operations are performed.
-   * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd and EvalMult operations are
-   * performed.
-   * @param dcrBits number of bits in each CRT modulus.
-   * @param n ring dimension in case the user wants to use a custom ring dimension (0 to derive it from the
-   * security level).
-   * @param numPartQ number of partitions (digits) of Q for HYBRID key switching.
-   * @return true on success (an exception is thrown otherwise).
-   */
+     * Generates the BFV element parameters (ring dimension and CRT moduli) for the requested computation. The
+     * ciphertext modulus is sized from the BFV noise bounds for the given numbers of additions, multiplications
+     * and key switches, the ring dimension is chosen to satisfy the security level (unless a custom one is
+     * given), the encoding batch size is set to n when not specified, and the CRT tables are precomputed.
+     *
+     * @param cryptoParams the crypto parameters object to be populated with parameters.
+     * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch operations are performed.
+     * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and KeySwitch operations are performed.
+     * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd and EvalMult operations are
+     * performed.
+     * @param dcrBits number of bits in each CRT modulus.
+     * @param n ring dimension in case the user wants to use a custom ring dimension (0 to derive it from the
+     * security level).
+     * @param numPartQ number of partitions (digits) of Q for HYBRID key switching.
+     * @return true on success (an exception is thrown otherwise).
+     */
     bool ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrBits, uint32_t n,
                                  uint32_t numPartQ) const override;

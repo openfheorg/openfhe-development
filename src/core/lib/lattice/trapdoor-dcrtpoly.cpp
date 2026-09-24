@@ -64,8 +64,8 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
     size_t k = params->GetParams().size() * digitCount;
 
     if (bal == true) {
-        k++;    // for a balanced digit representation, there is an extra digit
-                // required
+        k++;  // for a balanced digit representation, there is an extra digit
+              // required
     }
 
     auto a = uniform_alloc();
@@ -104,8 +104,8 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
     size_t k = params->GetParams().size() * digitCount;
 
     if (bal == true) {
-        k++;    // for a balanced digit representation, there is an extra digit
-                // required
+        k++;  // for a balanced digit representation, there is an extra digit
+              // required
     }
 
     Matrix<DCRTPoly> R(zero_alloc, d, d * k, gaussian_alloc);

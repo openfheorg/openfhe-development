@@ -619,19 +619,19 @@ MatrixStrassen<Element> MatrixStrassen<Element>::Mult(MatrixStrassen<Element> co
         // int allcols = cols;
 
         /*
-     * Calculate the optimal number of padding rows and padding columns.  (Note
-     * that these do not need to be the same, allowing rectangular matrices to
-     * be handled.)
-     *
-     * The amount of padding in a dimension needs to support the number of
-     * levels of recursion that are passed to this routine.  For instance, if
-     * the original number of columns is 93, and nrec = 1. then only 1 column of
-     * padding must be added.  (93 + 1)/2 is an integer. However, (93 + 1)/2/2
-     * is not an integer, so a single column of padding will not support 2
-     * levels of recursion.  The algorithm given here will determine that a
-     * 93x93 matrix needs to be padded to 96x96 to support 2 levels of
-     * recursion, as 96/(2^2) is an integer.
-     */
+         * Calculate the optimal number of padding rows and padding columns.  (Note
+         * that these do not need to be the same, allowing rectangular matrices to
+         * be handled.)
+         *
+         * The amount of padding in a dimension needs to support the number of
+         * levels of recursion that are passed to this routine.  For instance, if
+         * the original number of columns is 93, and nrec = 1. then only 1 column of
+         * padding must be added.  (93 + 1)/2 is an integer. However, (93 + 1)/2/2
+         * is not an integer, so a single column of padding will not support 2
+         * levels of recursion.  The algorithm given here will determine that a
+         * 93x93 matrix needs to be padded to 96x96 to support 2 levels of
+         * recursion, as 96/(2^2) is an integer.
+         */
         double powtemp = std::pow(2, nrec);
         rowpad = std::ceil(rows / powtemp) * static_cast<int>(powtemp) - rows;
         colpad = std::ceil(cols / powtemp) * static_cast<int>(powtemp) - cols;
@@ -639,14 +639,14 @@ MatrixStrassen<Element> MatrixStrassen<Element>::Mult(MatrixStrassen<Element> co
         // allcols = cols + colpad;
     } else {
         /* Apply the indicated padding rows and columns.  (For now they are equal,
-     * assuming square matrices.  Note that the dimension of the matrix after
-     * padding must support the number of levels of recursion.  For instance, if
-     * a 93x93 matrix is padded out to 94x94, this supports only 1 level of
-     * recursion, since 94/2 is integral, while 47/2 is not.  The assertions
-     * catch this problem.  Note that the user should not need to provide a
-     * padding value, as setting the padding value to -1 will cause this code to
-     * caluclate the optimal padding for the number of levels of recursion.
-     */
+         * assuming square matrices.  Note that the dimension of the matrix after
+         * padding must support the number of levels of recursion.  For instance, if
+         * a 93x93 matrix is padded out to 94x94, this supports only 1 level of
+         * recursion, since 94/2 is integral, while 47/2 is not.  The assertions
+         * catch this problem.  Note that the user should not need to provide a
+         * padding value, as setting the padding value to -1 will cause this code to
+         * caluclate the optimal padding for the number of levels of recursion.
+         */
 
         rowpad = pad;
         colpad = pad;

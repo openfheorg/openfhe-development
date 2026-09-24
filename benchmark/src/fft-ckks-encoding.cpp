@@ -44,7 +44,7 @@ using namespace lbcrypto;
  * GenerateRandNumberVector generates a vector of real values in the range (-1,1)
  * @param vecSize is number of elements in the returned vector
  * @return generated vector
-*/
+ */
 std::vector<std::complex<double>> GenerateRandNumberVector(size_t vecSize) {
     std::vector<std::complex<double>> result(vecSize);
 

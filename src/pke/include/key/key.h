@@ -56,19 +56,19 @@ class Key : public CryptoObject<Element>, public Serializable {
     Key() = default;
 
     /**
-   * Constructs a key that belongs to a crypto context.
-   *
-   * @param cc the crypto context the key belongs to
-   * @param id the key tag identifying the key (empty by default)
-   */
+     * Constructs a key that belongs to a crypto context.
+     *
+     * @param cc the crypto context the key belongs to
+     * @param id the key tag identifying the key (empty by default)
+     */
     explicit Key(const CryptoContext<Element>& cc, const std::string& id = "") : CryptoObject<Element>(cc, id) {}
 
     /**
-   * Constructs a key from another crypto object and a key tag.
-   *
-   * @param co the crypto object whose context is used to initialize the key
-   * @param id the key tag identifying the key (empty by default)
-   */
+     * Constructs a key from another crypto object and a key tag.
+     *
+     * @param co the crypto object whose context is used to initialize the key
+     * @param id the key tag identifying the key (empty by default)
+     */
     explicit Key(const std::shared_ptr<CryptoObject<Element>>& co, const std::string& id = "")
         : CryptoObject<Element>(co, id) {}
 

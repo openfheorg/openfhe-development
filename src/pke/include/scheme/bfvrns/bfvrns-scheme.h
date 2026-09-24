@@ -65,21 +65,21 @@ class SchemeBFVRNS : public SchemeRNS {
     virtual ~SchemeBFVRNS() {}
 
     /**
-   * Compares two schemes by type.
-   *
-   * @param sch the scheme to compare to.
-   * @return true if sch is also a SchemeBFVRNS.
-   */
+     * Compares two schemes by type.
+     *
+     * @param sch the scheme to compare to.
+     * @return true if sch is also a SchemeBFVRNS.
+     */
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
         return (typeid(sch) == typeid(SchemeBFVRNS));
     }
 
     /**
-   * Instantiates the BFV implementation of the given feature (PKE, PRE, LEVELEDSHE, MULTIPARTY, ADVANCEDSHE
-   * or FHE) if it has not been instantiated yet. KEYSWITCH is set up separately by SetKeySwitchingTechnique().
-   *
-   * @param feature the feature to enable; unsupported features throw.
-   */
+     * Instantiates the BFV implementation of the given feature (PKE, PRE, LEVELEDSHE, MULTIPARTY, ADVANCEDSHE
+     * or FHE) if it has not been instantiated yet. KEYSWITCH is set up separately by SetKeySwitchingTechnique().
+     *
+     * @param feature the feature to enable; unsupported features throw.
+     */
     void Enable(PKESchemeFeature feature) override;
 
     /////////////////////////////////////

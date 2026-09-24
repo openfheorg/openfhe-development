@@ -59,11 +59,11 @@ class CryptoContextCKKSRNS {
     using CryptoParams = CryptoParametersCKKSRNS;     ///< the crypto parameters instantiated in the context
 
     /**
-   * Validates the parameters and generates a CKKS cryptocontext from them.
-   *
-   * @param parameters the CKKS parameters
-   * @return the cryptocontext
-   */
+     * Validates the parameters and generates a CKKS cryptocontext from them.
+     *
+     * @param parameters the CKKS parameters
+     * @return the cryptocontext
+     */
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextCKKSRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
         return genCryptoContextCKKSRNSInternal<CryptoContextCKKSRNS, Element>(parameters);

@@ -166,10 +166,10 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     parameters.SetSecretKeyDist(UNIFORM_TERNARY);
 
     /* Desired security level based on FHE standards. Note that this is different than NoiseDecryptionMode,
-    * which also gives us enhanced security in CKKS when using NOISE_FLOODING_DECRYPT.
-    * We must always use the same ring dimension in both iterations, so we set the security level to HEStd_NotSet,
-    * and manually set the ring dimension.
-    */
+     * which also gives us enhanced security in CKKS when using NOISE_FLOODING_DECRYPT.
+     * We must always use the same ring dimension in both iterations, so we set the security level to HEStd_NotSet,
+     * and manually set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 16);
 

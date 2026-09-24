@@ -442,13 +442,13 @@ void ParameterGenerationCKKSRNS::SinglePrimeModuliGen(std::vector<NativeInteger>
             }
         } else {  // FLEXIBLEAUTO
             /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
-            * in the sense that once one scaling factor gets far enough from the
-            * original scaling factor, subsequent level scaling factors quickly
-            * diverge to either 0 or infinity. To mitigate this problem to a certain
-            * extend, we have a special prime selection process in place. The goal is
-            * to maintain the scaling factor of all levels as close to the original
-            * scale factor of level 0 as possible.
-            */
+             * in the sense that once one scaling factor gets far enough from the
+             * original scaling factor, subsequent level scaling factors quickly
+             * diverge to either 0 or infinity. To mitigate this problem to a certain
+             * extend, we have a special prime selection process in place. The goal is
+             * to maintain the scaling factor of all levels as close to the original
+             * scale factor of level 0 as possible.
+             */
             double sf = moduliQ[numPrimes - 1].ConvertToDouble();
             for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
                 sf = std::pow(sf, 2) / moduliQ[i + 1].ConvertToDouble();

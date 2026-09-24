@@ -42,7 +42,7 @@ That is the only tool you need to install. `clang-format` and `cpplint` are pinn
 contributor therefore formats with the same versions, and the `clang-format` already on your system is not used.
 
 Note that `clang-format` output differs between versions, so an editor configured to format on save may disagree with
-the hook. Running `pip3 install clang-format==18.1.8` gives your editor the same binary the hook uses.
+the hook. Running `pip3 install clang-format==23.1.1` gives your editor the same binary the hook uses.
 
 ## Setup
 

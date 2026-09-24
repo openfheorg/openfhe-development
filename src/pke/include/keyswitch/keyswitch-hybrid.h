@@ -81,84 +81,84 @@ class KeySwitchHYBRID : public KeySwitchRNS {
 
   public:
     /**
-   * Default constructor.
-   */
+     * Default constructor.
+     */
     KeySwitchHYBRID() = default;
 
     /**
-   * Virtual destructor.
-   */
+     * Virtual destructor.
+     */
     virtual ~KeySwitchHYBRID() = default;
 
     /**
-   * Generates a hybrid key switching key from oldPrivateKey to newPrivateKey: one (b_j, a_j) pair modulo QP per
-   * digit, with b_j = -a_j * sB + noiseScale * e_j + P * [sA]_{Q_j}. The new key is extended from Q to QP for this
-   * purpose.
-   *
-   * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
-   * @param newPrivateKey private key the switched ciphertexts should decrypt under
-   * @return the key switching key
-   */
+     * Generates a hybrid key switching key from oldPrivateKey to newPrivateKey: one (b_j, a_j) pair modulo QP per
+     * digit, with b_j = -a_j * sB + noiseScale * e_j + P * [sA]_{Q_j}. The new key is extended from Q to QP for this
+     * purpose.
+     *
+     * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
+     * @param newPrivateKey private key the switched ciphertexts should decrypt under
+     * @return the key switching key
+     */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
     /**
-   * Generates a hybrid key switching key from oldPrivateKey to newPrivateKey reusing the "a" components of
-   * evalKey (threshold FHE); see KeySwitchBase::KeySwitchGenInternal.
-   *
-   * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
-   * @param newPrivateKey private key the switched ciphertexts should decrypt under
-   * @param evalKey key switching key whose "a" components are reused; if null, fresh components are sampled
-   * @return the key switching key
-   */
+     * Generates a hybrid key switching key from oldPrivateKey to newPrivateKey reusing the "a" components of
+     * evalKey (threshold FHE); see KeySwitchBase::KeySwitchGenInternal.
+     *
+     * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
+     * @param newPrivateKey private key the switched ciphertexts should decrypt under
+     * @param evalKey key switching key whose "a" components are reused; if null, fresh components are sampled
+     * @return the key switching key
+     */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PrivateKey<DCRTPoly> newPrivateKey,
                                            const EvalKey<DCRTPoly> evalKey) const override;
 
     /**
-   * Generates a hybrid key switching key from oldPrivateKey to the secret key of newPublicKey by encrypting
-   * P * [sA]_{Q_j} for every digit with the public key, modulo QP (proxy re-encryption).
-   *
-   * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
-   * @param newPublicKey public key of the party the switched ciphertexts should decrypt for
-   * @return the key switching key
-   */
+     * Generates a hybrid key switching key from oldPrivateKey to the secret key of newPublicKey by encrypting
+     * P * [sA]_{Q_j} for every digit with the public key, modulo QP (proxy re-encryption).
+     *
+     * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
+     * @param newPublicKey public key of the party the switched ciphertexts should decrypt for
+     * @return the key switching key
+     */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PublicKey<DCRTPoly> newPublicKey) const override;
 
     /**
-   * Key switches a ciphertext in place; see KeySwitchBase::KeySwitchInPlace.
-   *
-   * @param ciphertext ciphertext to be key switched; holds the result
-   * @param evalKey key switching key
-   */
+     * Key switches a ciphertext in place; see KeySwitchBase::KeySwitchInPlace.
+     *
+     * @param ciphertext ciphertext to be key switched; holds the result
+     * @param evalKey key switching key
+     */
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 
     /**
-   * Raises a ciphertext from basis Ql to the extended basis QlP by multiplying its elements by P; see
-   * KeySwitchBase::KeySwitchExt.
-   *
-   * @param ciphertext ciphertext in basis Ql
-   * @param addFirst if true, the first element c0 is raised as well; if false, it is set to zero
-   * @return the ciphertext in basis QlP
-   */
+     * Raises a ciphertext from basis Ql to the extended basis QlP by multiplying its elements by P; see
+     * KeySwitchBase::KeySwitchExt.
+     *
+     * @param ciphertext ciphertext in basis Ql
+     * @param addFirst if true, the first element c0 is raised as well; if false, it is set to zero
+     * @return the ciphertext in basis QlP
+     */
     Ciphertext<DCRTPoly> KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const override;
 
     /**
-   * Divides a two-element ciphertext in basis QlP by P with rounding, returning it in basis Ql; see
-   * KeySwitchBase::KeySwitchDown.
-   *
-   * @param ciphertext ciphertext in basis QlP
-   * @return the ciphertext in basis Ql
-   */
+     * Divides a two-element ciphertext in basis QlP by P with rounding, returning it in basis Ql; see
+     * KeySwitchBase::KeySwitchDown.
+     *
+     * @param ciphertext ciphertext in basis QlP
+     * @return the ciphertext in basis Ql
+     */
     Ciphertext<DCRTPoly> KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
     /**
-   * Divides the first element of a ciphertext in basis QlP by P with rounding, returning it in basis Ql.
-   *
-   * @param ciphertext ciphertext in basis QlP
-   * @return the first element switched to basis Ql
-   */
+     * Divides the first element of a ciphertext in basis QlP by P with rounding, returning it in basis Ql.
+     *
+     * @param ciphertext ciphertext in basis QlP
+     * @return the first element switched to basis Ql
+     */
     DCRTPoly KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
     /////////////////////////////////////////
@@ -166,50 +166,50 @@ class KeySwitchHYBRID : public KeySwitchRNS {
     /////////////////////////////////////////
 
     /**
-   * Key switches a single ring element: digit decomposition, inner products with the key, and division by P.
-   *
-   * @param a ring element to be key switched, in basis Ql
-   * @param evalKey key switching key
-   * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
-   */
+     * Key switches a single ring element: digit decomposition, inner products with the key, and division by P.
+     *
+     * @param a ring element to be key switched, in basis Ql
+     * @param evalKey key switching key
+     * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
+     */
     std::vector<DCRTPoly> KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const override;
 
     /**
-   * Splits a ring element into its digits and extends every digit from its own limbs to the whole basis QlP. The
-   * number of digits is ceil(sizeQl / alpha), capped by the number of digits of the key; the last digit may hold
-   * fewer than alpha limbs at lower levels. The basis extension is the approximate (non-exact) CRT conversion,
-   * whose small overflow is accounted for in the noise analysis.
-   *
-   * @param c ring element to be decomposed, in basis Ql
-   * @param cryptoParamsBase crypto parameters holding the partition of Q into digits and the extension tables
-   * @return the digits of c, each in basis QlP
-   */
+     * Splits a ring element into its digits and extends every digit from its own limbs to the whole basis QlP. The
+     * number of digits is ceil(sizeQl / alpha), capped by the number of digits of the key; the last digit may hold
+     * fewer than alpha limbs at lower levels. The basis extension is the approximate (non-exact) CRT conversion,
+     * whose small overflow is accounted for in the noise analysis.
+     *
+     * @param c ring element to be decomposed, in basis Ql
+     * @param cryptoParamsBase crypto parameters holding the partition of Q into digits and the extension tables
+     * @return the digits of c, each in basis QlP
+     */
     std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
             const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
     /**
-   * Computes the inner products of the digits with the two key vectors modulo QlP (EvalFastKeySwitchCoreExt) and
-   * divides the two results by P with rounding to return them in basis Ql.
-   *
-   * @param digits digits of the element computed by EvalKeySwitchPrecomputeCore
-   * @param evalKey key switching key
-   * @param paramsQl parameters of the basis Ql of the element (its current level)
-   * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
-   */
+     * Computes the inner products of the digits with the two key vectors modulo QlP (EvalFastKeySwitchCoreExt) and
+     * divides the two results by P with rounding to return them in basis Ql.
+     *
+     * @param digits digits of the element computed by EvalKeySwitchPrecomputeCore
+     * @param evalKey key switching key
+     * @param paramsQl parameters of the basis Ql of the element (its current level)
+     * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
+     */
     std::vector<DCRTPoly> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                 const EvalKey<DCRTPoly> evalKey,
                                                 const std::shared_ptr<ParmType> paramsQl) const override;
 
     /**
-   * Computes the inner products of the digits with the two key vectors modulo QlP and leaves the result in the
-   * extended basis; only the limbs of the key that correspond to Ql and P are used. See
-   * KeySwitchBase::EvalFastKeySwitchCoreExt for how the result is accumulated and switched down.
-   *
-   * @param digits digits of the element computed by EvalKeySwitchPrecomputeCore
-   * @param evalKey key switching key
-   * @param paramsQl parameters of the basis Ql of the element (its current level)
-   * @return the pair (b', a') in basis QlP such that b' + a' * sB = P * a * sA + noise
-   */
+     * Computes the inner products of the digits with the two key vectors modulo QlP and leaves the result in the
+     * extended basis; only the limbs of the key that correspond to Ql and P are used. See
+     * KeySwitchBase::EvalFastKeySwitchCoreExt for how the result is accumulated and switched down.
+     *
+     * @param digits digits of the element computed by EvalKeySwitchPrecomputeCore
+     * @param evalKey key switching key
+     * @param paramsQl parameters of the basis Ql of the element (its current level)
+     * @return the pair (b', a') in basis QlP such that b' + a' * sB = P * a * sA + noise
+     */
     std::vector<DCRTPoly> EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                    const EvalKey<DCRTPoly> evalKey,
                                                    const std::shared_ptr<ParmType> paramsQl) const override;
@@ -219,30 +219,30 @@ class KeySwitchHYBRID : public KeySwitchRNS {
     /////////////////////////////////////////
 
     /**
-   * Serializes the object (no state of its own beyond the base class).
-   *
-   * @param ar archive to write to
-   */
+     * Serializes the object (no state of its own beyond the base class).
+     *
+     * @param ar archive to write to
+     */
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<KeySwitchRNS>(this));
     }
 
     /**
-   * Deserializes the object.
-   *
-   * @param ar archive to read from
-   */
+     * Deserializes the object.
+     *
+     * @param ar archive to read from
+     */
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<KeySwitchRNS>(this));
     }
 
     /**
-   * Name used to identify the class in serialized objects.
-   *
-   * @return the name of the class
-   */
+     * Name used to identify the class in serialized objects.
+     *
+     * @return the name of the class
+     */
     std::string SerializedObjectName() const override {
         return "KeySwitchHYBRID";
     }

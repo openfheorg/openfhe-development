@@ -81,47 +81,47 @@ class PrivateKeyImpl : public Key<Element> {
 
   public:
     /**
-   * Default constructor
-   */
+     * Default constructor
+     */
     PrivateKeyImpl() = default;
 
     /**
-   * Constructs an empty private key in the given crypto context and assigns it a freshly generated
-   * random key tag (see GenerateUniqueKeyID()).
-   *
-   * @param cc the crypto context the key belongs to
-   */
+     * Constructs an empty private key in the given crypto context and assigns it a freshly generated
+     * random key tag (see GenerateUniqueKeyID()).
+     *
+     * @param cc the crypto context the key belongs to
+     */
     explicit PrivateKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc, GenerateUniqueKeyID()) {}
 
     /**
-   * Copy constructor
-   *@param rhs the PrivateKeyImpl to copy from
-   */
+     * Copy constructor
+     *@param rhs the PrivateKeyImpl to copy from
+     */
     PrivateKeyImpl(const PrivateKeyImpl<Element>& rhs)
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(rhs.m_sk) {}
 
     /**
-   * Move constructor
-   *@param rhs the PrivateKeyImpl to move from
-   */
+     * Move constructor
+     *@param rhs the PrivateKeyImpl to move from
+     */
     PrivateKeyImpl(PrivateKeyImpl<Element>&& rhs) noexcept
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(std::move(rhs.m_sk)) {}
 
     /**
-   * Checks whether the key is attached to a crypto context.
-   *
-   * @return true if the key has a crypto context
-   */
+     * Checks whether the key is attached to a crypto context.
+     *
+     * @return true if the key has a crypto context
+     */
     operator bool() const {
         return this->context != nullptr;
     }
 
     /**
-   * Assignment Operator.
-   *
-   * @param rhs PrivateKeyImpl to assign from.
-   * @return the resulting PrivateKeyImpl
-   */
+     * Assignment Operator.
+     *
+     * @param rhs PrivateKeyImpl to assign from.
+     * @return the resulting PrivateKeyImpl
+     */
     PrivateKeyImpl<Element>& operator=(const PrivateKeyImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
         m_sk = rhs.m_sk;
@@ -129,11 +129,11 @@ class PrivateKeyImpl : public Key<Element> {
     }
 
     /**
-   * Move Assignment Operator.
-   *
-   * @param rhs PrivateKeyImpl to assign from.
-   * @return the resulting PrivateKeyImpl
-   */
+     * Move Assignment Operator.
+     *
+     * @param rhs PrivateKeyImpl to assign from.
+     * @return the resulting PrivateKeyImpl
+     */
     PrivateKeyImpl<Element>& operator=(PrivateKeyImpl<Element>&& rhs) noexcept {
         CryptoObject<Element>::operator=(std::move(rhs));
         m_sk = std::move(rhs.m_sk);
@@ -141,45 +141,45 @@ class PrivateKeyImpl : public Key<Element> {
     }
 
     /**
-   * Implementation of the Get accessor for private element.
-   * @return the private element.
-   */
+     * Implementation of the Get accessor for private element.
+     * @return the private element.
+     */
     const Element& GetPrivateElement() const {
         return m_sk;
     }
 
     /**
-   * Set accessor for private element.
-   * @param x private element to set to.
-   */
+     * Set accessor for private element.
+     * @param x private element to set to.
+     */
     void SetPrivateElement(const Element& x) {
         m_sk = x;
     }
 
     /**
-   * Set accessor for private element.
-   * @param x private element to move from.
-   */
+     * Set accessor for private element.
+     * @param x private element to move from.
+     */
     void SetPrivateElement(Element&& x) noexcept {
         m_sk = std::move(x);
     }
 
     /**
-   * Equality: same crypto context (by pointer), same key tag and equal private elements.
-   *
-   * @param other the private key to compare with
-   * @return true if the keys are equal
-   */
+     * Equality: same crypto context (by pointer), same key tag and equal private elements.
+     *
+     * @param other the private key to compare with
+     * @return true if the keys are equal
+     */
     bool operator==(const PrivateKeyImpl& other) const {
         return CryptoObject<Element>::operator==(other) && m_sk == other.m_sk;
     }
 
     /**
-   * Inequality: negation of operator==.
-   *
-   * @param other the private key to compare with
-   * @return true if the keys differ
-   */
+     * Inequality: negation of operator==.
+     *
+     * @param other the private key to compare with
+     * @return true if the keys differ
+     */
     bool operator!=(const PrivateKeyImpl& other) const {
         return !(*this == other);
     }

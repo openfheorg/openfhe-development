@@ -55,8 +55,8 @@ namespace lbcrypto {
 class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
   public:
     /**
-   * Virtual destructor.
-   */
+     * Virtual destructor.
+     */
     virtual ~KeySwitchRNS() = default;
 
     /////////////////////////////////////////
@@ -64,30 +64,30 @@ class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
     /////////////////////////////////////////
 
     /**
-   * Serializes the object (no state of its own beyond the base class).
-   *
-   * @param ar archive to write to
-   */
+     * Serializes the object (no state of its own beyond the base class).
+     *
+     * @param ar archive to write to
+     */
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<KeySwitchBase<DCRTPoly>>(this));
     }
 
     /**
-   * Deserializes the object.
-   *
-   * @param ar archive to read from
-   */
+     * Deserializes the object.
+     *
+     * @param ar archive to read from
+     */
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<KeySwitchBase<DCRTPoly>>(this));
     }
 
     /**
-   * Name used to identify the class in serialized objects.
-   *
-   * @return the name of the class
-   */
+     * Name used to identify the class in serialized objects.
+     *
+     * @return the name of the class
+     */
     virtual std::string SerializedObjectName() const {
         return "KeySwitchRNS";
     }

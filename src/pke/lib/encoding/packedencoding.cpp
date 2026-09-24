@@ -243,7 +243,9 @@ void PackedEncoding::SetParams(uint32_t m, EncodingParams params) {
     try {
         if (IsPowerOfTwo(m)) {
 #pragma omp critical
-            { SetParams_2n(m, params); }
+            {
+                SetParams_2n(m, params);
+            }
         } else {
 #pragma omp critical
             {

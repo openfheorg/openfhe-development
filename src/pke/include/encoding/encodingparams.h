@@ -58,20 +58,20 @@ typedef std::shared_ptr<EncodingParamsImpl> EncodingParams;
 class EncodingParamsImpl : public lbcrypto::Serializable {
   public:
     /**
-   * Main constructor. Supports (1) default constructor, (2) regular encoding
-   * with plaintext modulus set, (3) packed encoding with at least first two
-   * parameters set. All of the private members not explicitly included as
-   * arguments will be initialized to zero.
-   *
-   * @param plaintextModulus plaintext modulus (used by all encodings)
-   * @param batchSize sets the maximum batch size (as a power of 2) needed for
-   * EvalSum
-   * @param plaintextGenerator (used by packed encoding for plaintext slot
-   * rotation)
-   * @param plaintextRootOfUnity root of unity for the plaintext modulus (used by packed encoding)
-   * @param plaintextBigModulus big plaintext modulus used for arbitrary cyclotomics (used by packed encoding)
-   * @param plaintextBigRootOfUnity root of unity for the big plaintext modulus (used by packed encoding)
-   */
+     * Main constructor. Supports (1) default constructor, (2) regular encoding
+     * with plaintext modulus set, (3) packed encoding with at least first two
+     * parameters set. All of the private members not explicitly included as
+     * arguments will be initialized to zero.
+     *
+     * @param plaintextModulus plaintext modulus (used by all encodings)
+     * @param batchSize sets the maximum batch size (as a power of 2) needed for
+     * EvalSum
+     * @param plaintextGenerator (used by packed encoding for plaintext slot
+     * rotation)
+     * @param plaintextRootOfUnity root of unity for the plaintext modulus (used by packed encoding)
+     * @param plaintextBigModulus big plaintext modulus used for arbitrary cyclotomics (used by packed encoding)
+     * @param plaintextBigRootOfUnity root of unity for the big plaintext modulus (used by packed encoding)
+     */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
                        NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
                        NativeInteger plaintextBigRootOfUnity = 0)
@@ -83,10 +83,10 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
           m_batchSize(batchSize) {}
 
     /**
-   * Copy constructor.
-   *
-   * @param rhs the input set of parameters which is copied.
-   */
+     * Copy constructor.
+     *
+     * @param rhs the input set of parameters which is copied.
+     */
     EncodingParamsImpl(const EncodingParamsImpl& rhs) {
         m_plaintextModulus = rhs.m_plaintextModulus;
         m_plaintextRootOfUnity = rhs.m_plaintextRootOfUnity;
@@ -97,10 +97,10 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     }
 
     /**
-   * Move constructor.
-   *
-   * @param rhs the input set of parameters which is moved.
-   */
+     * Move constructor.
+     *
+     * @param rhs the input set of parameters which is moved.
+     */
     EncodingParamsImpl(EncodingParamsImpl&& rhs) noexcept {
         m_plaintextModulus = std::move(rhs.m_plaintextModulus);
         m_plaintextRootOfUnity = std::move(rhs.m_plaintextRootOfUnity);
@@ -111,11 +111,11 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     }
 
     /**
-   * Assignment Operator.
-   *
-   * @param rhs the EncodingParamsImpl to be copied.
-   * @return the resulting EncodingParamsImpl.
-   */
+     * Assignment Operator.
+     *
+     * @param rhs the EncodingParamsImpl to be copied.
+     * @return the resulting EncodingParamsImpl.
+     */
     const EncodingParamsImpl& operator=(const EncodingParamsImpl& rhs) {
         m_plaintextModulus = rhs.m_plaintextModulus;
         m_plaintextRootOfUnity = rhs.m_plaintextRootOfUnity;
@@ -127,8 +127,8 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     }
 
     /**
-   * Destructor.
-   */
+     * Destructor.
+     */
     virtual ~EncodingParamsImpl() = default;
 
     // ACCESSORS
@@ -136,117 +136,117 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     // Get accessors
 
     /**
-   * @brief Getter for the plaintext modulus.
-   * @return The plaintext modulus.
-   */
+     * @brief Getter for the plaintext modulus.
+     * @return The plaintext modulus.
+     */
     PlaintextModulus GetPlaintextModulus() const {
         return m_plaintextModulus;
     }
 
     /**
-   * @brief Setter for the plaintext modulus.
-   * @param plaintextModulus the plaintext modulus.
-   */
+     * @brief Setter for the plaintext modulus.
+     * @param plaintextModulus the plaintext modulus.
+     */
     void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_plaintextModulus = plaintextModulus;
     }
 
     /**
-   * @brief Getter for the plaintext modulus root of unity.
-   * @return The plaintext modulus root of unity.
-   */
+     * @brief Getter for the plaintext modulus root of unity.
+     * @return The plaintext modulus root of unity.
+     */
     NativeInteger GetPlaintextRootOfUnity() const {
         return m_plaintextRootOfUnity;
     }
 
     /**
-   * @brief Setter for the plaintext modulus root of unity.
-   * @param plaintextRootOfUnity the plaintext modulus root of unity.
-   */
+     * @brief Setter for the plaintext modulus root of unity.
+     * @param plaintextRootOfUnity the plaintext modulus root of unity.
+     */
     void SetPlaintextRootOfUnity(NativeInteger plaintextRootOfUnity) {
         m_plaintextRootOfUnity = plaintextRootOfUnity;
     }
 
     /**
-   * @brief Getter for the big plaintext modulus.
-   * @return The big plaintext modulus.
-   */
+     * @brief Getter for the big plaintext modulus.
+     * @return The big plaintext modulus.
+     */
     NativeInteger GetPlaintextBigModulus() const {
         return m_plaintextBigModulus;
     }
 
     /**
-   * @brief Setter for the big plaintext modulus.
-   * @param plaintextBigModulus the big plaintext modulus.
-   */
+     * @brief Setter for the big plaintext modulus.
+     * @param plaintextBigModulus the big plaintext modulus.
+     */
     void SetPlaintextBigModulus(NativeInteger plaintextBigModulus) {
         m_plaintextBigModulus = plaintextBigModulus;
     }
 
     /**
-   * @brief Getter for the big plaintext modulus root of unity.
-   * @return The big plaintext modulus root of unity.
-   */
+     * @brief Getter for the big plaintext modulus root of unity.
+     * @return The big plaintext modulus root of unity.
+     */
     NativeInteger GetPlaintextBigRootOfUnity() const {
         return m_plaintextBigRootOfUnity;
     }
 
     /**
-   * @brief Setter for the big plaintext modulus root of unity.
-   * @param plaintextBigRootOfUnity the big plaintext modulus root of unity.
-   */
+     * @brief Setter for the big plaintext modulus root of unity.
+     * @param plaintextBigRootOfUnity the big plaintext modulus root of unity.
+     */
     void SetPlaintextBigRootOfUnity(NativeInteger plaintextBigRootOfUnity) {
         m_plaintextBigRootOfUnity = plaintextBigRootOfUnity;
     }
 
     /**
-   * @brief Getter for the plaintext generator.
-   * @return The plaintext generator.
-   */
+     * @brief Getter for the plaintext generator.
+     * @return The plaintext generator.
+     */
     uint32_t GetPlaintextGenerator() const {
         return m_plaintextGenerator;
     }
 
     /**
-   * @brief Setter for the plaintext generator.
-   * @param plaintextGenerator the plaintext generator.
-   */
+     * @brief Setter for the plaintext generator.
+     * @param plaintextGenerator the plaintext generator.
+     */
     void SetPlaintextGenerator(uint32_t plaintextGenerator) {
         m_plaintextGenerator = plaintextGenerator;
     }
 
     /**
-   * @brief Getter for the plaintext batch size.
-   * @return The plaintext batch size.
-   */
+     * @brief Getter for the plaintext batch size.
+     * @return The plaintext batch size.
+     */
     uint32_t GetBatchSize() const {
         return m_batchSize;
     }
 
     /**
-   * @brief Setter for the batch size
-   * @param batchSize the batch size.
-   */
+     * @brief Setter for the batch size
+     * @param batchSize the batch size.
+     */
     void SetBatchSize(uint32_t batchSize) {
         m_batchSize = batchSize;
     }
 
     // Operators
     /**
-   * @brief output stream operator.
-   * @param out the output stream to output.
-   * @param item the following object to output.
-   * @return the string output.
-   */
+     * @brief output stream operator.
+     * @param out the output stream to output.
+     * @param item the following object to output.
+     * @return the string output.
+     */
     friend std::ostream& operator<<(std::ostream& out, const EncodingParamsImpl& item) {
         return item.doprint(out);
     }
     /**
-   * @brief Equality operator for the parameters.  Tests that all the parameters
-   * are equal.
-   * @param other the other parameter set to compare to.
-   * @return true if values of all data are equal.
-   */
+     * @brief Equality operator for the parameters.  Tests that all the parameters
+     * are equal.
+     * @param other the other parameter set to compare to.
+     * @return true if values of all data are equal.
+     */
     bool operator==(const EncodingParamsImpl& other) const {
         return m_plaintextModulus == other.m_plaintextModulus &&
                m_plaintextRootOfUnity == other.m_plaintextRootOfUnity &&
@@ -255,11 +255,11 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
                m_plaintextGenerator == other.m_plaintextGenerator && m_batchSize == other.m_batchSize;
     }
     /**
-   * @brief Inequality operator for the parameters.  Tests that all the
-   * parameters are not equal.
-   * @param other the other parameter set to compare to.
-   * @return true if values of any data is not equal.
-   */
+     * @brief Inequality operator for the parameters.  Tests that all the
+     * parameters are not equal.
+     * @param other the other parameter set to compare to.
+     * @return true if values of any data is not equal.
+     */
     bool operator!=(const EncodingParamsImpl& other) const {
         return !(*this == other);
     }
@@ -297,10 +297,10 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
   protected:
     /**
-   * @brief Prints all parameters to a stream; called by operator<<.
-   * @param out the output stream
-   * @return the output stream
-   */
+     * @brief Prints all parameters to a stream; called by operator<<.
+     * @param out the output stream
+     * @return the output stream
+     */
     std::ostream& doprint(std::ostream& out) const {
         out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
             << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize

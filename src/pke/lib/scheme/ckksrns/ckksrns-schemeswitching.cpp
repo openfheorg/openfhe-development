@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-	CKKS to FHEW scheme switching implementation.
+        CKKS to FHEW scheme switching implementation.
  */
 
 #include "scheme/ckksrns/ckksrns-schemeswitching.h"

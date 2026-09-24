@@ -51,10 +51,10 @@ template <typename IntType>
 class CenteredToInt32ConverterImpl {
   public:
     /**
-   * Precomputes the bounds of the representable centered values for a modulus.
-   *
-   * @param modulus the ring modulus q
-   */
+     * Precomputes the bounds of the representable centered values for a modulus.
+     *
+     * @param modulus the ring modulus q
+     */
     explicit CenteredToInt32ConverterImpl(const IntType& modulus)
         : m_modulus(modulus), m_native(modulus.GetMSB() <= 64) {
         const IntType int32Max(int32MaxValue);
@@ -78,11 +78,11 @@ class CenteredToInt32ConverterImpl {
     }
 
     /**
-   * Maps a residue in Z_q to its centered representative.
-   *
-   * @param value the residue in [0, q)
-   * @return the representative in (-q/2, q/2] as int32_t; throws if it does not fit
-   */
+     * Maps a residue in Z_q to its centered representative.
+     *
+     * @param value the residue in [0, q)
+     * @return the representative in (-q/2, q/2] as int32_t; throws if it does not fit
+     */
     int32_t Convert(const IntType& value) const {
         if (m_native) {
             //  q <= 2^64: both bounds and the magnitude fit in a native word, so the comparisons

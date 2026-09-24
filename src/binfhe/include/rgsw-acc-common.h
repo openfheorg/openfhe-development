@@ -285,9 +285,9 @@ void AddToAccNoMonomial(const PP& polyParams, typename P::Integer::Integer Q,
         for (uint32_t d = 0; d < digitsG2; ++d)
             dct[d].SetFormat(Format::EVALUATION);
 
-            // each column writes only its own acc element, so GadgetMatrixProduct's in-place
-            // reuse of dct[0] for the second column cannot be used here. nowait: the region's
-            // own closing barrier is the one the caller needs
+        // each column writes only its own acc element, so GadgetMatrixProduct's in-place
+        // reuse of dct[0] for the second column cannot be used here. nowait: the region's
+        // own closing barrier is the one the caller needs
 #pragma omp for schedule(static) nowait
         for (uint32_t j = 0; j < 2; ++j) {
             acc[j] = dct[0];

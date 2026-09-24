@@ -63,67 +63,67 @@ class ILParamsImpl final : public ElemParams<IntType> {
     ~ILParamsImpl() override = default;
 
     /**
-   * @brief Constructor computing the missing parameters: the modulus (last
-   * prime of the given bit width for the order) and the root of unity.
-   * @param order the cyclotomic order.
-   * @param bits the bit width of the modulus to select.
-   */
+     * @brief Constructor computing the missing parameters: the modulus (last
+     * prime of the given bit width for the order) and the root of unity.
+     * @param order the cyclotomic order.
+     * @param bits the bit width of the modulus to select.
+     */
     explicit ILParamsImpl(uint32_t order, uint32_t bits = MAX_MODULUS_SIZE)
         : ILParamsImpl<IntType>(order, LastPrime<IntType>(bits, order)) {}
 
     /**
-   * @brief Constructor computing the root of unity for the given cyclotomic order and modulus.
-   * @param order the cyclotomic order.
-   * @param modulus the modulus.
-   */
+     * @brief Constructor computing the root of unity for the given cyclotomic order and modulus.
+     * @param order the cyclotomic order.
+     * @param modulus the modulus.
+     */
     explicit ILParamsImpl(uint32_t order, const IntType& modulus)
         : ElemParams<IntType>(order, modulus, RootOfUnity<IntType>(order, modulus)) {}
 
     /**
-   * @brief Constructor with the cyclotomic order, the modulus and its root of unity given.
-   * @param order the cyclotomic order.
-   * @param modulus the modulus.
-   * @param rootOfUnity the root of unity for the modulus.
-   */
+     * @brief Constructor with the cyclotomic order, the modulus and its root of unity given.
+     * @param order the cyclotomic order.
+     * @param modulus the modulus.
+     * @param rootOfUnity the root of unity for the modulus.
+     */
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity)
         : ElemParams<IntType>(order, modulus, rootOfUnity) {}
 
     /**
-   * @brief Constructor with all parameters given, including the big modulus and big root of unity used for
-   * arbitrary cyclotomics.
-   * @param order the cyclotomic order.
-   * @param modulus the modulus.
-   * @param rootOfUnity the root of unity for the modulus.
-   * @param bigModulus the big modulus.
-   * @param bigRootOfUnity the root of unity for the big modulus.
-   */
+     * @brief Constructor with all parameters given, including the big modulus and big root of unity used for
+     * arbitrary cyclotomics.
+     * @param order the cyclotomic order.
+     * @param modulus the modulus.
+     * @param rootOfUnity the root of unity for the modulus.
+     * @param bigModulus the big modulus.
+     * @param bigRootOfUnity the root of unity for the big modulus.
+     */
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity, const IntType& bigModulus,
                  const IntType& bigRootOfUnity)
         : ElemParams<IntType>(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}
 
     /**
-   * @brief Copy constructor.
-   *
-   * @param rhs the input set of parameters which is copied.
-   */
+     * @brief Copy constructor.
+     *
+     * @param rhs the input set of parameters which is copied.
+     */
     ILParamsImpl(const ILParamsImpl& rhs) : ElemParams<IntType>(rhs) {}
 
     /**
-   * @brief Copy Assignment Operator.
-   *
-   * @param rhs the params to be copied.
-   * @return this object
-   */
+     * @brief Copy Assignment Operator.
+     *
+     * @param rhs the params to be copied.
+     * @return this object
+     */
     ILParamsImpl& operator=(const ILParamsImpl& rhs) {
         ElemParams<IntType>::operator=(rhs);
         return *this;
     }
 
     /**
-   * @brief Move constructor.
-   *
-   * @param rhs the input set of parameters which is moved.
-   */
+     * @brief Move constructor.
+     *
+     * @param rhs the input set of parameters which is moved.
+     */
     ILParamsImpl(ILParamsImpl&& rhs) noexcept : ElemParams<IntType>(std::move(rhs)) {}
 
     ILParamsImpl& operator=(ILParamsImpl&& rhs) noexcept {
@@ -132,11 +132,11 @@ class ILParamsImpl final : public ElemParams<IntType> {
     }
 
     /**
-   * @brief Equality operator: true only when rhs is also an ILParamsImpl and
-   * all wrapped parameters are equal.
-   * @param rhs the parameter set to compare to.
-   * @return true if rhs is an ILParamsImpl with the same parameters, false otherwise.
-   */
+     * @brief Equality operator: true only when rhs is also an ILParamsImpl and
+     * all wrapped parameters are equal.
+     * @param rhs the parameter set to compare to.
+     * @return true if rhs is an ILParamsImpl with the same parameters, false otherwise.
+     */
     bool operator==(const ElemParams<IntType>& rhs) const override {
         // ATTENTION: dynamic_cast was replaced with typeid() to fix failures in unittests linked with clang++-18 and running on MacOS
         // ===========================================================================================================================

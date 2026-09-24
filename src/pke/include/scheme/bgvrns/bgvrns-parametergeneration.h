@@ -47,8 +47,8 @@
 namespace lbcrypto {
 
 /**
-   * @brief Struct that keeps track of all noise estimates necessary to compute the BGV moduli.
-   */
+ * @brief Struct that keeps track of all noise estimates necessary to compute the BGV moduli.
+ */
 struct BGVNoiseEstimates {
     /** the bound on the error distribution */
     double Berr;
@@ -66,16 +66,16 @@ struct BGVNoiseEstimates {
     double noisePerLevel;
 
     /**
-   * Constructor that stores all noise estimates.
-   *
-   * @param Berr0 the bound on the error distribution.
-   * @param Bkey0 the bound on the key distribution.
-   * @param expansionFactor0 the expansion factor of the ring.
-   * @param freshEncryptionNoise0 the noise after encryption.
-   * @param keySwitchingNoise0 the noise after key switching.
-   * @param modSwitchingNoise0 the noise after modulus switching.
-   * @param noisePerLevel0 the noise we wish to maintain at each level.
-   */
+     * Constructor that stores all noise estimates.
+     *
+     * @param Berr0 the bound on the error distribution.
+     * @param Bkey0 the bound on the key distribution.
+     * @param expansionFactor0 the expansion factor of the ring.
+     * @param freshEncryptionNoise0 the noise after encryption.
+     * @param keySwitchingNoise0 the noise after key switching.
+     * @param modSwitchingNoise0 the noise after modulus switching.
+     * @param noisePerLevel0 the noise we wish to maintain at each level.
+     */
     BGVNoiseEstimates(double Berr0, double Bkey0, double expansionFactor0, double freshEncryptionNoise0,
                       double keySwitchingNoise0, double modSwitchingNoise0, double noisePerLevel0)
         : Berr(Berr0),
@@ -96,19 +96,19 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
     virtual ~ParameterGenerationBGVRNS() {}
 
     /**
-   * Method that generates parameters for the BGV RNS scheme.
-   *
-   * @param cryptoParams contains parameters input by the user
-   * @param evalAddCount is the maximum number of additions per level.
-   * @param keySwitchCount is the maximum number of key switches per level.
-   * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
-   * @param numPrimes Number of CRT moduli.
-   * @param firstModSize is the approximate bit size of the first CRT modulus.
-   * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
-   * @param numPartQ number of partitions (digits) of Q for HYBRID key switching.
-   * @param numHops numbers of hops for HRA-secure PRE
-   * @return true on success (an exception is thrown otherwise).
-   */
+     * Method that generates parameters for the BGV RNS scheme.
+     *
+     * @param cryptoParams contains parameters input by the user
+     * @param evalAddCount is the maximum number of additions per level.
+     * @param keySwitchCount is the maximum number of key switches per level.
+     * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
+     * @param numPrimes Number of CRT moduli.
+     * @param firstModSize is the approximate bit size of the first CRT modulus.
+     * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
+     * @param numPartQ number of partitions (digits) of Q for HYBRID key switching.
+     * @param numHops numbers of hops for HRA-secure PRE
+     * @return true on success (an exception is thrown otherwise).
+     */
     bool ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, uint32_t cyclOrder, uint32_t numPrimes, uint32_t firstModSize,
                                  uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const override;
@@ -129,67 +129,67 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
 
   private:
     /**
-   * Method that computes a security-compliant ring dimension.
-   *
-   * @param cryptoParams contains parameters input by the user
-   * @param qBound is the upper bound on the number of bits in the ciphertext modulus
-   * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
-   * @return The ring dimension.
-   */
+     * Method that computes a security-compliant ring dimension.
+     *
+     * @param cryptoParams contains parameters input by the user
+     * @param qBound is the upper bound on the number of bits in the ciphertext modulus
+     * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
+     * @return The ring dimension.
+     */
     uint32_t computeRingDimension(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t qBound,
                                   uint32_t cyclOrder) const;
 
     /**
-   * Computes the BGV noise bounds (fresh encryption, key switching, modulus switching and the noise to be
-   * kept per level) for the given ring dimension and operation counts.
-   *
-   * @param cryptoParams contains parameters input by the user.
-   * @param ringDimension is the dimension of the ring (n).
-   * @param evalAddCount is the maximum number of additions per level.
-   * @param keySwitchCount is the maximum number of key switches per level.
-   * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
-   * @param numPrimes Number of CRT moduli.
-   * @return the noise estimates.
-   */
+     * Computes the BGV noise bounds (fresh encryption, key switching, modulus switching and the noise to be
+     * kept per level) for the given ring dimension and operation counts.
+     *
+     * @param cryptoParams contains parameters input by the user.
+     * @param ringDimension is the dimension of the ring (n).
+     * @param evalAddCount is the maximum number of additions per level.
+     * @param keySwitchCount is the maximum number of key switches per level.
+     * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
+     * @param numPrimes Number of CRT moduli.
+     * @return the noise estimates.
+     */
     BGVNoiseEstimates computeNoiseEstimates(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams,
                                             uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
                                             uint32_t auxTowers, uint32_t numPrimes) const;
 
     /**
-   * Computes the modulus the CRT primes must be congruent to 1 with: the cyclotomic order 2n, or lcm(2n, t)
-   * for FIXEDAUTO where the primes must also be 1 modulo the plaintext modulus t.
-   *
-   * @param ringDimension is the dimension of the ring (n).
-   * @param plainModulus the plaintext modulus t.
-   * @param scalTech the scaling technique.
-   * @return the modulus for the prime search.
-   */
+     * Computes the modulus the CRT primes must be congruent to 1 with: the cyclotomic order 2n, or lcm(2n, t)
+     * for FIXEDAUTO where the primes must also be 1 modulo the plaintext modulus t.
+     *
+     * @param ringDimension is the dimension of the ring (n).
+     * @param plainModulus the plaintext modulus t.
+     * @param scalTech the scaling technique.
+     * @return the modulus for the prime search.
+     */
     uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
                             const ScalingTechnique scalTech) const;
 
     /**
-   * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
-   *
-   * @param cryptoParams contains parameters input by the user
-   * @param ringDimension is the dimension of the ring (n)
-   * @param evalAddCount is the maximum number of additions per level.
-   * @param keySwitchCount is the maximum number of key switches per level.
-   * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
-   * @param numPrimes Number of CRT moduli.
-   * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for
-   * ensuring security compliance.
-   */
+     * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
+     *
+     * @param cryptoParams contains parameters input by the user
+     * @param ringDimension is the dimension of the ring (n)
+     * @param evalAddCount is the maximum number of additions per level.
+     * @param keySwitchCount is the maximum number of key switches per level.
+     * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
+     * @param numPrimes Number of CRT moduli.
+     * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for
+     * ensuring security compliance.
+     */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
             const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
             uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
 
     /**
-   * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
-   *
-   * @param cryptoParams contains parameters input by the user
-   * @param numPrimes Number of CRT moduli.
-   * @param ringDimension ring dimension.
-   */
+     * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
+     *
+     * @param cryptoParams contains parameters input by the user
+     * @param numPrimes Number of CRT moduli.
+     * @param ringDimension ring dimension.
+     */
     void InitializeFloodingDgg(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t numPrimes,
                                uint32_t ringDimension) const;
 };

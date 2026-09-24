@@ -66,11 +66,11 @@ class SchemeRNS : public SchemeBase<DCRTPoly> {
     virtual ~SchemeRNS() = default;
 
     /**
-   * Instantiates the key switching component for the given technique (KeySwitchBV or KeySwitchHYBRID).
-   * Must be called with the key switching technique from the crypto parameters before any key switching.
-   *
-   * @param ksTech the key switching technique (BV or HYBRID); any other value throws.
-   */
+     * Instantiates the key switching component for the given technique (KeySwitchBV or KeySwitchHYBRID).
+     * Must be called with the key switching technique from the crypto parameters before any key switching.
+     *
+     * @param ksTech the key switching technique (BV or HYBRID); any other value throws.
+     */
     void SetKeySwitchingTechnique(KeySwitchTechnique ksTech) {
         if (ksTech == BV) {
             m_KeySwitch = std::make_shared<KeySwitchBV>();

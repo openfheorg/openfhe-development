@@ -93,89 +93,89 @@ class MultipartyBase {
     virtual ~MultipartyBase() = default;
 
     /**
-   * Threshold FHE: Generates a public key from a vector of secret shares.
-   * ONLY FOR DEBUGGING PURPOSES. SHOULD NOT BE USED IN PRODUCTION.
-   *
-   * @param cc cryptocontext for the keys to be generated.
-   * @param privateKeyVec secret key shares.
-   * @param makeSparse set to true if ring reduce by a factor of 2 is to be
-   * used. NOT SUPPORTED BY ANY SCHEME ANYMORE.
-   * @return key pair including the private for the current party and joined
-   * public key
-   */
+     * Threshold FHE: Generates a public key from a vector of secret shares.
+     * ONLY FOR DEBUGGING PURPOSES. SHOULD NOT BE USED IN PRODUCTION.
+     *
+     * @param cc cryptocontext for the keys to be generated.
+     * @param privateKeyVec secret key shares.
+     * @param makeSparse set to true if ring reduce by a factor of 2 is to be
+     * used. NOT SUPPORTED BY ANY SCHEME ANYMORE.
+     * @return key pair including the private for the current party and joined
+     * public key
+     */
     virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc,
                                               const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse);
 
     /**
-   * Threshold FHE: Generation of a public key derived
-   * from a previous joined public key (for prior secret shares) and the secret
-   * key share of the current party.
-   *
-   * @param cc cryptocontext for the keys to be generated.
-   * @param publicKey joined public key from prior parties.
-   * @param makeSparse set to true if ring reduce by a factor of 2 is to be
-   * used. NOT SUPPORTED BY ANY SCHEME ANYMORE.
-   * @param fresh set to true if proxy re-encryption is used in the multi-party
-   * protocol or star topology is used
-   * @return key pair including the secret share for the current party and
-   * joined public key
-   */
+     * Threshold FHE: Generation of a public key derived
+     * from a previous joined public key (for prior secret shares) and the secret
+     * key share of the current party.
+     *
+     * @param cc cryptocontext for the keys to be generated.
+     * @param publicKey joined public key from prior parties.
+     * @param makeSparse set to true if ring reduce by a factor of 2 is to be
+     * used. NOT SUPPORTED BY ANY SCHEME ANYMORE.
+     * @param fresh set to true if proxy re-encryption is used in the multi-party
+     * protocol or star topology is used
+     * @return key pair including the secret share for the current party and
+     * joined public key
+     */
     virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc, const PublicKey<Element> publicKey,
                                               bool makeSparse, bool fresh);
 
     /**
-   * Threshold FHE: Generates a joined evaluation key
-   * from the current secret share and a prior joined
-   * evaluation key
-   *
-   * @param oldPrivateKey secret key transformed from.
-   * @param newPrivateKey secret key transformed to.
-   * @param evalKey the prior joined evaluation key.
-   * @return the new joined evaluation key.
-   */
+     * Threshold FHE: Generates a joined evaluation key
+     * from the current secret share and a prior joined
+     * evaluation key
+     *
+     * @param oldPrivateKey secret key transformed from.
+     * @param newPrivateKey secret key transformed to.
+     * @param evalKey the prior joined evaluation key.
+     * @return the new joined evaluation key.
+     */
     virtual EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> oldPrivateKey,
                                                const PrivateKey<Element> newPrivateKey,
                                                const EvalKey<Element> evalKey) const;
 
     /**
-   * Threshold FHE: Generates joined automorphism keys
-   * from the current secret share and prior joined
-   * automorphism keys
-   *
-   * @param privateKey secret key share.
-   * @param evalKeyMap a dictionary with prior joined automorphism keys.
-   * @param indexVec a vector of automorphism indices.
-   * @return a dictionary with new joined automorphism keys.
-   */
+     * Threshold FHE: Generates joined automorphism keys
+     * from the current secret share and prior joined
+     * automorphism keys
+     *
+     * @param privateKey secret key share.
+     * @param evalKeyMap a dictionary with prior joined automorphism keys.
+     * @param indexVec a vector of automorphism indices.
+     * @return a dictionary with new joined automorphism keys.
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
             const std::vector<uint32_t>& indexVec) const;
 
     /**
-   * Threshold FHE: Generates evaluation keys for a list of indices for a
-   * multi-party setting Currently works only for power-of-two and cyclic-group
-   * cyclotomics
-   *
-   * @param privateKey secret share
-   * @param evalKeyMap evaluation key set from other party (parties)
-   * @param indexVec list of indices to be computed
-   * @return returns the joined evaluation keys
-   */
+     * Threshold FHE: Generates evaluation keys for a list of indices for a
+     * multi-party setting Currently works only for power-of-two and cyclic-group
+     * cyclotomics
+     *
+     * @param privateKey secret share
+     * @param evalKeyMap evaluation key set from other party (parties)
+     * @param indexVec list of indices to be computed
+     * @return returns the joined evaluation keys
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
             const std::vector<int32_t>& indexVec) const;
 
     /**
-   * Threshold FHE: Generates joined summation evaluation keys
-   * from the current secret share and prior joined
-   * summation keys
-   *
-   * @param privateKey secret key share.
-   * @param evalKeyMap a dictionary with prior joined summation keys.
-   * @return new joined summation keys.
-   */
+     * Threshold FHE: Generates joined summation evaluation keys
+     * from the current secret share and prior joined
+     * summation keys
+     *
+     * @param privateKey secret key share.
+     * @param evalKeyMap a dictionary with prior joined summation keys.
+     * @return new joined summation keys.
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap) const;
@@ -183,219 +183,219 @@ class MultipartyBase {
     // MULTIPARTY PKE
 
     /**
-   * Threshold FHE: "Partial" decryption computed by all parties except for the
-   * lead one
-   *
-   * @param ciphertext ciphertext that is being decrypted.
-   * @param privateKey secret key share used for decryption.
-   * @return the partial decryption.
-   */
+     * Threshold FHE: "Partial" decryption computed by all parties except for the
+     * lead one
+     *
+     * @param ciphertext ciphertext that is being decrypted.
+     * @param privateKey secret key share used for decryption.
+     * @return the partial decryption.
+     */
     virtual Ciphertext<Element> MultipartyDecryptMain(ConstCiphertext<Element> ciphertext,
                                                       const PrivateKey<Element> privateKey) const;
 
     /**
-   * Threshold FHE: Method for decryption operation run by the lead decryption
-   * client
-   *
-   * @param ciphertext ciphertext that is being decrypted.
-   * @param privateKey secret key share used for decryption.
-   * @return the partial decryption.
-   */
+     * Threshold FHE: Method for decryption operation run by the lead decryption
+     * client
+     *
+     * @param ciphertext ciphertext that is being decrypted.
+     * @param privateKey secret key share used for decryption.
+     * @return the partial decryption.
+     */
     virtual Ciphertext<Element> MultipartyDecryptLead(ConstCiphertext<Element> ciphertext,
                                                       const PrivateKey<Element> privateKey) const;
 
     /**
-   * Threshold FHE: Method for combining the partially decrypted ciphertexts
-   * and getting the final decryption in the clear as a NativePoly.
-   *
-   * @param ciphertextVec vector of "partial" decryptions.
-   * @param plaintext the plaintext output as a NativePoly.
-   * @return the decoding result.
-   */
+     * Threshold FHE: Method for combining the partially decrypted ciphertexts
+     * and getting the final decryption in the clear as a NativePoly.
+     *
+     * @param ciphertextVec vector of "partial" decryptions.
+     * @param plaintext the plaintext output as a NativePoly.
+     * @return the decoding result.
+     */
     virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                   NativePoly* plaintext) const;
 
     /**
-   * Threshold FHE: Method for combining the partially decrypted ciphertexts
-   * and getting the final decryption in the clear as a Poly.
-   *
-   * @param ciphertextVec vector of "partial" decryptions.
-   * @param plaintext the plaintext output as a Poly.
-   * @return the decoding result.
-   */
+     * Threshold FHE: Method for combining the partially decrypted ciphertexts
+     * and getting the final decryption in the clear as a Poly.
+     *
+     * @param ciphertextVec vector of "partial" decryptions.
+     * @param plaintext the plaintext output as a Poly.
+     * @return the decoding result.
+     */
     virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                   Poly* plaintext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-   * Threshold FHE: Adds two prior public keys
-   *
-   * @param publicKey1 first public key.
-   * @param publicKey2 second public key.
-   * @return the new joined key.
-   */
+     * Threshold FHE: Adds two prior public keys
+     *
+     * @param publicKey1 first public key.
+     * @param publicKey2 second public key.
+     * @return the new joined key.
+     */
     virtual PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2) const;
 
     /**
-   * Threshold FHE: Adds two prior evaluation keys
-   *
-   * @param evalKey1 first evaluation key.
-   * @param evalKey2 second evaluation key.
-   * @return the new joined key.
-   */
+     * Threshold FHE: Adds two prior evaluation keys
+     *
+     * @param evalKey1 first evaluation key.
+     * @param evalKey2 second evaluation key.
+     * @return the new joined key.
+     */
     virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const;
 
     /**
-   * Threshold FHE: Adds two partial evaluation keys for multiplication
-   *
-   * @param evalKey1 first evaluation key.
-   * @param evalKey2 second evaluation key.
-   * @return the new joined key.
-   */
+     * Threshold FHE: Adds two partial evaluation keys for multiplication
+     *
+     * @param evalKey1 first evaluation key.
+     * @param evalKey2 second evaluation key.
+     * @return the new joined key.
+     */
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const;
 
     /**
-    * Threshold FHE: Generates a partial evaluation key for homomorphic
-    * multiplication based on the current secret share and an existing partial
-    * evaluation key
-    *
-    * @param privateKey current secret share.
-    * @param evalKey prior evaluation key.
-    * @return the new joined key.
-    */
+     * Threshold FHE: Generates a partial evaluation key for homomorphic
+     * multiplication based on the current secret share and an existing partial
+     * evaluation key
+     *
+     * @param privateKey current secret share.
+     * @param evalKey prior evaluation key.
+     * @return the new joined key.
+     */
     virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey) const;
     /**
-    *
-    * Threshold FHE: Adds two prior evaluation key sets for automorphisms
-    *
-    * @param evalKeyMap1 first automorphism key set.
-    * @param evalKeyMap2 second automorphism key set.
-    * @return the new joined key set for automorphisms.
-    */
+     *
+     * Threshold FHE: Adds two prior evaluation key sets for automorphisms
+     *
+     * @param evalKeyMap1 first automorphism key set.
+     * @param evalKeyMap2 second automorphism key set.
+     * @return the new joined key set for automorphisms.
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
-    * Threshold FHE: Adds two prior evaluation key sets for summation
-    *
-    * @param evalKeyMap1 first summation key set.
-    * @param evalKeyMap2 second summation key set.
-    * @return the new joined key set for summation.
-    */
+     * Threshold FHE: Adds two prior evaluation key sets for summation
+     *
+     * @param evalKeyMap1 first summation key set.
+     * @param evalKeyMap2 second summation key set.
+     * @return the new joined key set for summation.
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2) const;
 
     /**
-	 * Prepare a ciphertext for interactive bootstrapping.
-	 *
-	 * For the FIXEDMANUAL and FIXEDAUTO modes of CKKS, drops the
-	 * the number of towers 2 and makes sure the scale is Delta
-	 * (not a power of Delta). The input should have at least 2
-	 * towers.
-	 *
-	 * For the FLEXIBLEAUTO mode of CKKS, the input ciphertext
-	 * should have at least 3 towers. One tower will be used to adjust
-	 * the scale to level 0.
-	 *
-	 * @param ciphertext Input Ciphertext
-	 * @return Resulting Ciphertext
-	 */
+     * Prepare a ciphertext for interactive bootstrapping.
+     *
+     * For the FIXEDMANUAL and FIXEDAUTO modes of CKKS, drops the
+     * the number of towers 2 and makes sure the scale is Delta
+     * (not a power of Delta). The input should have at least 2
+     * towers.
+     *
+     * For the FLEXIBLEAUTO mode of CKKS, the input ciphertext
+     * should have at least 3 towers. One tower will be used to adjust
+     * the scale to level 0.
+     *
+     * @param ciphertext Input Ciphertext
+     * @return Resulting Ciphertext
+     */
     virtual Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-       * Does masked decryption as part of interactive bootstrapping.
-       *
-       * For the case of Server, it expects a ciphertext with both polynomials a and b.
-       * For the case of Client, it expects only the polynomial a (for the linear term).
-       * Under the hood, the decryption also includes the rounding operation.
-       *
-       * @param privateKey secret key share
-       * @param ciphertext input ciphertext
-       * @return Resulting masked decryption
-       */
+     * Does masked decryption as part of interactive bootstrapping.
+     *
+     * For the case of Server, it expects a ciphertext with both polynomials a and b.
+     * For the case of Client, it expects only the polynomial a (for the linear term).
+     * Under the hood, the decryption also includes the rounding operation.
+     *
+     * @param privateKey secret key share
+     * @param ciphertext input ciphertext
+     * @return Resulting masked decryption
+     */
     virtual Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
                                                ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-       * Does public key encryption of Client's masked decryption
-       * as part of interactive bootstrapping, which increases
-       * the ciphertext modulus and enables future computations.
-       * This operation is done by the Client.
-       *
-       * @param publicKey joint public key based on Threshold FHE
-       * @param ciphertext input ciphertext
-       * @return Resulting encryption
-       */
+     * Does public key encryption of Client's masked decryption
+     * as part of interactive bootstrapping, which increases
+     * the ciphertext modulus and enables future computations.
+     * This operation is done by the Client.
+     *
+     * @param publicKey joint public key based on Threshold FHE
+     * @param ciphertext input ciphertext
+     * @return Resulting encryption
+     */
     virtual Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey,
                                                ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-       * Adds up both masked decryptions (one encrypted with public key
-       * encryption), which is the last step of the interactive bootstrapping
-       * procedure.
-       *
-       * @param ciphertext1 encrypted masked decryption
-       * @param ciphertext2 unencrypted masked decryption
-       * @return Refreshed ciphertext
-       */
+     * Adds up both masked decryptions (one encrypted with public key
+     * encryption), which is the last step of the interactive bootstrapping
+     * procedure.
+     *
+     * @param ciphertext1 encrypted masked decryption
+     * @param ciphertext2 unencrypted masked decryption
+     * @return Refreshed ciphertext
+     */
     virtual Ciphertext<Element> IntBootAdd(ConstCiphertext<Element> ciphertext1,
                                            ConstCiphertext<Element> ciphertext2) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-    * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping
-    *
-    * @param ciphertext Input Ciphertext
-    * @return Resulting Ciphertext
-    */
+     * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping
+     *
+     * @param ciphertext Input Ciphertext
+     * @return Resulting Ciphertext
+     */
     virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-    * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
-    *
-    * @param params CKKS crypto parameters used to sample the random polynomial
-    * @param publicKey the scheme public key (you can also provide the lead party's public-key)
-    * @return Resulting ring element
-    */
+     * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
+     *
+     * @param params CKKS crypto parameters used to sample the random polynomial
+     * @param publicKey the scheme public key (you can also provide the lead party's public-key)
+     * @return Resulting ring element
+     */
     virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                           const PublicKey<Element> publicKey) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
     /**
-    * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping,
-    * using an existing ciphertext to derive the crypto context, key tag and element parameters,
-    * so that no public key has to be supplied.
-    *
-    * @param params CKKS crypto parameters
-    * @param ciphertext reference ciphertext whose metadata and element parameters are used
-    * @return Resulting ring element, wrapped in a single-element ciphertext
-    */
+     * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping,
+     * using an existing ciphertext to derive the crypto context, key tag and element parameters,
+     * so that no public key has to be supplied.
+     *
+     * @param params CKKS crypto parameters
+     * @param ciphertext reference ciphertext whose metadata and element parameters are used
+     * @return Resulting ring element, wrapped in a single-element ciphertext
+     */
     virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                           ConstCiphertext<Element>& ciphertext) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-    * Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
-    * Each party calls this function as part of the protocol
-    *
-    * @param privateKey secret key share for party i
-    * @param ciphertext input ciphertext
-    * @param a input common random polynomial
-    * @return Resulting masked decryption
-    */
+     * Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
+     * Each party calls this function as part of the protocol
+     *
+     * @param privateKey secret key share for party i
+     * @param ciphertext input ciphertext
+     * @param a input common random polynomial
+     * @return Resulting masked decryption
+     */
     virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                               ConstCiphertext<Element> ciphertext,
                                                               ConstCiphertext<Element> a) const {
@@ -403,31 +403,31 @@ class MultipartyBase {
     }
 
     /**
-    * Threshold FHE: Aggregates a vector of masked decryptions and re-encryption shares,
-    * which is the second step of the interactive multiparty bootstrapping procedure.
-    *
-    * @param sharesPairVec vector of pair of ciphertexts, each element of this vector contains
-    * (h_0i, h_1i) - the masked-decryption and encryption shares of party i
-    * @return aggregated pair of shares (h_0, h_1)
-    */
+     * Threshold FHE: Aggregates a vector of masked decryptions and re-encryption shares,
+     * which is the second step of the interactive multiparty bootstrapping procedure.
+     *
+     * @param sharesPairVec vector of pair of ciphertexts, each element of this vector contains
+     * (h_0i, h_1i) - the masked-decryption and encryption shares of party i
+     * @return aggregated pair of shares (h_0, h_1)
+     */
     virtual std::vector<Ciphertext<Element>> IntMPBootAdd(
             std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
     /**
-    *  Threshold FHE: Does public key encryption of lead party's masked decryption
-    * as part of interactive multi-party bootstrapping, which increases
-    * the ciphertext modulus and enables future computations.
-    * This operation is done by the lead party as the final step
-    * of interactive multi-party bootstrapping.
-    *
-    * @param publicKey the lead party's public key
-    * @param sharesPair aggregated decryption and re-encryption shares
-    * @param a common random ring element
-    * @param ciphertext input ciphertext
-    * @return Resulting encryption
-    */
+     *  Threshold FHE: Does public key encryption of lead party's masked decryption
+     * as part of interactive multi-party bootstrapping, which increases
+     * the ciphertext modulus and enables future computations.
+     * This operation is done by the lead party as the final step
+     * of interactive multi-party bootstrapping.
+     *
+     * @param publicKey the lead party's public key
+     * @param sharesPair aggregated decryption and re-encryption shares
+     * @param a common random ring element
+     * @param ciphertext input ciphertext
+     * @return Resulting encryption
+     */
     virtual Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                                  const std::vector<Ciphertext<Element>>& sharesPair,
                                                  ConstCiphertext<Element> a,

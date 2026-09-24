@@ -61,23 +61,23 @@ class ElemParams : public Serializable {
     virtual ~ElemParams() = default;
 
     /**
-   * @brief Constructor taking the cyclotomic order and the ciphertext modulus; the ring dimension is set to the
-   * totient of the order and the roots of unity and big modulus are left at zero.
-   * @param order the cyclotomic order wrapped by the parameter set.
-   * @param ctModulus the ciphertext modulus wrapped by the parameter set.
-   */
+     * @brief Constructor taking the cyclotomic order and the ciphertext modulus; the ring dimension is set to the
+     * totient of the order and the roots of unity and big modulus are left at zero.
+     * @param order the cyclotomic order wrapped by the parameter set.
+     * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+     */
     ElemParams(uint32_t order, const IntegerType& ctModulus)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus) {}
 
     /**
-   * @brief Constructor taking the cyclotomic order, the ciphertext modulus and its root of unity; the ring
-   * dimension is set to the totient of the order and the big modulus and big root of unity are left at zero.
-   * @param order the cyclotomic order wrapped by the parameter set.
-   * @param ctModulus the ciphertext modulus wrapped by the parameter set.
-   * @param rUnity the root of unity.
-   */
+     * @brief Constructor taking the cyclotomic order, the ciphertext modulus and its root of unity; the ring
+     * dimension is set to the totient of the order and the big modulus and big root of unity are left at zero.
+     * @param order the cyclotomic order wrapped by the parameter set.
+     * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+     * @param rUnity the root of unity.
+     */
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
@@ -85,16 +85,16 @@ class ElemParams : public Serializable {
           m_rootOfUnity(rUnity) {}
 
     /**
-   * @brief Constructor taking the cyclotomic order, the ciphertext modulus and
-   * root of unity, and the big ciphertext modulus and big root of unity used
-   * for bit-packing operations.
-   * @param order the cyclotomic order wrapped by the parameter set.
-   * @param ctModulus the ciphertext modulus wrapped by the parameter set.
-   * @param rUnity the root of unity.
-   * @param bigCtModulus the big ciphertext modulus used for bit packing
-   * operations.
-   * @param bigRUnity the big root of unity used for bit packing operations.
-   */
+     * @brief Constructor taking the cyclotomic order, the ciphertext modulus and
+     * root of unity, and the big ciphertext modulus and big root of unity used
+     * for bit-packing operations.
+     * @param order the cyclotomic order wrapped by the parameter set.
+     * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+     * @param rUnity the root of unity.
+     * @param bigCtModulus the big ciphertext modulus used for bit packing
+     * operations.
+     * @param bigRUnity the big root of unity used for bit packing operations.
+     */
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity, const IntegerType& bigCtModulus,
                const IntegerType& bigRUnity)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
@@ -110,72 +110,72 @@ class ElemParams : public Serializable {
     ElemParams& operator=(ElemParams&& rhs) noexcept = default;
 
     /**
-   * @brief Simple getter method for cyclotomic order.
-   * @return The cyclotomic order.
-   */
+     * @brief Simple getter method for cyclotomic order.
+     * @return The cyclotomic order.
+     */
     uint32_t GetCyclotomicOrder() const {
         return m_cyclotomicOrder;
     }
 
     /**
-   * @brief Simple ring dimension getter method.  The ring dimension is the
-   * evaluation of the totient function of the cyclotomic order.
-   * @return the ring dimension.
-   */
+     * @brief Simple ring dimension getter method.  The ring dimension is the
+     * evaluation of the totient function of the cyclotomic order.
+     * @return the ring dimension.
+     */
     uint32_t GetRingDimension() const {
         return m_ringDimension;
     }
 
     /**
-   * @brief Simple getter method for the ciphertext modulus, not the big
-   * ciphertext modulus.
-   * @return The ciphertext modulus, not the big ciphertext modulus.
-   */
+     * @brief Simple getter method for the ciphertext modulus, not the big
+     * ciphertext modulus.
+     * @return The ciphertext modulus, not the big ciphertext modulus.
+     */
     const IntegerType& GetModulus() const {
         return m_ciphertextModulus;
     }
 
     /**
-   * @brief Simpler getter method for the big ciphertext modulus.
-   * This is not relevant for all applications.
-   * @return The big ciphertext modulus.
-   */
+     * @brief Simpler getter method for the big ciphertext modulus.
+     * This is not relevant for all applications.
+     * @return The big ciphertext modulus.
+     */
     const IntegerType& GetBigModulus() const {
         return m_bigCiphertextModulus;
     }
 
     /**
-   * @brief Simple getter method for the root of unity, not the big root of
-   * unity.
-   * @return The root of unity, not the big root of unity.
-   */
+     * @brief Simple getter method for the root of unity, not the big root of
+     * unity.
+     * @return The root of unity, not the big root of unity.
+     */
     const IntegerType& GetRootOfUnity() const {
         return m_rootOfUnity;
     }
 
     /**
-   * @brief Simple getter method for the big root of unity.
-   * @return The the big root of unity.
-   */
+     * @brief Simple getter method for the big root of unity.
+     * @return The the big root of unity.
+     */
     const IntegerType& GetBigRootOfUnity() const {
         return m_bigRootOfUnity;
     }
 
     /**
-   * @brief Output strem operator.
-   * @param out the preceding output stream.
-   * @param item what to add to the output stream.
-   * @return the appended output stream.
-   */
+     * @brief Output strem operator.
+     * @param out the preceding output stream.
+     * @param item what to add to the output stream.
+     * @return the appended output stream.
+     */
     friend std::ostream& operator<<(std::ostream& out, const ElemParams& item) {
         return item.doprint(out);
     }
 
     /**
-   * @brief Equality operator that tests the equality of all wrapped values.
-   * @param other the other ElemenParams to compare to.
-   * @return True if all elements are equal, and False otherwise.
-   */
+     * @brief Equality operator that tests the equality of all wrapped values.
+     * @param other the other ElemenParams to compare to.
+     * @return True if all elements are equal, and False otherwise.
+     */
     virtual bool operator==(const ElemParams<IntegerType>& other) const {
         return m_ringDimension == other.m_ringDimension && m_cyclotomicOrder == other.m_cyclotomicOrder &&
                m_ciphertextModulus == other.m_ciphertextModulus && m_rootOfUnity == other.m_rootOfUnity &&
@@ -183,10 +183,10 @@ class ElemParams : public Serializable {
     }
 
     /**
-   * @brief Inequality operator that tests the equality of all wrapped values.
-   * @param other the other ElemenParams to compare to.
-   * @return False if all elements are equal, and True otherwise.
-   */
+     * @brief Inequality operator that tests the equality of all wrapped values.
+     * @param other the other ElemenParams to compare to.
+     * @return False if all elements are equal, and True otherwise.
+     */
     bool operator!=(const ElemParams<IntegerType>& other) const {
         return !(*this == other);
     }
@@ -230,10 +230,10 @@ class ElemParams : public Serializable {
     IntegerType m_bigRootOfUnity{0};        // Used for only some applications.
 
     /**
-   * @brief Pretty print operator for the ElemParams type.
-   * @param out the output stream to print to
-   * @return the resulting output stream.
-   */
+     * @brief Pretty print operator for the ElemParams type.
+     * @param out the output stream to print to
+     * @return the resulting output stream.
+     */
     virtual std::ostream& doprint(std::ostream& out) const {
         out << "[m=" << m_cyclotomicOrder << " n=" << m_ringDimension << " q=" << m_ciphertextModulus
             << " ru=" << m_rootOfUnity << " bigq=" << m_bigCiphertextModulus << " bigru=" << m_bigRootOfUnity << "]";

@@ -66,10 +66,10 @@ class CryptoParametersBase : public Serializable {
     // NOTE: some getters and setters are declared "virtual" as they should be overriden and disabled in
     // some scheme-specific parameter classes derived from CryptoParametersBase
     /**
-   * Returns the value of plaintext modulus p
-   *
-   * @return the plaintext modulus.
-   */
+     * Returns the value of plaintext modulus p
+     *
+     * @return the plaintext modulus.
+     */
     virtual PlaintextModulus GetPlaintextModulus() const {
         return m_encodingParams->GetPlaintextModulus();
     }
@@ -79,10 +79,10 @@ class CryptoParametersBase : public Serializable {
     }
 
     /**
-   * Returns the reference to IL params
-   *
-   * @return the ring element parameters.
-   */
+     * Returns the reference to IL params
+     *
+     * @return the ring element parameters.
+     */
     const std::shared_ptr<typename Element::Params> GetElementParams() const {
         return m_params;
     }
@@ -92,27 +92,27 @@ class CryptoParametersBase : public Serializable {
     }
 
     /**
-   * Returns the element parameters used for public key generation and public-key encryption; a scheme
-   * may extend the ciphertext parameters here (e.g., with the auxiliary or extra moduli needed by
-   * HRA-secure PRE or by the EXTENDED encryption technique).
-   *
-   * @return the element parameters for the public key.
-   */
+     * Returns the element parameters used for public key generation and public-key encryption; a scheme
+     * may extend the ciphertext parameters here (e.g., with the auxiliary or extra moduli needed by
+     * HRA-secure PRE or by the EXTENDED encryption technique).
+     *
+     * @return the element parameters for the public key.
+     */
     virtual const std::shared_ptr<typename Element::Params> GetParamsPK() const = 0;
 
     /**
-   * Returns the reference to encoding params
-   *
-   * @return the encoding parameters.
-   */
+     * Returns the reference to encoding params
+     *
+     * @return the encoding parameters.
+     */
     const EncodingParams GetEncodingParams() const {
         return m_encodingParams;
     }
 
     /**
-   * Sets the value of plaintext modulus p
-   * @param plaintextModulus the plaintext modulus
-   */
+     * Sets the value of plaintext modulus p
+     * @param plaintextModulus the plaintext modulus
+     */
     void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_encodingParams->SetPlaintextModulus(plaintextModulus);
     }
@@ -130,13 +130,13 @@ class CryptoParametersBase : public Serializable {
     }
 
     /**
-   * Overload to allow printing of parameters to an iostream
-   * NOTE that the implementation relies on calling the virtual
-   * PrintParameters method
-   * @param out - the stream to print to
-   * @param item - reference to the item to print
-   * @return the stream
-   */
+     * Overload to allow printing of parameters to an iostream
+     * NOTE that the implementation relies on calling the virtual
+     * PrintParameters method
+     * @param out - the stream to print to
+     * @param item - reference to the item to print
+     * @return the stream
+     */
     friend std::ostream& operator<<(std::ostream& out, const CryptoParametersBase& item) {
         item.PrintParameters(out);
         return out;
@@ -147,27 +147,27 @@ class CryptoParametersBase : public Serializable {
     }
 
     /**
-   * Returns the value of the maximum power of secret key for which the
-   * relinearization key is generated
-   *
-   * @return maximum power of secret key
-   */
+     * Returns the value of the maximum power of secret key for which the
+     * relinearization key is generated
+     *
+     * @return maximum power of secret key
+     */
     virtual uint32_t GetMaxRelinSkDeg() const {
         return 0;
     }
 
     /**
-   * Sets the reference to element params
-   * @param params the ring element parameters
-   */
+     * Sets the reference to element params
+     * @param params the ring element parameters
+     */
     virtual void SetElementParams(std::shared_ptr<typename Element::Params> params) {
         m_params = params;
     }
 
     /**
-   * Sets the reference to encoding params
-   * @param encodingParams the encoding parameters
-   */
+     * Sets the reference to encoding params
+     * @param encodingParams the encoding parameters
+     */
     virtual void SetEncodingParams(EncodingParams encodingParams) {
         m_encodingParams = encodingParams;
     }
@@ -201,65 +201,65 @@ class CryptoParametersBase : public Serializable {
 
   protected:
     /**
-   * Constructor that creates default encoding parameters for the given plaintext modulus; the element
-   * parameters are left unset.
-   *
-   * @param plaintextModulus the plaintext modulus.
-   */
+     * Constructor that creates default encoding parameters for the given plaintext modulus; the element
+     * parameters are left unset.
+     *
+     * @param plaintextModulus the plaintext modulus.
+     */
     explicit CryptoParametersBase(const PlaintextModulus& plaintextModulus) {
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
     /**
-   * Constructor that sets the element parameters and creates default encoding parameters for the
-   * given plaintext modulus.
-   *
-   * @param params the ring element parameters.
-   * @param plaintextModulus the plaintext modulus.
-   */
+     * Constructor that sets the element parameters and creates default encoding parameters for the
+     * given plaintext modulus.
+     *
+     * @param params the ring element parameters.
+     * @param plaintextModulus the plaintext modulus.
+     */
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, const PlaintextModulus& plaintextModulus) {
         m_params = params;
         m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
     }
 
     /**
-   * Constructor that sets the element parameters and the encoding parameters.
-   *
-   * @param params the ring element parameters.
-   * @param encodingParams the encoding parameters.
-   */
+     * Constructor that sets the element parameters and the encoding parameters.
+     *
+     * @param params the ring element parameters.
+     * @param encodingParams the encoding parameters.
+     */
     CryptoParametersBase(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams) {
         m_params = params;
         m_encodingParams = encodingParams;
     }
 
     /**
-   * Constructor that copies the parameters of another object and replaces its element parameters.
-   *
-   * @param from the parameters to copy.
-   * @param newElemParms the ring element parameters of the new object.
-   */
+     * Constructor that copies the parameters of another object and replaces its element parameters.
+     *
+     * @param from the parameters to copy.
+     * @param newElemParms the ring element parameters of the new object.
+     */
     CryptoParametersBase(CryptoParametersBase<Element>* from, std::shared_ptr<typename Element::Params> newElemParms) {
         *this = *from;
         m_params = newElemParms;
     }
 
     /**
-    * @brief CompareTo() is a method to compare two CryptoParametersBase objects. It is called by operator==()
-    *
-    * @param rhs - the other CryptoParametersBase object to compare to.
-    * @return whether the two CryptoParametersBase objects are equivalent.
-    */
+     * @brief CompareTo() is a method to compare two CryptoParametersBase objects. It is called by operator==()
+     *
+     * @param rhs - the other CryptoParametersBase object to compare to.
+     * @return whether the two CryptoParametersBase objects are equivalent.
+     */
     virtual bool CompareTo(const CryptoParametersBase<Element>& rhs) const {
         return (*m_encodingParams == *(rhs.m_encodingParams) && *m_params == *(rhs.m_params));
     }
 
     /**
-   * Prints the element parameters and the encoding parameters to the stream; called by operator<<
-   * and extended by derived classes.
-   *
-   * @param out the stream to print to.
-   */
+     * Prints the element parameters and the encoding parameters to the stream; called by operator<<
+     * and extended by derived classes.
+     *
+     * @param out the stream to print to.
+     */
     virtual void PrintParameters(std::ostream& out) const {
         out << "Element Parameters: " << *m_params << std::endl;
         out << "Encoding Parameters: " << *m_encodingParams << std::endl;

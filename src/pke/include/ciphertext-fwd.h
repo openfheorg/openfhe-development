@@ -101,46 +101,46 @@ struct seriesPowers {
     ~seriesPowers() = default;
 
     /**
-   * Constructs the precomputation for the linear algorithm on a real input.
-   *
-   * @param powers0 powers of degree 1..k
-   */
+     * Constructs the precomputation for the linear algorithm on a real input.
+     *
+     * @param powers0 powers of degree 1..k
+     */
     explicit seriesPowers(const std::vector<Ciphertext<Element>>& powers0) : powersRe(powers0) {}
 
     /**
-   * Constructs the precomputation for the linear algorithm on a complex input.
-   *
-   * @param powers0 powers of degree 1..k of the real part
-   * @param powers1 powers of degree 1..k of the imaginary part
-   */
+     * Constructs the precomputation for the linear algorithm on a complex input.
+     *
+     * @param powers0 powers of degree 1..k of the real part
+     * @param powers1 powers of degree 1..k of the imaginary part
+     */
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers1)
         : powersRe(powers0), powersIm(powers1) {}
 
     /**
-   * Constructs the precomputation for the Paterson-Stockmeyer algorithm on a real input.
-   *
-   * @param powers0 powers of degree 1..k
-   * @param powers20 powers of degree k*2^i, i = 0..m-1
-   * @param power2km10 power of degree k*(2m-1)
-   * @param k0 baby-step degree k
-   * @param m0 giant-step count m
-   */
+     * Constructs the precomputation for the Paterson-Stockmeyer algorithm on a real input.
+     *
+     * @param powers0 powers of degree 1..k
+     * @param powers20 powers of degree k*2^i, i = 0..m-1
+     * @param power2km10 power of degree k*(2m-1)
+     * @param k0 baby-step degree k
+     * @param m0 giant-step count m
+     */
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
                  const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0)
         : powersRe(powers0), powers2Re(powers20), power2km1Re(power2km10), k(k0), m(m0) {}
 
     /**
-   * Constructs the precomputation for the Paterson-Stockmeyer algorithm on a complex input.
-   *
-   * @param powers0 powers of degree 1..k of the real part
-   * @param powers20 powers of degree k*2^i, i = 0..m-1, of the real part
-   * @param power2km10 power of degree k*(2m-1) of the real part
-   * @param k0 baby-step degree k
-   * @param m0 giant-step count m
-   * @param powers1 powers of degree 1..k of the imaginary part
-   * @param powers21 powers of degree k*2^i, i = 0..m-1, of the imaginary part
-   * @param power2km11 power of degree k*(2m-1) of the imaginary part
-   */
+     * Constructs the precomputation for the Paterson-Stockmeyer algorithm on a complex input.
+     *
+     * @param powers0 powers of degree 1..k of the real part
+     * @param powers20 powers of degree k*2^i, i = 0..m-1, of the real part
+     * @param power2km10 power of degree k*(2m-1) of the real part
+     * @param k0 baby-step degree k
+     * @param m0 giant-step count m
+     * @param powers1 powers of degree 1..k of the imaginary part
+     * @param powers21 powers of degree k*2^i, i = 0..m-1, of the imaginary part
+     * @param power2km11 power of degree k*(2m-1) of the imaginary part
+     */
     seriesPowers(const std::vector<Ciphertext<Element>>& powers0, const std::vector<Ciphertext<Element>>& powers20,
                  const Ciphertext<Element>& power2km10, uint32_t k0, uint32_t m0,
                  const std::vector<Ciphertext<Element>>& powers1, const std::vector<Ciphertext<Element>>& powers21,

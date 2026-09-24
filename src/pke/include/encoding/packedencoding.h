@@ -69,10 +69,10 @@ class PackedEncoding : public PlaintextImpl {
   public:
     // these two constructors are used inside of Decrypt
     /**
-   * @brief Constructs an empty packed plaintext over the given element parameters.
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   */
+     * @brief Constructs an empty packed plaintext over the given element parameters.
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -80,11 +80,11 @@ class PackedEncoding : public PlaintextImpl {
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
     /**
-   * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param coeffs the slot values
-   */
+     * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param coeffs the slot values
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -93,11 +93,11 @@ class PackedEncoding : public PlaintextImpl {
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     /**
-   * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param coeffs the slot values
-   */
+     * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param coeffs the slot values
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -106,109 +106,109 @@ class PackedEncoding : public PlaintextImpl {
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
     /**
-   * @brief Constructs a container with a copy of each of the elements in rhs,
-   * in the same order.
-   * @param rhs - The input object to copy.
-   */
+     * @brief Constructs a container with a copy of each of the elements in rhs,
+     * in the same order.
+     * @param rhs - The input object to copy.
+     */
     explicit PackedEncoding(const std::vector<int64_t>& rhs)
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(rhs) {}
 
     /**
-   * @brief Constructs a container with a copy of each of the elements in arr, in
-   * the same order.
-   * @param arr the list to copy.
-   */
+     * @brief Constructs a container with a copy of each of the elements in arr, in
+     * the same order.
+     * @param arr the list to copy.
+     */
     PackedEncoding(std::initializer_list<int64_t> arr)
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(arr) {}
 
     /**
-   * @brief Default empty constructor with empty uninitialized data elements.
-   */
+     * @brief Default empty constructor with empty uninitialized data elements.
+     */
     PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value() {}
 
     /**
-   * @brief Gets the generator of the automorphism group used for slot rotations of the packed encoding with the
-   * given cyclotomic order (set by SetParams).
-   * @param m the cyclotomic order
-   * @return the generator
-   */
+     * @brief Gets the generator of the automorphism group used for slot rotations of the packed encoding with the
+     * given cyclotomic order (set by SetParams).
+     * @param m the cyclotomic order
+     * @return the generator
+     */
     static uint32_t GetAutomorphismGenerator(uint32_t m) {
         return m_automorphismGenerator[m];
     }
 
     /**
-   * @brief Encodes the slot values into the polynomial (inverse number-theoretic transform modulo the plaintext
-   * modulus, with the CRT permutation of the slots).
-   * @return true on success
-   */
+     * @brief Encodes the slot values into the polynomial (inverse number-theoretic transform modulo the plaintext
+     * modulus, with the CRT permutation of the slots).
+     * @return true on success
+     */
     bool Encode() override;
 
     /**
-   * @brief Decodes the polynomial into the slot values (number-theoretic transform modulo the plaintext
-   * modulus), mapping them to the centered range [-p/2, p/2).
-   * @return true on success
-   */
+     * @brief Decodes the polynomial into the slot values (number-theoretic transform modulo the plaintext
+     * modulus), mapping them to the centered range [-p/2, p/2).
+     * @return true on success
+     */
     bool Decode() override;
 
     /**
-   * @brief Gets the decoded (or to be encoded) slot values.
-   * @return the integer vector
-   */
+     * @brief Gets the decoded (or to be encoded) slot values.
+     * @return the integer vector
+     */
     const std::vector<int64_t>& GetPackedValue() const override {
         return value;
     }
 
     /**
-   * SetIntVectorValue
-   * @param val integer vector to initialize the plaintext
-   */
+     * SetIntVectorValue
+     * @param val integer vector to initialize the plaintext
+     */
     void SetIntVectorValue(const std::vector<int64_t>& val) override {
         value = val;
     }
 
     /**
-   * Get method to return the length of plaintext
-   *
-   * @return the length of the plaintext in terms of the number of elements.
-   */
+     * Get method to return the length of plaintext
+     *
+     * @return the length of the plaintext in terms of the number of elements.
+     */
     size_t GetLength() const override {
         return value.size();
     }
 
     /**
-   * @brief Method to set encoding params
-   * @param m the encoding cyclotomic order.
-   * @param params data structure storing encoding parameters
-   */
+     * @brief Method to set encoding params
+     * @param m the encoding cyclotomic order.
+     * @param params data structure storing encoding parameters
+     */
     static void SetParams(uint32_t m, EncodingParams params);
 
     /**
-   * @brief Method to set encoding params (this method should eventually be
-   * replaced by void SetParams(uint32_t m, EncodingParams params);)
-   * @param m the encoding cyclotomic order.
-   * @param modulus is the plaintext modulus
-   */
+     * @brief Method to set encoding params (this method should eventually be
+     * replaced by void SetParams(uint32_t m, EncodingParams params);)
+     * @param m the encoding cyclotomic order.
+     * @param modulus is the plaintext modulus
+     */
     static void SetParams(uint32_t m, const PlaintextModulus& modulus)
             __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
 
     /**
-   * SetLength of the plaintext to the given size
-   * @param siz the new number of elements
-   */
+     * SetLength of the plaintext to the given size
+     * @param siz the new number of elements
+     */
     void SetLength(size_t siz) override {
         value.resize(siz);
     }
 
     /**
-    * @brief Destructor method.
-    */
+     * @brief Destructor method.
+     */
     static void Destroy();
 
   protected:
     /**
-    * @brief PrintValue() is called by operator<<
-    * @param out stream to print to
-    */
+     * @brief PrintValue() is called by operator<<
+     * @param out stream to print to
+     */
     void PrintValue(std::ostream& out) const override {
         out << "(";
         // for sanity's sake: get rid of all trailing zeroes and print "..." instead
@@ -230,12 +230,12 @@ class PackedEncoding : public PlaintextImpl {
     }
 
     /**
-    * Method to compare two plaintext to test for equivalence.  This method does
-    * not test that the plaintext are of the same type.
-    *
-    * @param rhs - the other plaintext to compare to.
-    * @return whether the two plaintext are equivalent.
-    */
+     * Method to compare two plaintext to test for equivalence.  This method does
+     * not test that the plaintext are of the same type.
+     *
+     * @param rhs - the other plaintext to compare to.
+     * @return whether the two plaintext are equivalent.
+     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
         if (typeid(rhs) != typeid(PackedEncoding))
             return false;
@@ -261,11 +261,11 @@ class PackedEncoding : public PlaintextImpl {
     static void SetParams_2n(uint32_t m, EncodingParams params);
 
     /**
-   * @brief Packs the slot values into aggregate plaintext space.
-   *
-   * @param ring is the element containing slot values.
-   * @param modulus is the plaintext modulus used for packing.
-   */
+     * @brief Packs the slot values into aggregate plaintext space.
+     *
+     * @param ring is the element containing slot values.
+     * @param modulus is the plaintext modulus used for packing.
+     */
     template <typename P>
     void Pack(P* ring, const PlaintextModulus& modulus) const;
 
@@ -273,11 +273,11 @@ class PackedEncoding : public PlaintextImpl {
     void PackNativeVector(const PlaintextModulus& modulus, uint32_t m, NativeVector* values) const;
 
     /**
-   * @brief Unpacks the data from aggregated plaintext to slot values.
-   *
-   * @param ring is the input polynomial ring in aggregate plaintext.
-   * @param modulus is the plaintext modulus used in packing operation.
-   */
+     * @brief Unpacks the data from aggregated plaintext to slot values.
+     *
+     * @param ring is the input polynomial ring in aggregate plaintext.
+     * @param modulus is the plaintext modulus used in packing operation.
+     */
     template <typename P>
     void Unpack(P* ring, const PlaintextModulus& modulus) const;
 };

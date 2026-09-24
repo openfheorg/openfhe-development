@@ -52,32 +52,32 @@ class LWECiphertextImpl : public Serializable {
     LWECiphertextImpl() = default;
 
     /**
-   * Constructs an LWE ciphertext (a, b) from its components
-   *
-   * @param a the vector "a"; its modulus is the ciphertext modulus q. For a fresh encryption of m under the
-   * secret key s, b = <a, s> + e + m * (q / p) mod q
-   * @param b the integer "b"
-   * @param p the plaintext modulus the ciphertext encodes for (4 for binary gates)
-   */
+     * Constructs an LWE ciphertext (a, b) from its components
+     *
+     * @param a the vector "a"; its modulus is the ciphertext modulus q. For a fresh encryption of m under the
+     * secret key s, b = <a, s> + e + m * (q / p) mod q
+     * @param b the integer "b"
+     * @param p the plaintext modulus the ciphertext encodes for (4 for binary gates)
+     */
     LWECiphertextImpl(const NativeVector& a, NativeInteger b, NativeInteger p = 4) : m_a(a), m_b(b), m_p(p) {}
 
     /**
-   * Constructs an LWE ciphertext (a, b) from its components, moving the vector "a"
-   *
-   * @param a the vector "a"; its modulus is the ciphertext modulus q. For a fresh encryption of m under the
-   * secret key s, b = <a, s> + e + m * (q / p) mod q
-   * @param b the integer "b"
-   * @param p the plaintext modulus the ciphertext encodes for (4 for binary gates)
-   */
+     * Constructs an LWE ciphertext (a, b) from its components, moving the vector "a"
+     *
+     * @param a the vector "a"; its modulus is the ciphertext modulus q. For a fresh encryption of m under the
+     * secret key s, b = <a, s> + e + m * (q / p) mod q
+     * @param b the integer "b"
+     * @param p the plaintext modulus the ciphertext encodes for (4 for binary gates)
+     */
     LWECiphertextImpl(NativeVector&& a, NativeInteger b, NativeInteger p = 4) noexcept
         : m_a(std::move(a)), m_b(b), m_p(p) {}
 
     // TODO: m_p deliberately not copied, and completing this copy breaks multi-input gates.
     /**
-   * Copies "a" and "b" only; the plaintext modulus of the copy is left at its default of 4
-   *
-   * @param rhs the ciphertext to copy
-   */
+     * Copies "a" and "b" only; the plaintext modulus of the copy is left at its default of 4
+     *
+     * @param rhs the ciphertext to copy
+     */
     LWECiphertextImpl(const LWECiphertextImpl& rhs) : m_a(rhs.m_a), m_b(rhs.m_b) {}
 
     LWECiphertextImpl(LWECiphertextImpl&& rhs) noexcept : m_a(std::move(rhs.m_a)), m_b(rhs.m_b) {}
@@ -107,15 +107,15 @@ class LWECiphertextImpl : public Serializable {
     }
 
     /**
-   * @return the ciphertext modulus q (the modulus of the vector "a")
-   */
+     * @return the ciphertext modulus q (the modulus of the vector "a")
+     */
     NativeInteger GetModulus() const {
         return m_a.GetModulus();
     }
 
     /**
-   * @return the LWE dimension (the length of the vector "a")
-   */
+     * @return the LWE dimension (the length of the vector "a")
+     */
     uint32_t GetLength() const {
         return m_a.GetLength();
     }
@@ -137,10 +137,10 @@ class LWECiphertextImpl : public Serializable {
     }
 
     /**
-   * Sets the ciphertext modulus and reduces "a" and "b" modulo it
-   *
-   * @param q the new ciphertext modulus
-   */
+     * Sets the ciphertext modulus and reduces "a" and "b" modulo it
+     *
+     * @param q the new ciphertext modulus
+     */
     void SetModulus(NativeInteger q) {
         m_a.SetModulus(q);
         m_a.ModReduceEq();
@@ -152,19 +152,19 @@ class LWECiphertextImpl : public Serializable {
     }
 
     /**
-   * Compares "a" and "b"; the plaintext modulus is not compared
-   *
-   * @param other the ciphertext to compare with
-   * @return true if both ciphertexts have the same "a" and "b"
-   */
+     * Compares "a" and "b"; the plaintext modulus is not compared
+     *
+     * @param other the ciphertext to compare with
+     * @return true if both ciphertexts have the same "a" and "b"
+     */
     bool operator==(const LWECiphertextImpl& other) const {
         return m_a == other.m_a && m_b == other.m_b;
     }
 
     /**
-   * @param other the ciphertext to compare with
-   * @return true if the ciphertexts differ in "a" or "b"
-   */
+     * @param other the ciphertext to compare with
+     * @return true if the ciphertexts differ in "a" or "b"
+     */
     bool operator!=(const LWECiphertextImpl& other) const {
         return !(*this == other);
     }

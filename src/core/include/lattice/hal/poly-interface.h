@@ -75,35 +75,35 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
     using BugType = BinaryUniformGeneratorImpl<VecType>;
 
     /**
-   * @brief Get the Derived object, this is apart of the CRTP software design pattern
-   * it allows the base class (this one) to implement methods that call the derived
-   * objects implementation.
-   *
-   * See Chapter 21.2 "C++ Templates The Complete Guide" by David Vandevoorde and Nicolai M. Josuttis
-   * http://www.informit.com/articles/article.asp?p=31473
-   *
-   * @return DerivedType&
-   */
+     * @brief Get the Derived object, this is apart of the CRTP software design pattern
+     * it allows the base class (this one) to implement methods that call the derived
+     * objects implementation.
+     *
+     * See Chapter 21.2 "C++ Templates The Complete Guide" by David Vandevoorde and Nicolai M. Josuttis
+     * http://www.informit.com/articles/article.asp?p=31473
+     *
+     * @return DerivedType&
+     */
     DerivedType& GetDerived() {
         return static_cast<DerivedType&>(*this);
     }
 
     /**
-   * @brief Const version of GetDerived().
-   *
-   * @return const reference to this object as the derived type.
-   */
+     * @brief Const version of GetDerived().
+     *
+     * @return const reference to this object as the derived type.
+     */
     const DerivedType& GetDerived() const {
         return static_cast<DerivedType const&>(*this);
     }
 
     /**
-   * @brief Create lambda that allocates a zeroed element for the case when it
-   * is called from a templated class
-   * @param params the params to use.
-   * @param format - EVALUATION or COEFFICIENT
-   * @return a lambda that creates a zero-initialized element with the given parameters and format.
-   */
+     * @brief Create lambda that allocates a zeroed element for the case when it
+     * is called from a templated class
+     * @param params the params to use.
+     * @param format - EVALUATION or COEFFICIENT
+     * @return a lambda that creates a zero-initialized element with the given parameters and format.
+     */
     inline static std::function<DerivedType()> Allocator(const std::shared_ptr<Params>& params, Format format) {
         return [=]() {
             return DerivedType(params, format, true);
@@ -111,13 +111,13 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
     }
 
     /**
-   * @brief Allocator for discrete Gaussian distribution.
-   *
-   * @param params Params instance that is is passed.
-   * @param resultFormat resultFormat for the polynomials generated.
-   * @param stddev standard deviation for the discrete gaussian generator.
-   * @return a lambda that generates a discrete Gaussian element.
-   */
+     * @brief Allocator for discrete Gaussian distribution.
+     *
+     * @param params Params instance that is is passed.
+     * @param resultFormat resultFormat for the polynomials generated.
+     * @param stddev standard deviation for the discrete gaussian generator.
+     * @return a lambda that generates a discrete Gaussian element.
+     */
     inline static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(
             const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
         return [=]() {
@@ -127,12 +127,12 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
     }
 
     /**
-   * @brief Allocator for discrete uniform distribution.
-   *
-   * @param params Params instance that is is passed.
-   * @param format format for the polynomials generated.
-   * @return a lambda that generates a discrete uniform element.
-   */
+     * @brief Allocator for discrete uniform distribution.
+     *
+     * @param params Params instance that is is passed.
+     * @param format format for the polynomials generated.
+     * @return a lambda that generates a discrete uniform element.
+     */
     inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
                                                                             Format format) {
         return [=]() {
@@ -144,83 +144,83 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
     DerivedType& operator=(const DerivedType& rhs) override = 0;
     DerivedType& operator=(DerivedType&& rhs) override = 0;
     /**
-   * @brief Assigns signed coefficients reduced modulo the modulus (used for trapdoor sampling); missing trailing
-   * coefficients are zero and the format becomes COEFFICIENT.
-   *
-   * @param rhs the signed coefficients.
-   * @return the resulting element.
-   */
+     * @brief Assigns signed coefficients reduced modulo the modulus (used for trapdoor sampling); missing trailing
+     * coefficients are zero and the format becomes COEFFICIENT.
+     *
+     * @param rhs the signed coefficients.
+     * @return the resulting element.
+     */
     DerivedType& operator=(const std::vector<int32_t>& rhs) {
         return this->GetDerived().operator=(rhs);
     }
     /**
-   * @brief Assigns signed coefficients reduced modulo the modulus (used for trapdoor sampling); missing trailing
-   * coefficients are zero and the format becomes COEFFICIENT.
-   *
-   * @param rhs the signed coefficients.
-   * @return the resulting element.
-   */
+     * @brief Assigns signed coefficients reduced modulo the modulus (used for trapdoor sampling); missing trailing
+     * coefficients are zero and the format becomes COEFFICIENT.
+     *
+     * @param rhs the signed coefficients.
+     * @return the resulting element.
+     */
     DerivedType& operator=(const std::vector<int64_t>& rhs) {
         return this->GetDerived().operator=(rhs);
     }
     DerivedType& operator=(std::initializer_list<uint64_t> rhs) override = 0;
     /**
-   * @brief Assigns coefficients given as decimal strings.
-   *
-   * @param rhs the coefficients as decimal strings.
-   * @return the resulting element.
-   */
+     * @brief Assigns coefficients given as decimal strings.
+     *
+     * @param rhs the coefficients as decimal strings.
+     * @return the resulting element.
+     */
     DerivedType& operator=(std::initializer_list<std::string> rhs) {
         return this->GetDerived().operator=(rhs);
     }
     /**
-   * @brief Assigns the constant polynomial rhs: every entry is set to rhs and the format becomes EVALUATION.
-   *
-   * @param rhs the constant to assign.
-   * @return the resulting element.
-   */
+     * @brief Assigns the constant polynomial rhs: every entry is set to rhs and the format becomes EVALUATION.
+     *
+     * @param rhs the constant to assign.
+     * @return the resulting element.
+     */
     DerivedType& operator=(uint64_t rhs) {
         return this->GetDerived().operator=(rhs);
     }
 
     /**
-   * @brief returns the element's ring dimension
-   * @return returns the ring dimension of the element.
-   */
+     * @brief returns the element's ring dimension
+     * @return returns the ring dimension of the element.
+     */
     uint32_t GetRingDimension() const {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
     /**
-   * @brief returns the element's root of unity.
-   * @return the element's root of unity.
-   */
+     * @brief returns the element's root of unity.
+     * @return the element's root of unity.
+     */
     const Integer& GetRootOfUnity() const {
         return this->GetDerived().GetParams()->GetRootOfUnity();
     }
 
     /**
-   * @brief returns the element's modulus
-   * @return returns the modulus of the element.
-   */
+     * @brief returns the element's modulus
+     * @return returns the modulus of the element.
+     */
     const Integer& GetModulus() const final {
         return this->GetDerived().GetParams()->GetModulus();
     }
 
     /**
-   * @brief returns the element's cyclotomic order
-   * @return returns the cyclotomic order of the element.
-   */
+     * @brief returns the element's cyclotomic order
+     * @return returns the cyclotomic order of the element.
+     */
     uint32_t GetCyclotomicOrder() const final {
         return this->GetDerived().GetParams()->GetCyclotomicOrder();
     }
 
     /**
-   * @brief Get method for length of each component element.
-   * NOTE assumes all components are the same size. (Ring Dimension)
-   *
-   * @return length of the component element
-   */
+     * @brief Get method for length of each component element.
+     * NOTE assumes all components are the same size. (Ring Dimension)
+     *
+     * @return length of the component element
+     */
     uint32_t GetLength() const final {
         //        if (this->GetDerived().IsEmpty())
         //            OPENFHE_THROW("No values in PolyImpl");
@@ -228,239 +228,239 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
     }
 
     /**
-   * @brief Get method for the values of the element.
-   *
-   * @return the vector of values.
-   */
+     * @brief Get method for the values of the element.
+     *
+     * @return the vector of values.
+     */
     const VecType& GetValues() const override = 0;
 
     /**
-   * @brief Get interpolated value of elements at all tower index i.
-   * Note this operation is computationally intense. Does bound checking
-   * @param i the coefficient index.
-   * @return interpolated value at index i.
-   */
+     * @brief Get interpolated value of elements at all tower index i.
+     * Note this operation is computationally intense. Does bound checking
+     * @param i the coefficient index.
+     * @return interpolated value at index i.
+     */
     Integer& at(uint32_t i) override = 0;
     /**
-   * @brief Const version of at(): bounds-checked access to the value at index i.
-   * @param i the index.
-   * @return the value at index i.
-   */
+     * @brief Const version of at(): bounds-checked access to the value at index i.
+     * @param i the index.
+     * @return the value at index i.
+     */
     const Integer& at(uint32_t i) const override = 0;
 
     /**
-   * @brief Get interpolated value of element at index i.
-   * Note this operation is computationally intense. No bound checking
-   * @param i the coefficient index.
-   * @return interpolated value at index i.
-   */
+     * @brief Get interpolated value of element at index i.
+     * Note this operation is computationally intense. No bound checking
+     * @param i the coefficient index.
+     * @return interpolated value at index i.
+     */
     Integer& operator[](uint32_t i) override {
         return this->GetDerived()[i];
     }
 
     /**
-   * @brief Const version of operator[](): unchecked access to the value at index i.
-   * @param i the index.
-   * @return the value at index i.
-   */
+     * @brief Const version of operator[](): unchecked access to the value at index i.
+     * @param i the index.
+     * @return the value at index i.
+     */
     const Integer& operator[](uint32_t i) const override {
         return this->GetDerived()[i];
     }
 
     /**
-   * @brief Performs an addition operation and returns the result.
-   *
-   * @param rhs is the element to add with.
-   * @return is the result of the addition.
-   */
+     * @brief Performs an addition operation and returns the result.
+     *
+     * @param rhs is the element to add with.
+     * @return is the result of the addition.
+     */
     DerivedType Plus(const DerivedType& rhs) const override {
         return this->GetDerived().Plus(rhs);
     }
 
     /**
-   * @brief Performs a subtraction operation and returns the result.
-   *
-   * @param element is the element to subtract.
-   * @return is the result of the subtraction.
-   */
+     * @brief Performs a subtraction operation and returns the result.
+     *
+     * @param element is the element to subtract.
+     * @return is the result of the subtraction.
+     */
     DerivedType Minus(const DerivedType& element) const override = 0;
 
     /**
-   * @brief Performs a modular multiplication operation for Poly's in
-   * EVALUATION format and returns the result. Performs runtime checks
-   * for operand compatibility.
-   *
-   * @param element is the element to multiply with.
-   * @return is the result of the multiplication.
-   */
+     * @brief Performs a modular multiplication operation for Poly's in
+     * EVALUATION format and returns the result. Performs runtime checks
+     * for operand compatibility.
+     *
+     * @param element is the element to multiply with.
+     * @return is the result of the multiplication.
+     */
     DerivedType Times(const DerivedType& element) const override = 0;
 
     /**
-   * @brief Scalar addition - add an integer to the first coefficient in COEFFICIENT
-   * format, or to all entries in EVALUATION format.
-   *
-   * @param element is the integer to add.
-   * @return is the result of the addition operation.
-   */
+     * @brief Scalar addition - add an integer to the first coefficient in COEFFICIENT
+     * format, or to all entries in EVALUATION format.
+     *
+     * @param element is the integer to add.
+     * @return is the result of the addition operation.
+     */
     DerivedType Plus(const Integer& element) const override = 0;
 
     /**
-   * @brief Scalar subtraction - subtract an element to all entries.
-   *
-   * @param element is the element to subtract entry-wise.
-   * @return is the return value of the minus operation.
-   */
+     * @brief Scalar subtraction - subtract an element to all entries.
+     *
+     * @param element is the element to subtract entry-wise.
+     * @return is the return value of the minus operation.
+     */
     DerivedType Minus(const Integer& element) const override = 0;
 
     /**
-   * @brief Scalar multiplication - multiply all entries.
-   *
-   * @param element is the element to multiply entry-wise.
-   * @return is the return value of the times operation.
-   */
+     * @brief Scalar multiplication - multiply all entries.
+     *
+     * @param element is the element to multiply entry-wise.
+     * @return is the return value of the times operation.
+     */
     DerivedType Times(const Integer& element) const override = 0;
 
     /**
-   * @brief Scalar multiplication - multiply by a signed integer
-   *
-   * @param element is the element to multiply entry-wise.
-   * @return is the return value of the times operation.
-   */
+     * @brief Scalar multiplication - multiply by a signed integer
+     *
+     * @param element is the element to multiply entry-wise.
+     * @return is the return value of the times operation.
+     */
     DerivedType Times(NativeInteger::SignedNativeInt element) const override = 0;
 
 #if NATIVEINT != 64
     /**
-   * @brief Scalar multiplication - multiply by a signed integer
-   *
-   * @param rhs is the element to multiply entry-wise.
-   * @return is the return value of the times operation.
-   *
-   * @note this is need for 128-bit so that the 64-bit inputs can be used.
-   */
+     * @brief Scalar multiplication - multiply by a signed integer
+     *
+     * @param rhs is the element to multiply entry-wise.
+     * @return is the return value of the times operation.
+     *
+     * @note this is need for 128-bit so that the 64-bit inputs can be used.
+     */
     DerivedType Times(int64_t rhs) const {
         return this->GetDerived().Times(rhs);
     }
 #endif
 
     /**
-   * @brief Scalar multiplication followed by division and rounding operation -
-   * operation on all entries.
-   *
-   * @param p is the element to multiply entry-wise.
-   * @param q is the element to divide entry-wise.
-   * @return is the return value of the multiply, divide and followed by
-   * rounding operation.
-   *
-   * @warning Will remove, this is only inplace because of BFV
-   */
+     * @brief Scalar multiplication followed by division and rounding operation -
+     * operation on all entries.
+     *
+     * @param p is the element to multiply entry-wise.
+     * @param q is the element to divide entry-wise.
+     * @return is the return value of the multiply, divide and followed by
+     * rounding operation.
+     *
+     * @warning Will remove, this is only inplace because of BFV
+     */
     DerivedType MultiplyAndRound(const Integer& p, const Integer& q) const override = 0;
 
     /**
-   * @brief Scalar division followed by rounding operation - operation on all
-   * entries.
-   *
-   * @param q is the element to divide entry-wise.
-   * @return is the return value of the divide, followed by rounding operation.
-   *
-   * @warning Will remove, this is only inplace because of BFV
-   */
+     * @brief Scalar division followed by rounding operation - operation on all
+     * entries.
+     *
+     * @param q is the element to divide entry-wise.
+     * @return is the return value of the divide, followed by rounding operation.
+     *
+     * @warning Will remove, this is only inplace because of BFV
+     */
     DerivedType DivideAndRound(const Integer& q) const override = 0;
 
     /**
-   * @brief Performs a negation operation and returns the result.
-   *
-   * @return is the result of the negation.
-   */
+     * @brief Performs a negation operation and returns the result.
+     *
+     * @return is the result of the negation.
+     */
     virtual DerivedType Negate() const = 0;
 
     /**
-   * @brief Unary minus on a element.
-   * @return additive inverse of the an element.
-   */
+     * @brief Unary minus on a element.
+     * @return additive inverse of the an element.
+     */
     DerivedType operator-() const override = 0;
 
     DerivedType& operator+=(const Integer& element) override = 0;
 
     /**
-   * @brief Performs a subtraction operation and returns the result.
-   *
-   * @param element is the element to subtract.
-   * @return is the result of the subtraction.
-   */
+     * @brief Performs a subtraction operation and returns the result.
+     *
+     * @param element is the element to subtract.
+     * @return is the result of the subtraction.
+     */
     DerivedType& operator-=(const Integer& element) override = 0;
 
     /**
-   * @brief Performs a multiplication operation and returns the result.
-   *
-   * @param element is the element to multiply by.
-   * @return is the result of the multiplication.
-   */
+     * @brief Performs a multiplication operation and returns the result.
+     *
+     * @param element is the element to multiply by.
+     * @return is the result of the multiplication.
+     */
     DerivedType& operator*=(const Integer& element) override = 0;
 
     /**
-   * @brief Performs an entry-wise addition over all elements of each tower with
-   * the towers of the element on the right hand side.
-   *
-   * @param rhs is the element to add with.
-   * @return is the result of the addition.
-   */
+     * @brief Performs an entry-wise addition over all elements of each tower with
+     * the towers of the element on the right hand side.
+     *
+     * @param rhs is the element to add with.
+     * @return is the result of the addition.
+     */
     DerivedType& operator+=(const DerivedType& rhs) override = 0;
 
     /**
-   * @brief Performs an entry-wise subtraction over all elements of each tower
-   * with the towers of the element on the right hand side.
-   *
-   * @param rhs is the element to subtract.
-   * @return is the result of the subtraction.
-   */
+     * @brief Performs an entry-wise subtraction over all elements of each tower
+     * with the towers of the element on the right hand side.
+     *
+     * @param rhs is the element to subtract.
+     * @return is the result of the subtraction.
+     */
     DerivedType& operator-=(const DerivedType& rhs) override = 0;
 
     /**
-   * @brief Performs an multiplication operation and returns the result.
-   *
-   * @param element is the element to multiply with.
-   * @return is the result of the multiplication.
-   */
+     * @brief Performs an multiplication operation and returns the result.
+     *
+     * @param element is the element to multiply with.
+     * @return is the result of the multiplication.
+     */
     DerivedType& operator*=(const DerivedType& element) override = 0;
 
     /**
-   * @brief Equality operator.
-   *
-   * @param rhs is the specified element to be compared with this element.
-   * @return true if this element represents the same values as the specified
-   * element, false otherwise
-   */
+     * @brief Equality operator.
+     *
+     * @param rhs is the specified element to be compared with this element.
+     * @return true if this element represents the same values as the specified
+     * element, false otherwise
+     */
     bool operator==(const DerivedType& rhs) const override = 0;
 
     /**
-   * @brief Adds "1" to every entry in every tower.
-   */
+     * @brief Adds "1" to every entry in every tower.
+     */
     void AddILElementOne() override = 0;
 
     /**
-   * @brief Permutes coefficients in a polynomial. Moves the ith index to the
-   * first one, it only supports odd indices.
-   *
-   * @param i is the automorphism index (an odd integer) to apply.
-   * @return is the result of the automorphism transform.
-   */
+     * @brief Permutes coefficients in a polynomial. Moves the ith index to the
+     * first one, it only supports odd indices.
+     *
+     * @param i is the automorphism index (an odd integer) to apply.
+     * @return is the result of the automorphism transform.
+     */
     DerivedType AutomorphismTransform(uint32_t i) const override = 0;
 
     /**
-   * @brief Performs an automorphism transform operation using precomputed bit
-   * reversal indices.
-   *
-   * @param i is the automorphism index (an odd integer) to apply.
-   * @param vec a vector with precomputed indices
-   * @return is the result of the automorphism transform.
-   */
+     * @brief Performs an automorphism transform operation using precomputed bit
+     * reversal indices.
+     *
+     * @param i is the automorphism index (an odd integer) to apply.
+     * @param vec a vector with precomputed indices
+     * @return is the result of the automorphism transform.
+     */
     DerivedType AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const override = 0;
 
     /**
-   * @brief Transpose the ring element using the automorphism operation
-   *
-   * @return is the result of the transposition.
-   */
+     * @brief Transpose the ring element using the automorphism operation
+     *
+     * @return is the result of the transposition.
+     */
     inline DerivedType Transpose() const final {
         if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
             OPENFHE_THROW(
@@ -470,351 +470,351 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
     }
 
     /**
-   * @brief Performs a multiplicative inverse operation and returns the result.
-   *
-   * @return is the result of the multiplicative inverse.
-   */
+     * @brief Performs a multiplicative inverse operation and returns the result.
+     *
+     * @return is the result of the multiplicative inverse.
+     */
     DerivedType MultiplicativeInverse() const override = 0;
 
     /**
-   * @brief Perform a modulus by 2 operation.  Returns the least significant
-   * bit.
-   *
-   * @return is the resulting value.
-   */
+     * @brief Perform a modulus by 2 operation.  Returns the least significant
+     * bit.
+     *
+     * @return is the resulting value.
+     */
     DerivedType ModByTwo() const override = 0;
 
     /**
-   * @brief Modulus - perform a modulus operation. Does proper mapping of
-   * [-modulus/2, modulus/2) to [0, modulus)
-   *
-   * @param modulus is the modulus to use.
-   * @return is the return value of the modulus.
-   */
+     * @brief Modulus - perform a modulus operation. Does proper mapping of
+     * [-modulus/2, modulus/2) to [0, modulus)
+     *
+     * @param modulus is the modulus to use.
+     * @return is the return value of the modulus.
+     */
     DerivedType Mod(const Integer& modulus) const override = 0;
 
     /**
-   * @brief Switch modulus and adjust the values
-   *
-   * @param modulus is the modulus to be set
-   * @param rootOfUnity is the corresponding root of unity for the modulus
-   * @param modulusArb is the modulus used for arbitrary cyclotomics CRT
-   * @param rootOfUnityArb is the corresponding root of unity for the modulus
-   * ASSUMPTION: This method assumes that the caller provides the correct
-   * rootOfUnity for the modulus
-   */
+     * @brief Switch modulus and adjust the values
+     *
+     * @param modulus is the modulus to be set
+     * @param rootOfUnity is the corresponding root of unity for the modulus
+     * @param modulusArb is the modulus used for arbitrary cyclotomics CRT
+     * @param rootOfUnityArb is the corresponding root of unity for the modulus
+     * ASSUMPTION: This method assumes that the caller provides the correct
+     * rootOfUnity for the modulus
+     */
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
                        const Integer& rootOfUnityArb) override = 0;
     /**
-   * @brief Switch modulus without centering: every value is reduced modulo the new modulus as a non-negative
-   * integer (unlike SwitchModulus, which maps values above half the old modulus to negative representatives), and
-   * the parameters are replaced.
-   *
-   * @param modulus is the modulus to be set
-   * @param rootOfUnity is the corresponding root of unity for the modulus
-   * @param modulusArb is the modulus used for arbitrary cyclotomics CRT
-   * @param rootOfUnityArb is the corresponding root of unity for the modulus
-   */
+     * @brief Switch modulus without centering: every value is reduced modulo the new modulus as a non-negative
+     * integer (unlike SwitchModulus, which maps values above half the old modulus to negative representatives), and
+     * the parameters are replaced.
+     *
+     * @param modulus is the modulus to be set
+     * @param rootOfUnity is the corresponding root of unity for the modulus
+     * @param modulusArb is the modulus used for arbitrary cyclotomics CRT
+     * @param rootOfUnityArb is the corresponding root of unity for the modulus
+     */
     virtual void LazySwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
                                    const Integer& rootOfUnityArb) = 0;
 
     /**
-   * @brief Fused multiply-accumulate with a scalar: *this += V * I (mod the modulus), without parameter validation.
-   *
-   * @param V the element to scale and add.
-   * @param I the scalar factor.
-   * @return the resulting element.
-   */
+     * @brief Fused multiply-accumulate with a scalar: *this += V * I (mod the modulus), without parameter validation.
+     *
+     * @param V the element to scale and add.
+     * @param I the scalar factor.
+     * @return the resulting element.
+     */
     virtual DerivedType& MultAccEqNoCheck(const DerivedType& V, const Integer& I) = 0;
 
     /**
-   * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT
-   *
-   * @param thread_limit not used by single-polynomial implementations; kept for interface compatibility with
-   * DCRTPoly, where it bounds the number of threads.
-   * @warning use @see SetFormat(format) instead
-   */
+     * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT
+     *
+     * @param thread_limit not used by single-polynomial implementations; kept for interface compatibility with
+     * DCRTPoly, where it bounds the number of threads.
+     * @warning use @see SetFormat(format) instead
+     */
     void SwitchFormat(uint32_t thread_limit = 0) override = 0;
 
     /**
-   * @brief Sets format to value without calling FFT. Only use if you know what you're doing.
-   *
-   * @param f the format to record.
-   */
+     * @brief Sets format to value without calling FFT. Only use if you know what you're doing.
+     *
+     * @param f the format to record.
+     */
     virtual void OverrideFormat(const Format f) = 0;
 
     /**
-   * @brief Make DCRTPoly Sparse. Sets every index of each tower not equal to
-   * zero mod the wFactor to zero.
-   *
-   * @param wFactor ratio between the sparse and none-sparse values.
-   *
-   * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
-   */
+     * @brief Make DCRTPoly Sparse. Sets every index of each tower not equal to
+     * zero mod the wFactor to zero.
+     *
+     * @param wFactor ratio between the sparse and none-sparse values.
+     *
+     * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
+     */
     void MakeSparse(uint32_t wFactor) override = 0;
 
     /**
-   * @brief Returns true if ALL the tower(s) are empty.
-   * @return true if all towers are empty
-   */
+     * @brief Returns true if ALL the tower(s) are empty.
+     * @return true if all towers are empty
+     */
     bool IsEmpty() const override = 0;
 
     /**
-   * @brief Determines if inverse exists
-   *
-   * @return is the Boolean representation of the existence of multiplicative
-   * inverse.
-   */
+     * @brief Determines if inverse exists
+     *
+     * @return is the Boolean representation of the existence of multiplicative
+     * inverse.
+     */
     bool InverseExists() const override = 0;
 
     /**
-   * @brief Returns the infinity norm, basically the largest value in the ring
-   * element.
-   *
-   * @return is the largest value in the ring element.
-   */
+     * @brief Returns the infinity norm, basically the largest value in the ring
+     * element.
+     *
+     * @return is the largest value in the ring element.
+     */
     double Norm() const override = 0;
 
     /**
-   * @brief Write the element as \f$ \sum\limits{i=0}^{\lfloor {\log q/base}
-   * \rfloor} {(base^i u_i)} \f$ and return the vector of \f$ \left\{u_0,
-   * u_1,...,u_{\lfloor {\log q/base} \rfloor} \right\} \in R_{{base}^{\lceil
-   * {\log q/base} \rceil}} \f$; This is used as a subroutine in the
-   * relinearization procedure.
-   *
-   * @param baseBits is the number of bits in the base, i.e., \f$ base =
-   * 2^{baseBits} \f$.
-   * @param evalModeAnswer if true, the digits are returned in EVALUATION format; otherwise in COEFFICIENT format.
-   * @return is the pointer where the base decomposition vector is stored
-   *
-   * @warning not efficient and  not fast, uses multiprecision arithmetic and
-   *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.
-   */
+     * @brief Write the element as \f$ \sum\limits{i=0}^{\lfloor {\log q/base}
+     * \rfloor} {(base^i u_i)} \f$ and return the vector of \f$ \left\{u_0,
+     * u_1,...,u_{\lfloor {\log q/base} \rfloor} \right\} \in R_{{base}^{\lceil
+     * {\log q/base} \rceil}} \f$; This is used as a subroutine in the
+     * relinearization procedure.
+     *
+     * @param baseBits is the number of bits in the base, i.e., \f$ base =
+     * 2^{baseBits} \f$.
+     * @param evalModeAnswer if true, the digits are returned in EVALUATION format; otherwise in COEFFICIENT format.
+     * @return is the pointer where the base decomposition vector is stored
+     *
+     * @warning not efficient and  not fast, uses multiprecision arithmetic and
+     *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.
+     */
 
     std::vector<DerivedType> BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const override = 0;
 
     /**
-   * @brief Generate a vector of PolyImpl's as \f$ \left\{x, {base}*x,
-   * {base}^2*x, ..., {base}^{\lfloor {\log q/{base}} \rfloor} \right\}*x \f$,
-   * where \f$ x \f$ is the current PolyImpl object;
-   * used as a subroutine in the relinearization procedure to get powers of a
-   * certain "base" for the secret key element.
-   *
-   * @param baseBits is the number of bits in the base, i.e., \f$ base =
-   * 2^{baseBits} \f$.
-   * @return is the pointer where the base decomposition vector is stored
-   *
-   * @warning not efficient and  not fast, uses multiprecision arithmetic and
-   *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.
-   */
+     * @brief Generate a vector of PolyImpl's as \f$ \left\{x, {base}*x,
+     * {base}^2*x, ..., {base}^{\lfloor {\log q/{base}} \rfloor} \right\}*x \f$,
+     * where \f$ x \f$ is the current PolyImpl object;
+     * used as a subroutine in the relinearization procedure to get powers of a
+     * certain "base" for the secret key element.
+     *
+     * @param baseBits is the number of bits in the base, i.e., \f$ base =
+     * 2^{baseBits} \f$.
+     * @return is the pointer where the base decomposition vector is stored
+     *
+     * @warning not efficient and  not fast, uses multiprecision arithmetic and
+     *          will be removed in future. Use @see DCRTPolyInterface::CRTDecompose instead.
+     */
     std::vector<DerivedType> PowersOfBase(uint32_t baseBits) const override = 0;
 
     /**
-   * @brief Sets the values of the element.
-   *
-   * @param values the vector of values to set.
-   * @param format the format (COEFFICIENT or EVALUATION) of the values.
-   */
+     * @brief Sets the values of the element.
+     *
+     * @param values the vector of values to set.
+     * @param format the format (COEFFICIENT or EVALUATION) of the values.
+     */
     virtual void SetValues(const VecType& values, Format format) = 0;
     /**
-   * @brief Sets the values of the element by moving them in.
-   *
-   * @param values the vector of values to move in.
-   * @param format the format (COEFFICIENT or EVALUATION) of the values.
-   */
+     * @brief Sets the values of the element by moving them in.
+     *
+     * @param values the vector of values to move in.
+     * @param format the format (COEFFICIENT or EVALUATION) of the values.
+     */
     virtual void SetValues(VecType&& values, Format format) = 0;
 
     /**
-   * @brief Sets all values of element to zero.
-   */
+     * @brief Sets all values of element to zero.
+     */
     virtual void SetValuesToZero() = 0;
     /**
-   * @brief Sets all values of the element to modulus - 1.
-   */
+     * @brief Sets all values of the element to modulus - 1.
+     */
     virtual void SetValuesToMax() = 0;
 
     /**
-   * @brief CRT interpolation is a no-op for a single-modulus polynomial; returns a
-   * copy of this element.
-   *
-   * @return a copy of this element.
-   */
+     * @brief CRT interpolation is a no-op for a single-modulus polynomial; returns a
+     * copy of this element.
+     *
+     * @return a copy of this element.
+     */
     DerivedType CRTInterpolate() const {
         return this->GetDerived();
     }
 
     /**
-   * @brief Maps each coefficient from the centered range [-q/2, q/2) to [0, ptm) and returns the result as a native
-   * polynomial with modulus ptm; this produces the plaintext polynomial at decryption.
-   *
-   * @param ptm the plaintext modulus.
-   * @return the native polynomial of the reduced coefficients, in this element's format.
-   */
+     * @brief Maps each coefficient from the centered range [-q/2, q/2) to [0, ptm) and returns the result as a native
+     * polynomial with modulus ptm; this produces the plaintext polynomial at decryption.
+     *
+     * @param ptm the plaintext modulus.
+     * @return the native polynomial of the reduced coefficients, in this element's format.
+     */
     virtual PolyNative DecryptionCRTInterpolate(PlaintextModulus ptm) const = 0;
 
     /**
-   * @brief If the values are small enough this is used for efficiency
-   *
-   * @return NativePoly
-   *
-   * @warning This will be replaced with a non-member utility function.
-   */
+     * @brief If the values are small enough this is used for efficiency
+     *
+     * @return NativePoly
+     *
+     * @warning This will be replaced with a non-member utility function.
+     */
     virtual PolyNative ToNativePoly() const = 0;
 
     /**
-   * @brief Makes a copy of this element.
-   *
-   * @return the copy.
-   */
+     * @brief Makes a copy of this element.
+     *
+     * @return the copy.
+     */
     DerivedType Clone() const final {
         return DerivedType(this->GetDerived());
     }
 
     /**
-   * @brief Creates a default-constructed element of the derived type, without parameters or values.
-   *
-   * @return the empty element.
-   */
+     * @brief Creates a default-constructed element of the derived type, without parameters or values.
+     *
+     * @return the empty element.
+     */
     DerivedType CloneEmpty() const final {
         return DerivedType();
     }
 
     /**
-   * @brief Creates an element with this element's parameters and format whose values are left unallocated.
-   *
-   * @return the new element.
-   */
+     * @brief Creates an element with this element's parameters and format whose values are left unallocated.
+     *
+     * @return the new element.
+     */
     DerivedType CloneParametersOnly() const final {
         return DerivedType(this->GetDerived().GetParams(), this->GetDerived().GetFormat());
     }
 
     /**
-   * @brief Samples a discrete Gaussian element with this element's parameters.
-   *
-   * @param dgg the discrete Gaussian generator.
-   * @param format the format of the resulting element.
-   * @return the sampled element.
-   */
+     * @brief Samples a discrete Gaussian element with this element's parameters.
+     *
+     * @param dgg the discrete Gaussian generator.
+     * @param format the format of the resulting element.
+     * @return the sampled element.
+     */
     DerivedType CloneWithNoise(const DggType& dgg, Format format) const final {
         return DerivedType(dgg, this->GetDerived().GetParams(), format);
     }
 
     /**
-   * @brief Returns the name of the derived element type, e.g. "PolyImpl".
-   *
-   * @return the element type name.
-   */
+     * @brief Returns the name of the derived element type, e.g. "PolyImpl".
+     *
+     * @return the element type name.
+     */
     const std::string GetElementName() const {
         return this->GetDerived().GetElementName();
     }
 
   protected:
     /**
-   * @brief ostream operator
-   * @param os the input preceding output stream
-   * @param vec the element to add to the output stream.
-   * @return a resulting concatenated output stream
-   */
+     * @brief ostream operator
+     * @param os the input preceding output stream
+     * @param vec the element to add to the output stream.
+     * @return a resulting concatenated output stream
+     */
     friend inline std::ostream& operator<<(std::ostream& os, const DerivedType& vec) {
         os << (vec.GetFormat() == Format::EVALUATION ? "EVAL: " : "COEF: ") << vec.GetValues();
         return os;
     }
 
     /**
-   * @brief Element-element addition operator.
-   * @param a first element to add.
-   * @param b second element to add.
-   * @return the result of the addition operation.
-   */
+     * @brief Element-element addition operator.
+     * @param a first element to add.
+     * @param b second element to add.
+     * @return the result of the addition operation.
+     */
     friend inline DerivedType operator+(const DerivedType& a, const DerivedType& b) {
         return a.Plus(b);
     }
     /**
-   * @brief Element-integer addition operator.
-   * @param a first element to add.
-   * @param b integer to add.
-   * @return the result of the addition operation.
-   */
+     * @brief Element-integer addition operator.
+     * @param a first element to add.
+     * @param b integer to add.
+     * @return the result of the addition operation.
+     */
     friend inline DerivedType operator+(const DerivedType& a, const Integer& b) {
         return a.Plus(b);
     }
 
     /**
-   * @brief Integer-element addition operator.
-   * @param a integer to add.
-   * @param b element to add.
-   * @return the result of the addition operation.
-   */
+     * @brief Integer-element addition operator.
+     * @param a integer to add.
+     * @param b element to add.
+     * @return the result of the addition operation.
+     */
     friend inline DerivedType operator+(const Integer& a, const DerivedType& b) {
         return b.Plus(a);
     }
 
     /**
-   * @brief Element-element subtraction operator.
-   * @param a element to subtract from.
-   * @param b element to subtract.
-   * @return the result of the subtraction operation.
-   */
+     * @brief Element-element subtraction operator.
+     * @param a element to subtract from.
+     * @param b element to subtract.
+     * @return the result of the subtraction operation.
+     */
     friend inline DerivedType operator-(const DerivedType& a, const DerivedType& b) {
         return a.Minus(b);
     }
 
     /**
-   * @brief Element-integer subtraction operator.
-   * @param a element to subtract from.
-   * @param b integer to subtract.
-   * @return the result of the subtraction operation.
-   */
+     * @brief Element-integer subtraction operator.
+     * @param a element to subtract from.
+     * @param b integer to subtract.
+     * @return the result of the subtraction operation.
+     */
     friend inline DerivedType operator-(const DerivedType& a, const Integer& b) {
         return a.Minus(b);
     }
 
     /**
-   * @brief Element-element multiplication operator.
-   * @param a element to multiply.
-   * @param b element to multiply.
-   * @return the result of the multiplication operation.
-   */
+     * @brief Element-element multiplication operator.
+     * @param a element to multiply.
+     * @param b element to multiply.
+     * @return the result of the multiplication operation.
+     */
     friend inline DerivedType operator*(const DerivedType& a, const DerivedType& b) {
         return a.Times(b);
     }
 
     /**
-   * @brief Element-integer multiplication operator.
-   * @param a element to multiply.
-   * @param b integer to multiply.
-   * @return the result of the multiplication operation.
-   */
+     * @brief Element-integer multiplication operator.
+     * @param a element to multiply.
+     * @param b integer to multiply.
+     * @return the result of the multiplication operation.
+     */
     friend inline DerivedType operator*(const DerivedType& a, const Integer& b) {
         return a.Times(b);
     }
 
     /**
-   * @brief Integer-element multiplication operator.
-   * @param a integer to multiply.
-   * @param b element to multiply.
-   * @return the result of the multiplication operation.
-   */
+     * @brief Integer-element multiplication operator.
+     * @param a integer to multiply.
+     * @param b element to multiply.
+     * @return the result of the multiplication operation.
+     */
     friend inline DerivedType operator*(const Integer& a, const DerivedType& b) {
         return b.Times(a);
     }
 
     /**
-   * @brief Element-signed-integer multiplication operator.
-   * @param a element to multiply.
-   * @param b integer to multiply.
-   * @return the result of the multiplication operation.
-   */
+     * @brief Element-signed-integer multiplication operator.
+     * @param a element to multiply.
+     * @param b integer to multiply.
+     * @return the result of the multiplication operation.
+     */
     friend inline DerivedType operator*(const DerivedType& a, int64_t b) {
         return a.Times((NativeInteger::SignedNativeInt)b);
     }
 
     /**
-   * @brief signed-Integer-element multiplication operator.
-   * @param a integer to multiply.
-   * @param b element to multiply.
-   * @return the result of the multiplication operation.
-   */
+     * @brief signed-Integer-element multiplication operator.
+     * @param a integer to multiply.
+     * @param b element to multiply.
+     * @return the result of the multiplication operation.
+     */
     friend inline DerivedType operator*(int64_t a, const DerivedType& b) {
         return b.Times((NativeInteger::SignedNativeInt)a);
     }

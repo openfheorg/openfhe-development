@@ -60,22 +60,22 @@ class CryptoParametersBFVRNS : public CryptoParametersRNS {
     CryptoParametersBFVRNS(const CryptoParametersBFVRNS& rhs) : CryptoParametersRNS(rhs) {}
 
     /**
-   * Constructor that initializes the BFV crypto parameters from a plaintext modulus.
-   *
-   * @param params element parameters (the DCRT modulus chain).
-   * @param plaintextModulus plaintext modulus t.
-   * @param distributionParameter standard deviation of the error distribution.
-   * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
-   * @param securityLevel security level from the homomorphic encryption standard.
-   * @param digitSize the size of the digit (relinearization window) for BV key switching.
-   * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
-   * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
-   * @param ksTech key switching technique (BV or HYBRID).
-   * @param scalTech scaling technique (BFV always uses FIXEDMANUAL).
-   * @param encTech encryption technique (STANDARD or EXTENDED).
-   * @param multTech homomorphic multiplication technique (HPS, BEHZ, HPSPOVERQ or HPSPOVERQLEVELED).
-   * @param multipartyMode security mode for multiparty (threshold) decryption.
-   */
+     * Constructor that initializes the BFV crypto parameters from a plaintext modulus.
+     *
+     * @param params element parameters (the DCRT modulus chain).
+     * @param plaintextModulus plaintext modulus t.
+     * @param distributionParameter standard deviation of the error distribution.
+     * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+     * @param securityLevel security level from the homomorphic encryption standard.
+     * @param digitSize the size of the digit (relinearization window) for BV key switching.
+     * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
+     * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+     * @param ksTech key switching technique (BV or HYBRID).
+     * @param scalTech scaling technique (BFV always uses FIXEDMANUAL).
+     * @param encTech encryption technique (STANDARD or EXTENDED).
+     * @param multTech homomorphic multiplication technique (HPS, BEHZ, HPSPOVERQ or HPSPOVERQLEVELED).
+     * @param multipartyMode security mode for multiparty (threshold) decryption.
+     */
     CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                            float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                            uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
@@ -87,29 +87,29 @@ class CryptoParametersBFVRNS : public CryptoParametersRNS {
                               multipartyMode) {}
 
     /**
-   * Constructor that initializes the BFV crypto parameters from explicit encoding parameters.
-   *
-   * @param params element parameters (the DCRT modulus chain).
-   * @param encodingParams encoding parameters (plaintext modulus, batch size).
-   * @param distributionParameter standard deviation of the error distribution.
-   * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
-   * @param securityLevel security level from the homomorphic encryption standard.
-   * @param digitSize the size of the digit (relinearization window) for BV key switching.
-   * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
-   * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
-   * @param ksTech key switching technique (BV or HYBRID).
-   * @param scalTech scaling technique (BFV always uses FIXEDMANUAL).
-   * @param encTech encryption technique (STANDARD or EXTENDED).
-   * @param multTech homomorphic multiplication technique (HPS, BEHZ, HPSPOVERQ or HPSPOVERQLEVELED).
-   * @param PREMode security mode for proxy re-encryption (only INDCPA and NOT_SET are supported by BFV).
-   * @param multipartyMode security mode for multiparty (threshold) decryption.
-   * @param executionMode execution mode (CKKS-only; kept for a uniform interface).
-   * @param decryptionNoiseMode decryption noise mode (CKKS-only; kept for a uniform interface).
-   * @param noiseScale multiplier applied to the fresh encryption noise (always 1 for BFV).
-   * @param statisticalSecurity statistical security parameter in bits (CKKS-only).
-   * @param numAdversarialQueries number of adversarial decryption queries assumed (CKKS-only).
-   * @param thresholdNumOfParties number of parties in a threshold-FHE application (bounds the joint secret key).
-   */
+     * Constructor that initializes the BFV crypto parameters from explicit encoding parameters.
+     *
+     * @param params element parameters (the DCRT modulus chain).
+     * @param encodingParams encoding parameters (plaintext modulus, batch size).
+     * @param distributionParameter standard deviation of the error distribution.
+     * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+     * @param securityLevel security level from the homomorphic encryption standard.
+     * @param digitSize the size of the digit (relinearization window) for BV key switching.
+     * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
+     * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+     * @param ksTech key switching technique (BV or HYBRID).
+     * @param scalTech scaling technique (BFV always uses FIXEDMANUAL).
+     * @param encTech encryption technique (STANDARD or EXTENDED).
+     * @param multTech homomorphic multiplication technique (HPS, BEHZ, HPSPOVERQ or HPSPOVERQLEVELED).
+     * @param PREMode security mode for proxy re-encryption (only INDCPA and NOT_SET are supported by BFV).
+     * @param multipartyMode security mode for multiparty (threshold) decryption.
+     * @param executionMode execution mode (CKKS-only; kept for a uniform interface).
+     * @param decryptionNoiseMode decryption noise mode (CKKS-only; kept for a uniform interface).
+     * @param noiseScale multiplier applied to the fresh encryption noise (always 1 for BFV).
+     * @param statisticalSecurity statistical security parameter in bits (CKKS-only).
+     * @param numAdversarialQueries number of adversarial decryption queries assumed (CKKS-only).
+     * @param thresholdNumOfParties number of parties in a threshold-FHE application (bounds the joint secret key).
+     */
     CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
                            float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
                            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
@@ -128,47 +128,47 @@ class CryptoParametersBFVRNS : public CryptoParametersRNS {
     virtual ~CryptoParametersBFVRNS() {}
 
     /**
-   * Computes the RNS tables shared by all schemes (via CryptoParametersRNS::PrecomputeCRTTables) and the
-   * BFV-specific tables: [-Q_l]_t and t^{-1} mod q_i for encryption, the basis Qr for EXTENDED encryption,
-   * the auxiliary bases R_l / Q_l*R_l and the basis-extension and scale-and-round tables for the HPS family
-   * of multiplication techniques (leveled versions for every Q_l when HPSPOVERQ or HPSPOVERQLEVELED is
-   * used), the Bsk = B U {msk} tables for BEHZ, and the decryption scale-and-round tables.
-   *
-   * @param ksTech the technique to use for key switching (BV or HYBRID).
-   * @param scalTech the technique to use for scaling (FIXEDMANUAL for BFV).
-   * @param encTech the technique to use for encryption (STANDARD or EXTENDED).
-   * @param multTech the technique to use for homomorphic multiplication (HPS, BEHZ, HPSPOVERQ or
-   * HPSPOVERQLEVELED).
-   * @param numPartQ the number of digits (partitions of Q) for HYBRID key switching.
-   * @param auxBits the number of bits in the auxiliary (special) prime moduli.
-   * @param extraBits the number of extra bits reserved for the auxiliary modulus in HYBRID key switching.
-   */
+     * Computes the RNS tables shared by all schemes (via CryptoParametersRNS::PrecomputeCRTTables) and the
+     * BFV-specific tables: [-Q_l]_t and t^{-1} mod q_i for encryption, the basis Qr for EXTENDED encryption,
+     * the auxiliary bases R_l / Q_l*R_l and the basis-extension and scale-and-round tables for the HPS family
+     * of multiplication techniques (leveled versions for every Q_l when HPSPOVERQ or HPSPOVERQLEVELED is
+     * used), the Bsk = B U {msk} tables for BEHZ, and the decryption scale-and-round tables.
+     *
+     * @param ksTech the technique to use for key switching (BV or HYBRID).
+     * @param scalTech the technique to use for scaling (FIXEDMANUAL for BFV).
+     * @param encTech the technique to use for encryption (STANDARD or EXTENDED).
+     * @param multTech the technique to use for homomorphic multiplication (HPS, BEHZ, HPSPOVERQ or
+     * HPSPOVERQLEVELED).
+     * @param numPartQ the number of digits (partitions of Q) for HYBRID key switching.
+     * @param auxBits the number of bits in the auxiliary (special) prime moduli.
+     * @param extraBits the number of extra bits reserved for the auxiliary modulus in HYBRID key switching.
+     */
     void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
                              MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
                              uint32_t extraBits) override;
 
     /**
-   * Returns the step for the auxiliary prime search of HYBRID key switching; for BFV the auxiliary primes
-   * are chosen to be 1 modulo the cyclotomic order 2n.
-   *
-   * @return the cyclotomic order 2n.
-   */
+     * Returns the step for the auxiliary prime search of HYBRID key switching; for BFV the auxiliary primes
+     * are chosen to be 1 modulo the cyclotomic order 2n.
+     *
+     * @return the cyclotomic order 2n.
+     */
     uint64_t FindAuxPrimeStep() const override;
 
     /**
-   * Number of hops for HRA-secure proxy re-encryption; not available for BFV (always throws).
-   *
-   * @return never returns.
-   */
+     * Number of hops for HRA-secure proxy re-encryption; not available for BFV (always throws).
+     *
+     * @return never returns.
+     */
     uint32_t GetPRENumHops() const override {
         DISABLED_FOR_BFVRNS_PARAMS;
     }
 
     /**
-   * CKKS noise estimate for noise flooding; not available for BFV (always throws).
-   *
-   * @return never returns.
-   */
+     * CKKS noise estimate for noise flooding; not available for BFV (always throws).
+     *
+     * @return never returns.
+     */
     double GetNoiseEstimate() const override {
         DISABLED_FOR_BFVRNS_PARAMS;
     }

@@ -68,10 +68,10 @@ struct RingGSWBTKey {
 #endif
 
     /**
-   * Checks whether a refreshing key is present in either representation
-   *
-   * @return true if the 64-bit or the 32-bit refreshing key is set
-   */
+     * Checks whether a refreshing key is present in either representation
+     *
+     * @return true if the 64-bit or the 32-bit refreshing key is set
+     */
     bool HasRefreshKey() const {
 #if NATIVEINT != 32
         return (BSkey != nullptr) || (BSkey32 != nullptr);
@@ -126,11 +126,11 @@ class BinFHEScheme {
     BinFHEScheme() = default;
 
     /**
-   * Constructs the scheme for a bootstrapping method, instantiating the matching accumulator (DM for AP, CGGI for
-   * GINX, and LMKCDEY)
-   *
-   * @param method the bootstrapping method; any other value throws
-   */
+     * Constructs the scheme for a bootstrapping method, instantiating the matching accumulator (DM for AP, CGGI for
+     * GINX, and LMKCDEY)
+     *
+     * @param method the bootstrapping method; any other value throws
+     */
     explicit BinFHEScheme(BINFHE_METHOD method) {
         if (method == AP)
             ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
@@ -143,160 +143,160 @@ class BinFHEScheme {
     }
 
     /**
-   * Generates a refresh key
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param LWEsk a shared pointer to the secret key of the underlying additive
-   * @param keygenMode enum to indicate generation of secret key only (SYM_ENCRYPT) or
-   * secret key, public key pair (PUB_ENCRYPT)
-   * @param internal32 generate the keys directly in their 32-bit internal form where they qualify;
-   * a key whose moduli do not fit is generated in the 64-bit form instead
-   * @return a shared pointer to the refresh key
-   */
+     * Generates a refresh key
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param LWEsk a shared pointer to the secret key of the underlying additive
+     * @param keygenMode enum to indicate generation of secret key only (SYM_ENCRYPT) or
+     * secret key, public key pair (PUB_ENCRYPT)
+     * @param internal32 generate the keys directly in their 32-bit internal form where they qualify;
+     * a key whose moduli do not fit is generated in the 64-bit form instead
+     * @return a shared pointer to the refresh key
+     */
     RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
                         KEYGEN_MODE keygenMode, bool internal32) const;
 
     /**
-   * Evaluates a binary gate (calls bootstrapping as a subroutine)
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct1 first ciphertext
-   * @param ct2 second ciphertext
-   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates a binary gate (calls bootstrapping as a subroutine)
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct1 first ciphertext
+     * @param ct2 second ciphertext
+     * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
                               ConstLWECiphertext& ct1, ConstLWECiphertext& ct2, bool extended = false) const;
 
     /**
-   * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine).
-   * The evaluation of the gates in this function is specific to 3 input and 4 input
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param gate the gate; can be for 3-input: AND3, OR3, MAJORITY, CMUX, for 4-input: AND4, OR4
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ctvector vector of ciphertexts
-   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine).
+     * The evaluation of the gates in this function is specific to 3 input and 4 input
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param gate the gate; can be for 3-input: AND3, OR3, MAJORITY, CMUX, for 4-input: AND4, OR4
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ctvector vector of ciphertexts
+     * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
                               const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
 
     /**
-   * Evaluates NOT gate
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param ct the input ciphertext
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates NOT gate
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param ct the input ciphertext
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalNOT(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWECiphertext& ct) const;
 
     /**
-   * Bootstraps a fresh ciphertext
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct input ciphertext
-   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Bootstraps a fresh ciphertext
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct input ciphertext
+     * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                             ConstLWECiphertext& ct, bool extended = false) const;
 
     /**
-   * Evaluate an arbitrary function
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct input ciphertext
-   * @param LUT the look-up table of the to-be-evaluated function
-   * @param beta the error bound
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate an arbitrary function
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct input ciphertext
+     * @param LUT the look-up table of the to-be-evaluated function
+     * @param beta the error bound
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                            ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT, NativeInteger beta) const;
 
     /**
-   * Evaluate a round down function
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct input ciphertext
-   * @param beta the error bound
-   * @param roundbits by how many bits to round down
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate a round down function
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct input ciphertext
+     * @param beta the error bound
+     * @param roundbits by how many bits to round down
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalFloor(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                             ConstLWECiphertext& ct, NativeInteger beta, uint32_t roundbits = 0) const;
 
     /**
-   * Evaluate a sign function over large precision
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EKs a shared pointer to the bootstrapping keys map
-   * @param ct input ciphertext
-   * @param beta the error bound
-   * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate a sign function over large precision
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EKs a shared pointer to the bootstrapping keys map
+     * @param ct input ciphertext
+     * @param beta the error bound
+     * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
                            const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct, NativeInteger beta,
                            bool schemeSwitch = false) const;
 
     /**
-   * Evaluate digit decomposition over a large precision LWE ciphertext
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EKs a shared pointer to the bootstrapping keys map
-   * @param ct input ciphertext
-   * @param beta the error bound
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate digit decomposition over a large precision LWE ciphertext
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EKs a shared pointer to the bootstrapping keys map
+     * @param ct input ciphertext
+     * @param beta the error bound
+     * @return a shared pointer to the resulting ciphertext
+     */
     std::vector<LWECiphertext> EvalDecomp(const std::shared_ptr<BinFHECryptoParams>& params,
                                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
                                           NativeInteger beta) const;
 
   private:
     /**
-   * Core bootstrapping operation
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct input ciphertext
-   * @return the output RingLWE accumulator
-   */
+     * Core bootstrapping operation
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct input ciphertext
+     * @return the output RingLWE accumulator
+     */
     RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
                                      const RingGSWBTKey& EK, ConstLWECiphertext& ct) const;
 
     // Arbitrary function evaluation purposes
 
     /**
-   * Core bootstrapping operation
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct input ciphertext
-   * @param f function to evaluate in the functional bootstrapping
-   * @param fmod modulus over which the function is defined
-   * @return the output RingLWE accumulator
-   */
+     * Core bootstrapping operation
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct input ciphertext
+     * @param f function to evaluate in the functional bootstrapping
+     * @param fmod modulus over which the function is defined
+     * @return the output RingLWE accumulator
+     */
     template <typename Func>
     RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                      ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
 
     /**
-   * Bootstraps a ciphertext while evaluating a function on it (functional bootstrapping)
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param EK a shared pointer to the bootstrapping keys
-   * @param ct input ciphertext
-   * @param f function to evaluate in the functional bootstrapping
-   * @param fmod modulus over which the function is defined
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Bootstraps a ciphertext while evaluating a function on it (functional bootstrapping)
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param EK a shared pointer to the bootstrapping keys
+     * @param ct input ciphertext
+     * @param f function to evaluate in the functional bootstrapping
+     * @param fmod modulus over which the function is defined
+     * @return a shared pointer to the resulting ciphertext
+     */
     template <typename Func>
     LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                 ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
@@ -313,12 +313,12 @@ class BinFHEScheme {
     std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};  ///< the accumulator selected by the bootstrapping method
 
     /**
-   * Checks type of input function
-   *
-   * @param lut look up table for the input function
-   * @param mod modulus over which the function is defined
-   * @return the function type: 0 for negacyclic, 1 for periodic, 2 for arbitrary
-   */
+     * Checks type of input function
+     *
+     * @param lut look up table for the input function
+     * @param mod modulus over which the function is defined
+     * @return the function type: 0 for negacyclic, 1 for periodic, 2 for arbitrary
+     */
     static uint32_t checkInputFunction(const std::vector<NativeInteger>& lut, NativeInteger mod) {
         size_t mid{lut.size() / 2};
         if (lut[0] == (mod - lut[mid])) {

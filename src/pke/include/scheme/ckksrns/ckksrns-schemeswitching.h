@@ -141,56 +141,56 @@ class SWITCHCKKSRNS : public FHERNS {
                                                                 double scaleSign) override;
 
     /**
-   * Gets the FHEW (binary FHE) cryptocontext used for scheme switching.
-   *
-   * @return the FHEW cryptocontext
-   */
+     * Gets the FHEW (binary FHE) cryptocontext used for scheme switching.
+     *
+     * @return the FHEW cryptocontext
+     */
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
         return m_ccLWE;
     }
 
     /**
-   * Sets the FHEW (binary FHE) cryptocontext used for scheme switching (e.g., after deserialization).
-   *
-   * @param ccLWE the FHEW cryptocontext
-   */
+     * Sets the FHEW (binary FHE) cryptocontext used for scheme switching (e.g., after deserialization).
+     *
+     * @param ccLWE the FHEW cryptocontext
+     */
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override {
         m_ccLWE = ccLWE;
     }
 
     /**
-   * Gets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key.
-   *
-   * @return the switching key
-   */
+     * Gets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key.
+     *
+     * @return the switching key
+     */
     Ciphertext<DCRTPoly> GetSwkFC() override {
         return m_FHEWtoCKKSswk;
     }
 
     /**
-   * Sets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key (it is not serialized
-   * with this object, so it has to be restored after deserialization).
-   *
-   * @param FHEWtoCKKSswk the switching key
-   */
+     * Sets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key (it is not serialized
+     * with this object, so it has to be restored after deserialization).
+     *
+     * @param FHEWtoCKKSswk the switching key
+     */
     void SetSwkFC(Ciphertext<DCRTPoly> FHEWtoCKKSswk) override {
         m_FHEWtoCKKSswk = FHEWtoCKKSswk;
     }
 
     /**
-   * Gets the number of values (LWE ciphertexts) the scheme switching was set up for.
-   *
-   * @return the number of ciphertexts to switch
-   */
+     * Gets the number of values (LWE ciphertexts) the scheme switching was set up for.
+     *
+     * @return the number of ciphertexts to switch
+     */
     uint32_t GetNumCtxtsToSwitch() {
         return m_numCtxts;
     }
 
     /**
-   * Gets the LWE ciphertext modulus the CKKS ciphertexts are switched to.
-   *
-   * @return the LWE modulus
-   */
+     * Gets the LWE ciphertext modulus the CKKS ciphertexts are switched to.
+     *
+     * @return the LWE modulus
+     */
     NativeInteger GetModulusLWEToSwitch() {
         return m_modulus_LWE;
     }
@@ -292,25 +292,25 @@ class SWITCHCKKSRNS : public FHERNS {
 
 #if NATIVEINT == 128
     /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param ringDim ring dimension (number of coefficients to fit).
-   * @param vec input vector
-   * @param bigBound big bound of the vector values.
-   * @param nativeVec output native vector (its modulus is used to fit the values).
-   */
+     * Set modulus and recalculates the vector values to fit the modulus
+     *
+     * @param ringDim ring dimension (number of coefficients to fit).
+     * @param vec input vector
+     * @param bigBound big bound of the vector values.
+     * @param nativeVec output native vector (its modulus is used to fit the values).
+     */
     void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                            NativeVector* nativeVec) const;
 
 #else  // NATIVEINT == 64
     /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param ringDim ring dimension (number of coefficients to fit).
-   * @param vec input vector
-   * @param bigBound big bound of the vector values.
-   * @param nativeVec output native vector (its modulus is used to fit the values).
-   */
+     * Set modulus and recalculates the vector values to fit the modulus
+     *
+     * @param ringDim ring dimension (number of coefficients to fit).
+     * @param vec input vector
+     * @param bigBound big bound of the vector values.
+     * @param nativeVec output native vector (its modulus is used to fit the values).
+     */
     void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                            NativeVector* nativeVec) const;
 #endif

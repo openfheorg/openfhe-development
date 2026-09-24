@@ -75,8 +75,8 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     }
 
     /**
-   * Basic constructor.
-   */
+     * Basic constructor.
+     */
     BigVectorFixedT();
 
     static inline BigVectorFixedT Single(const IntegerType& val, const IntegerType& modulus) {
@@ -86,12 +86,12 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     }
 
     /**
-   * Basic constructor for specifying the length of the vector and the modulus.
-   *
-   * @param length is the length of the big binary vector, in terms of the
-   * number of entries.
-   * @param modulus is the modulus of the ring.
-   */
+     * Basic constructor for specifying the length of the vector and the modulus.
+     *
+     * @param length is the length of the big binary vector, in terms of the
+     * number of entries.
+     * @param modulus is the modulus of the ring.
+     */
     explicit BigVectorFixedT(uint32_t length, const IntegerType& modulus = 0);
 
     BigVectorFixedT(uint32_t length, const IntegerType& modulus, const IntegerType& value)
@@ -100,82 +100,82 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     }
 
     /**
-   * Basic constructor for copying a vector
-   *
-   * @param bigVector is the big binary vector to be copied.
-   */
+     * Basic constructor for copying a vector
+     *
+     * @param bigVector is the big binary vector to be copied.
+     */
     BigVectorFixedT(const BigVectorFixedT& bigVector);
 
     /**
-   * Basic move constructor for moving a vector
-   *
-   * @param bigVector is the big binary vector to be moved.
-   */
+     * Basic move constructor for moving a vector
+     *
+     * @param bigVector is the big binary vector to be moved.
+     */
     BigVectorFixedT(BigVectorFixedT&& bigVector);  // move copy constructor
 
     /**
-   * Basic constructor for specifying the length of the vector
-   * the modulus and an initializer list.
-   *
-   * @param length is the length of the big binary vector, in terms of the
-   * number of entries.
-   * @param modulus is the modulus of the ring.
-   * @param rhs is an initializer list of strings
-   */
+     * Basic constructor for specifying the length of the vector
+     * the modulus and an initializer list.
+     *
+     * @param length is the length of the big binary vector, in terms of the
+     * number of entries.
+     * @param modulus is the modulus of the ring.
+     * @param rhs is an initializer list of strings
+     */
 
     BigVectorFixedT(uint32_t length, const IntegerType& modulus, std::initializer_list<std::string> rhs);
 
     /**
-   * Basic constructor for specifying the length of the vector
-   * the modulus and an initializer list.
-   *
-   * @param length is the length of the big binary vector, in terms of the
-   * number of entries.
-   * @param modulus is the modulus of the ring.
-   * @param rhs is an initializer list of uint64_t
-   */
+     * Basic constructor for specifying the length of the vector
+     * the modulus and an initializer list.
+     *
+     * @param length is the length of the big binary vector, in terms of the
+     * number of entries.
+     * @param modulus is the modulus of the ring.
+     * @param rhs is an initializer list of uint64_t
+     */
     BigVectorFixedT(uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs);
 
     /**
-   * Assignment operator to assign value from rhs
-   *
-   * @param rhs is the big binary vector to be assigned from.
-   * @return Assigned BigVectorFixedT.
-   */
+     * Assignment operator to assign value from rhs
+     *
+     * @param rhs is the big binary vector to be assigned from.
+     * @return Assigned BigVectorFixedT.
+     */
     BigVectorFixedT& operator=(const BigVectorFixedT& rhs);
 
     /**
-   * Move assignment operator
-   *
-   * @param rhs is the big binary vector to be moved.
-   * @return moved BigVectorFixedT object
-   */
+     * Move assignment operator
+     *
+     * @param rhs is the big binary vector to be moved.
+     * @return moved BigVectorFixedT object
+     */
     BigVectorFixedT& operator=(BigVectorFixedT&& rhs);
 
     /**
-   * Initializer list for BigVectorFixedT.
-   *
-   * @param rhs is the list of strings containing integers to be assigned to
-   * the BBV.
-   * @return BigVectorFixedT object
-   */
+     * Initializer list for BigVectorFixedT.
+     *
+     * @param rhs is the list of strings containing integers to be assigned to
+     * the BBV.
+     * @return BigVectorFixedT object
+     */
     BigVectorFixedT& operator=(std::initializer_list<std::string> rhs);
 
     /**
-   * Initializer list for BigVectorFixedT.
-   *
-   * @param rhs is the list of integers to be assigned to the BBV.
-   * @return BigVectorFixedT object
-   */
+     * Initializer list for BigVectorFixedT.
+     *
+     * @param rhs is the list of integers to be assigned to the BBV.
+     * @return BigVectorFixedT object
+     */
     BigVectorFixedT& operator=(std::initializer_list<uint64_t> rhs);
 
     /**
-   * Assignment operator to assign value val to first entry, 0 for the rest of
-   * entries.
-   *
-   * @param val is the value to be assigned at the first entry.
-   * @return Assigned BigVectorFixedT.
-   */
+     * Assignment operator to assign value val to first entry, 0 for the rest of
+     * entries.
+     *
+     * @param val is the value to be assigned at the first entry.
+     * @return Assigned BigVectorFixedT.
+     */
     BigVectorFixedT& operator=(uint64_t val) {
         m_data[0] = val;
         if (m_modulus != 0) {
@@ -190,12 +190,12 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     // ACCESSORS
 
     /**
-   * Sets/gets a value at an index.
-   * This method is slower than operator[] as it checks if index out of range
-   *
-   * @param i is the index of the entry to access.
-   * @return is a reference to the entry at the index.
-   */
+     * Sets/gets a value at an index.
+     * This method is slower than operator[] as it checks if index out of range
+     *
+     * @param i is the index of the entry to access.
+     * @return is a reference to the entry at the index.
+     */
     IntegerType& at(size_t i) {
         if (!IndexCheck(i)) {
             OPENFHE_THROW("BigVector index out of range");
@@ -211,10 +211,10 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     }
 
     /**
-   * operators to get a value at an index.
-   * @param idx is the index to get a value at.
-   * @return is the value at the index.
-   */
+     * operators to get a value at an index.
+     * @param idx is the index to get a value at.
+     * @return is the value at the index.
+     */
     IntegerType& operator[](size_t idx) {
         return m_data[idx];
     }
@@ -224,19 +224,19 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     }
 
     /**
-   * Sets the vector modulus.
-   *
-   * @param value is the modulus value to set.
-   */
+     * Sets the vector modulus.
+     *
+     * @param value is the modulus value to set.
+     */
     void SetModulus(const IntegerType& value) {
         m_modulus = value;
     }
 
     /**
-   * Sets the vector modulus and changes the values to match the new modulus.
-   *
-   * @param value is the value to set.
-   */
+     * Sets the vector modulus and changes the values to match the new modulus.
+     *
+     * @param value is the value to set.
+     */
     void SwitchModulus(const IntegerType& value);
     void LazySwitchModulus(const IntegerType& value);
 
@@ -248,19 +248,19 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     }
 
     /**
-   * Gets the vector modulus.
-   *
-   * @return the vector modulus.
-   */
+     * Gets the vector modulus.
+     *
+     * @return the vector modulus.
+     */
     const IntegerType& GetModulus() const {
         return m_modulus;
     }
 
     /**
-   * Gets the vector length.
-   *
-   * @return vector length.
-   */
+     * Gets the vector length.
+     *
+     * @return vector length.
+     */
     size_t GetLength() const {
         return m_length;
     }
@@ -268,272 +268,272 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     // MODULAR ARITHMETIC OPERATIONS
 
     /**
-   * Vector modulus operator.
-   *
-   * @param modulus is the modulus to perform on the current vector entries.
-   * @return is the result of the modulus operation on current vector.
-   */
+     * Vector modulus operator.
+     *
+     * @param modulus is the modulus to perform on the current vector entries.
+     * @return is the result of the modulus operation on current vector.
+     */
     BigVectorFixedT Mod(const IntegerType& modulus) const;
 
     /**
-   * Vector modulus operator. In-place variant.
-   *
-   * @param modulus is the modulus to perform on the current vector entries.
-   * @return is the result of the modulus operation on current vector.
-   */
+     * Vector modulus operator. In-place variant.
+     *
+     * @param modulus is the modulus to perform on the current vector entries.
+     * @return is the result of the modulus operation on current vector.
+     */
     BigVectorFixedT& ModEq(const IntegerType& modulus);
 
     /**
-   * Scalar-to-vector modulus addition operation.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar-to-vector modulus addition operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus addition operation.
+     */
     BigVectorFixedT ModAdd(const IntegerType& b) const;
 
     /**
-   * Scalar-to-vector modulus addition operation. In-place variant.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar-to-vector modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus addition operation.
+     */
     BigVectorFixedT& ModAddEq(const IntegerType& b);
 
     /**
-   * Scalar modulus addition at a particular index.
-   *
-   * @param i is the index of the entry to add.
-   * @param b is the scalar to add.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar modulus addition at a particular index.
+     *
+     * @param i is the index of the entry to add.
+     * @param b is the scalar to add.
+     * @return is the result of the modulus addition operation.
+     */
     BigVectorFixedT ModAddAtIndex(uint32_t i, const IntegerType& b) const;
 
     /**
-   * Scalar modulus addition at a particular index. In-place variant.
-   *
-   * @param i is the index of the entry to add.
-   * @param b is the scalar to add.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar modulus addition at a particular index. In-place variant.
+     *
+     * @param i is the index of the entry to add.
+     * @param b is the scalar to add.
+     * @return is the result of the modulus addition operation.
+     */
     BigVectorFixedT& ModAddAtIndexEq(uint32_t i, const IntegerType& b);
 
     /**
-   * Vector component wise modulus addition.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     BigVectorFixedT ModAdd(const BigVectorFixedT& b) const;
 
     /**
-   * Vector component wise modulus addition. In-place variant.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     BigVectorFixedT& ModAddEq(const BigVectorFixedT& b);
     BigVectorFixedT& ModAddNoCheckEq(const BigVectorFixedT& b);
 
     /**
-   * Scalar-from-vector modulus subtraction operation.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Scalar-from-vector modulus subtraction operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus subtraction operation.
+     */
     BigVectorFixedT ModSub(const IntegerType& b) const;
 
     /**
-   * Scalar-from-vector modulus subtraction operation. In-place variant.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Scalar-from-vector modulus subtraction operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus subtraction operation.
+     */
     BigVectorFixedT& ModSubEq(const IntegerType& b);
 
     /**
-   * Vector component wise modulus subtraction.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus subtraction operation.
-   */
+     * Vector component wise modulus subtraction.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus subtraction operation.
+     */
     BigVectorFixedT ModSub(const BigVectorFixedT& b) const;
 
     /**
-   * Vector component wise modulus subtraction. In-place variant.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus subtraction operation.
-   */
+     * Vector component wise modulus subtraction. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus subtraction operation.
+     */
     BigVectorFixedT& ModSubEq(const BigVectorFixedT& b);
 
     /**
-   * Scalar-to-vector modulus multiplication operation.
-   * Generalized Barrett modulo reduction algorithm.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Scalar-to-vector modulus multiplication operation.
+     * Generalized Barrett modulo reduction algorithm.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus multiplication operation.
+     */
     BigVectorFixedT ModMul(const IntegerType& b) const;
 
     /**
-   * Scalar-to-vector modulus multiplication operation. In-place variant.
-   * Generalized Barrett modulo reduction algorithm.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Scalar-to-vector modulus multiplication operation. In-place variant.
+     * Generalized Barrett modulo reduction algorithm.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus multiplication operation.
+     */
     BigVectorFixedT& ModMulEq(const IntegerType& b);
 
     /**
-   * Vector component wise modulus multiplication.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication
-   * operation.
-   */
+     * Vector component wise modulus multiplication.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication
+     * operation.
+     */
     BigVectorFixedT ModMul(const BigVectorFixedT& b) const;
 
     /**
-   * Vector component wise modulus multiplication. In-place variant.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication
-   * operation.
-   */
+     * Vector component wise modulus multiplication. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication
+     * operation.
+     */
     BigVectorFixedT& ModMulEq(const BigVectorFixedT& b);
     BigVectorFixedT& ModMulNoCheckEq(const BigVectorFixedT& b);
 
     /**
-   * Scalar modulus exponentiation operation.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Scalar modulus exponentiation operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     BigVectorFixedT ModExp(const IntegerType& b) const;
 
     /**
-   * Scalar modulus exponentiation operation. In-place variant.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Scalar modulus exponentiation operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     BigVectorFixedT& ModExpEq(const IntegerType& b);
 
     /**
-   * Modulus inverse operation.
-   *
-   * @return is the result of the component wise modulus inverse operation.
-   */
+     * Modulus inverse operation.
+     *
+     * @return is the result of the component wise modulus inverse operation.
+     */
     BigVectorFixedT ModInverse() const;
 
     /**
-   * Modulus inverse operation. In-place variant.
-   *
-   * @return is the result of the component wise modulus inverse operation.
-   */
+     * Modulus inverse operation. In-place variant.
+     *
+     * @return is the result of the component wise modulus inverse operation.
+     */
     BigVectorFixedT& ModInverseEq();
 
     /**
-   * Modulus 2 operation, also a least significant bit.
-   *
-   * @return is the result of the component wise modulus 2 operation, also a
-   * least significant bit.
-   */
+     * Modulus 2 operation, also a least significant bit.
+     *
+     * @return is the result of the component wise modulus 2 operation, also a
+     * least significant bit.
+     */
     BigVectorFixedT ModByTwo() const;
 
     /**
-   * Modulus 2 operation, also a least significant bit. In-place variant.
-   *
-   * @return is the result of the component wise modulus 2 operation, also a
-   * least significant bit.
-   */
+     * Modulus 2 operation, also a least significant bit. In-place variant.
+     *
+     * @return is the result of the component wise modulus 2 operation, also a
+     * least significant bit.
+     */
     BigVectorFixedT& ModByTwoEq();
 
     /**
-   * Vector multiplication without applying the modulus operation.
-   *
-   * @param b is the vector to multiply.
-   * @return is the result of the multiplication operation.
-   */
+     * Vector multiplication without applying the modulus operation.
+     *
+     * @param b is the vector to multiply.
+     * @return is the result of the multiplication operation.
+     */
     BigVectorFixedT MultWithOutMod(const BigVectorFixedT& b) const;
 
     /**
-   * Vector multiplication without applying the modulus operation. In-place
-   * variant.
-   *
-   * @param b is the vector to multiply.
-   * @return is the result of the multiplication operation.
-   */
+     * Vector multiplication without applying the modulus operation. In-place
+     * variant.
+     *
+     * @param b is the vector to multiply.
+     * @return is the result of the multiplication operation.
+     */
     BigVectorFixedT& MultWithOutModEq(const BigVectorFixedT& b);
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     BigVectorFixedT MultiplyAndRound(const IntegerType& p, const IntegerType& q) const;
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     BigVectorFixedT& MultiplyAndRoundEq(const IntegerType& p, const IntegerType& q);
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     BigVectorFixedT DivideAndRound(const IntegerType& q) const;
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     BigVectorFixedT& DivideAndRoundEq(const IntegerType& q);
 
     // OTHER FUNCTIONS
 
     /**
-   * Digit vector at a specific index for all entries for a given number base.
-   * Warning: only power-of-2 bases are currently supported.
-   * Example: for vector (83, 1, 45), index 2 and base 4 we have:
-   *
-   *                           index:0,1,2,3
-   * |83|                           |3,0,1,1|                 |1|
-   * |1 | --base 4 decomposition--> |1,0,0,0| --at index 2--> |0|
-   * |45|                           |1,3,2,0|                 |2|
-   *
-   * The return vector is (1,0,2)
-   *
-   * @param index is the index to return the digit from in all entries.
-   * @param base is the base to use for the operation.
-   * @return is the digit at a specific index for all entries for a given number
-   * base
-   */
+     * Digit vector at a specific index for all entries for a given number base.
+     * Warning: only power-of-2 bases are currently supported.
+     * Example: for vector (83, 1, 45), index 2 and base 4 we have:
+     *
+     *                           index:0,1,2,3
+     * |83|                           |3,0,1,1|                 |1|
+     * |1 | --base 4 decomposition--> |1,0,0,0| --at index 2--> |0|
+     * |45|                           |1,3,2,0|                 |2|
+     *
+     * The return vector is (1,0,2)
+     *
+     * @param index is the index to return the digit from in all entries.
+     * @param base is the base to use for the operation.
+     * @return is the digit at a specific index for all entries for a given number
+     * base
+     */
     BigVectorFixedT GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // STRINGS & STREAMS
 
     /**
-   * ostream operator to output vector values to console
-   *
-   * @param os is the std ostream object.
-   * @param ptr_obj is the BigVectorFixedT object to be printed.
-   * @return std ostream object which captures the vector values.
-   */
+     * ostream operator to output vector values to console
+     *
+     * @param os is the std ostream object.
+     * @param ptr_obj is the BigVectorFixedT object to be printed.
+     * @return std ostream object which captures the vector values.
+     */
     template <class IntegerType_c>
     friend std::ostream& operator<<(std::ostream& os, const BigVectorFixedT<IntegerType_c>& ptr_obj) {
         auto len = ptr_obj.m_length;

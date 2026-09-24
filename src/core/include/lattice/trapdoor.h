@@ -68,10 +68,10 @@ class RLWETrapdoorPair {
           m_e(Matrix<Element>([]() { return Element(); }, 0, 0)) {}
 
     /**
-   * @brief Constructs the trapdoor pair from the two rows sampled by TrapdoorGen.
-   * @param r row of noise polynomials r
-   * @param e row of noise polynomials e
-   */
+     * @brief Constructs the trapdoor pair from the two rows sampled by TrapdoorGen.
+     * @param r row of noise polynomials r
+     * @param e row of noise polynomials e
+     */
     RLWETrapdoorPair(const Matrix<Element>& r, const Matrix<Element>& e) : m_r(r), m_e(e) {}
 
     template <class Archive>
@@ -99,126 +99,126 @@ class RLWETrapdoorUtility {
 
   public:
     /**
-   * Trapdoor generation method as described in Algorithm 1 of
-   * https://eprint.iacr.org/2017/844.pdf
-   *
-   * @param params ring element parameters
-   * @param stddev distribution parameter used in sampling noise polynomials
-   * of the trapdoor
-   * @param base base of gadget matrix
-   * @param bal flag for balanced (true) versus not-balanced (false) digit
-   * representation
-   * @return the trapdoor pair including the public key (matrix of rings)
-   * and trapdoor itself
-   */
+     * Trapdoor generation method as described in Algorithm 1 of
+     * https://eprint.iacr.org/2017/844.pdf
+     *
+     * @param params ring element parameters
+     * @param stddev distribution parameter used in sampling noise polynomials
+     * of the trapdoor
+     * @param base base of gadget matrix
+     * @param bal flag for balanced (true) versus not-balanced (false) digit
+     * representation
+     * @return the trapdoor pair including the public key (matrix of rings)
+     * and trapdoor itself
+     */
     static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGen(std::shared_ptr<ParmType> params,
                                                                              double stddev, int64_t base = 2,
                                                                              bool bal = false);
 
     /**
-   * Generalized trapdoor generation method (described in "Implementing
-   * Token-Based Obfuscation under (Ring) LWE")
-   *
-   * @param params ring element parameters
-   * @param stddev distribution parameter used in sampling noise polynomials of
-   * the trapdoor
-   * @param dimension dimension of the square matrix
-   * @param base base of gadget matrix
-   * @param bal flag for balanced (true) versus not-balanced (false) digit
-   * representation
-   * @return the trapdoor pair including the public key (matrix of rings) and
-   * trapdoor itself
-   */
+     * Generalized trapdoor generation method (described in "Implementing
+     * Token-Based Obfuscation under (Ring) LWE")
+     *
+     * @param params ring element parameters
+     * @param stddev distribution parameter used in sampling noise polynomials of
+     * the trapdoor
+     * @param dimension dimension of the square matrix
+     * @param base base of gadget matrix
+     * @param bal flag for balanced (true) versus not-balanced (false) digit
+     * representation
+     * @return the trapdoor pair including the public key (matrix of rings) and
+     * trapdoor itself
+     */
     static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGenSquareMat(std::shared_ptr<ParmType> params,
                                                                                       double stddev, size_t dimension,
                                                                                       int64_t base = 2,
                                                                                       bool bal = false);
 
     /**
-   * Gaussian sampling as described in Alogorithm 2 of
-   * https://eprint.iacr.org/2017/844.pdf
-   *
-   * @param n ring dimension
-   * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
-   * @param A public key of the trapdoor pair
-   * @param T trapdoor itself
-   * @param u syndrome vector where gaussian that Gaussian sampling is centered
-   * around
-   * @param dgg discrete Gaussian generator for integers
-   * @param dggLargeSigma discrete Gaussian generator for perturbation vector
-   * sampling (only used in Peikert's method)
-   * @param base base of gadget matrix
-   * @return the sampled vector (matrix)
-   */
+     * Gaussian sampling as described in Alogorithm 2 of
+     * https://eprint.iacr.org/2017/844.pdf
+     *
+     * @param n ring dimension
+     * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
+     * @param A public key of the trapdoor pair
+     * @param T trapdoor itself
+     * @param u syndrome vector where gaussian that Gaussian sampling is centered
+     * around
+     * @param dgg discrete Gaussian generator for integers
+     * @param dggLargeSigma discrete Gaussian generator for perturbation vector
+     * sampling (only used in Peikert's method)
+     * @param base base of gadget matrix
+     * @return the sampled vector (matrix)
+     */
     static Matrix<Element> GaussSamp(size_t n, size_t k, const Matrix<Element>& A, const RLWETrapdoorPair<Element>& T,
                                      const Element& u, DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
 
     /**
-   * Gaussian sampling (described in "Implementing Token-Based Obfuscation under
-   * (Ring) LWE")
-   *
-   * @param n ring dimension
-   * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
-   * @param A public key of the trapdoor pair
-   * @param T trapdoor itself
-   * @param U syndrome matrix that Gaussian sampling is centered around
-   * @param dgg discrete Gaussian generator for integers
-   * @param dggLargeSigma discrete Gaussian generator for perturbation vector
-   * sampling (only used in Peikert's method)
-   * @param base base of gadget matrix
-   * @return the sampled vector (matrix)
-   */
+     * Gaussian sampling (described in "Implementing Token-Based Obfuscation under
+     * (Ring) LWE")
+     *
+     * @param n ring dimension
+     * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
+     * @param A public key of the trapdoor pair
+     * @param T trapdoor itself
+     * @param U syndrome matrix that Gaussian sampling is centered around
+     * @param dgg discrete Gaussian generator for integers
+     * @param dggLargeSigma discrete Gaussian generator for perturbation vector
+     * sampling (only used in Peikert's method)
+     * @param base base of gadget matrix
+     * @return the sampled vector (matrix)
+     */
     static Matrix<Element> GaussSampSquareMat(size_t n, size_t k, const Matrix<Element>& A,
                                               const RLWETrapdoorPair<Element>& T, const Matrix<Element>& U,
                                               DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
 
     /**
-   * On-line stage of pre-image sampling (includes only G-sampling)
-   *
-   * @param n ring dimension
-   * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
-   * @param A public key of the trapdoor pair
-   * @param T trapdoor itself
-   * @param u syndrome vector where gaussian that Gaussian sampling is centered
-   * around
-   * @param dgg discrete Gaussian generator for integers
-   * @param perturbationVector perturbation vector generated during the offline
-   * stage
-   * @param base base for G-lattice
-   * @return the sampled vector (matrix)
-   */
+     * On-line stage of pre-image sampling (includes only G-sampling)
+     *
+     * @param n ring dimension
+     * @param k matrix sample dimension; k = log2(q)/log2(base) + 2
+     * @param A public key of the trapdoor pair
+     * @param T trapdoor itself
+     * @param u syndrome vector where gaussian that Gaussian sampling is centered
+     * around
+     * @param dgg discrete Gaussian generator for integers
+     * @param perturbationVector perturbation vector generated during the offline
+     * stage
+     * @param base base for G-lattice
+     * @return the sampled vector (matrix)
+     */
     static Matrix<Element> GaussSampOnline(size_t n, size_t k, const Matrix<Element>& A,
                                            const RLWETrapdoorPair<Element>& T, const Element& u, DggType& dgg,
                                            const std::shared_ptr<Matrix<Element>> perturbationVector, int64_t base = 2);
 
     /**
-   * Offline stage of pre-image sampling (perturbation sampling)
-   *
-   * @param n ring dimension
-   * @param k matrix sample dimension; k = logq + 2
-   * @param T trapdoor itself
-   * @param dgg discrete Gaussian generator for integers
-   * @param dggLargeSigma discrete Gaussian generator for perturbation vector
-   * sampling
-   * @param base base for G-lattice
-   * @return the sampled vector (matrix)
-   */
+     * Offline stage of pre-image sampling (perturbation sampling)
+     *
+     * @param n ring dimension
+     * @param k matrix sample dimension; k = logq + 2
+     * @param T trapdoor itself
+     * @param dgg discrete Gaussian generator for integers
+     * @param dggLargeSigma discrete Gaussian generator for perturbation vector
+     * sampling
+     * @param base base for G-lattice
+     * @return the sampled vector (matrix)
+     */
     static std::shared_ptr<Matrix<Element>> GaussSampOffline(size_t n, size_t k, const RLWETrapdoorPair<Element>& T,
                                                              DggType& dgg, DggType& dggLargeSigma, int64_t base = 2);
 
     /**
-   * Method for perturbation generation as described in Algorithm 4 of
-   *https://eprint.iacr.org/2017/844.pdf
-   *
-   *@param n ring dimension
-   *@param s parameter Gaussian distribution
-   *@param sigma standard deviation
-   *@param Tprime compact trapdoor matrix
-   *@param dgg discrete Gaussian generator for error sampling
-   *@param dggLargeSigma discrete Gaussian generator for perturbation vector
-   *sampling
-   *@param perturbationVector perturbation vector;output of the function
-   */
+     * Method for perturbation generation as described in Algorithm 4 of
+     *https://eprint.iacr.org/2017/844.pdf
+     *
+     *@param n ring dimension
+     *@param s parameter Gaussian distribution
+     *@param sigma standard deviation
+     *@param Tprime compact trapdoor matrix
+     *@param dgg discrete Gaussian generator for error sampling
+     *@param dggLargeSigma discrete Gaussian generator for perturbation vector
+     *sampling
+     *@param perturbationVector perturbation vector;output of the function
+     */
     static void ZSampleSigmaP(size_t n, double s, double sigma, const RLWETrapdoorPair<Element>& Tprime,
                               const DggType& dgg, const DggType& dggLargeSigma,
                               std::shared_ptr<Matrix<Element>> perturbationVector) {
@@ -352,18 +352,18 @@ class RLWETrapdoorUtility {
     }
 
     /**
-   * Method for perturbation generation as described in "Implementing
-   *Token-Based Obfuscation under (Ring) LWE"
-   *
-   *@param n ring dimension
-   *@param s spectral norm
-   *@param sigma standard deviation
-   *@param Tprime compact trapdoor matrix
-   *@param dgg discrete Gaussian generator for error sampling
-   *@param dggLargeSigma discrete Gaussian generator for perturbation vector
-   *sampling
-   *@param perturbationVector perturbation vector;output of the function
-   */
+     * Method for perturbation generation as described in "Implementing
+     *Token-Based Obfuscation under (Ring) LWE"
+     *
+     *@param n ring dimension
+     *@param s spectral norm
+     *@param sigma standard deviation
+     *@param Tprime compact trapdoor matrix
+     *@param dgg discrete Gaussian generator for error sampling
+     *@param dggLargeSigma discrete Gaussian generator for perturbation vector
+     *sampling
+     *@param perturbationVector perturbation vector;output of the function
+     */
     static void SamplePertSquareMat(size_t n, double s, double sigma, const RLWETrapdoorPair<Element>& Tprime,
                                     const DggType& dgg, const DggType& dggLargeSigma,
                                     std::shared_ptr<Matrix<Element>> perturbationVector) {

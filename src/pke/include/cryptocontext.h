@@ -89,10 +89,10 @@ class CryptoContextImpl : public Serializable {
     using ParmType = typename Element::Params;
 
     /**
-    * @brief Checks if the cryptocontext scheme is CKKS and throws an exception if it is not.
-    *
-    * @param functionName the calling function name. __func__ can be used instead
-    */
+     * @brief Checks if the cryptocontext scheme is CKKS and throws an exception if it is not.
+     *
+     * @param functionName the calling function name. __func__ can be used instead
+     */
     inline void VerifyCKKSScheme(const std::string& functionName) const {
         if (!isCKKS(m_schemeId)) {
             std::string errMsg = std::string(functionName) +
@@ -104,10 +104,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief VerifyCKKSRealDataType Checks if the CKKS data type is real and throws an exception if it is not.
-    *
-    * @param functionName the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyCKKSRealDataType Checks if the CKKS data type is real and throws an exception if it is not.
+     *
+     * @param functionName the calling function name. __func__ can be used instead
+     */
     inline void VerifyCKKSRealDataType(const std::string& functionName) const {
         if (GetCKKSDataType() != REAL) {
             std::string errMsg =
@@ -128,14 +128,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Constructs CoefPackedEncoding or PackedEncoding in this context
-    *
-    * @param encoding encoding type
-    * @param value the value to encode
-    * @param depth the multiplicative depth to encode the plaintext at
-    * @param level the level to encode the plaintext at
-    * @return new plaintext
-    */
+     * @brief Constructs CoefPackedEncoding or PackedEncoding in this context
+     *
+     * @param encoding encoding type
+     * @param value the value to encode
+     * @param depth the multiplicative depth to encode the plaintext at
+     * @param level the level to encode the plaintext at
+     * @return new plaintext
+     */
     Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
                             uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
@@ -213,13 +213,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Constructs CoefPackedEncoding, PackedEncoding in this context
-    *
-    * @param encoding encoding type
-    * @param cc the context to create a plaintext with
-    * @param value the value to encode
-    * @return new plaintext
-    */
+     * @brief Constructs CoefPackedEncoding, PackedEncoding in this context
+     *
+     * @param encoding encoding type
+     * @param cc the context to create a plaintext with
+     * @param value the value to encode
+     * @return new plaintext
+     */
     template <typename Value1>
     static Plaintext MakePlaintext(PlaintextEncodings encoding, CryptoContext<Element> cc, const Value1& value) {
         return PlaintextFactory::MakePlaintext(value, encoding, cc->GetElementParams(), cc->GetEncodingParams());
@@ -233,12 +233,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Gets automorphism keys for a specific secret key tag and an array of specific indices
-    *
-    * @param keyTag secret key tag
-    * @param indexList array of specific indices to retrieve key for
-    * @return shared_ptr to std::map where the map key/data pair is index/automorphism key
-    */
+     * @brief Gets automorphism keys for a specific secret key tag and an array of specific indices
+     *
+     * @param keyTag secret key tag
+     * @param indexList array of specific indices to retrieve key for
+     * @return shared_ptr to std::map where the map key/data pair is index/automorphism key
+     */
     static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetPartialEvalAutomorphismKeyMapPtr(
             const std::string& keyTag, const std::vector<uint32_t>& indexList);
 
@@ -258,11 +258,11 @@ class CryptoContextImpl : public Serializable {
     uint32_t m_keyGenLevel{0};  ///< level at which evaluation keys should be generated (for future use)
 
     /**
-    * @brief TypeCheck makes sure that an operation between two ciphertexts is permitted
-    *
-    * @param a ciphertext1
-    * @param b ciphertext2
-    */
+     * @brief TypeCheck makes sure that an operation between two ciphertexts is permitted
+     *
+     * @param a ciphertext1
+     * @param b ciphertext2
+     */
     void TypeCheck(ConstCiphertext<Element>& a, ConstCiphertext<Element>& b, CALLER_INFO_ARGS_HDR) const {
         if (a == nullptr || b == nullptr) {
             std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
@@ -291,11 +291,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief TypeCheck makes sure that an operation between a ciphertext and a plaintext is permitted
-    *
-    * @param a ciphertext
-    * @param b plaintext
-    */
+     * @brief TypeCheck makes sure that an operation between a ciphertext and a plaintext is permitted
+     *
+     * @param a ciphertext
+     * @param b plaintext
+     */
     void TypeCheck(ConstCiphertext<Element>& a, ConstPlaintext& b, CALLER_INFO_ARGS_HDR) const {
         if (a == nullptr) {
             std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
@@ -320,20 +320,20 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Checks whether a crypto context is a different object than this one.
-    *
-    * @param a the crypto context to compare with
-    * @return true if a is not this crypto context
-    */
+     * @brief Checks whether a crypto context is a different object than this one.
+     *
+     * @param a the crypto context to compare with
+     * @return true if a is not this crypto context
+     */
     bool Mismatched(const CryptoContext<Element> a) const {
         return a.get() != this;
     }
 
     /**
-    * @brief Throws if a key is null or was not generated with this crypto context.
-    *
-    * @param key the key to validate (any key type with GetCryptoContext())
-    */
+     * @brief Throws if a key is null or was not generated with this crypto context.
+     *
+     * @param key the key to validate (any key type with GetCryptoContext())
+     */
     template <typename T>
     void ValidateKey(const T& key, CALLER_INFO_ARGS_HDR) const {
         if (key == nullptr) {
@@ -347,10 +347,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Throws if a ciphertext is null or was not generated with this crypto context.
-    *
-    * @param ciphertext the ciphertext to validate
-    */
+     * @brief Throws if a ciphertext is null or was not generated with this crypto context.
+     *
+     * @param ciphertext the ciphertext to validate
+     */
     void ValidateCiphertext(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
         if (ciphertext == nullptr) {
             std::string errorMsg(std::string("Ciphertext is nullptr") + CALLER_INFO);
@@ -364,9 +364,9 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Throws if proxy re-encryption is disabled for this crypto context, i.e., HYBRID key switching is
-    * used and the PRE mode is NOT_SET.
-    */
+     * @brief Throws if proxy re-encryption is disabled for this crypto context, i.e., HYBRID key switching is
+     * used and the PRE mode is NOT_SET.
+     */
     void ValidatePREMode(CALLER_INFO_ARGS_HDR) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
         if (cryptoParams == nullptr)
@@ -377,10 +377,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Throws if a precomputed set of powers is null, empty, or was not generated with this crypto context.
-    *
-    * @param powers the powers to validate
-    */
+     * @brief Throws if a precomputed set of powers is null, empty, or was not generated with this crypto context.
+     *
+     * @param powers the powers to validate
+     */
     void ValidateSeriesPowers(std::shared_ptr<seriesPowers<Element>> powers, CALLER_INFO_ARGS_HDR) const {
         if (powers == nullptr) {
             std::string errorMsg(std::string("The object for powers is nullptr") + CALLER_INFO);
@@ -398,17 +398,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Creates and encodes a CKKS plaintext from complex values at a given level and noise scale degree,
-    * validating the level against the modulus chain and choosing the element parameters (the towers remaining at
-    * that level) and the scaling factor of the level when params is null.
-    *
-    * @param value the complex values to encode
-    * @param noiseScaleDeg noise scale degree of the plaintext
-    * @param level level of the plaintext (must be below the number of RNS moduli)
-    * @param params element parameters to encode with (null = derived from the level)
-    * @param slots number of slots (0 = default)
-    * @return the encoded plaintext
-    */
+     * @brief Creates and encodes a CKKS plaintext from complex values at a given level and noise scale degree,
+     * validating the level against the modulus chain and choosing the element parameters (the towers remaining at
+     * that level) and the scaling factor of the level when params is null.
+     *
+     * @param value the complex values to encode
+     * @param noiseScaleDeg noise scale degree of the plaintext
+     * @param level level of the plaintext (must be below the number of RNS moduli)
+     * @param params element parameters to encode with (null = derived from the level)
+     * @param slots number of slots (0 = default)
+     * @return the encoded plaintext
+     */
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, uint32_t slots) const {
@@ -494,9 +494,9 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Getter for composite degree of the current scheme crypto context.
-    * @return integer value corresponding to composite degree
-    */
+     * @brief Getter for composite degree of the current scheme crypto context.
+     * @return integer value corresponding to composite degree
+     */
     uint32_t GetCompositeDegreeFromCtxt() const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
         if (!cryptoParams)
@@ -512,23 +512,23 @@ class CryptoContextImpl : public Serializable {
   public:
 #ifdef DEBUG_KEY
     /**
-    * SetPrivateKey() stores the private key in the crypto context.
-    * GetPrivateKey() gets the private key from the crypto context.
-    *
-    * Thees functions are only intended for debugging and should not be used in production systems.
-    * Please define DEBUG_KEY in openfhe.h to enable them.
-    *
-    * If used, one can create a key pair and store the secret key in the crypto context like this:
-    *
-    * auto keys = cc->KeyGen();
-    * cc->SetPrivateKey(keys.secretKey);
-    *
-    * After that, anyone in the code can access the secret key by getting the crypto context and doing the following:
-    *
-    * auto sk = cc->GetPrivateKey();
-    *
-    * The key can be used for decrypting any intermediate ciphertexts for debugging purposes.
-    */
+     * SetPrivateKey() stores the private key in the crypto context.
+     * GetPrivateKey() gets the private key from the crypto context.
+     *
+     * Thees functions are only intended for debugging and should not be used in production systems.
+     * Please define DEBUG_KEY in openfhe.h to enable them.
+     *
+     * If used, one can create a key pair and store the secret key in the crypto context like this:
+     *
+     * auto keys = cc->KeyGen();
+     * cc->SetPrivateKey(keys.secretKey);
+     *
+     * After that, anyone in the code can access the secret key by getting the crypto context and doing the following:
+     *
+     * auto sk = cc->GetPrivateKey();
+     *
+     * The key can be used for decrypting any intermediate ciphertexts for debugging purposes.
+     */
     void SetPrivateKey(const PrivateKey<Element> privateKey) {
         OPENFHE_DIAGNOSTIC_ERR << "Warning - SetPrivateKey is only intended to be used for debugging "
                                   "purposes - not for production systems."
@@ -542,30 +542,30 @@ class CryptoContextImpl : public Serializable {
 #endif
 
     /**
-    * @brief Sets the identifier of the scheme this crypto context implements.
-    *
-    * @param schemeTag the scheme identifier
-    */
+     * @brief Sets the identifier of the scheme this crypto context implements.
+     *
+     * @param schemeTag the scheme identifier
+     */
     void setSchemeId(SCHEME schemeTag) {
         m_schemeId = schemeTag;
     }
 
     /**
-    * @brief Gets the identifier of the scheme this crypto context implements.
-    *
-    * @return the scheme identifier
-    */
+     * @brief Gets the identifier of the scheme this crypto context implements.
+     *
+     * @return the scheme identifier
+     */
     SCHEME getSchemeId() const {
         return m_schemeId;
     }
 
     /**
-    * @brief Constructor from raw pointers to parameters and scheme
-    *
-    * @param params pointer to CryptoParameters
-    * @param scheme pointer to Crypto Scheme object
-    * @param schemeId scheme identifier
-    */
+     * @brief Constructor from raw pointers to parameters and scheme
+     *
+     * @param params pointer to CryptoParameters
+     * @param scheme pointer to Crypto Scheme object
+     * @param schemeId scheme identifier
+     */
     // TODO (dsuponit): investigate if we really need 2 constructors for CryptoContextImpl as one of them take regular pointer
     // and the other one takes shared_ptr
     CryptoContextImpl(CryptoParametersBase<Element>* params = nullptr, SchemeBase<Element>* scheme = nullptr,
@@ -577,12 +577,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Constructor from shared pointers to parameters and scheme
-    *
-    * @param params shared pointer to CryptoParameters
-    * @param scheme sharedpointer to Crypto Scheme object
-    * @param schemeId scheme identifier
-    */
+     * @brief Constructor from shared pointers to parameters and scheme
+     *
+     * @param params shared pointer to CryptoParameters
+     * @param scheme sharedpointer to Crypto Scheme object
+     * @param schemeId scheme identifier
+     */
     CryptoContextImpl(std::shared_ptr<CryptoParametersBase<Element>> params,
                       std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME) {
         m_params = params;
@@ -592,9 +592,9 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Copy constructor
-    * @param other cryptocontext to copy from
-    */
+     * @brief Copy constructor
+     * @param other cryptocontext to copy from
+     */
     CryptoContextImpl(const CryptoContextImpl<Element>& other) {
         m_params = other.m_params;
         m_scheme = other.m_scheme;
@@ -603,10 +603,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Assignment operator
-    * @param rhs cryptocontext to assign values from
-    * @return this
-    */
+     * @brief Assignment operator
+     * @param rhs cryptocontext to assign values from
+     * @return this
+     */
     CryptoContextImpl<Element>& operator=(const CryptoContextImpl<Element>& rhs) {
         m_params = rhs.m_params;
         m_scheme = rhs.m_scheme;
@@ -616,21 +616,21 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Checks the CryptoContextImpl object health.
-    * @return true if params and scheme exists in the object
-    */
+     * @brief Checks the CryptoContextImpl object health.
+     * @return true if params and scheme exists in the object
+     */
     operator bool() const {
         return m_params && m_scheme;
     }
 
     /**
-    * @brief Equality comparison operator
-    *
-    * @param a cryptocontext object1
-    * @param b cryptocontext object2
-    * @return true if the implementations have identical params and scheme
-    * @attention this is for internal use only
-    */
+     * @brief Equality comparison operator
+     *
+     * @param a cryptocontext object1
+     * @param b cryptocontext object2
+     * @return true if the implementations have identical params and scheme
+     * @attention this is for internal use only
+     */
     friend bool operator==(const CryptoContextImpl<Element>& a, const CryptoContextImpl<Element>& b) {
         // Identical if the parameters and the schemes are identical... the exact
         // same object, OR the same type and the same values
@@ -658,43 +658,43 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Inequality comparison operator
-    *
-    * @param a cryptocontext object1
-    * @param b cryptocontext object2
-    * @return true if the implementations do not have identical params and scheme
-    * @attention this is for internal use only
-    */
+     * @brief Inequality comparison operator
+     *
+     * @param a cryptocontext object1
+     * @param b cryptocontext object2
+     * @return true if the implementations do not have identical params and scheme
+     * @attention this is for internal use only
+     */
     friend bool operator!=(const CryptoContextImpl<Element>& a, const CryptoContextImpl<Element>& b) {
         return !(a == b);
     }
 
     /**
-    * @brief Clears various caches within the library
-    */
+     * @brief Clears various caches within the library
+     */
     static void ClearStaticMapsAndVectors();
 
     /**
-    * @brief Clear CKKS bootstrap precomputations cached by this context's scheme.
-    */
+     * @brief Clear CKKS bootstrap precomputations cached by this context's scheme.
+     */
     void ClearBootstrapPrecom() {
         VerifyCKKSScheme(__func__);
         m_scheme->ClearBootstrapPrecom();
     }
 
     /**
-    * @brief Clear CKKS/FHEW scheme-switch precomputations cached by this context's scheme.
-    */
+     * @brief Clear CKKS/FHEW scheme-switch precomputations cached by this context's scheme.
+     */
     void ClearSchemeSwitchPrecom() {
         VerifyCKKSScheme(__func__);
         m_scheme->ClearSchemeSwitchPrecom();
     }
 
     /**
-    * @brief Release all scheme-level caches (bootstrap + scheme-switch). Unlike the two calls
-    *        above this is a teardown helper used to sweep contexts of any scheme, so it is a
-    *        noexcept no-op when the caches cannot exist rather than an error.
-    */
+     * @brief Release all scheme-level caches (bootstrap + scheme-switch). Unlike the two calls
+     *        above this is a teardown helper used to sweep contexts of any scheme, so it is a
+     *        noexcept no-op when the caches cannot exist rather than an error.
+     */
     void ClearAllCKKSCaches() noexcept {
         if (m_scheme && isCKKS(m_schemeId)) {
             m_scheme->ClearBootstrapPrecom();
@@ -703,13 +703,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param keyTag secret key tag
-    * @return true on success
-    */
+     * @brief Serializes either all EvalMult keys (if keyTag is empty) or the EvalMult keys for keyTag
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param keyTag secret key tag
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, const std::string& keyTag = "") {
         const auto& evalMultKeys = CryptoContextImpl<Element>::GetAllEvalMultKeys();
@@ -728,13 +728,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Serializes all EvalMult keys associated with the given CryptoContext
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param cc the CryptoContext whose keys should be serialized
-    * @return true on success
-    */
+     * @brief Serializes all EvalMult keys associated with the given CryptoContext
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param cc the CryptoContext whose keys should be serialized
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
         std::map<std::string, std::vector<EvalKey<Element>>> omap;
@@ -752,13 +752,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Deserializes EvalMult keys
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @return true on success
-    * @attention Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
-    */
+     * @brief Deserializes EvalMult keys
+     *
+     * @param ser stream to deserialize from
+     * @param sertype type of serialization
+     * @return true on success
+     * @attention Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
+     */
     template <typename ST>
     static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
         std::map<std::string, std::vector<EvalKey<Element>>> omap;
@@ -774,107 +774,107 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Clears the entire EvalMultKey cache
-    */
+     * @brief Clears the entire EvalMultKey cache
+     */
     static void ClearEvalMultKeys();
 
     /**
-    * @brief Clears the EvalMultKey cache for the given keyTag or the entire EvalMultKey cache if keyTag is empty
-    * @param keyTag secret key tag
-    */
+     * @brief Clears the EvalMultKey cache for the given keyTag or the entire EvalMultKey cache if keyTag is empty
+     * @param keyTag secret key tag
+     */
     static void ClearEvalMultKeys(const std::string& keyTag);
 
     /**
-    * @brief Clears EvalMultKey cache for the given context
-    * @param cc the context to clear all EvalMultKey for
-    */
+     * @brief Clears EvalMultKey cache for the given context
+     * @param cc the context to clear all EvalMultKey for
+     */
     static void ClearEvalMultKeys(const CryptoContext<Element>& cc);
 
     /**
-    * @brief Adds the given vector of keys for the given keyTag to the map of all EvalMult keys
-    *
-    * @param evalKeyVec vector of keys
-    * @param keyTag secret key tag
-    * @attention Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from evalKeyVec
-    */
+     * @brief Adds the given vector of keys for the given keyTag to the map of all EvalMult keys
+     *
+     * @param evalKeyVec vector of keys
+     * @param keyTag secret key tag
+     * @attention Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from evalKeyVec
+     */
     static void InsertEvalMultKey(const std::vector<EvalKey<Element>>& evalKeyVec, const std::string& keyTag = "");
 
     /**
-    * @brief Serializes either all EvalSum keys (if keyTag is empty) or the EvalSum keys for keyTag
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param keyTag secret key tag
-    * @return true on success
-    */
+     * @brief Serializes either all EvalSum keys (if keyTag is empty) or the EvalSum keys for keyTag
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param keyTag secret key tag
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalSumKey(std::ostream& ser, const ST& sertype, const std::string& keyTag = "") {
         return CryptoContextImpl<Element>::SerializeEvalAutomorphismKey(ser, sertype, keyTag);
     }
 
     /**
-    * @brief Serializes all EvalSum keys associated with the given CryptoContext
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param cc the CryptoContext whose keys should be serialized
-    * @return true on success
-    */
+     * @brief Serializes all EvalSum keys associated with the given CryptoContext
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param cc the CryptoContext whose keys should be serialized
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalSumKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
         return CryptoContextImpl<Element>::SerializeEvalAutomorphismKey(ser, sertype, cc);
     }
 
     /**
-    * @brief Deserializes EvalSum keys
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @return true on success
-    * @attention Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
-    */
+     * @brief Deserializes EvalSum keys
+     *
+     * @param ser stream to deserialize from
+     * @param sertype type of serialization
+     * @return true on success
+     * @attention Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
+     */
     template <typename ST>
     static bool DeserializeEvalSumKey(std::istream& ser, const ST& sertype) {
         return CryptoContextImpl<Element>::DeserializeEvalAutomorphismKey(ser, sertype);
     }
 
     /**
-    * @brief Clears the entire EvalSumKey cache
-    */
+     * @brief Clears the entire EvalSumKey cache
+     */
     static void ClearEvalSumKeys();
 
     /**
-    * @brief Clears the EvalSumKey cache for the given keyTag or the entire EvalSumKey cache if keyTag is empty
-    * @param keyTag secret key tag
-    */
+     * @brief Clears the EvalSumKey cache for the given keyTag or the entire EvalSumKey cache if keyTag is empty
+     * @param keyTag secret key tag
+     */
     static void ClearEvalSumKeys(const std::string& keyTag);
 
     /**
-    * @brief Clears EvalSumKey cache for the given context
-    * @param cc the context to clear all EvalSumKey for
-    */
+     * @brief Clears EvalSumKey cache for the given context
+     * @param cc the context to clear all EvalSumKey for
+     */
     static void ClearEvalSumKeys(const CryptoContext<Element> cc);
 
     /**
-    * @brief Adds the given map of keys for the given keyTag to the map of all EvalSum keys
-    *
-    * @param mapToInsert map of keys
-    * @param keyTag secret key tag
-    * @attention Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from mapToInsert
-    */
+     * @brief Adds the given map of keys for the given keyTag to the map of all EvalSum keys
+     *
+     * @param mapToInsert map of keys
+     * @param keyTag secret key tag
+     * @attention Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from mapToInsert
+     */
     static void InsertEvalSumKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert,
                                  std::string keyTag = "") {
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(mapToInsert, keyTag);
     }
 
     /**
-    * @brief Serializes either all EvalAutomorphism keys (if keyTag is empty) or the EvalAutomorphism keys for keyTag
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param keyTag secret key tag
-    * @return true on success
-    */
+     * @brief Serializes either all EvalAutomorphism keys (if keyTag is empty) or the EvalAutomorphism keys for keyTag
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param keyTag secret key tag
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyTag = "") {
         // TODO (dsuponit): do we need Serailize/Deserialized to return bool?
@@ -892,13 +892,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Serializes all EvalAutomorphism keys associated with the given CryptoContext
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param cc the CryptoContext whose keys should be serialized
-    * @return true on success
-    */
+     * @brief Serializes all EvalAutomorphism keys associated with the given CryptoContext
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param cc the CryptoContext whose keys should be serialized
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
         std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> omap;
@@ -916,14 +916,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Serializes EvalAutomorphism keys for an array of specific indices associated with the given keyTag
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param keyTag secret key tag
-    * @param indexList array of specific indices to serialize keys for
-    * @return true on success
-    */
+     * @brief Serializes EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param keyTag secret key tag
+     * @param indexList array of specific indices to serialize keys for
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype, const std::string& keyTag,
                                              const std::vector<uint32_t>& indexList) {
@@ -935,14 +935,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Deserializes EvalAutomorphism keys for an array of specific indices associated with the given keyTag
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @param keyTag secret key tag
-    * @param indexList array of specific indices to deserialize keys for
-    * @return true on success
-    */
+     * @brief Deserializes EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+     *
+     * @param ser stream to deserialize from
+     * @param sertype type of serialization
+     * @param keyTag secret key tag
+     * @param indexList array of specific indices to deserialize keys for
+     * @return true on success
+     */
     template <typename ST>
     static bool DeserializeEvalAutomorphismKey(std::istream& ser, const ST& sertype, const std::string& keyTag,
                                                const std::vector<uint32_t>& indexList) {
@@ -977,15 +977,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Serializes bootstrap EvalAutomorphism keys associated with the given key tag
-    *
-    * @param ser stream to serialize to
-    * @param sertype type of serialization
-    * @param cc crypto context
-    * @param keyTag secret key tag
-    * @param slots number of slots for which the bootstrapping is performed
-    * @return true on success
-    */
+     * @brief Serializes bootstrap EvalAutomorphism keys associated with the given key tag
+     *
+     * @param ser stream to serialize to
+     * @param sertype type of serialization
+     * @param cc crypto context
+     * @param keyTag secret key tag
+     * @param slots number of slots for which the bootstrapping is performed
+     * @return true on success
+     */
     template <typename ST>
     static bool SerializeEvalBootstrapKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element>& cc,
                                           const std::string& keyTag, uint32_t slots) {
@@ -998,14 +998,14 @@ class CryptoContextImpl : public Serializable {
         return true;
     }
     /**
-    * @brief Deserializes bootstrap EvalAutomorphism keys for an array of specific indices associated with the given keyTag
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @param keyTag secret key tag
-    * @param indexList array of specific indices to deserialize keys for
-    * @return true on success
-    */
+     * @brief Deserializes bootstrap EvalAutomorphism keys for an array of specific indices associated with the given keyTag
+     *
+     * @param ser stream to deserialize from
+     * @param sertype type of serialization
+     * @param keyTag secret key tag
+     * @param indexList array of specific indices to deserialize keys for
+     * @return true on success
+     */
     template <typename ST>
     static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype, const std::string& keyTag,
                                             const std::vector<uint32_t>& indexList) {
@@ -1013,15 +1013,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Deserializes bootstrap EvalAutomorphism keys derived from the given crypto context, key tag, and slots count
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @param cc crypto context
-    * @param keyTag secret key tag
-    * @param slots number of slots for which the bootstrapping was performed
-    * @return true on success
-    */
+     * @brief Deserializes bootstrap EvalAutomorphism keys derived from the given crypto context, key tag, and slots count
+     *
+     * @param ser stream to deserialize from
+     * @param sertype type of serialization
+     * @param cc crypto context
+     * @param keyTag secret key tag
+     * @param slots number of slots for which the bootstrapping was performed
+     * @return true on success
+     */
     template <typename ST>
     static bool DeserializeEvalBootstrapKey(std::istream& ser, const ST& sertype, const CryptoContext<Element>& cc,
                                             const std::string& keyTag, uint32_t slots) {
@@ -1030,13 +1030,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Deserializes EvalAutomorphism keys
-    *
-    * @param ser stream to deserialize from
-    * @param sertype type of serialization
-    * @return true on success
-    * @attention Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
-    */
+     * @brief Deserializes EvalAutomorphism keys
+     *
+     * @param ser stream to deserialize from
+     * @param sertype type of serialization
+     * @return true on success
+     * @attention Silently replaces any existing matching keys and creates a new CryptoContextImpl if necessary
+     */
     template <typename ST>
     static bool DeserializeEvalAutomorphismKey(std::istream& ser, const ST& sertype) {
         std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> keyMap;
@@ -1052,29 +1052,29 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Clears the entire EvalAutomorphismKey cache
-    */
+     * @brief Clears the entire EvalAutomorphismKey cache
+     */
     static void ClearEvalAutomorphismKeys();
 
     /**
-    * @brief Clears the EvalAutomorphismKey cache for the given keyTag or the entire EvalAutomorphismKey cache if keyTag is empty
-    * @param keyTag secret key tag
-    */
+     * @brief Clears the EvalAutomorphismKey cache for the given keyTag or the entire EvalAutomorphismKey cache if keyTag is empty
+     * @param keyTag secret key tag
+     */
     static void ClearEvalAutomorphismKeys(const std::string& keyTag);
 
     /**
-    * @brief Clears EvalAutomorphismKey cache for the given context
-    * @param cc the context to clear all EvalAutomorphismKeys for
-    */
+     * @brief Clears EvalAutomorphismKey cache for the given context
+     * @param cc the context to clear all EvalAutomorphismKeys for
+     */
     static void ClearEvalAutomorphismKeys(const CryptoContext<Element> cc);
 
     /**
-    * @brief Adds the given map of keys for the given keyTag to the map of all EvalAutomorphism keys
-    *
-    * @param mapToInsert map of keys
-    * @param keyTag secret key tag
-    * @attention Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from mapToInsert
-    */
+     * @brief Adds the given map of keys for the given keyTag to the map of all EvalAutomorphism keys
+     *
+     * @param mapToInsert map of keys
+     * @param keyTag secret key tag
+     * @attention Silently replaces any existing matching keys and if keyTag is empty, then the key tag is retrieved from mapToInsert
+     */
     // TODO (dsuponit): move InsertEvalAutomorphismKey() to the private section of the class
     static void InsertEvalAutomorphismKey(const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert,
                                           const std::string& keyTag = "");
@@ -1083,100 +1083,100 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Enable a particular feature for use with this CryptoContextImpl
-    * @param feature the feature that should be enabled
-    */
+     * @brief Enable a particular feature for use with this CryptoContextImpl
+     * @param feature the feature that should be enabled
+     */
     void Enable(PKESchemeFeature feature) {
         m_scheme->Enable(feature);
     }
 
     /**
-    * @brief Enable several features at once
-    * @param featureMask bitwise value of several PKESchemeFeatures
-    */
+     * @brief Enable several features at once
+     * @param featureMask bitwise value of several PKESchemeFeatures
+     */
     void Enable(uint32_t featureMask) {
         m_scheme->Enable(featureMask);
     }
 
     // GETTERS
     /**
-    * @brief Getter for Scheme
-    * @return Scheme object
-    */
+     * @brief Getter for Scheme
+     * @return Scheme object
+     */
     const std::shared_ptr<SchemeBase<Element>> GetScheme() const {
         return m_scheme;
     }
 
     /**
-    * @brief Getter for CryptoParams
-    * @return CryptoParams
-    */
+     * @brief Getter for CryptoParams
+     * @return CryptoParams
+     */
     const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const {
         return m_params;
     }
 
     /**
-    * @brief Getter for the level at which evaluation keys should be generated
-    * @return level
-    * @attention For future use
-    */
+     * @brief Getter for the level at which evaluation keys should be generated
+     * @return level
+     * @attention For future use
+     */
     size_t GetKeyGenLevel() const {
         return m_keyGenLevel;
     }
 
     /**
-    * @brief Setter for the level at which evaluation keys should be generated
-    * @param level the level at which evaluation keys should be generated
-    * @attention For future use
-    */
+     * @brief Setter for the level at which evaluation keys should be generated
+     * @param level the level at which evaluation keys should be generated
+     * @attention For future use
+     */
     void SetKeyGenLevel(size_t level) {
         m_keyGenLevel = level;
     }
 
     /**
-    * @brief Getter for element params
-    * @return ElementParams
-    */
+     * @brief Getter for element params
+     * @return ElementParams
+     */
     const std::shared_ptr<ParmType> GetElementParams() const {
         return m_params->GetElementParams();
     }
 
     /**
-    * @brief Getter for encoding params
-    * @return EncodingParams
-    */
+     * @brief Getter for encoding params
+     * @return EncodingParams
+     */
     const EncodingParams GetEncodingParams() const {
         return m_params->GetEncodingParams();
     }
 
     /**
-    * @brief Getter for cyclotomic order
-    * @return CyclotomicOrder
-    */
+     * @brief Getter for cyclotomic order
+     * @return CyclotomicOrder
+     */
     uint32_t GetCyclotomicOrder() const {
         return m_params->GetElementParams()->GetCyclotomicOrder();
     }
 
     /**
-    * @brief Getter for ring dimension
-    * @return RingDimension
-    */
+     * @brief Getter for ring dimension
+     * @return RingDimension
+     */
     uint32_t GetRingDimension() const {
         return m_params->GetElementParams()->GetRingDimension();
     }
 
     /**
-    * @brief Getter for ciphertext modulus
-    * @return modulus
-    */
+     * @brief Getter for ciphertext modulus
+     * @return modulus
+     */
     const IntType& GetModulus() const {
         return m_params->GetElementParams()->GetModulus();
     }
 
     /**
-    * @brief Getter for root of unity
-    * @return RootOfUnity
-    */
+     * @brief Getter for root of unity
+     * @return RootOfUnity
+     */
     const IntType& GetRootOfUnity() const {
         return m_params->GetElementParams()->GetRootOfUnity();
     }
@@ -1198,52 +1198,52 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Gets a map of all relinearization/evaluation multiplication keys
-    * @return std::map where the map key/data pair is "keyTag"/"EvalMultKeys vector"
-    */
+     * @brief Gets a map of all relinearization/evaluation multiplication keys
+     * @return std::map where the map key/data pair is "keyTag"/"EvalMultKeys vector"
+     */
     static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys();
 
     /**
-    * @brief Gets a vector of relinearization/evaluation multiplication keys for the given keyTag
-    * @param keyTag secret key tag
-    * @return vector of EvalMultKeys
-    */
+     * @brief Gets a vector of relinearization/evaluation multiplication keys for the given keyTag
+     * @param keyTag secret key tag
+     * @return vector of EvalMultKeys
+     */
     static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(const std::string& keyTag);
 
     /**
-    * @brief Gets a map of all EvalAutomorphism keys
-    * @return std::map where the map key/data pair is "keyTag"/"shared_ptr to EvalMultKey map"
-    */
+     * @brief Gets a map of all EvalAutomorphism keys
+     * @return std::map where the map key/data pair is "keyTag"/"shared_ptr to EvalMultKey map"
+     */
     static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
 
     /**
-    * @brief Gets a map of EvalAutomorphism keys for the given keyTag
-    * @param keyTag secret key tag
-    * @return shared_ptr to EvalAutomorphismKey map
-    */
+     * @brief Gets a map of EvalAutomorphism keys for the given keyTag
+     * @param keyTag secret key tag
+     * @return shared_ptr to EvalAutomorphismKey map
+     */
     static std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> GetEvalAutomorphismKeyMapPtr(
             const std::string& keyTag);
 
     /**
-    * @brief Gets a map of EvalAutomorphism keys for the given keyTag
-    * @param keyTag secret key tag
-    * @return EvalAutomorphismKey map
-    */
+     * @brief Gets a map of EvalAutomorphism keys for the given keyTag
+     * @param keyTag secret key tag
+     * @return EvalAutomorphismKey map
+     */
     static std::map<uint32_t, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& keyTag) {
         return *(CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyTag));
     }
 
     /**
-    * @brief Gets a map of all summation keys
-    * @return std::map where the map key/data pair is "keyTag"/"shared_ptr to EvalSumKey map"
-    */
+     * @brief Gets a map of all summation keys
+     * @return std::map where the map key/data pair is "keyTag"/"shared_ptr to EvalSumKey map"
+     */
     static std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>& GetAllEvalSumKeys();
 
     /**
-    * @brief Gets a map of EvalSum keys for the given keyTag
-    * @param keyTag secret key tag
-    * @return EvalSumKey map
-    */
+     * @brief Gets a map of EvalSum keys for the given keyTag
+     * @param keyTag secret key tag
+     * @return EvalSumKey map
+     */
     static const std::map<uint32_t, EvalKey<Element>>& GetEvalSumKeyMap(const std::string& keyTag);
 
     //------------------------------------------------------------------------------
@@ -1252,24 +1252,24 @@ class CryptoContextImpl : public Serializable {
 
     // TODO to be deprecated in 2.0
     /**
-    * @brief Creates a plaintext from a string using string encoding.
-    *
-    * @param str Input string to encode.
-    * @return Encoded plaintext.
-    */
+     * @brief Creates a plaintext from a string using string encoding.
+     *
+     * @param str Input string to encode.
+     * @return Encoded plaintext.
+     */
     Plaintext MakeStringPlaintext(const std::string& str) const {
         return PlaintextFactory::MakePlaintext(str, STRING_ENCODING, this->GetElementParams(),
                                                this->GetEncodingParams());
     }
 
     /**
-    * @brief Encodes a vector of integers into a coefficient-packed plaintext.
-    *
-    * @param value           Input vector to encode.
-    * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
-    * @param level           Encryption level for the input vector.
-    * @return Encoded plaintext.
-    */
+     * @brief Encodes a vector of integers into a coefficient-packed plaintext.
+     *
+     * @param value           Input vector to encode.
+     * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
+     * @param level           Encryption level for the input vector.
+     * @return Encoded plaintext.
+     */
     Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1,
                                       uint32_t level = 0) const {
         if (value.empty())
@@ -1279,13 +1279,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Encodes a vector of integers into a packed plaintext.
-    *
-    * @param value           Input vector to encode.
-    * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
-    * @param level           Encryption level for the input vector.
-    * @return Encoded plaintext.
-    */
+     * @brief Encodes a vector of integers into a packed plaintext.
+     *
+     * @param value           Input vector to encode.
+     * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
+     * @param level           Encryption level for the input vector.
+     * @return Encoded plaintext.
+     */
     Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t noiseScaleDeg = 1,
                                   uint32_t level = 0) const {
         if (value.empty())
@@ -1295,15 +1295,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Encodes a vector of complex numbers into a CKKS packed plaintext.
-    *
-    * @param value           Input vector to encode.
-    * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
-    * @param level           Encryption level for the input vector.
-    * @param params          Encoding parameters.
-    * @param slots           Number of slots to use.
-    * @return Encoded CKKS plaintext.
-    */
+     * @brief Encodes a vector of complex numbers into a CKKS packed plaintext.
+     *
+     * @param value           Input vector to encode.
+     * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
+     * @param level           Encryption level for the input vector.
+     * @param params          Encoding parameters.
+     * @param slots           Number of slots to use.
+     * @return Encoded CKKS plaintext.
+     */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t noiseScaleDeg = 1,
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
                                       uint32_t slots = 0) const {
@@ -1315,15 +1315,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Encodes a vector of real numbers into a CKKS packed plaintext.
-    *
-    * @param value           Input vector to encode.
-    * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
-    * @param level           Encryption level for the input vector.
-    * @param params          Encoding parameters.
-    * @param slots           Number of slots to use.
-    * @return Encoded CKKS plaintext.
-    */
+     * @brief Encodes a vector of real numbers into a CKKS packed plaintext.
+     *
+     * @param value           Input vector to encode.
+     * @param noiseScaleDeg   Degree of the scaling factor to encode the plaintext at.
+     * @param level           Encryption level for the input vector.
+     * @param params          Encoding parameters.
+     * @param slots           Number of slots to use.
+     * @return Encoded CKKS plaintext.
+     */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t noiseScaleDeg = 1, uint32_t level = 0,
                                       const std::shared_ptr<ParmType> params = nullptr, uint32_t slots = 0) const {
         VerifyCKKSScheme(__func__);
@@ -1338,14 +1338,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Returns a plaintext object for decryption based on encoding type and parameters.
-    *
-    * @param pte   Plaintext encoding type.
-    * @param evp   Element parameters.
-    * @param ep    Encoding parameters.
-    * @param cdt   CKKS data type.
-    * @return Plaintext for decryption.
-    */
+     * @brief Returns a plaintext object for decryption based on encoding type and parameters.
+     *
+     * @param pte   Plaintext encoding type.
+     * @param evp   Element parameters.
+     * @param ep    Encoding parameters.
+     * @param cdt   CKKS data type.
+     * @return Plaintext for decryption.
+     */
     static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep,
                                             CKKSDataType cdt = REAL);
 
@@ -1354,31 +1354,31 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Generates a standard public/secret key pair.
-    *
-    * @return Generated key pair.
-    */
+     * @brief Generates a standard public/secret key pair.
+     *
+     * @return Generated key pair.
+     */
     KeyPair<Element> KeyGen() const {
         return m_scheme->KeyGen(GetContextForPointer(this), false);
     }
 
     /**
-    * @brief Generates a sparse key pair (with special structure and without full entropy) for special use cases like ring reduction.
-    *
-    * @return Generated key pair.
-    * @attention Not supported by any crypto scheme currently.
-    */
+     * @brief Generates a sparse key pair (with special structure and without full entropy) for special use cases like ring reduction.
+     *
+     * @return Generated key pair.
+     * @attention Not supported by any crypto scheme currently.
+     */
     KeyPair<Element> SparseKeyGen() const {
         return m_scheme->KeyGen(GetContextForPointer(this), true);
     }
 
     /**
-    * @brief Encrypts a plaintext using the given public key.
-    *
-    * @param plaintext  Plaintext to encrypt.
-    * @param publicKey  Public key to use for encryption.
-    * @return Encrypted ciphertext (or null on failure).
-    */
+     * @brief Encrypts a plaintext using the given public key.
+     *
+     * @param plaintext  Plaintext to encrypt.
+     * @param publicKey  Public key to use for encryption.
+     * @return Encrypted ciphertext (or null on failure).
+     */
     Ciphertext<Element> Encrypt(ConstPlaintext& plaintext, const PublicKey<Element>& publicKey) const {
         if (plaintext == nullptr)
             OPENFHE_THROW("Input plaintext is nullptr");
@@ -1399,23 +1399,23 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Encrypts a plaintext using the given public key.
-    *
-    * @param publicKey  Public key to use for encryption.
-    * @param plaintext  Plaintext to encrypt.
-    * @return Encrypted ciphertext (or null on failure).
-    */
+     * @brief Encrypts a plaintext using the given public key.
+     *
+     * @param publicKey  Public key to use for encryption.
+     * @param plaintext  Plaintext to encrypt.
+     * @return Encrypted ciphertext (or null on failure).
+     */
     Ciphertext<Element> Encrypt(const PublicKey<Element>& publicKey, ConstPlaintext& plaintext) const {
         return Encrypt(plaintext, publicKey);
     }
 
     /**
-    * @brief Encrypts a plaintext using the given private key.
-    *
-    * @param plaintext   Plaintext to encrypt.
-    * @param privateKey  Private key to use for encryption.
-    * @return Encrypted ciphertext (or null on failure).
-    */
+     * @brief Encrypts a plaintext using the given private key.
+     *
+     * @param plaintext   Plaintext to encrypt.
+     * @param privateKey  Private key to use for encryption.
+     * @return Encrypted ciphertext (or null on failure).
+     */
     Ciphertext<Element> Encrypt(ConstPlaintext& plaintext, const PrivateKey<Element>& privateKey) const {
         //    if (plaintext == nullptr)
         //      OPENFHE_THROW( "Input plaintext is nullptr");
@@ -1436,35 +1436,35 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Encrypts a plaintext using the given private key.
-    *
-    * @param privateKey  Private key to use for encryption.
-    * @param plaintext   Plaintext to encrypt.
-    * @return Encrypted ciphertext (or null on failure).
-    */
+     * @brief Encrypts a plaintext using the given private key.
+     *
+     * @param privateKey  Private key to use for encryption.
+     * @param plaintext   Plaintext to encrypt.
+     * @return Encrypted ciphertext (or null on failure).
+     */
     Ciphertext<Element> Encrypt(const PrivateKey<Element>& privateKey, ConstPlaintext& plaintext) const {
         return Encrypt(plaintext, privateKey);
     }
 
     /**
-    * @brief Decrypts a ciphertext using the given private key.
-    *
-    * @param ciphertext  Ciphertext to decrypt.
-    * @param privateKey  Private key for decryption.
-    * @param plaintext   Output pointer for the resulting plaintext.
-    * @return Decryption result status.
-    */
+     * @brief Decrypts a ciphertext using the given private key.
+     *
+     * @param ciphertext  Ciphertext to decrypt.
+     * @param privateKey  Private key for decryption.
+     * @param plaintext   Output pointer for the resulting plaintext.
+     * @return Decryption result status.
+     */
     DecryptResult Decrypt(ConstCiphertext<Element>& ciphertext, const PrivateKey<Element>& privateKey,
                           Plaintext* plaintext);
 
     /**
-    * @brief Decrypts a ciphertext using the given private key.
-    *
-    * @param privateKey  Private key for decryption.
-    * @param ciphertext  Ciphertext to decrypt.
-    * @param plaintext   Output pointer for the resulting plaintext.
-    * @return Decryption result status.
-    */
+     * @brief Decrypts a ciphertext using the given private key.
+     *
+     * @param privateKey  Private key for decryption.
+     * @param ciphertext  Ciphertext to decrypt.
+     * @param plaintext   Output pointer for the resulting plaintext.
+     * @return Decryption result status.
+     */
     inline DecryptResult Decrypt(const PrivateKey<Element>& privateKey, ConstCiphertext<Element>& ciphertext,
                                  Plaintext* plaintext) {
         return Decrypt(ciphertext, privateKey, plaintext);
@@ -1475,12 +1475,12 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Generates a key switching key from one secret key to another.
-    *
-    * @param oldPrivateKey  Original secret key.
-    * @param newPrivateKey  Target secret key.
-    * @return New evaluation key for key switching.
-    */
+     * @brief Generates a key switching key from one secret key to another.
+     *
+     * @param oldPrivateKey  Original secret key.
+     * @param newPrivateKey  Target secret key.
+     * @return New evaluation key for key switching.
+     */
     EvalKey<Element> KeySwitchGen(const PrivateKey<Element>& oldPrivateKey,
                                   const PrivateKey<Element>& newPrivateKey) const {
         ValidateKey(oldPrivateKey);
@@ -1489,12 +1489,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Applies key switching to a ciphertext using the given evaluation key.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param evalKey     Evaluation key for key switching.
-    * @return Ciphertext after key switching.
-    */
+     * @brief Applies key switching to a ciphertext using the given evaluation key.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param evalKey     Evaluation key for key switching.
+     * @return Ciphertext after key switching.
+     */
     Ciphertext<Element> KeySwitch(ConstCiphertext<Element>& ciphertext, const EvalKey<Element>& evalKey) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(evalKey);
@@ -1502,11 +1502,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Applies key switching in place on the given ciphertext.
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param evalKey     Evaluation key for key switching.
-    */
+     * @brief Applies key switching in place on the given ciphertext.
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param evalKey     Evaluation key for key switching.
+     */
     void KeySwitchInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element>& evalKey) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(evalKey);
@@ -1518,21 +1518,21 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Negates a ciphertext.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Negated ciphertext.
-    */
+     * @brief Negates a ciphertext.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Negated ciphertext.
+     */
     Ciphertext<Element> EvalNegate(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->EvalNegate(ciphertext);
     }
 
     /**
-    * @brief Performs in-place negation of a ciphertext.
-    *
-    * @param ciphertext  Ciphertext to negate.
-    */
+     * @brief Performs in-place negation of a ciphertext.
+     *
+     * @param ciphertext  Ciphertext to negate.
+     */
     void EvalNegateInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         m_scheme->EvalNegateInPlace(ciphertext);
@@ -1543,35 +1543,35 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Homomorphic addition of two ciphertexts.
-    *
-    * @param ciphertext1  First addend.
-    * @param ciphertext2  Second addend.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of two ciphertexts.
+     *
+     * @param ciphertext1  First addend.
+     * @param ciphertext2  Second addend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return m_scheme->EvalAdd(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief In-place homomorphic addition of two ciphertexts.
-    *
-    * @param ciphertext1  First addend (modified in place).
-    * @param ciphertext2  Second addend.
-    */
+     * @brief In-place homomorphic addition of two ciphertexts.
+     *
+     * @param ciphertext1  First addend (modified in place).
+     * @param ciphertext2  Second addend.
+     */
     void EvalAddInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         m_scheme->EvalAddInPlace(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief In-place element-wise addition of two ciphertexts without any type, level or scaling factor checks;
-    * the ciphertexts must already have the same number of elements, level and noise scale degree.
-    *
-    * @param ctxt1  First addend (modified in place).
-    * @param ctxt2  Second addend.
-    */
+     * @brief In-place element-wise addition of two ciphertexts without any type, level or scaling factor checks;
+     * the ciphertexts must already have the same number of elements, level and noise scale degree.
+     *
+     * @param ctxt1  First addend (modified in place).
+     * @param ctxt2  Second addend.
+     */
     void EvalAddInPlaceNoCheck(Ciphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
         auto& cv1 = ctxt1->GetElements();
         auto& cv2 = ctxt2->GetElements();
@@ -1581,35 +1581,35 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic addition of two mutable ciphertexts.
-    *
-    * @param ciphertext1  First addend (may be modified).
-    * @param ciphertext2  Second addend (may be modified).
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of two mutable ciphertexts.
+     *
+     * @param ciphertext1  First addend (may be modified).
+     * @param ciphertext2  Second addend (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return m_scheme->EvalAddMutable(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief In-place homomorphic addition of two mutable ciphertexts.
-    *
-    * @param ciphertext1  First addend (modified in place).
-    * @param ciphertext2  Second addend (may be modified).
-    */
+     * @brief In-place homomorphic addition of two mutable ciphertexts.
+     *
+     * @param ciphertext1  First addend (modified in place).
+     * @param ciphertext2  Second addend (may be modified).
+     */
     void EvalAddMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         m_scheme->EvalAddMutableInPlace(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief Homomorphic addition of a ciphertext and a plaintext.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param plaintext   Input plaintext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a ciphertext and a plaintext.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param plaintext   Input plaintext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         plaintext->SetFormat(EVALUATION);
@@ -1617,22 +1617,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic addition of a plaintext and a ciphertext.
-    *
-    * @param plaintext   Input plaintext.
-    * @param ciphertext  Input ciphertext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a plaintext and a ciphertext.
+     *
+     * @param plaintext   Input plaintext.
+     * @param ciphertext  Input ciphertext.
+     * @return Resulting ciphertext.
+     */
     inline Ciphertext<Element> EvalAdd(Plaintext& plaintext, ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(ciphertext, plaintext);
     }
 
     /**
-    * @brief In-place addition of a ciphertext and a plaintext.
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param plaintext   Plaintext to add.
-    */
+     * @brief In-place addition of a ciphertext and a plaintext.
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param plaintext   Plaintext to add.
+     */
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         plaintext->SetFormat(EVALUATION);
@@ -1640,22 +1640,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place addition of a plaintext and a ciphertext.
-    *
-    * @param plaintext   Plaintext to add.
-    * @param ciphertext  Ciphertext to modify.
-    */
+     * @brief In-place addition of a plaintext and a ciphertext.
+     *
+     * @param plaintext   Plaintext to add.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalAddInPlace(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         EvalAddInPlace(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic addition of a mutable ciphertext and a plaintext.
-    *
-    * @param ciphertext  Input ciphertext (may be modified).
-    * @param plaintext   Input plaintext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a mutable ciphertext and a plaintext.
+     *
+     * @param ciphertext  Input ciphertext (may be modified).
+     * @param plaintext   Input plaintext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         plaintext->SetFormat(EVALUATION);
@@ -1663,44 +1663,44 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic addition of a plaintext and a mutable ciphertext.
-    *
-    * @param plaintext   Input plaintext.
-    * @param ciphertext  Input ciphertext (may be modified).
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a plaintext and a mutable ciphertext.
+     *
+     * @param plaintext   Input plaintext.
+     * @param ciphertext  Input ciphertext (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAddMutable(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         return EvalAddMutable(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic addition of a ciphertext and a real number (CKKS only).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param scalar      Real number to add.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a ciphertext and a real number (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Real number to add.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext, double scalar) const {
         return scalar >= 0. ? m_scheme->EvalAdd(ciphertext, scalar) : m_scheme->EvalSub(ciphertext, -scalar);
     }
 
     /**
-    * @brief Homomorphic addition of a real number and a ciphertext (CKKS only).
-    *
-    * @param scalar      Real number to add.
-    * @param ciphertext  Input ciphertext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a real number and a ciphertext (CKKS only).
+     *
+     * @param scalar      Real number to add.
+     * @param ciphertext  Input ciphertext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(double scalar, ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(ciphertext, scalar);
     }
 
     /**
-    * @brief In-place addition of a ciphertext and a real number (CKKS only).
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param scalar      Real number to add.
-    */
+     * @brief In-place addition of a ciphertext and a real number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Real number to add.
+     */
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (scalar == 0.)
             return;
@@ -1711,43 +1711,43 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place addition of a real number and a ciphertext (CKKS only).
-    *
-    * @param scalar      Real number to add.
-    * @param ciphertext  Ciphertext to modify.
-    */
+     * @brief In-place addition of a real number and a ciphertext (CKKS only).
+     *
+     * @param scalar      Real number to add.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalAddInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
         EvalAddInPlace(ciphertext, scalar);
     }
 
     /**
-    * @brief Homomorphic addition of a ciphertext and a complex number (CKKS only).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param scalar      Complex number to add.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a ciphertext and a complex number (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Complex number to add.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         return m_scheme->EvalAdd(ciphertext, scalar);
     }
 
     /**
-    * @brief Homomorphic addition of a complex number and a ciphertext (CKKS only).
-    *
-    * @param scalar      Complex number to add.
-    * @param ciphertext  Input ciphertext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic addition of a complex number and a ciphertext (CKKS only).
+     *
+     * @param scalar      Complex number to add.
+     * @param ciphertext  Input ciphertext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAdd(std::complex<double> scalar, ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(ciphertext, scalar);
     }
 
     /**
-    * @brief In-place addition of a ciphertext and a complex number (CKKS only).
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param scalar      Complex number to add.
-    */
+     * @brief In-place addition of a ciphertext and a complex number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Complex number to add.
+     */
     void EvalAddInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (scalar == std::complex<double>(0.0, 0.0))
             return;
@@ -1755,11 +1755,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place addition of a complex number and a ciphertext (CKKS only).
-    *
-    * @param scalar      Complex number to add.
-    * @param ciphertext  Ciphertext to modify.
-    */
+     * @brief In-place addition of a complex number and a ciphertext (CKKS only).
+     *
+     * @param scalar      Complex number to add.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalAddInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
         EvalAddInPlace(ciphertext, scalar);
     }
@@ -1769,93 +1769,93 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Homomorphic subtraction of two ciphertexts.
-    *
-    * @param ciphertext1  Minuend.
-    * @param ciphertext2  Subtrahend.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic subtraction of two ciphertexts.
+     *
+     * @param ciphertext1  Minuend.
+     * @param ciphertext2  Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return m_scheme->EvalSub(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief In-place homomorphic subtraction of two ciphertexts.
-    *
-    * @param ciphertext1  Minuend (modified in place).
-    * @param ciphertext2  Subtrahend.
-    */
+     * @brief In-place homomorphic subtraction of two ciphertexts.
+     *
+     * @param ciphertext1  Minuend (modified in place).
+     * @param ciphertext2  Subtrahend.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         m_scheme->EvalSubInPlace(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief Homomorphic subtraction of two mutable ciphertexts.
-    *
-    * @param ciphertext1  Minuend (may be modified).
-    * @param ciphertext2  Subtrahend (may be modified).
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic subtraction of two mutable ciphertexts.
+     *
+     * @param ciphertext1  Minuend (may be modified).
+     * @param ciphertext2  Subtrahend (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         return m_scheme->EvalSubMutable(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief In-place homomorphic subtraction of two mutable ciphertexts.
-    *
-    * @param ciphertext1  Minuend (modified in place).
-    * @param ciphertext2  Subtrahend (may be modified).
-    */
+     * @brief In-place homomorphic subtraction of two mutable ciphertexts.
+     *
+     * @param ciphertext1  Minuend (modified in place).
+     * @param ciphertext2  Subtrahend (may be modified).
+     */
     void EvalSubMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
         m_scheme->EvalSubMutableInPlace(ciphertext1, ciphertext2);
     }
 
     /**
-    * @brief Homomorphic subtraction of a ciphertext and a plaintext.
-    *
-    * @param ciphertext  Minuend.
-    * @param plaintext   Subtrahend.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic subtraction of a ciphertext and a plaintext.
+     *
+     * @param ciphertext  Minuend.
+     * @param plaintext   Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return m_scheme->EvalSub(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic subtraction of a ciphertext from a plaintext.
-    *
-    * @param plaintext   Minuend.
-    * @param ciphertext  Subtrahend.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic subtraction of a ciphertext from a plaintext.
+     *
+     * @param plaintext   Minuend.
+     * @param ciphertext  Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSub(Plaintext& plaintext, ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), plaintext);
     }
 
     /**
-    * @brief Homomorphic subtraction of a plaintext from a mutable ciphertext.
-    *
-    * @param ciphertext  Minuend (may be modified).
-    * @param plaintext   Subtrahend.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic subtraction of a plaintext from a mutable ciphertext.
+     *
+     * @param ciphertext  Minuend (may be modified).
+     * @param plaintext   Subtrahend.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return m_scheme->EvalSubMutable(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic subtraction of a mutable ciphertext from a plaintext.
-    *
-    * @param plaintext   Minuend.
-    * @param ciphertext  Subtrahend (may be modified).
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic subtraction of a mutable ciphertext from a plaintext.
+     *
+     * @param plaintext   Minuend.
+     * @param ciphertext  Subtrahend (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalSubMutable(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         Ciphertext<Element> negated = EvalNegate(ciphertext);
         Ciphertext<Element> result = EvalAddMutable(negated, plaintext);
@@ -1864,55 +1864,55 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place subtraction of a plaintext from a ciphertext.
-    *
-    * @param ciphertext  Minuend (modified in place).
-    * @param plaintext  Subtrahend.
-    */
+     * @brief In-place subtraction of a plaintext from a ciphertext.
+     *
+     * @param ciphertext  Minuend (modified in place).
+     * @param plaintext  Subtrahend.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         m_scheme->EvalSubInPlace(ciphertext, plaintext);
     }
 
     /**
-    * @brief In-place subtraction of a ciphertext from a plaintext.
-    *
-    * @param plaintext   Minuend (may be modified).
-    * @param ciphertext  Subtrahend (modified in place to hold the result).
-    */
+     * @brief In-place subtraction of a ciphertext from a plaintext.
+     *
+     * @param plaintext   Minuend (may be modified).
+     * @param ciphertext  Subtrahend (modified in place to hold the result).
+     */
     void EvalSubInPlace(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
         EvalAddInPlace(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic subtraction of a real number from a ciphertext (CKKS only).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param scalar      Real number to subtract.
-    * @return Resulting ciphertext (ciphertext - scalar).
-    */
+     * @brief Homomorphic subtraction of a real number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Real number to subtract.
+     * @return Resulting ciphertext (ciphertext - scalar).
+     */
     Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext, double scalar) const {
         return scalar >= 0 ? m_scheme->EvalSub(ciphertext, scalar) : m_scheme->EvalAdd(ciphertext, -scalar);
     }
 
     /**
-    * @brief Homomorphic subtraction of a ciphertext from a real number (CKKS only).
-    *
-    * @param scalar      Real number.
-    * @param ciphertext  Ciphertext to subtract.
-    * @return Resulting ciphertext (scalar - ciphertext).
-    */
+     * @brief Homomorphic subtraction of a ciphertext from a real number (CKKS only).
+     *
+     * @param scalar      Real number.
+     * @param ciphertext  Ciphertext to subtract.
+     * @return Resulting ciphertext (scalar - ciphertext).
+     */
     Ciphertext<Element> EvalSub(double scalar, ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), scalar);
     }
 
     /**
-    * @brief In-place subtraction of a real number from a ciphertext (CKKS only).
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param scalar      Real number to subtract.
-    */
+     * @brief In-place subtraction of a real number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Real number to subtract.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (scalar == 0.)
             return;
@@ -1923,44 +1923,44 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place subtraction of a ciphertext from a real number (CKKS only).
-    *
-    * @param scalar      Real number.
-    * @param ciphertext  Ciphertext to modify.
-    */
+     * @brief In-place subtraction of a ciphertext from a real number (CKKS only).
+     *
+     * @param scalar      Real number.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalSubInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
         EvalAddInPlace(ciphertext, scalar);
     }
 
     /**
-    * @brief Homomorphic subtraction of a complex number from a ciphertext (CKKS only).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param scalar      Complex number to subtract.
-    * @return Resulting ciphertext (ciphertext - scalar).
-    */
+     * @brief Homomorphic subtraction of a complex number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param scalar      Complex number to subtract.
+     * @return Resulting ciphertext (ciphertext - scalar).
+     */
     Ciphertext<Element> EvalSub(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         return m_scheme->EvalAdd(ciphertext, -scalar);
     }
 
     /**
-    * @brief Homomorphic subtraction of a ciphertext from a complex number (CKKS only).
-    *
-    * @param scalar      Complex number.
-    * @param ciphertext  Ciphertext to subtract.
-    * @return Resulting ciphertext (scalar - ciphertext).
-    */
+     * @brief Homomorphic subtraction of a ciphertext from a complex number (CKKS only).
+     *
+     * @param scalar      Complex number.
+     * @param ciphertext  Ciphertext to subtract.
+     * @return Resulting ciphertext (scalar - ciphertext).
+     */
     Ciphertext<Element> EvalSub(std::complex<double> scalar, ConstCiphertext<Element>& ciphertext) const {
         return EvalAdd(EvalNegate(ciphertext), scalar);
     }
 
     /**
-    * @brief In-place subtraction of a complex number from a ciphertext (CKKS only).
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param scalar      Complex number to subtract.
-    */
+     * @brief In-place subtraction of a complex number from a ciphertext (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Complex number to subtract.
+     */
     void EvalSubInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (scalar == std::complex<double>(0.0, 0.0))
             return;
@@ -1968,11 +1968,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place subtraction of a ciphertext from a complex number (CKKS only).
-    *
-    * @param scalar      Complex number.
-    * @param ciphertext  Ciphertext to modify.
-    */
+     * @brief In-place subtraction of a ciphertext from a complex number (CKKS only).
+     *
+     * @param scalar      Complex number.
+     * @param ciphertext  Ciphertext to modify.
+     */
     void EvalSubInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
         EvalNegateInPlace(ciphertext);
         EvalAddInPlace(ciphertext, scalar);
@@ -1983,30 +1983,30 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Creates a relinearization key (for s^2) that can be used with the OpenFHE EvalMult operator
-    *
-    * @param key secret key
-    * @note the new evaluation key is stored in cryptocontext
-    */
+     * @brief Creates a relinearization key (for s^2) that can be used with the OpenFHE EvalMult operator
+     *
+     * @param key secret key
+     * @note the new evaluation key is stored in cryptocontext
+     */
     void EvalMultKeyGen(const PrivateKey<Element>& key);
 
     /**
-    * @brief Creates a vector evalmult keys that can be used with the OpenFHE EvalMult operator
-    * @param key secret key
-    *
-    * @note 1st key (for s^2) is used for multiplication of ciphertexts of depth 1,
-    * 2nd key (for s^3) is used for multiplication of ciphertexts of depth 2, etc.
-    * A vector of new evaluation keys is stored in cryptocontext
-    */
+     * @brief Creates a vector evalmult keys that can be used with the OpenFHE EvalMult operator
+     * @param key secret key
+     *
+     * @note 1st key (for s^2) is used for multiplication of ciphertexts of depth 1,
+     * 2nd key (for s^3) is used for multiplication of ciphertexts of depth 2, etc.
+     * A vector of new evaluation keys is stored in cryptocontext
+     */
     void EvalMultKeysGen(const PrivateKey<Element>& key);
 
     /**
-    * @brief Homomorphic multiplication of two ciphertexts using a relinearization key.
-    *
-    * @param ciphertext1  Multiplier.
-    * @param ciphertext2  Multiplicand.
-    * @return Resulting ciphertext (ciphertext1 * ciphertext2).
-    */
+     * @brief Homomorphic multiplication of two ciphertexts using a relinearization key.
+     *
+     * @param ciphertext1  Multiplier.
+     * @param ciphertext2  Multiplicand.
+     * @return Resulting ciphertext (ciphertext1 * ciphertext2).
+     */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
 
@@ -2018,12 +2018,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of two mutable ciphertexts using a relinearization key.
-    *
-    * @param ciphertext1  Multiplier (may be modified).
-    * @param ciphertext2  Multiplicand (may be modified).
-    * @return Resulting ciphertext (ciphertext1 * ciphertext2).
-    */
+     * @brief Homomorphic multiplication of two mutable ciphertexts using a relinearization key.
+     *
+     * @param ciphertext1  Multiplier (may be modified).
+     * @param ciphertext2  Multiplicand (may be modified).
+     * @return Resulting ciphertext (ciphertext1 * ciphertext2).
+     */
     Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
 
@@ -2035,11 +2035,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place homomorphic multiplication of two mutable ciphertexts using a relinearization key.
-    *
-    * @param ciphertext1  Multiplier (modified in place).
-    * @param ciphertext2  Multiplicand (may be modified).
-    */
+     * @brief In-place homomorphic multiplication of two mutable ciphertexts using a relinearization key.
+     *
+     * @param ciphertext1  Multiplier (modified in place).
+     * @param ciphertext2  Multiplicand (may be modified).
+     */
     void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
 
@@ -2051,11 +2051,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic squaring of a ciphertext using a relinearization key.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Squared ciphertext.
-    */
+     * @brief Homomorphic squaring of a ciphertext using a relinearization key.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Squared ciphertext.
+     */
     Ciphertext<Element> EvalSquare(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
@@ -2067,11 +2067,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic squaring of a mutable ciphertext using a relinearization key.
-    *
-    * @param ciphertext  Input ciphertext (may be modified).
-    * @return Squared ciphertext.
-    */
+     * @brief Homomorphic squaring of a mutable ciphertext using a relinearization key.
+     *
+     * @param ciphertext  Input ciphertext (may be modified).
+     * @return Squared ciphertext.
+     */
     Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
@@ -2083,10 +2083,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place homomorphic squaring of a ciphertext using a relinearization key.
-    *
-    * @param ciphertext  Ciphertext to square (modified in place).
-    */
+     * @brief In-place homomorphic squaring of a ciphertext using a relinearization key.
+     *
+     * @param ciphertext  Ciphertext to square (modified in place).
+     */
     void EvalSquareInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
 
@@ -2098,12 +2098,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of two ciphertexts without relinearization.
-    *
-    * @param ciphertext1  Multiplier.
-    * @param ciphertext2  Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of two ciphertexts without relinearization.
+     *
+     * @param ciphertext1  Multiplier.
+     * @param ciphertext2  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultNoRelin(ConstCiphertext<Element>& ciphertext1,
                                         ConstCiphertext<Element>& ciphertext2) const {
         TypeCheck(ciphertext1, ciphertext2);
@@ -2111,15 +2111,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of two ciphertexts without relinearization and without any type, level
-    * or scaling factor checks: the tensor product of the ciphertext elements is computed directly, so the
-    * ciphertexts must already have the same level and scaling factor. The result carries the summed noise scale
-    * degree and the product of the scaling factors.
-    *
-    * @param ctxt1  Multiplier.
-    * @param ctxt2  Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of two ciphertexts without relinearization and without any type, level
+     * or scaling factor checks: the tensor product of the ciphertext elements is computed directly, so the
+     * ciphertexts must already have the same level and scaling factor. The result carries the summed noise scale
+     * degree and the product of the scaling factors.
+     *
+     * @param ctxt1  Multiplier.
+     * @param ctxt2  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultNoRelinNoCheck(ConstCiphertext<Element>& ctxt1, ConstCiphertext<Element>& ctxt2) const {
         auto& cv1 = ctxt1->GetElements();
         auto& cv2 = ctxt2->GetElements();
@@ -2160,11 +2160,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Relinearizes a ciphertext to reduce it to two components (2 polynomials per ciphertext).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Relinearized ciphertext.
-    */
+     * @brief Relinearizes a ciphertext to reduce it to two components (2 polynomials per ciphertext).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Relinearized ciphertext.
+     */
     Ciphertext<Element> Relinearize(ConstCiphertext<Element>& ciphertext) const {
         // input parameter check
         if (!ciphertext)
@@ -2179,10 +2179,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place relinearization of a ciphertext to reduce it to two components (2 polynomials per ciphertext).
-    *
-    * @param ciphertext  Ciphertext to relinearize (modified in place).
-    */
+     * @brief In-place relinearization of a ciphertext to reduce it to two components (2 polynomials per ciphertext).
+     *
+     * @param ciphertext  Ciphertext to relinearize (modified in place).
+     */
     void RelinearizeInPlace(Ciphertext<Element>& ciphertext) const {
         // input parameter check
         if (!ciphertext)
@@ -2196,12 +2196,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of two ciphertexts followed by relinearization to the lowest level.
-    *
-    * @param ciphertext1  First input ciphertext.
-    * @param ciphertext2  Second input ciphertext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of two ciphertexts followed by relinearization to the lowest level.
+     *
+     * @param ciphertext1  First input ciphertext.
+     * @param ciphertext2  Second input ciphertext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultAndRelinearize(ConstCiphertext<Element>& ciphertext1,
                                                ConstCiphertext<Element>& ciphertext2) const {
         if (!ciphertext1 || !ciphertext2)
@@ -2218,13 +2218,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Multiplies all ciphertext elements by an unscaled integer without any checks; the level, noise scale
-    * degree and scaling factor of the ciphertext are unchanged.
-    *
-    * @param ctxt  Input ciphertext.
-    * @param k     Integer to multiply by.
-    * @return Resulting ciphertext.
-    */
+     * @brief Multiplies all ciphertext elements by an unscaled integer without any checks; the level, noise scale
+     * degree and scaling factor of the ciphertext are unchanged.
+     *
+     * @param ctxt  Input ciphertext.
+     * @param k     Integer to multiply by.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultNoCheck(ConstCiphertext<Element>& ctxt, NativeInteger k) const {
         auto result = ctxt->Clone();
         auto& cv = result->GetElements();
@@ -2235,58 +2235,58 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of a ciphertext by a plaintext.
-    *
-    * @param ciphertext  Multiplier.
-    * @param plaintext   Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a ciphertext by a plaintext.
+     *
+     * @param ciphertext  Multiplier.
+     * @param plaintext   Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, ConstPlaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return m_scheme->EvalMult(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic multiplication of a plaintext by a ciphertext.
-    *
-    * @param plaintext   Multiplier.
-    * @param ciphertext  Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a plaintext by a ciphertext.
+     *
+     * @param plaintext   Multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(ConstPlaintext& plaintext, ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic multiplication of a mutable ciphertext and a plaintext.
-    *
-    * @param ciphertext  Multiplier (may be modified).
-    * @param plaintext   Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a mutable ciphertext and a plaintext.
+     *
+     * @param ciphertext  Multiplier (may be modified).
+     * @param plaintext   Multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext, Plaintext& plaintext) const {
         TypeCheck(ciphertext, plaintext);
         return m_scheme->EvalMultMutable(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic multiplication of a plaintext and a mutable ciphertext.
-    *
-    * @param plaintext   Multiplier.
-    * @param ciphertext  Multiplicand (may be modified).
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a plaintext and a mutable ciphertext.
+     *
+     * @param plaintext   Multiplier.
+     * @param ciphertext  Multiplicand (may be modified).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMultMutable(Plaintext& plaintext, Ciphertext<Element>& ciphertext) const {
         return EvalMultMutable(ciphertext, plaintext);
     }
 
     /**
-    * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
-    *
-    * @param ciphertext  Multiplier.
-    * @param scalar      Real number multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param ciphertext  Multiplier.
+     * @param scalar      Real number multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2294,22 +2294,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
-    *
-    * @param scalar      Real number multiplier.
-    * @param ciphertext  Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param scalar      Real number multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     inline Ciphertext<Element> EvalMult(double scalar, ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, scalar);
     }
 
     /**
-    * @brief In-place multiplication of a ciphertext by a real number (CKKS only).
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param scalar      Real number multiplicand.
-    */
+     * @brief In-place multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Real number multiplicand.
+     */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, double scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2317,22 +2317,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place multiplication of a ciphertext by a real number (CKKS only).
-    *
-    * @param scalar      Real number multiplier.
-    * @param ciphertext  Ciphertext to modify (multiplicand).
-    */
+     * @brief In-place multiplication of a ciphertext by a real number (CKKS only).
+     *
+     * @param scalar      Real number multiplier.
+     * @param ciphertext  Ciphertext to modify (multiplicand).
+     */
     inline void EvalMultInPlace(double scalar, Ciphertext<Element>& ciphertext) const {
         EvalMultInPlace(ciphertext, scalar);
     }
 
     /**
-    * @brief Homomorphic multiplication of a ciphertext by a complex number (CKKS only).
-    *
-    * @param ciphertext  Multiplier.
-    * @param scalar      Complex number multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param ciphertext  Multiplier.
+     * @param scalar      Complex number multiplicand.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2340,22 +2340,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of a ciphertext by a complex number (CKKS only).
-    *
-    * @param scalar      Complex number multiplier.
-    * @param ciphertext  Multiplicand.
-    * @return Resulting ciphertext.
-    */
+     * @brief Homomorphic multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param scalar      Complex number multiplier.
+     * @param ciphertext  Multiplicand.
+     * @return Resulting ciphertext.
+     */
     inline Ciphertext<Element> EvalMult(std::complex<double> scalar, ConstCiphertext<Element>& ciphertext) const {
         return EvalMult(ciphertext, scalar);
     }
 
     /**
-    * @brief In-place multiplication of a ciphertext by a complex number (CKKS only).
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param scalar      Complex number multiplicand.
-    */
+     * @brief In-place multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param scalar      Complex number multiplicand.
+     */
     void EvalMultInPlace(Ciphertext<Element>& ciphertext, std::complex<double> scalar) const {
         if (!ciphertext)
             OPENFHE_THROW("Input ciphertext is nullptr");
@@ -2363,11 +2363,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place multiplication of a ciphertext by a complex number (CKKS only).
-    *
-    * @param scalar      Complex number multiplier.
-    * @param ciphertext  Ciphertext to modify (multiplicand).
-    */
+     * @brief In-place multiplication of a ciphertext by a complex number (CKKS only).
+     *
+     * @param scalar      Complex number multiplier.
+     * @param ciphertext  Ciphertext to modify (multiplicand).
+     */
     inline void EvalMultInPlace(std::complex<double> scalar, Ciphertext<Element>& ciphertext) const {
         EvalMultInPlace(ciphertext, scalar);
     }
@@ -2377,12 +2377,12 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Generates automorphism evaluation keys for the given private key.
-    *
-    * @param privateKey   Private key to use for key generation.
-    * @param indexList    List of automorphism indices to be computed.
-    * @return Map of generated evaluation keys.
-    */
+     * @brief Generates automorphism evaluation keys for the given private key.
+     *
+     * @param privateKey   Private key to use for key generation.
+     * @param indexList    List of automorphism indices to be computed.
+     * @return Map of generated evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
             const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
         ValidateKey(privateKey);
@@ -2394,13 +2394,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Applies an automorphism to a ciphertext using the given evaluation keys.
-    *
-    * @param ciphertext   Input ciphertext.
-    * @param i            Automorphism index.
-    * @param evalKeyMap   Map of evaluation keys generated by EvalAutomorphismKeyGen.
-    * @return Transformed ciphertext.
-    */
+     * @brief Applies an automorphism to a ciphertext using the given evaluation keys.
+     *
+     * @param ciphertext   Input ciphertext.
+     * @param i            Automorphism index.
+     * @param evalKeyMap   Map of evaluation keys generated by EvalAutomorphismKeyGen.
+     * @return Transformed ciphertext.
+     */
     Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                          const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
                                          CALLER_INFO_ARGS_HDR) const {
@@ -2420,11 +2420,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes the automorphism index for a given vector index.
-    *
-    * @param idx  Vector index.
-    * @return Corresponding automorphism index.
-    */
+     * @brief Computes the automorphism index for a given vector index.
+     *
+     * @param idx  Vector index.
+     * @return Corresponding automorphism index.
+     */
     uint32_t FindAutomorphismIndex(const uint32_t idx) const {
         const auto cryptoParams = m_params;
         const auto elementParams = cryptoParams->GetElementParams();
@@ -2433,11 +2433,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes automorphism indices for a list of vector indices.
-    *
-    * @param idxList  List of vector indices.
-    * @return Vector of corresponding automorphism indices.
-    */
+     * @brief Computes automorphism indices for a list of vector indices.
+     *
+     * @param idxList  List of vector indices.
+     * @return Vector of corresponding automorphism indices.
+     */
     std::vector<uint32_t> FindAutomorphismIndices(const std::vector<uint32_t>& idxList) const {
         std::vector<uint32_t> newIndices;
         newIndices.reserve(idxList.size());
@@ -2448,12 +2448,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Rotates a ciphertext by the given index using a stored rotation key.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param index       Rotation index (positive for left, negative for right).
-    * @return Rotated ciphertext.
-    */
+     * @brief Rotates a ciphertext by the given index using a stored rotation key.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param index       Rotation index (positive for left, negative for right).
+     * @return Rotated ciphertext.
+     */
     Ciphertext<Element> EvalRotate(ConstCiphertext<Element>& ciphertext, int32_t index) const {
         ValidateCiphertext(ciphertext);
 
@@ -2462,105 +2462,105 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief implements the precomputation step of hoisted automorphisms.
-    *
-    * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
-    * for more details, link: https://eprint.iacr.org/2018/244.
-    *
-    * Generally, automorphisms are performed with three steps:
-    * (1) the automorphism is applied on the ciphertext
-    * (2) the automorphed values are decomposed into digits
-    * (3) key switching is applied to make it possible to further compute on the ciphertext.
-    *
-    * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
-    * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
-    * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
-    * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
-    * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
-    *
-    * it implements the digit decomposition step of hoisted automorphisms.
-    *
-    * @param ciphertext Input ciphertext on which to do the precomputation (digit decomposition).
-    * @return Pointer to precomputed rotation data.
-    */
+     * @brief implements the precomputation step of hoisted automorphisms.
+     *
+     * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
+     * for more details, link: https://eprint.iacr.org/2018/244.
+     *
+     * Generally, automorphisms are performed with three steps:
+     * (1) the automorphism is applied on the ciphertext
+     * (2) the automorphed values are decomposed into digits
+     * (3) key switching is applied to make it possible to further compute on the ciphertext.
+     *
+     * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
+     * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
+     * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
+     * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
+     * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
+     *
+     * it implements the digit decomposition step of hoisted automorphisms.
+     *
+     * @param ciphertext Input ciphertext on which to do the precomputation (digit decomposition).
+     * @return Pointer to precomputed rotation data.
+     */
     std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element>& ciphertext) const {
         return m_scheme->EvalFastRotationPrecompute(ciphertext);
     }
 
     /**
-    * @brief Implements the automorphism and key switching step of hoisted automorphisms.
-    *
-    * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
-    * for more details, link: https://eprint.iacr.org/2018/244.
-    *
-    * Generally, automorphisms are performed with three steps:
-    * (1) the automorphism is applied on the ciphertext
-    * (2) the automorphed values are decomposed into digits
-    * (3) key switching is applied to make it possible to further compute on the ciphertext.
-    *
-    * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
-    * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
-    * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
-    * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
-    * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
-    *
-    * This method assumes that all required rotation keys exist. This may not be true if we are
-    * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
-    * EvalPermuteBGStepHoisted to see how to deal with this issue.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param index       Rotation index (positive for left, negative for right).
-    * @param m           Cyclotomic order.
-    * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
-    * @return Rotated ciphertext.
-    */
+     * @brief Implements the automorphism and key switching step of hoisted automorphisms.
+     *
+     * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
+     * for more details, link: https://eprint.iacr.org/2018/244.
+     *
+     * Generally, automorphisms are performed with three steps:
+     * (1) the automorphism is applied on the ciphertext
+     * (2) the automorphed values are decomposed into digits
+     * (3) key switching is applied to make it possible to further compute on the ciphertext.
+     *
+     * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
+     * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
+     * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
+     * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
+     * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
+     *
+     * This method assumes that all required rotation keys exist. This may not be true if we are
+     * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
+     * EvalPermuteBGStepHoisted to see how to deal with this issue.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param index       Rotation index (positive for left, negative for right).
+     * @param m           Cyclotomic order.
+     * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
+     * @return Rotated ciphertext.
+     */
     Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
         return m_scheme->EvalFastRotation(ciphertext, index, m, digits);
     }
 
     /**
-    * @brief Implements the automorphism and key switching step of hoisted automorphisms.
-    *
-    * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
-    * for more details, link: https://eprint.iacr.org/2018/244.
-    *
-    * Generally, automorphisms are performed with three steps:
-    * (1) the automorphism is applied on the ciphertext
-    * (2) the automorphed values are decomposed into digits
-    * (3) key switching is applied to make it possible to further compute on the ciphertext.
-    *
-    * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
-    * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
-    * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
-    * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
-    * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
-    *
-    * This method assumes that all required rotation keys exist. This may not be true if we are
-    * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
-    * EvalPermuteBGStepHoisted to see how to deal with this issue.
-    *
-    * The cyclotomic order is computed from the CryptoContext.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param index       Rotation index (positive for left, negative for right).
-    * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
-    * @return Rotated ciphertext.
-    */
+     * @brief Implements the automorphism and key switching step of hoisted automorphisms.
+     *
+     * Please refer to Section 5 of Halevi and Shoup, "Faster Homomorphic linear transformations in HELib."
+     * for more details, link: https://eprint.iacr.org/2018/244.
+     *
+     * Generally, automorphisms are performed with three steps:
+     * (1) the automorphism is applied on the ciphertext
+     * (2) the automorphed values are decomposed into digits
+     * (3) key switching is applied to make it possible to further compute on the ciphertext.
+     *
+     * Hoisted automorphisms is a technique that performs the digit decomposition for the original ciphertext first,
+     * and then performs the automorphism and the key switching on the decomposed digits. The benefit of this is that the
+     * digit decomposition is independent of the automorphism rotation index, so  it can be reused for
+     * multiple different indices. This can greatly improve performance when we have to compute many automorphisms
+     * on the same ciphertext. This routinely happens when we do permutations (EvalPermute).
+     *
+     * This method assumes that all required rotation keys exist. This may not be true if we are
+     * using baby-step/giant-step key switching. Please refer to Section 5.1 of the above reference and
+     * EvalPermuteBGStepHoisted to see how to deal with this issue.
+     *
+     * The cyclotomic order is computed from the CryptoContext.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param index       Rotation index (positive for left, negative for right).
+     * @param digits      Precomputed rotation data (the digit decomposition created by EvalFastRotationPrecompute).
+     * @return Rotated ciphertext.
+     */
     Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element>& ciphertext, const uint32_t index,
                                          const std::shared_ptr<std::vector<Element>> digits) const {
         return EvalFastRotation(ciphertext, index, GetRingDimension() * 2, digits);
     }
 
     /**
-    * @brief Performs fast (hoisted) rotation in the extended CRT basis P*Q. Only supported with hybrid key switching.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param index       Rotation index (positive for left, negative for right).
-    * @param digits      Precomputed digits for the ciphertext.
-    * @param addFirst    If true, the first element c0 is also computed.
-    * @return Rotated ciphertext in extended basis.
-    */
+     * @brief Performs fast (hoisted) rotation in the extended CRT basis P*Q. Only supported with hybrid key switching.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param index       Rotation index (positive for left, negative for right).
+     * @param digits      Precomputed digits for the ciphertext.
+     * @param addFirst    If true, the first element c0 is also computed.
+     * @return Rotated ciphertext in extended basis.
+     */
     Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
                                             const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
         auto evalKeyMap = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
@@ -2568,65 +2568,65 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Scales a ciphertext down from the extended CRT basis P*Q to Q. Only supported with hybrid key switching.
-    *
-    * @param ciphertext  Input ciphertext in extended basis.
-    * @return Scaled ciphertext in basis Q.
-    */
+     * @brief Scales a ciphertext down from the extended CRT basis P*Q to Q. Only supported with hybrid key switching.
+     *
+     * @param ciphertext  Input ciphertext in extended basis.
+     * @return Scaled ciphertext in basis Q.
+     */
     Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->KeySwitchDown(ciphertext);
     }
 
     /**
-    * @brief Scales down the first polynomial c0 from extended CRT basis P*Q to Q. Only supported with hybrid key switching.
-    *
-    * @param ciphertext  Input ciphertext in extended basis.
-    * @return Scaled polynomial c0 in basis Q.
-    */
+     * @brief Scales down the first polynomial c0 from extended CRT basis P*Q to Q. Only supported with hybrid key switching.
+     *
+     * @param ciphertext  Input ciphertext in extended basis.
+     * @return Scaled polynomial c0 in basis Q.
+     */
     Element KeySwitchDownFirstElement(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->KeySwitchDownFirstElement(ciphertext);
     }
 
     /**
-    * @brief Extends a ciphertext from basis Q to the extended CRT basis P*Q. Only supported with hybrid key switching.
-    *
-    * @param ciphertext  Input ciphertext in basis Q.
-    * @param addFirst    If true, includes the first component c0 in the output.
-    * @return Extended ciphertext in basis P*Q.
-    */
+     * @brief Extends a ciphertext from basis Q to the extended CRT basis P*Q. Only supported with hybrid key switching.
+     *
+     * @param ciphertext  Input ciphertext in basis Q.
+     * @param addFirst    If true, includes the first component c0 in the output.
+     * @return Extended ciphertext in basis P*Q.
+     */
     Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element>& ciphertext, bool addFirst) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->KeySwitchExt(ciphertext, addFirst);
     }
 
     /**
-    * @brief Generates evaluation keys for a list of rotation indices.
-    *
-    * @param privateKey  Private key used for key generation.
-    * @param indexList   List of rotation indices.
-    */
+     * @brief Generates evaluation keys for a list of rotation indices.
+     *
+     * @param privateKey  Private key used for key generation.
+     * @param indexList   List of rotation indices.
+     */
     void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList);
 
     /**
-    * @brief Generates rotation evaluation keys for a list of indices. Internally calls EvalAtIndexKeyGen.
-    *
-    * @param privateKey  Private key used for key generation.
-    * @param indexList   List of rotation indices.
-    */
+     * @brief Generates rotation evaluation keys for a list of indices. Internally calls EvalAtIndexKeyGen.
+     *
+     * @param privateKey  Private key used for key generation.
+     * @param indexList   List of rotation indices.
+     */
     void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) {
         EvalAtIndexKeyGen(privateKey, indexList);
     };
 
     /**
-    * @brief Rotates a ciphertext by the given index using stored rotation keys.
-    *        Positive index = left shift; negative index = right shift.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param index       Rotation index.
-    * @return Rotated ciphertext.
-    */
+     * @brief Rotates a ciphertext by the given index using stored rotation keys.
+     *        Positive index = left shift; negative index = right shift.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param index       Rotation index.
+     * @return Rotated ciphertext.
+     */
     Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element>& ciphertext, int32_t index) const;
 
     //------------------------------------------------------------------------------
@@ -2634,13 +2634,13 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Performs multiplication, relinearization, and rescaling in one step.
-    *        Uses a relinearization key from the crypto context.
-    *
-    * @param ciphertext1  First ciphertext.
-    * @param ciphertext2  Second ciphertext.
-    * @return Resulting ciphertext.
-    */
+     * @brief Performs multiplication, relinearization, and rescaling in one step.
+     *        Uses a relinearization key from the crypto context.
+     *
+     * @param ciphertext1  First ciphertext.
+     * @param ciphertext2  Second ciphertext.
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> ComposedEvalMult(ConstCiphertext<Element>& ciphertext1,
                                          ConstCiphertext<Element>& ciphertext2) const {
         ValidateCiphertext(ciphertext1);
@@ -2654,57 +2654,57 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Rescales a ciphertext by reducing its modulus (alias for ModReduce in CKKS).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Rescaled ciphertext.
-    */
+     * @brief Rescales a ciphertext by reducing its modulus (alias for ModReduce in CKKS).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Rescaled ciphertext.
+     */
     Ciphertext<Element> Rescale(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
-    * @brief In-place rescaling of a ciphertext (alias for ModReduceInPlace in CKKS).
-    *
-    * @param ciphertext  Ciphertext to rescale.
-    */
+     * @brief In-place rescaling of a ciphertext (alias for ModReduceInPlace in CKKS).
+     *
+     * @param ciphertext  Ciphertext to rescale.
+     */
     void RescaleInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         m_scheme->ModReduceInPlace(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
-    * @brief Performs modulus reduction on a ciphertext (used in BGV/CKKS).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Modulus-reduced ciphertext.
-    */
+     * @brief Performs modulus reduction on a ciphertext (used in BGV/CKKS).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Modulus-reduced ciphertext.
+     */
     Ciphertext<Element> ModReduce(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->ModReduce(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
-    * @brief In-place modulus reduction of a ciphertext (used in BGV/CKKS).
-    *
-    * @param ciphertext  Ciphertext to reduce.
-    */
+     * @brief In-place modulus reduction of a ciphertext (used in BGV/CKKS).
+     *
+     * @param ciphertext  Ciphertext to reduce.
+     */
     void ModReduceInPlace(Ciphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         m_scheme->ModReduceInPlace(ciphertext, GetCompositeDegreeFromCtxt());
     }
 
     /**
-    * @brief Reduces the number of RNS limbs (levels) in a ciphertext.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param evalKey     Evaluation key (currently unused; kept for API compatibility).
-    * @param levels      Number of levels to drop.
-    * @return Ciphertext with reduced levels.
-    *
-    * @note Supported in BGV and CKKS. In CKKS with COMPOSITESCALING*, levels are scaled by the composite degree.
-    */
+     * @brief Reduces the number of RNS limbs (levels) in a ciphertext.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param evalKey     Evaluation key (currently unused; kept for API compatibility).
+     * @param levels      Number of levels to drop.
+     * @return Ciphertext with reduced levels.
+     *
+     * @note Supported in BGV and CKKS. In CKKS with COMPOSITESCALING*, levels are scaled by the composite degree.
+     */
     Ciphertext<Element> LevelReduce(ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
                                     size_t levels = 1) const {
         ValidateCiphertext(ciphertext);
@@ -2712,14 +2712,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place reduction of RNS limbs (levels) in a ciphertext.
-    *
-    * @param ciphertext  Ciphertext to modify.
-    * @param evalKey     Evaluation key (currently unused; kept for API compatibility).
-    * @param levels      Number of levels to drop.
-    *
-    * @note Supported in BGV and CKKS. In CKKS with COMPOSITESCALING*, levels are scaled by the composite degree.
-    */
+     * @brief In-place reduction of RNS limbs (levels) in a ciphertext.
+     *
+     * @param ciphertext  Ciphertext to modify.
+     * @param evalKey     Evaluation key (currently unused; kept for API compatibility).
+     * @param levels      Number of levels to drop.
+     *
+     * @note Supported in BGV and CKKS. In CKKS with COMPOSITESCALING*, levels are scaled by the composite degree.
+     */
     void LevelReduceInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey, size_t levels = 1) const {
         ValidateCiphertext(ciphertext);
         if (levels > 0)
@@ -2727,13 +2727,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Compresses a ciphertext by reducing its modulus to lower communication cost.
-    *
-    * @param ciphertext     Input ciphertext.
-    * @param towersLeft     Number of RNS limbs to retain.
-    * @param noiseScaleDeg  Noise scale degree the ciphertext is reduced to before dropping limbs (must not exceed towersLeft).
-    * @return Compressed ciphertext.
-    */
+     * @brief Compresses a ciphertext by reducing its modulus to lower communication cost.
+     *
+     * @param ciphertext     Input ciphertext.
+     * @param towersLeft     Number of RNS limbs to retain.
+     * @param noiseScaleDeg  Noise scale degree the ciphertext is reduced to before dropping limbs (must not exceed towersLeft).
+     * @return Compressed ciphertext.
+     */
     Ciphertext<Element> Compress(ConstCiphertext<Element>& ciphertext, uint32_t towersLeft = 1,
                                  size_t noiseScaleDeg = 1) const {
         if (ciphertext == nullptr)
@@ -2752,11 +2752,11 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Homomorphic addition of multiple ciphertexts (null entries are skipped).
-    *
-    * @param ciphertextVec  Vector of ciphertexts.
-    * @return Resulting ciphertext; never aliases an input, so it is always safe to mutate.
-    */
+     * @brief Homomorphic addition of multiple ciphertexts (null entries are skipped).
+     *
+     * @param ciphertextVec  Vector of ciphertexts.
+     * @return Resulting ciphertext; never aliases an input, so it is always safe to mutate.
+     */
     Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
         if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
@@ -2764,11 +2764,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief In-place homomorphic addition of multiple ciphertexts (null entries are skipped; the result is also left in slot 0 of the vector).
-    *
-    * @param ciphertextVec  Vector of ciphertexts (modified in place to store intermediate results).
-    * @return Resulting ciphertext.
-    */
+     * @brief In-place homomorphic addition of multiple ciphertexts (null entries are skipped; the result is also left in slot 0 of the vector).
+     *
+     * @param ciphertextVec  Vector of ciphertexts (modified in place to store intermediate results).
+     * @return Resulting ciphertext.
+     */
     Ciphertext<Element> EvalAddManyInPlace(std::vector<Ciphertext<Element>>& ciphertextVec) const {
         if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
@@ -2776,16 +2776,16 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic multiplication of multiple ciphertexts using a binary tree approach,
-    *        followed by relinearization to reduce ciphertext size to two elements after each multiplication.
-    *
-    * @param ciphertextVec  Vector of ciphertexts to multiply.
-    * @return Resulting ciphertext.
-    *
-    * @note Assumes each multiplication produces a ciphertext within the supported ring size
-    *       (for the secret key degree used by EvalMultKeysGen).
-    *       Otherwise, it throws an error
-    */
+     * @brief Homomorphic multiplication of multiple ciphertexts using a binary tree approach,
+     *        followed by relinearization to reduce ciphertext size to two elements after each multiplication.
+     *
+     * @param ciphertextVec  Vector of ciphertexts to multiply.
+     * @return Resulting ciphertext.
+     *
+     * @note Assumes each multiplication produces a ciphertext within the supported ring size
+     *       (for the secret key degree used by EvalMultKeysGen).
+     *       Otherwise, it throws an error
+     */
     Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
         if (ciphertextVec.empty())
             OPENFHE_THROW("Empty input ciphertext vector");
@@ -2802,12 +2802,12 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Computes a linear weighted sum of ciphertexts (CKKS only).
-    *
-    * @param ciphertextVec  List of ciphertexts.
-    * @param constantVec    Corresponding weights.
-    * @return Weighted sum as a ciphertext.
-    */
+     * @brief Computes a linear weighted sum of ciphertexts (CKKS only).
+     *
+     * @param ciphertextVec  List of ciphertexts.
+     * @param constantVec    Corresponding weights.
+     * @return Weighted sum as a ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSum(std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec,
                                        const std::vector<VectorDataType>& constantVec) const {
@@ -2815,12 +2815,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes a linear weighted sum of ciphertexts (CKKS only).
-    *
-    * @param constantsVec   Corresponding weights.
-    * @param ciphertextVec  List of ciphertexts.
-    * @return Weighted sum as a ciphertext.
-    */
+     * @brief Computes a linear weighted sum of ciphertexts (CKKS only).
+     *
+     * @param constantsVec   Corresponding weights.
+     * @param ciphertextVec  List of ciphertexts.
+     * @return Weighted sum as a ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSum(const std::vector<VectorDataType>& constantsVec,
                                        std::vector<ReadOnlyCiphertext<Element>>& ciphertextVec) const {
@@ -2828,12 +2828,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes a linear weighted sum using mutable ciphertexts (CKKS only).
-    *
-    * @param ciphertextVec  List of mutable ciphertexts.
-    * @param constantsVec   Corresponding weights.
-    * @return Weighted sum as a ciphertext.
-    */
+     * @brief Computes a linear weighted sum using mutable ciphertexts (CKKS only).
+     *
+     * @param ciphertextVec  List of mutable ciphertexts.
+     * @param constantsVec   Corresponding weights.
+     * @return Weighted sum as a ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
                                               const std::vector<VectorDataType>& constantsVec) const {
@@ -2841,12 +2841,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes a linear weighted sum using mutable ciphertexts (CKKS only).
-    *
-    * @param constantsVec   Corresponding weights.
-    * @param ciphertextVec  List of mutable ciphertexts.
-    * @return Weighted sum as a ciphertext.
-    */
+     * @brief Computes a linear weighted sum using mutable ciphertexts (CKKS only).
+     *
+     * @param constantsVec   Corresponding weights.
+     * @param ciphertextVec  List of mutable ciphertexts.
+     * @return Weighted sum as a ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalLinearWSumMutable(const std::vector<VectorDataType>& constantsVec,
                                               std::vector<Ciphertext<Element>>& ciphertextVec) const {
@@ -2858,13 +2858,13 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Computes the powers of a ciphertext to be used when evaluating a polynomial (CKKS only).
-    *        Uses EvalPowersLinear() for low polynomial degrees (degree < 5), or EvalPowersPS() for higher degrees.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
-    * @return Resulting structure of powers.
-    */
+     * @brief Computes the powers of a ciphertext to be used when evaluating a polynomial (CKKS only).
+     *        Uses EvalPowersLinear() for low polynomial degrees (degree < 5), or EvalPowersPS() for higher degrees.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+     * @return Resulting structure of powers.
+     */
 
     template <typename VectorDataType = double>
     std::shared_ptr<seriesPowers<Element>> EvalPowers(ConstCiphertext<Element>& ciphertext,
@@ -2874,13 +2874,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a polynomial (given as a power series) on a ciphertext (CKKS only).
-    *        Use EvalPolyLinear() for low polynomial degrees (degree < 5), or EvalPolyPS() for higher degrees.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a polynomial (given as a power series) on a ciphertext (CKKS only).
+     *        Use EvalPolyLinear() for low polynomial degrees (degree < 5), or EvalPolyPS() for higher degrees.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+     * @return Resulting ciphertext.
+     */
 
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPoly(ConstCiphertext<Element>& ciphertext,
@@ -2890,15 +2890,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a polynomial (given as a power series) from the powers of a ciphertext precomputed
-    *        by EvalPowers (CKKS only). The powers are left unmodified, so the same precomputation can be
-    *        reused for further polynomials of the same degree as the one it was computed for (below degree 5,
-    *        EvalPowers builds only the powers its coefficients need, so the nonzero terms must match as well).
-    *
-    * @param powers        Powers of the input ciphertext, as returned by EvalPowers.
-    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a polynomial (given as a power series) from the powers of a ciphertext precomputed
+     *        by EvalPowers (CKKS only). The powers are left unmodified, so the same precomputation can be
+     *        reused for further polynomials of the same degree as the one it was computed for (below degree 5,
+     *        EvalPowers builds only the powers its coefficients need, so the nonzero terms must match as well).
+     *
+     * @param powers        Powers of the input ciphertext, as returned by EvalPowers.
+     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyWithPrecomp(std::shared_ptr<seriesPowers<Element>> powers,
                                             const std::vector<VectorDataType>& coefficients) const {
@@ -2907,13 +2907,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Naive polynomial evaluation using a binary tree approach (efficient for low-degree polynomials, <10).
-    *        Polynomials are given as a power series. Supported only in CKKS.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
-    * @return Resulting ciphertext.
-    */
+     * @brief Naive polynomial evaluation using a binary tree approach (efficient for low-degree polynomials, <10).
+     *        Polynomials are given as a power series. Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element>& ciphertext,
                                        const std::vector<VectorDataType>& coefficients) const {
@@ -2922,13 +2922,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a polynomial (given as a power series) using the Paterson-Stockmeyer method (efficient for high-degree polynomials).
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a polynomial (given as a power series) using the Paterson-Stockmeyer method (efficient for high-degree polynomials).
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element>& ciphertext,
                                    const std::vector<VectorDataType>& coefficients) const {
@@ -2941,16 +2941,16 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Computes the Chebyshev polynomials for a ciphertext to be used when evaluating a Chebyshev series (CKKS only).
-    *        Maps [a, b] to [-1, 1] using the linear transformation 1 + 2(x-a)/(b-a), then computes the polynomials
-    *        needed by EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS (higher degrees) depending on degree.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
-    * @param a             Lower bound of argument for which the coefficients were found.
-    * @param b             Upper bound of argument for which the coefficients were found.
-    * @return Resulting structure of Chebyshev polynomials.
-    */
+     * @brief Computes the Chebyshev polynomials for a ciphertext to be used when evaluating a Chebyshev series (CKKS only).
+     *        Maps [a, b] to [-1, 1] using the linear transformation 1 + 2(x-a)/(b-a), then computes the polynomials
+     *        needed by EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS (higher degrees) depending on degree.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Polynomial coefficients (vector's size = (degree + 1)).
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting structure of Chebyshev polynomials.
+     */
 
     template <typename VectorDataType = double>
     std::shared_ptr<seriesPowers<Element>> EvalChebyPolys(ConstCiphertext<Element>& ciphertext,
@@ -2961,17 +2961,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a Chebyshev interpolated polynomial on a ciphertext.
-    *        Uses a linear transformation to map [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a),
-    *        then applies either EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS depending on degree.
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Chebyshev series coefficients.
-    * @param a             Lower bound of argument for which the coefficients were found.
-    * @param b             Upper bound of argument for which the coefficients were found.
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a Chebyshev interpolated polynomial on a ciphertext.
+     *        Uses a linear transformation to map [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a),
+     *        then applies either EvalChebyshevSeriesLinear (degree < 5) or EvalChebyshevSeriesPS depending on degree.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Chebyshev series coefficients.
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element>& ciphertext,
                                             const std::vector<VectorDataType>& coefficients, double a, double b) const {
@@ -2980,14 +2980,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a Chebyshev series from the Chebyshev polynomials of a ciphertext precomputed by
-    *        EvalChebyPolys (CKKS only). The polynomials are left unmodified, so the same precomputation
-    *        can be reused for further series of the same degree as the one it was computed for.
-    *
-    * @param polys         Chebyshev polynomials of the input ciphertext, as returned by EvalChebyPolys.
-    * @param coefficients  Chebyshev series coefficients.
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a Chebyshev series from the Chebyshev polynomials of a ciphertext precomputed by
+     *        EvalChebyPolys (CKKS only). The polynomials are left unmodified, so the same precomputation
+     *        can be reused for further series of the same degree as the one it was computed for.
+     *
+     * @param polys         Chebyshev polynomials of the input ciphertext, as returned by EvalChebyPolys.
+     * @param coefficients  Chebyshev series coefficients.
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeriesWithPrecomp(std::shared_ptr<seriesPowers<Element>> polys,
                                                        const std::vector<VectorDataType>& coefficients) const {
@@ -2996,15 +2996,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a Chebyshev interpolated polynomial using a naive linear method.
-    *        Maps [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a). Supported only in CKKS.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Chebyshev series coefficients.
-    * @param a             Lower bound of argument for which the coefficients were found.
-    * @param b             Upper bound of argument for which the coefficients were found.
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a Chebyshev interpolated polynomial using a naive linear method.
+     *        Maps [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a). Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Chebyshev series coefficients.
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element>& ciphertext,
                                                   const std::vector<VectorDataType>& coefficients, double a,
@@ -3014,15 +3014,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a Chebyshev interpolated polynomial using the Paterson-Stockmeyer method.
-    *        Maps [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a). Supported only in CKKS.
-    *
-    * @param ciphertext    Input ciphertext.
-    * @param coefficients  Chebyshev series coefficients.
-    * @param a             Lower bound of argument for which the coefficients were found.
-    * @param b             Upper bound of argument for which the coefficients were found.
-    * @return Resulting ciphertext.
-    */
+     * @brief Evaluates a Chebyshev interpolated polynomial using the Paterson-Stockmeyer method.
+     *        Maps [a, b] to [-1, 1] using linear transformation 1 + 2(x-a)/(b-a). Supported only in CKKS.
+     *
+     * @param ciphertext    Input ciphertext.
+     * @param coefficients  Chebyshev series coefficients.
+     * @param a             Lower bound of argument for which the coefficients were found.
+     * @param b             Upper bound of argument for which the coefficients were found.
+     * @return Resulting ciphertext.
+     */
     template <typename VectorDataType = double>
     Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element>& ciphertext,
                                               const std::vector<VectorDataType>& coefficients, double a,
@@ -3032,65 +3032,65 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a smooth function on a ciphertext using Chebyshev polynomial approximation over [a, b].
-    *        Supported only in CKKS.
-    *
-    * @param func        Function to approximate.
-    * @param ciphertext  Input ciphertext.
-    * @param a           Lower bound of argument for which the coefficients were found.
-    * @param b           Upper bound of argument for which the coefficients were found.
-    * @param degree      Degree of the Chebyshev approximation.
-    * @return Ciphertext after function evaluation.
-    */
+     * @brief Evaluates a smooth function on a ciphertext using Chebyshev polynomial approximation over [a, b].
+     *        Supported only in CKKS.
+     *
+     * @param func        Function to approximate.
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after function evaluation.
+     */
     Ciphertext<Element> EvalChebyshevFunction(std::function<double(double)> func, ConstCiphertext<Element>& ciphertext,
                                               double a, double b, uint32_t degree) const;
 
     /**
-    * @brief Evaluates an approximate sine function on a ciphertext using Chebyshev approximation.
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param a           Lower bound of argument for which the coefficients were found.
-    * @param b           Upper bound of argument for which the coefficients were found.
-    * @param degree      Degree of the Chebyshev approximation.
-    * @return Ciphertext after sine approximation.
-    */
+     * @brief Evaluates an approximate sine function on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after sine approximation.
+     */
     Ciphertext<Element> EvalSin(ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
-    * @brief Evaluates an approximate cosine function on a ciphertext using Chebyshev approximation.
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param a           Lower bound of argument for which the coefficients were found.
-    * @param b           Upper bound of argument for which the coefficients were found.
-    * @param degree      Degree of the Chebyshev approximation.
-    * @return Ciphertext after cosine approximation.
-    */
+     * @brief Evaluates an approximate cosine function on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after cosine approximation.
+     */
     Ciphertext<Element> EvalCos(ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
-    * @brief Evaluates an approximate logistic function 1 / (1 + exp(-x)) on a ciphertext using Chebyshev approximation.
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param a           Lower bound of argument for which the coefficients were found.
-    * @param b           Upper bound of argument for which the coefficients were found.
-    * @param degree      Degree of the Chebyshev approximation.
-    * @return Ciphertext after logistic approximation.
-    */
+     * @brief Evaluates an approximate logistic function 1 / (1 + exp(-x)) on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after logistic approximation.
+     */
     Ciphertext<Element> EvalLogistic(ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     /**
-    * @brief Evaluates an approximate reciprocal function 1 / x (for x ≥ 1) on a ciphertext using Chebyshev approximation.
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param a           Lower bound of argument for which the coefficients were found.
-    * @param b           Upper bound of argument for which the coefficients were found.
-    * @param degree      Degree of the Chebyshev approximation.
-    * @return Ciphertext after reciprocal approximation.
-    */
+     * @brief Evaluates an approximate reciprocal function 1 / x (for x ≥ 1) on a ciphertext using Chebyshev approximation.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param a           Lower bound of argument for which the coefficients were found.
+     * @param b           Upper bound of argument for which the coefficients were found.
+     * @param degree      Degree of the Chebyshev approximation.
+     * @return Ciphertext after reciprocal approximation.
+     */
     Ciphertext<Element> EvalDivide(ConstCiphertext<Element>& ciphertext, double a, double b, uint32_t degree) const;
 
     //------------------------------------------------------------------------------
@@ -3098,34 +3098,34 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Generates evaluation keys required for homomorphic summation (EvalSum).
-    *
-    * @param privateKey  Private key used for key generation.
-    */
+     * @brief Generates evaluation keys required for homomorphic summation (EvalSum).
+     *
+     * @param privateKey  Private key used for key generation.
+     */
     void EvalSumKeyGen(const PrivateKey<Element> privateKey);
 
     /**
-    * @brief Generates automorphism keys for EvalSumRows (only for packed encoding).
-    *
-    * @param privateKey    Private key used for key generation.
-    * @param rowSize       Number of slots per row in the packed matrix.
-    * @param subringDim    Subring dimension (use cyclotomic order if 0).
-    * @return Map of generated evaluation keys.
-    */
+     * @brief Generates automorphism keys for EvalSumRows (only for packed encoding).
+     *
+     * @param privateKey    Private key used for key generation.
+     * @param rowSize       Number of slots per row in the packed matrix.
+     * @param subringDim    Subring dimension (use cyclotomic order if 0).
+     * @return Map of generated evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                             uint32_t rowSize = 0,
                                                                             uint32_t subringDim = 0);
 
     /**
-    * @brief Generates automorphism keys for EvalSumRows (only for packed encoding). Kept for backwards
-    * compatibility; the public key is unused.
-    *
-    * @param privateKey    Private key used for key generation.
-    * @param publicKey     Unused.
-    * @param rowSize       Number of slots per row in the packed matrix.
-    * @param subringDim    Subring dimension (use cyclotomic order if 0).
-    * @return Map of generated evaluation keys.
-    */
+     * @brief Generates automorphism keys for EvalSumRows (only for packed encoding). Kept for backwards
+     * compatibility; the public key is unused.
+     *
+     * @param privateKey    Private key used for key generation.
+     * @param publicKey     Unused.
+     * @param rowSize       Number of slots per row in the packed matrix.
+     * @param subringDim    Subring dimension (use cyclotomic order if 0).
+     * @return Map of generated evaluation keys.
+     */
     // TODO: this is here for backwards compatibility; should remove in v2.0
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                             const PublicKey<Element> publicKey,
@@ -3133,43 +3133,43 @@ class CryptoContextImpl : public Serializable {
                                                                             uint32_t subringDim = 0);
 
     /**
-    * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
-    *
-    * @param privateKey  Private key used for key generation.
-    * @return Map of generated evaluation keys.
-    */
+     * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
+     *
+     * @param privateKey  Private key used for key generation.
+     * @return Map of generated evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
 
     /**
-    * @brief Computes the sum of all components in a packed ciphertext vector.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param batchSize   Number of slots to sum over.
-    * @return Resulting ciphertext containing the sum.
-    */
+     * @brief Computes the sum of all components in a packed ciphertext vector.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param batchSize   Number of slots to sum over.
+     * @return Resulting ciphertext containing the sum.
+     */
     Ciphertext<Element> EvalSum(ConstCiphertext<Element>& ciphertext, uint32_t batchSize) const;
 
     /**
-    * @brief Sums all elements across each row in a packed-encoded matrix ciphertext.
-    *
-    * @param ciphertext      Input ciphertext.
-    * @param numRows         Number of rows in the matrix.
-    * @param evalSumKeyMap   Map of evaluation keys generated for row summation.
-    * @param subringDim      Subring dimension (use full cyclotomic order if 0).
-    * @return Ciphertext containing row-wise sums.
-    */
+     * @brief Sums all elements across each row in a packed-encoded matrix ciphertext.
+     *
+     * @param ciphertext      Input ciphertext.
+     * @param numRows         Number of rows in the matrix.
+     * @param evalSumKeyMap   Map of evaluation keys generated for row summation.
+     * @param subringDim      Subring dimension (use full cyclotomic order if 0).
+     * @return Ciphertext containing row-wise sums.
+     */
     Ciphertext<Element> EvalSumRows(ConstCiphertext<Element>& ciphertext, uint32_t numRows,
                                     const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
                                     uint32_t subringDim = 0) const;
 
     /**
-    * @brief Sums all elements across each column in a packed-encoded matrix ciphertext.
-    *
-    * @param ciphertext      Input ciphertext.
-    * @param numCols         Number of columns in the matrix.
-    * @param evalSumKeyMap   Map of evaluation keys generated for column summation.
-    * @return Ciphertext containing column-wise sums.
-    */
+     * @brief Sums all elements across each column in a packed-encoded matrix ciphertext.
+     *
+     * @param ciphertext      Input ciphertext.
+     * @param numCols         Number of columns in the matrix.
+     * @param evalSumKeyMap   Map of evaluation keys generated for column summation.
+     * @return Ciphertext containing column-wise sums.
+     */
     Ciphertext<Element> EvalSumCols(ConstCiphertext<Element>& ciphertext, uint32_t numCols,
                                     const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap) const;
 
@@ -3178,35 +3178,35 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Computes the inner product of two ciphertext vectors using packed encoding and EvalSum.
-    *
-    * @param ciphertext1  First input ciphertext vector.
-    * @param ciphertext2  Second input ciphertext vector.
-    * @param batchSize    Number of slots to sum over.
-    * @return Ciphertext containing the inner product.
-    */
+     * @brief Computes the inner product of two ciphertext vectors using packed encoding and EvalSum.
+     *
+     * @param ciphertext1  First input ciphertext vector.
+     * @param ciphertext2  Second input ciphertext vector.
+     * @param batchSize    Number of slots to sum over.
+     * @return Ciphertext containing the inner product.
+     */
     Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2,
                                          uint32_t batchSize) const;
 
     /**
-    * @brief Computes the inner product of a ciphertext and a plaintext using packed encoding and EvalSum.
-    *
-    * @param ciphertext  Encrypted input vector.
-    * @param plaintext   Plaintext input vector.
-    * @param batchSize   Number of slots to sum over.
-    * @return Ciphertext containing the inner product.
-    */
+     * @brief Computes the inner product of a ciphertext and a plaintext using packed encoding and EvalSum.
+     *
+     * @param ciphertext  Encrypted input vector.
+     * @param plaintext   Plaintext input vector.
+     * @param batchSize   Number of slots to sum over.
+     * @return Ciphertext containing the inner product.
+     */
     Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element>& ciphertext, ConstPlaintext& plaintext,
                                          uint32_t batchSize) const;
 
     /**
-    * @brief Merges multiple ciphertexts with values in slot 0 into a single packed ciphertext.
-    *
-    * @param ciphertextVec  Vector of ciphertexts to merge.
-    * @return Merged ciphertext with values placed into slots in order.
-    *
-    * @note Requires rotation keys for the necessary indices.
-    */
+     * @brief Merges multiple ciphertexts with values in slot 0 into a single packed ciphertext.
+     *
+     * @param ciphertextVec  Vector of ciphertexts to merge.
+     * @return Merged ciphertext with values placed into slots in order.
+     *
+     * @note Requires rotation keys for the necessary indices.
+     */
     Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
     //------------------------------------------------------------------------------
@@ -3214,12 +3214,12 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Generates a re-encryption key for Proxy Re-Encryption (PRE).
-    *
-    * @param oldPrivateKey  Original private key.
-    * @param newPublicKey   Public key of the target recipient.
-    * @return Re-encryption evaluation key.
-    */
+     * @brief Generates a re-encryption key for Proxy Re-Encryption (PRE).
+     *
+     * @param oldPrivateKey  Original private key.
+     * @param newPublicKey   Public key of the target recipient.
+     * @return Re-encryption evaluation key.
+     */
     EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey, const PublicKey<Element> newPublicKey) const {
         ValidateKey(oldPrivateKey);
         ValidateKey(newPublicKey);
@@ -3228,25 +3228,25 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Produces an Eval Key that OpenFHE can use for Proxy Re-Encryption
-    *
-    * @param originalPrivateKey original secret key
-    * @param newPrivateKey new secret key
-    * @return new evaluation key
-    * @attention This functionality has been completely removed from OpenFHE
-    */
+     * @brief Produces an Eval Key that OpenFHE can use for Proxy Re-Encryption
+     *
+     * @param originalPrivateKey original secret key
+     * @param newPrivateKey new secret key
+     * @return new evaluation key
+     * @attention This functionality has been completely removed from OpenFHE
+     */
     EvalKey<Element> ReKeyGen(const PrivateKey<Element> originalPrivateKey,
                               const PrivateKey<Element> newPrivateKey) const
             __attribute__((deprecated("functionality removed from OpenFHE")));
 
     /**
-    * @brief Re-encrypts a ciphertext using a re-encryption key for Proxy Re-Encryption.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @param evalKey     Re-encryption key.
-    * @param publicKey   Optional public key of the recipient.
-    * @return Re-encrypted ciphertext.
-    */
+     * @brief Re-encrypts a ciphertext using a re-encryption key for Proxy Re-Encryption.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param evalKey     Re-encryption key.
+     * @param publicKey   Optional public key of the recipient.
+     * @return Re-encrypted ciphertext.
+     */
     Ciphertext<Element> ReEncrypt(ConstCiphertext<Element>& ciphertext, EvalKey<Element> evalKey,
                                   const PublicKey<Element> publicKey = nullptr) const {
         ValidateCiphertext(ciphertext);
@@ -3260,13 +3260,13 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * @brief Generates a joined public key from a set of secret key shares (Threshold FHE).
-    *
-    * @param privateKeyVec  Vector of secret key shares.
-    * @return Key pair containing this party's private key and the joined public key.
-    *
-    * @attention Only for debugging purposes. Not for production use.
-    */
+     * @brief Generates a joined public key from a set of secret key shares (Threshold FHE).
+     *
+     * @param privateKeyVec  Vector of secret key shares.
+     * @return Key pair containing this party's private key and the joined public key.
+     *
+     * @attention Only for debugging purposes. Not for production use.
+     */
     KeyPair<Element> MultipartyKeyGen(const std::vector<PrivateKey<Element>>& privateKeyVec) {
         if (privateKeyVec.empty())
             OPENFHE_THROW("Input private key vector is empty");
@@ -3274,13 +3274,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates a joined public key using a prior public key and the current party's secret share (Threshold FHE).
-    *
-    * @param publicKey   joined public key from prior parties.
-    * @param makeSparse  Use ring reduction (no longer supported).
-    * @param fresh       Indicates if proxy re-encryption is used in the multi-party protocol or star topology is used.
-    * @return Key pair containing this party's private key and the updated joined public key.
-    */
+     * @brief Generates a joined public key using a prior public key and the current party's secret share (Threshold FHE).
+     *
+     * @param publicKey   joined public key from prior parties.
+     * @param makeSparse  Use ring reduction (no longer supported).
+     * @param fresh       Indicates if proxy re-encryption is used in the multi-party protocol or star topology is used.
+     * @return Key pair containing this party's private key and the updated joined public key.
+     */
     KeyPair<Element> MultipartyKeyGen(const PublicKey<Element> publicKey, bool makeSparse = false, bool fresh = false) {
         if (!publicKey)
             OPENFHE_THROW("Input public key is empty");
@@ -3288,12 +3288,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Performs partial decryption as the lead decryption party (Threshold FHE).
-    *
-    * @param ciphertextVec  Vector of ciphertexts to decrypt.
-    * @param privateKey     Secret key share of the lead party.
-    * @return Vector of partially decrypted ciphertexts.
-    */
+     * @brief Performs partial decryption as the lead decryption party (Threshold FHE).
+     *
+     * @param ciphertextVec  Vector of ciphertexts to decrypt.
+     * @param privateKey     Secret key share of the lead party.
+     * @return Vector of partially decrypted ciphertexts.
+     */
     std::vector<Ciphertext<Element>> MultipartyDecryptLead(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
         ValidateKey(privateKey);
@@ -3307,12 +3307,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Performs partial decryption by non-lead parties in a Threshold FHE setting.
-    *
-    * @param ciphertextVec  Vector of ciphertexts to decrypt.
-    * @param privateKey     Secret key share of a non-lead party.
-    * @return Vector of partially decrypted ciphertexts.
-    */
+     * @brief Performs partial decryption by non-lead parties in a Threshold FHE setting.
+     *
+     * @param ciphertextVec  Vector of ciphertexts to decrypt.
+     * @param privateKey     Secret key share of a non-lead party.
+     * @return Vector of partially decrypted ciphertexts.
+     */
     std::vector<Ciphertext<Element>> MultipartyDecryptMain(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
         ValidateKey(privateKey);
@@ -3326,12 +3326,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Combines partially decrypted ciphertexts into the final plaintext result (Threshold FHE).
-    *
-    * @param partialCiphertextVec  Vector of partial decryptions.
-    * @param plaintext             Output plaintext.
-    * @return Decoding result.
-    */
+     * @brief Combines partially decrypted ciphertexts into the final plaintext result (Threshold FHE).
+     *
+     * @param partialCiphertextVec  Vector of partial decryptions.
+     * @param plaintext             Output plaintext.
+     * @return Decoding result.
+     */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& partialCiphertextVec,
                                           Plaintext* plaintext) const {
         std::string datatype = demangle(typeid(Element).name());
@@ -3339,13 +3339,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates a new joined evaluation key from a prior key and secret key shares (Threshold FHE).
-    *
-    * @param originalPrivateKey  Original private key.
-    * @param newPrivateKey       New private key.
-    * @param evalKey             Prior joined evaluation key.
-    * @return New joined evaluation key.
-    */
+     * @brief Generates a new joined evaluation key from a prior key and secret key shares (Threshold FHE).
+     *
+     * @param originalPrivateKey  Original private key.
+     * @param newPrivateKey       New private key.
+     * @param evalKey             Prior joined evaluation key.
+     * @return New joined evaluation key.
+     */
     EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> originalPrivateKey,
                                        const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey) const {
         if (!originalPrivateKey)
@@ -3358,14 +3358,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates joined automorphism keys from the current secret share and prior keys (Threshold FHE).
-    *
-    * @param privateKey   Secret key share.
-    * @param evalKeyMap   Prior joined automorphism keys.
-    * @param indexList    List of automorphism indices.
-    * @param keyTag       Secret key tag (optional).
-    * @return Map of updated joined automorphism keys.
-    */
+     * @brief Generates joined automorphism keys from the current secret share and prior keys (Threshold FHE).
+     *
+     * @param privateKey   Secret key share.
+     * @param evalKeyMap   Prior joined automorphism keys.
+     * @param indexList    List of automorphism indices.
+     * @param keyTag       Secret key tag (optional).
+     * @return Map of updated joined automorphism keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
@@ -3380,14 +3380,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates joined rotation keys from the current secret share and prior keys (Threshold FHE).
-    *
-    * @param privateKey   Secret key share.
-    * @param evalKeyMap   Prior joined rotation keys.
-    * @param indexList    List of rotation indices.
-    * @param keyTag       Secret key tag (optional).
-    * @return Map of updated joined rotation keys.
-    */
+     * @brief Generates joined rotation keys from the current secret share and prior keys (Threshold FHE).
+     *
+     * @param privateKey   Secret key share.
+     * @param evalKeyMap   Prior joined rotation keys.
+     * @param indexList    List of rotation indices.
+     * @param keyTag       Secret key tag (optional).
+     * @return Map of updated joined rotation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap,
@@ -3402,13 +3402,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates joined summation evaluation keys from the current secret share and prior keys (Threshold FHE).
-    *
-    * @param privateKey   Secret key share.
-    * @param evalKeyMap   Prior summation evaluation keys.
-    * @param keyTag       Secret key tag (optional).
-    * @return Map of updated summation evaluation keys.
-    */
+     * @brief Generates joined summation evaluation keys from the current secret share and prior keys (Threshold FHE).
+     *
+     * @param privateKey   Secret key share.
+     * @param evalKeyMap   Prior summation evaluation keys.
+     * @param keyTag       Secret key tag (optional).
+     * @return Map of updated summation evaluation keys.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap, const std::string& keyTag = "") {
@@ -3420,13 +3420,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Adds two evaluation keys to produce a new joined evaluation key (Threshold FHE).
-    *
-    * @param evalKey1  First evaluation key.
-    * @param evalKey2  Second evaluation key.
-    * @param keyTag    Secret key tag (optional).
-    * @return Joined evaluation key.
-    */
+     * @brief Adds two evaluation keys to produce a new joined evaluation key (Threshold FHE).
+     *
+     * @param evalKey1  First evaluation key.
+     * @param evalKey2  Second evaluation key.
+     * @param keyTag    Secret key tag (optional).
+     * @return Joined evaluation key.
+     */
     EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                       const std::string& keyTag = "") {
         if (!evalKey1)
@@ -3437,13 +3437,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates a joined partial evaluation key for homomorphic multiplication from a partial key and current secret share (Threshold FHE).
-    *
-    * @param privateKey  Current secret share.
-    * @param evalKey     Prior partial evaluation key.
-    * @param keyTag      Secret key tag (optional).
-    * @return Joined evaluation key.
-    */
+     * @brief Generates a joined partial evaluation key for homomorphic multiplication from a partial key and current secret share (Threshold FHE).
+     *
+     * @param privateKey  Current secret share.
+     * @param evalKey     Prior partial evaluation key.
+     * @param keyTag      Secret key tag (optional).
+     * @return Joined evaluation key.
+     */
     EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
                                       const std::string& keyTag = "") {
         if (!privateKey)
@@ -3454,13 +3454,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Adds two summation evaluation key sets (Threshold FHE).
-    *
-    * @param evalKeyMap1  First summation key set.
-    * @param evalKeyMap2  Second summation key set.
-    * @param keyTag       Secret key tag (optional).
-    * @return Combined summation evaluation key set.
-    */
+     * @brief Adds two summation evaluation key sets (Threshold FHE).
+     *
+     * @param evalKeyMap1  First summation key set.
+     * @param evalKeyMap2  Second summation key set.
+     * @param keyTag       Secret key tag (optional).
+     * @return Combined summation evaluation key set.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
@@ -3472,13 +3472,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Adds two automorphism evaluation key sets (Threshold FHE).
-    *
-    * @param evalKeyMap1  First automorphism key set.
-    * @param evalKeyMap2  Second automorphism key set.
-    * @param keyTag       Secret key tag (optional).
-    * @return Combined automorphism evaluation key set.
-    */
+     * @brief Adds two automorphism evaluation key sets (Threshold FHE).
+     *
+     * @param evalKeyMap1  First automorphism key set.
+     * @param evalKeyMap2  Second automorphism key set.
+     * @param keyTag       Secret key tag (optional).
+     * @return Combined automorphism evaluation key set.
+     */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap1,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalKeyMap2, const std::string& keyTag = "") {
@@ -3490,13 +3490,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Adds two public keys to produce a combined public key (Threshold FHE).
-    *
-    * @param publicKey1  First public key.
-    * @param publicKey2  Second public key.
-    * @param keyTag      Secret key tag (optional).
-    * @return Combined public key.
-    */
+     * @brief Adds two public keys to produce a combined public key (Threshold FHE).
+     *
+     * @param publicKey1  First public key.
+     * @param publicKey2  Second public key.
+     * @param keyTag      Secret key tag (optional).
+     * @return Combined public key.
+     */
     PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
                                        const std::string& keyTag = "") {
         if (!publicKey1)
@@ -3507,13 +3507,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Adds two partial evaluation keys for multiplication (Threshold FHE).
-    *
-    * @param evalKey1  First evaluation key.
-    * @param evalKey2  Second evaluation key.
-    * @param keyTag    Secret key tag (optional).
-    * @return Combined evaluation key.
-    */
+     * @brief Adds two partial evaluation keys for multiplication (Threshold FHE).
+     *
+     * @param evalKey1  First evaluation key.
+     * @param evalKey2  Second evaluation key.
+     * @param keyTag    Secret key tag (optional).
+     * @return Combined evaluation key.
+     */
     EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                           const std::string& keyTag = "") {
         if (!evalKey1)
@@ -3524,16 +3524,16 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Performs masked decryption for interactive bootstrapping (2-party protocol).
-    *
-    * @param privateKey   Secret key share.
-    * @param ciphertext   Input ciphertext.
-    * @return Masked decrypted ciphertext.
-    *
-    * @note For Server, expects ciphertext with both polynomials a and b.
-    *       For Client, expects only the linear term a.
-    *       Includes rounding as part of decryption.
-    */
+     * @brief Performs masked decryption for interactive bootstrapping (2-party protocol).
+     *
+     * @param privateKey   Secret key share.
+     * @param ciphertext   Input ciphertext.
+     * @return Masked decrypted ciphertext.
+     *
+     * @note For Server, expects ciphertext with both polynomials a and b.
+     *       For Client, expects only the linear term a.
+     *       Includes rounding as part of decryption.
+     */
     Ciphertext<Element> IntBootDecrypt(const PrivateKey<Element> privateKey,
                                        ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
@@ -3542,13 +3542,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Encrypts Client's masked decryption for interactive bootstrapping.
-    *        Increases ciphertext modulus to allow further computation. Done by Client.
-    *
-    * @param publicKey   Joined public key (Threshold FHE).
-    * @param ciphertext  Input ciphertext.
-    * @return Encrypted ciphertext.
-    */
+     * @brief Encrypts Client's masked decryption for interactive bootstrapping.
+     *        Increases ciphertext modulus to allow further computation. Done by Client.
+     *
+     * @param publicKey   Joined public key (Threshold FHE).
+     * @param ciphertext  Input ciphertext.
+     * @return Encrypted ciphertext.
+     */
     Ciphertext<Element> IntBootEncrypt(const PublicKey<Element> publicKey, ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         ValidateKey(publicKey);
@@ -3556,13 +3556,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Combines encrypted and unencrypted masked decryptions in 2-party interactive bootstrapping.
-    *        It is the last step in the bootstrapping.
-    *
-    * @param ciphertext1  Encrypted masked decryption.
-    * @param ciphertext2  Unencrypted masked decryption.
-    * @return Refreshed ciphertext.
-    */
+     * @brief Combines encrypted and unencrypted masked decryptions in 2-party interactive bootstrapping.
+     *        It is the last step in the bootstrapping.
+     *
+     * @param ciphertext1  Encrypted masked decryption.
+     * @param ciphertext2  Unencrypted masked decryption.
+     * @return Refreshed ciphertext.
+     */
     Ciphertext<Element> IntBootAdd(ConstCiphertext<Element>& ciphertext1, ConstCiphertext<Element>& ciphertext2) const {
         ValidateCiphertext(ciphertext1);
         ValidateCiphertext(ciphertext2);
@@ -3570,90 +3570,90 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Prepares a ciphertext for interactive bootstrapping.
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Adjusted ciphertext.
-    *
-    * @note CKKS FIXEDMANUAL/FIXEDAUTO: requires ≥ 2 towers; reduces to 2 towers and sets scale to Delta (not a power of Delta).
-    *       CKKS FLEXIBLEAUTO: requires ≥ 3 towers; adjusts scale to level 0.
-    */
+     * @brief Prepares a ciphertext for interactive bootstrapping.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Adjusted ciphertext.
+     *
+     * @note CKKS FIXEDMANUAL/FIXEDAUTO: requires ≥ 2 towers; reduces to 2 towers and sets scale to Delta (not a power of Delta).
+     *       CKKS FLEXIBLEAUTO: requires ≥ 3 towers; adjusts scale to level 0.
+     */
     Ciphertext<Element> IntBootAdjustScale(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->IntBootAdjustScale(ciphertext);
     }
 
     /**
-    * @brief Prepares a ciphertext for multi-party interactive bootstrapping (Threshold FHE).
-    *
-    * @param ciphertext  Input ciphertext.
-    * @return Adjusted ciphertext.
-    */
+     * @brief Prepares a ciphertext for multi-party interactive bootstrapping (Threshold FHE).
+     *
+     * @param ciphertext  Input ciphertext.
+     * @return Adjusted ciphertext.
+     */
     Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element>& ciphertext) const;
 
     /**
-    * @brief Generates a common random polynomial for Multi-Party Interactive Bootstrapping (Threshold FHE).
-    *
-    * @param publicKey  Scheme public key or lead party's public key.
-    * @return Random ring element as ciphertext.
-    */
+     * @brief Generates a common random polynomial for Multi-Party Interactive Bootstrapping (Threshold FHE).
+     *
+     * @param publicKey  Scheme public key or lead party's public key.
+     * @return Random ring element as ciphertext.
+     */
     Ciphertext<Element> IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const;
     /**
-    * @brief Generates a common random polynomial for Multi-Party Interactive Bootstrapping (Threshold FHE)
-    *        using an existing ciphertext, eliminating the need to supply a public key explicitly
-    *
-    * @param ciphertext Reference ciphertext used to derive the cryptocontext and parameters.
-    * @return Random ring element as ciphertext.
-    */
+     * @brief Generates a common random polynomial for Multi-Party Interactive Bootstrapping (Threshold FHE)
+     *        using an existing ciphertext, eliminating the need to supply a public key explicitly
+     *
+     * @param ciphertext Reference ciphertext used to derive the cryptocontext and parameters.
+     * @return Random ring element as ciphertext.
+     */
     Ciphertext<Element> IntMPBootRandomElementGen(ConstCiphertext<Element>& ciphertext) const;
 
     /**
-    * @brief Performs masked decryption as part of Multi-Party Interactive Bootstrapping (Threshold FHE).
-    *        Each party calls this function as part of the protocol
-    *
-    * @param privateKey  Secret key share for the party.
-    * @param ciphertext  Input ciphertext.
-    * @param a           Common random polynomial.
-    * @return Vector of masked decryption shares.
-    */
+     * @brief Performs masked decryption as part of Multi-Party Interactive Bootstrapping (Threshold FHE).
+     *        Each party calls this function as part of the protocol
+     *
+     * @param privateKey  Secret key share for the party.
+     * @param ciphertext  Input ciphertext.
+     * @param a           Common random polynomial.
+     * @return Vector of masked decryption shares.
+     */
     std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                       ConstCiphertext<Element>& ciphertext,
                                                       ConstCiphertext<Element>& a) const;
 
     /**
-    * @brief Aggregates masked decryption and re-encryption shares (Threshold FHE).
-    *        It is the second step of the interactive multiparty bootstrapping procedure.
-    *
-    * @param sharesPairVec  Vector of (h_0i, h_1i) shares from each party.
-    * @return Aggregated pair of shares (h_0, h_1).
-    */
+     * @brief Aggregates masked decryption and re-encryption shares (Threshold FHE).
+     *        It is the second step of the interactive multiparty bootstrapping procedure.
+     *
+     * @param sharesPairVec  Vector of (h_0i, h_1i) shares from each party.
+     * @return Aggregated pair of shares (h_0, h_1).
+     */
     std::vector<Ciphertext<Element>> IntMPBootAdd(std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const;
 
     /**
-    * @brief Encrypts the lead party's masked decryption result as the final step of Multi-Party Interactive Bootstrapping (Threshold FHE).
-    *        It increases the ciphertext modulus and enables future computations. This operation is done by the lead party as the final step
-    *        of interactive multi-party bootstrapping.
-    *
-    * @param publicKey   Lead party's public key.
-    * @param sharesPair  Aggregated masked decryption and re-encryption shares.
-    * @param a           Common random polynomial.
-    * @param ciphertext  Input ciphertext.
-    * @return Encrypted refreshed ciphertext.
-    */
+     * @brief Encrypts the lead party's masked decryption result as the final step of Multi-Party Interactive Bootstrapping (Threshold FHE).
+     *        It increases the ciphertext modulus and enables future computations. This operation is done by the lead party as the final step
+     *        of interactive multi-party bootstrapping.
+     *
+     * @param publicKey   Lead party's public key.
+     * @param sharesPair  Aggregated masked decryption and re-encryption shares.
+     * @param a           Common random polynomial.
+     * @param ciphertext  Input ciphertext.
+     * @return Encrypted refreshed ciphertext.
+     */
     Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey,
                                          const std::vector<Ciphertext<Element>>& sharesPair,
                                          ConstCiphertext<Element>& a, ConstCiphertext<Element>& ciphertext) const;
 
     /**
-    * @brief Performs secret sharing of a secret key for Threshold FHE with aborts.
-    *
-    * @param sk         Secret key to be shared.
-    * @param N          Total number of parties.
-    * @param threshold  Threshold number of parties required to reconstruct the key.
-    * @param index      Index of the current party.
-    * @param shareType  Type of secret sharing ("additive" or "shamir").
-    * @return Map of secret key shares indexed by party ID.
-    */
+     * @brief Performs secret sharing of a secret key for Threshold FHE with aborts.
+     *
+     * @param sk         Secret key to be shared.
+     * @param N          Total number of parties.
+     * @param threshold  Threshold number of parties required to reconstruct the key.
+     * @param index      Index of the current party.
+     * @param shareType  Type of secret sharing ("additive" or "shamir").
+     * @return Map of secret key shares indexed by party ID.
+     */
     std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, uint32_t N, uint32_t threshold,
                                                     uint32_t index, const std::string& shareType) const {
         std::string datatype = demangle(typeid(Element).name());
@@ -3661,14 +3661,14 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Recovers a secret key share from existing shares for Threshold FHE with aborts.
-    *
-    * @param sk         Output: recovered secret key.
-    * @param sk_shares  Map of secret key shares indexed by party ID.
-    * @param N          Total number of parties.
-    * @param threshold  Threshold number of parties required to reconstruct the key.
-    * @param shareType  Type of secret sharing ("additive" or "shamir").
-    */
+     * @brief Recovers a secret key share from existing shares for Threshold FHE with aborts.
+     *
+     * @param sk         Output: recovered secret key.
+     * @param sk_shares  Map of secret key shares indexed by party ID.
+     * @param N          Total number of parties.
+     * @param threshold  Threshold number of parties required to reconstruct the key.
+     * @param shareType  Type of secret sharing ("additive" or "shamir").
+     */
     void RecoverSharedKey(PrivateKey<Element>& sk, std::unordered_map<uint32_t, Element>& sk_shares, uint32_t N,
                           uint32_t threshold, const std::string& shareType) const;
 
@@ -3677,25 +3677,25 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * Bootstrap functionality:
-    * There are four methods that have to be called in this specific order:
-    * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
-    * decoding and stores the necessary parameters
-    * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
-    * 3. EvalBootstrapPrecompute: computes and stores the plaintexts for encoding and decoding if not already done in EvalBootstrapSetup
-    * 4. EvalBootstrap: refreshes the given ciphertext
-    */
+     * Bootstrap functionality:
+     * There are four methods that have to be called in this specific order:
+     * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
+     * decoding and stores the necessary parameters
+     * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
+     * 3. EvalBootstrapPrecompute: computes and stores the plaintexts for encoding and decoding if not already done in EvalBootstrapSetup
+     * 4. EvalBootstrap: refreshes the given ciphertext
+     */
 
     /**
-    * @brief Sets all bootstrapping parameters for both linear and FFT-like methods. Supported only in CKKS.
-    *
-    * @param levelBudget      Vector of level budgets for encoding and decoding.
-    * @param dim1             Inner dimensions for baby-step giant-step routine.
-    * @param slots            Number of slots to be bootstrapped.
-    * @param correctionFactor Internal rescaling factor to improve precision (only for NATIVE_SIZE=64; 0 = default).
-    * @param precompute       Whether to precompute plaintexts for encoding/decoding.
-    * @param BTSlotsEncoding  Whether the approximate modular reduction happens over the message being in slots or coefficients
-    */
+     * @brief Sets all bootstrapping parameters for both linear and FFT-like methods. Supported only in CKKS.
+     *
+     * @param levelBudget      Vector of level budgets for encoding and decoding.
+     * @param dim1             Inner dimensions for baby-step giant-step routine.
+     * @param slots            Number of slots to be bootstrapped.
+     * @param correctionFactor Internal rescaling factor to improve precision (only for NATIVE_SIZE=64; 0 = default).
+     * @param precompute       Whether to precompute plaintexts for encoding/decoding.
+     * @param BTSlotsEncoding  Whether the approximate modular reduction happens over the message being in slots or coefficients
+     */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
                             uint32_t slots = 0, uint32_t correctionFactor = 0, bool precompute = true,
                             bool BTSlotsEncoding = false) {
@@ -3703,11 +3703,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates automorphism keys for EvalBootstrap. Uses baby-step/giant-step strategy. Supported only in CKKS.
-    *
-    * @param privateKey  Secret key.
-    * @param slots       Number of slots to support permutations on.
-    */
+     * @brief Generates automorphism keys for EvalBootstrap. Uses baby-step/giant-step strategy. Supported only in CKKS.
+     *
+     * @param privateKey  Secret key.
+     * @param slots       Number of slots to support permutations on.
+     */
     void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
         ValidateKey(privateKey);
         auto evalKeys = m_scheme->EvalBootstrapKeyGen(privateKey, slots);
@@ -3715,73 +3715,73 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Precomputes plaintexts for encoding and decoding used in bootstrapping. Supported only in CKKS.
-    *
-    * @param slots  Number of slots to be bootstrapped.
-    */
+     * @brief Precomputes plaintexts for encoding and decoding used in bootstrapping. Supported only in CKKS.
+     *
+     * @param slots  Number of slots to be bootstrapped.
+     */
     void EvalBootstrapPrecompute(uint32_t slots = 0) {
         m_scheme->EvalBootstrapPrecompute(*this, slots);
     }
 
     /**
-    * @brief Evaluates bootstrapping on a ciphertext using FFT-like or linear method. Supported only in CKKS.
-    *
-    * @param ciphertext     Input ciphertext.
-    * @param numIterations  Number of Meta-BTS iterations to improve precision.
-    * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
-    * @return Refreshed ciphertext.
-    */
+     * @brief Evaluates bootstrapping on a ciphertext using FFT-like or linear method. Supported only in CKKS.
+     *
+     * @param ciphertext     Input ciphertext.
+     * @param numIterations  Number of Meta-BTS iterations to improve precision.
+     * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
+     * @return Refreshed ciphertext.
+     */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
                                       uint32_t precision = 0) const {
         return m_scheme->EvalBootstrap(ciphertext, numIterations, precision);
     }
 
     /**
-    * @brief Evaluates the slots-encoding variant of CKKS bootstrapping (SlotsToCoeffs first, then modulus raise,
-    *        CoeffsToSlots and the approximate modular reduction over the message values). EvalBootstrap dispatches
-    *        here automatically when EvalBootstrapSetup was called with BTSlotsEncoding = true. Supported only in
-    *        CKKS.
-    *
-    * @param ciphertext     Input ciphertext.
-    * @param numIterations  Number of Meta-BTS iterations to improve precision (1 or 2).
-    * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
-    * @return Refreshed ciphertext.
-    */
+     * @brief Evaluates the slots-encoding variant of CKKS bootstrapping (SlotsToCoeffs first, then modulus raise,
+     *        CoeffsToSlots and the approximate modular reduction over the message values). EvalBootstrap dispatches
+     *        here automatically when EvalBootstrapSetup was called with BTSlotsEncoding = true. Supported only in
+     *        CKKS.
+     *
+     * @param ciphertext     Input ciphertext.
+     * @param numIterations  Number of Meta-BTS iterations to improve precision (1 or 2).
+     * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
+     * @return Refreshed ciphertext.
+     */
     Ciphertext<Element> EvalBootstrapStCFirst(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
                                               uint32_t precision = 0) const {
         return m_scheme->EvalBootstrapStCFirst(ciphertext, numIterations, precision);
     }
 
     /**
-    * @brief Precomputes the encoding/decoding plaintexts for FE functional bootstrapping. Supported only in
-    *        CKKS, with HYBRID key switching and FirstModSize == ScalingModSize + 1.
-    *
-    * Shares the bootstrapping precomputation slot for @p slots with EvalBootstrapSetup and EvalFBTSetup, so
-    * a context can hold the precomputation for only one of them per slot count.
-    *
-    * @param levelBudget  Levels spent on CoeffsToSlots and SlotsToCoeffs.
-    * @param dim1         Baby-step dimensions for the two linear transforms (0 = choose automatically).
-    * @param slots        Number of slots to be bootstrapped (0 = full packing).
-    */
+     * @brief Precomputes the encoding/decoding plaintexts for FE functional bootstrapping. Supported only in
+     *        CKKS, with HYBRID key switching and FirstModSize == ScalingModSize + 1.
+     *
+     * Shares the bootstrapping precomputation slot for @p slots with EvalBootstrapSetup and EvalFBTSetup, so
+     * a context can hold the precomputation for only one of them per slot count.
+     *
+     * @param levelBudget  Levels spent on CoeffsToSlots and SlotsToCoeffs.
+     * @param dim1         Baby-step dimensions for the two linear transforms (0 = choose automatically).
+     * @param slots        Number of slots to be bootstrapped (0 = full packing).
+     */
     void EvalFEFuncBootstrapSetup(const std::vector<uint32_t>& levelBudget = {5, 4},
                                   const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) {
         GetScheme()->EvalFEFuncBootstrapSetup(*this, levelBudget, dim1, slots);
     }
 
     /**
-    * @brief Refreshes a ciphertext and evaluates a function on it in one pass, by evaluating the function's
-    *        Fourier extension over the bootstrapped message. Supported only in CKKS.
-    *
-    * The message is embedded into half of the series period (t = m/2), so the input must lie in [-1/2, 1/2)
-    * and @p coefficients must be the Fourier extension of the target function over that domain. The result
-    * is 2*Re(c_0 + sum_{j>=1} c_j exp(2*Pi*i*j*t)) and is therefore always real-valued: with CKKSDataType
-    * COMPLEX the imaginary part of each input slot is discarded and the output slots have zero imaginary
-    * part. Use CKKSDataType REAL unless complex intermediates are needed elsewhere in the computation.
-    *
-    * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
-    * @param coefficients  Fourier coefficients c_j of the target function, c_0 first.
-    * @return Refreshed ciphertext holding the function values.
-    */
+     * @brief Refreshes a ciphertext and evaluates a function on it in one pass, by evaluating the function's
+     *        Fourier extension over the bootstrapped message. Supported only in CKKS.
+     *
+     * The message is embedded into half of the series period (t = m/2), so the input must lie in [-1/2, 1/2)
+     * and @p coefficients must be the Fourier extension of the target function over that domain. The result
+     * is 2*Re(c_0 + sum_{j>=1} c_j exp(2*Pi*i*j*t)) and is therefore always real-valued: with CKKSDataType
+     * COMPLEX the imaginary part of each input slot is discarded and the output slots have zero imaginary
+     * part. Use CKKSDataType REAL unless complex intermediates are needed elsewhere in the computation.
+     *
+     * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
+     * @param coefficients  Fourier coefficients c_j of the target function, c_0 first.
+     * @return Refreshed ciphertext holding the function values.
+     */
     Ciphertext<Element> EvalFEFuncBootstrap(ConstCiphertext<Element>& ciphertext,
                                             const std::vector<std::complex<double>>& coefficients) const {
         ValidateCiphertext(ciphertext);
@@ -3789,22 +3789,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Runs the function-independent part of FE functional bootstrapping and returns the powers of the
-    *        complex exponential, so that several functions can be evaluated on one bootstrapped ciphertext.
-    *        Supported only in CKKS.
-    *
-    * The refresh itself - SlotsToCoeffs, modulus raise, CoeffsToSlots and the complex exponential - happens
-    * here and dominates the cost; each subsequent EvalFEFuncBootstrapWithPrecomp only evaluates a series.
-    * The Paterson-Stockmeyer shape is fixed by @p coefficients, which must have degree at least 5, so pass
-    * the longest series of the family: every series later evaluated against these powers may have at most
-    * the degree of @p coefficients rounded up to the shape's capacity (EvalFEFuncBootstrapWithPrecomp
-    * reports the exact bound if it is exceeded). A series below degree 5 is evaluated straight from the
-    * power basis and is accepted as long as its degree does not exceed the number of powers the shape holds.
-    *
-    * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
-    * @param coefficients  Fourier coefficients of the longest series to be evaluated, c_0 first.
-    * @return Powers of the complex exponential, to be passed to EvalFEFuncBootstrapWithPrecomp.
-    */
+     * @brief Runs the function-independent part of FE functional bootstrapping and returns the powers of the
+     *        complex exponential, so that several functions can be evaluated on one bootstrapped ciphertext.
+     *        Supported only in CKKS.
+     *
+     * The refresh itself - SlotsToCoeffs, modulus raise, CoeffsToSlots and the complex exponential - happens
+     * here and dominates the cost; each subsequent EvalFEFuncBootstrapWithPrecomp only evaluates a series.
+     * The Paterson-Stockmeyer shape is fixed by @p coefficients, which must have degree at least 5, so pass
+     * the longest series of the family: every series later evaluated against these powers may have at most
+     * the degree of @p coefficients rounded up to the shape's capacity (EvalFEFuncBootstrapWithPrecomp
+     * reports the exact bound if it is exceeded). A series below degree 5 is evaluated straight from the
+     * power basis and is accepted as long as its degree does not exceed the number of powers the shape holds.
+     *
+     * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
+     * @param coefficients  Fourier coefficients of the longest series to be evaluated, c_0 first.
+     * @return Powers of the complex exponential, to be passed to EvalFEFuncBootstrapWithPrecomp.
+     */
     std::shared_ptr<seriesPowers<Element>> EvalFEFuncBootstrapPrecompute(
             ConstCiphertext<Element>& ciphertext, const std::vector<std::complex<double>>& coefficients) const {
         ValidateCiphertext(ciphertext);
@@ -3812,13 +3812,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates one function's Fourier series against powers from EvalFEFuncBootstrapPrecompute.
-    *        Supported only in CKKS.
-    *
-    * @param powers        Powers returned by EvalFEFuncBootstrapPrecompute.
-    * @param coefficients  Fourier coefficients c_j of this function, c_0 first.
-    * @return Refreshed ciphertext holding the function values.
-    */
+     * @brief Evaluates one function's Fourier series against powers from EvalFEFuncBootstrapPrecompute.
+     *        Supported only in CKKS.
+     *
+     * @param powers        Powers returned by EvalFEFuncBootstrapPrecompute.
+     * @param coefficients  Fourier coefficients c_j of this function, c_0 first.
+     * @return Refreshed ciphertext holding the function values.
+     */
     Ciphertext<Element> EvalFEFuncBootstrapWithPrecomp(const std::shared_ptr<seriesPowers<Element>>& powers,
                                                        const std::vector<std::complex<double>>& coefficients) const {
         ValidateSeriesPowers(powers);
@@ -3826,26 +3826,26 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Sets up CKKS functional bootstrapping of a look-up table (see CKKS_FUNCTIONAL_BOOTSTRAPING.md):
-    *        computes its depth and precomputes the homomorphic encoding and decoding matrices with the required
-    *        scalings folded in. Supported only in CKKS with HYBRID key switching (64-bit build). Shares the
-    *        precomputation entry for @p numSlots with EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
-    *
-    * @param coeffs                   Trigonometric Hermite interpolation coefficients of the look-up table
-    *                                 (complex, or integer for a Boolean function of order 1); only their number
-    *                                 is used here.
-    * @param numSlots                 Number of slots to be bootstrapped (0 = full packing).
-    * @param PIn                      Plaintext modulus of the RLWE input.
-    * @param POut                     Plaintext modulus of the RLWE output.
-    * @param Bigq                     Ciphertext modulus of the RLWE scheme the input is converted from.
-    * @param pubKey                   Public key (its element parameters define the modulus chain).
-    * @param dim1                     Baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = automatic).
-    * @param levelBudget              Levels spent on CoeffsToSlots and SlotsToCoeffs (each in [1, log2(slots)]).
-    * @param lvlsAfterBoot            Number of levels remaining after functional bootstrapping.
-    * @param depthLeveledComputation  Depth reserved for a leveled computation between EvalFBTNoDecoding and
-    *                                 EvalHomDecoding.
-    * @param order                    Order of the trigonometric Hermite interpolation (1, 2 or 3).
-    */
+     * @brief Sets up CKKS functional bootstrapping of a look-up table (see CKKS_FUNCTIONAL_BOOTSTRAPING.md):
+     *        computes its depth and precomputes the homomorphic encoding and decoding matrices with the required
+     *        scalings folded in. Supported only in CKKS with HYBRID key switching (64-bit build). Shares the
+     *        precomputation entry for @p numSlots with EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
+     *
+     * @param coeffs                   Trigonometric Hermite interpolation coefficients of the look-up table
+     *                                 (complex, or integer for a Boolean function of order 1); only their number
+     *                                 is used here.
+     * @param numSlots                 Number of slots to be bootstrapped (0 = full packing).
+     * @param PIn                      Plaintext modulus of the RLWE input.
+     * @param POut                     Plaintext modulus of the RLWE output.
+     * @param Bigq                     Ciphertext modulus of the RLWE scheme the input is converted from.
+     * @param pubKey                   Public key (its element parameters define the modulus chain).
+     * @param dim1                     Baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = automatic).
+     * @param levelBudget              Levels spent on CoeffsToSlots and SlotsToCoeffs (each in [1, log2(slots)]).
+     * @param lvlsAfterBoot            Number of levels remaining after functional bootstrapping.
+     * @param depthLeveledComputation  Depth reserved for a leveled computation between EvalFBTNoDecoding and
+     *                                 EvalHomDecoding.
+     * @param order                    Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     */
     template <typename VectorDataType>
     void EvalFBTSetup(const std::vector<VectorDataType>& coeffs, uint32_t numSlots, const BigInteger& PIn,
                       const BigInteger& POut, const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
@@ -3856,23 +3856,23 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Functional bootstrapping of a look-up table on a CKKS ciphertext imported from RLWE
-    *        (SchemeletRLWEMP::ConvertRLWEToCKKS): modulus raise, CoeffsToSlots, complex exponential (or cosine
-    *        for a Boolean function of order 1), trigonometric Hermite series, SlotsToCoeffs and scalings.
-    *        Supported only in CKKS.
-    *
-    * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
-    * @param coeffs          Trigonometric Hermite interpolation coefficients of the look-up table (complex, or
-    *                        integer for a Boolean function of order 1), scaled to magnitude at most one.
-    * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
-    * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
-    * @param postScaling     Integer the result is multiplied by after SlotsToCoeffs (typically the scale the
-    *                        coefficients were divided by; values of at most 1 are ignored).
-    * @param levelToReduce   Number of levels to drop before SlotsToCoeffs.
-    * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
-    * @return Ciphertext holding the look-up table outputs in its coefficients, ready for
-    *         SchemeletRLWEMP::ConvertCKKSToRLWE.
-    */
+     * @brief Functional bootstrapping of a look-up table on a CKKS ciphertext imported from RLWE
+     *        (SchemeletRLWEMP::ConvertRLWEToCKKS): modulus raise, CoeffsToSlots, complex exponential (or cosine
+     *        for a Boolean function of order 1), trigonometric Hermite series, SlotsToCoeffs and scalings.
+     *        Supported only in CKKS.
+     *
+     * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
+     * @param coeffs          Trigonometric Hermite interpolation coefficients of the look-up table (complex, or
+     *                        integer for a Boolean function of order 1), scaled to magnitude at most one.
+     * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
+     * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
+     * @param postScaling     Integer the result is multiplied by after SlotsToCoeffs (typically the scale the
+     *                        coefficients were divided by; values of at most 1 are ignored).
+     * @param levelToReduce   Number of levels to drop before SlotsToCoeffs.
+     * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @return Ciphertext holding the look-up table outputs in its coefficients, ready for
+     *         SchemeletRLWEMP::ConvertCKKSToRLWE.
+     */
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBT(ConstCiphertext<Element>& ciphertext, const std::vector<VectorDataType>& coeffs,
                                 uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
@@ -3881,17 +3881,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Functional bootstrapping of a look-up table without the final homomorphic decoding: the outputs stay
-    *        in the slots so that a leveled computation can be applied before EvalHomDecoding. Supported only in
-    *        CKKS.
-    *
-    * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
-    * @param coeffs          Trigonometric Hermite interpolation coefficients of the look-up table.
-    * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
-    * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
-    * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
-    * @return Ciphertext holding the look-up table outputs in its slots.
-    */
+     * @brief Functional bootstrapping of a look-up table without the final homomorphic decoding: the outputs stay
+     *        in the slots so that a leveled computation can be applied before EvalHomDecoding. Supported only in
+     *        CKKS.
+     *
+     * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
+     * @param coeffs          Trigonometric Hermite interpolation coefficients of the look-up table.
+     * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
+     * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
+     * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @return Ciphertext holding the look-up table outputs in its slots.
+     */
     template <typename VectorDataType>
     Ciphertext<Element> EvalFBTNoDecoding(ConstCiphertext<Element>& ciphertext,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
@@ -3900,33 +3900,33 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Homomorphic decoding step of functional bootstrapping: drops levels if requested, applies
-    *        SlotsToCoeffs, multiplies by postScaling and rescales to noise scale degree 1. Supported only in CKKS.
-    *
-    * @param ciphertext     Ciphertext with the look-up table outputs in its slots.
-    * @param postScaling    Integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are
-    *                       ignored).
-    * @param levelToReduce  Number of levels to drop before SlotsToCoeffs.
-    * @return Ciphertext holding the outputs in its coefficients, at noise scale degree 1.
-    */
+     * @brief Homomorphic decoding step of functional bootstrapping: drops levels if requested, applies
+     *        SlotsToCoeffs, multiplies by postScaling and rescales to noise scale degree 1. Supported only in CKKS.
+     *
+     * @param ciphertext     Ciphertext with the look-up table outputs in its slots.
+     * @param postScaling    Integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are
+     *                       ignored).
+     * @param levelToReduce  Number of levels to drop before SlotsToCoeffs.
+     * @return Ciphertext holding the outputs in its coefficients, at noise scale degree 1.
+     */
     Ciphertext<Element> EvalHomDecoding(ConstCiphertext<Element>& ciphertext, uint64_t postScaling,
                                         uint32_t levelToReduce = 0) {
         return m_scheme->EvalHomDecoding(ciphertext, postScaling, levelToReduce);
     }
 
     /**
-    * @brief Precomputes the complex-exponential powers for multi-value bootstrapping (modulus raise,
-    *        CoeffsToSlots, complex exponential and its powers). Every look-up table later evaluated on the
-    *        result (EvalMVB, EvalMVBNoDecoding) must be interpolated with the same shape (same plaintext modulus
-    *        and order) as @p coeffs, since those determine which powers are computed. Supported only in CKKS.
-    *
-    * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
-    * @param coeffs          Trigonometric Hermite interpolation coefficients of one of the look-up tables.
-    * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
-    * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
-    * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
-    * @return Powers of the complex exponential.
-    */
+     * @brief Precomputes the complex-exponential powers for multi-value bootstrapping (modulus raise,
+     *        CoeffsToSlots, complex exponential and its powers). Every look-up table later evaluated on the
+     *        result (EvalMVB, EvalMVBNoDecoding) must be interpolated with the same shape (same plaintext modulus
+     *        and order) as @p coeffs, since those determine which powers are computed. Supported only in CKKS.
+     *
+     * @param ciphertext      Input ciphertext holding the RLWE input in its coefficients.
+     * @param coeffs          Trigonometric Hermite interpolation coefficients of one of the look-up tables.
+     * @param digitBitSize    Bit size of the look-up table input (log2 of the input plaintext modulus).
+     * @param initialScaling  Scale of the imported message (the RLWE ciphertext modulus of the input).
+     * @param order           Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @return Powers of the complex exponential.
+     */
     template <typename VectorDataType>
     std::shared_ptr<seriesPowers<Element>> EvalMVBPrecompute(ConstCiphertext<Element>& ciphertext,
                                                              const std::vector<VectorDataType>& coeffs,
@@ -3936,19 +3936,19 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the
-    *        powers from EvalMVBPrecompute and applies the homomorphic decoding. Supported only in CKKS.
-    *
-    * @param ciphertexts    Powers of the complex exponential from EvalMVBPrecompute.
-    * @param coeffs         Trigonometric Hermite interpolation coefficients of the look-up table (same shape as
-    *                       in EvalMVBPrecompute).
-    * @param digitBitSize   Bit size of the look-up table input (log2 of the input plaintext modulus).
-    * @param postScaling    Integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are
-    *                       ignored).
-    * @param levelToReduce  Number of levels to drop before SlotsToCoeffs.
-    * @param order          Order of the trigonometric Hermite interpolation (1, 2 or 3).
-    * @return Ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1.
-    */
+     * @brief Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the
+     *        powers from EvalMVBPrecompute and applies the homomorphic decoding. Supported only in CKKS.
+     *
+     * @param ciphertexts    Powers of the complex exponential from EvalMVBPrecompute.
+     * @param coeffs         Trigonometric Hermite interpolation coefficients of the look-up table (same shape as
+     *                       in EvalMVBPrecompute).
+     * @param digitBitSize   Bit size of the look-up table input (log2 of the input plaintext modulus).
+     * @param postScaling    Integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are
+     *                       ignored).
+     * @param levelToReduce  Number of levels to drop before SlotsToCoeffs.
+     * @param order          Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @return Ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1.
+     */
     template <typename VectorDataType>
     Ciphertext<Element> EvalMVB(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                 const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
@@ -3957,17 +3957,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Multi-value bootstrapping without the final homomorphic decoding: the look-up table outputs stay in
-    *        the slots so that a leveled computation can be applied before EvalHomDecoding. Supported only in
-    *        CKKS.
-    *
-    * @param ciphertexts   Powers of the complex exponential from EvalMVBPrecompute.
-    * @param coeffs        Trigonometric Hermite interpolation coefficients of the look-up table (same shape as in
-    *                      EvalMVBPrecompute).
-    * @param digitBitSize  Bit size of the look-up table input (log2 of the input plaintext modulus).
-    * @param order         Order of the trigonometric Hermite interpolation (1, 2 or 3).
-    * @return Ciphertext holding the look-up table outputs in its slots.
-    */
+     * @brief Multi-value bootstrapping without the final homomorphic decoding: the look-up table outputs stay in
+     *        the slots so that a leveled computation can be applied before EvalHomDecoding. Supported only in
+     *        CKKS.
+     *
+     * @param ciphertexts   Powers of the complex exponential from EvalMVBPrecompute.
+     * @param coeffs        Trigonometric Hermite interpolation coefficients of the look-up table (same shape as in
+     *                      EvalMVBPrecompute).
+     * @param digitBitSize  Bit size of the look-up table input (log2 of the input plaintext modulus).
+     * @param order         Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @return Ciphertext holding the look-up table outputs in its slots.
+     */
     template <typename VectorDataType>
     Ciphertext<Element> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<Element>> ciphertexts,
                                           const std::vector<VectorDataType>& coeffs, uint32_t digitBitSize,
@@ -3976,20 +3976,20 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Evaluates a trigonometric Hermite series: approximates exp(i*Pi/2*x) with the given Chebyshev series
-    *        over [a, b], squares it twice to get exp(2*Pi*i*x), evaluates the Hermite series in the power basis of
-    *        the exponential and returns its real part. The exponential can be cached in the bootstrapping
-    *        precomputation for the ciphertext's slot count and reused. Supported only in CKKS.
-    *
-    * @param ciphertext        Input ciphertext.
-    * @param coefficientsCheb  Chebyshev coefficients of exp(i*Pi/2*x) over [a, b].
-    * @param a                 Lower bound of the Chebyshev interpolation interval.
-    * @param b                 Upper bound of the Chebyshev interpolation interval.
-    * @param coefficientsHerm  Hermite series coefficients in the power basis of the exponential, divided by 2.
-    * @param precomp           0 or 1: compute the exponential and cache it in the first or second slot; 2: reuse
-    *                          the first cached exponential; any other value: reuse the second one.
-    * @return The real part of the evaluated series.
-    */
+     * @brief Evaluates a trigonometric Hermite series: approximates exp(i*Pi/2*x) with the given Chebyshev series
+     *        over [a, b], squares it twice to get exp(2*Pi*i*x), evaluates the Hermite series in the power basis of
+     *        the exponential and returns its real part. The exponential can be cached in the bootstrapping
+     *        precomputation for the ciphertext's slot count and reused. Supported only in CKKS.
+     *
+     * @param ciphertext        Input ciphertext.
+     * @param coefficientsCheb  Chebyshev coefficients of exp(i*Pi/2*x) over [a, b].
+     * @param a                 Lower bound of the Chebyshev interpolation interval.
+     * @param b                 Upper bound of the Chebyshev interpolation interval.
+     * @param coefficientsHerm  Hermite series coefficients in the power basis of the exponential, divided by 2.
+     * @param precomp           0 or 1: compute the exponential and cache it in the first or second slot; 2: reuse
+     *                          the first cached exponential; any other value: reuse the second one.
+     * @return The real part of the evaluated series.
+     */
     template <typename VectorDataType>
     Ciphertext<Element> EvalHermiteTrigSeries(ConstCiphertext<Element>& ciphertext,
                                               const std::vector<std::complex<double>>& coefficientsCheb, double a,
@@ -3999,21 +3999,21 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Gets the correction factor of CKKS bootstrapping (the number of bits the message is scaled down by in
-    *        total before the approximate modular reduction to improve precision), as set by EvalBootstrapSetup.
-    *        Supported only in CKKS.
-    *
-    * @return The correction factor.
-    */
+     * @brief Gets the correction factor of CKKS bootstrapping (the number of bits the message is scaled down by in
+     *        total before the approximate modular reduction to improve precision), as set by EvalBootstrapSetup.
+     *        Supported only in CKKS.
+     *
+     * @return The correction factor.
+     */
     uint32_t GetCKKSBootCorrectionFactor() {
         return m_scheme->GetCKKSBootCorrectionFactor();
     }
 
     /**
-    * @brief Sets the correction factor of CKKS bootstrapping. Supported only in CKKS.
-    *
-    * @param cf  The correction factor.
-    */
+     * @brief Sets the correction factor of CKKS bootstrapping. Supported only in CKKS.
+     *
+     * @param cf  The correction factor.
+     */
     void SetCKKSBootCorrectionFactor(uint32_t cf) {
         return m_scheme->SetCKKSBootCorrectionFactor(cf);
     }
@@ -4023,29 +4023,29 @@ class CryptoContextImpl : public Serializable {
     //------------------------------------------------------------------------------
 
     /**
-    * Scheme switching between CKKS and FHEW functionality
-    * There are three methods that have to be called in this specific order:
-    * 1. EvalCKKStoFHEWSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
-    * the coefficients for encoding and decoding and stores the necessary parameters
-    * 2. EvalCKKStoFHEWKeyGen: computes and stores the keys for rotations and conjugation
-    * 3. EvalCKKStoFHEW: returns the FHEW/CGGI ciphertext
-    * 1'. EvalFHEWtoCKKSSetup: takes in the CKKS cryptocontext and sets the parameters
-    * 2'. EvalFHEWtoCKKSKeyGen: computes and stores the switching key and the keys for rotations and conjugation
-    * 3'. EvalFHEWtoCKKS: returns the CKKS ciphertext
-    * 1''. EvalSchemeSwitchingSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
-    * the coefficients for encoding and decoding and stores the necessary parameters
-    * 2''. EvalSchemeSwitchingKeyGen: computes and stores the switching key and the keys for rotations and conjugation
-    * 3''. EvalCompareSchemeSwitching/EvalFuncSchemeSwitching: returns the CKKS ciphertext of the function specified
-    */
+     * Scheme switching between CKKS and FHEW functionality
+     * There are three methods that have to be called in this specific order:
+     * 1. EvalCKKStoFHEWSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
+     * the coefficients for encoding and decoding and stores the necessary parameters
+     * 2. EvalCKKStoFHEWKeyGen: computes and stores the keys for rotations and conjugation
+     * 3. EvalCKKStoFHEW: returns the FHEW/CGGI ciphertext
+     * 1'. EvalFHEWtoCKKSSetup: takes in the CKKS cryptocontext and sets the parameters
+     * 2'. EvalFHEWtoCKKSKeyGen: computes and stores the switching key and the keys for rotations and conjugation
+     * 3'. EvalFHEWtoCKKS: returns the CKKS ciphertext
+     * 1''. EvalSchemeSwitchingSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
+     * the coefficients for encoding and decoding and stores the necessary parameters
+     * 2''. EvalSchemeSwitchingKeyGen: computes and stores the switching key and the keys for rotations and conjugation
+     * 3''. EvalCompareSchemeSwitching/EvalFuncSchemeSwitching: returns the CKKS ciphertext of the function specified
+     */
 
     /**
-    * @brief Sets all parameters for switching from CKKS to FHEW.
-    *
-    * @param params  Parameters for CKKS-to-FHEW scheme switching.
-    * @return FHEW secret key.
-    *
-    * @note TODO: Add overload for pre-generated BinFHEContext.
-    */
+     * @brief Sets all parameters for switching from CKKS to FHEW.
+     *
+     * @param params  Parameters for CKKS-to-FHEW scheme switching.
+     * @return FHEW secret key.
+     *
+     * @note TODO: Add overload for pre-generated BinFHEContext.
+     */
     LWEPrivateKey EvalCKKStoFHEWSetup(SchSwchParams params) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -4054,11 +4054,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates keys for CKKS-to-FHEW scheme switching: rotation keys, conjugation keys, and switching key.
-    *
-    * @param keyPair  CKKS key pair.
-    * @param lwesk    FHEW secret key.
-    */
+     * @brief Generates keys for CKKS-to-FHEW scheme switching: rotation keys, conjugation keys, and switching key.
+     *
+     * @param keyPair  CKKS key pair.
+     * @param lwesk    FHEW secret key.
+     */
     void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -4071,12 +4071,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Performs precomputations for CKKS homomorphic decoding. Allows setting a custom scale factor. Given as
-    *        a separate method than EvalCKKStoFHEWSetup to allow the user to specify a scale that depends on
-    *        the CKKS and FHEW cryptocontexts
-    *
-    * @param scale  Scaling factor for the linear transform matrix.
-    */
+     * @brief Performs precomputations for CKKS homomorphic decoding. Allows setting a custom scale factor. Given as
+     *        a separate method than EvalCKKStoFHEWSetup to allow the user to specify a scale that depends on
+     *        the CKKS and FHEW cryptocontexts
+     *
+     * @param scale  Scaling factor for the linear transform matrix.
+     */
     void EvalCKKStoFHEWPrecompute(double scale = 1.0) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -4084,12 +4084,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Switches a CKKS ciphertext to a vector of FHEW ciphertexts.
-    *
-    * @param ciphertext  Input CKKS ciphertext.
-    * @param numCtxts    Number of coefficients to extract (defaults to number of slots if 0).
-    * @return Vector of LWE ciphertexts.
-    */
+     * @brief Switches a CKKS ciphertext to a vector of FHEW ciphertexts.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param numCtxts    Number of coefficients to extract (defaults to number of slots if 0).
+     * @return Vector of LWE ciphertexts.
+     */
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element>& ciphertext,
                                                                    uint32_t numCtxts = 0) {
         VerifyCKKSScheme(__func__);
@@ -4101,12 +4101,12 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Sets parameters for switching from FHEW to CKKS. Requires existing CKKS context.
-    *
-    * @param ccLWE         Source FHEW crypto context.
-    * @param numSlotsCKKS  Number of slots in resulting CKKS ciphertext.
-    * @param logQ          Ciphertext modulus size in FHEW (for high precision).
-    */
+     * @brief Sets parameters for switching from FHEW to CKKS. Requires existing CKKS context.
+     *
+     * @param ccLWE         Source FHEW crypto context.
+     * @param numSlotsCKKS  Number of slots in resulting CKKS ciphertext.
+     * @param logQ          Ciphertext modulus size in FHEW (for high precision).
+     */
     void EvalFHEWtoCKKSSetup(const std::shared_ptr<BinFHEContext>& ccLWE, uint32_t numSlotsCKKS = 0,
                              uint32_t logQ = 25) {
         VerifyCKKSScheme(__func__);
@@ -4115,15 +4115,15 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates keys for switching from FHEW to CKKS.
-    *
-    * @param keyPair   CKKS key pair.
-    * @param lwesk     FHEW secret key.
-    * @param numSlots  Number of slots for CKKS encryption.
-    * @param numCtxts  Number of LWE ciphertext values to encrypt.
-    * @param dim1      Baby-step parameter for linear transform.
-    * @param L         Target level for homomorphic decoding matrix.
-    */
+     * @brief Generates keys for switching from FHEW to CKKS.
+     *
+     * @param keyPair   CKKS key pair.
+     * @param lwesk     FHEW secret key.
+     * @param numSlots  Number of slots for CKKS encryption.
+     * @param numCtxts  Number of LWE ciphertext values to encrypt.
+     * @param dim1      Baby-step parameter for linear transform.
+     * @param L         Target level for homomorphic decoding matrix.
+     */
     void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
                               uint32_t numCtxts = 0, uint32_t dim1 = 0, uint32_t L = 0) {
         VerifyCKKSScheme(__func__);
@@ -4135,17 +4135,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Switches a vector of FHEW ciphertexts to a single CKKS ciphertext.
-    *
-    * @param LWECiphertexts  Input vector of FHEW ciphertexts.
-    * @param numCtxts        Number of values to encode.
-    * @param numSlots        Number of CKKS slots to use.
-    * @param p               Plaintext modulus (default = 4).
-    * @param pmin            Minimum expected plaintext value (default = 0.0).
-    * @param pmax            Maximum expected plaintext value (default = 2.0).
-    * @param dim1            Baby-step parameter (used in argmin).
-    * @return CKKS ciphertext encoding the input LWE messages.
-    */
+     * @brief Switches a vector of FHEW ciphertexts to a single CKKS ciphertext.
+     *
+     * @param LWECiphertexts  Input vector of FHEW ciphertexts.
+     * @param numCtxts        Number of values to encode.
+     * @param numSlots        Number of CKKS slots to use.
+     * @param p               Plaintext modulus (default = 4).
+     * @param pmin            Minimum expected plaintext value (default = 0.0).
+     * @param pmax            Maximum expected plaintext value (default = 2.0).
+     * @param dim1            Baby-step parameter (used in argmin).
+     * @return CKKS ciphertext encoding the input LWE messages.
+     */
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
                                        double pmax = 2.0, uint32_t dim1 = 0) const {
@@ -4155,10 +4155,10 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Sets scheme switching parameters using the current CKKS crypto context.
-    *
-    * @param params  Scheme switching parameter object to populate.
-    */
+     * @brief Sets scheme switching parameters using the current CKKS crypto context.
+     *
+     * @param params  Scheme switching parameter object to populate.
+     */
     void SetParamsFromCKKSCryptocontext(SchSwchParams& params) {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_params);
         if (!cryptoParams)
@@ -4172,13 +4172,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Sets parameters for switching between CKKS and FHEW.
-    *
-    * @param params  Scheme switching parameter object.
-    * @return FHEW secret key.
-    *
-    * @note TODO: Add overload for pre-generated BinFHEContext.
-    */
+     * @brief Sets parameters for switching between CKKS and FHEW.
+     *
+     * @param params  Scheme switching parameter object.
+     * @return FHEW secret key.
+     *
+     * @note TODO: Add overload for pre-generated BinFHEContext.
+     */
     LWEPrivateKey EvalSchemeSwitchingSetup(SchSwchParams& params) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -4187,11 +4187,11 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Generates keys for switching between CKKS and FHEW.
-    *
-    * @param keyPair  CKKS key pair.
-    * @param lwesk    FHEW secret key.
-    */
+     * @brief Generates keys for switching between CKKS and FHEW.
+     *
+     * @param keyPair  CKKS key pair.
+     * @param lwesk    FHEW secret key.
+     */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -4202,13 +4202,13 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Performs precomputations for scheme switching in CKKS-to-FHEW comparison.
-    *        Given as a separate method than EvalSchemeSwitchingSetup to allow the user to specify a scale.
-    *
-    * @param pLWE       Target plaintext modulus for FHEW ciphertexts.
-    * @param scaleSign  Scaling factor for CKKS ciphertexts before switching.
-    * @param unit       Indicates if input messages are normalized to unit circle.
-    */
+     * @brief Performs precomputations for scheme switching in CKKS-to-FHEW comparison.
+     *        Given as a separate method than EvalSchemeSwitchingSetup to allow the user to specify a scale.
+     *
+     * @param pLWE       Target plaintext modulus for FHEW ciphertexts.
+     * @param scaleSign  Scaling factor for CKKS ciphertexts before switching.
+     * @param unit       Indicates if input messages are normalized to unit circle.
+     */
     void EvalCompareSwitchPrecompute(uint32_t pLWE = 0, double scaleSign = 1.0, bool unit = false) {
         VerifyCKKSScheme(__func__);
         VerifyCKKSRealDataType(__func__);
@@ -4216,17 +4216,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Compares two CKKS ciphertexts using FHEW-based scheme switching and returns CKKS result.
-    *
-    * @param ciphertext1  First input CKKS ciphertext.
-    * @param ciphertext2  Second input CKKS ciphertext.
-    * @param numCtxts     Number of coefficients to extract.
-    * @param numSlots     Number of slots to encode in the result.
-    * @param pLWE         Target plaintext modulus for FHEW ciphertexts.
-    * @param scaleSign    Scaling factor for CKKS ciphertexts before switching.
-    * @param unit         Indicates if input messages are normalized to unit circle.
-    * @return CKKS ciphertext encoding sign comparison result.
-    */
+     * @brief Compares two CKKS ciphertexts using FHEW-based scheme switching and returns CKKS result.
+     *
+     * @param ciphertext1  First input CKKS ciphertext.
+     * @param ciphertext2  Second input CKKS ciphertext.
+     * @param numCtxts     Number of coefficients to extract.
+     * @param numSlots     Number of slots to encode in the result.
+     * @param pLWE         Target plaintext modulus for FHEW ciphertexts.
+     * @param scaleSign    Scaling factor for CKKS ciphertexts before switching.
+     * @param unit         Indicates if input messages are normalized to unit circle.
+     * @return CKKS ciphertext encoding sign comparison result.
+     */
     Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element>& ciphertext1,
                                                    ConstCiphertext<Element>& ciphertext2, uint32_t numCtxts = 0,
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
@@ -4240,19 +4240,19 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes minimum and index of the first packed values using scheme switching.
-    *
-    * @param ciphertext  Input CKKS ciphertext.
-    * @param publicKey   CKKS public key.
-    * @param numValues   Number of values to compare (we assume that numValues is a power of two).
-    * @param numSlots    Number of output slots.
-    * @param pLWE        Target plaintext modulus for FHEW.
-    * @param scaleSign   Scaling factor before switching to FHEW. The resulting FHEW ciphertexts will encrypt values modulo pLWE,
-    *                    so scaleSign should account for this pLWE and is given here only if the homomorphic decoding matrix is
-    *                    not scaled with the desired values
-    * @return A vector of two CKKS ciphertexts: [min, argmin]. The ciphertexts have junk after the first slot in the first ciphertext
-    *         and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
-    */
+     * @brief Computes minimum and index of the first packed values using scheme switching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of values to compare (we assume that numValues is a power of two).
+     * @param numSlots    Number of output slots.
+     * @param pLWE        Target plaintext modulus for FHEW.
+     * @param scaleSign   Scaling factor before switching to FHEW. The resulting FHEW ciphertexts will encrypt values modulo pLWE,
+     *                    so scaleSign should account for this pLWE and is given here only if the homomorphic decoding matrix is
+     *                    not scaled with the desired values
+     * @return A vector of two CKKS ciphertexts: [min, argmin]. The ciphertexts have junk after the first slot in the first ciphertext
+     *         and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
+     */
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element>& ciphertext,
                                                             PublicKey<Element>& publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -4264,16 +4264,16 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes minimum and index using more FHEW operations than CKKS with higher precision, but slower than EvalMinSchemeSwitching.
-    *
-    * @param ciphertext  Input CKKS ciphertext.
-    * @param publicKey   CKKS public key.
-    * @param numValues   Number of packed values to compare.
-    * @param numSlots    Number of slots in the output ciphertexts.
-    * @param pLWE        Target plaintext modulus for FHEW ciphertexts.
-    * @param scaleSign   Scaling factor before switching to FHEW.
-    * @return A vector with two CKKS ciphertexts: [min, argmin].
-    */
+     * @brief Computes minimum and index using more FHEW operations than CKKS with higher precision, but slower than EvalMinSchemeSwitching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of packed values to compare.
+     * @param numSlots    Number of slots in the output ciphertexts.
+     * @param pLWE        Target plaintext modulus for FHEW ciphertexts.
+     * @param scaleSign   Scaling factor before switching to FHEW.
+     * @return A vector with two CKKS ciphertexts: [min, argmin].
+     */
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element>& ciphertext,
                                                                PublicKey<Element>& publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -4285,17 +4285,17 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes maximum and index from the first packed values using scheme switching.
-    *
-    * @param ciphertext  Input CKKS ciphertext.
-    * @param publicKey   CKKS public key.
-    * @param numValues   Number of values to compare (we assume that numValues is a power of two).
-    * @param numSlots    Number of output slots.
-    * @param pLWE        Target plaintext modulus for FHEW.
-    * @param scaleSign   Scaling factor before switching to FHEW.
-    * @return A vector of two CKKS ciphertexts: [max, argmax]. The ciphertexts have junk after the first slot in the first ciphertext
-    *         and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
-    */
+     * @brief Computes maximum and index from the first packed values using scheme switching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of values to compare (we assume that numValues is a power of two).
+     * @param numSlots    Number of output slots.
+     * @param pLWE        Target plaintext modulus for FHEW.
+     * @param scaleSign   Scaling factor before switching to FHEW.
+     * @return A vector of two CKKS ciphertexts: [max, argmax]. The ciphertexts have junk after the first slot in the first ciphertext
+     *         and after numValues in the second ciphertext if oneHot=true and after the first slot if oneHot=false.
+     */
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element>& ciphertext,
                                                             PublicKey<Element>& publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -4307,16 +4307,16 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Computes max and index via scheme switching, with more FHEW operations for better precision than EvalMaxSchemeSwitching.
-    *
-    * @param ciphertext  Input CKKS ciphertext.
-    * @param publicKey   CKKS public key.
-    * @param numValues   Number of values to compare.
-    * @param numSlots    Number of output slots.
-    * @param pLWE        Target plaintext modulus for FHEW.
-    * @param scaleSign   Scaling factor before switching to FHEW.
-    * @return A vector of two CKKS ciphertexts: [max, argmax].
-    */
+     * @brief Computes max and index via scheme switching, with more FHEW operations for better precision than EvalMaxSchemeSwitching.
+     *
+     * @param ciphertext  Input CKKS ciphertext.
+     * @param publicKey   CKKS public key.
+     * @param numValues   Number of values to compare.
+     * @param numSlots    Number of output slots.
+     * @param pLWE        Target plaintext modulus for FHEW.
+     * @param scaleSign   Scaling factor before switching to FHEW.
+     * @return A vector of two CKKS ciphertexts: [max, argmax].
+     */
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element>& ciphertext,
                                                                PublicKey<Element>& publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, uint32_t pLWE = 0,
@@ -4328,44 +4328,44 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Returns the BinFHE context used for scheme switching.
-    * @return BinFHE context.
-    */
+     * @brief Returns the BinFHE context used for scheme switching.
+     * @return BinFHE context.
+     */
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() const {
         return m_scheme->GetBinCCForSchemeSwitch();
     }
 
     /**
-    * @brief Sets the BinFHE context to be used for scheme switching.
-    * @param ccLWE BinFHE context.
-    */
+     * @brief Sets the BinFHE context to be used for scheme switching.
+     * @param ccLWE BinFHE context.
+     */
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) {
         m_scheme->SetBinCCForSchemeSwitch(ccLWE);
     }
 
     /**
-    * @brief Gets the FHEW-to-CKKS scheme switching key ciphertext.
-    * @return Switching key ciphertext.
-    */
+     * @brief Gets the FHEW-to-CKKS scheme switching key ciphertext.
+     * @return Switching key ciphertext.
+     */
     Ciphertext<Element> GetSwkFC() const {
         return m_scheme->GetSwkFC();
     }
 
     /**
-    * @brief Sets the FHEW-to-CKKS scheme switching key ciphertext.
-    * @param FHEWtoCKKSswk Switching key ciphertext.
-    */
+     * @brief Sets the FHEW-to-CKKS scheme switching key ciphertext.
+     * @param FHEWtoCKKSswk Switching key ciphertext.
+     */
     void SetSwkFC(Ciphertext<Element> FHEWtoCKKSswk) {
         m_scheme->SetSwkFC(FHEWtoCKKSswk);
     }
 
     /**
-    * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
-    *
-    * @param keyTag secret key tag
-    * @param indices set of specific indices to check the key map against
-    * @return indices that do not have automorphism keys associated with
-    */
+     * @brief Gets indices that do not have automorphism keys for the given secret key tag in the key map
+     *
+     * @param keyTag secret key tag
+     * @param indices set of specific indices to check the key map against
+     * @return indices that do not have automorphism keys associated with
+     */
     static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
                                                               const std::set<uint32_t>& indices) {
         std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyTag)};
@@ -4375,18 +4375,18 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-    * @brief Returns automorphism indices for all existing evaluation keys.
-    * @param keyTag      Secret key tag.
-    * @return Set of indices found for the given key tag. Empty if none exist.
-    */
+     * @brief Returns automorphism indices for all existing evaluation keys.
+     * @param keyTag      Secret key tag.
+     * @return Set of indices found for the given key tag. Empty if none exist.
+     */
     static std::set<uint32_t> GetExistingEvalAutomorphismKeyIndices(const std::string& keyTag);
 
     /**
-    * @brief Compares two sets and returns unique values from the second set.
-    * @param oldValues   First set to compare against.
-    * @param newValues   Second set to extract unique values from.
-    * @return Set of values present in newValues but not in oldValues.
-    */
+     * @brief Compares two sets and returns unique values from the second set.
+     * @param oldValues   First set to compare against.
+     * @param newValues   Second set to extract unique values from.
+     * @return Set of values present in newValues but not in oldValues.
+     */
     static std::set<uint32_t> GetUniqueValues(const std::set<uint32_t>& oldValues, const std::set<uint32_t>& newValues);
 
     template <class Archive>

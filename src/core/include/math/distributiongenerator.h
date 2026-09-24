@@ -54,12 +54,12 @@ namespace lbcrypto {
 class PseudoRandomNumberGenerator {
   public:
     /**
-    * @brief InitPRNGEngine() initializes the PRNG generator
-    * @param libPath a string with the absolute path to an external PRNG library ("/path/to/libprng.so").
-    *        If the string is empty, then the default (OpenFHE's built-in PRNG) library will be used.
-    * @note this function should be called at the beginning of main() if an external library to be used and
-    *       prints a trace in this case. There is no trace for the built-in PRNG
-    */
+     * @brief InitPRNGEngine() initializes the PRNG generator
+     * @param libPath a string with the absolute path to an external PRNG library ("/path/to/libprng.so").
+     *        If the string is empty, then the default (OpenFHE's built-in PRNG) library will be used.
+     * @note this function should be called at the beginning of main() if an external library to be used and
+     *       prints a trace in this case. There is no trace for the built-in PRNG
+     */
     static void InitPRNGEngine(const std::string& libPath = std::string());
 
     /**

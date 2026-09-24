@@ -133,30 +133,30 @@ class SchemeBase {
     virtual ~SchemeBase() = default;
 
     /**
-   * Compares two scheme objects. The base implementation throws an exception; every concrete scheme overrides
-   * it (CryptoContextFactory relies on it to deduplicate crypto contexts).
-   *
-   * @param sch the scheme to compare with
-   * @return true if the schemes are equal
-   */
+     * Compares two scheme objects. The base implementation throws an exception; every concrete scheme overrides
+     * it (CryptoContextFactory relies on it to deduplicate crypto contexts).
+     *
+     * @param sch the scheme to compare with
+     * @return true if the schemes are equal
+     */
     virtual bool operator==(const SchemeBase& sch) const {
         OPENFHE_THROW("operator== is not supported");
     }
 
     /**
-   * Inequality of scheme objects: negation of operator==.
-   *
-   * @param sch the scheme to compare with
-   * @return true if the schemes differ
-   */
+     * Inequality of scheme objects: negation of operator==.
+     *
+     * @param sch the scheme to compare with
+     * @return true if the schemes differ
+     */
     virtual bool operator!=(const SchemeBase& sch) const {
         return !(*this == sch);
     }
 
     /**
-   * Enable features with a bit mask of PKESchemeFeature codes
-   * @param mask bitwise OR of PKESchemeFeature codes to enable
-   */
+     * Enable features with a bit mask of PKESchemeFeature codes
+     * @param mask bitwise OR of PKESchemeFeature codes to enable
+     */
     void Enable(uint32_t mask) {
         if (mask & PKE)
             Enable(PKE);
@@ -177,10 +177,10 @@ class SchemeBase {
     }
 
     /**
-   * Returns the enabled features, i.e., the families whose implementing object has been instantiated.
-   *
-   * @return bitwise OR of the PKESchemeFeature codes of the enabled features
-   */
+     * Returns the enabled features, i.e., the families whose implementing object has been instantiated.
+     *
+     * @return bitwise OR of the PKESchemeFeature codes of the enabled features
+     */
     uint32_t GetEnabled() const {
         uint32_t flag = 0;
         if (m_PKE != nullptr)
@@ -203,11 +203,11 @@ class SchemeBase {
     }
 
     /**
-   * Checks whether a single feature has been enabled.
-   *
-   * @param feature the feature to check; an unknown value causes an exception
-   * @return true if the object implementing the feature has been instantiated
-   */
+     * Checks whether a single feature has been enabled.
+     *
+     * @param feature the feature to check; an unknown value causes an exception
+     * @return true if the object implementing the feature has been instantiated
+     */
     bool IsFeatureEnabled(PKESchemeFeature feature) {
         switch (feature) {
             case PKE:
@@ -232,11 +232,11 @@ class SchemeBase {
     }
 
     /**
-   * Enables a single feature by instantiating the object implementing it. The base implementation throws an
-   * exception; every concrete scheme overrides it.
-   *
-   * @param feature the feature to enable
-   */
+     * Enables a single feature by instantiating the object implementing it. The base implementation throws an
+     * exception; every concrete scheme overrides it.
+     *
+     * @param feature the feature to enable
+     */
     // instantiated in the scheme implementation class
     virtual void Enable(PKESchemeFeature feature) {
         OPENFHE_THROW("Enable is not implemented");
@@ -417,26 +417,26 @@ class SchemeBase {
     /////////////////////////////////////////
 
     /**
-   * Generates a proxy re-encryption key from oldPrivateKey to newPublicKey via m_PRE and tags it with the key tag
-   * of newPublicKey, so that re-encrypted ciphertexts are associated with the new key.
-   *
-   * @param oldPrivateKey secret key the ciphertexts are currently encrypted under
-   * @param newPublicKey public key of the new recipient
-   * @return the re-encryption key
-   */
+     * Generates a proxy re-encryption key from oldPrivateKey to newPublicKey via m_PRE and tags it with the key tag
+     * of newPublicKey, so that re-encrypted ciphertexts are associated with the new key.
+     *
+     * @param oldPrivateKey secret key the ciphertexts are currently encrypted under
+     * @param newPublicKey public key of the new recipient
+     * @return the re-encryption key
+     */
     virtual EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey,
                                       const PublicKey<Element> newPublicKey) const;
 
     /**
-   * Re-encrypts a ciphertext to the recipient of the re-encryption key via m_PRE and sets the key tag of the
-   * result to the tag of evalKey (that of the new public key).
-   *
-   * @param ciphertext the ciphertext to re-encrypt
-   * @param evalKey the re-encryption key
-   * @param publicKey public key of the recipient, used by the PRE modes that re-randomize the result with a fresh
-   *        encryption of zero (may be null in the other modes)
-   * @return the re-encrypted ciphertext
-   */
+     * Re-encrypts a ciphertext to the recipient of the re-encryption key via m_PRE and sets the key tag of the
+     * result to the tag of evalKey (that of the new public key).
+     *
+     * @param ciphertext the ciphertext to re-encrypt
+     * @param evalKey the re-encryption key
+     * @param publicKey public key of the recipient, used by the PRE modes that re-randomize the result with a fresh
+     *        encryption of zero (may be null in the other modes)
+     * @return the re-encrypted ciphertext
+     */
     virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
                                           const PublicKey<Element> publicKey) const;
 
@@ -586,20 +586,20 @@ class SchemeBase {
     /////////////////////////////////////////
 
     /**
-   * Generates the relinearization key (from s^2 to s) via m_LeveledSHE and tags it with the key tag of privateKey.
-   *
-   * @param privateKey the secret key
-   * @return the relinearization key
-   */
+     * Generates the relinearization key (from s^2 to s) via m_LeveledSHE and tags it with the key tag of privateKey.
+     *
+     * @param privateKey the secret key
+     * @return the relinearization key
+     */
     virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey) const;
 
     /**
-   * Generates the relinearization keys for s^2, s^3, ... (used for ciphertexts of more than two elements) via
-   * m_LeveledSHE and tags each of them with the key tag of privateKey.
-   *
-   * @param privateKey the secret key
-   * @return the vector of relinearization keys
-   */
+     * Generates the relinearization keys for s^2, s^3, ... (used for ciphertexts of more than two elements) via
+     * m_LeveledSHE and tags each of them with the key tag of privateKey.
+     *
+     * @param privateKey the secret key
+     * @return the vector of relinearization keys
+     */
     virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const;
 
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1,
@@ -755,13 +755,13 @@ class SchemeBase {
     /////////////////////////////////////////
 
     /**
-   * Generates the automorphism (key-switching) keys for the given automorphism indices via m_LeveledSHE and tags
-   * each of them with the key tag of privateKey.
-   *
-   * @param privateKey the secret key
-   * @param indexList automorphism indices (elements of the Galois group) to generate keys for
-   * @return map from automorphism index to key
-   */
+     * Generates the automorphism (key-switching) keys for the given automorphism indices via m_LeveledSHE and tags
+     * each of them with the key tag of privateKey.
+     *
+     * @param privateKey the secret key
+     * @param indexList automorphism indices (elements of the Galois group) to generate keys for
+     * @return map from automorphism index to key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
             const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
@@ -807,17 +807,17 @@ class SchemeBase {
     }
 
     /**
-   * Only supported for hybrid key switching.
-   * Performs fast (hoisted) rotation and returns the results
-   * in the extended CRT basis P*Q
-   *
-   * @param ciphertext input ciphertext
-   * @param index the rotation index.
-   * @param digits the precomputed digits for the ciphertext
-   * @param addFirst if true, the first element c0 is also computed (otherwise ignored)
-   * @param evalKeys the map of automorphism keys
-   * @return resulting ciphertext
-   */
+     * Only supported for hybrid key switching.
+     * Performs fast (hoisted) rotation and returns the results
+     * in the extended CRT basis P*Q
+     *
+     * @param ciphertext input ciphertext
+     * @param index the rotation index.
+     * @param digits the precomputed digits for the ciphertext
+     * @param addFirst if true, the first element c0 is also computed (otherwise ignored)
+     * @param evalKeys the map of automorphism keys
+     * @return resulting ciphertext
+     */
     virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element>& ciphertext, uint32_t index,
                                                     const std::shared_ptr<std::vector<Element>> digits, bool addFirst,
                                                     const std::map<uint32_t, EvalKey<Element>>& evalKeys) const {
@@ -828,12 +828,12 @@ class SchemeBase {
     }
 
     /**
-   * Only supported for hybrid key switching.
-   * Scales down the polynomial c0 from extended basis P*Q to Q.
-   *
-   * @param ciphertext input ciphertext in the extended basis
-   * @return resulting polynomial
-   */
+     * Only supported for hybrid key switching.
+     * Scales down the polynomial c0 from extended basis P*Q to Q.
+     *
+     * @param ciphertext input ciphertext in the extended basis
+     * @return resulting polynomial
+     */
     Element KeySwitchDownFirstElement(ConstCiphertext<Element>& ciphertext) const {
         VerifyKeySwitchEnabled(__func__);
         return m_KeySwitch->KeySwitchDownFirstElement(ciphertext);
@@ -845,13 +845,13 @@ class SchemeBase {
     }
 
     /**
-   * Generates the rotation keys for the given rotation indices via m_LeveledSHE and tags each of them with the
-   * key tag of privateKey.
-   *
-   * @param privateKey the secret key
-   * @param indexList rotation indices (positive for left, negative for right rotations)
-   * @return map from automorphism index to key
-   */
+     * Generates the rotation keys for the given rotation indices via m_LeveledSHE and tags each of them with the
+     * key tag of privateKey.
+     *
+     * @param privateKey the secret key
+     * @param indexList rotation indices (positive for left, negative for right rotations)
+     * @return map from automorphism index to key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
             const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
@@ -873,26 +873,26 @@ class SchemeBase {
     /////////////////////////////////////////
 
     /**
-   * Multiplies two ciphertexts, relinearizes and rescales the product via m_LeveledSHE, and sets the key tag of
-   * the result to the tag of evalKey.
-   *
-   * @param ciphertext1 first operand
-   * @param ciphertext2 second operand
-   * @param evalKey the relinearization key
-   * @return the relinearized and rescaled product
-   */
+     * Multiplies two ciphertexts, relinearizes and rescales the product via m_LeveledSHE, and sets the key tag of
+     * the result to the tag of evalKey.
+     *
+     * @param ciphertext1 first operand
+     * @param ciphertext2 second operand
+     * @param evalKey the relinearization key
+     * @return the relinearized and rescaled product
+     */
     virtual Ciphertext<Element> ComposedEvalMult(ConstCiphertext<Element>& ciphertext1,
                                                  ConstCiphertext<Element>& ciphertext2,
                                                  const EvalKey<Element> evalKey) const;
 
     /**
-   * Rescales a ciphertext by the given number of levels via m_LeveledSHE; the result keeps the key tag of the
-   * input.
-   *
-   * @param ciphertext the ciphertext to rescale
-   * @param levels number of levels (RNS limbs) to drop
-   * @return the rescaled ciphertext
-   */
+     * Rescales a ciphertext by the given number of levels via m_LeveledSHE; the result keeps the key tag of the
+     * input.
+     *
+     * @param ciphertext the ciphertext to rescale
+     * @param levels number of levels (RNS limbs) to drop
+     * @return the rescaled ciphertext
+     */
     virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element>& ciphertext, size_t levels) const;
 
     virtual void ModReduceInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
@@ -906,11 +906,11 @@ class SchemeBase {
     }
 
     /**
-   * Rescales a ciphertext in place by the given number of levels via m_LeveledSHE; does nothing for levels == 0.
-   *
-   * @param ciphertext the ciphertext to rescale
-   * @param levels number of levels (RNS limbs) to drop
-   */
+     * Rescales a ciphertext in place by the given number of levels via m_LeveledSHE; does nothing for levels == 0.
+     *
+     * @param ciphertext the ciphertext to rescale
+     * @param levels number of levels (RNS limbs) to drop
+     */
     virtual void ModReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
         VerifyLeveledSHEEnabled(__func__);
         if (levels > 0)
@@ -1105,37 +1105,37 @@ class SchemeBase {
     /////////////////////////////////////
 
     /**
-   * Generates the rotation keys needed by EvalSum via m_AdvancedSHE and tags each of them with the key tag of
-   * privateKey.
-   *
-   * @param privateKey the secret key
-   * @return map from automorphism index to key
-   */
+     * Generates the rotation keys needed by EvalSum via m_AdvancedSHE and tags each of them with the key tag of
+     * privateKey.
+     *
+     * @param privateKey the secret key
+     * @return map from automorphism index to key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
             const PrivateKey<Element> privateKey) const;
 
     /**
-   * Generates the rotation keys needed by EvalSumRows via m_AdvancedSHE and tags each of them with the key tag
-   * of privateKey.
-   *
-   * @param privateKey the secret key
-   * @param rowSize number of slots per row of the packed matrix
-   * @param subringDim subring dimension (0 selects the cyclotomic order)
-   * @param indices receives the automorphism indices the keys were generated for
-   * @return map from automorphism index to key
-   */
+     * Generates the rotation keys needed by EvalSumRows via m_AdvancedSHE and tags each of them with the key tag
+     * of privateKey.
+     *
+     * @param privateKey the secret key
+     * @param rowSize number of slots per row of the packed matrix
+     * @param subringDim subring dimension (0 selects the cyclotomic order)
+     * @param indices receives the automorphism indices the keys were generated for
+     * @return map from automorphism index to key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
             const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
             std::vector<uint32_t>& indices) const;
 
     /**
-   * Generates the rotation keys needed by EvalSumCols via m_AdvancedSHE and tags each of them with the key tag
-   * of privateKey.
-   *
-   * @param privateKey the secret key
-   * @param indices receives the automorphism indices the keys were generated for
-   * @return map from automorphism index to key
-   */
+     * Generates the rotation keys needed by EvalSumCols via m_AdvancedSHE and tags each of them with the key tag
+     * of privateKey.
+     *
+     * @param privateKey the secret key
+     * @param indices receives the automorphism indices the keys were generated for
+     * @return map from automorphism index to key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
             const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
 
@@ -1172,17 +1172,17 @@ class SchemeBase {
     /////////////////////////////////////
 
     /**
-   * Computes the inner product of two packed ciphertexts via m_AdvancedSHE after checking that the summation key
-   * map is not empty and the relinearization key is not null; the result is tagged with the key tag of the
-   * summation keys.
-   *
-   * @param ciphertext1 first operand
-   * @param ciphertext2 second operand
-   * @param batchSize number of slots to sum over
-   * @param evalSumKeyMap rotation keys generated by EvalSumKeyGen
-   * @param evalMultKey the relinearization key
-   * @return ciphertext with the inner product in every slot
-   */
+     * Computes the inner product of two packed ciphertexts via m_AdvancedSHE after checking that the summation key
+     * map is not empty and the relinearization key is not null; the result is tagged with the key tag of the
+     * summation keys.
+     *
+     * @param ciphertext1 first operand
+     * @param ciphertext2 second operand
+     * @param batchSize number of slots to sum over
+     * @param evalSumKeyMap rotation keys generated by EvalSumKeyGen
+     * @param evalMultKey the relinearization key
+     * @return ciphertext with the inner product in every slot
+     */
     virtual Ciphertext<Element> EvalInnerProduct(ConstCiphertext<Element>& ciphertext1,
                                                  ConstCiphertext<Element>& ciphertext2, uint32_t batchSize,
                                                  const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap,
@@ -1217,51 +1217,51 @@ class SchemeBase {
     /////////////////////////////////////////
 
     /**
-   * Threshold key generation from the secret keys of several parties via m_Multiparty. Checks that the context
-   * and the key vector are not empty and sets the key tag of the joint public key to that of the joint secret key.
-   *
-   * @param cc the crypto context
-   * @param privateKeyVec secret keys of the participating parties
-   * @param makeSparse use ring reduction (no longer supported)
-   * @return the joint key pair
-   */
+     * Threshold key generation from the secret keys of several parties via m_Multiparty. Checks that the context
+     * and the key vector are not empty and sets the key tag of the joint public key to that of the joint secret key.
+     *
+     * @param cc the crypto context
+     * @param privateKeyVec secret keys of the participating parties
+     * @param makeSparse use ring reduction (no longer supported)
+     * @return the joint key pair
+     */
     virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc,
                                               const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse);
 
     /**
-   * Threshold key generation for one party given the joint public key of the previous parties, via m_Multiparty.
-   * Checks that the context and the public key are not null and sets the key tag of the returned public key to
-   * that of the returned secret key.
-   *
-   * @param cc the crypto context
-   * @param publicKey joint public key of the prior parties
-   * @param makeSparse use ring reduction (no longer supported)
-   * @param PRE true if proxy re-encryption or the star topology is used in the multiparty protocol, in which case
-   *        a fresh public key is generated instead of a joint one
-   * @return this party's key pair
-   */
+     * Threshold key generation for one party given the joint public key of the previous parties, via m_Multiparty.
+     * Checks that the context and the public key are not null and sets the key tag of the returned public key to
+     * that of the returned secret key.
+     *
+     * @param cc the crypto context
+     * @param publicKey joint public key of the prior parties
+     * @param makeSparse use ring reduction (no longer supported)
+     * @param PRE true if proxy re-encryption or the star topology is used in the multiparty protocol, in which case
+     *        a fresh public key is generated instead of a joint one
+     * @return this party's key pair
+     */
     virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc, const PublicKey<Element> publicKey,
                                               bool makeSparse, bool PRE);
 
     /**
-   * Computes a non-lead party's partial decryption via m_Multiparty after checking that the ciphertext has at
-   * most two elements.
-   *
-   * @param ciphertext the ciphertext to partially decrypt
-   * @param privateKey this party's secret key share
-   * @return the partial decryption
-   */
+     * Computes a non-lead party's partial decryption via m_Multiparty after checking that the ciphertext has at
+     * most two elements.
+     *
+     * @param ciphertext the ciphertext to partially decrypt
+     * @param privateKey this party's secret key share
+     * @return the partial decryption
+     */
     virtual Ciphertext<Element> MultipartyDecryptMain(ConstCiphertext<Element>& ciphertext,
                                                       const PrivateKey<Element> privateKey) const;
 
     /**
-   * Computes the lead party's partial decryption via m_Multiparty after checking that the ciphertext has at most
-   * two elements.
-   *
-   * @param ciphertext the ciphertext to partially decrypt
-   * @param privateKey the lead party's secret key share
-   * @return the partial decryption
-   */
+     * Computes the lead party's partial decryption via m_Multiparty after checking that the ciphertext has at most
+     * two elements.
+     *
+     * @param ciphertext the ciphertext to partially decrypt
+     * @param privateKey the lead party's secret key share
+     * @return the partial decryption
+     */
     virtual Ciphertext<Element> MultipartyDecryptLead(ConstCiphertext<Element>& ciphertext,
                                                       const PrivateKey<Element> privateKey) const;
 
@@ -1278,126 +1278,126 @@ class SchemeBase {
     }
 
     /**
-   * Generates this party's share of a key-switching key (used for joint relinearization keys) via m_Multiparty
-   * and tags it with the key tag of newPrivateKey.
-   *
-   * @param oldPrivateKey this party's share of the original secret key
-   * @param newPrivateKey this party's share of the new secret key
-   * @param evalKey the key-switching key accumulated so far by the previous parties
-   * @return the updated key-switching key
-   */
+     * Generates this party's share of a key-switching key (used for joint relinearization keys) via m_Multiparty
+     * and tags it with the key tag of newPrivateKey.
+     *
+     * @param oldPrivateKey this party's share of the original secret key
+     * @param newPrivateKey this party's share of the new secret key
+     * @param evalKey the key-switching key accumulated so far by the previous parties
+     * @return the updated key-switching key
+     */
     virtual EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> oldPrivateKey,
                                                const PrivateKey<Element> newPrivateKey,
                                                const EvalKey<Element> evalKey) const;
 
     /**
-   * Adds this party's share to the joint automorphism keys via m_Multiparty and tags every returned key with
-   * keyId.
-   *
-   * @param privateKey this party's secret key share
-   * @param evalAutoKeyMap automorphism keys accumulated so far by the previous parties
-   * @param indexList automorphism indices to generate keys for
-   * @param keyId key tag assigned to the returned keys
-   * @return map from automorphism index to the updated key
-   */
+     * Adds this party's share to the joint automorphism keys via m_Multiparty and tags every returned key with
+     * keyId.
+     *
+     * @param privateKey this party's secret key share
+     * @param evalAutoKeyMap automorphism keys accumulated so far by the previous parties
+     * @param indexList automorphism indices to generate keys for
+     * @param keyId key tag assigned to the returned keys
+     * @return map from automorphism index to the updated key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
             const std::vector<uint32_t>& indexList, const std::string& keyId);
 
     /**
-   * Adds this party's share to the joint rotation keys via m_Multiparty and tags every returned key with keyId.
-   *
-   * @param privateKey this party's secret key share
-   * @param evalAutoKeyMap rotation keys accumulated so far by the previous parties
-   * @param indexList rotation indices to generate keys for
-   * @param keyId key tag assigned to the returned keys
-   * @return map from automorphism index to the updated key
-   */
+     * Adds this party's share to the joint rotation keys via m_Multiparty and tags every returned key with keyId.
+     *
+     * @param privateKey this party's secret key share
+     * @param evalAutoKeyMap rotation keys accumulated so far by the previous parties
+     * @param indexList rotation indices to generate keys for
+     * @param keyId key tag assigned to the returned keys
+     * @return map from automorphism index to the updated key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalAutoKeyMap,
             const std::vector<int32_t>& indexList, const std::string& keyId);
 
     /**
-   * Adds this party's share to the joint EvalSum keys via m_Multiparty and tags every returned key with keyId.
-   *
-   * @param privateKey this party's secret key share
-   * @param evalSumKeyMap summation keys accumulated so far by the previous parties
-   * @param keyId key tag assigned to the returned keys
-   * @return map from automorphism index to the updated key
-   */
+     * Adds this party's share to the joint EvalSum keys via m_Multiparty and tags every returned key with keyId.
+     *
+     * @param privateKey this party's secret key share
+     * @param evalSumKeyMap summation keys accumulated so far by the previous parties
+     * @param keyId key tag assigned to the returned keys
+     * @return map from automorphism index to the updated key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiEvalSumKeyGen(
             const PrivateKey<Element> privateKey,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap, const std::string& keyId = "");
 
     /**
-   * Adds two evaluation (key-switching) key shares via m_Multiparty and tags the sum with keyId.
-   *
-   * @param evalKey1 first key share
-   * @param evalKey2 second key share
-   * @param keyId key tag assigned to the result
-   * @return the summed key
-   */
+     * Adds two evaluation (key-switching) key shares via m_Multiparty and tags the sum with keyId.
+     *
+     * @param evalKey1 first key share
+     * @param evalKey2 second key share
+     * @param keyId key tag assigned to the result
+     * @return the summed key
+     */
     virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                               const std::string& keyId);
 
     /**
-   * Multiplies an evaluation key by this party's secret key share (a step of the joint relinearization key
-   * generation) via m_Multiparty and tags the result with keyId.
-   *
-   * @param privateKey this party's secret key share
-   * @param evalKey the evaluation key to multiply
-   * @param keyId key tag assigned to the result
-   * @return the resulting key
-   */
+     * Multiplies an evaluation key by this party's secret key share (a step of the joint relinearization key
+     * generation) via m_Multiparty and tags the result with keyId.
+     *
+     * @param privateKey this party's secret key share
+     * @param evalKey the evaluation key to multiply
+     * @param keyId key tag assigned to the result
+     * @return the resulting key
+     */
     virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
                                               const std::string& keyId);
 
     /**
-   * Adds two maps of EvalSum key shares index by index via m_Multiparty and tags every resulting key with keyId.
-   *
-   * @param evalSumKeyMap1 first map of key shares
-   * @param evalSumKeyMap2 second map of key shares
-   * @param keyId key tag assigned to the resulting keys
-   * @return map from automorphism index to the summed key
-   */
+     * Adds two maps of EvalSum key shares index by index via m_Multiparty and tags every resulting key with keyId.
+     *
+     * @param evalSumKeyMap1 first map of key shares
+     * @param evalSumKeyMap2 second map of key shares
+     * @param keyId key tag assigned to the resulting keys
+     * @return map from automorphism index to the summed key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalSumKeys(
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
 
     /**
-   * Adds two maps of automorphism key shares index by index via m_Multiparty and tags every resulting key with
-   * keyId.
-   *
-   * @param evalSumKeyMap1 first map of key shares
-   * @param evalSumKeyMap2 second map of key shares
-   * @param keyId key tag assigned to the resulting keys
-   * @return map from automorphism index to the summed key
-   */
+     * Adds two maps of automorphism key shares index by index via m_Multiparty and tags every resulting key with
+     * keyId.
+     *
+     * @param evalSumKeyMap1 first map of key shares
+     * @param evalSumKeyMap2 second map of key shares
+     * @param keyId key tag assigned to the resulting keys
+     * @return map from automorphism index to the summed key
+     */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap1,
             const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId);
 
     /**
-   * Adds two public key shares via m_Multiparty and tags the joint public key with keyId.
-   *
-   * @param publicKey1 first public key share
-   * @param publicKey2 second public key share
-   * @param keyId key tag assigned to the result
-   * @return the joint public key
-   */
+     * Adds two public key shares via m_Multiparty and tags the joint public key with keyId.
+     *
+     * @param publicKey1 first public key share
+     * @param publicKey2 second public key share
+     * @param keyId key tag assigned to the result
+     * @return the joint public key
+     */
     virtual PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
                                                const std::string& keyId);
 
     /**
-   * Adds two relinearization key shares via m_Multiparty and tags the sum with keyId.
-   *
-   * @param evalKey1 first relinearization key share
-   * @param evalKey2 second relinearization key share
-   * @param keyId key tag assigned to the result
-   * @return the joint relinearization key
-   */
+     * Adds two relinearization key shares via m_Multiparty and tags the sum with keyId.
+     *
+     * @param evalKey1 first relinearization key share
+     * @param evalKey2 second relinearization key share
+     * @param keyId key tag assigned to the result
+     * @return the joint relinearization key
+     */
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                                   const std::string& keyId);
 
@@ -1473,17 +1473,17 @@ class SchemeBase {
     // Cache teardown is best-effort and must stay noexcept: a scheme that never enabled the
     // feature simply holds nothing to clear, so these are no-ops rather than errors.
     /**
-   * Drops the bootstrapping precomputations cached by the FHE object; a no-op if FHE has not been enabled.
-   */
+     * Drops the bootstrapping precomputations cached by the FHE object; a no-op if FHE has not been enabled.
+     */
     void ClearBootstrapPrecom() noexcept {
         if (m_FHE)
             m_FHE->ClearBootstrapPrecom();
     }
 
     /**
-   * Drops the scheme-switching precomputations cached by the scheme-switching object; a no-op if SCHEMESWITCH has
-   * not been enabled.
-   */
+     * Drops the scheme-switching precomputations cached by the scheme-switching object; a no-op if SCHEMESWITCH has
+     * not been enabled.
+     */
     void ClearSchemeSwitchPrecom() noexcept {
         if (m_SchemeSwitch)
             m_SchemeSwitch->ClearSchemeSwitchPrecom();
@@ -1744,13 +1744,13 @@ class SchemeBase {
     }
 
     /**
-   * Serializes the scheme: only the FHE and scheme-switching objects (which carry precomputed data) and the mask
-   * of enabled features are written; the other family objects are stateless and are recreated by Enable() on
-   * load.
-   *
-   * @param ar the archive to write to
-   * @param version serialized version of the object
-   */
+     * Serializes the scheme: only the FHE and scheme-switching objects (which carry precomputed data) and the mask
+     * of enabled features are written; the other family objects are stateless and are recreated by Enable() on
+     * load.
+     *
+     * @param ar the archive to write to
+     * @param version serialized version of the object
+     */
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         // TODO (dsuponit): should we serialize all feature pointers???
@@ -1768,13 +1768,13 @@ class SchemeBase {
     }
 
     /**
-   * Deserializes the scheme: reads the FHE and scheme-switching objects, tolerating archives written before
-   * these fields existed (JSON encoding only; the fields are then left null), then re-enables every feature in
-   * the serialized mask through Enable().
-   *
-   * @param ar the archive to read from
-   * @param version serialized version of the object; must not exceed SerializedVersion()
-   */
+     * Deserializes the scheme: reads the FHE and scheme-switching objects, tolerating archives written before
+     * these fields existed (JSON encoding only; the fields are then left null), then re-enables every feature in
+     * the serialized mask through Enable().
+     *
+     * @param ar the archive to read from
+     * @param version serialized version of the object; must not exceed SerializedVersion()
+     */
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
@@ -1824,10 +1824,10 @@ class SchemeBase {
     // Functions to check enabled features in the cryptocontext
     //=================================================================================================================
     /**
-    * @brief VerifyAdvancedSHEEnabled is to check if Enable(ADVANCEDSHE) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyAdvancedSHEEnabled is to check if Enable(ADVANCEDSHE) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyAdvancedSHEEnabled(const std::string& functionName) const {
         if (m_AdvancedSHE == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1836,10 +1836,10 @@ class SchemeBase {
         }
     }
     /**
-    * @brief VerifyMultipartyEnabled is to check if Enable(MULTIPARTY) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyMultipartyEnabled is to check if Enable(MULTIPARTY) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyMultipartyEnabled(const std::string& functionName) const {
         if (m_Multiparty == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1848,10 +1848,10 @@ class SchemeBase {
         }
     }
     /**
-    * @brief VerifyLeveledSHEEnabled is to check if Enable(LEVELEDSHE) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyLeveledSHEEnabled is to check if Enable(LEVELEDSHE) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyLeveledSHEEnabled(const std::string& functionName) const {
         if (m_LeveledSHE == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1860,10 +1860,10 @@ class SchemeBase {
         }
     }
     /**
-    * @brief VerifyPKEEnabled is to check if Enable(PKE) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyPKEEnabled is to check if Enable(PKE) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyPKEEnabled(const std::string& functionName) const {
         if (m_PKE == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1872,10 +1872,10 @@ class SchemeBase {
         }
     }
     /**
-    * @brief VerifyPREEnabled is to check if Enable(PRE) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyPREEnabled is to check if Enable(PRE) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyPREEnabled(const std::string& functionName) const {
         if (m_PRE == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1884,10 +1884,10 @@ class SchemeBase {
         }
     }
     /**
-    * @brief VerifyKeySwitchEnabled is to check if Enable(KEYSWITCH) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyKeySwitchEnabled is to check if Enable(KEYSWITCH) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyKeySwitchEnabled(const std::string& functionName) const {
         if (m_KeySwitch == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1896,10 +1896,10 @@ class SchemeBase {
         }
     }
     /**
-    * @brief VerifyFHEEnabled is to check if Enable(FHE) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifyFHEEnabled is to check if Enable(FHE) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifyFHEEnabled(const std::string& functionName) const {
         if (m_FHE == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1909,10 +1909,10 @@ class SchemeBase {
     }
 
     /**
-    * @brief VerifySchemeSwitchEnabled is to check if Enable(SCHEMESWITCH) has been called and if it has not
-    *        it will throw an exception
-    * @param functionName is the calling function name. __func__ can be used instead
-    */
+     * @brief VerifySchemeSwitchEnabled is to check if Enable(SCHEMESWITCH) has been called and if it has not
+     *        it will throw an exception
+     * @param functionName is the calling function name. __func__ can be used instead
+     */
     inline void VerifySchemeSwitchEnabled(const std::string& functionName) const {
         if (m_SchemeSwitch == nullptr) {
             std::string errMsg = std::string(functionName) +
@@ -1922,13 +1922,13 @@ class SchemeBase {
     }
 
     /**
-   * Prints the dynamic type of the scheme and, for every family, the dynamic type of the implementing object or
-   * "none" if the family is not enabled.
-   *
-   * @param out the output stream
-   * @param s the scheme to print
-   * @return the output stream
-   */
+     * Prints the dynamic type of the scheme and, for every family, the dynamic type of the implementing object or
+     * "none" if the family is not enabled.
+     *
+     * @param out the output stream
+     * @param s the scheme to print
+     * @return the output stream
+     */
     friend std::ostream& operator<<(std::ostream& out, const SchemeBase<Element>& s) {
         out << typeid(s).name() << ":";
         out << " ParamsGen " << (s.m_ParamsGen == 0 ? "none" : typeid(*s.m_ParamsGen).name());
@@ -1964,11 +1964,11 @@ class SchemeBase {
     std::shared_ptr<FHEBase<Element>> m_SchemeSwitch;
 
     /**
-   * Throws an exception if the ciphertext has more than two elements, since multiparty decryption requires a
-   * relinearized ciphertext. The remaining (macro-supplied) parameters identify the caller for the error message.
-   *
-   * @param ciphertext the ciphertext to check
-   */
+     * Throws an exception if the ciphertext has more than two elements, since multiparty decryption requires a
+     * relinearized ciphertext. The remaining (macro-supplied) parameters identify the caller for the error message.
+     *
+     * @param ciphertext the ciphertext to check
+     */
     inline void CheckMultipartyDecryptCompatibility(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
         if (ciphertext->NumberCiphertextElements() > 2) {
             std::string errorMsg(std::string("ciphertext's number of elements is [") +

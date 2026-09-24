@@ -39,24 +39,24 @@
 
 namespace lbcrypto {
 /**
-     * Tells whether PrecomputeCRTTables() will be executed during CryptoContext deserialization.
-     * Deserializing without this precomputation can speed up the procedure by a factor of 100.
-     *
-     * @return true (default value) if PrecomputeCRTTables() will be executed during deserialization,
-     *         false if it will not
-     */
+ * Tells whether PrecomputeCRTTables() will be executed during CryptoContext deserialization.
+ * Deserializing without this precomputation can speed up the procedure by a factor of 100.
+ *
+ * @return true (default value) if PrecomputeCRTTables() will be executed during deserialization,
+ *         false if it will not
+ */
 bool PrecomputeCRTTablesAfterDeserializaton();
 
 /**
-     * Makes PrecomputeCRTTablesAfterDeserializaton() return true, so CRT tables are precomputed during
-     * CryptoContext deserialization (the default behavior).
-     */
+ * Makes PrecomputeCRTTablesAfterDeserializaton() return true, so CRT tables are precomputed during
+ * CryptoContext deserialization (the default behavior).
+ */
 void EnablePrecomputeCRTTablesAfterDeserializaton();
 
 /**
-     * Makes PrecomputeCRTTablesAfterDeserializaton() return false, so CRT tables are not precomputed during
-     * CryptoContext deserialization.
-     */
+ * Makes PrecomputeCRTTablesAfterDeserializaton() return false, so CRT tables are not precomputed during
+ * CryptoContext deserialization.
+ */
 void DisablePrecomputeCRTTablesAfterDeserializaton();
 
 }  // namespace lbcrypto
