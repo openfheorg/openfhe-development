@@ -30,7 +30,8 @@
 //==================================================================================
 
 /*
-  Simple examples for CKKS
+  Simple examples for CKKS in the COMPOSITESCALINGMANUAL mode, with the register word size
+  and composite degree set explicitly
  */
 
 #define PROFILE

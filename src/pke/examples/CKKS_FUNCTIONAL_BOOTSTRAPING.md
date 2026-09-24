@@ -1,23 +1,33 @@
-OpenFHE Lattice Cryptography Library - Arbitrary Lookup Table Evaluation using CKKS-based Functional Bootstrapping
-==================================================================================================================
+OpenFHE Lattice Cryptography Library - CKKS-based Functional Bootstrapping
+==========================================================================
 
-[License Information](License.md)
+[License Information](../../../LICENSE)
 
 Document Description
 ====================
-This document describes how to use the CKKS-based functional bootstrapping functionality to evaluate lookup tables (LUT) and
-what capabilities are currently supported in OpenFHE. This is an experimental functionality based on
-[Alexandru, Kim and Polyakov CRYPTO 2025](https://eprint.iacr.org/2024/1623.pdf).
+This document describes the two flavors of CKKS-based functional bootstrapping in OpenFHE and what capabilities are
+currently supported for each of them:
+- the evaluation of arbitrary lookup tables (LUT) over integers, based on
+[Alexandru, Kim and Polyakov CRYPTO 2025](https://eprint.iacr.org/2024/1623.pdf) (section "Functionality" below);
+- the evaluation of smooth functions over real numbers using Fourier extension, based on
+[ePrint 2026/367](https://eprint.iacr.org/2026/367) (EUROCRYPT 2026) (section "Fourier-Extension Functional Bootstrapping" below).
+
+Both are experimental functionalities.
 
 Example Description
 ====================
 
-The example file for this functionality is located at [functional-bootstrapping-ckks.cpp](functional-bootstrapping-ckks.cpp). The file gives
+The example file for the lookup table evaluation is located at [functional-bootstrapping-ckks.cpp](functional-bootstrapping-ckks.cpp). The file gives
 examples on how to run:
 - `ArbitraryLUT`, which applies a function specified as an LUT over an input ciphertext, for various values of the input and output bit-sizes;
 - `MultiValueBootstrapping`, which applies different functions specified as LUTs over the same input ciphertext, reusing intermediate
 computations; it also shows how to apply leveled computations after an LUT evaluation;
 - `MultiPrecisionSign`, which evaluates the sign of a large value using digit decomposition, for various sizes of the digits.
+
+The example file for the Fourier-extension functional bootstrapping is located at
+[FE-functional-bootstrapping-ckks.cpp](FE-functional-bootstrapping-ckks.cpp). It refreshes one CKKS ciphertext and evaluates
+three functions on it (the exponential over [-2, 2], the sigmoid over [-8, 8] and the tanh approximation of GELU over [-8, 8]),
+sharing the function-independent part of the computation among them.
 
 
 Functionality
@@ -150,3 +160,87 @@ composite scaling requires the first modulus to be larger than the scaling facto
 ciphertext modulus), so in these modes the first modulus has to be at least one bit larger.
 - The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFBTSetup` rejects it.
 - MULTIPARTY is not supported.
+
+Fourier-Extension Functional Bootstrapping
+==========================================
+
+**Overview**
+The Fourier-extension functional bootstrapping (FE functional bootstrapping) refreshes a CKKS ciphertext and evaluates a
+smooth real-valued function f on its slots in a single pass. Unlike the lookup table evaluation described above, it operates
+directly on CKKS ciphertexts (no RLWE schemelet is involved), its inputs are real numbers rather than integers, and its output
+is approximate.
+
+The method replaces the approximate modular reduction of CKKS bootstrapping by a Fourier series of f. Every term of the series
+is periodic, so the integer overflows introduced by modulus raising vanish when the series is evaluated, and the evaluation of
+the series both removes the overflows and applies f. The name refers to how the series is obtained: f is approximated on the
+message domain, which is half of the period of the series, and the approximation is free on the other half. Such a Fourier
+extension converges much faster than a plain Fourier expansion of a non-periodic function.
+
+Internally, `EvalFEFuncBootstrap` follows the SlotsToCoeffs-first variant of CKKS bootstrapping (see
+[CKKS_BOOTSTRAPPING.md](CKKS_BOOTSTRAPPING.md)): SlotsToCoeffs transform, modulus raising, CoeffsToSlots transform, evaluation
+of the complex exponential (Chebyshev interpolation followed by double-angle iterations), and evaluation of the Fourier series
+over the powers of the complex exponential.
+
+**Fourier coefficients**
+The input message m has to lie in [-1/2, 1/2). A function f over [-B, B] is evaluated as g(m) = f(2Bm), and the
+coefficient vector c = (c_0, c_1, ..., c_d) has to satisfy
+
+$$g(m) \approx 2 \cdot \mathrm{Re}\left(\sum_{j=0}^{d} c_j e^{\pi i j m}\right), \quad m \in [-1/2, 1/2).$$
+
+In other words, c_0 is half of the constant term of the series and c_j, for j > 0, are the one-sided coefficients of the
+series (the conjugate terms are added internally). The output is always real-valued; with CKKSDataType COMPLEX, the imaginary
+parts of the input slots are discarded, so CKKSDataType REAL should be used unless complex values are needed elsewhere in the
+computation.
+
+The coefficients are computed offline, for example by a least-squares fit of g over [-1/2, 1/2) in the basis
+$\{e^{\pi i j m}\}_{j=0}^{d}$. OpenFHE does not include a generator for them; the example contains the coefficient vectors for
+its three functions.
+
+**OpenFHE functions**
+The features that need to be enabled are PKE, KEYSWITCH, LEVELEDSHE, ADVANCEDSHE and FHE. Then:
+- `FHECKKSRNS::GetFEFBTDepth` returns the multiplicative depth consumed by the FE functional bootstrapping for a given level
+budget, coefficient vector and secret key distribution. The levels to be used after the bootstrapping should be added to it
+when setting the multiplicative depth of the crypto context.
+- `EvalFEFuncBootstrapSetup` performs the precomputations of the linear transforms for a given level budget and number of slots.
+A level budget of {1, 1} uses a single linear transform for each of the SlotsToCoeffs and CoeffsToSlots steps.
+- `EvalBootstrapKeyGen` (together with `EvalMultKeyGen`) generates the keys, as for regular CKKS bootstrapping.
+- `EvalFEFuncBootstrap` refreshes a ciphertext and evaluates the function given by a coefficient vector.
+
+As the SlotsToCoeffs transform is performed first, the input ciphertext has to have enough levels left for it: in the example,
+the input is encoded at level `depth - (levelBudget[1] + 1)`. A ciphertext at a higher level is brought down to the required
+level automatically.
+
+When several functions need to be evaluated on the same input, the function-independent part of the computation (up to and
+including the powers of the complex exponential), which dominates the cost, can be shared. `EvalFEFuncBootstrapPrecompute`
+performs it and returns the powers, and `EvalFEFuncBootstrapWithPrecomp` evaluates the series of one function against them.
+The coefficient vector passed to `EvalFEFuncBootstrapPrecompute` determines which powers are computed, so it should be that of
+the longest series (of degree at least 5); the error message of `EvalFEFuncBootstrapWithPrecomp` reports the maximum degree
+if a longer series is passed.
+
+`EvalFEFuncBootstrapSetup`, `EvalBootstrapSetup` and `EvalFBTSetup` store their precomputations in the same entry for a given
+number of slots, so a crypto context holds the precomputations of only one of them for each number of slots.
+
+**Secret key distributions**
+All three distributions are supported, and the probabilities of failure are those of the bound K on the mod-raise overflows
+used for each of them (for full packing):
+- SPARSE_ENCAPSULATED (recommended): K = 16, probability of failure below 2^-128. For a first modulus larger than 60 bits
+(which requires composite scaling in the 64-bit build), the Hamming weight of the sparse key is 64 and K = 28 is used, which
+keeps the probability of failure negligible.
+- UNIFORM_TERNARY: K = 696, probability of failure below 2^-79 for N = 2^16 and 2^-33 for N = 2^17. It can be used when uniform
+ternary secrets are required for compliance with the homomorphic encryption security guidelines, at the cost of a larger
+multiplicative depth (9 double-angle iterations instead of 3-4).
+- SPARSE_TERNARY (discouraged): K = 28, probability of failure about 2^-23 for N = 2^16.
+
+**Current limitations**
+- The first modulus has to be exactly one bit larger than the scaling factor (`FirstModSize = ScalingModSize + 1`), since the
+message is embedded into half of the period of the series; `EvalFEFuncBootstrap` and `EvalFEFuncBootstrapPrecompute`
+throw otherwise.
+- Only HYBRID key switching is supported.
+- The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL modes for
+rescaling are supported. Both full and sparse packing are supported.
+- There is no correction factor and no iterative (Meta-BTS) mode, and there is no automated selection of the number of
+Fourier coefficients: the user needs to choose it (and the domain [-B, B]) so that the approximation error of the series is
+below the desired precision.
+- If the output is decrypted under CKKS, noise flooding should be applied in order to achieve $\textsf{IND}-\textsf{CPA}^{D}$
+security.
+- The 128-bit build (`NATIVE_SIZE == 128`) is not supported yet; `EvalFEFuncBootstrapSetup` rejects it.

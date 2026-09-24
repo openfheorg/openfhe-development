@@ -68,6 +68,9 @@ std::size_t HeapInUseBytes() {
 
 static CryptoContext<DCRTPoly> BuildBootstrapContext() {
     CCParams<CryptoContextCKKSRNS> parameters;
+    // SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128). UNIFORM_TERNARY,
+    // used here, is the distribution of the homomorphic encryption security guidelines; its probability of failure is
+    // 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
     SecretKeyDist skDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(skDist);
     parameters.SetSecurityLevel(HEStd_NotSet);

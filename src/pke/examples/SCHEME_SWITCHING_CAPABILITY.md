@@ -1,7 +1,7 @@
 OpenFHE Lattice Cryptography Library - Scheme switching between CKKS and FHEW experimental capability
 =====================================================================================================
 
-[License Information](License.md)
+[License Information](../../../LICENSE)
 
 Document Description
 ====================
@@ -147,4 +147,4 @@ Additional example demonstrating serialization
 ================================================
 
 The code for this example is located in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). The file provides a simple setup for real number serialization before progressing into the next logical step - serialization and communication between 2 separate entities.
-All generated files containing serialized data are stored in the DATAFOLDER directory, which is defined in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). If you want to rename any of those files, you can do so in [src/pke/unittest/utils/schemeswitching-data-serializer.h](src/pke/unittest/utils/schemeswitching-data-serializer.h).
+All generated files containing serialized data are stored in the DATAFOLDER directory, which is defined in [scheme-switching-serial.cpp](scheme-switching-serial.cpp). If you want to rename any of those files, you can do so in [src/pke/unittest/utils/schemeswitching-data-serializer.h](../unittest/utils/schemeswitching-data-serializer.h).
