@@ -44,18 +44,34 @@
 
 namespace lbcrypto {
 
+/**
+ * @class StringEncoding
+ * @brief Plaintext encoding that stores a string of 7-bit ASCII characters, one character code per polynomial
+ * coefficient (requires a plaintext modulus of 256).
+ */
 class StringEncoding : public PlaintextImpl {
     std::string ptx;
     // enum EncodingType { CHAR7bit } encoding = CHAR7bit;
 
   public:
     // these three constructors are used inside of Decrypt
+    /**
+   * @brief Constructs an empty string plaintext over the given element parameters.
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     StringEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, STRING_ENCODING) {}
 
+    /**
+   * @brief Constructs a string plaintext holding the given string (not encoded yet; call Encode).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param str the string to encode
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -78,7 +94,7 @@ class StringEncoding : public PlaintextImpl {
 
     /**
    * SetStringValue
-   * @param val to initialize the Plaintext
+   * @param value string to initialize the Plaintext with
    */
     void SetStringValue(const std::string& value) override {
         ptx = value;
@@ -123,7 +139,7 @@ class StringEncoding : public PlaintextImpl {
 
     /**
     * PrintValue - used by operator<< for this object
-    * @param out
+    * @param out stream to print to
     */
     void PrintValue(std::ostream& out) const override {
         out << ptx;

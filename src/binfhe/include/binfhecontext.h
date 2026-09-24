@@ -49,39 +49,26 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Custom parameter set for BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams&, BINFHE_METHOD)
+ *
+ * The RingGSW/RLWE modulus Q is derived as the largest numberBits-bit prime congruent to 1 mod cyclOrder, and the
+ * ring dimension N as cyclOrder / 2.
+ */
 struct BinFHEContextParams {
-    // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
-    uint32_t numberBits;
-
-    uint32_t cyclOrder;
-
-    // for LWE crypto parameters
-    uint32_t latticeParam;
-
-    // modulus for additive LWE
-    uint32_t mod;
-
-    // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
-    uint32_t modKS;
-
-    // base for key switching
-    uint32_t baseKS;
-
-    // for Ring GSW + LWE parameters
-    uint32_t gadgetBase;  // gadget base used in the bootstrapping
-
-    uint32_t baseRK;  // base for the refreshing key
-
-    // number of Automorphism keys for LMKCDEY (> 0)
-    uint32_t numAutoKeys;
-
-    // for key distribution
-    SecretKeyDist keyDist;
-
-    double stdDev;
-
-    // number of LWE secret-key coefficients assigned to each gadget base, in ascending base order
-    std::map<uint32_t, uint32_t> gadgetBaseMap;
+    uint32_t numberBits;    ///< bit size of the intermediate prime Q, the RingGSW/RLWE modulus used in bootstrapping
+    uint32_t cyclOrder;     ///< cyclotomic order 2N of the RingGSW/RLWE ring
+    uint32_t latticeParam;  ///< lattice parameter n (dimension) of the additive LWE scheme
+    uint32_t mod;           ///< modulus q for additive LWE
+    uint32_t modKS;         ///< modulus for key switching; zero selects the intermediate prime Q
+    uint32_t baseKS;        ///< base for key switching
+    uint32_t gadgetBase;    ///< gadget base used in bootstrapping (also for the automorphism keys in LMKCDEY)
+    uint32_t baseRK;        ///< base for the refreshing key (AP bootstrapping)
+    uint32_t numAutoKeys;   ///< number of automorphism keys for LMKCDEY (> 0)
+    SecretKeyDist keyDist;  ///< secret key distribution
+    double stdDev;          ///< standard deviation of the error distribution
+    std::map<uint32_t, uint32_t> gadgetBaseMap;  ///< number of LWE secret-key coefficients assigned to each gadget
+                                                 ///< base, in ascending base order; empty means gadgetBase for all
 };
 
 /**
@@ -109,7 +96,6 @@ class BinFHEContext : public Serializable {
    * @param keyDist secret key distribution
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
    * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
-   * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std, uint32_t baseKS,
                                uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
@@ -126,7 +112,6 @@ class BinFHEContext : public Serializable {
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
    * @param timeOptimization whether to use dynamic bootstrapping technique
-   * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ = 11, uint32_t N = 0,
                                BINFHE_METHOD method = GINX, bool timeOptimization = false);
@@ -137,7 +122,6 @@ class BinFHEContext : public Serializable {
    *
    * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   * @return create the cryptocontext
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
@@ -146,7 +130,6 @@ class BinFHEContext : public Serializable {
    *
    * @param params the parameter context
    * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   * @return create the cryptocontext
    */
     void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
 
@@ -190,8 +173,12 @@ class BinFHEContext : public Serializable {
         return m_BTKey.Pkey;
     }
 
-    // Whether a key is held in the 32-bit internal form. Unlike the serialization getters,
-    // these never widen, so they are safe for introspection and memory accounting.
+    /**
+   * Checks whether the refreshing key is held in the 32-bit internal form. Unlike the serialization getters, this
+   * never widens, so it is safe for introspection and memory accounting
+   *
+   * @return true if the resident refreshing key is the 32-bit one; always false in a 32-bit NATIVEINT build
+   */
     bool HasInternal32RefreshKey() const {
 #if NATIVEINT != 32
         return m_BTKey.BSkey32 != nullptr;
@@ -200,6 +187,11 @@ class BinFHEContext : public Serializable {
 #endif
     }
 
+    /**
+   * Checks whether the key switching key is held in the 32-bit internal form, without widening it
+   *
+   * @return true if the resident switching key is the 32-bit one; always false in a 32-bit NATIVEINT build
+   */
     bool HasInternal32SwitchKey() const {
 #if NATIVEINT != 32
         return m_BTKey.KSkey32 != nullptr;
@@ -234,6 +226,7 @@ class BinFHEContext : public Serializable {
     /**
    * Generates a public key for a secret key for the main LWE scheme
    *
+   * @param sk the secret key
    * @return a shared pointer to the public key
    */
     LWEPublicKey PubKeyGen(ConstLWEPrivateKey& sk) const;
@@ -378,6 +371,7 @@ class BinFHEContext : public Serializable {
    * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
    * @param ct1 first ciphertext
    * @param ct2 second ciphertext
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
@@ -388,6 +382,7 @@ class BinFHEContext : public Serializable {
    *
    * @param gate the gate; can be MAJORITY, AND3, OR3, AND4, OR4, or CMUX
    * @param ctvector vector of ciphertexts
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
@@ -396,6 +391,7 @@ class BinFHEContext : public Serializable {
    * Bootstraps a ciphertext (without peforming any operation)
    *
    * @param ct ciphertext to be bootstrapped
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext Bootstrap(ConstLWECiphertext& ct, bool extended = false) const;
@@ -414,7 +410,7 @@ class BinFHEContext : public Serializable {
    *
    * @param f the to-be-evaluated function on an integer message and a plaintext modulus
    * @param p plaintext modulus
-   * @return a shared pointer to the resulting ciphertext
+   * @return the look-up table (vector of function values) for the function
    */
     std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
                                                       NativeInteger p);
@@ -463,7 +459,7 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for params
-   * @return
+   * @return a shared pointer to the BinFHE crypto parameters
    */
     const std::shared_ptr<BinFHECryptoParams>& GetParams() {
         return m_params;
@@ -471,15 +467,15 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for LWE scheme
-   * @return
+   * @return a shared pointer to the LWE encryption scheme
    */
     const std::shared_ptr<LWEEncryptionScheme>& GetLWEScheme() {
         return m_LWEscheme;
     }
 
     /**
-   * Getter for BinFHE scheme params
-   * @return
+   * Getter for BinFHE scheme
+   * @return a shared pointer to the BinFHE scheme
    */
     const std::shared_ptr<BinFHEScheme>& GetBinFHEScheme() {
         return m_binfhescheme;
@@ -510,7 +506,7 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for maximum plaintext modulus
-   * @return
+   * @return the maximum plaintext modulus supported by the parameters
    */
     NativeInteger GetMaxPlaintextSpace() const {
         // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
@@ -519,7 +515,7 @@ class BinFHEContext : public Serializable {
 
     /**
    * Getter for the beta security parameter
-   * @return
+   * @return the error bound beta
    */
     constexpr NativeInteger GetBeta() const {
         return NativeInteger(128);

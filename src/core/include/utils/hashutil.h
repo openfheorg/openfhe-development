@@ -44,10 +44,23 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Hash algorithm selector for HashUtil::Hash. SHA_512 is currently not implemented and falls back to
+ * SHA-256.
+ */
 enum HashAlgorithm { SHA_256 = 0, SHA_512 = 1 };
 
+/**
+ * @brief Static utility class providing a self-contained SHA-256 implementation.
+ */
 class HashUtil {
   public:
+    /**
+   * @brief Hashes a message and appends the digest bytes to a vector.
+   * @param message input bytes to hash
+   * @param algo hash algorithm; SHA_512 currently computes SHA-256, any other value throws
+   * @param digest receives the 32 digest bytes, one per entry, appended to the existing contents
+   */
     static void Hash(std::string message, HashAlgorithm algo, std::vector<int64_t>& digest) {
         switch (algo) {
             case SHA_256:
@@ -64,6 +77,11 @@ class HashUtil {
         }
     }
 
+    /**
+   * @brief Computes the SHA-256 digest of a message as a hexadecimal string.
+   * @param message input bytes to hash
+   * @return the 64-character lowercase hexadecimal SHA-256 digest
+   */
     static std::string HashString(std::string message);
 
   private:

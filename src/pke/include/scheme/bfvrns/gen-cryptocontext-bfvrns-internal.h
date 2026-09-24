@@ -50,6 +50,17 @@ template <typename T>
 class CCParams;
 
 template <typename ContextGeneratorType, typename Element>
+/**
+ * Builds a BFV crypto context from the parameters: creates the crypto parameters object (with the noise
+ * scale fixed to 1), the scheme object with the requested key switching technique, runs the BFV parameter
+ * generation and registers the context with the factory. MUST NOT be used without the wrapper
+ * CryptoContextBFVRNS::genCryptoContext(), which validates the parameters first.
+ *
+ * @tparam ContextGeneratorType the context generator class (CryptoContextBFVRNS).
+ * @tparam Element the ring element type (DCRTPoly).
+ * @param parameters the BFV parameters.
+ * @return the generated crypto context.
+ */
 typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
         const CCParams<ContextGeneratorType>& parameters) {
     using ParmType = typename Element::Params;

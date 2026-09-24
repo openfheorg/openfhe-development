@@ -51,7 +51,6 @@ namespace lbcrypto {
 
 /**
  * @class ElemParams
- * @file elemparams.h
  * @brief Wrapper class to hold the parameters for Element types and their
  * inheritors.
  */
@@ -61,11 +60,24 @@ class ElemParams : public Serializable {
     constexpr ElemParams() = default;
     virtual ~ElemParams() = default;
 
+    /**
+   * @brief Constructor taking the cyclotomic order and the ciphertext modulus; the ring dimension is set to the
+   * totient of the order and the roots of unity and big modulus are left at zero.
+   * @param order the cyclotomic order wrapped by the parameter set.
+   * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+   */
     ElemParams(uint32_t order, const IntegerType& ctModulus)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus) {}
 
+    /**
+   * @brief Constructor taking the cyclotomic order, the ciphertext modulus and its root of unity; the ring
+   * dimension is set to the totient of the order and the big modulus and big root of unity are left at zero.
+   * @param order the cyclotomic order wrapped by the parameter set.
+   * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+   * @param rUnity the root of unity.
+   */
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity)
         : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
@@ -219,7 +231,7 @@ class ElemParams : public Serializable {
 
     /**
    * @brief Pretty print operator for the ElemParams type.
-   * @param out the ElemParams to output
+   * @param out the output stream to print to
    * @return the resulting output stream.
    */
     virtual std::ostream& doprint(std::ostream& out) const {

@@ -67,6 +67,8 @@ class BinaryUniformGeneratorImpl {
     /**
    * @brief  Generates a vector of random values within the Binary Uniform
    * Distribution.
+   * @param size The number of values to generate.
+   * @param modulus The modulus of the resulting vector.
    * @return A vector of random values within this Binary Uniform Distribution.
    */
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus) const;

@@ -271,21 +271,21 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Copy constructor.
    *
-   * @param &val is the big binary integer to be copied.
+   * @param val is the big binary integer to be copied.
    */
     BigIntegerFixedT(const BigIntegerFixedT& val);
 
     /**
    * Move constructor.
    *
-   * @param &&val is the big binary integer to be copied.
+   * @param val is the big binary integer to be moved.
    */
     BigIntegerFixedT(BigIntegerFixedT&& val);
 
     /**
    * Constructor from a string.
    *
-   * @param &strval is the initial integer represented as a string.
+   * @param strval is the initial integer represented as a string.
    */
     explicit BigIntegerFixedT(const std::string& strval);
     BigIntegerFixedT(const char* strval) : BigIntegerFixedT(std::string(strval)) {}  // NOLINT
@@ -315,7 +315,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Constructor for all other types that have not already got their own constructors.
    * These other data types must have a member function ConvertToInt() defined.
    *
-   * @param &val is the initial integer represented as a big integer.
+   * @param val is the initial integer represented as a big integer.
    */
     template <typename T,
               typename std::enable_if<
@@ -346,7 +346,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Copy assignment operator
    *
-   * @param &val is the big binary integer to be assigned from.
+   * @param val is the big binary integer to be assigned from.
    * @return assigned BigIntegerFixedT ref.
    */
     BigIntegerFixedT& operator=(const BigIntegerFixedT& val);
@@ -354,15 +354,14 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Move assignment operator
    *
-   * @param &val is the big binary integer to be assigned from.
+   * @param val is the big binary integer to be moved from.
    * @return assigned BigIntegerFixedT ref.
    */
     BigIntegerFixedT& operator=(BigIntegerFixedT&& val);
 
     /**
-   * Assignment operator for all other types that have not already got their own
-   * assignment operators.
-   * @param &val is the value to be assign from
+   * Assignment operator from a string.
+   * @param strval is the string representation of the value to assign from
    * @return the assigned BigIntegerFixedT ref.
    */
     BigIntegerFixedT& operator=(const std::string strval) {
@@ -370,6 +369,12 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
         return *this;
     }
 
+    /**
+   * Assignment operator for all other types that have not already got their own
+   * assignment operators.
+   * @param val is the value to be assign from
+   * @return the assigned BigIntegerFixedT ref.
+   */
     template <typename T, typename std::enable_if<!std::is_same<T, BigIntegerFixedT>::value &&
                                                           !std::is_same<T, const BigIntegerFixedT>::value,
                                                   bool>::type = true>
@@ -405,7 +410,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Sets the int value at the specified index.
    *
-   * @param index is the index of the int to set in the uint array.
+   * @param idx is the index of the int to set in the uint array.
+   * @param value is the native integer value to store at that index.
    */
     void SetIntAtIndex(uint32_t idx, uint_type value);
 
@@ -414,7 +420,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Addition operation.
    *
-   * @param &b is the value to add.
+   * @param b is the value to add.
    * @return result of the addition operation.
    */
     BigIntegerFixedT Add(const BigIntegerFixedT& b) const;
@@ -422,7 +428,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Addition operation. In-place variant.
    *
-   * @param &b is the value to add.
+   * @param b is the value to add.
    * @return result of the addition operation.
    */
     BigIntegerFixedT& AddEq(const BigIntegerFixedT& b);
@@ -430,7 +436,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Subtraction operation.
    *
-   * @param &b is the value to subtract.
+   * @param b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
     BigIntegerFixedT Sub(const BigIntegerFixedT& b) const;
@@ -438,14 +444,14 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Subtraction operation. In-place variant.
    *
-   * @param &b is the value to subtract.
+   * @param b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
     BigIntegerFixedT& SubEq(const BigIntegerFixedT& b);
 
     /**
    * Operator for unary minus
-   * @return
+   * @return is the result of subtracting this value from zero.
    */
     BigIntegerFixedT operator-() const {
         return BigIntegerFixedT(0).Sub(*this);
@@ -454,7 +460,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Multiplication operation.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     BigIntegerFixedT Mul(const BigIntegerFixedT& b) const;
@@ -462,7 +468,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Multiplication operation. In-place variant.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     BigIntegerFixedT& MulEq(const BigIntegerFixedT& b);
@@ -470,7 +476,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Division operation.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     BigIntegerFixedT DividedBy(const BigIntegerFixedT& b) const;
@@ -478,7 +484,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Division operation. In-place variant.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     BigIntegerFixedT& DividedByEq(const BigIntegerFixedT& b);
@@ -503,8 +509,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     BigIntegerFixedT MultiplyAndRound(const BigIntegerFixedT& p, const BigIntegerFixedT& q) const;
@@ -513,8 +519,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     BigIntegerFixedT& MultiplyAndRoundEq(const BigIntegerFixedT& p, const BigIntegerFixedT& q);
@@ -523,7 +529,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     BigIntegerFixedT DivideAndRound(const BigIntegerFixedT& q) const;
@@ -532,7 +538,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     BigIntegerFixedT& DivideAndRoundEq(const BigIntegerFixedT& q);
@@ -542,7 +548,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Naive modulus operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
     BigIntegerFixedT Mod(const BigIntegerFixedT& modulus) const;
@@ -550,7 +556,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Naive modulus operation. In-place variant.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
     BigIntegerFixedT& ModEq(const BigIntegerFixedT& modulus);
@@ -567,8 +573,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Implements generalized Barrett modular reduction algorithm. Uses one
    * precomputed value of mu.
    *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
     BigIntegerFixedT Mod(const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu) const;
@@ -578,8 +584,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Implements generalized Barrett modular reduction algorithm. Uses one
    * precomputed value of mu.
    *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
     BigIntegerFixedT& ModEq(const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
@@ -587,8 +593,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     BigIntegerFixedT ModAdd(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -596,8 +602,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     BigIntegerFixedT& ModAddEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -605,8 +611,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus addition where operands are < modulus.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     BigIntegerFixedT ModAddFast(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -614,8 +620,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus addition where operands are < modulus. In-place variant.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     BigIntegerFixedT& ModAddFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -623,9 +629,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
     BigIntegerFixedT ModAdd(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
@@ -634,9 +640,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
     BigIntegerFixedT& ModAddEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
@@ -644,8 +650,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     BigIntegerFixedT ModSub(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -653,8 +659,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     BigIntegerFixedT& ModSubEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -662,8 +668,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus subtraction where operands are < modulus.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     BigIntegerFixedT ModSubFast(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -671,8 +677,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus subtraction where operands are < modulus. In-place variant.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     BigIntegerFixedT& ModSubFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -680,9 +686,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
     BigIntegerFixedT ModSub(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
@@ -691,9 +697,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
     BigIntegerFixedT& ModSubEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
@@ -701,8 +707,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus multiplication operation.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT ModMul(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -710,8 +716,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus multiplication operation. In-place variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT& ModMulEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -719,9 +725,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus multiplication.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT ModMul(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
@@ -730,9 +736,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus multiplication. In-place variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT& ModMulEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
@@ -740,8 +746,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT ModMulFast(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -750,8 +756,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Modulus multiplication that assumes the operands are < modulus. In-place
    * variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -759,9 +765,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT ModMulFast(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
@@ -771,9 +777,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Barrett modulus multiplication that assumes the operands are < modulus.
    * In-place variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
@@ -792,8 +798,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus exponentiation operation. Square-and-multiply algorithm is used.
    *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the exponent.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
     BigIntegerFixedT ModExp(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus) const;
@@ -802,8 +808,8 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
    * Modulus exponentiation operation. Square-and-multiply algorithm is used.
    * In-place variant.
    *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the exponent.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
     BigIntegerFixedT& ModExpEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
@@ -811,7 +817,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus inverse operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
     BigIntegerFixedT ModInverse(const BigIntegerFixedT& modulus) const;
@@ -819,7 +825,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Modulus inverse operation. In-place variant.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
     BigIntegerFixedT& ModInverseEq(const BigIntegerFixedT& modulus);
@@ -874,7 +880,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Converts the value to an int.
    *
-   * @return the int representation of the value as uint64_t.
+   * @return the int representation of the value as T.
    */
     // TODO (dsuponit): make ConvertToInt() a template utility function
     template <typename T = BasicInteger,
@@ -998,7 +1004,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     /**
    * Delivers value of the internal limb storage
    * Used primarily for debugging
-   * @return STL vector of uint_type
+   * @return string with the space-separated limb values, most significant limb first
    */
     std::string GetInternalRepresentation(void) const {
         std::string ret("");
@@ -1183,9 +1189,9 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     BigIntegerFixedT MulByUint(const uint_type b) const;
 
     /**
-   * function that returns the BigIntegerFixedT after multiplication by a uint.
+   * function that stores in ans the BigIntegerFixedT after multiplication by a uint.
    * @param b is the number to be multiplied.
-   * @return the BigIntegerFixedT after the multiplication.
+   * @param[out] ans is the BigIntegerFixedT after the multiplication.
    */
     void MulByUintToInt(const uint_type b, BigIntegerFixedT* ans) const;
 

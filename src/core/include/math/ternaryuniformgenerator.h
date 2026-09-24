@@ -53,11 +53,16 @@ template <typename VecType>
 class TernaryUniformGeneratorImpl {
   public:
     /**
-   * @brief Basic constructor for Binary Uniform Generator.
+   * @brief Basic constructor for Ternary Uniform Generator.
    */
     TernaryUniformGeneratorImpl() = default;
     ~TernaryUniformGeneratorImpl() = default;
 
+    /**
+   * @brief Single-integer generation is not implemented for the ternary distribution; this
+   * method ignores its argument and always returns 0. Use GenerateVector or GenerateIntVector.
+   * @return always 0.
+   */
     typename VecType::Integer GenerateInteger(const typename VecType::Integer&) const {
         return 0;
     }

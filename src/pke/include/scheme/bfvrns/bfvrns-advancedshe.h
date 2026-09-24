@@ -42,6 +42,9 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief BFV instantiation of the advanced SHE component; it inherits the RNS implementation without changes.
+ */
 class AdvancedSHEBFVRNS : public AdvancedSHERNS {
   public:
     virtual ~AdvancedSHEBFVRNS() {}

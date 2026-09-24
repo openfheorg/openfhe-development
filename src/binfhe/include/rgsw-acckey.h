@@ -64,10 +64,40 @@ class RingGSWACCKeyImpl : public Serializable {
   public:
     RingGSWACCKeyImpl() = default;
 
+    /**
+   * Allocates a dim1 x dim2 x dim3 array of (null) RingGSW evaluation keys
+   *
+   * The meaning of the three dimensions depends on the bootstrapping method; see the KeyGenAcc methods of the
+   * RingGSWAccumulator classes. With s the LWE secret key of dimension n:
+   * - DM (AP): [n][baseR][digitsR], indexed [i][j][k] with i the position in s, j in [1, baseR) the value of a
+   *   base-baseR digit and k the digit position; the entry is RGSW(X^(s_i * j * baseR^k)). The entries with
+   *   j = 0, and with j at or above the extent of the top digit position, stay null.
+   * - CGGI (GINX): [1][2][n]; [0][0][i] encrypts 1 if s_i = 1 and 0 otherwise, [0][1][i] encrypts 1 if s_i = -1
+   *   and 0 otherwise.
+   * - LMKCDEY: [1][2][n]; [0][0][i] = RGSW(X^(s_i)), [0][1][0] is the automorphism key for the exponent 2N - 5
+   *   and [0][1][t] for t = 1..numAutoKeys is the automorphism key for 5^t mod 2N; the remaining [0][1] entries
+   *   stay null.
+   *
+   * @param dim1 the size of the first dimension
+   * @param dim2 the size of the second dimension
+   * @param dim3 the size of the third dimension
+   */
     RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
 
+    /**
+   * Constructs a refresh key from a three-dimensional array of RingGSW evaluation keys
+   *
+   * @param key the RingGSW evaluation keys, laid out per bootstrapping method as described for the constructor
+   * taking the three dimensions
+   */
     explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
 
+    /**
+   * Constructs a refresh key from a three-dimensional array of RingGSW evaluation keys, moving it
+   *
+   * @param key the RingGSW evaluation keys, laid out per bootstrapping method as described for the constructor
+   * taking the three dimensions
+   */
     explicit RingGSWACCKeyImpl(std::vector<std::vector<std::vector<RingGSWEvalKey>>>&& key) noexcept
         : m_key(std::move(key)) {}
 
@@ -97,14 +127,28 @@ class RingGSWACCKeyImpl : public Serializable {
         m_key = std::move(key);
     }
 
+    /**
+   * @param i the index in the first dimension
+   * @return the two-dimensional slice of RingGSW evaluation keys at index i
+   */
     std::vector<std::vector<RingGSWEvalKey>>& operator[](uint32_t i) {
         return m_key[i];
     }
 
+    /**
+   * @param i the index in the first dimension
+   * @return the two-dimensional slice of RingGSW evaluation keys at index i
+   */
     const std::vector<std::vector<RingGSWEvalKey>>& operator[](uint32_t i) const {
         return m_key[i];
     }
 
+    /**
+   * Compares the two keys entry by entry through the shared pointers; two null entries compare equal
+   *
+   * @param other the refresh key to compare with
+   * @return true if both keys have the same dimensions and equal RingGSW evaluation keys in every position
+   */
     bool operator==(const RingGSWACCKeyImpl& other) const {
         // as RingGSWEvalKey is shared_ptr<RingGSWEvalKeyImpl>, we have to loop through all elements to compare them
         if (m_key.size() != other.m_key.size())
@@ -135,6 +179,10 @@ class RingGSWACCKeyImpl : public Serializable {
         return true;
     }
 
+    /**
+   * @param other the refresh key to compare with
+   * @return true if the dimensions or any RingGSW evaluation key differ
+   */
     bool operator!=(const RingGSWACCKeyImpl& other) const {
         return !(*this == other);
     }
@@ -166,7 +214,7 @@ class RingGSWACCKeyImpl : public Serializable {
     using dim2_t = std::vector<dim3_t>;
     using dim1_t = std::vector<dim2_t>;
 
-    std::vector<std::vector<std::vector<RingGSWEvalKey>>> m_key;
+    std::vector<std::vector<std::vector<RingGSWEvalKey>>> m_key;  ///< RingGSW evaluation keys, laid out per method
 };
 
 }  // namespace lbcrypto

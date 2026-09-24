@@ -86,12 +86,12 @@ class LatticeGaussSampUtility {
    * https://eprint.iacr.org/2017/308.pdf
    *
    * @param u syndrome (a polynomial)
-   * @param sttdev standard deviation
+   * @param stddev standard deviation
    * @param k number of components in the gadget vector
    * @param q integer modulus
    * @param base base of gadget matrix
    * @param dgg discrete Gaussian generator
-   * @param *z a set of k sampled polynomials corresponding to the gadget matrix
+   * @param z a set of k sampled polynomials corresponding to the gadget matrix
    * G; represented as Z^(k x n)
    */
     static void GaussSampGq(const Element& u, double stddev, size_t k, const typename Element::Integer& q, int64_t base,
@@ -103,12 +103,12 @@ class LatticeGaussSampUtility {
    * of https://eprint.iacr.org/2017/844.pdf
    *
    * @param u syndrome (a polynomial)
-   * @param sttdev standard deviation
+   * @param stddev standard deviation
    * @param k number of components in the gadget vector
    * @param q integer modulus
    * @param base base of gadget matrix
    * @param dgg discrete Gaussian generator
-   * @param *z a set of k sampled polynomials corresponding to the gadget matrix
+   * @param z a set of k sampled polynomials corresponding to the gadget matrix
    * G; represented as Z^(k x n)
    */
     static void GaussSampGqArbBase(const Element& u, double stddev, size_t k, const typename Element::Integer& q,
@@ -137,7 +137,7 @@ class LatticeGaussSampUtility {
    * @param D a matrix of field elements in DFT format
    * @param C a matrix of field elements in Coefficient format
    * @param dgg discrete Gaussian generator
-   * @param *p non-spherical perturbation matrix; output of the function
+   * @param p non-spherical perturbation matrix; output of the function
    */
     static void SampleMat(const Matrix<Field2n>& A, const Matrix<Field2n>& B, const Matrix<Field2n>& D,
                           const Matrix<Field2n>& C, const typename Element::DggType& dgg,
@@ -151,6 +151,7 @@ class LatticeGaussSampUtility {
    * @param c field element in Coefficient format
    * @param dgg discrete Gaussian generator
    * @param n ring dimension used for rejection sampling
+   * @return the sampled integer vector as a column matrix
    */
     static std::shared_ptr<Matrix<int64_t>> ZSampleF(const Field2n& f, const Field2n& c,
                                                      const typename Element::DggType& dgg, size_t n);

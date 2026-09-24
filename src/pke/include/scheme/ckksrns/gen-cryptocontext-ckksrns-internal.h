@@ -53,6 +53,15 @@ namespace lbcrypto {
 template <typename T>
 class CCParams;
 
+/**
+ * Generates a CKKS cryptocontext from validated parameters: builds the encoding parameters (the scaling modulus
+ * size acts as the plaintext modulus), the crypto parameters and the scheme, adjusts the scaling and first
+ * modulus sizes for the NOISE_FLOODING_DECRYPT mode, runs the CKKS parameter generation and registers the context
+ * with the factory. Must not be called directly; use GenCryptoContext.
+ *
+ * @param parameters the CKKS parameters
+ * @return the cryptocontext
+ */
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         const CCParams<ContextGeneratorType>& parameters) {

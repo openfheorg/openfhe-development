@@ -61,19 +61,30 @@ namespace lbcrypto {
 // Forward declaration
 class Field2n;
 
+/**
+ * @brief Dense row-major matrix of Element values. Elements are created through a
+ * caller-supplied zero allocator so that ring elements carrying parameters can be
+ * constructed; arithmetic is element-wise or the usual matrix product, and the class
+ * provides the gadget, rotation, stacking, and decomposition helpers of the lattice
+ * trapdoor code.
+ * @tparam Element the element type (integer, floating point, or ring element)
+ */
 template <class Element>
 class Matrix : public Serializable {
   public:
+    /// storage: a vector of rows
     typedef std::vector<std::vector<Element>> data_t;
+    /// one row of the matrix
     typedef std::vector<Element> data_row_t;
+    /// function returning a freshly allocated element (typically zero)
     typedef std::function<Element(void)> alloc_func;
 
     /**
    * Constructor that initializes matrix values using a zero allocator
    *
-   * @param &allocZero lambda function for zero initialization.
-   * @param &rows number of rows.
-   * @param &rows number of columns.
+   * @param allocZero lambda function for zero initialization.
+   * @param rows number of rows.
+   * @param cols number of columns.
    */
     Matrix(alloc_func allocZero, size_t rows, size_t cols) : data(), rows(rows), cols(cols), allocZero(allocZero) {
         data.resize(rows);
@@ -91,11 +102,11 @@ class Matrix : public Serializable {
    * Constructor that initializes matrix values using a distribution generation
    * allocator
    *
-   * @param &allocZero lambda function for zero initialization (used for
+   * @param allocZero lambda function for zero initialization (used for
    * initializing derived matrix objects)
-   * @param &rows number of rows.
-   * @param &rows number of columns.
-   * @param &allocGen lambda function for initialization using a distribution
+   * @param rows number of rows.
+   * @param cols number of columns.
+   * @param allocGen lambda function for initialization using a distribution
    * generator.
    */
     Matrix(alloc_func allocZero, size_t rows, size_t cols, alloc_func allocGen);
@@ -106,7 +117,7 @@ class Matrix : public Serializable {
    * SetAlloc needs to be called if 0 passed to constructor
    * This mostly exists to support deserializing
    *
-   * @param &allocZero lambda function for zero initialization.
+   * @param allocZero lambda function for zero initialization.
    */
     explicit Matrix(alloc_func allocZero = 0) : data(), rows(0), cols(0), allocZero(allocZero) {}
 
@@ -114,7 +125,7 @@ class Matrix : public Serializable {
    * Set the size of a matrix, elements are zeroed out
    *
    * @param rows number of rows
-   * @param cols number of colums
+   * @param cols number of columns
    */
 
     void SetSize(size_t rows, size_t cols) {
@@ -138,7 +149,7 @@ class Matrix : public Serializable {
    * SetAllocator - set the function to allocate a zero;
    * basically only required for deserializer
    *
-   * @param allocZero
+   * @param allocZero lambda function for zero initialization
    */
     void SetAllocator(alloc_func allocZero) {
         this->allocZero = allocZero;
@@ -147,7 +158,7 @@ class Matrix : public Serializable {
     /**
    * Copy constructor
    *
-   * @param &other the matrix object to be copied
+   * @param other the matrix object to be copied
    */
     Matrix(const Matrix<Element>& other) : data(), rows(other.rows), cols(other.cols), allocZero(other.allocZero) {
         deepCopyData(other.data);
@@ -156,7 +167,7 @@ class Matrix : public Serializable {
     /**
    * Assignment operator
    *
-   * @param &other the matrix object whose values are to be copied
+   * @param other the matrix object whose values are to be copied
    * @return the resulting matrix
    */
     Matrix<Element>& operator=(const Matrix<Element>& other);
@@ -178,21 +189,24 @@ class Matrix : public Serializable {
     /**
    * In-place modulo reduction
    *
-   * @return the resulting matrix
+   * @param modulus the modulus to reduce by
+   * @return the resulting matrix (same object)
    */
     Matrix<Element>& ModEq(const Element& modulus);
 
     /**
-   * modular subtraction
+   * In-place modular subtraction
    *
-   * @return the resulting matrix
+   * @param b the matrix to be subtracted
+   * @param modulus the modulus to reduce by
+   * @return the resulting matrix (same object)
    */
     Matrix<Element>& ModSubEq(Matrix<Element> const& b, const Element& modulus);
 
     /**
    * Fill matrix using the same element
    *
-   * @param &val the element the matrix is filled by
+   * @param val the element the matrix is filled by
    *
    * @return the resulting matrix
    */
@@ -243,6 +257,14 @@ class Matrix : public Serializable {
         return g;
     }
 
+    /**
+   * Gadget matrix for DCRTPoly elements: the digits of every CRT modulus are handled
+   * separately, so the first row holds, for each tower i, the powers of the base embedded
+   * in tower i only; the other rows are shifted copies of the first row.
+   *
+   * @param base is the base the digits of the matrix are represented in
+   * @return the resulting matrix
+   */
     template <typename T = Element,
               typename std::enable_if<std::is_same<T, M2DCRTPoly>::value || std::is_same<T, M4DCRTPoly>::value ||
                                               std::is_same<T, M6DCRTPoly>::value,
@@ -276,9 +298,10 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Computes the infinity norm
+   * Computes the infinity norm; not defined for scalar (double, int, int64_t) and Field2n
+   * element types, for which this overload always throws.
    *
-   * @return the norm in double format
+   * @return never returns; throws.
    */
     template <typename T = Element,
               typename std::enable_if<std::is_same<T, double>::value || std::is_same<T, int>::value ||
@@ -288,6 +311,11 @@ class Matrix : public Serializable {
         OPENFHE_THROW("Norm not defined for this type");
     }
 
+    /**
+   * Computes the infinity norm: the largest Norm() over all elements
+   *
+   * @return the norm in double format
+   */
     template <typename T = Element,
               typename std::enable_if<!std::is_same<T, double>::value && !std::is_same<T, int>::value &&
                                               !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
@@ -309,7 +337,7 @@ class Matrix : public Serializable {
     /**
    * Matrix multiplication
    *
-   * @param &other the multiplier matrix
+   * @param other the multiplier matrix
    * @return the result of multiplication
    */
     Matrix<Element> Mult(Matrix<Element> const& other) const;
@@ -317,7 +345,7 @@ class Matrix : public Serializable {
     /**
    * Operator for matrix multiplication
    *
-   * @param &other the multiplier matrix
+   * @param other the multiplier matrix
    * @return the result of multiplication
    */
     Matrix<Element> operator*(Matrix<Element> const& other) const {
@@ -327,7 +355,7 @@ class Matrix : public Serializable {
     /**
    * Multiplication of matrix by a scalar
    *
-   * @param &other the multiplier element
+   * @param other the multiplier element
    * @return the result of multiplication
    */
     Matrix<Element> ScalarMult(Element const& other) const {
@@ -345,7 +373,7 @@ class Matrix : public Serializable {
     /**
    * Operator for scalar multiplication
    *
-   * @param &other the multiplier element
+   * @param other the multiplier element
    * @return the result of multiplication
    */
     Matrix<Element> operator*(Element const& other) const {
@@ -355,7 +383,7 @@ class Matrix : public Serializable {
     /**
    * Equality check
    *
-   * @param &other the matrix object to compare to
+   * @param other the matrix object to compare to
    * @return the boolean result
    */
     bool Equal(Matrix<Element> const& other) const {
@@ -376,7 +404,7 @@ class Matrix : public Serializable {
     /**
    * Operator for equality check
    *
-   * @param &other the matrix object to compare to
+   * @param other the matrix object to compare to
    * @return the boolean result
    */
     bool operator==(Matrix<Element> const& other) const {
@@ -386,7 +414,7 @@ class Matrix : public Serializable {
     /**
    * Operator for non-equality check
    *
-   * @param &other the matrix object to compare to
+   * @param other the matrix object to compare to
    * @return the boolean result
    */
     bool operator!=(Matrix<Element> const& other) const {
@@ -433,7 +461,7 @@ class Matrix : public Serializable {
    * Sets the evaluation or coefficient representation for all ring elements
    * that support the SetFormat method
    *
-   * @param &format the enum value corresponding to coefficient or evaluation
+   * @param format the enum value corresponding to coefficient or evaluation
    * representation
    */
     void SetFormat(Format format);
@@ -441,7 +469,7 @@ class Matrix : public Serializable {
     /**
    * Matrix addition
    *
-   * @param &other the matrix to be added
+   * @param other the matrix to be added
    * @return the resulting matrix
    */
     Matrix<Element> Add(Matrix<Element> const& other) const {
@@ -461,7 +489,7 @@ class Matrix : public Serializable {
     /**
    * Operator for matrix addition
    *
-   * @param &other the matrix to be added
+   * @param other the matrix to be added
    * @return the resulting matrix
    */
     Matrix<Element> operator+(Matrix<Element> const& other) const {
@@ -471,15 +499,15 @@ class Matrix : public Serializable {
     /**
    * Operator for in-place addition
    *
-   * @param &other the matrix to be added
+   * @param other the matrix to be added
    * @return the resulting matrix (same object)
    */
     Matrix<Element>& operator+=(Matrix<Element> const& other);
 
     /**
-   * Matrix substraction
+   * Matrix subtraction
    *
-   * @param &other the matrix to be substracted
+   * @param other the matrix to be subtracted
    * @return the resulting matrix
    */
     Matrix<Element> Sub(Matrix<Element> const& other) const {
@@ -498,9 +526,9 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Operator for matrix substraction
+   * Operator for matrix subtraction
    *
-   * @param &other the matrix to be substracted
+   * @param other the matrix to be subtracted
    * @return the resulting matrix
    */
     Matrix<Element> operator-(Matrix<Element> const& other) const {
@@ -508,9 +536,9 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Operator for in-place matrix substraction
+   * Operator for in-place matrix subtraction
    *
-   * @param &other the matrix to be substracted
+   * @param other the matrix to be subtracted
    * @return the resulting matrix (same object)
    */
     Matrix<Element>& operator-=(Matrix<Element> const& other);
@@ -527,7 +555,7 @@ class Matrix : public Serializable {
    * Matrix determinant - found using Laplace formula with complexity O(d!),
    * where d is the dimension
    *
-   * @param *result where the result is stored
+   * @param result where the result is stored
    */
     void Determinant(Element* result) const;
     // Element Determinant() const;
@@ -543,7 +571,7 @@ class Matrix : public Serializable {
     /**
    * Add rows to bottom of the matrix
    *
-   * @param &other the matrix to be added to the bottom of current matrix
+   * @param other the matrix to be added to the bottom of current matrix
    * @return the resulting matrix
    */
     Matrix<Element>& VStack(Matrix<Element> const& other);
@@ -551,7 +579,7 @@ class Matrix : public Serializable {
     /**
    * Add columns the right of the matrix
    *
-   * @param &other the matrix to be added to the right of current matrix
+   * @param other the matrix to be added to the right of current matrix
    * @return the resulting matrix
    */
     Matrix<Element>& HStack(Matrix<Element> const& other);
@@ -559,8 +587,8 @@ class Matrix : public Serializable {
     /**
    * Matrix indexing operator - writeable instance of the element
    *
-   * @param &row row index
-   * @param &col column index
+   * @param row row index
+   * @param col column index
    * @return the element at the index
    */
     Element& operator()(size_t row, size_t col) {
@@ -570,8 +598,8 @@ class Matrix : public Serializable {
     /**
    * Matrix indexing operator - read-only instance of the element
    *
-   * @param &row row index
-   * @param &col column index
+   * @param row row index
+   * @param col column index
    * @return the element at the index
    */
     Element const& operator()(size_t row, size_t col) const {
@@ -581,7 +609,7 @@ class Matrix : public Serializable {
     /**
    * Matrix row extractor
    *
-   * @param &row row index
+   * @param row row index
    * @return the row at the index
    */
     Matrix<Element> ExtractRow(size_t row) const {
@@ -598,7 +626,7 @@ class Matrix : public Serializable {
     /**
    * Matrix column extractor
    *
-   * @param &col col index
+   * @param col col index
    * @return the col at the index
    */
     Matrix<Element> ExtractCol(size_t col) const {
@@ -611,9 +639,10 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Matrix rows extractor in a range from row_start to row_and; inclusive
+   * Matrix rows extractor in a range from row_start to row_end; inclusive
    *
-   * @param &row_start &row_end row indices
+   * @param row_start index of the first row to extract
+   * @param row_end index of the last row to extract
    * @return the rows in the range delimited by indices inclusive
    */
     inline Matrix<Element> ExtractRows(size_t row_start, size_t row_end) const {
@@ -655,17 +684,22 @@ class Matrix : public Serializable {
         OPENFHE_THROW("Not a matrix of Elements"); \
     }
 
-    /*
+    /**
    * Multiply the matrix by a vector whose elements are all 1's.  This causes
    * the elements of each row of the matrix to be added and placed into the
    * corresponding position in the output vector.
+   *
+   * @return the rows x 1 matrix of row sums
    */
     Matrix<Element> MultByUnityVector() const;
 
-    /*
+    /**
    * Multiply the matrix by a vector of random 1's and 0's, which is the same as
    * adding select elements in each row together. Return a vector that is a rows
    * x 1 matrix.
+   *
+   * @param ranvec the 0/1 vector of length cols selecting the columns to add
+   * @return the rows x 1 matrix of selected row sums
    */
     Matrix<Element> MultByRandomVector(std::vector<int> ranvec) const;
 
@@ -712,8 +746,8 @@ class Matrix : public Serializable {
 /**
  * Operator for scalar multiplication of matrix
  *
- * @param &e element
- * @param &M matrix
+ * @param e element
+ * @param M matrix
  * @return the resulting matrix
  */
 template <class Element>
@@ -725,7 +759,7 @@ Matrix<Element> operator*(Element const& e, Matrix<Element> const& M) {
  * Generates a matrix of rotations. See pages 7-8 of
  * https://eprint.iacr.org/2013/297
  *
- * @param &inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
+ * @param inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
  * @return the resulting matrix of big binary integers
  */
 template <typename Element>
@@ -736,8 +770,8 @@ Matrix<typename Element::Integer> Rotate(Matrix<Element> const& inMat);
  *  rotations in coefficient form. See pages 7-8 of
  * https://eprint.iacr.org/2013/297
  *
- * @param &inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
- * @return the resulting matrix of big binary integers
+ * @param inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
+ * @return the resulting matrix of big binary vectors
  */
 template <typename Element>
 Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat);
@@ -745,34 +779,42 @@ Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat);
 /**
  *  Stream output operator
  *
- * @param &os stream
- * @param &m matrix to be outputted
+ * @param os stream
+ * @param m matrix to be outputted
  * @return the chained stream
  */
 template <class Element>
 std::ostream& operator<<(std::ostream& os, const Matrix<Element>& m);
 
 /**
- * Gives the Choleshky decomposition of the input matrix.
+ * Gives the Cholesky decomposition of the input matrix.
  * The assumption is that covariance matrix does not have large coefficients
  * because it is formed by discrete gaussians e and s; this implies int32_t can
  * be used This algorithm can be further improved - see the Darmstadt paper
  * section 4.4 http://eprint.iacr.org/2013/297.pdf
  *
- * @param &input the matrix for which the Cholesky decomposition is to be
+ * @param input the matrix for which the Cholesky decomposition is to be
  * computed
  * @return the resulting matrix of floating-point numbers
  */
 Matrix<double> Cholesky(const Matrix<int32_t>& input);
 
+/**
+ * Gives the Cholesky decomposition of the input matrix, writing the lower-triangular factor
+ * into a caller-provided matrix of the same size (the upper triangle is zeroed). See the
+ * single-argument overload for the assumptions.
+ *
+ * @param input the square matrix for which the Cholesky decomposition is to be computed
+ * @param result the preallocated rows x rows matrix receiving the factor
+ */
 void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result);
 
 /**
  * Convert a matrix of integers from BigInteger to int32_t
  * Convert from Z_q to (-q/2, q/2]
  *
- * @param &input the input matrix
- * @param &modulus the ring modulus
+ * @param input the input matrix
+ * @param modulus the ring modulus
  * @return the resulting matrix of int32_t
  * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
@@ -782,20 +824,20 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger
  * Convert a matrix of BigVector to int32_t
  * Convert from Z_q to (-q/2, q/2]
  *
- * @param &input the input matrix
- * @param &modulus the ring modulus
+ * @param input the input matrix
+ * @param modulus the ring modulus
  * @return the resulting matrix of int32_t
  * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger& modulus);
 
 /**
- * Split a vector of int32_t into a vector of ring elements with ring dimension
+ * Split a vector of int64_t into a vector of ring elements with ring dimension
  * n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 template <typename Element>
@@ -822,9 +864,9 @@ Matrix<Element> SplitInt64IntoElements(Matrix<int64_t> const& other, size_t n,
  * Another method for splitting a vector of int32_t into a vector of ring
  * elements with ring dimension n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 template <typename Element>
@@ -851,9 +893,9 @@ Matrix<Element> SplitInt32AltIntoElements(Matrix<int32_t> const& other, size_t n
  * Split a vector of int64_t into a vector of ring elements with ring dimension
  * n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 template <typename Element>

@@ -51,23 +51,27 @@
 
 namespace lbcrypto {
 
-// The struct for storing bootstrapping keys
+/**
+ * @brief The struct for storing bootstrapping keys
+ *
+ * The 32-bit members hold the internal forms generated directly by KeyGen with internal32 requested, or narrowed by
+ * BTKeyGen or BTKeyLoad. When one is set, the corresponding 64-bit member stays null (or is released) and the
+ * 32-bit copy is the only resident one, so the key material is half size.
+ */
 struct RingGSWBTKey {
-    // refreshing key
-    RingGSWACCKey BSkey;
-    // switching key
-    LWESwitchingKey KSkey;
-    // public key
-    LWEPublicKey Pkey;
+    RingGSWACCKey BSkey;    ///< refreshing key (64-bit form)
+    LWESwitchingKey KSkey;  ///< switching key (64-bit form)
+    LWEPublicKey Pkey;      ///< public key
 #if NATIVEINT != 32
-    // 32-bit internal forms, generated directly by KeyGen(internal32) or narrowed by
-    // BTKeyGen or BTKeyLoad with internal32 requested. When set, the 64-bit member stays null (or is released)
-    // and the 32-bit copy is the only resident one, so the key material is half size.
-    RingGSWACCKey32 BSkey32;
-    LWESwitchingKey32 KSkey32;
+    RingGSWACCKey32 BSkey32;    ///< refreshing key in the 32-bit internal form, null when BSkey is resident
+    LWESwitchingKey32 KSkey32;  ///< switching key in the 32-bit internal form, null when KSkey is resident
 #endif
 
-    // a refreshing key is present in either representation
+    /**
+   * Checks whether a refreshing key is present in either representation
+   *
+   * @return true if the 64-bit or the 32-bit refreshing key is set
+   */
     bool HasRefreshKey() const {
 #if NATIVEINT != 32
         return (BSkey != nullptr) || (BSkey32 != nullptr);
@@ -121,6 +125,12 @@ class BinFHEScheme {
   public:
     BinFHEScheme() = default;
 
+    /**
+   * Constructs the scheme for a bootstrapping method, instantiating the matching accumulator (DM for AP, CGGI for
+   * GINX, and LMKCDEY)
+   *
+   * @param method the bootstrapping method; any other value throws
+   */
     explicit BinFHEScheme(BINFHE_METHOD method) {
         if (method == AP)
             ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
@@ -139,6 +149,8 @@ class BinFHEScheme {
    * @param LWEsk a shared pointer to the secret key of the underlying additive
    * @param keygenMode enum to indicate generation of secret key only (SYM_ENCRYPT) or
    * secret key, public key pair (PUB_ENCRYPT)
+   * @param internal32 generate the keys directly in their 32-bit internal form where they qualify;
+   * a key whose moduli do not fit is generated in the 64-bit form instead
    * @return a shared pointer to the refresh key
    */
     RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWEPrivateKey& LWEsk,
@@ -148,10 +160,11 @@ class BinFHEScheme {
    * Evaluates a binary gate (calls bootstrapping as a subroutine)
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XOR
+   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
    * @param EK a shared pointer to the bootstrapping keys
    * @param ct1 first ciphertext
    * @param ct2 second ciphertext
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
@@ -165,6 +178,7 @@ class BinFHEScheme {
    * @param gate the gate; can be for 3-input: AND3, OR3, MAJORITY, CMUX, for 4-input: AND4, OR4
    * @param EK a shared pointer to the bootstrapping keys
    * @param ctvector vector of ciphertexts
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
@@ -174,7 +188,7 @@ class BinFHEScheme {
    * Evaluates NOT gate
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param ct1 the input ciphertext
+   * @param ct the input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalNOT(const std::shared_ptr<BinFHECryptoParams>& params, ConstLWECiphertext& ct) const;
@@ -184,7 +198,8 @@ class BinFHEScheme {
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param EK a shared pointer to the bootstrapping keys
-   * @param ct1 input ciphertext
+   * @param ct input ciphertext
+   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext Bootstrap(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
@@ -220,7 +235,7 @@ class BinFHEScheme {
    * Evaluate a sign function over large precision
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param EK a shared pointer to the bootstrapping keys map
+   * @param EKs a shared pointer to the bootstrapping keys map
    * @param ct input ciphertext
    * @param beta the error bound
    * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
@@ -248,8 +263,8 @@ class BinFHEScheme {
    * Core bootstrapping operation
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XOR
-   * @param ek a shared pointer to the bootstrapping keys
+   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
+   * @param EK a shared pointer to the bootstrapping keys
    * @param ct input ciphertext
    * @return the output RingLWE accumulator
    */
@@ -262,25 +277,25 @@ class BinFHEScheme {
    * Core bootstrapping operation
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param ek a shared pointer to the bootstrapping keys
+   * @param EK a shared pointer to the bootstrapping keys
    * @param ct input ciphertext
    * @param f function to evaluate in the functional bootstrapping
    * @param fmod modulus over which the function is defined
-   * @return a shared pointer to the resulting ciphertext
+   * @return the output RingLWE accumulator
    */
     template <typename Func>
     RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
                                      ConstLWECiphertext& ct, const Func f, NativeInteger fmod) const;
 
     /**
-   * Bootstraps a fresh ciphertext
+   * Bootstraps a ciphertext while evaluating a function on it (functional bootstrapping)
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param EK a shared pointer to the bootstrapping keys
    * @param ct input ciphertext
    * @param f function to evaluate in the functional bootstrapping
    * @param fmod modulus over which the function is defined
-   * @return the output RingLWE accumulator
+   * @return a shared pointer to the resulting ciphertext
    */
     template <typename Func>
     LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWBTKey& EK,
@@ -294,8 +309,8 @@ class BinFHEScheme {
                             ConstLWECiphertext& ct) const;
 
   protected:
-    std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};
-    std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};
+    std::shared_ptr<LWEEncryptionScheme> LWEscheme{std::make_shared<LWEEncryptionScheme>()};  ///< the LWE scheme
+    std::shared_ptr<RingGSWAccumulator> ACCscheme{nullptr};  ///< the accumulator selected by the bootstrapping method
 
     /**
    * Checks type of input function

@@ -270,7 +270,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector modulus operator.
    *
-   * @param &modulus is the modulus to perform on the current vector entries.
+   * @param b is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
     myVecP Mod(const myT& b) const;
@@ -278,7 +278,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector modulus operator. In-place variant.
    *
-   * @param &modulus is the modulus to perform on the current vector entries.
+   * @param b is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
     myVecP& ModEq(const myT& b);
@@ -286,7 +286,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar-to-vector modulus addition operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
     myVecP ModAdd(const myT& b) const {
@@ -299,7 +299,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar-to-vector modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
     myVecP& ModAddEq(const myT& b) {
@@ -314,7 +314,7 @@ class myVecP : public NTL::Vec<myT>,
    * Scalar modulus addition at a particular index.
    *
    * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
+   * @param b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
     myVecP ModAddAtIndex(size_t i, const myT& b) const;
@@ -323,7 +323,7 @@ class myVecP : public NTL::Vec<myT>,
    * Scalar modulus addition at a particular index. In-place variant.
    *
    * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
+   * @param b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
     myVecP& ModAddAtIndexEq(size_t i, const myT& b);
@@ -331,7 +331,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector component wise modulus addition.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
     myVecP ModAdd(const myVecP& b) const {
@@ -344,7 +344,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector component wise modulus addition. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
     myVecP& ModAddEq(const myVecP& b) {
@@ -368,7 +368,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar-from-vector modulus subtraction operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
     myVecP ModSub(const myT& b) const {
@@ -381,7 +381,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar-from-vector modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
     myVecP& ModSubEq(const myT& b) {
@@ -395,7 +395,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector component wise modulus subtraction.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
     myVecP ModSub(const myVecP& b) const {
@@ -408,7 +408,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector component wise modulus subtraction. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
     myVecP& ModSubEq(const myVecP& b) {
@@ -426,7 +426,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar-to-vector modulus multiplication operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
     myVecP ModMul(const myT& b) const {
@@ -439,7 +439,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar-to-vector modulus multiplication operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
     myVecP& ModMulEq(const myT& b) {
@@ -453,7 +453,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector component wise modulus multiplication.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
@@ -467,7 +467,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Vector component wise modulus multiplication. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
@@ -492,7 +492,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar modulus exponentiation operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     myVecP ModExp(const myT& b) const;
@@ -500,7 +500,7 @@ class myVecP : public NTL::Vec<myT>,
     /**
    * Scalar modulus exponentiation operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     myVecP& ModExpEq(const myT& b);
@@ -539,8 +539,8 @@ class myVecP : public NTL::Vec<myT>,
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     myVecP MultiplyAndRound(const myT& p, const myT& q) const;
@@ -549,8 +549,8 @@ class myVecP : public NTL::Vec<myT>,
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     myVecP& MultiplyAndRoundEq(const myT& p, const myT& q);
@@ -559,7 +559,7 @@ class myVecP : public NTL::Vec<myT>,
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     myVecP DivideAndRound(const myT& q) const;
@@ -568,7 +568,7 @@ class myVecP : public NTL::Vec<myT>,
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     myVecP& DivideAndRoundEq(const myT& q);
@@ -600,7 +600,7 @@ class myVecP : public NTL::Vec<myT>,
    * ostream operator to output vector values to console
    *
    * @param os is the std ostream object.
-   * @param &ptr_obj is the BigVectorImpl object to be printed.
+   * @param ptr_obj is the myVecP object to be printed.
    * @return std ostream object which captures the vector values.
    */
     friend std::ostream& operator<<(std::ostream& os, const myVecP<myT>& ptr_obj) {

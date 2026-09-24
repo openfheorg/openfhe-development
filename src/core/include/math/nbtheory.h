@@ -67,7 +67,7 @@ namespace lbcrypto {
  * two.
  *
  * @param m as number which is cyclotomic(in format of int).
- * @param &modulo which is used to find generator.
+ * @param modulo which is used to find generator.
  *
  * @return a root of unity.
  */
@@ -87,17 +87,12 @@ template <typename IntType>
 std::vector<IntType> RootsOfUnity(uint32_t m, const std::vector<IntType>& moduli);
 
 /**
- * Method to reverse bits of num and return an unsigned int, for all bits up to
- * an including the designated most significant bit.
+ * Reverses the bit order of a byte using a precomputed table.
  *
- * @param input an unsigned int
- * @param msb the most significant bit.  All larger bits are disregarded.
+ * @param x the byte to reverse.
  *
- * @return an unsigned integer that represents the reversed bits.
+ * @return the byte with its bits reversed.
  */
-
-// precomputed reverse of a byte
-
 inline static unsigned char reverse_byte(unsigned char x) {
     static const unsigned char table[] = {
             0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0, 0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0, 0x08, 0x88,
@@ -119,9 +114,19 @@ inline static unsigned char reverse_byte(unsigned char x) {
     return table[x];
 }
 
+/// right shift applied by ReverseBits() after byte-wise reversal, indexed by msb mod 8, to
+/// discard the unused high bits of the last partial byte
 static int shift_trick[] = {0, 7, 6, 5, 4, 3, 2, 1};
 
-/* Function to reverse bits of num */
+/**
+ * Method to reverse bits of num and return an unsigned int, for all bits up to
+ * an including the designated most significant bit.
+ *
+ * @param num an unsigned int
+ * @param msb the most significant bit.  All larger bits are disregarded.
+ *
+ * @return an unsigned integer that represents the reversed bits.
+ */
 inline uint32_t ReverseBits(uint32_t num, uint32_t msb) {
     uint32_t msbb = (msb >> 3) + (msb & 0x7 ? 1 : 0);
     switch (msbb) {
@@ -221,6 +226,16 @@ inline constexpr uint32_t GetDigitCount(T x, uint64_t base) {
     return count;
 }
 
+/**
+ * Decomposes u into its k least significant digits in a power-of-two base, least
+ * significant digit first. The digit width is floor(log2(base)) bits, so base must be a
+ * power of two for the decomposition to be exact.
+ *
+ * @param u the integer to decompose
+ * @param base the (power-of-two) base of the decomposition
+ * @param k the number of digits to return
+ * @return the vector of k digits
+ */
 template <typename IntType>
 std::shared_ptr<std::vector<int64_t>> GetDigits(const IntType& u, uint64_t base, uint32_t k) {
     auto u_vec = std::make_shared<std::vector<int64_t>>(k);
@@ -253,13 +268,12 @@ IntType GreatestCommonDivisor(const IntType& a, const IntType& b);
  * Perform the MillerRabin primality test on an IntType.
  * This approach to primality testing is iterative and randomized.
  * It returns false if evidence of non-primality is found, and true if no
- * evidence is found after multiple rounds of testing. The const parameter
- * PRIMALITY_NO_OF_ITERATIONS determines how many rounds are used ( set in
- * nbtheory.h).
+ * evidence is found after multiple rounds of testing. The parameter niter
+ * determines how many rounds are used.
  *
  * @param p the candidate prime to test.
  * @param niter Number of iterations used for primality
- *              testing (default = 100.
+ *              testing (default = 100).
  *
  * @return false if evidence of non-primality is found.  True is no evidence of
  * non-primality is found.
@@ -279,8 +293,8 @@ const IntType PollardRhoFactorization(const IntType& n);
 
 /**
  * Recursively factorizes to find the distinct primefactors of a number.
- * @param &n the value to factorize. [note the value of n is destroyed]
- * @param &primeFactors set of factors found [must begin cleared]
+ * @param n the value to factorize.
+ * @param primeFactors set of factors found [must begin cleared]
  */
 template <typename IntType>
 void PrimeFactorize(IntType n, std::set<IntType>& primeFactors);
@@ -310,7 +324,7 @@ IntType LastPrime(uint32_t nBits, uint64_t m);
 /**
  * Finds the next prime that satisfies q = 1 mod m
  *
- * @param &q is the prime number to start from (the number itself is not
+ * @param q is the prime number to start from (the number itself is not
  * included)
  * @param m the ring parameter (cyclotomic order).
  *
@@ -322,7 +336,7 @@ IntType NextPrime(const IntType& q, uint64_t m);
 /**
  * Finds the previous prime that satisfies q = 1 mod m
  *
- * @param &q is the prime number to start from (the number itself is not
+ * @param q is the prime number to start from (the number itself is not
  * included)
  * @param m the ring parameter (cyclotomic order).
  *
@@ -342,10 +356,11 @@ IntType PreviousPrime(const IntType& q, uint64_t m);
 uint32_t ModInverse(uint32_t a, uint32_t b);
 
 /**
- * Returns the next power of 2 that is greater than the input number.
+ * Returns the exponent k such that 2^k is the smallest power of 2 that is
+ * greater than or equal to the input number, i.e. ceil(log2(n)).
  *
- * @param &n is the input value for which next power of 2 needs to be computed.
- * @return Next power of 2 that is greater or equal to n.
+ * @param n is the input value for which the next power of 2 needs to be computed.
+ * @return the exponent k of the next power of 2 that is greater than or equal to n.
  */
 template <typename IntType>
 IntType NextPowerOfTwo(IntType n);
@@ -353,7 +368,7 @@ IntType NextPowerOfTwo(IntType n);
 /**
  * Returns the totient value phi of a number n.
  *
- * @param &n the input number.
+ * @param n the input number.
  * @return phi of n which is the number of integers m coprime to n such that 1 <= m <=
  * n.
  */
@@ -362,7 +377,7 @@ uint64_t GetTotient(const uint64_t n);
 /**
  * Returns the list of coprimes to number n in ascending order.
  *
- * @param &n the input number.
+ * @param n the input number.
  * @return vector of mi's such that 1 <= mi <= n and gcd(mi,n)==1.
  */
 template <typename IntType>
@@ -371,12 +386,12 @@ std::vector<IntType> GetTotientList(const IntType& n);
 /**
  * Returns the polynomial modulus.
  *
- * @param &dividend the input dividend polynomial with degree >= degree of
+ * @param dividend the input dividend polynomial with degree >= degree of
  * divisor.
- * @param &divisor the input divisor polynomial with degree <= degree of
+ * @param divisor the input divisor polynomial with degree <= degree of
  * dividend and divisor is a monic polynomial.
- * @param &modulus the working modulus.
- * @return resultant polynomial vector s.t. return = divident mod
+ * @param modulus the working modulus.
+ * @return resultant polynomial vector s.t. return = dividend mod
  * (divisor,modulus).
  */
 template <typename IntVector>
@@ -385,10 +400,10 @@ IntVector PolyMod(const IntVector& dividend, const IntVector& divisor, const typ
 /**
  * Returns the polynomial multiplication of the input operands.
  *
- * @param &a the input polynomial.
- * @param &b the input polynomial.
+ * @param a the input polynomial.
+ * @param b the input polynomial.
  * a and b must have the same modulus.
- * @return resultant polynomial s.t. return = a*b and coefficinet ci =
+ * @return resultant polynomial s.t. return = a*b and coefficient ci =
  * ci%modulus.
  */
 template <typename IntVector>
@@ -397,8 +412,8 @@ IntVector PolynomialMultiplication(const IntVector& a, const IntVector& b);
 /**
  * Returns the m-th cyclotomic polynomial.
  * Added as a wrapper to GetCyclotomicPolynomialRecursive
- * @param &m the input cyclotomic order.
- * @param &modulus is the working modulus.
+ * @param m the input cyclotomic order.
+ * @param modulus is the working modulus.
  * @return resultant m-th cyclotomic polynomial with coefficients in modulus.
  */
 template <typename IntVector>
@@ -407,7 +422,7 @@ IntVector GetCyclotomicPolynomial(uint32_t m, const typename IntVector::Integer&
 /**
  * Returns the m-th cyclotomic polynomial.
  *
- * @param &m the input cyclotomic order.
+ * @param m the input cyclotomic order.
  * @return resultant m-th cyclotomic polynomial.
  */
 std::vector<int> GetCyclotomicPolynomialRecursive(uint32_t m);
@@ -415,9 +430,10 @@ std::vector<int> GetCyclotomicPolynomialRecursive(uint32_t m);
 /**
  * Returns the remainder after polynomial division of dividend with divisor =
  * x-a. Uses synthetic division algorithm.
- * @param &dividend is the input polynomial dividend in lower to higher
+ * @param dividend is the input polynomial dividend in lower to higher
  * coefficient form.
- * @param &a is the integer in divisor[x-a].
+ * @param a is the integer in divisor[x-a].
+ * @param modulus is the working modulus.
  * @return remainder after division with x-a.
  */
 template <typename IntVector>
@@ -427,9 +443,10 @@ typename IntVector::Integer SyntheticRemainder(const IntVector& dividend, const 
 /**
  * Returns the remainder vector after polynomial division of dividend with
  * divisor = x-aList[i]. Uses synthetic division algorithm.
- * @param &dividend is the input polynomial dividend in lower to higher
+ * @param dividend is the input polynomial dividend in lower to higher
  * coefficient form.
- * @param &aList is the integer vector for divisor[x-aList[i]].
+ * @param aList is the integer vector for divisor[x-aList[i]].
+ * @param modulus is the working modulus.
  * @return remainder vector after division with x-aList[i].
  */
 template <typename IntVector>
@@ -439,8 +456,8 @@ IntVector SyntheticPolyRemainder(const IntVector& dividend, const IntVector& aLi
 /**
  * Returns the polynomial after raising it by exponent = power.
  * Returns input^power.Uses Frobenius mapping.
- * @param &input is operand polynomial which needs to be exponentiated.
- * @param &power is the exponent.
+ * @param input is operand polynomial which needs to be exponentiated.
+ * @param power is the exponent.
  * @return exponentiated polynomial.
  */
 template <typename IntVector>
@@ -449,9 +466,10 @@ IntVector PolynomialPower(const IntVector& input, uint32_t power);
 /**
  * Returns the quotient after polynomial division of dividend with divisor =
  * x-a. Uses synthetic division algorithm.
- * @param &dividend is the input polynomial dividend in lower to higher
+ * @param dividend is the input polynomial dividend in lower to higher
  * coefficient form.
- * @param &a is the integer in divisor[x-a].
+ * @param a is the integer in divisor[x-a].
+ * @param modulus is the working modulus.
  * @return quotient after division with x-a.
  */
 template <typename IntVector>
@@ -459,10 +477,10 @@ IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename 
                                       const typename IntVector::Integer& modulus);
 
 /**
- * Checkes if g is a generator for any cyclic group with modulus q (non-prime
+ * Checks if g is a generator for any cyclic group with modulus q (non-prime
  * moduli are supported); currently q up to 64 bits only are supported
- * @param &g is candidate generator
- * @param &q is the modulus ( 2, 4, p^k, or 2*p^k where p^k is a power of an odd
+ * @param g is candidate generator
+ * @param q is the modulus ( 2, 4, p^k, or 2*p^k where p^k is a power of an odd
  * prime number )
  * @return true if g is a generator
  */
@@ -472,9 +490,9 @@ bool IsGenerator(const IntType& g, const IntType& q);
 /**
  * Finds a generator for any cyclic group with modulus q (non-prime moduli are
  * supported); currently q up to 64 bits only are supported
- * @param &q is the modulus ( 2, 4, p^k, or 2*p^k where p^k is a power of an odd
+ * @param q is the modulus ( 2, 4, p^k, or 2*p^k where p^k is a power of an odd
  * prime number )
- * @return true if g is a generator
+ * @return a generator of the cyclic group
  */
 template <typename IntType>
 IntType FindGeneratorCyclic(const IntType& q);
@@ -488,12 +506,18 @@ IntType FindGeneratorCyclic(const IntType& q);
 uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m);
 
 /**
- * @see FindAutomorphismIndex2n() version for CKKS
+ * Find an automorphism index for a power-of-two cyclotomic order in the CKKS (complex
+ * slot) layout, where the slots form one cycle generated by 5 and no conjugation is
+ * involved: rotation by i maps to the index 5^i mod m (5^-i for a negative i).
+ * @see FindAutomorphismIndex2n()
+ * @param i is the rotation index; 0 returns 1 and m-1 returns m-1 (the conjugation index)
+ * @param m is the cyclotomic order, which must be a power of two
+ * @return the automorphism index
  */
 uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m);
 
 /**
- * Find an automorhism index for cyclic groups
+ * Find an automorphism index for cyclic groups
  * @param i is the plaintext array index
  * @param m is the cyclotomic order
  * @param g is the generator
@@ -505,7 +529,7 @@ uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g);
  * Precompute a bit reversal map for a specific automorphism
  * @param n ring dimension
  * @param k automorphism index
- * @param *precomp the vector where the precomputed table is stored
+ * @param precomp the vector where the precomputed table is stored
  */
 void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp);
 

@@ -55,10 +55,9 @@ namespace lbcrypto {
 
 /**
  * @class CKKSPackedEncoding
- * @brief Type used for representing IntArray types.
- * Provides conversion functions to encode and decode plaintext data as type
- * vector<uint64_t>. This class uses bit packing techniques to enable efficient
- * computing on vectors of integers. It is NOT supported for DCRTPoly
+ * @brief Type used for representing CKKS packed plaintexts.
+ * Provides conversion functions to encode and decode vectors of complex (or real)
+ * numbers into the plaintext slots using the CKKS canonical embedding.
  */
 
 class CKKSPackedEncoding : public PlaintextImpl {
@@ -68,6 +67,13 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
   public:
     // these two constructors are used inside of Decrypt
+    /**
+   * @brief Constructs an empty CKKS plaintext over the given element parameters, with the default number of
+   * slots (the batch size, or N/2 if the batch size is 0).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param ckksdt CKKS data type (REAL discards the imaginary parts)
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -78,11 +84,18 @@ class CKKSPackedEncoding : public PlaintextImpl {
         slots = GetDefaultSlotSize();
     }
 
-    /*
-   * @param noiseScaleDeg degree of the scaling factor of a plaintext
-   * @param level level of plaintext to create.
+    /**
+   * @brief Constructs a CKKS plaintext holding the given values at a given level and noise scale degree (the
+   * values are not encoded yet; call Encode). For REAL data the imaginary parts of the values are zeroed.
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param v the values to be encoded
+   * @param nsdeg degree of the scaling factor of a plaintext
+   * @param lvl level of plaintext to create.
    * @param scFact scaling factor of a plaintext of this level at depth 1.
-   *
+   * @param slts number of slots (0 selects the default slot count; must be a power of two not smaller than the
+   * size of v)
+   * @param ckksdt CKKS data type (REAL discards the imaginary parts)
    */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
@@ -109,6 +122,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @brief Constructs a container with a copy of each of the elements in v,
    * in the same order.
    * @param v - The input object to copy.
+   * @param s - The number of slots (0 selects the default slot count for the size of v).
    */
     explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& v, uint32_t s)
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKS_PACKED_ENCODING, CKKSRNS_SCHEME), value(v) {
@@ -129,24 +143,63 @@ class CKKSPackedEncoding : public PlaintextImpl {
         slots = GetDefaultSlotSize();
     }
 
+    /**
+   * @brief Copy constructor.
+   * @param rhs the plaintext to copy
+   */
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
         : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
 
+    /**
+   * @brief Move constructor.
+   * @param rhs the plaintext to move from
+   */
     CKKSPackedEncoding(CKKSPackedEncoding&& rhs) noexcept
         : PlaintextImpl(std::move(rhs)), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
 
+    /**
+   * @brief Encodes the values into the polynomial: applies the inverse canonical embedding (inverse FFT over the
+   * slots), scales by the scaling factor raised to the noise scale degree, rounds and reduces modulo the RNS
+   * moduli of the level.
+   * @return true on success
+   */
     bool Encode() override;
 
+    /**
+   * @brief Not supported for CKKS: the scaling factor of the ciphertext is needed. Use Decode(depth,
+   * scalingFactor, scalTech, executionMode) instead.
+   * @return never returns
+   */
     bool Decode() override {
         OPENFHE_THROW("CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
     }
 
+    /**
+   * @brief Decodes the polynomial into the values: divides the coefficients by the scaling factor (2^p for the
+   * FIXED* techniques, the level-specific scalingFactor for FLEXIBLE* and COMPOSITESCALING*), estimates the
+   * approximation error and adds noise of that size to hide the decryption noise (in EXEC_EVALUATION mode), then
+   * applies the canonical embedding (FFT) to obtain the slot values. In EXEC_NOISE_ESTIMATION mode only the
+   * error estimate is decoded.
+   * @param depth noise scale degree of the decrypted ciphertext
+   * @param scalingFactor scaling factor of the decrypted ciphertext
+   * @param scalTech scaling technique of the scheme
+   * @param executionMode EXEC_NOISE_ESTIMATION or EXEC_EVALUATION
+   * @return true on success
+   */
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode) override;
 
+    /**
+   * @brief Gets the decoded (or to be encoded) complex values.
+   * @return the values, one per slot
+   */
     const std::vector<std::complex<double>>& GetCKKSPackedValue() const override {
         return value;
     }
 
+    /**
+   * @brief Gets the real parts of the decoded (or to be encoded) values.
+   * @return the real parts, one per slot
+   */
     std::vector<double> GetRealPackedValue() const override {
         std::vector<double> realValue(value.size());
         auto* rvptr = realValue.data();
@@ -163,7 +216,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    *
    * @param a is the first number in CRT representation.
    * @param b is the second number in CRT representation.
-   * @param m
+   * @param m is the vector of CRT moduli.
    * @return the product of the two numbers in CRT representation.
    */
     static std::vector<DCRTPoly::Integer> CRTMult(const std::vector<DCRTPoly::Integer>& a,
@@ -219,7 +272,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Get method to return the length of plaintext
    *
-   * @return the length of the plaintext in terms of the number of bits.
+   * @return the length of the plaintext in terms of the number of elements.
    */
     size_t GetLength() const override {
         return value.size();
@@ -228,13 +281,15 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Get method to return log2 of estimated standard deviation of approximation
    * error
+   * @return log2 of the estimated error
    */
     double GetLogError() const override {
         return m_logError;
     }
 
     /**
-   * Get method to return log2 of estimated precision
+   * Get method to return log2 of estimated precision (only for REAL data)
+   * @return log2 of the estimated precision, i.e., the scaling modulus size minus the estimated error
    */
     double GetLogPrecision() const override {
         if (ckksDataType == COMPLEX)
@@ -244,7 +299,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
     /**
    * SetLength of the plaintext to the given size
-   * @param siz
+   * @param siz the new number of elements
    */
     void SetLength(size_t siz) override {
         value.resize(siz);
@@ -292,6 +347,13 @@ class CKKSPackedEncoding : public PlaintextImpl {
         out << GetFormattedValues(8) << std::endl;
     }
 
+    /**
+   * @brief Resolves and validates the number of slots: 0 selects the batch size of the encoding parameters (or
+   * N/2 if the batch size is 0); the result must be a power of two, at most N/2 and at least vlen.
+   * @param slots the requested number of slots (0 = default)
+   * @param vlen the number of values to be packed
+   * @return the number of slots
+   */
     uint32_t GetDefaultSlotSize(uint32_t slots = 0, size_t vlen = 0) {
         if (slots == 0) {
             uint32_t batchSize = GetEncodingParams()->GetBatchSize();
@@ -324,9 +386,9 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     void FitToNativeVector(const std::vector<int64_t>& vec, int64_t bigBound, NativeVector* nativeVec) const;
 
@@ -334,9 +396,9 @@ class CKKSPackedEncoding : public PlaintextImpl {
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
+   * @param vec input vector
+   * @param bigBound big bound of the vector values.
+   * @param nativeVec output native vector (its modulus is used to fit the values).
    */
     void FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound, NativeVector* nativeVec) const;
 #endif

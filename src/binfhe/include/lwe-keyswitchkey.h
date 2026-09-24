@@ -51,10 +51,36 @@ class LWESwitchingKeyImpl : public Serializable {
   public:
     LWESwitchingKeyImpl() = default;
 
+    /**
+   * Constructs a key-switching key from its components
+   *
+   * Both components are indexed [i][j - 1][k], where i is the position in the source (dimension-N) secret
+   * key skN, j in [1, baseKS) is the value of a base-baseKS digit and k is the digit position. The pair
+   * (keyA[i][j - 1][k], keyB[i][j - 1][k]) is an LWE encryption of skN[i] * j * baseKS^k under the target
+   * (dimension-n) secret key s modulo qKS, i.e. keyB = <keyA, s> + e + skN[i] * j * baseKS^k. For digit
+   * values j at or above the extent of the top digit position the innermost vectors have one entry fewer,
+   * since that position is never read during key switching.
+   *
+   * @param keyA the vectors "a" of the key-switching LWE encryptions
+   * @param keyB the integers "b" of the key-switching LWE encryptions
+   */
     LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
                         const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
         : m_keyA(keyA), m_keyB(keyB) {}
 
+    /**
+   * Constructs a key-switching key from its components, moving them
+   *
+   * Both components are indexed [i][j - 1][k], where i is the position in the source (dimension-N) secret
+   * key skN, j in [1, baseKS) is the value of a base-baseKS digit and k is the digit position. The pair
+   * (keyA[i][j - 1][k], keyB[i][j - 1][k]) is an LWE encryption of skN[i] * j * baseKS^k under the target
+   * (dimension-n) secret key s modulo qKS, i.e. keyB = <keyA, s> + e + skN[i] * j * baseKS^k. For digit
+   * values j at or above the extent of the top digit position the innermost vectors have one entry fewer,
+   * since that position is never read during key switching.
+   *
+   * @param keyA the vectors "a" of the key-switching LWE encryptions
+   * @param keyB the integers "b" of the key-switching LWE encryptions
+   */
     LWESwitchingKeyImpl(std::vector<std::vector<std::vector<NativeVector>>>&& keyA,
                         std::vector<std::vector<std::vector<NativeInteger>>>&& keyB) noexcept
         : m_keyA(std::move(keyA)), m_keyB(std::move(keyB)) {}
@@ -100,10 +126,18 @@ class LWESwitchingKeyImpl : public Serializable {
         m_keyB = std::move(keyB);
     }
 
+    /**
+   * @param other the key-switching key to compare with
+   * @return true if both keys have the same "a" vectors and "b" integers
+   */
     bool operator==(const LWESwitchingKeyImpl& other) const {
         return (m_keyA == other.m_keyA && m_keyB == other.m_keyB);
     }
 
+    /**
+   * @param other the key-switching key to compare with
+   * @return true if the keys differ
+   */
     bool operator!=(const LWESwitchingKeyImpl& other) const {
         return !(*this == other);
     }
@@ -133,8 +167,8 @@ class LWESwitchingKeyImpl : public Serializable {
     }
 
   private:
-    std::vector<std::vector<std::vector<NativeVector>>> m_keyA;
-    std::vector<std::vector<std::vector<NativeInteger>>> m_keyB;
+    std::vector<std::vector<std::vector<NativeVector>>> m_keyA;   ///< vectors "a", indexed [i][j - 1][k]
+    std::vector<std::vector<std::vector<NativeInteger>>> m_keyB;  ///< integers "b", indexed [i][j - 1][k]
 };
 
 }  // namespace lbcrypto

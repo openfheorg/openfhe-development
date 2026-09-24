@@ -768,6 +768,13 @@ can be in the range [-ptm*qt/2, ptm*qt/2).
 * 3. let d' = c + delta mod q/qt. By construction, d' is divisible by qt and
 congruent to 0 mod ptm.
 * 4. output (d'/q') in R(q/q').
+*
+* @param t the plaintext modulus.
+* @param tModqPrecon NTL-specific precomputations for [t]_{q_i}; not used by this implementation.
+* @param negtInvModq precomputed value for [-t^{-1}]_{q_l}.
+* @param negtInvModqPrecon NTL-specific precomputation for negtInvModq; not used by this implementation.
+* @param qlInvModq precomputed values for [q_l^{-1}]_{q_i}.
+* @param qlInvModqPrecon NTL-specific precomputations for qlInvModq; not used by this implementation.
 */
 template <typename VecType>
 void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
@@ -1973,6 +1980,13 @@ bool DCRTPolyImpl<VecType>::InverseExists() const {
     return true;
 }
 
+/**
+ * @brief Writes every tower of a double-CRT polynomial to an output stream, one after another.
+ *
+ * @param os the output stream.
+ * @param p the double-CRT polynomial to print.
+ * @return the output stream.
+ */
 template <typename VecType>
 std::ostream& operator<<(std::ostream& os, const DCRTPolyImpl<VecType>& p) {
     // TODO(gryan): Standardize this printing so it is like other poly's

@@ -68,13 +68,13 @@ class ChineseRemainderTransformFTTInterface {
    * Forward Transform in the ring Z_q[X]/(X^n+1) with prime q and power-of-two
    * n s.t. 2n|q-1. Bit reversing indexes.
    *
-   * @param[in] &element is the input to the transform of type VecType and length n.
-   * @param &rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
+   * @param[in] element is the input to the transform of type VecType and length n.
+   * @param rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
    * the root of unity tables if needed. If rootOfUnity == 0 or 1, then the
    * result == input.
    * @param CycloOrder is 2n, should be a power-of-two or a throw if an error
    * occurs.
-   * @param[out] *result is the result of the transform, a VecType should be of the same
+   * @param[out] result is the result of the transform, a VecType should be of the same
    * size as input or a throw of error occurs.
    * @see NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    */
@@ -85,13 +85,12 @@ class ChineseRemainderTransformFTTInterface {
    * In-place Forward Transform in the ring Z_q[X]/(X^n+1) with prime q and
    * power-of-two n s.t. 2n|q-1. Bit reversing indexes.
    *
-   * @param &rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
+   * @param rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
    * the root of unity tables if needed. If rootOfUnity == 0 or 1, then the
    * result == input.
    * @param CycloOrder is 2n, should be a power-of-two or a throw if an error
    * occurs.
-   * @param[in,out] &element is the input to the transform of type VecType and length n.
-   * @return none
+   * @param[in,out] element is the input to the transform of type VecType and length n.
    * @see NumberTheoreticTransform::ForwardTransformToBitReverseInPlace()
    */
     virtual void ForwardTransformToBitReverseInPlace(const IntType& rootOfUnity, const uint32_t CycloOrder,
@@ -103,15 +102,14 @@ class ChineseRemainderTransformFTTInterface {
    * Inverse Transform in the ring Z_q[X]/(X^n+1) with prime q and power-of-two
    * n s.t. 2n|q-1. Bit reversing indexes.
    *
-   * @param &element[in] is the input to the transform of type VecType and length n.
-   * @param &rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
+   * @param[in] element is the input to the transform of type VecType and length n.
+   * @param rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
    * the root of unity tables if needed. If rootOfUnity == 0 or 1, then the
    * result == input.
    * @param CycloOrder is 2n, should be a power-of-two or a throw if an error
    * occurs.
-   * @param[out] *result is the result of the transform, a VecType should be of the same
+   * @param[out] result is the result of the transform, a VecType should be of the same
    * size as input or a throw if an error occurs.
-   * @return none
    * @see NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
    */
     virtual void InverseTransformFromBitReverse(const VecType& element, const IntType& rootOfUnity,
@@ -121,13 +119,12 @@ class ChineseRemainderTransformFTTInterface {
    * In-place Inverse Transform in the ring Z_q[X]/(X^n+1) with prime q and
    * power-of-two n s.t. 2n|q-1. Bit reversing indexes.
    *
-   * @param &rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
+   * @param rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
    * the root of unity tables if needed. If rootOfUnity == 0 or 1, then the
    * result == input.
    * @param CycloOrder is 2n, should be a power-of-two or a throw if an error
    * occurs.
-   * @param[in,out] &element is the input/output of the transform of type VecType and length n.
-   * @return none
+   * @param[in,out] element is the input/output of the transform of type VecType and length n.
    * @see NumberTheoreticTransform::InverseTransformFromBitReverseInPlace()
    */
     virtual void InverseTransformFromBitReverseInPlace(const IntType& rootOfUnity, const uint32_t CycloOrder,
@@ -137,9 +134,8 @@ class ChineseRemainderTransformFTTInterface {
    * Precomputation of root of unity tables for transforms in the ring
    * Z_q[X]/(X^n+1)
    *
-   * @param &rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
-   * the root of unity tables if needed. If rootOfUnity == 0 or 1, then the
-   * result == input.
+   * @param rootOfUnity is the 2n-th root of unity in Z_q used to precompute
+   * the root of unity tables.
    * @param CycloOrder is a power-of-two, equal to 2n.
    * @param modulus is q, the prime modulus
    */
@@ -149,11 +145,10 @@ class ChineseRemainderTransformFTTInterface {
    * Precomputation of root of unity tables for transforms in the ring
    * Z_q[X]/(X^n+1)
    *
-   * @param &rootOfUnity is the 2n-th root of unity in Z_q. Used to precompute
-   * the root of unity tables if needed. If rootOfUnity == 0 or 1, then the
-   * result == input.
+   * @param rootOfUnity is the vector of 2n-th roots of unity, one per modulus
+   * in moduliChain, used to precompute the root of unity tables.
    * @param CycloOrder is a power-of-two, equal to 2n.
-   * @param &moduliChain is the vector of prime moduli qi such that 2n|qi-1
+   * @param moduliChain is the vector of prime moduli qi such that 2n|qi-1
    */
     virtual void PreCompute(std::vector<IntType>& rootOfUnity, const uint32_t CycloOrder,
                             std::vector<IntType>& moduliChain) = 0;
@@ -175,6 +170,8 @@ class ChineseRemainderTransformArbInterface {
     /**
    * Sets the cyclotomic polynomial.
    *
+   * @param poly is the cyclotomic polynomial.
+   * @param mod is the modulus of the polynomial ring.
    */
     virtual void SetCylotomicPolynomial(const VecType& poly, const IntType& mod) = 0;
 
@@ -183,10 +180,10 @@ class ChineseRemainderTransformArbInterface {
    *
    * @param element is the element to perform the transform on.
    * @param root is the 2mth root of unity w.r.t the ring modulus.
-   * @param cycloOrder is the cyclotomic order of the ring element.
-   * @param bigMod is the addtional modulus needed for NTT operation.
-   * @param bigRoot is the addtional root of unity w.r.t bigMod needed for NTT
+   * @param bigMod is the additional modulus needed for NTT operation.
+   * @param bigRoot is the additional root of unity w.r.t bigMod needed for NTT
    * operation.
+   * @param cycloOrder is the cyclotomic order of the ring element.
    * @return is the output result of the transform.
    */
     virtual VecType ForwardTransform(const VecType& element, const IntType& root, const IntType& bigMod,
@@ -197,10 +194,10 @@ class ChineseRemainderTransformArbInterface {
    *
    * @param element is the element to perform the transform on.
    * @param root is the 2mth root of unity w.r.t the ring modulus.
-   * @param cycloOrder is the cyclotomic order of the ring element.
-   * @param bigMod is the addtional modulus needed for NTT operation.
-   * @param bigRoot is the addtional root of unity w.r.t bigMod needed for NTT
+   * @param bigMod is the additional modulus needed for NTT operation.
+   * @param bigRoot is the additional root of unity w.r.t bigMod needed for NTT
    * operation.
+   * @param cycloOrder is the cyclotomic order of the ring element.
    * @return is the output result of the transform.
    */
     virtual VecType InverseTransform(const VecType& element, const IntType& root, const IntType& bigMod,
@@ -214,7 +211,7 @@ class ChineseRemainderTransformArbInterface {
     /**
    * @brief Precomputes the root of unity and modulus needed for NTT operation
    * in forward Bluestein transform.
-   * @param cycloOrder is the cyclotomic order of the polynomial ring.
+   * @param cyclotoOrder is the cyclotomic order of the polynomial ring.
    * @param modulus is the modulus of the polynomial ring.
    */
     virtual void PreCompute(const uint32_t cyclotoOrder, const IntType& modulus) = 0;
@@ -222,7 +219,7 @@ class ChineseRemainderTransformArbInterface {
     /**
    * @brief Sets the precomputed root of unity and modulus needed for NTT
    * operation in forward Bluestein transform.
-   * @param cycloOrder is the cyclotomic order of the polynomial ring.
+   * @param cyclotoOrder is the cyclotomic order of the polynomial ring.
    * @param modulus is the modulus of the polynomial ring.
    * @param nttMod is the modulus needed for the NTT operation in forward
    * Bluestein transform.
@@ -236,7 +233,7 @@ class ChineseRemainderTransformArbInterface {
    * @brief Sets the precomputed root of unity and modulus needed for NTT
    * operation and computes m_cyclotomicPolyReveseNTTMap,m_cyclotomicPolyNTTMap.
    * Always called after setting the cyclotomic polynomial.
-   * @param cycloOrder is the cyclotomic order of the polynomial ring.
+   * @param cyclotoOrder is the cyclotomic order of the polynomial ring.
    * @param modulus is the modulus of the polynomial ring.
    * @param nttMod is the modulus needed for the NTT operation in forward
    * Bluestein transform.
@@ -251,6 +248,7 @@ class ChineseRemainderTransformArbInterface {
    * Newton-Iteration method.
    * @param cycloPoly is the cyclotomic polynomial.
    * @param modulus is the modulus of the polynomial ring.
+   * @param power is the number of coefficients of the result; the inverse is computed modulo x^power.
    * @return inverse polynomial.
    */
     virtual VecType InversePolyMod(const VecType& cycloPoly, const IntType& modulus, uint32_t power) = 0;
@@ -258,7 +256,7 @@ class ChineseRemainderTransformArbInterface {
   private:
     /**
    * @brief Padding zeroes to a vector
-   * @param &element is the input of type VecType to be padded with zeros.
+   * @param element is the input of type VecType to be padded with zeros.
    * @param cycloOrder is the cyclotomic order of the ring
    * @param forward is a flag for forward/inverse transform padding.
    * @return is result vector with &element values with padded zeros to it
@@ -267,12 +265,12 @@ class ChineseRemainderTransformArbInterface {
 
     /**
    * @brief Dropping elements from a vector
-   * @param &element is the input of type VecType.
+   * @param element is the input of type VecType.
    * @param cycloOrder is the cyclotomic order of the ring
    * @param forward is a flag for forward/inverse transform dropping.
-   * @param &bigMod is a modulus used to precompute the root of unity tables if
+   * @param bigMod is a modulus used to precompute the root of unity tables if
    * needed. The tables are used in the inverse dropping computations
-   * @param &bigRoot is a root of unity used to precompute the root of unity
+   * @param bigRoot is a root of unity used to precompute the root of unity
    * tables if needed. The tables are used in the inverse dropping computations
    * @return is result vector with &element values with dropped elements from it
    */

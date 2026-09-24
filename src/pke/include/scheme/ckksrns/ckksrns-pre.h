@@ -42,6 +42,9 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of the proxy re-encryption capability; the RNS implementation is used unchanged.
+ */
 class PRECKKSRNS : public PRERNS {
   public:
     virtual ~PRECKKSRNS() = default;

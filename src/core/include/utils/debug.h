@@ -197,24 +197,44 @@
 
 #endif  // NDEBUG
 
+/** time point type used by the TIC/TOC timing macros */
 typedef std::chrono::high_resolution_clock::time_point TimeVar;
 
 namespace lbcrypto {
 
+/**
+ * @brief Returns the current time point of the high-resolution clock; used by TIC().
+ * @return the current time point
+ */
 inline TimeVar timeNow() {
     return std::chrono::high_resolution_clock::now();
 }
 
+/**
+ * @brief Converts a clock duration to a count of nanoseconds; used by TOC_NS().
+ * @param d duration to convert
+ * @return the duration in whole nanoseconds
+ */
 template <typename Duration>
 inline auto duration_ns(const Duration& d) {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(d).count();
 }
 
+/**
+ * @brief Converts a clock duration to a count of microseconds; used by TOC_US().
+ * @param d duration to convert
+ * @return the duration in whole microseconds
+ */
 template <typename Duration>
 inline auto duration_us(const Duration& d) {
     return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
 }
 
+/**
+ * @brief Converts a clock duration to a count of milliseconds; used by TOC_MS() and TOC().
+ * @param d duration to convert
+ * @return the duration in whole milliseconds
+ */
 template <typename Duration>
 inline auto duration_ms(const Duration& d) {
     return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
@@ -222,8 +242,18 @@ inline auto duration_ms(const Duration& d) {
 
 }  // namespace lbcrypto
 
+/**
+ * @brief Returns the wall-clock time elapsed since local midnight.
+ * @return milliseconds since local midnight, with sub-millisecond fraction
+ */
 double currentDateTime();
 
+/**
+ * @brief Calls func(args...) and measures how long the call takes.
+ * @param func callable to time
+ * @param args arguments forwarded to func
+ * @return the elapsed time in whole milliseconds
+ */
 template <typename F, typename... Args>
 double funcTime(F func, Args&&... args) {
     TimeVar t1 = lbcrypto::timeNow();

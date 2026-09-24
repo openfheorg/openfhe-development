@@ -45,7 +45,6 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract base class for derived HE algorithms
- * @tparam Element a ring element.
  */
 class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
   public:

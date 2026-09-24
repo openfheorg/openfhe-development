@@ -47,7 +47,6 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract interface for encryption algorithm
- * @tparam Element a ring element.
  */
 class PKERNS : public PKEBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
@@ -62,33 +61,29 @@ class PKERNS : public PKEBase<DCRTPoly> {
     /**
    * Method for encrypting plaintext using LBC
    *
-   * @param&publicKey public key used for encryption.
    * @param plaintext copy of the plaintext element. NOTE a copy is passed!
    * That is NOT an error!
-   * @param doEncryption encrypts if true, embeds (encodes) the plaintext into
-   * cryptocontext if false
-   * @param *ciphertext ciphertext which results from encryption.
+   * @param publicKey public key used for encryption.
+   * @return ciphertext which results from encryption.
    */
     Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPoly> publicKey) const override;
 
     /**
-   * Method for encrypting plaintex using LBC
+   * Method for encrypting plaintext using LBC
    *
-   * @param privateKey private key used for encryption.
    * @param plaintext copy of the plaintext input. NOTE a copy is passed! That
    * is NOT an error!
-   * @param doEncryption encrypts if true, embeds (encodes) the plaintext into
-   * cryptocontext if false
-   * @param *ciphertext ciphertext which results from encryption.
+   * @param privateKey private key used for encryption.
+   * @return ciphertext which results from encryption.
    */
     Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPoly> privateKey) const override;
 
     /**
    * Method for decrypting plaintext using LBC
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
@@ -97,9 +92,9 @@ class PKERNS : public PKEBase<DCRTPoly> {
     /**
    * Method for decrypting plaintext using LBC
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
@@ -109,12 +104,39 @@ class PKERNS : public PKEBase<DCRTPoly> {
     // CORE OPERATIONS
     /////////////////////////////////////
 
+    /**
+   * Generates a secret-key encryption of zero, i.e., the pair (a*s + ns*e, -a) for a uniformly random a and a
+   * Gaussian error e, where ns is the noise scale of the scheme.
+   *
+   * @param privateKey the secret key.
+   * @param params the element parameters of the ciphertext; if fewer towers than the key has are requested,
+   * only the needed towers of the key are used. nullptr selects the full modulus chain.
+   * @return the two ciphertext polynomials.
+   */
     std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PrivateKey<DCRTPoly> privateKey,
                                                            const std::shared_ptr<ParmType> params) const override;
 
+    /**
+   * Generates a public-key encryption of zero, i.e., the pair (p0*v + ns*e0, p1*v + ns*e1) for a fresh
+   * ephemeral key v drawn from the secret key distribution and Gaussian errors e0, e1, where ns is the noise
+   * scale of the scheme.
+   *
+   * @param publicKey the public key (p0, p1).
+   * @param params the element parameters of the ciphertext; if fewer towers than the key has are requested,
+   * only the needed towers of the public key are used. nullptr selects the full modulus chain.
+   * @return the two ciphertext polynomials.
+   */
     std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
                                                            const std::shared_ptr<ParmType> params) const override;
 
+    /**
+   * Computes the decryption polynomial c_0 + c_1*s + c_2*s^2 + ... in EVALUATION format, using only the
+   * towers of the secret key that the ciphertext still has.
+   *
+   * @param cv the ciphertext polynomials.
+   * @param privateKey the secret key.
+   * @return the noisy scaled plaintext polynomial.
+   */
     DCRTPoly DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const override;
 
     /////////////////////////////////////

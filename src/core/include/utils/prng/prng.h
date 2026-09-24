@@ -54,15 +54,24 @@
 // ATTENTION (VERY IMPORTANT):
 //    for any engine class derived from the PRNG class there must be a C function named "createEngineInstance"
 //    returning a dynamically allocated object of that derived class (see how it is done in blake2engine.h)
+/**
+ * @brief Abstract base class for the PRNG engines used by OpenFHE, both the built-in Blake2Engine and any
+ * external engine. It satisfies the UniformRandomBitGenerator requirements of the C++11 distributions.
+ * Every derived engine must be accompanied by a C function named "createEngineInstance" returning a dynamically
+ * allocated object of that class.
+ */
 class PRNG {
   public:
-    // all C++11 distributions used in OpenFHE work with uint32_t by default.
-    // a different data type can be specified if needed for a particular architecture
+    /**
+     * the type of the generated samples; all C++11 distributions used in OpenFHE work with uint32_t by default.
+     * A different data type can be specified if needed for a particular architecture
+     */
     using result_type = uint32_t;
 
     /**
      * @brief minimum value used by C++11 distribution generators when no lower
      * bound is explicitly specified by the user
+     * @return the smallest value operator() can return
      */
     static constexpr result_type min() {
         return std::numeric_limits<result_type>::min();
@@ -71,11 +80,16 @@ class PRNG {
     /**
      * @brief maximum value used by C++11 distribution generators when no upper
      * bound is explicitly specified by the user
+     * @return the largest value operator() can return
      */
     static constexpr result_type max() {
         return std::numeric_limits<result_type>::max();
     }
 
+    /**
+     * @brief Generates the next pseudorandom sample.
+     * @return a uniformly distributed value in [min(), max()]
+     */
     virtual result_type operator()() = 0;
     virtual ~PRNG() = default;
 

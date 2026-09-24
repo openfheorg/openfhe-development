@@ -71,6 +71,16 @@ class ILDCRTParams final : public ElemParams<IntType> {
     using Integer = IntType;
     using ILNativeParams = ILParamsImpl<NativeInteger>;
 
+    /**
+   * @brief Constructor building the tower chain for a target composite modulus: native primes of MAX_MODULUS_SIZE
+   * bits are selected for the order, starting from the last such prime and going downwards, until their product
+   * reaches modulus; the composite modulus is set to that product. A zero order creates an empty parameter set to
+   * be populated later.
+   *
+   * @param corder the cyclotomic order.
+   * @param modulus the lower bound on the composite modulus.
+   * @param rootOfUnity not used; the root of unity of each tower is computed from its modulus.
+   */
     ILDCRTParams(uint32_t corder, const IntType& modulus, const IntType& rootOfUnity = IntType(0))
         : ElemParams<IntType>(corder, modulus) {
         // NOTE params generation uses this constructor to make an empty params that
@@ -121,10 +131,6 @@ class ILDCRTParams final : public ElemParams<IntType> {
    * @param moduli the list of the smaller moduli of the component polynomials.
    * @param rootsOfUnity the list of the smaller roots of unity of the component
    * polynomials.
-   * @param moduliBig the list of the big moduli of the component polynomials
-   * (arbitrary cyclotomics).
-   * @param rootsOfUnityBig the list of the roots of unity of the component
-   * polynomials for big moduli (arbitrary cyclotomics).
    */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
                  const std::vector<NativeInteger>& rootsOfUnity)
@@ -142,6 +148,17 @@ class ILDCRTParams final : public ElemParams<IntType> {
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
 
+    /**
+   * @brief Constructor with the moduli, roots of unity, big moduli and big roots of unity of the component
+   * parameters (the big values are used for arbitrary cyclotomics); the composite modulus is the product of the
+   * moduli. Throws if the four vectors differ in size.
+   *
+   * @param corder the cyclotomic order.
+   * @param moduli the moduli of the component polynomials.
+   * @param rootsOfUnity the roots of unity of the component polynomials.
+   * @param moduliBig the big moduli of the component polynomials.
+   * @param rootsOfUnityBig the big roots of unity of the component polynomials.
+   */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
                  const std::vector<NativeInteger>& rootsOfUnity, const std::vector<NativeInteger>& moduliBig,
                  const std::vector<NativeInteger>& rootsOfUnityBig)
@@ -166,7 +183,7 @@ class ILDCRTParams final : public ElemParams<IntType> {
    * of unity of the modulus is also calculated.
    *
    * @param corder the order of the ciphertext
-   * @param &moduli is the tower of moduli
+   * @param moduli is the tower of moduli
    */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli) : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
@@ -199,7 +216,7 @@ class ILDCRTParams final : public ElemParams<IntType> {
     /**
    * Assignment Operator.
    *
-   * @param &rhs the copied ILDCRTParams.
+   * @param rhs the copied ILDCRTParams.
    * @return the resulting ILDCRTParams.
    */
     ILDCRTParams& operator=(const ILDCRTParams& rhs) {
@@ -246,6 +263,12 @@ class ILDCRTParams final : public ElemParams<IntType> {
     std::shared_ptr<ILNativeParams>& operator[](size_t i) {
         return m_params[i];
     }
+    /**
+   * @brief Const version of operator[](): the component parameters at index i, unguarded.
+   *
+   * @param i the index of the parameters to return.
+   * @return the parameters at index i.
+   */
     const std::shared_ptr<ILNativeParams>& operator[](size_t i) const {
         return m_params[i];
     }
@@ -279,7 +302,7 @@ class ILDCRTParams final : public ElemParams<IntType> {
     /**
    * @brief Equality operator checks if the ElemParams are the same.
    *
-   * @param &other ElemParams to compare against.
+   * @param other ElemParams to compare against.
    * @return the equality check results.
    */
     bool operator==(const ElemParams<IntType>& other) const override {

@@ -60,10 +60,10 @@ void BootstrapExample(uint32_t numSlots) {
 
     // A. Specify main parameters
     /*  A1) Secret key distribution
-    * The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
-    * The SPARSE_TERNARY distribution was used in the original CKKS paper,
-    * but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
-    * encryption standard.
+    * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+    * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
+    * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
+    * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);

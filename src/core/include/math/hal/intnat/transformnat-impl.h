@@ -58,6 +58,13 @@ namespace intnat {
 
 using namespace lbcrypto;
 
+/**
+ * Conditional subtraction v >= q ? v - q : v computed without a branch, for v < 2q.
+ *
+ * @param v is the value to reduce.
+ * @param q is the modulus.
+ * @return v reduced into [0, q).
+ */
 template <typename NInt>
 static inline NInt condSubNoCmp(NInt v, NInt q) {
 #if defined(__clang__) && defined(__x86_64__) && !defined(__AVX2__)
@@ -72,9 +79,25 @@ static inline NInt condSubNoCmp(NInt v, NInt q) {
 // 32-bit-halves form with AVX2+ lanes and never takes the double-width form; clang vectorizes
 // the double-width form on its own and is slower with the halves form, so the halves
 // form is gcc-only. Scalar, the double-width form always wins, hence the fallbacks.
+/**
+ * High word of the 32x32-bit product, as used by the Shoup multiplication.
+ *
+ * @param a is the first factor.
+ * @param b is the second factor.
+ * @return the upper 32 bits of a * b.
+ */
 static inline uint32_t shoupMulHi(uint32_t a, uint32_t b) {
     return static_cast<uint32_t>((static_cast<uint64_t>(a) * b) >> 32);
 }
+
+/**
+ * High word of the 64x64-bit product, as used by the Shoup multiplication; uses the
+ * 128-bit type, the x86-64 mulq instruction, or 32-bit halves depending on the target.
+ *
+ * @param a is the first factor.
+ * @param b is the second factor.
+ * @return the upper 64 bits of a * b.
+ */
 static inline uint64_t shoupMulHi(uint64_t a, uint64_t b) {
 #if defined(__AVX2__) && defined(__GNUC__) && !defined(__clang__)
     uint64_t al{a & 0xffffffffu}, ah{a >> 32}, bl{b & 0xffffffffu}, bh{b >> 32};
@@ -97,6 +120,15 @@ static inline uint64_t shoupMulHi(uint64_t a, uint64_t b) {
 #endif
 }
 #if defined(HAVE_INT128)
+
+/**
+ * High word of the 128x128-bit product, as used by the Shoup multiplication, built from
+ * 64-bit halves.
+ *
+ * @param a is the first factor.
+ * @param b is the second factor.
+ * @return the upper 128 bits of a * b.
+ */
 static inline uint128_t shoupMulHi(uint128_t a, uint128_t b) {
     constexpr uint128_t mask{(static_cast<uint128_t>(1) << 64) - 1};
     uint128_t al{a & mask}, ah{a >> 64}, bl{b & mask}, bh{b >> 64};
@@ -107,16 +139,22 @@ static inline uint128_t shoupMulHi(uint128_t a, uint128_t b) {
 }
 #endif
 
-// pair loops (2i, 2i + 1) over words wider than 32 bits only vectorize with AVX2+ lanes; the
-// peeled butterfly stages fall back to the classic i += 2 scalar form without them
+/// pair loops (2i, 2i + 1) over words wider than 32 bits only vectorize with AVX2+ lanes; the
+/// peeled butterfly stages fall back to the classic i += 2 scalar form without them
 #if defined(__AVX2__)
 inline constexpr bool kPairLoop64 = true;
 #else
 inline constexpr bool kPairLoop64 = false;
 #endif
 
-// builds the Shoup constants for a root table, so the table-less transform overloads can
-// delegate to the vectorized precon kernels
+/**
+ * Builds the Shoup constants for a root table, so the table-less transform overloads can
+ * delegate to the vectorized precon kernels.
+ *
+ * @param table is the table of roots of unity.
+ * @param modulus is the modulus of the transform.
+ * @return the vector of PrepModMulConst() values of the table entries.
+ */
 template <typename VecType, typename IntType>
 static VecType prepShoupConsts(const VecType& table, const IntType& modulus) {
     const uint32_t n(table.GetLength());

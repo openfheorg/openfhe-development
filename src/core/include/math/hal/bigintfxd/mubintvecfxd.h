@@ -109,7 +109,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Basic move constructor for moving a vector
    *
-   * @param &&bigVector is the big binary vector to be moved.
+   * @param bigVector is the big binary vector to be moved.
    */
     BigVectorFixedT(BigVectorFixedT&& bigVector);  // move copy constructor
 
@@ -132,14 +132,14 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * @param length is the length of the big binary vector, in terms of the
    * number of entries.
    * @param modulus is the modulus of the ring.
-   * @param rhs is an initializer list of uint32_t
+   * @param rhs is an initializer list of uint64_t
    */
     BigVectorFixedT(uint32_t length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs);
 
     /**
    * Assignment operator to assign value from rhs
    *
-   * @param &rhs is the big binary vector to be assigned from.
+   * @param rhs is the big binary vector to be assigned from.
    * @return Assigned BigVectorFixedT.
    */
     BigVectorFixedT& operator=(const BigVectorFixedT& rhs);
@@ -147,7 +147,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Move assignment operator
    *
-   * @param &&rhs is the big binary vector to be moved.
+   * @param rhs is the big binary vector to be moved.
    * @return moved BigVectorFixedT object
    */
     BigVectorFixedT& operator=(BigVectorFixedT&& rhs);
@@ -155,7 +155,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Initializer list for BigVectorFixedT.
    *
-   * @param &&rhs is the list of strings containing integers to be assigned to
+   * @param rhs is the list of strings containing integers to be assigned to
    * the BBV.
    * @return BigVectorFixedT object
    */
@@ -164,7 +164,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Initializer list for BigVectorFixedT.
    *
-   * @param &&rhs is the list of integers to be assigned to the BBV.
+   * @param rhs is the list of integers to be assigned to the BBV.
    * @return BigVectorFixedT object
    */
     BigVectorFixedT& operator=(std::initializer_list<uint64_t> rhs);
@@ -193,7 +193,8 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Sets/gets a value at an index.
    * This method is slower than operator[] as it checks if index out of range
    *
-   * @param index is the index to set a value at.
+   * @param i is the index of the entry to access.
+   * @return is a reference to the entry at the index.
    */
     IntegerType& at(size_t i) {
         if (!IndexCheck(i)) {
@@ -225,7 +226,6 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Sets the vector modulus.
    *
-   * @param value is the value to set.
    * @param value is the modulus value to set.
    */
     void SetModulus(const IntegerType& value) {
@@ -270,7 +270,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector modulus operator.
    *
-   * @param &modulus is the modulus to perform on the current vector entries.
+   * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
     BigVectorFixedT Mod(const IntegerType& modulus) const;
@@ -278,7 +278,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector modulus operator. In-place variant.
    *
-   * @param &modulus is the modulus to perform on the current vector entries.
+   * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
     BigVectorFixedT& ModEq(const IntegerType& modulus);
@@ -286,7 +286,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Scalar-to-vector modulus addition operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
     BigVectorFixedT ModAdd(const IntegerType& b) const;
@@ -294,7 +294,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Scalar-to-vector modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
     BigVectorFixedT& ModAddEq(const IntegerType& b);
@@ -303,7 +303,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Scalar modulus addition at a particular index.
    *
    * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
+   * @param b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
     BigVectorFixedT ModAddAtIndex(uint32_t i, const IntegerType& b) const;
@@ -312,7 +312,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Scalar modulus addition at a particular index. In-place variant.
    *
    * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
+   * @param b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
     BigVectorFixedT& ModAddAtIndexEq(uint32_t i, const IntegerType& b);
@@ -320,7 +320,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector component wise modulus addition.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
     BigVectorFixedT ModAdd(const BigVectorFixedT& b) const;
@@ -328,7 +328,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector component wise modulus addition. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
     BigVectorFixedT& ModAddEq(const BigVectorFixedT& b);
@@ -337,7 +337,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Scalar-from-vector modulus subtraction operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
     BigVectorFixedT ModSub(const IntegerType& b) const;
@@ -345,7 +345,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Scalar-from-vector modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
     BigVectorFixedT& ModSubEq(const IntegerType& b);
@@ -353,7 +353,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector component wise modulus subtraction.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
     BigVectorFixedT ModSub(const BigVectorFixedT& b) const;
@@ -361,7 +361,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector component wise modulus subtraction. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
     BigVectorFixedT& ModSubEq(const BigVectorFixedT& b);
@@ -370,7 +370,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Scalar-to-vector modulus multiplication operation.
    * Generalized Barrett modulo reduction algorithm.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
     BigVectorFixedT ModMul(const IntegerType& b) const;
@@ -379,7 +379,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Scalar-to-vector modulus multiplication operation. In-place variant.
    * Generalized Barrett modulo reduction algorithm.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
     BigVectorFixedT& ModMulEq(const IntegerType& b);
@@ -387,7 +387,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector component wise modulus multiplication.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
@@ -396,7 +396,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector component wise modulus multiplication. In-place variant.
    *
-   * @param &b is the vector to perform operation with.
+   * @param b is the vector to perform operation with.
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
@@ -406,7 +406,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Scalar modulus exponentiation operation.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     BigVectorFixedT ModExp(const IntegerType& b) const;
@@ -414,7 +414,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Scalar modulus exponentiation operation. In-place variant.
    *
-   * @param &b is the scalar to perform operation with.
+   * @param b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
     BigVectorFixedT& ModExpEq(const IntegerType& b);
@@ -452,7 +452,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     /**
    * Vector multiplication without applying the modulus operation.
    *
-   * @param &b is the vector to multiply.
+   * @param b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
     BigVectorFixedT MultWithOutMod(const BigVectorFixedT& b) const;
@@ -461,7 +461,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Vector multiplication without applying the modulus operation. In-place
    * variant.
    *
-   * @param &b is the vector to multiply.
+   * @param b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
     BigVectorFixedT& MultWithOutModEq(const BigVectorFixedT& b);
@@ -470,8 +470,8 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     BigVectorFixedT MultiplyAndRound(const IntegerType& p, const IntegerType& q) const;
@@ -480,8 +480,8 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     BigVectorFixedT& MultiplyAndRoundEq(const IntegerType& p, const IntegerType& q);
@@ -490,7 +490,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     BigVectorFixedT DivideAndRound(const IntegerType& q) const;
@@ -499,7 +499,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     BigVectorFixedT& DivideAndRoundEq(const IntegerType& q);
@@ -531,7 +531,7 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
    * ostream operator to output vector values to console
    *
    * @param os is the std ostream object.
-   * @param &ptr_obj is the BigVectorFixedT object to be printed.
+   * @param ptr_obj is the BigVectorFixedT object to be printed.
    * @return std ostream object which captures the vector values.
    */
     template <class IntegerType_c>

@@ -52,7 +52,7 @@
 
 namespace lbcrypto {
 
-// STL pair used as a key for some tables in PackedEncoding
+/// STL pair (plaintext modulus, cyclotomic order) used as a key for some tables in PackedEncoding
 using ModulusM = std::pair<NativeInteger, uint64_t>;
 
 /**
@@ -68,12 +68,23 @@ class PackedEncoding : public PlaintextImpl {
 
   public:
     // these two constructors are used inside of Decrypt
+    /**
+   * @brief Constructs an empty packed plaintext over the given element parameters.
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, PACKED_ENCODING) {}
 
+    /**
+   * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param coeffs the slot values
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -81,6 +92,12 @@ class PackedEncoding : public PlaintextImpl {
     PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
         : PlaintextImpl(vp, ep, PACKED_ENCODING), value(coeffs) {}
 
+    /**
+   * @brief Constructs a packed plaintext holding the given slot values (not encoded yet; call Encode).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param coeffs the slot values
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -97,7 +114,7 @@ class PackedEncoding : public PlaintextImpl {
         : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value(rhs) {}
 
     /**
-   * @brief Constructs a container with a copy of each of the elements in il, in
+   * @brief Constructs a container with a copy of each of the elements in arr, in
    * the same order.
    * @param arr the list to copy.
    */
@@ -109,14 +126,34 @@ class PackedEncoding : public PlaintextImpl {
    */
     PackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, PACKED_ENCODING), value() {}
 
+    /**
+   * @brief Gets the generator of the automorphism group used for slot rotations of the packed encoding with the
+   * given cyclotomic order (set by SetParams).
+   * @param m the cyclotomic order
+   * @return the generator
+   */
     static uint32_t GetAutomorphismGenerator(uint32_t m) {
         return m_automorphismGenerator[m];
     }
 
+    /**
+   * @brief Encodes the slot values into the polynomial (inverse number-theoretic transform modulo the plaintext
+   * modulus, with the CRT permutation of the slots).
+   * @return true on success
+   */
     bool Encode() override;
 
+    /**
+   * @brief Decodes the polynomial into the slot values (number-theoretic transform modulo the plaintext
+   * modulus), mapping them to the centered range [-p/2, p/2).
+   * @return true on success
+   */
     bool Decode() override;
 
+    /**
+   * @brief Gets the decoded (or to be encoded) slot values.
+   * @return the integer vector
+   */
     const std::vector<int64_t>& GetPackedValue() const override {
         return value;
     }
@@ -132,7 +169,7 @@ class PackedEncoding : public PlaintextImpl {
     /**
    * Get method to return the length of plaintext
    *
-   * @return the length of the plaintext in terms of the number of bits.
+   * @return the length of the plaintext in terms of the number of elements.
    */
     size_t GetLength() const override {
         return value.size();
@@ -141,7 +178,7 @@ class PackedEncoding : public PlaintextImpl {
     /**
    * @brief Method to set encoding params
    * @param m the encoding cyclotomic order.
-   * @params params data structure storing encoding parameters
+   * @param params data structure storing encoding parameters
    */
     static void SetParams(uint32_t m, EncodingParams params);
 
@@ -149,14 +186,14 @@ class PackedEncoding : public PlaintextImpl {
    * @brief Method to set encoding params (this method should eventually be
    * replaced by void SetParams(uint32_t m, EncodingParams params);)
    * @param m the encoding cyclotomic order.
-   * @params modulus is the plaintext modulus
+   * @param modulus is the plaintext modulus
    */
     static void SetParams(uint32_t m, const PlaintextModulus& modulus)
             __attribute__((deprecated("use SetParams(uint32_t m, EncodingParams p)")));
 
     /**
    * SetLength of the plaintext to the given size
-   * @param siz
+   * @param siz the new number of elements
    */
     void SetLength(size_t siz) override {
         value.resize(siz);

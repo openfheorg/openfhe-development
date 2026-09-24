@@ -98,22 +98,42 @@ inline uint64_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
 
 // TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
 // that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
+/**
+ * @brief Returns the largest magnitude, 2^63 - 2^9 - 1, that a double is allowed to have when it is converted
+ * to int64_t; this is not the maximum int64_t value.
+ * @return the conversion bound
+ */
 inline constexpr int64_t Max64BitValue() {
     return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 9) - 1);
 }
 
 // TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if double can be
 // converted to int64_t. The name should reflect that. Something like isConvertableToInt64(). The function must be renamed!!!
+/**
+ * @brief Checks whether a double is too large in magnitude to be converted to int64_t.
+ * @param d value to test
+ * @return true if |d| exceeds Max64BitValue()
+ */
 inline bool is64BitOverflow(double d) {
     return std::abs(d) > static_cast<double>(Max64BitValue());
 }
 
 #if NATIVEINT == 128
+/**
+ * @brief Returns the largest magnitude, 2^127 - 2^73 - 1, that a double is allowed to have when it is converted
+ * to a 128-bit signed integer.
+ * @return the conversion bound
+ */
 inline constexpr __int128 Max128BitValue() {
     return static_cast<int128_t>((static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) -
                                  static_cast<uint128_t>(1));
 }
 
+/**
+ * @brief Checks whether a double is too large in magnitude to be converted to a 128-bit signed integer.
+ * @param d value to test
+ * @return true if |d| exceeds Max128BitValue()
+ */
 inline bool is128BitOverflow(double d) {
     return std::abs(d) > static_cast<double>(Max128BitValue());
 }
@@ -152,6 +172,12 @@ IntType SignedToResidue(int64_t value, const IntType& modulus) {
     return modulus - IntType(magnitude);
 }
 
+/**
+ * @brief Checks whether a double fits the signed range of the native integer type: int32_t max for 32-bit
+ * NativeInteger, Max64BitValue() for 64-bit, Max128BitValue() for 128-bit.
+ * @param d value to test
+ * @return true if |d| is within the bound for the configured NATIVEINT size
+ */
 inline bool isConvertableToNativeInt(double d) {
     if constexpr (NATIVEINT == 32)
         return std::abs(d) <= static_cast<double>(std::numeric_limits<int32_t>::max());

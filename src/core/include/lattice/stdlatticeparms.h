@@ -60,12 +60,21 @@ namespace lbcrypto {
 // SecurityLevel enums IF you change them, go look at and change byRing and
 // byLogQ
 
+/**
+ * @brief Secret key distribution used to select a table of the Homomorphic Encryption Standard.
+ * The enumerators must stay consecutive from 0 because they index the lookup tables in StdLatticeParm.
+ */
 enum DistributionType {
     HEStd_uniform,
     HEStd_error,
     HEStd_ternary,
 };
 
+/**
+ * @brief Security level of the Homomorphic Encryption Standard (bits of security, classical or quantum attacks).
+ * HEStd_NotSet disables the standard-based parameter checks. The enumerators must stay consecutive from 0 because
+ * they index the lookup tables in StdLatticeParm.
+ */
 enum SecurityLevel {
     HEStd_128_classic,
     HEStd_192_classic,
@@ -76,10 +85,34 @@ enum SecurityLevel {
     HEStd_NotSet,
 };
 
+/**
+ * @brief Converts the name of a security level (e.g., "HEStd_128_classic") to the enumerator; throws for an
+ * unknown name.
+ * @param str name of the security level, spelled as the enumerator
+ * @return the security level
+ */
 SecurityLevel convertToSecurityLevel(const std::string& str);
+/**
+ * @brief Converts an integer to a security level; throws for values that do not correspond to one of the
+ * standard levels (HEStd_NotSet is not accepted).
+ * @param num integer value of the enumerator
+ * @return the security level
+ */
 SecurityLevel convertToSecurityLevel(uint32_t num);
+/**
+ * @brief Prints the name of a security level.
+ * @param s output stream
+ * @param sl security level to print
+ * @return the output stream
+ */
 std::ostream& operator<<(std::ostream& s, SecurityLevel sl);
 
+/**
+ * @brief One row of the Homomorphic Encryption Standard parameter tables: for a secret key distribution,
+ * a ring dimension, and a security level, the largest supported bit size of the ciphertext modulus.
+ * The rows are stored in a static table and indexed by (distribution, security level), then by ring dimension
+ * (FindMaxQ) or by modulus bit size (FindRingDim).
+ */
 class StdLatticeParm {
     DistributionType distType;
     uint32_t ringDim;
@@ -104,9 +137,20 @@ class StdLatticeParm {
     static bool initialized;
 
   public:
+    /**
+   * @brief Constructs one table row.
+   * @param distType secret key distribution
+   * @param ringDim ring dimension
+   * @param minSecLev security level the row is certified for
+   * @param maxLogQ largest supported bit size of the ciphertext modulus
+   */
     StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
         : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}
 
+    /**
+   * @brief Builds the lookup maps (by ring dimension and by modulus bit size) from the static table of rows.
+   * Called on first use by FindMaxQ and FindRingDim.
+   */
     static void initializeLookups() {
         for (size_t i = 0; i < StandardLatticeParmSets.size(); i++) {
             StdLatticeParm& s = StandardLatticeParmSets[i];
@@ -116,6 +160,13 @@ class StdLatticeParm {
         initialized = true;
     }
 
+    /**
+   * @brief Looks up the largest supported ciphertext modulus bit size for a ring dimension.
+   * @param distType secret key distribution
+   * @param minSecLev required security level
+   * @param ringDim ring dimension
+   * @return the maximum log2 of the ciphertext modulus, or 0 if the table has no row for this ring dimension
+   */
     static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
         int distTypeIdx = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
@@ -127,6 +178,13 @@ class StdLatticeParm {
         return it->second->getMaxLogQ();
     }
 
+    /**
+   * @brief Finds the smallest tabulated ring dimension whose maximum modulus bit size is at least curLogQ.
+   * @param distType secret key distribution
+   * @param minSecLev required security level
+   * @param curLogQ log2 of the ciphertext modulus
+   * @return the ring dimension, or twice the largest tabulated ring dimension if curLogQ exceeds every table row
+   */
     static uint32_t FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
         if (!initialized)
             initializeLookups();

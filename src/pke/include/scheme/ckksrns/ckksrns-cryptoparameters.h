@@ -46,6 +46,14 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief Crypto parameters of the CKKS scheme in RNS form.
+ *
+ * Extends CryptoParametersRNS with the CKKS-specific parts of the CRT table precomputation: the composite degree
+ * of the COMPOSITESCALING* techniques, the tables of the exact CRT basis extension used by the bootstrapping
+ * modulus raise with composite scaling, and the auxiliary modulus and tables of sparse secret encapsulation
+ * (SPARSE_ENCAPSULATED). The BGV/BFV-only parameters (plaintext modulus counts, PRE hops) are disabled.
+ */
 class CryptoParametersCKKSRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
 #define DISABLED_FOR_CKKSRNS_PARAMS OPENFHE_THROW("This parameter is not available for CKKSRNS.");
@@ -55,6 +63,28 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
     CryptoParametersCKKSRNS(const CryptoParametersCKKSRNS& rhs) = default;
     CryptoParametersCKKSRNS(CryptoParametersCKKSRNS&& rhs) noexcept = default;
 
+    /**
+   * Constructor that initializes the CKKS parameters from a plaintext modulus (the scaling modulus size in bits);
+   * forwards all arguments to CryptoParametersRNS.
+   *
+   * @param params element parameters (the DCRT modulus chain).
+   * @param plaintextModulus plaintext modulus (for CKKS, the scaling modulus size in bits).
+   * @param distributionParameter standard deviation of the error distribution.
+   * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+   * @param securityLevel security level from the homomorphic encryption standard.
+   * @param digitSize the size of the digit (relinearization window) for BV key switching.
+   * @param secretKeyDist secret key distribution.
+   * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+   * @param ksTech key switching technique (BV or HYBRID).
+   * @param scalTech scaling (rescaling) technique.
+   * @param encTech encryption technique (STANDARD; EXTENDED is BFV-specific).
+   * @param multTech multiplication technique (BFV-specific; unused by CKKS).
+   * @param multipartyMode security mode for multiparty (threshold) decryption.
+   * @param executionMode execution mode for CKKS noise flooding (EXEC_EVALUATION or EXEC_NOISE_ESTIMATION).
+   * @param decryptionNoiseMode decryption noise mode for CKKS noise flooding.
+   * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in multi-party
+   * interactive bootstrapping (SLACK or COMPACT).
+   */
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                             uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
@@ -69,6 +99,37 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
                               multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {
     }
 
+    /**
+   * Constructor that initializes the CKKS parameters from explicit encoding parameters, including the
+   * threshold-FHE, noise-flooding and composite scaling settings; forwards all arguments to CryptoParametersRNS.
+   *
+   * @param params element parameters (the DCRT modulus chain).
+   * @param encodingParams encoding parameters (scaling modulus size as the plaintext modulus, batch size).
+   * @param distributionParameter standard deviation of the error distribution.
+   * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+   * @param securityLevel security level from the homomorphic encryption standard.
+   * @param digitSize the size of the digit (relinearization window) for BV key switching.
+   * @param secretKeyDist secret key distribution.
+   * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+   * @param ksTech key switching technique (BV or HYBRID).
+   * @param scalTech scaling (rescaling) technique.
+   * @param encTech encryption technique (STANDARD; EXTENDED is BFV-specific).
+   * @param multTech multiplication technique (BFV-specific; unused by CKKS).
+   * @param PREMode security mode for proxy re-encryption.
+   * @param multipartyMode security mode for multiparty (threshold) decryption.
+   * @param executionMode execution mode for CKKS noise flooding (EXEC_EVALUATION or EXEC_NOISE_ESTIMATION).
+   * @param decryptionNoiseMode decryption noise mode for CKKS noise flooding.
+   * @param noiseScale multiplier applied to the fresh encryption noise (always 1 for CKKS).
+   * @param statisticalSecurity statistical security parameter (in bits) for CKKS noise flooding.
+   * @param numAdversarialQueries number of adversarial decryption queries assumed for CKKS noise flooding.
+   * @param thresholdNumOfParties number of parties in a threshold-FHE application (bounds the joint secret key).
+   * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in multi-party
+   * interactive bootstrapping (SLACK or COMPACT).
+   * @param compositeDegree composite scaling degree d for the COMPOSITESCALING techniques (1 otherwise).
+   * @param registerWordSize register word size in bits (32, 48 or 64) used to size the primes in composite
+   * scaling mode.
+   * @param ckksDataType CKKS data type (REAL or COMPLEX).
+   */
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                             uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
@@ -91,26 +152,68 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     virtual ~CryptoParametersCKKSRNS() = default;
 
+    /**
+   * Precomputes the CRT tables of the RNS operations for the given techniques (key switching, scaling,
+   * encryption and multiplication), and additionally the CKKS-specific tables of the bootstrapping modulus
+   * raise with composite scaling and of sparse secret encapsulation.
+   *
+   * @param ksTech key switching technique
+   * @param scalTech scaling (rescaling) technique
+   * @param encTech encryption technique
+   * @param multTech multiplication technique
+   * @param numPartQ number of digits (partitions of Q) for HYBRID key switching
+   * @param auxBits size in bits of the auxiliary moduli of HYBRID key switching
+   * @param extraBits size in bits of the extra modulus of FLEXIBLEAUTOEXT
+   */
     void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
                              MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
                              uint32_t extraBits) override;
 
+    /**
+   * Gets the step between candidate auxiliary primes of HYBRID key switching: 2n for CKKS, so that the primes
+   * are congruent to 1 modulo the cyclotomic order.
+   *
+   * @return the step
+   */
     uint64_t FindAuxPrimeStep() const override;
 
+    /**
+   * Sets the composite degree for COMPOSITESCALINGAUTO: the smallest number of primes of at most the register
+   * word size whose product reaches the scaling modulus size (1 if the scaling modulus fits in the register word).
+   * Each prime must have at least 19 bits; register word sizes above 64 bits are not supported. Has no effect for
+   * the other scaling techniques.
+   *
+   * @param scalingModSize size of the scaling modulus in bits
+   */
     void ConfigureCompositeDegree(uint32_t scalingModSize);
 
     // PlaintextModulus GetPlaintextModulus() const override {
     //     DISABLED_FOR_CKKSRNS_PARAMS;
     // }
 
+    /**
+   * Not available for CKKS (the number of additions is not tracked); always throws.
+   *
+   * @return never returns
+   */
     uint32_t GetEvalAddCount() const override {
         DISABLED_FOR_CKKSRNS_PARAMS;
     }
 
+    /**
+   * Not available for CKKS (the number of key switchings is not tracked); always throws.
+   *
+   * @return never returns
+   */
     uint32_t GetKeySwitchCount() const override {
         DISABLED_FOR_CKKSRNS_PARAMS;
     }
 
+    /**
+   * Not available for CKKS (the number of PRE hops is not tracked); always throws.
+   *
+   * @return never returns
+   */
     uint32_t GetPRENumHops() const override {
         DISABLED_FOR_CKKSRNS_PARAMS;
     }
@@ -202,6 +305,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the element parameters of the sparse encapsulation auxiliary basis P' = {p'_0, ..., p'_{k-1}}
+   *
+   * @return the precomputed parameters
    */
     const std::shared_ptr<ParmType>& GetSparseKSParamsP() const {
         return m_sparseKSParamsP;
@@ -209,6 +314,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the element parameters of the extended basis {q_0, ..., q_{d-1}, p'_0, ..., p'_{k-1}}
+   *
+   * @return the precomputed parameters
    */
     const std::shared_ptr<ParmType>& GetSparseKSParamsQP() const {
         return m_sparseKSParamsQP;
@@ -216,6 +323,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the element parameters of the bottom basis Ql = {q_0, ..., q_{d-1}}
+   *
+   * @return the precomputed parameters
    */
     const std::shared_ptr<ParmType>& GetSparseKSParamsQ() const {
         return m_sparseKSParamsQ;
@@ -223,6 +332,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets [P']_{q_i} for q_i in Ql
+   *
+   * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetSparseKSPModq() const {
         return m_sparseKSPModq;
@@ -230,6 +341,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets [P'^{-1}]_{q_i} for q_i in Ql
+   *
+   * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetSparseKSPInvModq() const {
         return m_sparseKSPInvModq;
@@ -237,6 +350,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets [(P'/p'_j)^{-1}]_{p'_j}
+   *
+   * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetSparseKSPHatInvModp() const {
         return m_sparseKSPHatInvModp;
@@ -244,6 +359,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the modular multiplication precomputations for [(P'/p'_j)^{-1}]_{p'_j}
+   *
+   * @return the precomputed table
    */
     const std::vector<NativeInteger>& GetSparseKSPHatInvModpPrecon() const {
         return m_sparseKSPHatInvModpPrecon;
@@ -251,6 +368,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets [P'/p'_j]_{q_i}, indexed as [q_i][p'_j]
+   *
+   * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetSparseKSPHatModq() const {
         return m_sparseKSPHatModq;
@@ -258,6 +377,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the overflow correction [a*P']_{q_i}, 0 <= a <= k, indexed as [a][q_i]
+   *
+   * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetSparseKSAlphaPModq() const {
         return m_sparseKSAlphaPModq;
@@ -265,6 +386,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the Barrett modulo reduction precomputations for q_i in Ql
+   *
+   * @return the precomputed table
    */
     const std::vector<DoubleNativeInt>& GetSparseKSModqBarrettMu() const {
         return m_sparseKSModqBarrettMu;
@@ -272,6 +395,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets 1./p'_j
+   *
+   * @return the precomputed table
    */
     const std::vector<double>& GetSparseKSpInv() const {
         return m_sparseKSpInv;
@@ -279,6 +404,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets [Ql/q_i]_{p'_j}, indexed as [p'_j][q_i]
+   *
+   * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetSparseKSQlHatModp() const {
         return m_sparseKSQlHatModp;
@@ -286,6 +413,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the overflow correction [a*Ql]_{p'_j}, 0 <= a <= d, indexed as [a][p'_j]
+   *
+   * @return the precomputed table
    */
     const std::vector<std::vector<NativeInteger>>& GetSparseKSAlphaQlModp() const {
         return m_sparseKSAlphaQlModp;
@@ -293,6 +422,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
 
     /**
    * Gets the Barrett modulo reduction precomputations for p'_j
+   *
+   * @return the precomputed table
    */
     const std::vector<DoubleNativeInt>& GetSparseKSModpBarrettMu() const {
         return m_sparseKSModpBarrettMu;
@@ -301,6 +432,8 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
     /**
    * Gets the Hamming weight of the sparse secret used for sparse encapsulation: 32 for a first (bottom) modulus
    * of at most 60 bits, and 64 for larger first moduli; see SparseKSHammingWeight
+   *
+   * @return the Hamming weight
    */
     uint32_t GetSparseKSHammingWeight() const {
         return m_sparseKSHammingWeight;
@@ -312,6 +445,9 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
    * 64-bit build these require composite scaling). The denser secret selects the K = 28 approximations of
    * SPARSE_TERNARY in bootstrapping (K = 16 otherwise). Static so that the bootstrapping depth estimates can
    * apply the same rule before a cryptocontext exists.
+   *
+   * @param firstModSize size of the first modulus in bits
+   * @return the Hamming weight (32 or 64)
    */
     static uint32_t SparseKSHammingWeight(uint32_t firstModSize) {
         return (firstModSize > 60) ? 64 : 32;

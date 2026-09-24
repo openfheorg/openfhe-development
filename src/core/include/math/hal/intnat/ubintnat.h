@@ -68,6 +68,7 @@ namespace intnat {
 // Forward declare class and give it an alias for the expected type
 template <typename IntType>
 class NativeIntegerT;
+/// the native integer of the default word width of the build (NATIVEINT bits)
 using NativeInteger = NativeIntegerT<BasicInteger>;
 
 template <typename IntType>
@@ -82,51 +83,79 @@ class NumberTheoreticTransformNat;
  */
 template <typename utype>
 struct DataTypes {
+    /// signed integer of the same width as utype
     using SignedType = void;
+    /// unsigned integer of twice the width of utype
     using DoubleType = void;
+    /// signed integer of twice the width of utype
     using SignedDoubleType = void;
 };
+/// @brief Companion types of a 32-bit word: 32-bit signed, 64-bit double-width.
 template <>
 struct DataTypes<uint32_t> {
+    /// signed integer of the same width
     using SignedType = int32_t;
+    /// unsigned integer of twice the width
     using DoubleType = uint64_t;
+    /// signed integer of twice the width
     using SignedDoubleType = int64_t;
 };
+/// @brief Companion types of a 64-bit word: 64-bit signed and, when a 128-bit type is
+/// available (HAVE_INT128), 128-bit double-width; otherwise the double-width types fall back
+/// to 64 bits and the kernels use portable two-word arithmetic.
 template <>
 struct DataTypes<uint64_t> {
+    /// signed integer of the same width
     using SignedType = int64_t;
 #if defined(HAVE_INT128)
+    /// unsigned integer of twice the width
     using DoubleType = uint128_t;
+    /// signed integer of twice the width
     using SignedDoubleType = int128_t;
 #else
+    /// no wider type available: falls back to the same width
     using DoubleType = uint64_t;
+    /// no wider type available: falls back to the same width
     using SignedDoubleType = int64_t;
 #endif
 };
 #if defined(HAVE_INT128)
+/// @brief Companion types of a 128-bit word; no wider type exists, so double-width is 128 bits.
 template <>
 struct DataTypes<uint128_t> {
+    /// signed integer of the same width
     using SignedType = int128_t;
+    /// no wider type available: falls back to the same width
     using DoubleType = uint128_t;
+    /// no wider type available: falls back to the same width
     using SignedDoubleType = int128_t;
 };
 #endif
 
-// Largest modulus bit-width the generalized-Barrett kernels are exact for,
-// keyed on the word type rather than on the build.
+/**
+ * @brief Largest modulus bit-width the generalized-Barrett kernels are exact for, keyed on
+ * the word type rather than on the build.
+ * @tparam NativeInt native unsigned integer type
+ */
 template <typename NativeInt>
 struct MaxModulusBits;
+/// @brief Modulus cap for 32-bit words (MAX_MODULUS_SIZE32).
 template <>
 struct MaxModulusBits<uint32_t> {
+    /// the modulus cap in bits
     static constexpr uint32_t value{MAX_MODULUS_SIZE32};
 };
+/// @brief Modulus cap for 64-bit words (MAX_MODULUS_SIZE64).
 template <>
 struct MaxModulusBits<uint64_t> {
+    /// the modulus cap in bits
     static constexpr uint32_t value{MAX_MODULUS_SIZE64};
 };
 #if defined(HAVE_INT128) || NATIVEINT == 128
+/// @brief Modulus cap for 128-bit words (MAX_MODULUS_SIZE128).
 template <>
 struct MaxModulusBits<uint128_t> {
+    /// the modulus cap in bits
     static constexpr uint32_t value{MAX_MODULUS_SIZE128};
 };
 #endif
@@ -148,28 +177,58 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     friend class NumberTheoreticTransformNat<NativeVectorT<NativeIntegerT<NativeInt>>>;
 
   public:
+    /// the underlying native word type
     using Integer = NativeInt;
 
-    // Width conversion between native integer widths. Explicit; the caller guarantees value fits target.
+    /**
+   * Width conversion between native integer widths. Explicit; the caller guarantees that the
+   * value fits the target width (no check is performed).
+   *
+   * @param val is the native integer of another width to convert.
+   */
     template <typename OtherInt, typename = std::enable_if_t<!std::is_same_v<OtherInt, NativeInt>>>
     explicit NativeIntegerT(const NativeIntegerT<OtherInt>& val) noexcept
         : m_value(static_cast<NativeInt>(val.template ConvertToInt<OtherInt>())) {}
+    /// signed integer of the same width as NativeInt
     using SignedNativeInt = typename DataTypes<NativeInt>::SignedType;
+    /// unsigned integer of twice the width of NativeInt (NativeInt itself when none exists)
     using DNativeInt = typename DataTypes<NativeInt>::DoubleType;
+    /// signed integer of twice the width of NativeInt (SignedNativeInt when none exists)
     using SDNativeInt = typename DataTypes<NativeInt>::SignedDoubleType;
 
-    // data structure to represent a double-word integer as two single-word integers
+    /**
+   * @brief Double-word integer represented as two single-word integers.
+   */
     struct typeD {
+        /// most significant word
         NativeInt hi{0};
+        /// least significant word
         NativeInt lo{0};
+
+        /**
+       * Formats both words in base 10 for debugging output.
+       *
+       * @return the string "hi [<hi>], lo [<lo>]".
+       */
         inline std::string ConvertToString() const {
             return std::string("hi [" + toString(hi) + "], lo [" + toString(lo) + "]");
         }
     };
 
+    /**
+   * Explicit conversion to the underlying native word.
+   *
+   * @return the stored value.
+   */
     explicit operator NativeInt() const {
         return m_value;
     }
+
+    /**
+   * Explicit conversion to bool.
+   *
+   * @return true if the value is nonzero.
+   */
     explicit operator bool() const {
         return m_value != 0;
     }
@@ -178,19 +237,43 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     constexpr NativeIntegerT(const NativeIntegerT& val) noexcept : m_value{val.m_value} {}
     constexpr NativeIntegerT(NativeIntegerT&& val) noexcept : m_value{std::move(val.m_value)} {}
 
+    /**
+   * Constructor from a decimal string; throws if the string contains a non-digit or the
+   * value does not fit in NativeInt.
+   *
+   * @param val is the decimal representation of the value.
+   */
     NativeIntegerT(const std::string& val) {
         this->NativeIntegerT::SetValue(val);
     }
 
+    /**
+   * Constructor from a decimal C string; throws if the string contains a non-digit or the
+   * value does not fit in NativeInt.
+   *
+   * @param strval is the decimal representation of the value.
+   */
     explicit NativeIntegerT(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
     }
 
+    /**
+   * Constructor from a built-in integer type (including the 128-bit types); the value is
+   * converted to NativeInt without a range check.
+   *
+   * @param val is the integer value.
+   */
     template <typename T,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
     constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
+    /**
+   * Constructor from a multiprecision integer of one of the big-integer backends; the caller
+   * guarantees that the value fits in NativeInt.
+   *
+   * @param val is the multiprecision integer.
+   */
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
                                                    std::is_same_v<T, M6Integer>,
                                            bool> = true>
@@ -209,16 +292,37 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return *this;
     }
 
+    /**
+   * Assignment from a decimal string; throws if the string contains a non-digit or the value
+   * does not fit in NativeInt.
+   *
+   * @param val is the decimal representation of the value.
+   * @return *this.
+   */
     NativeIntegerT& operator=(const std::string& val) {
         this->NativeIntegerT::SetValue(val);
         return *this;
     }
 
+    /**
+   * Assignment from a decimal C string; throws if the string contains a non-digit or the
+   * value does not fit in NativeInt.
+   *
+   * @param strval is the decimal representation of the value.
+   * @return *this.
+   */
     NativeIntegerT& operator=(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
         return *this;
     }
 
+    /**
+   * Assignment from a built-in integer type (including the 128-bit types); the value is
+   * converted to NativeInt without a range check.
+   *
+   * @param val is the integer value.
+   * @return *this.
+   */
     template <typename T,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
                                bool> = true>
@@ -227,6 +331,13 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return *this;
     }
 
+    /**
+   * Assignment from a multiprecision integer of one of the big-integer backends; the caller
+   * guarantees that the value fits in NativeInt.
+   *
+   * @param val is the multiprecision integer.
+   * @return *this.
+   */
     template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
                                                    std::is_same_v<T, M6Integer>,
                                            bool> = true>
@@ -241,7 +352,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Basic set method for setting the value of a native integer
    *
-   * @param &strval is the string representation of the native integer to be
+   * @param str is the string representation of the native integer to be
    * copied.
    */
     void SetValue(const std::string& str) {
@@ -259,7 +370,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Basic set method for setting the value of a native integer
    *
-   * @param &val is the big binary integer representation of the native
+   * @param val is the big binary integer representation of the native
    * integer to be assigned.
    */
     void SetValue(const NativeIntegerT& val) {
@@ -276,7 +387,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Addition operation.
    *
-   * @param &b is the value to add.
+   * @param b is the value to add.
    * @return result of the addition operation.
    */
     NativeIntegerT Add(const NativeIntegerT& b) const {
@@ -309,7 +420,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Addition operation. In-place variant.
    *
-   * @param &b is the value to add.
+   * @param b is the value to add.
    * @return result of the addition operation.
    */
     NativeIntegerT& AddEq(const NativeIntegerT& b) {
@@ -344,7 +455,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Subtraction operation.
    *
-   * @param &b is the value to subtract.
+   * @param b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
     NativeIntegerT Sub(const NativeIntegerT& b) const {
@@ -375,7 +486,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Subtraction operation. In-place variant.
    *
-   * @param &b is the value to subtract.
+   * @param b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
     NativeIntegerT& SubEq(const NativeIntegerT& b) {
@@ -406,6 +517,12 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return *this = m_value - b.m_value;
     }
 
+    /**
+   * Unary minus: computes 0 - *this with the checking behavior of Sub (saturates to 0 when
+   * bounds checking is enabled, wraps modulo 2^MaxBits() otherwise).
+   *
+   * @return the negated value.
+   */
     NativeIntegerT operator-() const {
         return NativeIntegerT().Sub(*this);
     }
@@ -413,7 +530,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Multiplication operation.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     NativeIntegerT Mul(const NativeIntegerT& b) const {
@@ -446,7 +563,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Multiplication operation. In-place variant.
    *
-   * @param &b is the value to multiply with.
+   * @param b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
     NativeIntegerT& MulEq(const NativeIntegerT& b) {
@@ -481,7 +598,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Division operation.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     NativeIntegerT DividedBy(const NativeIntegerT& b) const {
@@ -493,7 +610,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Division operation. In-place variant.
    *
-   * @param &b is the value to divide by.
+   * @param b is the value to divide by.
    * @return is the result of the division operation.
    */
     NativeIntegerT& DividedByEq(const NativeIntegerT& b) {
@@ -533,8 +650,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     NativeIntegerT MultiplyAndRound(const NativeIntegerT& p, const NativeIntegerT& q) const {
@@ -547,8 +664,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
+   * @param p is the numerator to be multiplied.
+   * @param q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
     NativeIntegerT& MultiplyAndRoundEq(const NativeIntegerT& p, const NativeIntegerT& q) {
@@ -562,7 +679,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     NativeIntegerT DivideAndRound(const NativeIntegerT& q) const {
@@ -580,7 +697,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
    * operation. In-place variant.
    *
-   * @param &q is the denominator to be divided.
+   * @param q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
     NativeIntegerT& DivideAndRoundEq(const NativeIntegerT& q) {
@@ -597,7 +714,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Naive modulus operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
     NativeIntegerT Mod(const NativeIntegerT& modulus) const {
@@ -607,7 +724,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Naive modulus operation. In-place variant.
    *
-   * @param &modulus is the modulus to perform.
+   * @param modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
     NativeIntegerT& ModEq(const NativeIntegerT& modulus) {
@@ -634,8 +751,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Implements generalized Barrett modular reduction algorithm. Uses one
    * precomputed value of mu.
    *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
     NativeIntegerT Mod(const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
@@ -650,8 +767,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Implements generalized Barrett modular reduction algorithm. Uses one
    * precomputed value of mu.
    *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
+   * @param modulus is the modulus to perform.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
     NativeIntegerT& ModEq(const NativeIntegerT& modulus, const NativeIntegerT& mu) {
@@ -663,8 +780,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT ModAdd(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
@@ -684,8 +801,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT& ModAddEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
@@ -704,8 +821,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus addition where operands are < modulus.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT ModAddFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
@@ -718,8 +835,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus addition where operands are < modulus. In-place variant.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT& ModAddFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
@@ -733,9 +850,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus addition operation.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT ModAdd(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
@@ -755,9 +872,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus addition operation. In-place variant.
    *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to add.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
     NativeIntegerT& ModAddEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
@@ -776,8 +893,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
 
     /**
    * Modulus subtraction operation.
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT ModSub(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
@@ -796,8 +913,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT& ModSubEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
@@ -816,8 +933,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus subtraction where operands are < modulus.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT ModSubFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
@@ -828,8 +945,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus subtraction where operands are < modulus. In-place variant.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT& ModSubFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
@@ -841,9 +958,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus subtraction operation.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT ModSub(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
@@ -862,9 +979,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus subtraction operation. In-place variant.
    *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to subtract.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
     NativeIntegerT& ModSubEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
@@ -883,8 +1000,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus multiplication operation.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
@@ -912,8 +1029,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus multiplication operation. In-place variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
@@ -942,9 +1059,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus multiplication.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT ModMul(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) const {
@@ -969,9 +1086,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus multiplication. In-place variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT& ModMulEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
@@ -997,8 +1114,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT ModMulFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
@@ -1019,8 +1136,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Modulus multiplication that assumes the operands are < modulus. In-place
    * variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
@@ -1041,9 +1158,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     /* Source: http://homes.esat.kuleuven.be/~fvercaut/papers/bar_mont.pdf
@@ -1080,9 +1197,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Barrett modulus multiplication that assumes the operands are < modulus.
    * In-place variant.
    *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
+   * @param b is the scalar to multiply.
+   * @param modulus is the modulus to perform operations with.
+   * @param mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT& ModMulFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus, const NativeIntegerT& mu) {
@@ -1123,9 +1240,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modular multiplication using a precomputation for the multiplicand.
    *
-   * @param &b is the NativeIntegerT to multiply.
+   * @param b is the NativeIntegerT to multiply.
    * @param modulus is the modulus to perform operations with.
-   * @param &bInv precomputation for b.
+   * @param bInv precomputation for b.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT ModMulFastConst(const NativeIntegerT& b, const NativeIntegerT& modulus,
@@ -1139,9 +1256,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Modular multiplication using a precomputation for the multiplicand.
    * In-place variant.
    *
-   * @param &b is the NativeIntegerT to multiply.
+   * @param b is the NativeIntegerT to multiply.
    * @param modulus is the modulus to perform operations with.
-   * @param &bInv precomputation for b.
+   * @param bInv precomputation for b.
    * @return is the result of the modulus multiplication operation.
    */
     NativeIntegerT& ModMulFastConstEq(const NativeIntegerT& b, const NativeIntegerT& modulus,
@@ -1155,8 +1272,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus exponentiation operation.
    *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the exponent.
+   * @param mod is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
     NativeIntegerT ModExp(const NativeIntegerT& b, const NativeIntegerT& mod) const {
@@ -1192,8 +1309,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus exponentiation operation. In-place variant.
    *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
+   * @param b is the exponent.
+   * @param mod is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
     NativeIntegerT& ModExpEq(const NativeIntegerT& b, const NativeIntegerT& mod) {
@@ -1203,7 +1320,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus inverse operation.
    *
-   * @param &modulus is the modulus to perform.
+   * @param mod is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
     NativeIntegerT ModInverse(const NativeIntegerT& mod) const {
@@ -1236,7 +1353,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Modulus inverse operation. In-place variant.
    *
-   * @param &modulus is the modulus to perform.
+   * @param mod is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
     NativeIntegerT& ModInverseEq(const NativeIntegerT& mod) {
@@ -1288,7 +1405,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    *
    * @param a is the NativeIntegerT to be compared with.
    * @return  -1 for strictly less than, 0 for equal to and 1 for strictly
-   * greater than conditons.
+   * greater than conditions.
    */
     int Compare(const NativeIntegerT& a) const {
         return (m_value < a.m_value) ? -1 : (m_value > a.m_value) ? 1 : 0;
@@ -1297,7 +1414,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * Converts the value to an int.
    *
-   * @return the int representation of the value as uint32_t.
+   * @return the value converted to the integer type T (defaults to the native type).
    */
     template <typename T = NativeInt,
               std::enable_if_t<std::is_integral_v<T> || std::is_same_v<T, int128_t> || std::is_same_v<T, uint128_t>,
@@ -1393,6 +1510,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     /**
    * A zero allocator that is called by the Matrix class.
    * It is used to initialize a Matrix of NativeIntegerT objects.
+   *
+   * @return a NativeIntegerT holding zero.
    */
     static constexpr NativeIntegerT Allocator() noexcept {
         return NativeIntegerT();
@@ -1410,6 +1529,11 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return toString(m_value);
     }
 
+    /**
+   * Name identifying this integer backend.
+   *
+   * @return the string "UBNATINT".
+   */
     static const std::string IntegerTypeName() {
         return "UBNATINT";
     }
@@ -1510,10 +1634,20 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return 1;
     }
 
+    /**
+   * Bit width of the native word.
+   *
+   * @return the number of bits in NativeInt.
+   */
     static constexpr uint32_t MaxBits() noexcept {
         return m_uintBitLength;
     }
 
+    /**
+   * Tells whether this integer type is a native (single-word) integer.
+   *
+   * @return always true for this class.
+   */
     static constexpr bool IsNativeInt() noexcept {
         return true;
     }
@@ -1523,7 +1657,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    * Right shifts a typeD integer by a specific number of bits
    * and stores the result as a single-word integer.
    *
-   * @param &x double-word input
+   * @param x double-word input
    * @param shift the number of bits to shift by
    * @return the result of right-shifting
    */
@@ -1573,7 +1707,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    *
    * @param a multiplier
    * @param b multiplicand
-   * @param &res result of multiplication
+   * @param res result of multiplication
    */
     static void MultDPortable(NativeInt a, NativeInt b, typeD& res) {
         constexpr uint32_t half{MaxBits() / 2};
@@ -1604,7 +1738,7 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
    *
    * @param a multiplier
    * @param b multiplicand
-   * @param &x result of multiplication
+   * @param res result of multiplication
    */
     static void MultD(NativeInt a, NativeInt b, typeD& res) {
         if constexpr (std::is_same_v<NativeInt, uint32_t>) {
@@ -1697,7 +1831,14 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     }
 };
 
-// helper template to stream vector contents provided T has an stream operator<<
+/**
+ * Streams the contents of a std::vector as "[ v0 v1 ... ]", provided T has a stream
+ * operator<<.
+ *
+ * @param os is the output stream.
+ * @param v is the vector to print.
+ * @return the output stream.
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "[";
@@ -1706,7 +1847,13 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << " ]";
     return os;
 }
-// to stream internal representation
+/**
+ * Explicit instantiation used to stream the internal representation of a vector of words.
+ *
+ * @param os is the output stream.
+ * @param v is the vector to print.
+ * @return the output stream.
+ */
 template std::ostream& operator<< <uint64_t>(std::ostream& os, const std::vector<uint64_t>& v);
 
 }  // namespace intnat

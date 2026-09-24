@@ -47,6 +47,11 @@
 
 namespace lbcrypto {
 
+/**
+ * @class CoefPackedEncoding
+ * @brief Plaintext encoding that stores a vector of integers directly in the coefficients of the polynomial
+ * (no SIMD packing), so that homomorphic multiplication computes polynomial products of the encoded vectors.
+ */
 class CoefPackedEncoding : public PlaintextImpl {
   private:
     std::vector<int64_t> value;
@@ -93,6 +98,12 @@ class CoefPackedEncoding : public PlaintextImpl {
     }
 
   public:
+    /**
+   * @brief Constructs an empty coefficient-packed plaintext over the given element parameters.
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param schemeId scheme the plaintext is created for
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -100,6 +111,14 @@ class CoefPackedEncoding : public PlaintextImpl {
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)
         : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId) {}
 
+    /**
+   * @brief Constructs a coefficient-packed plaintext holding the given coefficients (not encoded yet; call
+   * Encode).
+   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+   * @param ep encoding parameters
+   * @param coeffs the integer coefficients
+   * @param schemeId scheme the plaintext is created for
+   */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -111,8 +130,8 @@ class CoefPackedEncoding : public PlaintextImpl {
     ~CoefPackedEncoding() override = default;
 
     /**
-   * GetCoeffsValue
-   * @return the un-encoded scalar
+   * GetCoefPackedValue
+   * @return the un-encoded integer vector
    */
     const std::vector<int64_t>& GetCoefPackedValue() const override {
         return value;
@@ -149,7 +168,7 @@ class CoefPackedEncoding : public PlaintextImpl {
 
     /**
    * SetLength of the plaintext to the given size
-   * @param siz
+   * @param siz the new number of elements
    */
     void SetLength(size_t siz) override {
         value.resize(siz);

@@ -47,27 +47,47 @@
 namespace lbcrypto {
 
 /**
- * @brief A child of KeySwitchBase for use with RNS keyswitching
- * @tparam Element a ring element.
+ * @brief Abstract base of the RNS (DCRTPoly) key switching methods.
+ *
+ * Adds serialization to KeySwitchBase<DCRTPoly>; the key switching operations themselves are implemented by the
+ * derived classes KeySwitchBV and KeySwitchHYBRID.
  */
 class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
   public:
+    /**
+   * Virtual destructor.
+   */
     virtual ~KeySwitchRNS() = default;
 
     /////////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////////
 
+    /**
+   * Serializes the object (no state of its own beyond the base class).
+   *
+   * @param ar archive to write to
+   */
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<KeySwitchBase<DCRTPoly>>(this));
     }
 
+    /**
+   * Deserializes the object.
+   *
+   * @param ar archive to read from
+   */
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<KeySwitchBase<DCRTPoly>>(this));
     }
 
+    /**
+   * Name used to identify the class in serialized objects.
+   *
+   * @return the name of the class
+   */
     virtual std::string SerializedObjectName() const {
         return "KeySwitchRNS";
     }

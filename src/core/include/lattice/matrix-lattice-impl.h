@@ -135,7 +135,13 @@ void Matrix<Element>::SwitchFormat() {
     }
 }
 
-//  Convert from Z_q to (-q/2, q/2]
+/**
+ * @brief Converts a matrix of integers modulo q to their centered representatives in (-q/2, q/2] as int32_t.
+ *
+ * @param input the matrix of integers in [0, q).
+ * @param modulus the modulus q.
+ * @return the matrix of centered representatives; throws if one does not fit in an int32_t.
+ */
 template <typename T>
 Matrix<int32_t> ConvertToInt32(const Matrix<T>& input, const T& modulus) {
     size_t rows = input.GetRows();
@@ -151,6 +157,14 @@ Matrix<int32_t> ConvertToInt32(const Matrix<T>& input, const T& modulus) {
     return result;
 }
 
+/**
+ * @brief Converts a matrix of vectors modulo q to the centered representatives in (-q/2, q/2] of their first
+ * entries, as int32_t.
+ *
+ * @param input the matrix of vectors with entries in [0, q); only entry 0 of each vector is used.
+ * @param modulus the modulus q.
+ * @return the matrix of centered representatives; throws if one does not fit in an int32_t.
+ */
 template <typename V>
 Matrix<int32_t> ConvertToInt32(const Matrix<V>& input, const typename V::Integer& modulus) {
     size_t rows = input.GetRows();

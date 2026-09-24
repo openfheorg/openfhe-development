@@ -132,7 +132,7 @@ namespace Serial {
  * Serialize an object
  * @param obj - object to serialize
  * @param stream - Stream to serialize to
- * @param sertype - type of serialization; default is BINARY
+ * @param st - type of serialization (BINARY)
  */
 template <typename T>
 void Serialize(const T& obj, std::ostream& stream, const SerType::SERBINARY& st) {
@@ -144,7 +144,7 @@ void Serialize(const T& obj, std::ostream& stream, const SerType::SERBINARY& st)
  * Deserialize an object
  * @param obj - object to deserialize into
  * @param stream - Stream to deserialize from
- * @param sertype - type of de-serialization; default is BINARY
+ * @param st - type of de-serialization (BINARY)
  */
 template <typename T>
 void Deserialize(T& obj, std::istream& stream, const SerType::SERBINARY& st) {
@@ -185,7 +185,7 @@ bool DeserializeFromFile(const std::string& filename, T& obj, const SerType::SER
  * Serialize an object
  * @param obj - object to serialize
  * @param stream - Stream to serialize to
- * @param sertype - type of serialization; default is BINARY
+ * @param ser - type of serialization (JSON)
  */
 template <typename T>
 void Serialize(const T& obj, std::ostream& stream, const SerType::SERJSON& ser) {
@@ -197,7 +197,7 @@ void Serialize(const T& obj, std::ostream& stream, const SerType::SERJSON& ser) 
  * Deserialize an object
  * @param obj - object to deserialize into
  * @param stream - Stream to deserialize from
- * @param sertype - type of serialization; default is BINARY
+ * @param ser - type of de-serialization (JSON)
  */
 template <typename T>
 void Deserialize(T& obj, std::istream& stream, const SerType::SERJSON& ser) {

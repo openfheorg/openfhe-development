@@ -96,25 +96,28 @@ smaller digits, and process these smaller digits separately.
 **Secret key distributions**
 
 Functional bootstrapping is supported for sparse secret keys (SPARSE_TERNARY and SPARSE_ENCAPSULATED) and for
-uniform ternary secret keys (UNIFORM_TERNARY).
+uniform ternary secret keys (UNIFORM_TERNARY). SPARSE_ENCAPSULATED is recommended, as it achieves a probability of
+failure below 2^-128; SPARSE_TERNARY is discouraged.
 
 The SPARSE_TERNARY distribution is the distribution used in the original CKKS paper [[CKKS17](https://eprint.iacr.org/2016/421.pdf)],
 where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 28, this
-distribution leads to a larger probability of failure (about 2^-22 for 2^16 slots). Compared to SPARSE_ENCAPSULATED, choosing
-this distribution requires an extra level in the complex exponential approximation to achieve correctness. This is the
-distribution used for the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
+distribution leads to a larger probability of failure (about 2^-22 for 2^16 slots), so it should not be used in deployments.
+Compared to SPARSE_ENCAPSULATED, choosing this distribution requires an extra level in the complex exponential approximation
+to achieve correctness. This is the distribution used for the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
 
 The SPARSE_ENCAPSULATED distribution (described in [[BTH22]](https://eprint.iacr.org/2022/024.pdf)) uses a Hamming weight of 32
 for the key used in (functional) bootstrapping and 192 for other operations. With the set number of overflows K = 16, this
-distribution leads to a negligible probability of failure. Moreover, for all supported LUT sizes (up to 14 bits), the number of
-levels for the complex exponential approximation is the same. The only caveat for the current implementation is that when the
+distribution leads to a negligible probability of failure (below 2^-138 for N = 2^16 and 2^-137 for N = 2^17 with full
+packing). Moreover, for all supported LUT sizes (up to 14 bits), the number of levels for the complex exponential
+approximation is the same. The only caveat for the current implementation is that when the
 scaling factor is very close to the first modulus size in CKKS (which happens for LUT of input bit-size 14), the noise introduced
 by the extra key switching is larger. For a first modulus larger than 60 bits (which requires composite scaling in the 64-bit
 build), the Hamming weight of the sparse key is 64 and the K = 28 approximation of SPARSE_TERNARY is used, which keeps the
 probability of failure negligible (below 2^-142 for 2^16 slots) at the cost of the extra level mentioned above.
 
-The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption standard. It is handled in the
-same manner as in regular CKKS bootstrapping: the number of overflows is bounded by K = 672 (probability of failure below 2^-73
+The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption security guidelines and can be
+used when uniform ternary secrets are required for compliance with them. It is handled in the same manner as in regular CKKS
+bootstrapping: the number of overflows is bounded by K = 672 (probability of failure below 2^-73
 for N = 2^16 and 2^-30 for N = 2^17 with full packing), and the complex exponential (or cosine, for the binary case) is
 approximated by a degree-104 Chebyshev interpolation over [-672, 672] followed by six double-angle iterations (instead of degree
 64/46 and two double-angle iterations for the sparse distributions). This increases the
@@ -133,9 +136,9 @@ security.
 factors (e.g., 90 bits) are supported with the COMPOSITESCALING* modes, which represent the scaling factor as a product
 of several smaller primes.
 - The current multiprecision sign evaluation implementation requires that the digit bit size divides the input bit size.
-- The supported secret key distributions are SPARSE_TERNARY (larger probability of failure), SPARSE_ENCAPSULATED
-(negligible probability of failure), and UNIFORM_TERNARY (negligible probability of failure, at the cost of a larger
-multiplicative depth and larger scaling factors).
+- The supported secret key distributions are SPARSE_ENCAPSULATED (recommended; probability of failure below 2^-128),
+UNIFORM_TERNARY (probability of failure below 2^-73 for N = 2^16 and 2^-30 for N = 2^17, at the cost of a larger
+multiplicative depth and larger scaling factors), and SPARSE_TERNARY (discouraged; larger probability of failure).
 - The FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL
 modes for rescaling are supported (for the 64-bit build).
 The FLEXIBLEAUTO, FLEXIBLEAUTOEXT, and COMPOSITESCALING* modes track the exact level-specific scaling factors, which

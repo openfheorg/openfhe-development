@@ -56,12 +56,15 @@ class EvalKeyImpl : public Key<Element> {
 
   public:
     /**
-   * Basic constructor for setting crypto params
-   *
-   * @param &cryptoParams is the reference to cryptoParams
+   * Default constructor
    */
     EvalKeyImpl() = default;
 
+    /**
+   * Constructs an evaluation key in the given crypto context with an empty key tag.
+   *
+   * @param cc the crypto context the key belongs to
+   */
     explicit EvalKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc) {}
 
     virtual ~EvalKeyImpl() = default;
@@ -70,7 +73,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &a is the Element vector to be copied.
+   * @param a is the Element vector to be copied.
    */
 
     virtual void SetAVector(const std::vector<Element>& a) {
@@ -81,7 +84,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &&a is the Element vector to be moved.
+   * @param a is the Element vector to be moved.
    */
 
     virtual void SetAVector(std::vector<Element>&& a) {
@@ -103,7 +106,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &b is the Element vector to be copied.
+   * @param b is the Element vector to be copied.
    */
 
     virtual void SetBVector(const std::vector<Element>& b) {
@@ -114,7 +117,7 @@ class EvalKeyImpl : public Key<Element> {
    * Setter function to store Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
-   * @param &&b is the Element vector to be moved.
+   * @param b is the Element vector to be moved.
    */
 
     virtual void SetBVector(std::vector<Element>&& b) {
@@ -132,18 +135,43 @@ class EvalKeyImpl : public Key<Element> {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
+    /**
+   * Releases the key material held by the evaluation key.
+   * Throws exception, to be overridden by derived class.
+   */
     virtual void ClearKeys() {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
+    /**
+   * Equality of evaluation keys, delegated to the virtual key_compare() of the left operand.
+   *
+   * @param a left operand
+   * @param b right operand
+   * @return true if a.key_compare(b) reports equality
+   */
     friend bool operator==(const EvalKeyImpl& a, const EvalKeyImpl& b) {
         return a.key_compare(b);
     }
 
+    /**
+   * Inequality of evaluation keys: negation of operator==.
+   *
+   * @param a left operand
+   * @param b right operand
+   * @return true if the keys differ
+   */
     friend bool operator!=(const EvalKeyImpl& a, EvalKeyImpl& b) {
         return !(a == b);
     }
 
+    /**
+   * Compares this key with another evaluation key.
+   * The base implementation always reports inequality; derived classes override it.
+   *
+   * @param other the evaluation key to compare with
+   * @return true if the keys are equal
+   */
     virtual bool key_compare(const EvalKeyImpl& other) const {
         return false;
     }

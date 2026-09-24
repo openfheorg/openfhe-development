@@ -46,6 +46,10 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief The BGV scheme in the RNS representation: instantiates the BGV parameter generation, PKE, PRE,
+ * leveled SHE, advanced SHE, multiparty and FHE components.
+ */
 class SchemeBGVRNS : public SchemeRNS {
   public:
     SchemeBGVRNS() {
@@ -54,10 +58,22 @@ class SchemeBGVRNS : public SchemeRNS {
 
     virtual ~SchemeBGVRNS() {}
 
+    /**
+   * Compares two schemes by type.
+   *
+   * @param sch the scheme to compare to.
+   * @return true if sch is also a SchemeBGVRNS.
+   */
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
         return (typeid(sch) == typeid(SchemeBGVRNS));
     }
 
+    /**
+   * Instantiates the BGV implementation of the given feature (PKE, PRE, LEVELEDSHE, MULTIPARTY, ADVANCEDSHE
+   * or FHE) if it has not been instantiated yet. KEYSWITCH is set up separately by SetKeySwitchingTechnique().
+   *
+   * @param feature the feature to enable; unsupported features throw.
+   */
     void Enable(PKESchemeFeature feature) override;
 
     /////////////////////////////////////

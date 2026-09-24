@@ -41,9 +41,12 @@ namespace lbcrypto {
 
 class PlaintextImpl;
 
+/// shared pointer to a plaintext
 using Plaintext = std::shared_ptr<PlaintextImpl>;
+/// constant shared pointer to a read-only plaintext (used for function arguments)
 using ConstPlaintext = const std::shared_ptr<const PlaintextImpl>;
 
+/// shared pointer to a read-only plaintext (used for stored precomputations)
 using ReadOnlyPlaintext = std::shared_ptr<const PlaintextImpl>;
 
 }  // namespace lbcrypto

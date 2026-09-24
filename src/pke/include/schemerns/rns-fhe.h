@@ -45,7 +45,6 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract base class for derived HE algorithms
- * @tparam Element a ring element.
  */
 class FHERNS : public FHEBase<DCRTPoly> {
   public:

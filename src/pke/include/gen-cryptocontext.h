@@ -85,6 +85,14 @@ namespace lbcrypto {
 template <typename T>
 class CCParams;
 
+/**
+ * Generates a crypto context from a set of scheme parameters by delegating to the generator class T
+ * (CryptoContextCKKSRNS, CryptoContextBFVRNS or CryptoContextBGVRNS); see the usage notes at the top of this file.
+ *
+ * @tparam T the scheme-specific context generator class
+ * @param params the parameter object for the scheme
+ * @return the generated crypto context (T::ContextType)
+ */
 template <typename T>
 typename T::ContextType GenCryptoContext(const CCParams<T>& params) {
     return T::genCryptoContext(params);

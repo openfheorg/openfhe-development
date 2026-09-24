@@ -48,18 +48,31 @@ namespace lbcrypto {
 /**
  * @brief CryptoObject
  *
- * A class to aid in referring to the crypto context that an object belongs to
+ * A class to aid in referring to the crypto context that an object belongs to.
+ * Every key and ciphertext derives from it and carries the crypto context it was created in together with a
+ * key tag: the identifier of the secret key the object is associated with, used to look up the evaluation keys
+ * (multiplication, rotation, summation) needed for SHE/FHE operations on it.
+ *
+ * @tparam Element a ring element.
  */
 template <typename Element>
 class CryptoObject {
   protected:
+    /** crypto context the object belongs to */
     CryptoContext<Element> context;  // crypto context belongs to the tag used to find the evaluation key needed
                                      // for SHE/FHE operations
+    /** identifier of the secret key the object is associated with; selects the evaluation keys used on it */
     std::string keyTag;
 
   public:
     CryptoObject() = default;
 
+    /**
+   * Constructs an object attached to a crypto context and a key tag.
+   *
+   * @param cc the crypto context the object belongs to
+   * @param tag the key tag identifying the associated secret key (empty by default)
+   */
     explicit CryptoObject(const CryptoContext<Element>& cc, const std::string& tag = "") : context(cc), keyTag(tag) {}
 
     CryptoObject(const CryptoObject& rhs) = default;
@@ -80,16 +93,38 @@ class CryptoObject {
         return *this;
     }
 
+    /**
+   * Equality: the objects refer to the same crypto context instance (pointer comparison) and have the same
+   * key tag.
+   *
+   * @param rhs the object to compare with
+   * @return true if both the context pointer and the key tag match
+   */
     bool operator==(const CryptoObject& rhs) const {
         return context.get() == rhs.context.get() && keyTag == rhs.keyTag;
     }
 
+    /**
+   * Returns the crypto context the object belongs to.
+   *
+   * @return the crypto context (may be null for a default-constructed object)
+   */
     CryptoContext<Element> GetCryptoContext() const {
         return context;
     }
 
+    /**
+   * Returns the crypto parameters of the crypto context the object belongs to.
+   *
+   * @return the crypto parameters of the object's context
+   */
     const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const;
 
+    /**
+   * Returns the encoding parameters of the crypto context the object belongs to.
+   *
+   * @return the encoding parameters of the object's context
+   */
     const EncodingParams GetEncodingParameters() const;
 
     const std::string& GetKeyTag() const {
@@ -106,6 +141,13 @@ class CryptoObject {
         ar(::cereal::make_nvp("kt", keyTag));
     }
 
+    /**
+   * Deserializes the object. The deserialized crypto context is replaced by the matching context registered in
+   * CryptoContextFactory (or registered there if it is new), so that all deserialized objects share one context.
+   *
+   * @param ar the archive to read from
+   * @param version serialized version of the object; must not exceed SerializedVersion()
+   */
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion())

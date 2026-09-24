@@ -146,12 +146,11 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     /* 4. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-    * The secret key distribution for CKKS should be SPARSE_TERNARY, SPARSE_ENCAPSULATED, or UNIFORM_TERNARY.
-    * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
-    * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
-    * of failure at a cost of slightly more noise. The UNIFORM_TERNARY distribution gives a negligible
-    * probability of failure, at the cost of 5 more levels of multiplicative depth and larger scaling
-    * factors (as in regular CKKS bootstrapping).
+    * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
+    * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+    * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
+    * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
+    * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
     * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
@@ -309,12 +308,11 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     /* 5. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-     * The secret key distribution for CKKS should be SPARSE_TERNARY, SPARSE_ENCAPSULATED, or UNIFORM_TERNARY.
-     * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
-     * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
-     * of failure at a cost of slightly more noise. The UNIFORM_TERNARY distribution gives a negligible
-     * probability of failure, at the cost of 5 more levels of multiplicative depth and larger scaling
-     * factors (as in regular CKKS bootstrapping).
+     * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
+     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+     * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
+     * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
+     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
      * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
      * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
@@ -325,7 +323,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     uint32_t levelsAvailableAfterBootstrap = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum = 3;
-    SecretKeyDist secretKeyDist = SPARSE_TERNARY;
+    SecretKeyDist secretKeyDist = SPARSE_ENCAPSULATED;
     ScalingTechnique scalTech = FIXEDMANUAL;
     std::vector<uint32_t> lvlb = {3, 3};
 
@@ -562,12 +560,11 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     /* 5. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus corresponding to the digit.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-     * The secret key distribution for CKKS should be SPARSE_TERNARY, SPARSE_ENCAPSULATED, or UNIFORM_TERNARY.
-     * The SPARSE_TERNARY distribution is for testing purposes as it gives a larger probability of
-     * failure but less noise, while the SPARSE_ENCAPSULATED distribution gives a smaller probability
-     * of failure at a cost of slightly more noise. The UNIFORM_TERNARY distribution gives a negligible
-     * probability of failure, at the cost of 5 more levels of multiplicative depth and larger scaling
-     * factors (as in regular CKKS bootstrapping).
+     * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
+     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+     * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
+     * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
+     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
      * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
      * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,

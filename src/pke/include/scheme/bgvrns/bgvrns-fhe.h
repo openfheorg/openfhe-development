@@ -42,6 +42,9 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief BGV instantiation of the FHE (bootstrapping) component; it inherits the RNS implementation without changes.
+ */
 class FHEBGVRNS : public FHERNS {
   public:
     virtual ~FHEBGVRNS() {}

@@ -63,7 +63,8 @@ class LWEEncryptionScheme {
     LWEPrivateKey KeyGen(uint32_t size, NativeInteger modulus) const;
 
     /**
-   * Generates a secret key of dimension n using modulus q
+   * Generates a secret key of dimension n using modulus q with coefficients sampled from a
+   * discrete Gaussian distribution
    *
    * @param size lattice parameter for the additive LWE scheme
    * @param modulus the modulus for the secret key
@@ -116,6 +117,7 @@ class LWEEncryptionScheme {
     /**
    * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
    *
+   * @param params a shared pointer to LWE scheme parameters
    * @param ksk the key switching key from secret key of dimension N to secret key of dimension n
    * @param ct the ciphertext to convert
    * @return a shared pointer to the ciphertext
@@ -160,7 +162,7 @@ class LWEEncryptionScheme {
     void EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext& ct2) const;
 
     /**
-   * Subtracts the second ciphertext from the first ciphertext, the result is held in the first ciphertext
+   * Subtracts the second ciphertext from the first ciphertext, the result is held in the second ciphertext
    *
    * @param ct1 the ciphertext from which to subtract
    * @param ct2 the ciphertext to subtract, will hold the difference
@@ -170,23 +172,23 @@ class LWEEncryptionScheme {
     /**
    * Subtracts the constant from the ciphertext
    *
-   * @param ct1 the ciphertext which will hold the difference
-   * @param ct2 the constant to subtract
+   * @param ct the ciphertext which will hold the difference
+   * @param cnst the constant to subtract
    */
     void EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
     /**
    * Multiplies a ciphertext by a constant
    *
-   * @param ct1 the ciphertext which will hold the product
-   * @param ct2 the constant to multiply by
+   * @param ct the ciphertext which will hold the product
+   * @param cnst the constant to multiply by
    */
     void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
     /**
    * Changes an LWE ciphertext modulo Q into an LWE ciphertext modulo q
    *
-   * @param q modulus to
+   * @param q the target modulus
    * @param ctQ the input ciphertext
    * @return resulting ciphertext
    */
@@ -216,12 +218,42 @@ class LWEEncryptionScheme {
                             ConstLWECiphertext& ctQN) const;
 
 #if NATIVEINT != 32
+    /**
+   * Generates the switching key from (Q,N) to (q,n) directly in its 32-bit internal form, used when the
+   * key-switching modulus qKS fits a 32-bit word (LWESwitchingKey32Impl::Fits). The whole key is sampled on 32-bit
+   * words, so the 64-bit key is never materialised; the outputs follow the same distributions as KeySwitchGen, but
+   * the sampling sequence differs, so keys are not bit-comparable across widths
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param sk new secret key
+   * @param skN old secret key
+   * @return a shared pointer to the 32-bit switching key
+   */
     LWESwitchingKey32 KeySwitchGen32(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk,
                                      ConstLWEPrivateKey& skN) const;
 
+    /**
+   * Switches ciphertext from (qKS,N) to (qKS,n) using the 32-bit internal switching key. Rows are accumulated
+   * unreduced in 64-bit words and reduced once per output coefficient, so the result is bit-identical to the key
+   * switch on the 64-bit key
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param K the 32-bit switching key
+   * @param ctQN input ciphertext of dimension N whose modulus does not exceed qKS
+   * @return a shared pointer to the resulting ciphertext
+   */
     LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& K,
                             ConstLWECiphertext& ctQN) const;
 
+    /**
+   * Converts a ciphertext with modulus Q and dimension N to a ciphertext with q and n using the 32-bit internal
+   * switching key: modulus switch to qKS, key switch to dimension n, modulus switch to q
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param ksk the 32-bit key switching key from the secret key of dimension N to the secret key of dimension n
+   * @param ct the ciphertext to convert
+   * @return a shared pointer to the ciphertext
+   */
     LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey32& ksk,
                                ConstLWECiphertext& ct) const;
 #endif

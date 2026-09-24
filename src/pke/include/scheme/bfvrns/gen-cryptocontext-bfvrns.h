@@ -49,15 +49,37 @@ namespace lbcrypto {
 template <typename Element>
 class CryptoContextFactory;
 
+/**
+ * @brief Context generator for the BFV scheme: binds the BFV scheme, crypto parameters and factory types
+ * used by GenCryptoContext() and builds a CryptoContext from CCParams<CryptoContextBFVRNS>.
+ */
 class CryptoContextBFVRNS {
     using Element = DCRTPoly;
 
   public:
+    /**
+   * The crypto context type produced by this generator (required by GenCryptoContext()).
+   */
     using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
+    /**
+   * The factory that registers and returns the generated contexts.
+   */
     using Factory = CryptoContextFactory<Element>;
+    /**
+   * The scheme implementation class instantiated for the context.
+   */
     using PublicKeyEncryptionScheme = SchemeBFVRNS;
+    /**
+   * The crypto parameters class instantiated for the context.
+   */
     using CryptoParams = CryptoParametersBFVRNS;
 
+    /**
+   * Validates the parameters and generates a BFV crypto context from them.
+   *
+   * @param parameters the BFV parameters.
+   * @return the generated crypto context.
+   */
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBFVRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
         return genCryptoContextBFVRNSInternal<CryptoContextBFVRNS, Element>(parameters);

@@ -48,6 +48,7 @@
 namespace lbcrypto {
 class EncodingParamsImpl;
 
+/// shared pointer to the encoding parameters
 typedef std::shared_ptr<EncodingParamsImpl> EncodingParams;
 
 /**
@@ -62,11 +63,14 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
    * parameters set. All of the private members not explicitly included as
    * arguments will be initialized to zero.
    *
-   * @param plaintextModulus plainext modulus (used by all encodings)
-   * @param plaintextGenerator (used by packed encoding for plaintext slot
-   * rotation)
+   * @param plaintextModulus plaintext modulus (used by all encodings)
    * @param batchSize sets the maximum batch size (as a power of 2) needed for
    * EvalSum
+   * @param plaintextGenerator (used by packed encoding for plaintext slot
+   * rotation)
+   * @param plaintextRootOfUnity root of unity for the plaintext modulus (used by packed encoding)
+   * @param plaintextBigModulus big plaintext modulus used for arbitrary cyclotomics (used by packed encoding)
+   * @param plaintextBigRootOfUnity root of unity for the big plaintext modulus (used by packed encoding)
    */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
                        NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
@@ -81,7 +85,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     /**
    * Copy constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is copied.
    */
     EncodingParamsImpl(const EncodingParamsImpl& rhs) {
         m_plaintextModulus = rhs.m_plaintextModulus;
@@ -95,7 +99,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     /**
    * Move constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is moved.
    */
     EncodingParamsImpl(EncodingParamsImpl&& rhs) noexcept {
         m_plaintextModulus = std::move(rhs.m_plaintextModulus);
@@ -109,7 +113,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     /**
    * Assignment Operator.
    *
-   * @param &rhs the EncodingParamsImpl to be copied.
+   * @param rhs the EncodingParamsImpl to be copied.
    * @return the resulting EncodingParamsImpl.
    */
     const EncodingParamsImpl& operator=(const EncodingParamsImpl& rhs) {
@@ -141,6 +145,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the plaintext modulus.
+   * @param plaintextModulus the plaintext modulus.
    */
     void SetPlaintextModulus(PlaintextModulus plaintextModulus) {
         m_plaintextModulus = plaintextModulus;
@@ -156,6 +161,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the plaintext modulus root of unity.
+   * @param plaintextRootOfUnity the plaintext modulus root of unity.
    */
     void SetPlaintextRootOfUnity(NativeInteger plaintextRootOfUnity) {
         m_plaintextRootOfUnity = plaintextRootOfUnity;
@@ -163,7 +169,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Getter for the big plaintext modulus.
-   * @return The plaintext modulus.
+   * @return The big plaintext modulus.
    */
     NativeInteger GetPlaintextBigModulus() const {
         return m_plaintextBigModulus;
@@ -171,6 +177,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the big plaintext modulus.
+   * @param plaintextBigModulus the big plaintext modulus.
    */
     void SetPlaintextBigModulus(NativeInteger plaintextBigModulus) {
         m_plaintextBigModulus = plaintextBigModulus;
@@ -186,6 +193,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the big plaintext modulus root of unity.
+   * @param plaintextBigRootOfUnity the big plaintext modulus root of unity.
    */
     void SetPlaintextBigRootOfUnity(NativeInteger plaintextBigRootOfUnity) {
         m_plaintextBigRootOfUnity = plaintextBigRootOfUnity;
@@ -201,6 +209,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the plaintext generator.
+   * @param plaintextGenerator the plaintext generator.
    */
     void SetPlaintextGenerator(uint32_t plaintextGenerator) {
         m_plaintextGenerator = plaintextGenerator;
@@ -216,6 +225,7 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
 
     /**
    * @brief Setter for the batch size
+   * @param batchSize the batch size.
    */
     void SetBatchSize(uint32_t batchSize) {
         m_batchSize = batchSize;
@@ -286,6 +296,11 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     }
 
   protected:
+    /**
+   * @brief Prints all parameters to a stream; called by operator<<.
+   * @param out the output stream
+   * @return the output stream
+   */
     std::ostream& doprint(std::ostream& out) const {
         out << "[p=" << m_plaintextModulus << " rootP =" << m_plaintextRootOfUnity << " bigP =" << m_plaintextBigModulus
             << " rootBigP =" << m_plaintextBigRootOfUnity << " g=" << m_plaintextGenerator << " L=" << m_batchSize
@@ -309,11 +324,24 @@ class EncodingParamsImpl : public lbcrypto::Serializable {
     uint32_t m_batchSize;
 };
 
+/**
+ * @brief Output stream operator for a shared pointer to encoding parameters; prints nothing for a null pointer.
+ * @param out the output stream
+ * @param o the encoding parameters
+ * @return the output stream
+ */
 inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<EncodingParamsImpl>& o) {
     if (o)
         out << *o;
     return out;
 }
+/**
+ * @brief Equality operator for shared pointers to encoding parameters: two null pointers are equal, a null and a
+ * non-null pointer are not, and two non-null pointers compare the parameters they point to.
+ * @param o1 the first encoding parameters
+ * @param o2 the second encoding parameters
+ * @return true if both are null or both point to equal parameters
+ */
 inline bool operator==(const std::shared_ptr<EncodingParamsImpl>& o1, const std::shared_ptr<EncodingParamsImpl>& o2) {
     if (o1 && o2)
         return *o1 == *o2;

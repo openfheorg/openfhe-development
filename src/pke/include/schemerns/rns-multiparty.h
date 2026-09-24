@@ -67,8 +67,6 @@ namespace lbcrypto {
  * All other clients run a regular "Main" multiparty decryption with their own
  * secret key. The resulting partially decrypted ciphertext are then fully
  * decrypted with the decryption fusion algorithms.
- *
- * @tparam Element a ring element.
  */
 class MultipartyRNS : public MultipartyBase<DCRTPoly> {
     using ParmType = typename DCRTPoly::Params;
@@ -80,20 +78,72 @@ class MultipartyRNS : public MultipartyBase<DCRTPoly> {
   public:
     virtual ~MultipartyRNS() = default;
 
+    /**
+   * Threshold FHE: "Partial" decryption computed by all parties except for the lead one. Returns s*c_1 plus
+   * flooding noise: uniform noise expanded from the last towers in NOISE_FLOODING_MULTIPARTY mode, Gaussian
+   * noise from the flooding generator in NOISE_FLOODING_DECRYPT mode, or fixed Gaussian noise otherwise.
+   *
+   * @param ciphertext ciphertext that is being decrypted.
+   * @param privateKey secret key share used for decryption.
+   * @return the partial decryption.
+   */
     Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
                                                const PrivateKey<DCRTPoly> privateKey) const override;
 
+    /**
+   * Threshold FHE: Method for decryption operation run by the lead decryption client. Returns c_0 + s*c_1
+   * plus flooding noise chosen as in MultipartyDecryptMain().
+   *
+   * @param ciphertext ciphertext that is being decrypted.
+   * @param privateKey secret key share used for decryption.
+   * @return the partial decryption.
+   */
     Ciphertext<DCRTPoly> MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
                                                const PrivateKey<DCRTPoly> privateKey) const override;
 
+    /**
+   * Threshold FHE: Generates a partial evaluation key for homomorphic multiplication by multiplying both
+   * vectors of an existing partial evaluation key by the current secret share and adding fresh noise. For
+   * HYBRID key switching the secret share is first extended to the basis QP.
+   *
+   * @param privateKey current secret share.
+   * @param evalKey prior evaluation key.
+   * @return the new joined key.
+   */
     EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const override;
 
+    /**
+   * Interactive bootstrapping: masked decryption with rounding. For a two-polynomial ciphertext (server) it
+   * computes c_0 + c_1*s; for a one-polynomial ciphertext (client) it computes c_0*s. The result is rounded
+   * to prevent an overflow when the two masked decryptions are later added.
+   *
+   * @param privateKey secret key share.
+   * @param ciphertext input ciphertext with one or two polynomials.
+   * @return the masked decryption as a single-polynomial ciphertext.
+   */
     Ciphertext<DCRTPoly> IntBootDecrypt(const PrivateKey<DCRTPoly> privateKey,
                                         ConstCiphertext<DCRTPoly> ciphertext) const override;
 
+    /**
+   * Interactive bootstrapping: public-key encryption of the client's masked decryption. The input polynomial
+   * (2 RNS limbs) is first extended to the full modulus chain Q, and the encoding metadata of the input
+   * ciphertext is copied to the result, with the level reset to 0.
+   *
+   * @param publicKey joint public key based on Threshold FHE.
+   * @param ciphertext input ciphertext holding the masked decryption.
+   * @return the resulting encryption.
+   */
     Ciphertext<DCRTPoly> IntBootEncrypt(const PublicKey<DCRTPoly> publicKey,
                                         ConstCiphertext<DCRTPoly> ciphertext) const override;
 
+    /**
+   * Interactive bootstrapping: adds the encrypted masked decryption and the unencrypted masked decryption
+   * (which is first extended to the full modulus chain Q), producing the refreshed ciphertext.
+   *
+   * @param ciphertext1 encrypted masked decryption.
+   * @param ciphertext2 unencrypted masked decryption (a single polynomial with 2 RNS limbs).
+   * @return the refreshed ciphertext.
+   */
     Ciphertext<DCRTPoly> IntBootAdd(ConstCiphertext<DCRTPoly> ciphertext1,
                                     ConstCiphertext<DCRTPoly> ciphertext2) const override;
 

@@ -78,6 +78,8 @@
 
 namespace lbcrypto {
 
+/// standard deviation above which sampling switches from Peikert's inversion method
+/// (precomputed CDF table) to Karney's rejection method
 constexpr double KARNEY_THRESHOLD = 300.0;
 
 /**
@@ -87,9 +89,7 @@ template <typename VecType>
 class DiscreteGaussianGeneratorImpl {
   public:
     /**
-   * @brief         Basic constructor for specifying distribution parameter and
-   * modulus.
-   * @param modulus The modulus to use to generate discrete values.
+   * @brief         Basic constructor for specifying the distribution parameter.
    * @param std     The standard deviation for this Gaussian Distribution.
    */
     explicit DiscreteGaussianGeneratorImpl(double std = 1.0);
@@ -101,6 +101,7 @@ class DiscreteGaussianGeneratorImpl {
 
     /**
      * @brief Check if the gaussian generator has been initialized with a standard deviation
+     * @return true if the standard deviation has been set to a value above 1
      */
     bool IsInitialized() const;
 
@@ -126,24 +127,34 @@ class DiscreteGaussianGeneratorImpl {
    * @return     a value generated with the distribution.
    */
     int64_t GenerateInt() const;
+
+    /**
+   * @brief      Returns a generated signed integer. Uses Peikert's inversion method
+   * @param g    The pseudorandom generator to draw from.
+   * @return     a value generated with the distribution.
+   */
     int64_t GenerateInt(PRNG& g) const;
 
     /**
    * @brief      Returns a generated integer vector. Uses Peikert's inversion method
+   * if enabled at initialization, and Karney's method otherwise.
    * @param size The number of values to return.
    * @return     vector of integer values generated with the distribution
    */
     std::vector<int64_t> GenerateIntVector(uint32_t size) const;
 
     /**
-   * @brief  Returns a generated integer. Uses Peikert's inversion method.
+   * @brief  Returns a generated integer. Uses Peikert's inversion method
+   * if enabled at initialization, and Karney's method otherwise.
+   * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
    * @return A random value within this Discrete Gaussian Distribution.
    */
     typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const;
 
     /**
    * @brief           Generates a vector of random values within this Discrete
-   * Gaussian Distribution. Uses Peikert's inversion method.
+   * Gaussian Distribution. Uses Peikert's inversion method if enabled at
+   * initialization, and Karney's method otherwise.
    *
    * @param  size     The number of values to return.
    * @param  modulus  modulus of the polynomial ring.
@@ -157,7 +168,7 @@ class DiscreteGaussianGeneratorImpl {
    * @param mean center of discrete Gaussian distribution.
    * @param stddev standard deviatin of discrete Gaussian distribution.
    * @param n is ring dimension
-   * param modulus modulus
+   * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
    * @return A random value within this Discrete Gaussian Distribution.
    */
     typename VecType::Integer GenerateInteger(double mean, double stddev, size_t n,
@@ -172,11 +183,11 @@ class DiscreteGaussianGeneratorImpl {
    */
     int32_t GenerateInteger(double mean, double stddev, size_t n) const;
 
-    /**
-   * @brief  Returns a generated integer (int32_t). Uses rejection method.
-   * @param mean center of discrecte Gaussian distribution.
-   * @param stddev standard deviatin of discrete Gaussian distribution.
-   * @return A random value within this Discrete Gaussian Distribution.
+    /*
+   * Returns a generated integer (int32_t). Uses rejection method.
+   * mean: center of discrete Gaussian distribution.
+   * stddev: standard deviation of discrete Gaussian distribution.
+   * returns a random value within this Discrete Gaussian Distribution.
    */
     // int32_t GenerateInt32 (double mean, double stddev);
     // will be defined later
@@ -189,6 +200,15 @@ class DiscreteGaussianGeneratorImpl {
    * @return A random value within this Discrete Gaussian Distribution.
    */
     static int64_t GenerateIntegerKarney(double mean, double stddev);
+
+    /**
+   * @brief Returns a generated integer. Uses Karney's method defined as
+   * Algorithm D in https://arxiv.org/pdf/1303.6257.pdf
+   * @param mean center of discrecte Gaussian distribution.
+   * @param stddev standard deviation of discrete Gaussian distribution.
+   * @param g The pseudorandom generator to draw from.
+   * @return A random value within this Discrete Gaussian Distribution.
+   */
     static int64_t GenerateIntegerKarney(double mean, double stddev, PRNG& g);
 
   private:

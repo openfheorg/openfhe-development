@@ -85,10 +85,19 @@ namespace lbcrypto {
 class Serializable {
   public:
     virtual ~Serializable() = default;
+    /**
+   * @brief Returns the name identifying the derived class in serialized form; every serializable class provides it.
+   * @return the serialized object name
+   */
     virtual std::string SerializedObjectName() const = 0;
 };
 
-// helper template to stream vector contents provided T has an stream operator<<
+/**
+ * @brief Streams the contents of a vector as "[ v0 v1 ... ]", provided T has a stream operator<<.
+ * @param os output stream
+ * @param v vector to print
+ * @return the output stream
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "[";

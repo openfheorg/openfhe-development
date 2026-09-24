@@ -217,7 +217,9 @@ int main() {
     const std::vector<uint32_t> bsgsDim = {0, 0};
     const usint dcrtBits = 59;
     const usint firstMod = 60;
-    const SecretKeyDist skd = SPARSE_TERNARY;
+    // SPARSE_ENCAPSULATED is recommended (probability of failure below 2^-128). UNIFORM_TERNARY (2^-79 for
+    // N = 2^16, 2^-33 for N = 2^17) needs a larger depth; SPARSE_TERNARY (about 2^-23 for N = 2^16) is discouraged.
+    const SecretKeyDist skd = SPARSE_ENCAPSULATED;
 
     // GetFEFBTDepth covers the functional bootstrapping itself, for the longest of the three series; the
     // levels added on top of it are what is left to compute with on the refreshed ciphertext.

@@ -64,6 +64,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Copy constructor.
+   * @param rhs the parameters to copy from
    */
     CryptoParametersRLWE(const CryptoParametersRLWE& rhs)
         : CryptoParametersBase<Element>(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {
@@ -95,8 +96,8 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * Constructor that initializes values - uses HomomorphicEncryption.org
    * standard security levels
    *
-   * @param &params element parameters.
-   * @param &encodingParams encoding-specific parameters
+   * @param params element parameters.
+   * @param encodingParams encoding-specific parameters
    * @param distributionParameter noise distribution parameter.
    * @param assuranceMeasure assurance level.
    * @param stdLevel security level.
@@ -104,7 +105,14 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param maxRelinSkDeg the maximum power of secret key for which the
    * relinearization key is generated
    * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
+   * @param PREMode security mode for proxy re-encryption
+   * @param multipartyMode security mode for multiparty decryption
+   * @param executionMode execution mode for CKKS noise flooding
+   * @param decryptionNoiseMode decryption noise mode for CKKS noise flooding
    * @param noiseScale used in HRA-secure PRE
+   * @param statisticalSecurity statistical security parameter for CKKS noise flooding and PRE
+   * @param numAdversarialQueries number of adversarial queries for CKKS noise flooding and PRE
+   * @param thresholdNumOfParties number of parties in threshold FHE
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
                          float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel,
@@ -268,7 +276,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     /**
    * Returns reference to Discrete Gaussian Generator
    *
-   * @return reference to Discrete Gaussian Generaror.
+   * @return reference to Discrete Gaussian Generator.
    */
     const typename Element::DggType& GetDiscreteGaussianGenerator() const {
         return m_dgg;
@@ -277,7 +285,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     /**
    * Returns reference to Discrete Gaussian Generator with flooding for PRE
    *
-   * @return reference to Discrete Gaussian Generaror with flooding for PRE.
+   * @return reference to Discrete Gaussian Generator with flooding for PRE.
    * The Std dev for this generator changes based on the PRE mode, so it is not const
    */
     typename Element::DggType& GetFloodingDiscreteGaussianGenerator() {
@@ -315,7 +323,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Sets the value of standard deviation r for discrete Gaussian distribution
-   * @param distributionParameter
+   * @param distributionParameter the standard deviation r
    */
     void SetDistributionParameter(float distributionParameter) {
         m_distributionParameter = distributionParameter;
@@ -324,7 +332,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Sets the value of flooding standard deviation r for discrete Gaussian distribution with flooding
-   * @param distributionParameter
+   * @param distributionParameter the flooding standard deviation r
    */
     void SetFloodingDistributionParameter(double distributionParameter) {
         m_floodingDistributionParameter = distributionParameter;
@@ -333,7 +341,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Sets the values of assurance measure alpha
-   * @param assuranceMeasure
+   * @param assuranceMeasure the assurance measure
    */
     void SetAssuranceMeasure(float assuranceMeasure) {
         m_assuranceMeasure = assuranceMeasure;
@@ -341,7 +349,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Sets the standard security level
-   * @param standard security level
+   * @param securityLevel the standard security level
    */
     void SetStdLevel(SecurityLevel securityLevel) {
         m_stdLevel = securityLevel;
@@ -349,7 +357,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Sets the value of noise scale
-   * @param noiseScale
+   * @param noiseScale the noise scale used in HRA-secure PRE
    */
     void SetNoiseScale(PlaintextModulus noiseScale) {
         m_noiseScale = noiseScale;
@@ -357,7 +365,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
     /**
    * Sets the value of digit size
-   * @param digitSize
+   * @param digitSize the digit size
    */
     void SetDigitSize(uint32_t digitSize) {
         m_digitSize = digitSize;
@@ -382,7 +390,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     /**
    * Sets the value of the maximum power of secret key for which the
    * relinearization key is generated
-   * @param maxRelinSkDeg
+   * @param maxRelinSkDeg the maximum power of secret key
    */
     void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg) {
         m_maxRelinSkDeg = maxRelinSkDeg;
@@ -429,24 +437,24 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     }
 
     /**
-   * Configures the decryption noise mode for CKKS noise flooding and PRE
-   * @param statisticalSecurity.
+   * Configures the statistical security parameter for CKKS noise flooding and PRE
+   * @param statisticalSecurity the statistical security parameter
    */
     void SetStatisticalSecurity(uint32_t statisticalSecurity) {
         m_statisticalSecurity = statisticalSecurity;
     }
 
     /**
-   * Configures the decryption noise mode for CKKS noise flooding and PRE
-   * @param numAdversarialQueries.
+   * Configures the number of adversarial queries for CKKS noise flooding and PRE
+   * @param numAdversarialQueries the number of adversarial queries
    */
     void SetNumAdversarialQueries(uint32_t numAdversarialQueries) {
         m_numAdversarialQueries = numAdversarialQueries;
     }
 
     /**
-   * Configures the number of parties in thresholdFHE
-   * @param thresholdNumOfParties.
+   * Configures the number of parties in threshold FHE
+   * @param thresholdNumOfParties the number of parties
    */
     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties) {
         m_thresholdNumOfParties = thresholdNumOfParties;
@@ -510,56 +518,62 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     }
 
   protected:
-    // standard deviation in Discrete Gaussian Distribution
+    /// standard deviation in Discrete Gaussian Distribution
     float m_distributionParameter = 0;
-    // standard deviation in Discrete Gaussian Distribution with Flooding
+    /// standard deviation in Discrete Gaussian Distribution with Flooding
     double m_floodingDistributionParameter = 0;
-    // assurance measure alpha
+    /// assurance measure alpha
     float m_assuranceMeasure = 0;
-    // noise scale
+    /// noise scale
     PlaintextModulus m_noiseScale = 1;
-    // digit size
+    /// digit size
     uint32_t m_digitSize = 1;
 
+    /// log2 of the noise estimate used to set the flooding noise in the NOISE_FLOODING_DECRYPT mode of CKKS
     double m_noiseEstimate{0};
+    /// multiplicative depth the parameters were generated for
     uint32_t m_multiplicativeDepth{1};
+    /// number of additions assumed in parameter generation
     uint32_t m_evalAddCount{0};
+    /// number of key switching operations assumed in parameter generation
     uint32_t m_keySwitchCount{0};
+    /// number of re-encryption hops supported in the HRA-secure mode of PRE
     uint32_t m_PRENumHops{0};
 
-    // the highest power of secret key for which relinearization key is generated
+    /// the highest power of secret key for which relinearization key is generated
     uint32_t m_maxRelinSkDeg = 2;
-    // specifies whether the secret polynomials are generated from discrete
-    // Gaussian distribution or ternary distribution with the norm of unity
+    /// specifies whether the secret polynomials are generated from discrete
+    /// Gaussian distribution or ternary distribution with the norm of unity
     SecretKeyDist m_secretKeyDist = GAUSSIAN;
-    // Security level according in the HomomorphicEncryption.org standard
+    /// Security level according in the HomomorphicEncryption.org standard
     SecurityLevel m_stdLevel = HEStd_NotSet;
 
-    // m_dgg gets the same default value as m_distributionParameter does
+    /// m_dgg gets the same default value as m_distributionParameter does
     typename Element::DggType m_dgg = typename Element::DggType(0);
-    // m_dggFlooding gets the same default value as m_floodingDistributionParameter does
+    /// m_dggFlooding gets the same default value as m_floodingDistributionParameter does
     typename Element::DggType m_dggFlooding = typename Element::DggType(0);
 
-    // specifies the security mode used for PRE
+    /// specifies the security mode used for PRE
     ProxyReEncryptionMode m_PREMode = NOT_SET;
 
-    // specifies the security mode used for multiparty decryption
+    /// specifies the security mode used for multiparty decryption
     MultipartyMode m_multipartyMode = FIXED_NOISE_MULTIPARTY;
 
-    // specifies the execution mode used for NOISE_FLOODING_DECRYPT mode in CKKS
+    /// specifies the execution mode used for NOISE_FLOODING_DECRYPT mode in CKKS
     ExecutionMode m_executionMode = EXEC_EVALUATION;
 
-    // specifies the noise mode used for decryption in CKKS
+    /// specifies the noise mode used for decryption in CKKS
     DecryptionNoiseMode m_decryptionNoiseMode = FIXED_NOISE_DECRYPT;
 
-    // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
-    // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
+    /// Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
+    /// that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
     double m_statisticalSecurity = 30;
 
-    // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
-    // security of CKKS in NOISE_FLOODING_DECRYPT mode.
+    /// This is the number of adversarial queries a user is expecting for their application, which we use to ensure
+    /// security of CKKS in NOISE_FLOODING_DECRYPT mode.
     double m_numAdversarialQueries = 1;
 
+    /// number of parties in threshold FHE
     uint32_t m_thresholdNumOfParties = 1;
 
     /**
@@ -587,6 +601,12 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
                m_thresholdNumOfParties == el->m_thresholdNumOfParties;
     }
 
+    /**
+   * Prints the base-class parameters followed by the RLWE parameters (distribution parameter,
+   * assurance measure, noise scale, digit size, secret key distribution and security level).
+   *
+   * @param os the stream to print to.
+   */
     void PrintParameters(std::ostream& os) const override {
         CryptoParametersBase<Element>::PrintParameters(os);
 

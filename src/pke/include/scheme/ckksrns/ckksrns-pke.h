@@ -42,6 +42,10 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of the public key encryption capability; adds the noise flooding used by the
+ * NOISE_FLOODING_DECRYPT mode to the RNS decryption.
+ */
 class PKECKKSRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
     using IntType = typename DCRTPoly::Integer;
@@ -55,9 +59,9 @@ class PKECKKSRNS : public PKERNS {
     /**
    * Method for decrypting plaintext with noise flooding
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
@@ -66,9 +70,9 @@ class PKECKKSRNS : public PKERNS {
     /**
    * Method for decrypting plaintext with noise flooding
    *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
+   * @param ciphertext ciphertext to be decrypted.
+   * @param privateKey private key used for decryption.
+   * @param plaintext the plaintext output.
    * @return the decoding result.
    */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,

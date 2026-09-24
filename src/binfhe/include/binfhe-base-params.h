@@ -84,7 +84,7 @@ class BinFHECryptoParams : public Serializable {
 
     /**
    * Getter for LWE params
-   * @return
+   * @return a shared pointer to the LWE crypto parameters
    */
     const std::shared_ptr<LWECryptoParams>& GetLWEParams() const {
         return m_LWEParams;
@@ -92,7 +92,7 @@ class BinFHECryptoParams : public Serializable {
 
     /**
    * Getter for RingGSW params
-   * @return
+   * @return a shared pointer to the RingGSW crypto parameters
    */
     const std::shared_ptr<RingGSWCryptoParams>& GetRingGSWParams() const {
         return m_RGSWParams;
@@ -100,7 +100,8 @@ class BinFHECryptoParams : public Serializable {
 
     /**
    * Compare two BinFHE sets of parameters
-   * @return
+   * @param other the parameters to compare with
+   * @return true if the LWE and RingGSW parameters are both equal
    */
     bool operator==(const BinFHECryptoParams& other) const {
         return *m_LWEParams == *other.m_LWEParams && *m_RGSWParams == *other.m_RGSWParams;

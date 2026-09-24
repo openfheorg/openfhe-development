@@ -98,13 +98,28 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     using BugType = BinaryUniformGeneratorImpl<LilVecType>;
 
     // measured team widths for the loops over the ring dimension
+    /** OpenMP team width for the ring-dimension loops of the ScaleAndRound overloads that output a native polynomial */
     static constexpr uint32_t THREADS_SCALE_TO_POLY{8};
+    /** OpenMP team width for the ring-dimension loops of CRTInterpolate, SwitchCRTBasis, the scale-and-round
+     *  methods over a CRT basis and the format switches beside them */
     static constexpr uint32_t THREADS_CRT_BASIS_SWITCH{16};
+    /** largest OpenMP team width used by ApproxSwitchCRTBasis */
     static constexpr uint32_t THREADS_APPROX_CRT_BASIS_SWITCH{36};
+    /** smallest OpenMP team width used by ApproxSwitchCRTBasis */
     static constexpr uint32_t THREADS_APPROX_CRT_BASIS_SWITCH_MIN{8};
+    /** inner-loop iterations (ring dimension x sizeQ x sizeP) per thread used to size the ApproxSwitchCRTBasis team */
     static constexpr uint64_t APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD{1u << 17};
 
-    // team width for ApproxSwitchCRTBasis and the format switches beside it, from the work in its loop
+    /**
+   * @brief Computes the OpenMP team width for ApproxSwitchCRTBasis and the format switches beside it from the
+   * work in its inner loop: ringDim * sizeQ * sizeP / APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD, clamped to
+   * [THREADS_APPROX_CRT_BASIS_SWITCH_MIN, THREADS_APPROX_CRT_BASIS_SWITCH].
+   *
+   * @param ringDim the ring dimension.
+   * @param sizeQ the number of towers in the source basis Q.
+   * @param sizeP the number of towers in the target basis P.
+   * @return the number of threads to request.
+   */
     static uint32_t ApproxSwitchCRTBasisThreads(uint32_t ringDim, uint32_t sizeQ, uint32_t sizeP) {
         const uint64_t threads =
                 static_cast<uint64_t>(ringDim) * sizeQ * sizeP / APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD;
@@ -117,7 +132,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * it allows the base class (this one) to implement methods that call the derived
    * objects implementation.
    *
-   * @ref Chapter 21.2 "C++ Templates The Complete Guide" by David Vandevoorde and Nicolai M. Josuttis
+   * See Chapter 21.2 "C++ Templates The Complete Guide" by David Vandevoorde and Nicolai M. Josuttis
    * http://www.informit.com/articles/article.asp?p=31473
    *
    * @return DerivedType&
@@ -126,6 +141,11 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
         return static_cast<DerivedType&>(*this);
     }
 
+    /**
+   * @brief Const version of GetDerived().
+   *
+   * @return const reference to this object as the derived type.
+   */
     const DerivedType& GetDerived() const {
         return static_cast<DerivedType const&>(*this);
     }
@@ -136,6 +156,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    *
    * @param params the params to use.
    * @param format - EVALUATION or COEFFICIENT
+   * @return a lambda that creates a zero-initialized element with the given parameters and format.
    */
     static std::function<DerivedType()> Allocator(const std::shared_ptr<Params>& params, Format format) {
         return [=]() {
@@ -144,12 +165,12 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     }
 
     /**
-   * @brief Allocator for discrete uniform distribution.
+   * @brief Allocator for discrete Gaussian distribution.
    *
    * @param params Params instance that is is passed.
    * @param resultFormat resultFormat for the polynomials generated.
    * @param stddev standard deviation for the discrete gaussian generator.
-   * @return the resulting vector.
+   * @return a lambda that generates a discrete Gaussian element.
    */
     static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(const std::shared_ptr<Params>& params,
                                                                                  Format resultFormat, double stddev) {
@@ -164,7 +185,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    *
    * @param params Params instance that is is passed.
    * @param format format for the polynomials generated.
-   * @return the resulting vector.
+   * @return a lambda that generates a discrete uniform element.
    */
     static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
                                                                      Format format) {
@@ -186,14 +207,29 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
         return this->GetDerived().CloneTowers(startTower, endTower);
     }
 
+    /**
+   * @brief Makes a copy of this element.
+   *
+   * @return the copy.
+   */
     DerivedType Clone() const final {
         return DerivedType(this->GetDerived());
     }
 
+    /**
+   * @brief Creates a default-constructed element of the derived type: default parameters and no towers.
+   *
+   * @return the empty element.
+   */
     DerivedType CloneEmpty() const final {
         return DerivedType();
     }
 
+    /**
+   * @brief Creates an element with this element's parameters and format whose tower values are left unallocated.
+   *
+   * @return the new element.
+   */
     DerivedType CloneParametersOnly() const final {
         return DerivedType(this->GetDerived().GetParams(), this->GetDerived().GetFormat());
     }
@@ -203,11 +239,12 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * params. The tower values will be filled up with noise based on the discrete
    * gaussian.
    *
-   * @param &dgg the input discrete Gaussian generator. The dgg will be the seed
+   * @param dgg the input discrete Gaussian generator. The dgg will be the seed
    * to populate the towers of the DCRTPoly with random numbers.
    * @param format the input format fixed to EVALUATION. Format is a enum type
    * that indicates if the polynomial is in Evaluation representation or
    * Coefficient representation. It is defined in inttypes.h.
+   * @return the new element.
    */
     DerivedType CloneWithNoise(const DiscreteGaussianGeneratorImpl<BigVecType>& dgg, Format format) const override = 0;
 
@@ -263,11 +300,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Get interpolated value of elements at all tower index i.
    * Note this operation is computationally intense. Does bound checking
+   * @param i the coefficient index.
    * @return interpolated value at index i.
    */
     BigIntType& at(uint32_t i) final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
+    /**
+   * @brief Const version of at(); not implemented for double-CRT elements and always throws.
+   * @param i the coefficient index.
+   * @return never returns; an exception is thrown.
+   */
     const BigIntType& at(uint32_t i) const final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
@@ -275,11 +318,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Get interpolated value of element at index i.
    * Note this operation is computationally intense. No bound checking
+   * @param i the coefficient index.
    * @return interpolated value at index i.
    */
     BigIntType& operator[](uint32_t i) final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
+    /**
+   * @brief Const version of operator[](); not implemented for double-CRT elements and always throws.
+   * @param i the coefficient index.
+   * @return never returns; an exception is thrown.
+   */
     const BigIntType& operator[](uint32_t i) const final {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
@@ -292,6 +341,11 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     const std::vector<TowerType>& GetAllElements() const {
         return this->GetDerived().GetAllElements();
     }
+    /**
+   * @brief Mutable access to the vector of all component elements (towers).
+   *
+   * @return a reference to the vector of towers.
+   */
     std::vector<TowerType>& GetAllElements() {
         return this->GetDerived().GetAllElements();
     }
@@ -349,6 +403,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    *
    * @param baseBits is the number of bits in the base, i.e., \f$ base =
    * 2^{baseBits} \f$.
+   * @param evalModeAnswer if true, the digits are returned in EVALUATION format; otherwise in COEFFICIENT format.
    * @return is the pointer where the base decomposition vector is stored
    *
    * @warning not efficient and  not fast, uses multiprecision arithmetic and
@@ -375,7 +430,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * CRT basis decomposition of c as [c qi/q]_qi
    *
-   * @param &baseBits bits in the base for additional digit decomposition if
+   * @param baseBits bits in the base for additional digit decomposition if
    * base > 0
    * @return is the pointer where the resulting vector is stored
    */
@@ -383,6 +438,13 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
         return this->GetDerived().CRTDecompose(baseBits);
     }
 
+    /**
+   * @brief Assigns a single-tower (native) polynomial: rhs becomes the first tower and copies of it switched
+   * (centered) to each remaining tower modulus become the other towers; if rhs is empty, all towers are empty.
+   *
+   * @param rhs the native polynomial, with the modulus of the first tower.
+   * @return the resulting element.
+   */
     DerivedType& operator=(const TowerType& rhs) {
         return this->GetDerived().operator=(rhs);
     }
@@ -390,7 +452,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Assignment Operator.
    *
-   * @param &rhs the copied element.
+   * @param rhs the copied element.
    * @return the resulting element.
    */
     DerivedType& operator=(const DerivedType& rhs) override = 0;
@@ -398,7 +460,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Move Assignment Operator.
    *
-   * @param &rhs the copied element.
+   * @param rhs the copied element.
    * @return the resulting element.
    */
     DerivedType& operator=(DerivedType&& rhs) override = 0;
@@ -406,17 +468,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Initalizer list
    *
-   * @param &rhs the list to initalized the element.
+   * @param rhs the list to initalized the element.
    * @return the resulting element.
    */
     DerivedType& operator=(std::initializer_list<uint64_t> rhs) override = 0;
 
     /**
-   * @brief Assignment Operator. The uint32_t val will be set at index zero and all
-   * other indices will be set to zero.
+   * @brief Assigns the constant val to every entry of every tower (each tower's format becomes EVALUATION, as in
+   * PolyImpl::operator=(uint64_t)).
    *
-   * @param val is the uint32_t to assign to index zero.
-   * @return the resulting vector.
+   * @param val the value to assign.
+   * @return the resulting element.
    */
     DerivedType& operator=(uint64_t val) {
         return this->GetDerived().operator=(val);
@@ -426,7 +488,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Creates a Poly from a vector of signed integers (used for trapdoor
    * sampling)
    *
-   * @param &rhs the vector to set the PolyImpl to.
+   * @param rhs the vector to set the PolyImpl to.
    * @return the resulting PolyImpl.
     */
     DerivedType& operator=(const std::vector<int64_t>& rhs) {
@@ -437,7 +499,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Creates a Poly from a vector of signed integers (used for trapdoor
    * sampling)
    *
-   * @param &rhs the vector to set the PolyImpl to.
+   * @param rhs the vector to set the PolyImpl to.
    * @return the resulting PolyImpl.
    */
     DerivedType& operator=(const std::vector<int32_t>& rhs) {
@@ -447,7 +509,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Initalizer list
    *
-   * @param &rhs the list to set the PolyImpl to.
+   * @param rhs the list to set the PolyImpl to.
    * @return the resulting PolyImpl.
    */
     DerivedType& operator=(std::initializer_list<std::string> rhs) {
@@ -463,7 +525,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Equality operator.
    *
-   * @param &rhs is the specified element to be compared with this element.
+   * @param rhs is the specified element to be compared with this element.
    * @return true if this element represents the same values as the specified
    * element, false otherwise.
    */
@@ -473,7 +535,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Performs an entry-wise addition over all elements of each tower with
    * the towers of the element on the right hand side.
    *
-   * @param &rhs is the element to add with.
+   * @param rhs is the element to add with.
    * @return is the result of the addition.
    */
     DerivedType& operator+=(const DerivedType& rhs) override = 0;
@@ -482,8 +544,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Performs an entry-wise subtraction over all elements of each tower
    * with the towers of the element on the right hand side.
    *
-   * @param &rhs is the element to subtract from.
-   * @return is the result of the addition.
+   * @param rhs is the element to subtract.
+   * @return is the result of the subtraction.
    */
     DerivedType& operator-=(const DerivedType& rhs) override = 0;
 
@@ -491,7 +553,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Permutes coefficients in a polynomial. Moves the ith index to the
    * first one, it only supports odd indices.
    *
-   * @param &i is the element to perform the automorphism transform with.
+   * @param i is the automorphism index (an odd integer) to apply.
    * @return is the result of the automorphism transform.
    */
     DerivedType AutomorphismTransform(uint32_t i) const override = 0;
@@ -500,8 +562,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Performs an automorphism transform operation using precomputed bit
    * reversal indices.
    *
-   * @param &i is the element to perform the automorphism transform with.
-   * @param &vec a vector with precomputed indices
+   * @param i is the automorphism index (an odd integer) to apply.
+   * @param vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
     DerivedType AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const override = 0;
@@ -520,7 +582,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Performs an addition operation and returns the result.
    *
-   * @param &element is the element to add with.
+   * @param rhs is the element to add with.
    * @return is the result of the addition.
    */
     DerivedType Plus(const DerivedType& rhs) const override = 0;
@@ -528,7 +590,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Performs a multiplication operation and returns the result.
    *
-   * @param &element is the element to multiply with.
+   * @param rhs is the element to multiply with.
    * @return is the result of the multiplication.
    */
     DerivedType Times(const DerivedType& rhs) const override = 0;
@@ -536,15 +598,16 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Performs a subtraction operation and returns the result.
    *
-   * @param &element is the element to subtract from.
+   * @param rhs is the element to subtract.
    * @return is the result of the subtraction.
    */
     DerivedType Minus(const DerivedType& rhs) const override = 0;
 
     /**
-   * @brief Scalar addition - add an element to the first index of each tower.
+   * @brief Scalar addition - add an integer to the first coefficient of each tower in
+   * COEFFICIENT format, or to all entries of each tower in EVALUATION format.
    *
-   * @param &element is the element to add entry-wise.
+   * @param rhs is the integer to add.
    * @return is the result of the addition operation.
    */
     DerivedType Plus(const BigIntType& rhs) const override = 0;
@@ -555,7 +618,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * correspond to the represented number modulo the primes in the
    * tower chain (in same order).
    *
-   * @param &element is the element to add entry-wise.
+   * @param rhs is the element to add entry-wise.
    * @return is the result of the addition operation.
    */
     DerivedType Plus(const std::vector<BigIntType>& rhs) const {
@@ -565,7 +628,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Scalar subtraction - subtract an element to all entries.
    *
-   * @param &element is the element to subtract entry-wise.
+   * @param rhs is the element to subtract entry-wise.
    * @return is the return value of the minus operation.
    */
     DerivedType Minus(const BigIntType& rhs) const override = 0;
@@ -576,7 +639,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * correspond to the represented number modulo the primes in the
    * tower chain (in same order).
    *
-   * @param &element is the element to subtract entry-wise.
+   * @param rhs is the element to subtract entry-wise.
    * @return is the result of the subtraction operation.
    */
     DerivedType Minus(const std::vector<BigIntType>& rhs) const {
@@ -586,7 +649,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Scalar multiplication - multiply all entries.
    *
-   * @param &element is the element to multiply entry-wise.
+   * @param rhs is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
     DerivedType Times(const BigIntType& rhs) const override = 0;
@@ -594,7 +657,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Scalar multiplication - multiply by a signed integer
    *
-   * @param &element is the element to multiply entry-wise.
+   * @param rhs is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
     DerivedType Times(NativeInteger::SignedNativeInt rhs) const override = 0;
@@ -603,7 +666,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Scalar multiplication - multiply by a signed integer
    *
-   * @param &element is the element to multiply entry-wise.
+   * @param rhs is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    *
    * @note this is need for 128-bit so that the 64-bit inputs can be used.
@@ -616,7 +679,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Scalar multiplication by an integer represented in CRT Basis.
    *
-   * @param &element is the element to multiply entry-wise.
+   * @param rhs is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
     DerivedType Times(const std::vector<NativeInteger>& rhs) const {
@@ -627,7 +690,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Performs a multiplication operation even when the multiplicands
    * have a different number of towers.
    *
-   * @param &element is the element to multiply with.
+   * @param rhs is the element to multiply with.
    * @return is the result of the multiplication.
    */
     DerivedType TimesNoCheck(const std::vector<NativeInteger>& rhs) const {
@@ -638,7 +701,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Scalar modular multiplication by an integer represented in CRT
    * Basis.
    *
-   * @param &element is the element to multiply entry-wise.
+   * @param rhs is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    *
    * @warning Should remove this, data is truncated to native-word size.
@@ -651,8 +714,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Scalar multiplication followed by division and rounding operation -
    * operation on all entries.
    *
-   * @param &p is the element to multiply entry-wise.
-   * @param &q is the element to divide entry-wise.
+   * @param p is the element to multiply entry-wise.
+   * @param q is the element to divide entry-wise.
    * @return is the return value of the multiply, divide and followed by
    * rounding operation.
    *
@@ -666,7 +729,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Scalar division followed by rounding operation - operation on all
    * entries.
    *
-   * @param &q is the element to divide entry-wise.
+   * @param q is the element to divide entry-wise.
    * @return is the return value of the divide, followed by rounding operation.
    *
    * @warning Will remove, this is only inplace because of BFV
@@ -682,31 +745,57 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    */
     virtual DerivedType Negate() const = 0;
 
+    /**
+   * @brief Scalar addition in place: rhs (converted to a native integer) is added to the first coefficient of each
+   * tower in COEFFICIENT format, or to all entries of each tower in EVALUATION format.
+   *
+   * @param rhs the integer to add.
+   * @return the resulting element.
+   */
     DerivedType& operator+=(const BigIntType& rhs) override = 0;
+    /**
+   * @brief Scalar addition in place by a native integer: rhs is added to the first coefficient of each tower in
+   * COEFFICIENT format, or to all entries of each tower in EVALUATION format.
+   *
+   * @param rhs the native integer to add.
+   * @return the resulting element.
+   */
     virtual DerivedType& operator+=(const LilIntType& rhs) = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
    *
-   * @param &element is the element to subtract from.
+   * @param rhs is the element to subtract.
    * @return is the result of the subtraction.
    */
     DerivedType& operator-=(const BigIntType& rhs) override = 0;
+    /**
+   * @brief Scalar subtraction in place by a native integer: rhs is subtracted from all entries of each tower.
+   *
+   * @param rhs the native integer to subtract.
+   * @return the resulting element.
+   */
     virtual DerivedType& operator-=(const LilIntType& rhs) = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
    *
-   * @param &element is the element to multiply by.
+   * @param rhs is the element to multiply by.
    * @return is the result of the multiplication.
    */
     DerivedType& operator*=(const BigIntType& rhs) override = 0;
+    /**
+   * @brief Scalar multiplication in place by a native integer: all entries of each tower are multiplied by rhs.
+   *
+   * @param rhs the native integer to multiply by.
+   * @return the resulting element.
+   */
     virtual DerivedType& operator*=(const LilIntType& rhs) = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
    *
-   * @param &element is the element to multiply with.
+   * @param rhs is the element to multiply with.
    * @return is the result of the multiplication.
    */
     DerivedType& operator*=(const DerivedType& rhs) override = 0;
@@ -758,8 +847,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Set method that should not be used, will throw an error.
    *
-   * @param &values
-   * @param format
+   * @param values ignored; the method always throws.
+   * @param format ignored; the method always throws.
    *
    * @warning Doesn't make sense for DCRT
    */
@@ -773,7 +862,10 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     virtual void SetValuesToZero() = 0;
 
     /**
-   * @brief Sets values with a different modulus
+   * @brief Sets values with a different modulus: the single tower of element is scaled
+   * from its modulus to the given modulus (with rounding) and stored in this element.
+   * @param element the single-tower source element whose values are switched.
+   * @param modulus the new modulus.
    */
     virtual void SetValuesModSwitch(const DerivedType& element, const NativeInteger& modulus) = 0;
 
@@ -786,6 +878,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Add uniformly random values to all components except for the first
    * one
    *
+   * @param modulus the modulus for the random values.
+   * @return never returns; an exception is thrown.
    * @warning Doesn't make sense for DCRT
    */
     DerivedType AddRandomNoise(const BigIntType& modulus) const {
@@ -796,7 +890,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Make DCRTPoly Sparse. Sets every index of each tower not equal to
    * zero mod the wFactor to zero.
    *
-   * @param &wFactor ratio between the sparse and none-sparse values.
+   * @param wFactor ratio between the sparse and none-sparse values.
    *
    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
    */
@@ -818,6 +912,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Drops the last i elements in the double-CRT representation.
+   * @param i the number of towers to drop.
    */
     virtual void DropLastElements(size_t i) = 0;
 
@@ -826,7 +921,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * down by the last CRT modulus, computing round(x/q_l) as
    * (x - [x]_{q_l}) * [q_l^{-1}]_{q_i}. The resulting DCRTPoly element will
    * have one less tower and is always in EVALUATION format.
-   * @param &qlInvModq precomputed values for [q_l^{-1}]_{q_i}
+   * @param qlInvModq precomputed values for [q_l^{-1}]_{q_i}
    */
     virtual void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) = 0;
 
@@ -835,12 +930,12 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * dropping the last modulus from the chain of moduli as well as dropping the
    * last tower.
    *
-   * @param &t is the plaintextModulus used for the DCRTPoly
-   * @param &tModqPrecon NTL-specific precomputations for [t]_{q_i}
-   * @param &negtInvModq precomputed values for [-t^{-1}]_{q_i}
-   * @param &negtInvModqPrecon NTL-specific precomputations for [-t^{-1}]_{q_i}
-   * @param &qlInvModq precomputed values for [q_{l}^{-1}]_{q_i}
-   * @param &qlInvModqPrecon NTL-specific precomputations for [q_{l}^{-1}]_{q_i}
+   * @param t is the plaintextModulus used for the DCRTPoly
+   * @param tModqPrecon NTL-specific precomputations for [t]_{q_i}
+   * @param negtInvModq precomputed values for [-t^{-1}]_{q_i}
+   * @param negtInvModqPrecon NTL-specific precomputations for [-t^{-1}]_{q_i}
+   * @param qlInvModq precomputed values for [q_{l}^{-1}]_{q_i}
+   * @param qlInvModqPrecon NTL-specific precomputations for [q_{l}^{-1}]_{q_i}
    */
     virtual void ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
                            const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,
@@ -855,6 +950,14 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    */
     virtual PolyLargeType CRTInterpolate() const = 0;
 
+    /**
+   * @brief Interpolates the towers to a single polynomial modulo the composite modulus Q, maps each coefficient
+   * from the centered range [-Q/2, Q/2) to [0, ptm) and returns the result as a native polynomial with modulus ptm;
+   * this produces the plaintext polynomial at decryption.
+   *
+   * @param ptm the plaintext modulus.
+   * @return the native polynomial of the reduced coefficients, in this element's format.
+   */
     virtual TowerType DecryptionCRTInterpolate(PlaintextModulus ptm) const = 0;
 
     /**
@@ -871,6 +974,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * Transform Interpolation, only at element index i, all other elements are
    * zero. and then returns a Poly with that single element
    *
+   * @param i the coefficient index to interpolate.
    * @return the interpolated ring element as a Poly object.
    */
     virtual PolyLargeType CRTInterpolateIndex(uint32_t i) const = 0;
@@ -891,10 +995,23 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * CRT basis, which is the concatenation of the towers currently in "this"
    * DCRTPoly, and the moduli in ParamsP.
    *
+   * @param paramsP element parameters for the moduli to append to the current towers.
    * @return element parameters of the extended basis.
    */
     virtual std::shared_ptr<Params> GetExtendedCRTBasis(const std::shared_ptr<Params>& paramsP) const = 0;
 
+    /**
+   * @brief Scales the element by Q/t in place, as used to encode a BFV plaintext into a ciphertext: each coefficient
+   * m (assumed reduced modulo t) of every tower becomes [[m*(-Q)]_t * t^{-1}]_{q_i}, which equals ceil(Q*m/t) mod
+   * q_i, where Q is the product of the current tower moduli and t the plaintext modulus.
+   *
+   * @param paramsQ element parameters of the basis Q (not used by the default implementation, whose current
+   * towers define the basis).
+   * @param tInvModq precomputed values for [t^{-1}]_{q_i}.
+   * @param t the plaintext modulus.
+   * @param NegQModt precomputed value for [-Q]_t.
+   * @param NegQModtPrecon NTL-specific precomputation for NegQModt.
+   */
     virtual void TimesQovert(const std::shared_ptr<Params>& paramsQ, const std::vector<NativeInteger>& tInvModq,
                              const NativeInteger& t, const NativeInteger& NegQModt,
                              const NativeInteger& NegQModtPrecon) = 0;
@@ -907,17 +1024,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * {P} = {p_1,...,p_k}
    *
    * Brief algorithm:
-   * [X']_{p_j} = [\sum_i([x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)]_{p_j}
+   * [X']_{p_j} = [sum over i of [x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)]_{p_j}
    *
    * Source: "A full RNS variant of approximate homomorphic encryption" by
    * Cheon, et. al.
    *
-   * @param &paramsQ parameters for the CRT basis {q_1,...,q_l}
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &QHatinvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
-   * @param &QHatinvModqPrecon NTL-specific precomputations
-   * @param &QHatModp precomputed values for [Q/q_i]_{p_j}
-   * @param &modpBarrettMu 128-bit Barrett reduction precomputed values
+   * @param paramsQ parameters for the CRT basis {q_1,...,q_l}
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
+   * @param QHatInvModqPrecon NTL-specific precomputations
+   * @param QHatModp precomputed values for [Q/q_i]_{p_j}
+   * @param modpBarrettMu 128-bit Barrett reduction precomputed values
    * @return the representation of {X + alpha*Q} in basis {P}.
    */
     virtual DerivedType ApproxSwitchCRTBasis(const std::shared_ptr<Params>& paramsQ,
@@ -941,14 +1058,15 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * Source: "A full RNS variant of approximate homomorphic encryption" by
    * Cheon, et. al.
    *
-   * @param &paramsQ parameters for the CRT basis {q_1,...,q_l}
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
-   * @param &QHatInvModqPrecon NTL-specific precomputations
-   * @param &QHatModp precomputed values for [Q/q_i]_{p_j}
-   * @param &modpBarrettMu 128-bit Barrett reduction precomputed values for
+   * @param paramsQ parameters for the CRT basis {q_1,...,q_l}
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param paramsQP parameters for the CRT basis {q_1,...,q_l,p_1,...,p_k}
+   * @param QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
+   * @param QHatInvModqPrecon NTL-specific precomputations
+   * @param QHatModp precomputed values for [Q/q_i]_{p_j}
+   * @param modpBarrettMu 128-bit Barrett reduction precomputed values for
    * p_j
-   * @return the representation of {X + alpha*Q} in basis {Q,P}.
+   * The element is replaced in place by the representation of {X + alpha*Q} in basis {Q,P}.
    */
     virtual void ApproxModUp(const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
                              const std::shared_ptr<Params>& paramsQP, const std::vector<NativeInteger>& QHatInvModq,
@@ -958,7 +1076,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Performs approximate modulus reduction:
-   * {X}_{Q,P} -> {\approx(X/P)}_{Q}.
+   * {X}_{Q,P} -> {approximately X/P}_{Q}.
    * {Q} = {q_1,...,q_l}
    * {P} = {p_1,...,p_k}
    *
@@ -969,20 +1087,22 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * Source: "A full RNS variant of approximate homomorphic encryption" by
    * Cheon, et. al.
    *
-   * @param &paramsQ parameters for the CRT basis {q_1,...,q_l}
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &PInvModq precomputed values for (P^{-1} mod q_j)
-   * @param &PInvModqPrecon NTL-specific precomputations
-   * @param &PHatInvModp precomputed values for [(P/p_j)^{-1}]_{p_j}
-   * @param &PHatInvModpPrecon NTL-specific precomputations
-   * @param &PHatModq precomputed values for [P/p_j]_{q_i}
-   * @param &modqBarrettMu 128-bit Barrett reduction precomputed values for
+   * @param paramsQ parameters for the CRT basis {q_1,...,q_l}
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param PInvModq precomputed values for (P^{-1} mod q_j)
+   * @param PInvModqPrecon NTL-specific precomputations
+   * @param PHatInvModp precomputed values for [(P/p_j)^{-1}]_{p_j}
+   * @param PHatInvModpPrecon NTL-specific precomputations
+   * @param PHatModq precomputed values for [P/p_j]_{q_i}
+   * @param modqBarrettMu 128-bit Barrett reduction precomputed values for
    * q_i
-   * @param &tInvModp precomputed values for [t^{-1}]_{p_j}
+   * @param tInvModp precomputed values for [t^{-1}]_{p_j}
    * used in BGVrns
+   * @param tInvModpPrecon NTL-specific precomputations
    * @param t often corresponds to the plaintext modulus
    * used in BGVrns
-   * @return the representation of {\approx(X/P)}_{Q}
+   * @param tModqPrecon NTL-specific precomputations for t modulo q_i
+   * @return the representation of approximately X/P in basis {Q}
    */
     virtual DerivedType ApproxModDown(
             const std::shared_ptr<Params>& paramsQ, const std::shared_ptr<Params>& paramsP,
@@ -999,22 +1119,22 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * {P} = {p_1,...,p_k}
    *
    * Brief algorithm:
-   * 1) X=\sum_i[x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)-alpha*Q
+   * 1) X = sum over i of [x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i) - alpha*Q
    * 2) compute round[[x_i*(Q/q_i)^{-1}]_{q_i} / q_i] to find alpha
-   * 3) [X]_{p_j}=[\sum_i[x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)]_{p_j}-[alpha*Q]_{p_j}
+   * 3) [X]_{p_j} = [sum over i of [x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)]_{p_j} - [alpha*Q]_{p_j}
    *
    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the
    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
    * 2018/117. (https://eprint.iacr.org/2018/117)
    *
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
-   * @param &QHatInvModqPrecon NTL-specific precomputations
-   * @param &QHatModp precomputed values for [Q/q_i]_{p_j}
-   * @param &alphaQModp precomputed values for [alpha*Q]_{p_j}
-   * @param &modpBarrettMu 128-bit Barrett reduction precomputed values for
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
+   * @param QHatInvModqPrecon NTL-specific precomputations
+   * @param QHatModp precomputed values for [Q/q_i]_{p_j}
+   * @param alphaQModp precomputed values for [alpha*Q]_{p_j}
+   * @param modpBarrettMu 128-bit Barrett reduction precomputed values for
    * p_j
-   * @params &qInv precomputed values for 1/q_i
+   * @param qInv precomputed values for 1/q_i
    * @return the representation of {X}_{P}
    */
     virtual DerivedType SwitchCRTBasis(const std::shared_ptr<Params>& paramsP,
@@ -1040,15 +1160,15 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
    * 2018/117. (https://eprint.iacr.org/2018/117)
    *
-   * @param &paramsQP parameters for the CRT basis {q_1,...,q_l,p_1,...,p_k}
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &QHatInvModq precomputed values for [QInv_i]_{q_i}
-   * @param &QHatInvModqPrecon NTL-specific precomputations
-   * @param &QHatModp precomputed values for [QHat_i]_{p_j}
-   * @param &alphaQModp precomputed values for [alpha*Q]_{p_j}
-   * @param &modpBarrettMu 128-bit Barrett reduction precomputed values for
+   * @param paramsQP parameters for the CRT basis {q_1,...,q_l,p_1,...,p_k}
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param QHatInvModq precomputed values for [QInv_i]_{q_i}
+   * @param QHatInvModqPrecon NTL-specific precomputations
+   * @param QHatModp precomputed values for [QHat_i]_{p_j}
+   * @param alphaQModp precomputed values for [alpha*Q]_{p_j}
+   * @param modpBarrettMu 128-bit Barrett reduction precomputed values for
    * p_j
-   * @params &qInv precomputed values for 1/q_i
+   * @param qInv precomputed values for 1/q_i
    * @param resultFormat Specifies the format we want the result to be in
    *
    */
@@ -1063,6 +1183,16 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Performs modulus raising in reverse order:
    * {X}_{Q} -> {X}_{P,Q}
+   *
+   * @param paramsQP parameters for the CRT basis {p_1,...,p_k,q_1,...,q_l}
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param QHatInvModq precomputed values for [(Q/q_i)^{-1}]_{q_i}
+   * @param QHatInvModqPrecon NTL-specific precomputations
+   * @param QHatModp precomputed values for [Q/q_i]_{p_j}
+   * @param alphaQModp precomputed values for [alpha*Q]_{p_j}
+   * @param modpBarrettMu 128-bit Barrett reduction precomputed values for p_j
+   * @param qInv precomputed values for 1/q_i
+   * @param resultFormat Specifies the format we want the result to be in
    */
     virtual void ExpandCRTBasisReverseOrder(const std::shared_ptr<Params>& paramsQP,
                                             const std::shared_ptr<Params>& paramsP,
@@ -1073,23 +1203,57 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
                                             const std::vector<DoubleNativeInt>& modpBarrettMu,
                                             const std::vector<double>& qInv, Format resultFormat) = 0;
 
+    /**
+   * @brief Precomputed constants for FastExpandCRTBasisPloverQ, the switch of an element from its current basis
+   * (with product Q) to the extended basis {Q_l, P_l} used by the BFV HPSPOVERQ multiplication variants, with
+   * {Q_l} = {q_1,...,q_l} and {P_l} = {p_1,...,p_k}.
+   */
     struct CRTBasisExtensionPrecomputations {
         // TODO (dsuponit) and (pascoec): make the data members private to enforce their constantness and add getters.
+        /** element parameters of the extended basis {Q_l, P_l} */
         std::shared_ptr<Params> paramsQlPl;
+        /** element parameters of the basis {P_l} */
         std::shared_ptr<Params> paramsPl;
+        /** element parameters of the basis {Q_l} */
         std::shared_ptr<Params> paramsQl;
+        /** precomputed values for [-P_l*(Q/q_i)^{-1}]_{q_i} */
         std::vector<NativeInteger> mPlQHatInvModq;
+        /** NTL-specific precomputations for mPlQHatInvModq */
         std::vector<NativeInteger> mPlQHatInvModqPrecon;
+        /** precomputed values for [q_i^{-1}]_{p_j} */
         std::vector<std::vector<NativeInteger>> qInvModp;
+        /** 128-bit Barrett reduction precomputed values for p_j */
         std::vector<DoubleNativeInt> modpBarrettMu;
+        /** precomputed values for [(P_l/p_j)^{-1}]_{p_j} */
         std::vector<NativeInteger> PlHatInvModp;
+        /** NTL-specific precomputations for PlHatInvModp */
         std::vector<NativeInteger> PlHatInvModpPrecon;
+        /** precomputed values for [P_l/p_j]_{q_i} */
         std::vector<std::vector<NativeInteger>> PlHatModq;
+        /** precomputed values for [alpha*P_l]_{q_i} */
         std::vector<std::vector<NativeInteger>> alphaPlModq;
+        /** 128-bit Barrett reduction precomputed values for q_i */
         std::vector<DoubleNativeInt> modqBarrettMu;
+        /** precomputed values for 1/p_j */
         std::vector<double> pInv;
 
         // clang-format off
+        /**
+       * @brief Constructs the precomputation set from its components.
+       * @param paramsQlPl0 element parameters of the extended basis {Q_l, P_l}.
+       * @param paramsPl0 element parameters of the basis {P_l}.
+       * @param paramsQl0 element parameters of the basis {Q_l}.
+       * @param mPlQHatInvModq0 precomputed values for [-P_l*(Q/q_i)^{-1}]_{q_i}.
+       * @param mPlQHatInvModqPrecon0 NTL-specific precomputations for mPlQHatInvModq0.
+       * @param qInvModp0 precomputed values for [q_i^{-1}]_{p_j}.
+       * @param modpBarrettMu0 128-bit Barrett reduction precomputed values for p_j.
+       * @param PlHatInvModp0 precomputed values for [(P_l/p_j)^{-1}]_{p_j}.
+       * @param PlHatInvModpPrecon0 NTL-specific precomputations for PlHatInvModp0.
+       * @param PlHatModq0 precomputed values for [P_l/p_j]_{q_i}.
+       * @param alphaPlModq0 precomputed values for [alpha*P_l]_{q_i}.
+       * @param modqBarrettMu0 128-bit Barrett reduction precomputed values for q_i.
+       * @param pInv0 precomputed values for 1/p_j.
+       */
         CRTBasisExtensionPrecomputations(
             const std::shared_ptr<Params>& paramsQlPl0,
             const std::shared_ptr<Params>& paramsPl0,
@@ -1121,35 +1285,64 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     };
     typedef struct CRTBasisExtensionPrecomputations CRTBasisExtensionPrecomputations;
 
+    /**
+   * @brief Scales the element by P_l/Q and expands it to the basis {Q_l, P_l} in place (the "P over Q" step of the
+   * BFV HPSPOVERQ multiplication variants):
+   * {X}_{Q} -> {approximately P_l/Q * X}_{Q_l,P_l}
+   * {Q} = the current towers, with product Q
+   * {Q_l} = {q_1,...,q_l}
+   * {P_l} = {p_1,...,p_k}
+   *
+   * Brief algorithm:
+   * 1) ApproxSwitchCRTBasis with the constants [-P_l*(Q/q_i)^{-1}]_{q_i} and [q_i^{-1}]_{p_j} yields
+   *    Y = (P_l*X + sum over i of [-P_l*x_i*(Q/q_i)^{-1}]_{q_i}*(Q/q_i)) / Q in basis {P_l}, i.e. P_l/Q * X
+   *    plus an error in [0, l)
+   * 2) SwitchCRTBasis converts {Y}_{P_l} exactly to {Y}_{Q_l}
+   * 3) the towers of {Y}_{Q_l} followed by those of {Y}_{P_l} form the result in basis {Q_l, P_l}
+   *
+   * @param precomputed the precomputed constants for the bases Q, Q_l and P_l.
+   */
     virtual void FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations& precomputed) = 0;
 
+    /**
+   * @brief Expands the element from the basis {Q_l} = {q_1,...,q_l} back to the full basis {Q} = {q_1,...,q_L}
+   * while multiplying it by Q/Q_l, in place:
+   * {X}_{Q_l} -> {X * Q/Q_l}_{Q}
+   * Each existing tower is multiplied by [Q/Q_l]_{q_i}; the towers for q_{l+1},...,q_L are zero because Q/Q_l
+   * vanishes modulo them. Used by the HPSPOVERQLEVELED BFV multiplication variant.
+   *
+   * @param paramsQ element parameters of the full basis {Q}.
+   * @param QlHatModq precomputed values for [Q/Q_l]_{q_i}, i = 1,...,l.
+   * @param QlHatModqPrecon NTL-specific precomputations for QlHatModq.
+   * @param sizeQ the number of towers L in the full basis {Q}.
+   */
     virtual void ExpandCRTBasisQlHat(const std::shared_ptr<Params>& paramsQ,
                                      const std::vector<NativeInteger>& QlHatModq,
                                      const std::vector<NativeInteger>& QlHatModqPrecon, const uint32_t sizeQ) = 0;
 
     /**
    * @brief Performs scale and round:
-   * {X}_{Q} -> {\round(t/Q*X)}_t
+   * {X}_{Q} -> {round(t/Q*X)}_t
    * {Q} = {q_1,...,q_l}
    * {P} = {p_1,...,p_k}
    *
    * Brief algorithm:
-   * [\sum_i x_i*[t*QHatInv_i/q_i]_t + Round(\sum_i x_i*{t*QHatInv_i/q_i})]_t
+   * [sum over i of x_i*[t*QHatInv_i/q_i]_t + Round(sum over i of x_i*{t*QHatInv_i/q_i})]_t
    *
    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the
    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
    * 2018/117. (https://eprint.iacr.org/2018/117)
    *
-   * @param &t often corresponds to the plaintext modulus
-   * @param &tQHatInvModqDivqModt precomputed values for
+   * @param t often corresponds to the plaintext modulus
+   * @param tQHatInvModqDivqModt precomputed values for
    * [Floor{t*QHatInv_i/q_i}]_t
-   * @param &tQHatInvModqDivqModtPrecon NTL-specific precomputations
-   * @param &tQHatInvModqBDivqModt precomputed values for
+   * @param tQHatInvModqDivqModtPrecon NTL-specific precomputations
+   * @param tQHatInvModqBDivqModt precomputed values for
    * [Floor{t*QHatInv_i*B/q_i}]_t used when CRT moduli are 45..60 bits long
-   * @param &tQHatInvBDivqModtPrecon NTL-specific precomputations
+   * @param tQHatInvModqBDivqModtPrecon NTL-specific precomputations
    * used when CRT moduli are 45..60 bits long
-   * @param &tQHatInvModqDivqFrac precomputed values for Frac{t*QHatInv_i/q_i}
-   * @param &tQHatInvBDivqFrac precomputed values for Frac{t*QHatInv_i*B/q_i}
+   * @param tQHatInvModqDivqFrac precomputed values for Frac{t*QHatInv_i/q_i}
+   * @param tQHatInvModqBDivqFrac precomputed values for Frac{t*QHatInv_i*B/q_i}
    * used when CRT moduli are 45..60 bits long
    * @return the result of computation as a polynomial with native 64-bit
    * coefficients
@@ -1163,25 +1356,25 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Computes approximate scale and round:
-   * {X}_{Q,P} -> {\approx{t/Q * X}}_{P}
+   * {X}_{Q,P} -> {approximately t/Q * X}_{P}
    * {Q} = {q_1,...,q_l}
    * {P} = {p_1,...,p_k}
    *
    * Brief algorithm:
    * Let S = {Q,P}
-   * 1) [\sum_k x_k * alpha_k]_{p_j}
+   * 1) [sum over k of x_k * alpha_k]_{p_j}
    * 2) alpha_k = [Floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}
    *
    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the
    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
    * 2018/117. (https://eprint.iacr.org/2018/117)
    *
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &tPSHatInvModsDivsModp precomputed values for
-   * [\floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}
-   * @param &modpBarretMu 128-bit Barrett reduction precomputed values for
+   * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+   * @param tPSHatInvModsDivsModp precomputed values for
+   * [floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}
+   * @param modpBarretMu 128-bit Barrett reduction precomputed values for
    * p_j
-   * @return the result {\approx{t/Q * X}}_{P}
+   * @return the result {approximately t/Q * X}_{P}
    */
     virtual DerivedType ApproxScaleAndRound(const std::shared_ptr<Params>& paramsP,
                                             const std::vector<std::vector<NativeInteger>>& tPSHatInvModsDivsModp,
@@ -1196,7 +1389,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    *
    * Brief algorithm:
    * Let S = {I,O}
-   * 1) [\sum_k x_k * alpha_k + Round(\sum_k beta_k * x_k)]_{o_j}
+   * 1) [sum over k of x_k * alpha_k + Round(sum over k of beta_k * x_k)]_{o_j}
    * 2) alpha_k = [Floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}
    * 3) beta_k = {t*O*[[SHatInv_k]_{s_k}/s_k}
    *
@@ -1204,12 +1397,12 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
    * 2018/117. (https://eprint.iacr.org/2018/117)
    *
-   * @param &paramsOutput parameters for the CRT basis {o_1,...,o_k}.
-   * @param &tOSHatInvModsDivsModo precomputed values for
-   * [\floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}
-   * @param &tPSHatInvModsDivsFrac precomputed values for
+   * @param paramsOutput parameters for the CRT basis {o_1,...,o_k}.
+   * @param tOSHatInvModsDivsModo precomputed values for
+   * [floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}
+   * @param tOSHatInvModsDivsFrac precomputed values for
    * {t*O*[[SHatInv_k]_{s_k}/s_k}
-   * @param &modoBarretMu 128-bit Barrett reduction precomputed values for
+   * @param modoBarretMu 128-bit Barrett reduction precomputed values for
    * o_j
    * @return the result {t/I * X}_{O}
    */
@@ -1220,7 +1413,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Computes scale and round for fast rounding:
-   * {X}_{Q} -> {\round(t/Q * X)}_t
+   * {X}_{Q} -> {round(t/Q * X)}_t
    * {Q} = {q_1,...,q_l}
    *
    * Brief algorithm:
@@ -1230,14 +1423,14 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * Schemes. Cryptology ePrint Archive: Report 2016/510.
    * (https://eprint.iacr.org/2016/510)
    *
-   * @param &moduliQ moduli {q_1,...,q_l}
-   * @param &t often corresponds to the plaintext modulus
-   * @param &tgamma t * gamma : t * 2^26 reduction
-   * @param &tgammaQHatModq [t*gamma*(Q/q_i)]_{q_i}
-   * @param &tgammaQHatModqPrecon NTL-specific precomputations
-   * @param &negInvqModtgamma [-q^{-1}]_{t*gamma}
-   * @param &negInvqModtgammaPrecon NTL-specific precomputations
-   * @return
+   * @param moduliQ moduli {q_1,...,q_l}
+   * @param t often corresponds to the plaintext modulus
+   * @param tgamma t * gamma : t * 2^26 reduction
+   * @param tgammaQHatModq [t*gamma*(Q/q_i)]_{q_i}
+   * @param tgammaQHatModqPrecon NTL-specific precomputations
+   * @param negInvqModtgamma [-q^{-1}]_{t*gamma}
+   * @param negInvqModtgammaPrecon NTL-specific precomputations
+   * @return the result of computation as a polynomial with native 64-bit coefficients
    */
     virtual TowerType ScaleAndRound(const std::vector<NativeInteger>& moduliQ, const NativeInteger& t,
                                     const NativeInteger& tgamma, const std::vector<NativeInteger>& tgammaQHatModq,
@@ -1247,16 +1440,15 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Computes scale and round for BFV encryption mode EXTENDED:
-   * {X}_{Qp} -> {\round(1/p * X)}_Q
+   * {X}_{Qp} -> {round(1/p * X)}_Q
    * {Q} = {q_1,...,q_l}
    *
    * Source: Andrey Kim and Yuriy Polyakov and Vincent Zucca. Revisiting Homomorphic Encryption
    * Schemes for Finite Fields. Cryptology ePrint Archive: Report 2021/204.
    * (https://eprint.iacr.org/2021/204.pdf)
    *
-   * @param &paramsQ Parameters for moduli {q_1,...,q_l}
-   * @param &pInvModq p^{-1}_{q_i}
-   * @return
+   * @param paramsQ Parameters for moduli {q_1,...,q_l}
+   * @param pInvModq p^{-1}_{q_i}
    */
     virtual void ScaleAndRoundPOverQ(const std::shared_ptr<Params>& paramsQ,
                                      const std::vector<NativeInteger>& pInvModq) = 0;
@@ -1276,19 +1468,19 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * (https://eprint.iacr.org/2016/510)
    *
    * @param paramsQBsk: container of QBsk moduli and roots on unity
-   * @param &moduliQ: basis {Q} = {q_1,q_2,...,q_l}
-   * @param &moduliBsk: basis {Bsk U mtilde} ...
-   * @param &modbskBarrettMu: 128-bit Barrett reduction precomputed values for
+   * @param moduliQ: basis {Q} = {q_1,q_2,...,q_l}
+   * @param moduliBsk: basis {Bsk U mtilde} ...
+   * @param modbskBarrettMu: 128-bit Barrett reduction precomputed values for
    * bsk_j
-   * @param &mtildeQHatInvModq: [mtilde*(Q/q_i)^{-1}]_{q_i}
-   * @param &mtildeQHatInvModqPrecon NTL-specific precomputations
-   * @param &QHatModbsk: [Q/q_i]_{bsk_j}
-   * @param &QHatModmtilde: [Q/q_i]_{mtilde}
-   * @param &QModbsk: [Q]_{bsk_j}
-   * @param &QModbskPrecon NTL-specific precomputations
-   * @param &negQInvModmtilde: [-Q^{-1}]_{mtilde}
-   * @param &mtildeInvModbsk: [mtilde^{-1}]_{bsk_j}
-   * @param &mtildeInvModbskPrecon NTL-specific precomputations
+   * @param mtildeQHatInvModq: [mtilde*(Q/q_i)^{-1}]_{q_i}
+   * @param mtildeQHatInvModqPrecon NTL-specific precomputations
+   * @param QHatModbsk: [Q/q_i]_{bsk_j}
+   * @param QHatModmtilde: [Q/q_i]_{mtilde}
+   * @param QModbsk: [Q]_{bsk_j}
+   * @param QModbskPrecon NTL-specific precomputations
+   * @param negQInvModmtilde: [-Q^{-1}]_{mtilde}
+   * @param mtildeInvModbsk: [mtilde^{-1}]_{bsk_j}
+   * @param mtildeInvModbskPrecon NTL-specific precomputations
    */
     virtual void FastBaseConvqToBskMontgomery(
             const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
@@ -1302,7 +1494,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Computes scale and floor:
-   * {X}_{Q,Bsk} -> {\floor{t/Q * X}}_{Bsk}
+   * {X}_{Q,Bsk} -> {floor(t/Q * X)}_{Bsk}
    * {Q} = {q_1,...,q_l}
    * {Bsk} = {bsk_1,...,bsk_k}
    * Outputs the resulting polynomial in CRT/RNS
@@ -1312,17 +1504,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * Schemes. Cryptology ePrint Archive: Report 2016/510.
    * (https://eprint.iacr.org/2016/510)
    *
-   * @param &t: plaintext modulus
-   * @param &moduliQ: {Q} = {q_1,...,q_l}
-   * @param &moduliBsk: {Bsk} = {bsk_1,...,bsk_k}
-   * @param &modbskBarrettMu: 128-bit Barrett reduction precomputed values for
+   * @param t: plaintext modulus
+   * @param moduliQ: {Q} = {q_1,...,q_l}
+   * @param moduliBsk: {Bsk} = {bsk_1,...,bsk_k}
+   * @param modbskBarrettMu: 128-bit Barrett reduction precomputed values for
    * bsk_j
-   * @param &tQHatInvModq: [(Q/q_i)^{-1}]_{q_i}
-   * @param &tQHatInvModqPrecon: NTL-specific precomputations
-   * @param &QHatModbsk: [Q/q_i]_{bsk_i}
-   * @param &qInvModbsk: [(q_i)^{-1}]_{bsk_j}
-   * @param &tQInvModbsk: [t*Q^{-1}]_{bsk_j}
-   * @param &tQInvModbskPrecon: NTL-specific precomputations
+   * @param tQHatInvModq: [(Q/q_i)^{-1}]_{q_i}
+   * @param tQHatInvModqPrecon: NTL-specific precomputations
+   * @param QHatModbsk: [Q/q_i]_{bsk_i}
+   * @param qInvModbsk: [(q_i)^{-1}]_{bsk_j}
+   * @param tQInvModbsk: [t*Q^{-1}]_{bsk_j}
+   * @param tQInvModbskPrecon: NTL-specific precomputations
    */
     virtual void FastRNSFloorq(const NativeInteger& t, const std::vector<NativeInteger>& moduliQ,
                                const std::vector<NativeInteger>& moduliBsk,
@@ -1335,11 +1527,12 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
                                const std::vector<NativeInteger>& tQInvModbskPrecon) = 0;
 
     /**
-   * @brief @brief Converts basis:
-   * {X}_{Q,Bsk} -> {X}_{Bsk}
+   * @brief Converts basis:
+   * {X}_{Q,Bsk} -> {X}_{Q}
    * {Q} = {q_1,...,q_l}
    * {Bsk} = {bsk_1,...,bsk_k}
-   * using Shenoy Kumaresan method.
+   * using Shenoy Kumaresan method: the Q towers are recomputed from the Bsk
+   * towers, which are then dropped.
    * Outputs the resulting polynomial in CRT/RNS
    *
    * Source: Jean-Claude Bajard and Julien Eynard and Anwar Hasan and Vincent
@@ -1349,18 +1542,18 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    *
    * Note in the source paper, B is referred to by M.
    *
-   * @param &paramsQ: Params for Q
-   * @param &modqBarrettMu precomputed Barrett Mu for q_i
-   * @param &moduliBsk: basis {Bsk} = {bsk_1,...,bsk_k}
-   * @param &modbskBarrettMu: precomputed Barrett Mu for bsk_j
-   * @param &BHatInvModb: [(B/b_j)^{-1}]_{b_j}
-   * @param &BHatInvModbPrecon NTL precomptations for [(B/b_j)^{-1}]_{b_j}
-   * @param &BHatModmsk: [B/b_j]_{msk}
-   * @param &BInvModmsk: [B^{-1}]_{msk}
-   * @param &BInvModmskPrecon NTL precomptation for [B^{-1}]_{msk}
-   * @param &BHatModq: [B/b_j]_{q_i}
-   * @param &BModq: [B]_{q_i}
-   * @param &BModqPrecon NTL precomptations for [B]_{q_i}
+   * @param paramsQ: Params for Q
+   * @param modqBarrettMu precomputed Barrett Mu for q_i
+   * @param moduliBsk: basis {Bsk} = {bsk_1,...,bsk_k}
+   * @param modbskBarrettMu: precomputed Barrett Mu for bsk_j
+   * @param BHatInvModb: [(B/b_j)^{-1}]_{b_j}
+   * @param BHatInvModbPrecon NTL precomptations for [(B/b_j)^{-1}]_{b_j}
+   * @param BHatModmsk: [B/b_j]_{msk}
+   * @param BInvModmsk: [B^{-1}]_{msk}
+   * @param BInvModmskPrecon NTL precomptation for [B^{-1}]_{msk}
+   * @param BHatModq: [B/b_j]_{q_i}
+   * @param BModq: [B]_{q_i}
+   * @param BModqPrecon NTL precomptations for [B]_{q_i}
    */
     virtual void FastBaseConvSK(
             const std::shared_ptr<Params>& paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
@@ -1373,6 +1566,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
    *
+   * @param thread_limit upper bound on the number of OpenMP threads for the loop over the towers; 0 means up to
+   * one thread per tower.
    * @warning use @see SetFormat(format) instead
    */
     void SwitchFormat(uint32_t thread_limit = 0) override = 0;
@@ -1380,16 +1575,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /**
    * @brief Sets format to value without performing NTT. Only use if you know what you're doing.
    *
+   * @param f the format to record.
    */
     virtual void OverrideFormat(const Format f) = 0;
 
     /**
    * @brief Switch modulus and adjust the values
    *
-   * @param &modulus is the modulus to be set
-   * @param &rootOfUnity is the corresponding root of unity for the modulus
-   * @param &modulusArb is the modulus used for arbitrary cyclotomics CRT
-   * @param &rootOfUnityArb is the corresponding root of unity for the modulus
+   * @param modulus is the modulus to be set
+   * @param rootOfUnity is the corresponding root of unity for the modulus
+   * @param modulusArb is the modulus used for arbitrary cyclotomics CRT
+   * @param rootOfUnityArb is the corresponding root of unity for the modulus
    * ASSUMPTION: This method assumes that the caller provides the correct
    * rootOfUnity for the modulus
    */
@@ -1402,8 +1598,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief Switch modulus at tower i and adjust the values
    *
    * @param index is the index for the tower
-   * @param &modulus is the modulus to be set
-   * @param &rootOfUnity is the corresponding root of unity for the modulus
+   * @param modulus is the modulus to be set
+   * @param rootOfUnity is the corresponding root of unity for the modulus
    * ASSUMPTION: This method assumes that the caller provides the correct
    * rootOfUnity for the modulus
    */
@@ -1428,6 +1624,11 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
         return PolyLargeType(this->GetDerived().CRTInterpolate()).Norm();
     }
 
+    /**
+   * @brief Returns the name of the derived element type, e.g. "DCRTPolyImpl".
+   *
+   * @return the element type name.
+   */
     const std::string GetElementName() const {
         return this->GetDerived().GetElementName();
     }
@@ -1511,7 +1712,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief Element-integer subtraction operator with CRT integer.
-   * @param a first element to subtract.
+   * @param a element to subtract from.
    * @param b integer to subtract.
    * @return the result of the subtraction operation.
    */
@@ -1521,7 +1722,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     /**
    * @brief BigIntType-element subtraction operator with CRT integer.
-   * @param a integer to subtract.
+   * @param a integer to subtract from.
    * @param b element to subtract.
    * @return the result of the subtraction operation.
    */

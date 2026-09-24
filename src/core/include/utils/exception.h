@@ -48,11 +48,14 @@
 
 namespace lbcrypto {
 
-// Exceptions thrown inside of a critical region, or inside of an omp thread,
-// must be caught in the same thread where thrown, or Bad Things Happen
-//
-// This class is used to catch and rethrow exceptions from threads/critical
-// regions (thank you stack overflow)
+/**
+ * @brief Captures an exception thrown inside an OpenMP parallel region or thread so it can be rethrown in the
+ * calling thread after the region ends.
+ *
+ * Exceptions thrown inside a critical region or an OpenMP thread must be caught in the thread where they were
+ * thrown. Declare an instance before the region, call CaptureException() from a catch(...) block inside it (or
+ * wrap the body in Run()), and call Rethrow() after the region; see the usage example below the class.
+ */
 class ThreadException {
     std::exception_ptr Ptr;
     std::mutex Lock;
@@ -60,15 +63,27 @@ class ThreadException {
   public:
     ThreadException() : Ptr(nullptr) {}
     ~ThreadException() {}
+    /**
+   * @brief Rethrows the captured exception, if any, in the calling thread; does nothing when none was captured.
+   */
     void Rethrow() {
         if (this->Ptr)
             std::rethrow_exception(this->Ptr);
     }
+    /**
+   * @brief Stores the exception currently being handled (call from inside a catch block); thread-safe, the last
+   * captured exception wins.
+   */
     void CaptureException() {
         std::unique_lock<std::mutex> guard(this->Lock);
         this->Ptr = std::current_exception();
     }
 
+    /**
+   * @brief Invokes f(params...) and captures any exception it throws instead of letting it escape the thread.
+   * @param f callable to run
+   * @param params arguments forwarded to f
+   */
     template <typename Function, typename... Parameters>
     void Run(Function f, Parameters... params) {
         try {
@@ -102,6 +117,11 @@ class ThreadException {
 // }
 // e.Rethrow();
 
+/**
+ * @brief Exception type thrown by OpenFHE, normally through the OPENFHE_THROW macro. Records the error
+ * description together with the throw site (file, function, line) and the call stack at construction; what()
+ * returns "file:l.line:function(): description".
+ */
 class OpenFHEException : public std::exception {
     // clang-format off
     std::string m_errorDescription;
@@ -120,6 +140,13 @@ class OpenFHEException : public std::exception {
     }
 
 public:
+    /**
+     * @brief Constructs the exception and captures the call stack.
+     * @param errorDescription description of the error
+     * @param fileName source file of the throw site (__FILE__)
+     * @param funcName function of the throw site (__func__)
+     * @param lineNumber line of the throw site (__LINE__)
+     */
     explicit OpenFHEException(const std::string_view errorDescription,
                               const std::string fileName,
                               const std::string funcName,
@@ -136,15 +163,28 @@ public:
     OpenFHEException(const OpenFHEException&) = default;
     OpenFHEException& operator=(const OpenFHEException&) = default;
 
+    /**
+   * @brief Returns the formatted error message "file:l.line:function(): description".
+   * @return the error message
+   */
     const char* what() const noexcept override {
         return m_errorMessage.c_str();
     }
 
+    /**
+   * @brief Returns the call stack captured when the exception was constructed, one frame per entry (empty when
+   * call-stack capture is not available in this build).
+   * @return the call stack frames
+   */
     std::vector<std::string> getCallStackAsVector() const {
         return m_callStack;
     }
 
     // getCallStackAsString() was added to be used by JSON logger. the implementtion will follow
+    /**
+   * @brief Placeholder for a single-string rendering of the call stack intended for a JSON logger.
+   * @return an empty string; the implementation is not yet provided
+   */
     std::string getCallStackAsString() const {
         return std::string();
 
@@ -160,6 +200,10 @@ public:
     }
 };
 
+/**
+ * @brief Throws an OpenFHEException with the given description, tagged with the current file, function, and line.
+ * @param desc error description (anything convertible to std::string_view)
+ */
 #define OPENFHE_THROW(desc) throw lbcrypto::OpenFHEException((desc), __FILE__, __func__, __LINE__)
 
 }  // namespace lbcrypto

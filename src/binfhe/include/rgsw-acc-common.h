@@ -58,10 +58,12 @@ Int AtWidth(const NativeInteger& x) {
 
 enum class GadgetTerm { NONE, ADD, SUB };
 
-// the plaintext of one RGSW encryption: term * X^position * G
+/**
+ * @brief The plaintext of one RGSW encryption: term * X^position * G, where G is the gadget vector
+ */
 struct GadgetMonomial {
-    uint32_t position{0};
-    GadgetTerm term{GadgetTerm::NONE};
+    uint32_t position{0};               ///< exponent of X, in [0, N)
+    GadgetTerm term{GadgetTerm::NONE};  ///< sign of the monomial; NONE encrypts zero
 };
 
 // X^m for an exponent m given modulo q: scaled to the cyclotomic order 2N and folded past N into

@@ -55,10 +55,12 @@
 
 namespace lbcrypto {
 
-/*
- Generates a random number between 0 and n.
- Input: BigInteger n.
- Output: Randomly generated BigInteger  between 0 and n.
+/**
+ * Generates a uniformly random integer in [0, modulus) by drawing 32-bit chunks from the
+ * global PRNG and rejecting draws that are not below the modulus.
+ *
+ * @param modulus the exclusive upper bound
+ * @return a uniformly random integer below modulus
  */
 template <typename IntType>
 static IntType RNG(const IntType& modulus) {
@@ -80,13 +82,14 @@ static IntType RNG(const IntType& modulus) {
             return result;
     }
 }
-/*
- A witness function used for the Miller-Rabin Primality test.
- Inputs: a is a randomly generated witness between 2 and p-1,
- p is the number to be tested for primality,
- s and d satisfy p-1 = ((2^s) * d), d is odd.
- Output: true if p is composite,
- false if p is likely prime
+/**
+ * A witness function used for the Miller-Rabin primality test.
+ *
+ * @param a a randomly generated witness between 2 and p-1
+ * @param d the odd factor with p-1 = 2^s * d
+ * @param s the power of two with p-1 = 2^s * d
+ * @param p the number to be tested for primality
+ * @return true if p is composite, false if p is likely prime
  */
 template <typename IntType>
 static bool WitnessFunction(const IntType& a, const IntType& d, uint32_t s, const IntType& p) {
@@ -101,9 +104,12 @@ static bool WitnessFunction(const IntType& a, const IntType& d, uint32_t s, cons
     return (mod != IntType(1));
 }
 
-/*
- A helper function to RootOfUnity function. This finds a generator for a given
- prime q. Input: BigInteger q which is a prime. Output: A generator of prime q
+/**
+ * A helper function to RootOfUnity function. This finds a generator of the multiplicative
+ * group of a given prime q by random trials against the prime factors of q-1.
+ *
+ * @param q a prime
+ * @return a generator of Z_q^*
  */
 template <typename IntType>
 static IntType FindGenerator(const IntType& q) {

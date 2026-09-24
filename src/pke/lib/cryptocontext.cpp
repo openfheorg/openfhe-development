@@ -262,8 +262,8 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys() {
 }
 
 /**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given id
- * @param keyTag
+ * ClearEvalSumKeys - flush EvalSumKey cache for a given id
+ * @param keyTag secret key tag
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& keyTag) {
@@ -271,8 +271,8 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& keyTag) {
 }
 
 /**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given context
- * @param cc
+ * ClearEvalSumKeys - flush EvalSumKey cache for a given context
+ * @param cc the context to clear all EvalSumKeys for
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys(const CryptoContext<Element> cc) {
@@ -298,7 +298,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
 
 /**
  * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given id
- * @param keyTag
+ * @param keyTag secret key tag
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& keyTag) {
@@ -310,7 +310,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& ke
 /**
  * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given
  * context
- * @param cc
+ * @param cc the context to clear all EvalAutomorphismKeys for
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<Element> cc) {

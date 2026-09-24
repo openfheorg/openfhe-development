@@ -51,7 +51,6 @@ namespace lbcrypto {
 
 /**
  * @class ILParamsImpl
- * @file ilparams.h
  * @brief Wrapper class to hold the parameters for integer lattice operations
  * and their inheritors.
  */
@@ -64,18 +63,40 @@ class ILParamsImpl final : public ElemParams<IntType> {
     ~ILParamsImpl() override = default;
 
     /**
-   * @brief Constructors computing the missing parameters: the modulus (last
-   * prime of the given bit width for the order) and/or the root of unity.
+   * @brief Constructor computing the missing parameters: the modulus (last
+   * prime of the given bit width for the order) and the root of unity.
+   * @param order the cyclotomic order.
+   * @param bits the bit width of the modulus to select.
    */
     explicit ILParamsImpl(uint32_t order, uint32_t bits = MAX_MODULUS_SIZE)
         : ILParamsImpl<IntType>(order, LastPrime<IntType>(bits, order)) {}
 
+    /**
+   * @brief Constructor computing the root of unity for the given cyclotomic order and modulus.
+   * @param order the cyclotomic order.
+   * @param modulus the modulus.
+   */
     explicit ILParamsImpl(uint32_t order, const IntType& modulus)
         : ElemParams<IntType>(order, modulus, RootOfUnity<IntType>(order, modulus)) {}
 
+    /**
+   * @brief Constructor with the cyclotomic order, the modulus and its root of unity given.
+   * @param order the cyclotomic order.
+   * @param modulus the modulus.
+   * @param rootOfUnity the root of unity for the modulus.
+   */
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity)
         : ElemParams<IntType>(order, modulus, rootOfUnity) {}
 
+    /**
+   * @brief Constructor with all parameters given, including the big modulus and big root of unity used for
+   * arbitrary cyclotomics.
+   * @param order the cyclotomic order.
+   * @param modulus the modulus.
+   * @param rootOfUnity the root of unity for the modulus.
+   * @param bigModulus the big modulus.
+   * @param bigRootOfUnity the root of unity for the big modulus.
+   */
     ILParamsImpl(uint32_t order, const IntType& modulus, const IntType& rootOfUnity, const IntType& bigModulus,
                  const IntType& bigRootOfUnity)
         : ElemParams<IntType>(order, modulus, rootOfUnity, bigModulus, bigRootOfUnity) {}
@@ -83,14 +104,14 @@ class ILParamsImpl final : public ElemParams<IntType> {
     /**
    * @brief Copy constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is copied.
    */
     ILParamsImpl(const ILParamsImpl& rhs) : ElemParams<IntType>(rhs) {}
 
     /**
    * @brief Copy Assignment Operator.
    *
-   * @param &rhs the params to be copied.
+   * @param rhs the params to be copied.
    * @return this object
    */
     ILParamsImpl& operator=(const ILParamsImpl& rhs) {
@@ -101,7 +122,7 @@ class ILParamsImpl final : public ElemParams<IntType> {
     /**
    * @brief Move constructor.
    *
-   * @param &rhs the input set of parameters which is copied.
+   * @param rhs the input set of parameters which is moved.
    */
     ILParamsImpl(ILParamsImpl&& rhs) noexcept : ElemParams<IntType>(std::move(rhs)) {}
 
@@ -113,6 +134,8 @@ class ILParamsImpl final : public ElemParams<IntType> {
     /**
    * @brief Equality operator: true only when rhs is also an ILParamsImpl and
    * all wrapped parameters are equal.
+   * @param rhs the parameter set to compare to.
+   * @return true if rhs is an ILParamsImpl with the same parameters, false otherwise.
    */
     bool operator==(const ElemParams<IntType>& rhs) const override {
         // ATTENTION: dynamic_cast was replaced with typeid() to fix failures in unittests linked with clang++-18 and running on MacOS

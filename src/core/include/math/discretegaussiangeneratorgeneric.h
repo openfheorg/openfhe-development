@@ -111,6 +111,7 @@
 
 namespace lbcrypto {
 
+/// algorithm used by a BaseSampler: Knuth-Yao (DDG tree) or Peikert's inversion method
 enum BaseSamplerType { KNUTH_YAO = 0, PEIKERT = 1 };
 
 class DiscreteGaussianGeneratorGeneric;
@@ -118,7 +119,7 @@ class BaseSampler;
 class SamplerCombiner;
 class BitGenerator;
 
-/*
+/**
  * @brief Class implementation to generate random bit. This is created for
  * centralizing the random bit pools by the samplers.
  */
@@ -126,7 +127,7 @@ class BitGenerator {
   public:
     BitGenerator() = default;
     ~BitGenerator() = default;
-    /*
+    /**
    * @brief Method for generating a random bit
    * @return A random bit
    */
@@ -142,13 +143,13 @@ class BitGenerator {
     uint32_t m_sequence{0};
     uint32_t m_counter{0};
 };
-/*
+/**
  * @brief Class definiton for base samplers with precomputation that is used for
  * UCSD generic sampler
  */
 class BaseSampler {
   public:
-    /*
+    /**
    * @brief Constructor
    * @param mean Mean of the distribution
    * @param std Standard deviation of the distribution
@@ -158,16 +159,16 @@ class BaseSampler {
    */
     BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType);
     BaseSampler() = default;
-    /*
+    /**
    * @brief Method for generating integer from the base sampler
    * @return A random integer from the distribution
    */
     virtual int64_t GenerateInteger();
-    /*
+    /**
    * @brief Destroyer for the base sampler
    */
     virtual ~BaseSampler() = default;
-    /*
+    /**
    * @brief Method for generating a random bit from the bit generator within
    * @return A random bit
    */
@@ -245,14 +246,13 @@ class BaseSampler {
     /**
    * @brief Generates the probability matrix of given distribution, which is
    * used in Knuth-Yao method
-   * @param sttdev standard deviation of Discrete Gaussian Distribution
+   * @param stddev standard deviation of Discrete Gaussian Distribution
    * @param mean Center of the distribution
-   * @param tableCount Number of probability tables to be generated
    */
     void GenerateProbMatrix(double stddev, double mean);
     /**
-   * @ brief Returns a generated integer. Uses Naive Knuth-Yao method
-   * @ return A random value within the Discrete Gaussian Distribution
+   * @brief Returns a generated integer. Uses Naive Knuth-Yao method
+   * @return A random value within the Discrete Gaussian Distribution
    */
     int64_t GenerateIntegerKnuthYao();
     /**
@@ -260,7 +260,7 @@ class BaseSampler {
    */
     int64_t GenerateIntegerPeikert() const;
 };
-/*
+/**
  * @brief Class for combining samples from two base samplers, which is used for
  * UCSD generic sampling
  */
@@ -303,7 +303,7 @@ class DiscreteGaussianGeneratorGeneric {
    * @brief Basic constructor which does the precomputations.
    * @param samplers Array containing the base samplers
    * @param std Standard deviation of the base samplers
-   * @param base Log of number of centers that are used for calculating base
+   * @param b Log of number of centers that are used for calculating base
    * samplers (Recall that base samplers are centered from 0 to (2^b-1)/2^b)
    * @param N smoothing parameter
    */
@@ -313,13 +313,19 @@ class DiscreteGaussianGeneratorGeneric {
     DiscreteGaussianGeneratorGeneric& operator=(const DiscreteGaussianGeneratorGeneric&) = delete;
 
     /**
-   * @ brief Returns a generated integer. Uses generic algorithm in UCSD paper,
+   * @brief Returns a generated integer. Uses generic algorithm in UCSD paper,
    * based on Sample Z
-   * @ param mean Mean of the distribution
-   * @ param variance Variance of the desired distribution
-   * @ return A random value within the Discrete Gaussian Distribution
+   * @param mean Mean of the distribution
+   * @param std Standard deviation of the desired distribution
+   * @return A random value within the Discrete Gaussian Distribution
    */
     int64_t GenerateInteger(double mean, double std);
+
+    /**
+   * @brief Returns a sample from the first base sampler (center 0), bypassing the generic
+   * combination step.
+   * @return A random value within the Discrete Gaussian Distribution of the first base sampler
+   */
     int64_t GenerateInteger() {
         return base_samplers[0]->GenerateInteger();
     }
