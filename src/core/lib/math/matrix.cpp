@@ -125,8 +125,9 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
         OPENFHE_THROW("not square");
     }
     size_t rows = input.GetRows();
-    //  Matrix<LargeFloat> result([]() { return make_unique<LargeFloat>(); },
-    // rows, rows);
+    if (result.GetRows() != rows || result.GetCols() != rows) {
+        OPENFHE_THROW("result must have the dimensions of input");
+    }
 
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < rows; ++j) {
@@ -135,7 +136,7 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
     }
 
     for (size_t k = 0; k < rows; ++k) {
-        result(k, k) = std::sqrt(input(k, k));
+        result(k, k) = std::sqrt(result(k, k));
 
         for (size_t i = k + 1; i < rows; ++i) {
             // result(i, k) = input(i, k) / result(k, k);
