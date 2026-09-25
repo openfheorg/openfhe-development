@@ -204,19 +204,19 @@ IntType RootOfUnity(uint32_t m, const IntType& modulo) {
         result = RootOfUnity(m, modulo);
 
     /*
-   * At this point, result contains a primitive root of unity. However,
-   * we want to return the minimum root of unity, to avoid different
-   * crypto contexts having different roots of unity for the same
-   * cyclotomic order and moduli. Therefore, we are going to cycle over
-   * all primitive roots of unity and select the smallest one (minRU).
-   *
-   * To cycle over all primitive roots of unity, we raise the root of
-   * unity in result to all the powers that are co-prime to the
-   * cyclotomic order. In power-of-two cyclotomics, this will be the
-   * set of all odd powers, but here we use a more general routine
-   * to support arbitrary cyclotomics.
-   *
-   */
+     * At this point, result contains a primitive root of unity. However,
+     * we want to return the minimum root of unity, to avoid different
+     * crypto contexts having different roots of unity for the same
+     * cyclotomic order and moduli. Therefore, we are going to cycle over
+     * all primitive roots of unity and select the smallest one (minRU).
+     *
+     * To cycle over all primitive roots of unity, we raise the root of
+     * unity in result to all the powers that are co-prime to the
+     * cyclotomic order. In power-of-two cyclotomics, this will be the
+     * set of all odd powers, but here we use a more general routine
+     * to support arbitrary cyclotomics.
+     *
+     */
 
     IntType mu(modulo.ComputeMu());
     IntType x(1);

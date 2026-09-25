@@ -138,19 +138,19 @@ class StdLatticeParm {
 
   public:
     /**
-   * @brief Constructs one table row.
-   * @param distType secret key distribution
-   * @param ringDim ring dimension
-   * @param minSecLev security level the row is certified for
-   * @param maxLogQ largest supported bit size of the ciphertext modulus
-   */
+     * @brief Constructs one table row.
+     * @param distType secret key distribution
+     * @param ringDim ring dimension
+     * @param minSecLev security level the row is certified for
+     * @param maxLogQ largest supported bit size of the ciphertext modulus
+     */
     StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
         : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}
 
     /**
-   * @brief Builds the lookup maps (by ring dimension and by modulus bit size) from the static table of rows.
-   * Called on first use by FindMaxQ and FindRingDim.
-   */
+     * @brief Builds the lookup maps (by ring dimension and by modulus bit size) from the static table of rows.
+     * Called on first use by FindMaxQ and FindRingDim.
+     */
     static void initializeLookups() {
         for (size_t i = 0; i < StandardLatticeParmSets.size(); i++) {
             StdLatticeParm& s = StandardLatticeParmSets[i];
@@ -161,12 +161,12 @@ class StdLatticeParm {
     }
 
     /**
-   * @brief Looks up the largest supported ciphertext modulus bit size for a ring dimension.
-   * @param distType secret key distribution
-   * @param minSecLev required security level
-   * @param ringDim ring dimension
-   * @return the maximum log2 of the ciphertext modulus, or 0 if the table has no row for this ring dimension
-   */
+     * @brief Looks up the largest supported ciphertext modulus bit size for a ring dimension.
+     * @param distType secret key distribution
+     * @param minSecLev required security level
+     * @param ringDim ring dimension
+     * @return the maximum log2 of the ciphertext modulus, or 0 if the table has no row for this ring dimension
+     */
     static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
         int distTypeIdx = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
@@ -179,12 +179,12 @@ class StdLatticeParm {
     }
 
     /**
-   * @brief Finds the smallest tabulated ring dimension whose maximum modulus bit size is at least curLogQ.
-   * @param distType secret key distribution
-   * @param minSecLev required security level
-   * @param curLogQ log2 of the ciphertext modulus
-   * @return the ring dimension, or twice the largest tabulated ring dimension if curLogQ exceeds every table row
-   */
+     * @brief Finds the smallest tabulated ring dimension whose maximum modulus bit size is at least curLogQ.
+     * @param distType secret key distribution
+     * @param minSecLev required security level
+     * @param curLogQ log2 of the ciphertext modulus
+     * @return the ring dimension, or twice the largest tabulated ring dimension if curLogQ exceeds every table row
+     */
     static uint32_t FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
         if (!initialized)
             initializeLookups();

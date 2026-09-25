@@ -56,55 +56,55 @@ class PKEBFVRNS : public PKERNS {
     virtual ~PKEBFVRNS() {}
 
     /**
-   * Generates a BFV key pair. The keys are generated over the key basis returned by GetParamsPK() (Q, Qr for
-   * EXTENDED encryption, or QP for HYBRID key switching with PRE) and the secret key is then truncated to the
-   * ciphertext basis.
-   *
-   * @param cc the crypto context the keys are generated for.
-   * @param makeSparse set to true to generate a sparse (ring-reduction) key; no longer supported.
-   * @return the generated key pair.
-   */
+     * Generates a BFV key pair. The keys are generated over the key basis returned by GetParamsPK() (Q, Qr for
+     * EXTENDED encryption, or QP for HYBRID key switching with PRE) and the secret key is then truncated to the
+     * ciphertext basis.
+     *
+     * @param cc the crypto context the keys are generated for.
+     * @param makeSparse set to true to generate a sparse (ring-reduction) key; no longer supported.
+     * @return the generated key pair.
+     */
     KeyPair<DCRTPoly> KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) const override;
 
     /**
-   * Method for encrypting plaintext using LBC
-   *
-   * @param plaintext copy of the plaintext element. NOTE a copy is passed!
-   * That is NOT an error!
-   * @param publicKey public key used for encryption.
-   * @return ciphertext which results from encryption.
-   */
+     * Method for encrypting plaintext using LBC
+     *
+     * @param plaintext copy of the plaintext element. NOTE a copy is passed!
+     * That is NOT an error!
+     * @param publicKey public key used for encryption.
+     * @return ciphertext which results from encryption.
+     */
     Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPoly> publicKey) const override;
 
     /**
-   * Method for encrypting plaintext using LBC
-   *
-   * @param plaintext copy of the plaintext input. NOTE a copy is passed! That
-   * is NOT an error!
-   * @param privateKey private key used for encryption.
-   * @return ciphertext which results from encryption.
-   */
+     * Method for encrypting plaintext using LBC
+     *
+     * @param plaintext copy of the plaintext input. NOTE a copy is passed! That
+     * is NOT an error!
+     * @param privateKey private key used for encryption.
+     * @return ciphertext which results from encryption.
+     */
     Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPoly> privateKey) const override;
 
     /**
-   * Method for decrypting plaintext using LBC
-   *
-   * @param ciphertext ciphertext to be decrypted.
-   * @param privateKey private key used for decryption.
-   * @param plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext using LBC
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           NativePoly* plaintext) const override;
 
     /**
-   * Method for decrypting plaintext using LBC
-   *
-   * @param ciphertext ciphertext to be decrypted.
-   * @param privateKey private key used for decryption.
-   * @param plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext using LBC
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           Poly* plaintext) const override {
         std::string errMsg =

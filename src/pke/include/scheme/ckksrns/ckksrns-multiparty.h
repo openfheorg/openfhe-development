@@ -68,13 +68,13 @@ class MultipartyCKKSRNS : public MultipartyRNS {
                                                    const PublicKey<DCRTPoly> publicKey) const override;
 
     /**
-   * Threshold FHE: generates a common random polynomial for multi-party interactive bootstrapping with the element
-   * parameters (modulus chain) of the given ciphertext, and wraps it in a ciphertext with the same metadata.
-   *
-   * @param params CKKS crypto parameters (unused; the parameters of the ciphertext are used instead)
-   * @param ciphertext the ciphertext to be bootstrapped, which sets the modulus chain of the random element
-   * @return a ciphertext holding the common random polynomial as its single element
-   */
+     * Threshold FHE: generates a common random polynomial for multi-party interactive bootstrapping with the element
+     * parameters (modulus chain) of the given ciphertext, and wraps it in a ciphertext with the same metadata.
+     *
+     * @param params CKKS crypto parameters (unused; the parameters of the ciphertext are used instead)
+     * @param ciphertext the ciphertext to be bootstrapped, which sets the modulus chain of the random element
+     * @return a ciphertext holding the common random polynomial as its single element
+     */
     Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                    ConstCiphertext<DCRTPoly>& ciphertext) const override;
 

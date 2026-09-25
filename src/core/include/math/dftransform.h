@@ -54,78 +54,78 @@ namespace lbcrypto {
 class DiscreteFourierTransform {
   public:
     /**
-   * FFT forward transform.
-   *
-   * @param A is the element to perform the transform on.
-   * @return is the output result of the transform.
-   */
+     * FFT forward transform.
+     *
+     * @param A is the element to perform the transform on.
+     * @return is the output result of the transform.
+     */
     static std::vector<std::complex<double>> FFTForwardTransform(std::vector<std::complex<double>>& A);
 
     /**
-   * FFT inverse transform.
-   *
-   * @param A is the element to perform the inverse transform on.
-   * @return is the output result of the inverse transform.
-   */
+     * FFT inverse transform.
+     *
+     * @param A is the element to perform the inverse transform on.
+     * @return is the output result of the inverse transform.
+     */
     static std::vector<std::complex<double>> FFTInverseTransform(std::vector<std::complex<double>>& A);
 
     /**
-   * Forward transform.
-   *
-   * @param A is the element to perform the transform on.
-   * @return is the output result of the transform.
-   */
+     * Forward transform.
+     *
+     * @param A is the element to perform the transform on.
+     * @return is the output result of the transform.
+     */
     static std::vector<std::complex<double>> ForwardTransform(std::vector<std::complex<double>> A);
 
     /**
-   * Inverse transform.
-   *
-   * @param A is the element to perform the inverse transform on.
-   * @return is the output result of the inverse transform.
-   */
+     * Inverse transform.
+     *
+     * @param A is the element to perform the inverse transform on.
+     * @return is the output result of the inverse transform.
+     */
     static std::vector<std::complex<double>> InverseTransform(std::vector<std::complex<double>> A);
 
     /**
-   * In-place FFT-like algorithm used in CKKS encoding. For more details,
-   * see Algorithm 1 in https://eprint.iacr.org/2018/1043.pdf.
-   *
-   * @param vals is a vector of complex numbers.
-   * @param cyclOrder is the cyclotomic order for which Initialize() precomputed the tables.
-   */
+     * In-place FFT-like algorithm used in CKKS encoding. For more details,
+     * see Algorithm 1 in https://eprint.iacr.org/2018/1043.pdf.
+     *
+     * @param vals is a vector of complex numbers.
+     * @param cyclOrder is the cyclotomic order for which Initialize() precomputed the tables.
+     */
     static void FFTSpecialInv(std::vector<std::complex<double>>& vals, uint32_t cyclOrder);
 
     /**
-   * In-place FFT-like algorithm used in CKKS decoding. For more details,
-   * see Algorithm 1 in https://eprint.iacr.org/2018/1043.pdf.
-   *
-   * @param vals is a vector of complex numbers.
-   * @param cyclOrder is the cyclotomic order for which Initialize() precomputed the tables.
-   */
+     * In-place FFT-like algorithm used in CKKS decoding. For more details,
+     * see Algorithm 1 in https://eprint.iacr.org/2018/1043.pdf.
+     *
+     * @param vals is a vector of complex numbers.
+     * @param cyclOrder is the cyclotomic order for which Initialize() precomputed the tables.
+     */
     static void FFTSpecial(std::vector<std::complex<double>>& vals, uint32_t cyclOrder);
 
     /**
-   * Reset cached values for the transform to empty.
-   */
+     * Reset cached values for the transform to empty.
+     */
     static void Reset();
 
     /**
-   * Resets and rebuilds the table of the s complex roots of unity exp(-2*pi*i*j/s),
-   * j = 0..s-1.
-   *
-   * @param s is the size of the table (the transform length).
-   */
+     * Resets and rebuilds the table of the s complex roots of unity exp(-2*pi*i*j/s),
+     * j = 0..s-1.
+     *
+     * @param s is the size of the table (the transform length).
+     */
     static void PreComputeTable(uint32_t s);
 
     /**
-   * Precomputes, once per cyclotomic order, the rotation group, the powers of the primitive
-   * m-th root of unity, and the per-stage butterfly twiddles used by FFTSpecial() and
-   * FFTSpecialInv() on vectors of length nh. Thread-safe; a no-op if the order is already
-   * initialized.
-   *
-   * @param m is the cyclotomic order.
-   * @param nh is the number of slots (half the ring dimension), the length of the vectors
-   * passed to FFTSpecial() and FFTSpecialInv().
-   */
+     * Precomputes, once per cyclotomic order, the rotation group, the powers of the primitive
+     * m-th root of unity, and the per-stage butterfly twiddles used by FFTSpecial() and
+     * FFTSpecialInv() on vectors of length nh. Thread-safe; a no-op if the order is already
+     * initialized.
+     *
+     * @param m is the cyclotomic order.
+     * @param nh is the number of slots (half the ring dimension), the length of the vectors
+     * passed to FFTSpecial() and FFTSpecialInv().
+     */
     static void Initialize(uint32_t m, uint32_t nh);
 
   private:

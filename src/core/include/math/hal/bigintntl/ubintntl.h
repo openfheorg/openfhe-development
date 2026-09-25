@@ -110,60 +110,60 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     // CONSTRUCTORS
 
     /**
-   * Default constructor.
-   */
+     * Default constructor.
+     */
     myZZ();
 
     /**
-   * Copy constructor.
-   *
-   * @param val is the ZZ to be copied.
-   */
+     * Copy constructor.
+     *
+     * @param val is the ZZ to be copied.
+     */
     myZZ(const NTL::ZZ& val);  // NOLINT
 
     /**
-   * Move constructor.
-   *
-   * @param val is the ZZ to be moved.
-   */
+     * Move constructor.
+     *
+     * @param val is the ZZ to be moved.
+     */
     myZZ(NTL::ZZ&& val);  // NOLINT
 
     // TODO: figure out how to do && for wrapper
     // myZZ(NTL::myZZ_p &&a);
 
     /**
-   * Constructor from a string.
-   *
-   * @param strval is the initial integer represented as a string.
-   */
+     * Constructor from a string.
+     *
+     * @param strval is the initial integer represented as a string.
+     */
     explicit myZZ(const std::string& strval);
     explicit myZZ(const char* strval) : myZZ(std::string(strval)) {}
 
     /**
-   * Constructor from an unsigned integer.
-   *
-   * @param val is the initial integer represented as a uint64_t.
-   */
+     * Constructor from an unsigned integer.
+     *
+     * @param val is the initial integer represented as a uint64_t.
+     */
     myZZ(uint64_t val);  // NOLINT
     #if defined(HAVE_INT128)
     myZZ(uint128_t val);  // NOLINT
     #endif
 
     /**
-   * Constructors from smaller basic types
-   *
-   * @param val is the initial integer represented as a basic integer type.
-   */
+     * Constructors from smaller basic types
+     *
+     * @param val is the initial integer represented as a basic integer type.
+     */
     myZZ(int val) : myZZ(uint64_t(val)) {}        // NOLINT
     myZZ(uint32_t val) : myZZ(uint64_t(val)) {}   // NOLINT
     myZZ(long val) : myZZ(uint64_t(val)) {}       // NOLINT
     myZZ(long long val) : myZZ(uint64_t(val)) {}  // NOLINT
 
     /**
-   * Constructor from a NativeInteger
-   *
-   * @param val is the initial integer represented as a native integer.
-   */
+     * Constructor from a NativeInteger
+     *
+     * @param val is the initial integer represented as a native integer.
+     */
     template <typename T,
               typename std::enable_if<
                       !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
@@ -176,41 +176,41 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     myZZ(const T& val) : myZZ(val.ConvertToInt()) {}  // NOLINT
 
     /**
-   * Constructor from double is not permitted
-   *
-   * @param val
-   */
+     * Constructor from double is not permitted
+     *
+     * @param val
+     */
     myZZ(double val) __attribute__((deprecated("Cannot construct from a double")));  // NOLINT
 
     // ASSIGNMENT OPERATORS
 
     /**
-   * Copy assignment operator
-   *
-   * @param val is the myZZ to be assigned from.
-   * @return assigned myZZ ref.
-   */
+     * Copy assignment operator
+     *
+     * @param val is the myZZ to be assigned from.
+     * @return assigned myZZ ref.
+     */
     myZZ& operator=(const myZZ& val);
 
     // TODO move assignment operator?
 
     /**
-   * Assignment operator from string
-   *
-   * @param strval is the string to be assigned from
-   * @return the assigned myZZ ref.
-   */
+     * Assignment operator from string
+     *
+     * @param strval is the string to be assigned from
+     * @return the assigned myZZ ref.
+     */
     inline const myZZ& operator=(std::string strval) {
         *this = myZZ(strval);
         return *this;
     }
 
     /**
-   * Assignment operator from unsigned integer
-   *
-   * @param val is the unsigned integer to be assigned from.
-   * @return the assigned myZZ ref.
-   */
+     * Assignment operator from unsigned integer
+     *
+     * @param val is the unsigned integer to be assigned from.
+     * @return the assigned myZZ ref.
+     */
     myZZ& operator=(uint64_t val) {
         *this = myZZ(val);
         return *this;
@@ -219,17 +219,17 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     // ACCESSORS
 
     /**
-   * Basic set method for setting the value of a myZZ
-   *
-   * @param strval is the string representation of the myZZ to be copied.
-   */
+     * Basic set method for setting the value of a myZZ
+     *
+     * @param strval is the string representation of the myZZ to be copied.
+     */
     void SetValue(const std::string& strval);
 
     /**
-   * Basic set method for setting the value of a myZZ
-   *
-   * @param val is the myZZ whose value is to be assigned.
-   */
+     * Basic set method for setting the value of a myZZ
+     *
+     * @param val is the myZZ whose value is to be assigned.
+     */
     void SetValue(const myZZ& val);
 
     void SetIdentity() {
@@ -239,44 +239,44 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     // ARITHMETIC OPERATIONS
 
     /**
-   * Addition operation.
-   *
-   * @param b is the value to add.
-   * @return result of the addition operation.
-   */
+     * Addition operation.
+     *
+     * @param b is the value to add.
+     * @return result of the addition operation.
+     */
     myZZ Add(const myZZ& b) const {
         return *static_cast<const ZZ*>(this) + static_cast<const ZZ&>(b);
     }
 
     /**
-   * Addition operation. In-place variant.
-   *
-   * @param b is the value to add.
-   * @return result of the addition operation.
-   */
+     * Addition operation. In-place variant.
+     *
+     * @param b is the value to add.
+     * @return result of the addition operation.
+     */
     myZZ& AddEq(const myZZ& b) {
         *static_cast<ZZ*>(this) += static_cast<const ZZ&>(b);
         return *this;
     }
 
     /**
-   * Subtraction operation.
-   * Note that in Sub we return 0, if a<b
-   *
-   * @param b is the value to subtract.
-   * @return is the result of the subtraction operation.
-   */
+     * Subtraction operation.
+     * Note that in Sub we return 0, if a<b
+     *
+     * @param b is the value to subtract.
+     * @return is the result of the subtraction operation.
+     */
     myZZ Sub(const myZZ& b) const {
         return (*this < b) ? ZZ(0) : (*static_cast<const ZZ*>(this) - static_cast<const ZZ&>(b));
     }
 
     /**
-   * Subtraction operation. In-place variant.
-   * Note that in Sub we return 0, if a<b
-   *
-   * @param b is the value to subtract.
-   * @return is the result of the subtraction operation.
-   */
+     * Subtraction operation. In-place variant.
+     * Note that in Sub we return 0, if a<b
+     *
+     * @param b is the value to subtract.
+     * @return is the result of the subtraction operation.
+     */
     myZZ& SubEq(const myZZ& b) {
         if (*this < b) {
             *this = ZZ(0);
@@ -287,134 +287,134 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Multiplication operation.
-   *
-   * @param b is the value to multiply with.
-   * @return is the result of the multiplication operation.
-   */
+     * Multiplication operation.
+     *
+     * @param b is the value to multiply with.
+     * @return is the result of the multiplication operation.
+     */
     myZZ Mul(const myZZ& b) const {
         return *static_cast<const ZZ*>(this) * static_cast<const ZZ&>(b);
     }
 
     /**
-   * Multiplication operation. In-place variant.
-   *
-   * @param b is the value to multiply with.
-   * @return is the result of the multiplication operation.
-   */
+     * Multiplication operation. In-place variant.
+     *
+     * @param b is the value to multiply with.
+     * @return is the result of the multiplication operation.
+     */
     myZZ& MulEq(const myZZ& b) {
         *static_cast<ZZ*>(this) *= static_cast<const ZZ&>(b);
         return *this;
     }
 
     /**
-   * Division operation.
-   *
-   * @param b is the value to divide by.
-   * @return is the result of the division operation.
-   */
+     * Division operation.
+     *
+     * @param b is the value to divide by.
+     * @return is the result of the division operation.
+     */
     myZZ DividedBy(const myZZ& b) const {
         return *static_cast<const ZZ*>(this) / static_cast<const ZZ&>(b);
     }
 
     /**
-   * Division operation. In-place variant.
-   *
-   * @param b is the value to divide by.
-   * @return is the result of the division operation.
-   */
+     * Division operation. In-place variant.
+     *
+     * @param b is the value to divide by.
+     * @return is the result of the division operation.
+     */
     myZZ& DividedByEq(const myZZ& b) {
         *static_cast<ZZ*>(this) /= static_cast<const ZZ&>(b);
         return *this;
     }
 
     /**
-   * Exponentiation operation. Returns x^p.
-   *
-   * @param p the exponent.
-   * @return is the result of the exponentiation operation.
-   */
+     * Exponentiation operation. Returns x^p.
+     *
+     * @param p the exponent.
+     * @return is the result of the exponentiation operation.
+     */
     myZZ Exp(const uint32_t p) const {
         return power(*this, p);
     }
 
     /**
-   * Exponentiation operation. Returns x^p. In-place variant.
-   *
-   * @param p the exponent.
-   * @return is the result of the exponentiation operation.
-   */
+     * Exponentiation operation. Returns x^p. In-place variant.
+     *
+     * @param p the exponent.
+     * @return is the result of the exponentiation operation.
+     */
     myZZ& ExpEq(const uint32_t p) {
         *this = power(*this, p);
         return *this;
     }
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     myZZ MultiplyAndRound(const myZZ& p, const myZZ& q) const;
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     myZZ& MultiplyAndRoundEq(const myZZ& p, const myZZ& q);
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     myZZ DivideAndRound(const myZZ& q) const;
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     myZZ& DivideAndRoundEq(const myZZ& q);
 
     // MODULAR ARITHMETIC OPERATIONS
 
     /**
-   * Naive modulus operation.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus operation.
-   */
+     * Naive modulus operation.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus operation.
+     */
     myZZ Mod(const myZZ& modulus) const {
         return *static_cast<const ZZ*>(this) % static_cast<const ZZ&>(modulus);
     }
 
     /**
-   * Naive modulus operation. In-place variant.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus operation.
-   */
+     * Naive modulus operation. In-place variant.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus operation.
+     */
     myZZ& ModEq(const myZZ& modulus) {
         *static_cast<ZZ*>(this) %= static_cast<const ZZ&>(modulus);
         return *this;
     }
 
     /**
-   * Pre-computes the mu factor that is used in Barrett modulo reduction
-   *
-   * @return the value of mu
-   */
+     * Pre-computes the mu factor that is used in Barrett modulo reduction
+     *
+     * @return the value of mu
+     */
     myZZ ComputeMu() const {
         myZZ temp(1);
         temp <<= (2 * this->GetMSB() + 3);
@@ -422,112 +422,112 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Barrett modulus operation.
-   * Implements generalized Barrett modular reduction algorithm. Uses one
-   * precomputed value of mu.
-   *
-   * @param modulus is the modulus to perform.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus operation.
-   */
+     * Barrett modulus operation.
+     * Implements generalized Barrett modular reduction algorithm. Uses one
+     * precomputed value of mu.
+     *
+     * @param modulus is the modulus to perform.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus operation.
+     */
     myZZ Mod(const myZZ& modulus, const myZZ& mu) const {
         return *static_cast<const ZZ*>(this) % static_cast<const ZZ&>(modulus);
     }
 
     /**
-   * Barrett modulus operation. In-place variant.
-   * Implements generalized Barrett modular reduction algorithm. Uses one
-   * precomputed value of mu.
-   *
-   * @param modulus is the modulus to perform.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus operation.
-   */
+     * Barrett modulus operation. In-place variant.
+     * Implements generalized Barrett modular reduction algorithm. Uses one
+     * precomputed value of mu.
+     *
+     * @param modulus is the modulus to perform.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus operation.
+     */
     myZZ& ModEq(const myZZ& modulus, const myZZ& mu) {
         *static_cast<ZZ*>(this) %= static_cast<const ZZ&>(modulus);
         return *this;
     }
 
     /**
-   * Modulus addition operation.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition operation.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     myZZ ModAdd(const myZZ& b, const myZZ& modulus) const {
         return AddMod(this->Mod(modulus), b.Mod(modulus), modulus);
     }
 
     /**
-   * Modulus addition operation. In-place variant.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     myZZ& ModAddEq(const myZZ& b, const myZZ& modulus) {
         AddMod(*this, this->Mod(modulus), b.Mod(modulus), modulus);
         return *this;
     }
 
     /**
-   * Modulus addition where operands are < modulus.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition where operands are < modulus.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     myZZ ModAddFast(const myZZ& b, const myZZ& modulus) const {
         return AddMod(*this, b, modulus);
     }
 
     /**
-   * Modulus addition where operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition where operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     myZZ& ModAddFastEq(const myZZ& b, const myZZ& modulus) {
         *this = AddMod(*this, b, modulus);
         return *this;
     }
 
     /**
-   * Barrett modulus addition operation.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus addition operation.
-   */
+     * Barrett modulus addition operation.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus addition operation.
+     */
     myZZ ModAdd(const myZZ& b, const myZZ& modulus, const myZZ& mu) const {
         return AddMod(*this, b, modulus);
     }
 
     /**
-   * Barrett modulus addition operation. In-place variant.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus addition operation.
-   */
+     * Barrett modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus addition operation.
+     */
     myZZ& ModAddEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         *this = AddMod(*this, b, modulus);
         return *this;
     }
 
     /**
-   * Modulus subtraction operation.
-   * NOTE ModSub needs to return signed modulus (i.e. -1/2..q/2) in order
-   * to be consistent with BE 2
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction operation.
+     * NOTE ModSub needs to return signed modulus (i.e. -1/2..q/2) in order
+     * to be consistent with BE 2
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     myZZ ModSub(const myZZ& b, const myZZ& modulus) const {
         myZZ newthis(*this % modulus);
         myZZ newb(b % modulus);
@@ -541,14 +541,14 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus subtraction operation. In-place variant.
-   * NOTE ModSub needs to return signed modulus (i.e. -1/2..q/2) in order
-   * to be consistent with BE 2
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction operation. In-place variant.
+     * NOTE ModSub needs to return signed modulus (i.e. -1/2..q/2) in order
+     * to be consistent with BE 2
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     myZZ& ModSubEq(const myZZ& b, const myZZ& modulus) {
         this->ModEq(modulus);
         myZZ newb(b % modulus);
@@ -563,12 +563,12 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus subtraction where operands are < modulus.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction where operands are < modulus.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     myZZ ModSubFast(const myZZ& b, const myZZ& modulus) const {
         if (*this >= b) {
             return SubMod(*this, b, modulus);  // normal mod sub
@@ -578,12 +578,12 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus subtraction where operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction where operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     myZZ& ModSubFastEq(const myZZ& b, const myZZ& modulus) {
         if (*this >= b) {
             return *this = SubMod(*this, b, modulus);  // normal mod sub
@@ -593,13 +593,13 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Barrett modulus subtraction operation.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Barrett modulus subtraction operation.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus subtraction operation.
+     */
     myZZ ModSub(const myZZ& b, const myZZ& modulus, const myZZ& mu) const {
         myZZ newthis(*this % modulus);
         myZZ newb(b % modulus);
@@ -613,13 +613,13 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Barrett modulus subtraction operation. In-place variant.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Barrett modulus subtraction operation. In-place variant.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus subtraction operation.
+     */
     myZZ& ModSubEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         this->ModEq(modulus);
         myZZ newb(b % modulus);
@@ -634,98 +634,98 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus multiplication operation.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication operation.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     myZZ ModMul(const myZZ& b, const myZZ& modulus) const {
         return MulMod(this->Mod(modulus), b.Mod(modulus), modulus);
     }
 
     /**
-   * Modulus multiplication operation. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication operation. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     myZZ& ModMulEq(const myZZ& b, const myZZ& modulus) {
         MulMod(*this, this->Mod(modulus), b.Mod(modulus), modulus);
         return *this;
     }
 
     /**
-   * Barrett modulus multiplication.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     myZZ ModMul(const myZZ& b, const myZZ& modulus, const myZZ& mu) const {
         return MulMod(this->Mod(modulus), b.Mod(modulus), modulus);
     }
 
     /**
-   * Barrett modulus multiplication. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     myZZ& ModMulEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         MulMod(*this, this->Mod(modulus), b.Mod(modulus), modulus);
         return *this;
     }
 
     /**
-   * Modulus multiplication that assumes the operands are < modulus.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication that assumes the operands are < modulus.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     inline myZZ ModMulFast(const myZZ& b, const myZZ& modulus) const {
         return MulMod(*this, b, modulus);
     }
 
     /**
-   * Modulus multiplication that assumes the operands are < modulus. In-place
-   * variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication that assumes the operands are < modulus. In-place
+     * variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     myZZ& ModMulFastEq(const myZZ& b, const myZZ& modulus) {
         *this = MulMod(*this, b, modulus);
         return *this;
     }
 
     /**
-   * Barrett modulus multiplication that assumes the operands are < modulus.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication that assumes the operands are < modulus.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     inline myZZ ModMulFast(const myZZ& b, const myZZ& modulus, const myZZ& mu) const {
         return MulMod(*this, b, modulus);
     }
 
     /**
-   * Barrett modulus multiplication that assumes the operands are < modulus.
-   * In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication that assumes the operands are < modulus.
+     * In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     myZZ& ModMulFastEq(const myZZ& b, const myZZ& modulus, const myZZ& mu) {
         *this = MulMod(*this, b, modulus);
         return *this;
@@ -740,12 +740,12 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus exponentiation operation.
-   *
-   * @param b is the exponent.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Modulus exponentiation operation.
+     *
+     * @param b is the exponent.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     inline myZZ ModExp(const myZZ& b, const myZZ& modulus) const {
         myZZ res;
         PowerMod(res, *this, b, modulus);
@@ -753,23 +753,23 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus exponentiation operation. In-place variant.
-   *
-   * @param b is the exponent.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Modulus exponentiation operation. In-place variant.
+     *
+     * @param b is the exponent.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     myZZ& ModExpEq(const myZZ& b, const myZZ& modulus) {
         PowerMod(*this, *this, b, modulus);
         return *this;
     }
 
     /**
-   * Modulus inverse operation.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus inverse operation.
-   */
+     * Modulus inverse operation.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus inverse operation.
+     */
     myZZ ModInverse(const myZZ& modulus) const {
         if (modulus == myZZ(0)) {
             OPENFHE_THROW("zero has no inverse");
@@ -788,11 +788,11 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Modulus inverse operation. In-place variant.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus inverse operation.
-   */
+     * Modulus inverse operation. In-place variant.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus inverse operation.
+     */
     myZZ& ModInverseEq(const myZZ& modulus) {
         if (modulus == myZZ(0)) {
             OPENFHE_THROW("zero has no inverse");
@@ -810,42 +810,42 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     /**
-   * Left shift operation.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Left shift operation.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     myZZ LShift(uint16_t shift) const {
         return *static_cast<const ZZ*>(this) << shift;
     }
 
     /**
-   * Left shift operation. In-place variant.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Left shift operation. In-place variant.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     myZZ& LShiftEq(uint16_t shift) {
         *static_cast<ZZ*>(this) <<= shift;
         return *this;
     }
 
     /**
-   * Right shift operation.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Right shift operation.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     myZZ RShift(uint16_t shift) const {
         return *static_cast<const ZZ*>(this) >> shift;
     }
 
     /**
-   * Right shift operation. In-place variant.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Right shift operation. In-place variant.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     myZZ& RShiftEq(uint16_t shift) {
         *static_cast<ZZ*>(this) >>= shift;
         return *this;
@@ -887,12 +887,12 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     double ConvertToDouble() const;
 
     /**
-   * Convert a string representation of a binary number to a myZZ.
-   * Note: needs renaming to a generic form since the variable type name is
-   * embedded in the function name. Suggest FromBinaryString()
-   * @param bitString the binary num in string.
-   * @return the number represented as a myZZ.
-   */
+     * Convert a string representation of a binary number to a myZZ.
+     * Note: needs renaming to a generic form since the variable type name is
+     * embedded in the function name. Suggest FromBinaryString()
+     * @param bitString the binary num in string.
+     * @return the number represented as a myZZ.
+     */
     static myZZ FromBinaryString(const std::string& bitString);
 
     // OTHER FUNCTIONS
@@ -904,31 +904,31 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     uint32_t GetMSB() const;
 
     /**
-   * Get the number of digits using a specific base - support for
-   * arbitrary base may be needed.
-   *
-   * @param base is the base with which to determine length in.
-   * @return the length of the representation in a specific base.
-   */
+     * Get the number of digits using a specific base - support for
+     * arbitrary base may be needed.
+     *
+     * @param base is the base with which to determine length in.
+     * @return the length of the representation in a specific base.
+     */
     uint32_t GetLengthForBase(uint32_t base) const {
         return GetMSB();
     }
 
     /**
-   * Get the integer value of the of a subfield of bits. Where the length of
-   * the field is specifice by a power of two base
-   * Warning: only power-of-2 bases are currently supported.
-   * Example: for number 83, index 2 and base 4 we have:
-   *
-   *                         index:0,1,2,3
-   * 83 --base 4 decomposition--> (3,0,1,1) --at index 2--> 1
-   *
-   * The return number is 1.
-   *
-   * @param index is the bit location (lsb)
-   * @param base such that log2(base)+1 is the bitwidth of the subfield
-   * @return the unsigned integer value of the subfield
-   */
+     * Get the integer value of the of a subfield of bits. Where the length of
+     * the field is specifice by a power of two base
+     * Warning: only power-of-2 bases are currently supported.
+     * Example: for number 83, index 2 and base 4 we have:
+     *
+     *                         index:0,1,2,3
+     * 83 --base 4 decomposition--> (3,0,1,1) --at index 2--> 1
+     *
+     * The return number is 1.
+     *
+     * @param index is the bit location (lsb)
+     * @param base such that log2(base)+1 is the bitwidth of the subfield
+     * @return the unsigned integer value of the subfield
+     */
     uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // variable to store the log(base 2) of the number of bits in the
@@ -936,26 +936,26 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     static const uint32_t m_log2LimbBitLength;
 
     /**
-   * Gets a subset of bits of a given length with LSB at specified index.
-   * optimized for speed in backend 6
-   * @param index of the set of bit to get. LSB=1
-   * @param length of the set of bits to get. LSB=1
-   * @return resulting unsigned in formed by set of bits.
-   */
+     * Gets a subset of bits of a given length with LSB at specified index.
+     * optimized for speed in backend 6
+     * @param index of the set of bit to get. LSB=1
+     * @param length of the set of bits to get. LSB=1
+     * @return resulting unsigned in formed by set of bits.
+     */
     uint32_t GetBitRangeAtIndex(uint32_t index, uint32_t length) const;
 
     /**
-   * Gets the bit at the specified index.
-   *
-   * @param index of the bit to get. LSB=1
-   * @return resulting bit.
-   */
+     * Gets the bit at the specified index.
+     *
+     * @param index of the bit to get. LSB=1
+     * @return resulting bit.
+     */
     uint8_t GetBitAtIndex(uint32_t index) const;
 
     /**
-   * A zero allocator that is called by the Matrix class. It is used to
-   * initialize a Matrix of myZZ objects.
-   */
+     * A zero allocator that is called by the Matrix class. It is used to
+     * initialize a Matrix of myZZ objects.
+     */
     static myZZ Allocator() {
         return 0;
     }
@@ -973,10 +973,10 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     friend std::ostream& operator<<(std::ostream& os, const myZZ& ptr_obj);
 
     /**
-   * Gets a copy of the internal limb storage
-   * Used primarily for debugging
-   * @return string with the space-separated limb values, least significant limb first
-   */
+     * Gets a copy of the internal limb storage
+     * Used primarily for debugging
+     * @return string with the space-separated limb values, least significant limb first
+     */
     std::string GetInternalRepresentation(void) const {
         std::string ret("");
         const ZZ_limb_t* zlp = ZZ_limbs_get(*this);
@@ -1058,12 +1058,12 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     void SetMSB();
 
     /**
-   * function to return the ceiling of the input number divided by
-   * the number of bits in the limb data type.  DBC this is to
-   * determine how many limbs are needed for an input bitsize.
-   * @param Number is the number to be divided.
-   * @return the ceiling of Number/(bits in the limb data type)
-   */
+     * function to return the ceiling of the input number divided by
+     * the number of bits in the limb data type.  DBC this is to
+     * determine how many limbs are needed for an input bitsize.
+     * @param Number is the number to be divided.
+     * @return the ceiling of Number/(bits in the limb data type)
+     */
     // todo: rename to MSB2NLimbs()
     static uint32_t ceilIntByUInt(const ZZ_limb_t Number);
 

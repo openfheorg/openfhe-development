@@ -54,41 +54,41 @@ int main(int argc, char* argv[]) {
 
 void SimpleBootstrapExample() {
     /* The bootstrapping flavor demonstrated in this example has the following workflow:
-    * 1. Modulus Raising
-    * 2. Coefficients to Slots
-    * 3. Evaluate the Approximate Modular Reduction
-    * 4. Slots to Coefficients
-    * The number of levels required to be available before bootstrapping is 1 to support a multiplication
-    * (and one more for FLEXIBLEAUTOEXT).
-    */
+     * 1. Modulus Raising
+     * 2. Coefficients to Slots
+     * 3. Evaluate the Approximate Modular Reduction
+     * 4. Slots to Coefficients
+     * The number of levels required to be available before bootstrapping is 1 to support a multiplication
+     * (and one more for FLEXIBLEAUTOEXT).
+     */
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-    * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
-    * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
-    * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
-    * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
-    */
+     * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+     * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
+     * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
+     * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
+     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
     /*  A2) Desired security level based on FHE standards.
-    * In this example, we use the "NotSet" option, so the example can run more quickly with
-    * a smaller ring dimension. Note that this should be used only in
-    * non-production environments, or by experts who understand the security
-    * implications of their choices. In production-like environments, we recommend using
-    * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively. If you choose one of these as your security level,
-    * you do not need to set the ring dimension.
-    */
+     * In this example, we use the "NotSet" option, so the example can run more quickly with
+     * a smaller ring dimension. Note that this should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices. In production-like environments, we recommend using
+     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * you do not need to set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
 
     /*  A3) Scaling parameters.
-    * By default, we set the modulus sizes and rescaling technique to the following values
-    * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-    * below unless you are an FHE expert.
-    */
+     * By default, we set the modulus sizes and rescaling technique to the following values
+     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+     * below unless you are an FHE expert.
+     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
     uint32_t dcrtBits = 78;
@@ -104,12 +104,12 @@ void SimpleBootstrapExample() {
     parameters.SetFirstModSize(firstMod);
 
     /*  A4) Multiplicative depth.
-    * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
-    * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
-    * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-    * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
-    * depth. We recommend using the input parameters below to get started.
-    */
+     * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
+     * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
+     * needs to consume a few levels to run. We compute the number of bootstrapping levels required
+     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
+     * depth. We recommend using the input parameters below to get started.
+     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
@@ -173,42 +173,42 @@ void SimpleBootstrapExample() {
 
 void SimpleBootstrapStCExample() {
     /* The bootstrapping flavor demonstrated in this example has the following workflow:
-    * 1. Slots to Coefficients
-    * 2. Modulus Raising
-    * 3. Coefficients to Slots
-    * 4. Evaluate the Approximate Modular Reduction
-    * The number of levels required to be available before bootstrapping is the number of levels for
-    * the Slots To Coefficients transformation plus 1 to support a multiplication
-    * (and one more for FLEXIBLEAUTOEXT).
-    */
+     * 1. Slots to Coefficients
+     * 2. Modulus Raising
+     * 3. Coefficients to Slots
+     * 4. Evaluate the Approximate Modular Reduction
+     * The number of levels required to be available before bootstrapping is the number of levels for
+     * the Slots To Coefficients transformation plus 1 to support a multiplication
+     * (and one more for FLEXIBLEAUTOEXT).
+     */
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-    * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
-    * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
-    * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
-    * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
-    */
+     * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+     * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
+     * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
+     * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
+     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
     /*  A2) Desired security level based on FHE standards.
-    * In this example, we use the "NotSet" option, so the example can run more quickly with
-    * a smaller ring dimension. Note that this should be used only in
-    * non-production environments, or by experts who understand the security
-    * implications of their choices. In production-like environments, we recommend using
-    * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively. If you choose one of these as your security level,
-    * you do not need to set the ring dimension.
-    */
+     * In this example, we use the "NotSet" option, so the example can run more quickly with
+     * a smaller ring dimension. Note that this should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices. In production-like environments, we recommend using
+     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * you do not need to set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
 
     /*  A3) Scaling parameters.
-    * By default, we set the modulus sizes and rescaling technique to the following values
-    * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-    * below unless you are an FHE expert.
-    */
+     * By default, we set the modulus sizes and rescaling technique to the following values
+     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+     * below unless you are an FHE expert.
+     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
     uint32_t dcrtBits = 78;
@@ -224,12 +224,12 @@ void SimpleBootstrapStCExample() {
     parameters.SetFirstModSize(firstMod);
 
     /*  A4) Multiplicative depth.
-    * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
-    * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
-    * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-    * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
-    * depth. We recommend using the input parameters below to get started.
-    */
+     * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
+     * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
+     * needs to consume a few levels to run. We compute the number of bootstrapping levels required
+     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
+     * depth. We recommend using the input parameters below to get started.
+     */
     std::vector<uint32_t> levelBudget = {4, 4};
 
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping

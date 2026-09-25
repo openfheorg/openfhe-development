@@ -55,24 +55,24 @@ class LWEKeyPairImpl {
     LWEPrivateKey secretKey{nullptr};  ///< the secret key s the public key was generated from
 
     /**
-   * Constructs a key pair from a public key and the matching secret key
-   *
-   * @param Av the public key (A, v)
-   * @param s the secret key s that (A, v) was generated from
-   */
+     * Constructs a key pair from a public key and the matching secret key
+     *
+     * @param Av the public key (A, v)
+     * @param s the secret key s that (A, v) was generated from
+     */
     LWEKeyPairImpl(const LWEPublicKey& Av, const LWEPrivateKey& s) : publicKey(Av), secretKey(s) {}
 
     /**
-   * Constructs a key pair from a public key and the matching secret key, moving both pointers
-   *
-   * @param Av the public key (A, v)
-   * @param s the secret key s that (A, v) was generated from
-   */
+     * Constructs a key pair from a public key and the matching secret key, moving both pointers
+     *
+     * @param Av the public key (A, v)
+     * @param s the secret key s that (A, v) was generated from
+     */
     LWEKeyPairImpl(LWEPublicKey&& Av, LWEPrivateKey&& s) noexcept : publicKey(std::move(Av)), secretKey(std::move(s)) {}
 
     /**
-   * @return true if both the public key and the secret key are set (non-null)
-   */
+     * @return true if both the public key and the secret key are set (non-null)
+     */
     bool good() {
         return publicKey && secretKey;
     }

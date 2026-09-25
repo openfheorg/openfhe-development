@@ -62,38 +62,38 @@ class DiscreteUniformGeneratorImpl {
     ~DiscreteUniformGeneratorImpl() = default;
 
     /**
-   * @brief         Constructor that sets the modulus (see SetModulus).
-   * @param modulus The modulus of the distribution.
-   */
+     * @brief         Constructor that sets the modulus (see SetModulus).
+     * @param modulus The modulus of the distribution.
+     */
     explicit DiscreteUniformGeneratorImpl(const typename VecType::Integer& modulus);
 
     /**
-   * @brief         Sets the modulus.
-   * @param modulus The new modulus.
-   */
+     * @brief         Sets the modulus.
+     * @param modulus The new modulus.
+     */
     void SetModulus(const typename VecType::Integer& modulus);
 
     /**
-   * @brief Generates a random integer based on the modulus set for the Discrete
-   * Uniform Generator object.
-   * @return A random integer uniformly distributed in [0, modulus).
-   */
+     * @brief Generates a random integer based on the modulus set for the Discrete
+     * Uniform Generator object.
+     * @return A random integer uniformly distributed in [0, modulus).
+     */
     typename VecType::Integer GenerateInteger() const;
 
     /**
-   * @brief Generates a vector of random integers using GenerateInteger()
-   * @param size The number of values to generate.
-   * @return A vector of random integers uniformly distributed in [0, modulus).
-   */
+     * @brief Generates a vector of random integers using GenerateInteger()
+     * @param size The number of values to generate.
+     * @return A vector of random integers uniformly distributed in [0, modulus).
+     */
     VecType GenerateVector(const uint32_t size) const;
 
     /**
-   * @brief Sets the modulus of the generator and then generates a vector of random integers
-   * using GenerateInteger()
-   * @param size The number of values to generate.
-   * @param modulus The new modulus, kept by the generator for subsequent calls.
-   * @return A vector of random integers uniformly distributed in [0, modulus).
-   */
+     * @brief Sets the modulus of the generator and then generates a vector of random integers
+     * using GenerateInteger()
+     * @param size The number of values to generate.
+     * @param modulus The new modulus, kept by the generator for subsequent calls.
+     * @return A vector of random integers uniformly distributed in [0, modulus).
+     */
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus);
 
   private:

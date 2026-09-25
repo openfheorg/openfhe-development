@@ -48,33 +48,33 @@ namespace lbcrypto {
 class MetadataTest : public Metadata {
   public:
     /**
-   * Default constructor
-   */
+     * Default constructor
+     */
     MetadataTest() : Metadata(), m_s("") {}
     /**
-   * Destructor
-   */
+     * Destructor
+     */
     virtual ~MetadataTest() {}
 
     /**
-   * Copy constructor
-   */
+     * Copy constructor
+     */
     MetadataTest(const MetadataTest& mdata) : Metadata() {
         m_s = mdata.m_s;
     }
 
     /**
-   * This method creates a new MetadataTest object.
-   *
-   * Since Ciphertexts have a map of shared_ptr<Metadata>,
-   * whenever we retrieve the contents of the map, we actually
-   * get the shared pointer and we do not create a new object.
-   *
-   * If we do want to create a new object (e.g., because we
-   * want to modify it only for a new Ciphertext), we can use
-   * the Clone method.
-   *
-   */
+     * This method creates a new MetadataTest object.
+     *
+     * Since Ciphertexts have a map of shared_ptr<Metadata>,
+     * whenever we retrieve the contents of the map, we actually
+     * get the shared pointer and we do not create a new object.
+     *
+     * If we do want to create a new object (e.g., because we
+     * want to modify it only for a new Ciphertext), we can use
+     * the Clone method.
+     *
+     */
     std::shared_ptr<Metadata> Clone() const override {
         auto mdata = std::make_shared<MetadataTest>();
         mdata->m_s = this->m_s;
@@ -82,22 +82,22 @@ class MetadataTest : public Metadata {
     }
 
     /**
-   * Setter method for the only value stored in this Metadata container.
-   */
+     * Setter method for the only value stored in this Metadata container.
+     */
     void SetMetadata(std::string str) {
         m_s = std::string(str);
     }
 
     /**
-   * This method returns the (only) value stored in this Metadata container
-   */
+     * This method returns the (only) value stored in this Metadata container
+     */
     std::string GetMetadata() const {
         return m_s;
     }
 
     /**
-   * Defines how to check equality between objects of this class.
-   */
+     * Defines how to check equality between objects of this class.
+     */
     bool operator==(const Metadata& mdata) const override {
         try {
             const MetadataTest& mdataTest = dynamic_cast<const MetadataTest&>(mdata);
@@ -109,8 +109,8 @@ class MetadataTest : public Metadata {
     }
 
     /**
-   * save method for serialization
-   */
+     * save method for serialization
+     */
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(cereal::base_class<Metadata>(this));
@@ -118,8 +118,8 @@ class MetadataTest : public Metadata {
     }
 
     /**
-   * load method for serialization
-   */
+     * load method for serialization
+     */
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
@@ -131,12 +131,12 @@ class MetadataTest : public Metadata {
     }
 
     /**
-   * This static method retrieves a MetadataTest object
-   * from a Ciphertext, and clones it so we can further
-   * modify it.
-   *
-   * @param ciphertext the ciphertext whose metadata to retrieve.
-   */
+     * This static method retrieves a MetadataTest object
+     * from a Ciphertext, and clones it so we can further
+     * modify it.
+     *
+     * @param ciphertext the ciphertext whose metadata to retrieve.
+     */
     template <class Element>
     static const std::shared_ptr<MetadataTest> CloneMetadata(
             const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
@@ -150,13 +150,13 @@ class MetadataTest : public Metadata {
     }
 
     /**
-   * This static method retrieves a MetadataTest object
-   * from a Ciphertext, without cloning it. This means that any
-   * modifications on the MetadataTest object will affect the
-   * original Ciphertext we retrieved the metadata from.
-   *
-   * @param ciphertext the ciphertext whose metadata to retrieve.
-   */
+     * This static method retrieves a MetadataTest object
+     * from a Ciphertext, without cloning it. This means that any
+     * modifications on the MetadataTest object will affect the
+     * original Ciphertext we retrieved the metadata from.
+     *
+     * @param ciphertext the ciphertext whose metadata to retrieve.
+     */
     template <class Element>
     static const std::shared_ptr<MetadataTest> GetMetadata(
             const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
@@ -170,20 +170,20 @@ class MetadataTest : public Metadata {
     }
 
     /**
-   * This static method stores a MetadataTest object
-   * to a Ciphertext. If the Ciphertext already has another MetadataTest
-   * object stored in its map, it will get overwritten by this MetadataTest
-   * object.
-   *
-   * Whenever we want to modify the metadata of a ciphertext, it is
-   * recommended to (1) clone the MetadataTest object from another
-   * ciphertext or create a new MetadataTest object with
-   * make_shared<MetadataTest>(), (2) modify it using the Setter methods
-   * of MetadataTest, and (3) store it to the ciphertext we want using
-   * this method.
-   *
-   * @param ciphertext the ciphertext whose metadata to retrieve.
-   */
+     * This static method stores a MetadataTest object
+     * to a Ciphertext. If the Ciphertext already has another MetadataTest
+     * object stored in its map, it will get overwritten by this MetadataTest
+     * object.
+     *
+     * Whenever we want to modify the metadata of a ciphertext, it is
+     * recommended to (1) clone the MetadataTest object from another
+     * ciphertext or create a new MetadataTest object with
+     * make_shared<MetadataTest>(), (2) modify it using the Setter methods
+     * of MetadataTest, and (3) store it to the ciphertext we want using
+     * this method.
+     *
+     * @param ciphertext the ciphertext whose metadata to retrieve.
+     */
     template <class Element>
     static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
                               std::shared_ptr<MetadataTest> mdata) {
@@ -192,8 +192,8 @@ class MetadataTest : public Metadata {
 
   protected:
     /**
-    * Defines how to print the contents of objects of this class.
-    */
+     * Defines how to print the contents of objects of this class.
+     */
     std::ostream& PrintMetadata(std::ostream& out) const override {
         out << "[ " << m_s << " ]";
         return out;

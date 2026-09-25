@@ -4,8 +4,8 @@
 #   pre-commit run clang-format --all-files          (whole tree)
 #   pre-commit run clang-format --files foo.cpp      (one file)
 # The pinned version is authoritative. An editor running its own clang-format
-# needs version 12 or newer to parse this file, and other versions format some
-# files differently; "pip3 install clang-format==18.1.8" gives an editor the
+# needs version 20 or newer to parse this file, and other versions format some
+# files differently; "pip3 install clang-format==23.1.1" gives an editor the
 # same binary the hook uses.
 #######################################################################
 BasedOnStyle: Google
@@ -34,7 +34,7 @@ EmptyLineBeforeAccessModifier: LogicalBlock
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
 PointerAlignment: Left
-ReflowComments: false
+ReflowComments: IndentOnly
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 UseTab: Never

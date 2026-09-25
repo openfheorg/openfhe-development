@@ -81,104 +81,104 @@ class BinFHEContext : public Serializable {
     BinFHEContext() = default;
 
     /**
-   * Creates a crypto context using custom parameters.
-   * Should be used with care (only for advanced users familiar with LWE
-   * parameter selection).
-   *
-   * @param n lattice parameter for additive LWE scheme
-   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param q modulus for additive LWE
-   * @param Q modulus for RingGSW/RLWE used in bootstrapping
-   * @param std standard deviation
-   * @param baseKS the base used for key switching
-   * @param baseG the gadget base used in bootstrapping
-   * @param baseR the base used for refreshing
-   * @param keyDist secret key distribution
-   * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
-   */
+     * Creates a crypto context using custom parameters.
+     * Should be used with care (only for advanced users familiar with LWE
+     * parameter selection).
+     *
+     * @param n lattice parameter for additive LWE scheme
+     * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+     * @param q modulus for additive LWE
+     * @param Q modulus for RingGSW/RLWE used in bootstrapping
+     * @param std standard deviation
+     * @param baseKS the base used for key switching
+     * @param baseG the gadget base used in bootstrapping
+     * @param baseR the base used for refreshing
+     * @param keyDist secret key distribution
+     * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
+     * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
+     */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, double std, uint32_t baseKS,
                                uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
                                BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
 
     /**
-   * Creates a crypto context using custom parameters.
-   * Should be used with care (only for advanced users familiar with LWE
-   * parameter selection).
-   *
-   * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
-   * @param arbFunc whether need to evaluate an arbitrary function using functional bootstrapping
-   * @param logQ log(input ciphertext modulus)
-   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   * @param timeOptimization whether to use dynamic bootstrapping technique
-   */
+     * Creates a crypto context using custom parameters.
+     * Should be used with care (only for advanced users familiar with LWE
+     * parameter selection).
+     *
+     * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
+     * @param arbFunc whether need to evaluate an arbitrary function using functional bootstrapping
+     * @param logQ log(input ciphertext modulus)
+     * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+     * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
+     * @param timeOptimization whether to use dynamic bootstrapping technique
+     */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ = 11, uint32_t N = 0,
                                BINFHE_METHOD method = GINX, bool timeOptimization = false);
 
     /**
-   * Creates a crypto context using predefined parameters sets. Recommended for
-   * most users.
-   *
-   * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
-   * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   */
+     * Creates a crypto context using predefined parameters sets. Recommended for
+     * most users.
+     *
+     * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256 with variants, see binfhe_constants.h
+     * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
+     */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
     /**
-   * Creates a crypto context using custom parameters.
-   *
-   * @param params the parameter context
-   * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
-   */
+     * Creates a crypto context using custom parameters.
+     *
+     * @param params the parameter context
+     * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
+     */
     void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
 
     /**
-   * Gets the refresh key at the width the context holds it. Null when the 32-bit internal form
-   * is the resident one, so serialize GetBTKey() rather than this.
-   *
-   * @return a shared pointer to the refresh key
-   */
+     * Gets the refresh key at the width the context holds it. Null when the 32-bit internal form
+     * is the resident one, so serialize GetBTKey() rather than this.
+     *
+     * @return a shared pointer to the refresh key
+     */
     const RingGSWACCKey& GetRefreshKey() const {
         return m_BTKey.BSkey;
     }
 
     /**
-   * Gets the switching key at the width the context holds it, with the same caveat as
-   * GetRefreshKey().
-   *
-   * @return a shared pointer to the switching key
-   */
+     * Gets the switching key at the width the context holds it, with the same caveat as
+     * GetRefreshKey().
+     *
+     * @return a shared pointer to the switching key
+     */
     const LWESwitchingKey& GetSwitchKey() const {
         return m_BTKey.KSkey;
     }
 
     /**
-   * Gets both bootstrapping keys and the public key, each at the width the context holds it.
-   * This is what serialization takes: the archive records whichever width was resident, and
-   * BTKeyLoad() restores it, narrowing or widening only if the caller asks for the other one.
-   *
-   * @return the bootstrapping keys
-   */
+     * Gets both bootstrapping keys and the public key, each at the width the context holds it.
+     * This is what serialization takes: the archive records whichever width was resident, and
+     * BTKeyLoad() restores it, narrowing or widening only if the caller asks for the other one.
+     *
+     * @return the bootstrapping keys
+     */
     const RingGSWBTKey& GetBTKey() const {
         return m_BTKey;
     }
 
     /**
-   * Gets the public key (used for serialization).
-   *
-   * @return a shared pointer to the public key
-   */
+     * Gets the public key (used for serialization).
+     *
+     * @return a shared pointer to the public key
+     */
     const LWEPublicKey& GetPublicKey() const {
         return m_BTKey.Pkey;
     }
 
     /**
-   * Checks whether the refreshing key is held in the 32-bit internal form. Unlike the serialization getters, this
-   * never widens, so it is safe for introspection and memory accounting
-   *
-   * @return true if the resident refreshing key is the 32-bit one; always false in a 32-bit NATIVEINT build
-   */
+     * Checks whether the refreshing key is held in the 32-bit internal form. Unlike the serialization getters, this
+     * never widens, so it is safe for introspection and memory accounting
+     *
+     * @return true if the resident refreshing key is the 32-bit one; always false in a 32-bit NATIVEINT build
+     */
     bool HasInternal32RefreshKey() const {
 #if NATIVEINT != 32
         return m_BTKey.BSkey32 != nullptr;
@@ -188,10 +188,10 @@ class BinFHEContext : public Serializable {
     }
 
     /**
-   * Checks whether the key switching key is held in the 32-bit internal form, without widening it
-   *
-   * @return true if the resident switching key is the 32-bit one; always false in a 32-bit NATIVEINT build
-   */
+     * Checks whether the key switching key is held in the 32-bit internal form, without widening it
+     *
+     * @return true if the resident switching key is the 32-bit one; always false in a 32-bit NATIVEINT build
+     */
     bool HasInternal32SwitchKey() const {
 #if NATIVEINT != 32
         return m_BTKey.KSkey32 != nullptr;
@@ -201,118 +201,118 @@ class BinFHEContext : public Serializable {
     }
 
     /**
-    * Gets the bootstrapping key map (used for serialization).
-    *
-    * @return a shared pointer to the bootstrapping key map
-    */
+     * Gets the bootstrapping key map (used for serialization).
+     *
+     * @return a shared pointer to the bootstrapping key map
+     */
     const std::shared_ptr<std::map<uint32_t, RingGSWBTKey>> GetBTKeyMap() const {
         return std::make_shared<std::map<uint32_t, RingGSWBTKey>>(m_BTKey_map);
     }
 
     /**
-   * Generates a secret key for the main LWE scheme
-   *
-   * @return a shared pointer to the secret key
-   */
+     * Generates a secret key for the main LWE scheme
+     *
+     * @return a shared pointer to the secret key
+     */
     LWEPrivateKey KeyGen() const;
 
     /**
-   * Generates a public key, secret key pair for the main LWE scheme
-   *
-   * @return a shared pointer to the public key, secret key pair
-   */
+     * Generates a public key, secret key pair for the main LWE scheme
+     *
+     * @return a shared pointer to the public key, secret key pair
+     */
     LWEKeyPair KeyGenPair() const;
 
     /**
-   * Generates a public key for a secret key for the main LWE scheme
-   *
-   * @param sk the secret key
-   * @return a shared pointer to the public key
-   */
+     * Generates a public key for a secret key for the main LWE scheme
+     *
+     * @param sk the secret key
+     * @return a shared pointer to the public key
+     */
     LWEPublicKey PubKeyGen(ConstLWEPrivateKey& sk) const;
 
     /**
-   * Generates a secret key used in bootstrapping
-   * @return a shared pointer to the secret key
-   */
+     * Generates a secret key used in bootstrapping
+     * @return a shared pointer to the secret key
+     */
     LWEPrivateKey KeyGenN() const;
 
     /**
-   * Encrypts a bit or integer using a secret key (symmetric key encryption)
-   *
-   * @param sk the secret key
-   * @param m the plaintext
-   * @param output SMALL_DIM to generate fresh ciphertext (default), LARGE_DIM to
-   * generate a refreshed ciphertext
-   * @param p plaintext modulus
-   * @param mod the ciphertext modulus to encrypt with; by default m_q in params
-   * @return a shared pointer to the ciphertext
-   */
+     * Encrypts a bit or integer using a secret key (symmetric key encryption)
+     *
+     * @param sk the secret key
+     * @param m the plaintext
+     * @param output SMALL_DIM to generate fresh ciphertext (default), LARGE_DIM to
+     * generate a refreshed ciphertext
+     * @param p plaintext modulus
+     * @param mod the ciphertext modulus to encrypt with; by default m_q in params
+     * @return a shared pointer to the ciphertext
+     */
     LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
-   * Encrypts a bit or integer using a public key (public key encryption)
-   *
-   * @param pk the public key
-   * @param m the plaintext
-   * @param output SMALL_DIM to generate ciphertext with dimension n (default). LARGE_DIM to generate ciphertext with dimension N
-   * @param p plaintext modulus
-   * @param mod the ciphertext modulus to encrypt with; by default m_q in params
-   * @return a shared pointer to the ciphertext
-   */
+     * Encrypts a bit or integer using a public key (public key encryption)
+     *
+     * @param pk the public key
+     * @param m the plaintext
+     * @param output SMALL_DIM to generate ciphertext with dimension n (default). LARGE_DIM to generate ciphertext with dimension N
+     * @param p plaintext modulus
+     * @param mod the ciphertext modulus to encrypt with; by default m_q in params
+     * @return a shared pointer to the ciphertext
+     */
     LWECiphertext Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
-   * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
-   *
-   * @param ksk the key switching key from secret key of dimension N to secret key of dimension n
-   * @param ct the ciphertext to convert
-   * @return a shared pointer to the ciphertext
-   */
+     * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
+     *
+     * @param ksk the key switching key from secret key of dimension N to secret key of dimension n
+     * @param ct the ciphertext to convert
+     * @return a shared pointer to the ciphertext
+     */
     LWECiphertext SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECiphertext& ct) const;
 
     /**
-   * Decrypts a ciphertext using a secret key
-   *
-   * @param sk the secret key
-   * @param ct the ciphertext
-   * @param result plaintext result
-   * @param p plaintext modulus
-   */
+     * Decrypts a ciphertext using a secret key
+     *
+     * @param sk the secret key
+     * @param ct the ciphertext
+     * @param result plaintext result
+     * @param p plaintext modulus
+     */
     void Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
 
     /**
-   * Generates a switching key to go from a secret key with (Q,N) to a secret
-   * key with (q,n)
-   *
-   * @param sk new secret key
-   * @param skN old secret key
-   * @return a shared pointer to the switching key
-   */
+     * Generates a switching key to go from a secret key with (Q,N) to a secret
+     * key with (q,n)
+     *
+     * @param sk new secret key
+     * @param skN old secret key
+     * @return a shared pointer to the switching key
+     */
     LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const;
 
     /**
-   * Generates boostrapping keys
-   *
-   * @param sk secret key
-   * @param keygenMode key generation mode for symmetric or public encryption
-   * @param internal32 generate the keys directly in their 32-bit internal form where they
-   *        qualify. Qualification is per key and automatic: a key whose moduli do not fit is
-   *        generated in the 64-bit form instead.
-   */
+     * Generates boostrapping keys
+     *
+     * @param sk secret key
+     * @param keygenMode key generation mode for symmetric or public encryption
+     * @param internal32 generate the keys directly in their 32-bit internal form where they
+     *        qualify. Qualification is per key and automatic: a key whose moduli do not fit is
+     *        generated in the 64-bit form instead.
+     */
     void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT, bool internal32 = true);
 
     /**
-   * Loads bootstrapping keys in the context (typically after deserializing)
-   *
-   * @param key struct with the bootstrapping keys
-   * @param internal32 convert the loaded keys to the 32-bit internal form where they qualify,
-   *        release the 64-bit copies and return the freed pages to the OS. Any handles the
-   *        caller still holds keep the 64-bit copies resident; drop them and call AllocTrim()
-   *        to finish the release.
-   */
+     * Loads bootstrapping keys in the context (typically after deserializing)
+     *
+     * @param key struct with the bootstrapping keys
+     * @param internal32 convert the loaded keys to the 32-bit internal form where they qualify,
+     *        release the 64-bit copies and return the freed pages to the OS. Any handles the
+     *        caller still holds keep the 64-bit copies resident; drop them and call AllocTrim()
+     *        to finish the release.
+     */
     void BTKeyLoad(const RingGSWBTKey& key, bool internal32 = true) {
         m_BTKey = key;
 #if NATIVEINT != 32
@@ -340,11 +340,11 @@ class BinFHEContext : public Serializable {
     }
 
     /**
-   * Loads a bootstrapping key map element in the context (typically after deserializing)
-   *
-   * @param baseG baseG corresponding to the given key
-   * @param key struct with the bootstrapping keys
-   */
+     * Loads a bootstrapping key map element in the context (typically after deserializing)
+     *
+     * @param baseG baseG corresponding to the given key
+     * @param key struct with the bootstrapping keys
+     */
     void BTKeyMapLoadSingleElement(uint32_t baseG, const RingGSWBTKey& key) {
         if (key.BSkey != nullptr)
             m_params->GetRingGSWParams()->EnsureMonomials();
@@ -352,8 +352,8 @@ class BinFHEContext : public Serializable {
     }
 
     /**
-   * Clear the bootstrapping keys in the current context
-   */
+     * Clear the bootstrapping keys in the current context
+     */
     void ClearBTKeys() {
         m_BTKey.BSkey.reset();
         m_BTKey.KSkey.reset();
@@ -366,117 +366,117 @@ class BinFHEContext : public Serializable {
     }
 
     /**
-   * Evaluates a binary gate (calls bootstrapping as a subroutine)
-   *
-   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
-   * @param ct1 first ciphertext
-   * @param ct2 second ciphertext
-   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates a binary gate (calls bootstrapping as a subroutine)
+     *
+     * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
+     * @param ct1 first ciphertext
+     * @param ct2 second ciphertext
+     * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2,
                               bool extended = false) const;
 
     /**
-   * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
-   *
-   * @param gate the gate; can be MAJORITY, AND3, OR3, AND4, OR4, or CMUX
-   * @param ctvector vector of ciphertexts
-   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
+     *
+     * @param gate the gate; can be MAJORITY, AND3, OR3, AND4, OR4, or CMUX
+     * @param ctvector vector of ciphertexts
+     * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector, bool extended = false) const;
 
     /**
-   * Bootstraps a ciphertext (without peforming any operation)
-   *
-   * @param ct ciphertext to be bootstrapped
-   * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Bootstraps a ciphertext (without peforming any operation)
+     *
+     * @param ct ciphertext to be bootstrapped
+     * @param extended if true, the result is returned before key switching (modulus Q, dimension N)
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext Bootstrap(ConstLWECiphertext& ct, bool extended = false) const;
 
     /**
-   * Evaluate an arbitrary function
-   *
-   * @param ct ciphertext to be bootstrapped
-   * @param LUT the look-up table of the to-be-evaluated function
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate an arbitrary function
+     *
+     * @param ct ciphertext to be bootstrapped
+     * @param LUT the look-up table of the to-be-evaluated function
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalFunc(ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT) const;
 
     /**
-   * Generate the LUT for the to-be-evaluated function
-   *
-   * @param f the to-be-evaluated function on an integer message and a plaintext modulus
-   * @param p plaintext modulus
-   * @return the look-up table (vector of function values) for the function
-   */
+     * Generate the LUT for the to-be-evaluated function
+     *
+     * @param f the to-be-evaluated function on an integer message and a plaintext modulus
+     * @param p plaintext modulus
+     * @return the look-up table (vector of function values) for the function
+     */
     std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
                                                       NativeInteger p);
 
     /**
-   * Evaluate a round down function
-   *
-   * @param ct ciphertext to be bootstrapped
-   * @param roundbits number of bits to be rounded
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate a round down function
+     *
+     * @param ct ciphertext to be bootstrapped
+     * @param roundbits number of bits to be rounded
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalFloor(ConstLWECiphertext& ct, uint32_t roundbits = 0) const;
 
     /**
-   * Evaluate a sign function over large precisions
-   *
-   * @param ct ciphertext to be bootstrapped
-   * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluate a sign function over large precisions
+     *
+     * @param ct ciphertext to be bootstrapped
+     * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalSign(ConstLWECiphertext& ct, bool schemeSwitch = false);
 
     /**
-   * Evaluate ciphertext decomposition
-   *
-   * @param ct ciphertext to be bootstrapped
-   * @return a vector of shared pointers to the resulting ciphertexts
-   */
+     * Evaluate ciphertext decomposition
+     *
+     * @param ct ciphertext to be bootstrapped
+     * @return a vector of shared pointers to the resulting ciphertexts
+     */
     std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext& ct);
 
     /**
-   * Evaluates NOT gate
-   *
-   * @param ct the input ciphertext
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates NOT gate
+     *
+     * @param ct the input ciphertext
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalNOT(ConstLWECiphertext& ct) const;
 
     /**
-   * Evaluates constant gate
-   *
-   * @param value the Boolean value to output
-   * @return a shared pointer to the resulting ciphertext
-   */
+     * Evaluates constant gate
+     *
+     * @param value the Boolean value to output
+     * @return a shared pointer to the resulting ciphertext
+     */
     LWECiphertext EvalConstant(bool value) const;
 
     /**
-   * Getter for params
-   * @return a shared pointer to the BinFHE crypto parameters
-   */
+     * Getter for params
+     * @return a shared pointer to the BinFHE crypto parameters
+     */
     const std::shared_ptr<BinFHECryptoParams>& GetParams() {
         return m_params;
     }
 
     /**
-   * Getter for LWE scheme
-   * @return a shared pointer to the LWE encryption scheme
-   */
+     * Getter for LWE scheme
+     * @return a shared pointer to the LWE encryption scheme
+     */
     const std::shared_ptr<LWEEncryptionScheme>& GetLWEScheme() {
         return m_LWEscheme;
     }
 
     /**
-   * Getter for BinFHE scheme
-   * @return a shared pointer to the BinFHE scheme
-   */
+     * Getter for BinFHE scheme
+     * @return a shared pointer to the BinFHE scheme
+     */
     const std::shared_ptr<BinFHEScheme>& GetBinFHEScheme() {
         return m_binfhescheme;
     }
@@ -505,18 +505,18 @@ class BinFHEContext : public Serializable {
     }
 
     /**
-   * Getter for maximum plaintext modulus
-   * @return the maximum plaintext modulus supported by the parameters
-   */
+     * Getter for maximum plaintext modulus
+     * @return the maximum plaintext modulus supported by the parameters
+     */
     NativeInteger GetMaxPlaintextSpace() const {
         // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
         return m_params->GetLWEParams()->Getq() / (this->GetBeta() << 1);
     }
 
     /**
-   * Getter for the beta security parameter
-   * @return the error bound beta
-   */
+     * Getter for the beta security parameter
+     * @return the error bound beta
+     */
     constexpr NativeInteger GetBeta() const {
         return NativeInteger(128);
     }
@@ -524,18 +524,18 @@ class BinFHEContext : public Serializable {
   private:
 #if NATIVEINT != 32
     /**
-   * Convert the refreshing and switching keys to their 32-bit internal forms and release the
-   * originals, halving resident key material and running the blind rotation and key switch on
-   * 32-bit words. Each key converts only when its modulus qualifies. Peak memory holds both
-   * forms during the conversion, and the released pages return to the OS only after a
-   * follow-up AllocTrim().
-   *
-   * Callers select this through BTKeyGen and BTKeyLoad rather than here: false means the keys
-   * were already narrowed as well as that they do not qualify, which is not a distinction an
-   * application should have to make.
-   *
-   * @return true if a key was converted
-   */
+     * Convert the refreshing and switching keys to their 32-bit internal forms and release the
+     * originals, halving resident key material and running the blind rotation and key switch on
+     * 32-bit words. Each key converts only when its modulus qualifies. Peak memory holds both
+     * forms during the conversion, and the released pages return to the OS only after a
+     * follow-up AllocTrim().
+     *
+     * Callers select this through BTKeyGen and BTKeyLoad rather than here: false means the keys
+     * were already narrowed as well as that they do not qualify, which is not a distinction an
+     * application should have to make.
+     *
+     * @return true if a key was converted
+     */
     bool CompressBTKeys() {
         bool converted = false;
         if (m_BTKey.BSkey != nullptr) {

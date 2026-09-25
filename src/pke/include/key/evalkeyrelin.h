@@ -59,10 +59,10 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
 
   public:
     /**
-   * Basic constructor for setting the crypto context
-   *
-   * @param cc the crypto context the key belongs to
-   */
+     * Basic constructor for setting the crypto context
+     *
+     * @param cc the crypto context the key belongs to
+     */
     explicit EvalKeyRelinImpl(const CryptoContext<Element>& cc) : EvalKeyImpl<Element>(cc) {}
 
     EvalKeyRelinImpl() = default;
@@ -70,36 +70,36 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     virtual ~EvalKeyRelinImpl() = default;
 
     /**
-   * Copy constructor
-   *
-   *@param rhs key to copy from
-   */
+     * Copy constructor
+     *
+     *@param rhs key to copy from
+     */
     EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
         : EvalKeyImpl<Element>(rhs.context), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
 
     /**
-   * Move constructor
-   *
-   *@param rhs key to move from
-   */
+     * Move constructor
+     *
+     *@param rhs key to move from
+     */
     EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
         : EvalKeyImpl<Element>(rhs.context), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
 
     /**
-   * Checks whether the key is usable: it has a crypto context and both key vectors A and B are non-empty.
-   *
-   * @return true if the key has a crypto context and non-empty A and B vectors
-   */
+     * Checks whether the key is usable: it has a crypto context and both key vectors A and B are non-empty.
+     *
+     * @return true if the key has a crypto context and non-empty A and B vectors
+     */
     operator bool() const {
         return (this->context != nullptr) && (m_AKey.size() != 0) && (m_BKey.size() != 0);
     }
 
     /**
-   * Assignment Operator.
-   *
-   * @param rhs key to copy from
-   * @return the resulting EvalKeyRelinImpl
-   */
+     * Assignment Operator.
+     *
+     * @param rhs key to copy from
+     * @return the resulting EvalKeyRelinImpl
+     */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
         this->context = rhs.context;
         m_AKey = rhs.m_AKey;
@@ -108,11 +108,11 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     }
 
     /**
-   * Move Assignment Operator.
-   *
-   * @param rhs key to move from
-   * @return the resulting EvalKeyRelinImpl
-   */
+     * Move Assignment Operator.
+     *
+     * @param rhs key to move from
+     * @return the resulting EvalKeyRelinImpl
+     */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
         this->context = std::move(rhs.context);
         m_AKey = std::move(rhs.m_AKey);
@@ -121,80 +121,80 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     }
 
     /**
-   * Setter function to store Relinearization Element Vector A.
-   * Overrides base class implementation.
-   *
-   * @param a is the Element vector to be copied.
-   */
+     * Setter function to store Relinearization Element Vector A.
+     * Overrides base class implementation.
+     *
+     * @param a is the Element vector to be copied.
+     */
     void SetAVector(const std::vector<Element>& a) override {
         m_AKey = a;
     }
 
     /**
-   * Setter function to store Relinearization Element Vector A.
-   * Overrides base class implementation.
-   *
-   * @param a is the Element vector to be moved.
-   */
+     * Setter function to store Relinearization Element Vector A.
+     * Overrides base class implementation.
+     *
+     * @param a is the Element vector to be moved.
+     */
     void SetAVector(std::vector<Element>&& a) noexcept override {
         m_AKey = std::move(a);
     }
 
     /**
-   * Getter function to access Relinearization Element Vector A.
-   * Overrides base class implementation.
-   *
-   * @return Element vector A.
-   */
+     * Getter function to access Relinearization Element Vector A.
+     * Overrides base class implementation.
+     *
+     * @return Element vector A.
+     */
     const std::vector<Element>& GetAVector() const override {
         return m_AKey;
     }
 
     /**
-   * Setter function to store Relinearization Element Vector B.
-   * Overrides base class implementation.
-   *
-   * @param b is the Element vector to be copied.
-   */
+     * Setter function to store Relinearization Element Vector B.
+     * Overrides base class implementation.
+     *
+     * @param b is the Element vector to be copied.
+     */
     void SetBVector(const std::vector<Element>& b) override {
         m_BKey = b;
     }
 
     /**
-   * Setter function to store Relinearization Element Vector B.
-   * Overrides base class implementation.
-   *
-   * @param b is the Element vector to be moved.
-   */
+     * Setter function to store Relinearization Element Vector B.
+     * Overrides base class implementation.
+     *
+     * @param b is the Element vector to be moved.
+     */
     void SetBVector(std::vector<Element>&& b) noexcept override {
         m_BKey = std::move(b);
     }
 
     /**
-   * Getter function to access Relinearization Element Vector B.
-   * Overrides base class implementation.
-   *
-   * @return Element vector B.
-   */
+     * Getter function to access Relinearization Element Vector B.
+     * Overrides base class implementation.
+     *
+     * @return Element vector B.
+     */
     const std::vector<Element>& GetBVector() const override {
         return m_BKey;
     }
 
     /**
-   * Releases the key material: clears both key vectors A and B.
-   */
+     * Releases the key material: clears both key vectors A and B.
+     */
     void ClearKeys() override {
         m_AKey.clear();
         m_BKey.clear();
     }
 
     /**
-   * Compares this key with another evaluation key, which must be an EvalKeyRelinImpl.
-   * Keys are equal if they share the crypto context (by pointer) and key tag and have equal A and B vectors.
-   *
-   * @param rhs the evaluation key to compare with
-   * @return true if the keys are equal
-   */
+     * Compares this key with another evaluation key, which must be an EvalKeyRelinImpl.
+     * Keys are equal if they share the crypto context (by pointer) and key tag and have equal A and B vectors.
+     *
+     * @param rhs the evaluation key to compare with
+     * @return true if the keys are equal
+     */
     bool key_compare(const EvalKeyImpl<Element>& rhs) const override {
         const auto& r = static_cast<const EvalKeyRelinImpl<Element>&>(rhs);
         return CryptoObject<Element>::operator==(rhs) && m_AKey == r.m_AKey && m_BKey == r.m_BKey;

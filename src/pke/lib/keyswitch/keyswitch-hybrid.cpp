@@ -104,7 +104,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(dug, dgg)
     for (uint32_t part = 0; part < numPartQ; ++part) {
         auto a = (ekPrev == nullptr) ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
-                                       ekPrev->GetAVector()[part];                                  // threshold HE
+                                       ekPrev->GetAVector()[part];                    // threshold HE
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, false);
 

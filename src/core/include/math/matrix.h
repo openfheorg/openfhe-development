@@ -80,12 +80,12 @@ class Matrix : public Serializable {
     typedef std::function<Element(void)> alloc_func;
 
     /**
-   * Constructor that initializes matrix values using a zero allocator
-   *
-   * @param allocZero lambda function for zero initialization.
-   * @param rows number of rows.
-   * @param cols number of columns.
-   */
+     * Constructor that initializes matrix values using a zero allocator
+     *
+     * @param allocZero lambda function for zero initialization.
+     * @param rows number of rows.
+     * @param cols number of columns.
+     */
     Matrix(alloc_func allocZero, size_t rows, size_t cols) : data(), rows(rows), cols(cols), allocZero(allocZero) {
         data.resize(rows);
         for (auto row = data.begin(); row != data.end(); ++row) {
@@ -99,34 +99,34 @@ class Matrix : public Serializable {
     // TODO: add Clear();
 
     /**
-   * Constructor that initializes matrix values using a distribution generation
-   * allocator
-   *
-   * @param allocZero lambda function for zero initialization (used for
-   * initializing derived matrix objects)
-   * @param rows number of rows.
-   * @param cols number of columns.
-   * @param allocGen lambda function for initialization using a distribution
-   * generator.
-   */
+     * Constructor that initializes matrix values using a distribution generation
+     * allocator
+     *
+     * @param allocZero lambda function for zero initialization (used for
+     * initializing derived matrix objects)
+     * @param rows number of rows.
+     * @param cols number of columns.
+     * @param allocGen lambda function for initialization using a distribution
+     * generator.
+     */
     Matrix(alloc_func allocZero, size_t rows, size_t cols, alloc_func allocGen);
 
     /**
-   * Constructor of an empty matrix.
-   * SetSize must be called on this matrix to use it
-   * SetAlloc needs to be called if 0 passed to constructor
-   * This mostly exists to support deserializing
-   *
-   * @param allocZero lambda function for zero initialization.
-   */
+     * Constructor of an empty matrix.
+     * SetSize must be called on this matrix to use it
+     * SetAlloc needs to be called if 0 passed to constructor
+     * This mostly exists to support deserializing
+     *
+     * @param allocZero lambda function for zero initialization.
+     */
     explicit Matrix(alloc_func allocZero = 0) : data(), rows(0), cols(0), allocZero(allocZero) {}
 
     /**
-   * Set the size of a matrix, elements are zeroed out
-   *
-   * @param rows number of rows
-   * @param cols number of columns
-   */
+     * Set the size of a matrix, elements are zeroed out
+     *
+     * @param rows number of rows
+     * @param cols number of columns
+     */
 
     void SetSize(size_t rows, size_t cols) {
         if (this->rows != 0 || this->cols != 0) {
@@ -146,37 +146,37 @@ class Matrix : public Serializable {
     }
 
     /**
-   * SetAllocator - set the function to allocate a zero;
-   * basically only required for deserializer
-   *
-   * @param allocZero lambda function for zero initialization
-   */
+     * SetAllocator - set the function to allocate a zero;
+     * basically only required for deserializer
+     *
+     * @param allocZero lambda function for zero initialization
+     */
     void SetAllocator(alloc_func allocZero) {
         this->allocZero = allocZero;
     }
 
     /**
-   * Copy constructor
-   *
-   * @param other the matrix object to be copied
-   */
+     * Copy constructor
+     *
+     * @param other the matrix object to be copied
+     */
     Matrix(const Matrix<Element>& other) : data(), rows(other.rows), cols(other.cols), allocZero(other.allocZero) {
         deepCopyData(other.data);
     }
 
     /**
-   * Assignment operator
-   *
-   * @param other the matrix object whose values are to be copied
-   * @return the resulting matrix
-   */
+     * Assignment operator
+     *
+     * @param other the matrix object whose values are to be copied
+     * @return the resulting matrix
+     */
     Matrix<Element>& operator=(const Matrix<Element>& other);
 
     /**
-   * In-place change of the current matrix to a matrix of all ones
-   *
-   * @return the resulting matrix
-   */
+     * In-place change of the current matrix to a matrix of all ones
+     *
+     * @return the resulting matrix
+     */
     Matrix<Element>& Ones() {
         for (size_t row = 0; row < rows; ++row) {
             for (size_t col = 0; col < cols; ++col) {
@@ -187,36 +187,36 @@ class Matrix : public Serializable {
     }
 
     /**
-   * In-place modulo reduction
-   *
-   * @param modulus the modulus to reduce by
-   * @return the resulting matrix (same object)
-   */
+     * In-place modulo reduction
+     *
+     * @param modulus the modulus to reduce by
+     * @return the resulting matrix (same object)
+     */
     Matrix<Element>& ModEq(const Element& modulus);
 
     /**
-   * In-place modular subtraction
-   *
-   * @param b the matrix to be subtracted
-   * @param modulus the modulus to reduce by
-   * @return the resulting matrix (same object)
-   */
+     * In-place modular subtraction
+     *
+     * @param b the matrix to be subtracted
+     * @param modulus the modulus to reduce by
+     * @return the resulting matrix (same object)
+     */
     Matrix<Element>& ModSubEq(Matrix<Element> const& b, const Element& modulus);
 
     /**
-   * Fill matrix using the same element
-   *
-   * @param val the element the matrix is filled by
-   *
-   * @return the resulting matrix
-   */
+     * Fill matrix using the same element
+     *
+     * @param val the element the matrix is filled by
+     *
+     * @return the resulting matrix
+     */
     Matrix<Element>& Fill(const Element& val);
 
     /**
-   * In-place change of the current matrix to Identity matrix
-   *
-   * @return the resulting matrix
-   */
+     * In-place change of the current matrix to Identity matrix
+     *
+     * @return the resulting matrix
+     */
     Matrix<Element>& Identity() {
         for (size_t row = 0; row < rows; ++row) {
             for (size_t col = 0; col < cols; ++col) {
@@ -231,11 +231,11 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Sets the first row to be powers of two for when the base is two
-   *
-   * @param base is the base the digits of the matrix are represented in
-   * @return the resulting matrix
-   */
+     * Sets the first row to be powers of two for when the base is two
+     *
+     * @param base is the base the digits of the matrix are represented in
+     * @return the resulting matrix
+     */
     template <typename T = Element,
               typename std::enable_if<!std::is_same<T, M2DCRTPoly>::value && !std::is_same<T, M4DCRTPoly>::value &&
                                               !std::is_same<T, M6DCRTPoly>::value,
@@ -258,13 +258,13 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Gadget matrix for DCRTPoly elements: the digits of every CRT modulus are handled
-   * separately, so the first row holds, for each tower i, the powers of the base embedded
-   * in tower i only; the other rows are shifted copies of the first row.
-   *
-   * @param base is the base the digits of the matrix are represented in
-   * @return the resulting matrix
-   */
+     * Gadget matrix for DCRTPoly elements: the digits of every CRT modulus are handled
+     * separately, so the first row holds, for each tower i, the powers of the base embedded
+     * in tower i only; the other rows are shifted copies of the first row.
+     *
+     * @param base is the base the digits of the matrix are represented in
+     * @return the resulting matrix
+     */
     template <typename T = Element,
               typename std::enable_if<std::is_same<T, M2DCRTPoly>::value || std::is_same<T, M4DCRTPoly>::value ||
                                               std::is_same<T, M6DCRTPoly>::value,
@@ -298,11 +298,11 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Computes the infinity norm; not defined for scalar (double, int, int64_t) and Field2n
-   * element types, for which this overload always throws.
-   *
-   * @return never returns; throws.
-   */
+     * Computes the infinity norm; not defined for scalar (double, int, int64_t) and Field2n
+     * element types, for which this overload always throws.
+     *
+     * @return never returns; throws.
+     */
     template <typename T = Element,
               typename std::enable_if<std::is_same<T, double>::value || std::is_same<T, int>::value ||
                                               std::is_same<T, int64_t>::value || std::is_same<T, Field2n>::value,
@@ -312,10 +312,10 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Computes the infinity norm: the largest Norm() over all elements
-   *
-   * @return the norm in double format
-   */
+     * Computes the infinity norm: the largest Norm() over all elements
+     *
+     * @return the norm in double format
+     */
     template <typename T = Element,
               typename std::enable_if<!std::is_same<T, double>::value && !std::is_same<T, int>::value &&
                                               !std::is_same<T, int64_t>::value && !std::is_same<T, Field2n>::value,
@@ -335,29 +335,29 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Matrix multiplication
-   *
-   * @param other the multiplier matrix
-   * @return the result of multiplication
-   */
+     * Matrix multiplication
+     *
+     * @param other the multiplier matrix
+     * @return the result of multiplication
+     */
     Matrix<Element> Mult(Matrix<Element> const& other) const;
 
     /**
-   * Operator for matrix multiplication
-   *
-   * @param other the multiplier matrix
-   * @return the result of multiplication
-   */
+     * Operator for matrix multiplication
+     *
+     * @param other the multiplier matrix
+     * @return the result of multiplication
+     */
     Matrix<Element> operator*(Matrix<Element> const& other) const {
         return Mult(other);
     }
 
     /**
-   * Multiplication of matrix by a scalar
-   *
-   * @param other the multiplier element
-   * @return the result of multiplication
-   */
+     * Multiplication of matrix by a scalar
+     *
+     * @param other the multiplier element
+     * @return the result of multiplication
+     */
     Matrix<Element> ScalarMult(Element const& other) const {
         Matrix<Element> result(*this);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.cols))
@@ -371,21 +371,21 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Operator for scalar multiplication
-   *
-   * @param other the multiplier element
-   * @return the result of multiplication
-   */
+     * Operator for scalar multiplication
+     *
+     * @param other the multiplier element
+     * @return the result of multiplication
+     */
     Matrix<Element> operator*(Element const& other) const {
         return ScalarMult(other);
     }
 
     /**
-   * Equality check
-   *
-   * @param other the matrix object to compare to
-   * @return the boolean result
-   */
+     * Equality check
+     *
+     * @param other the matrix object to compare to
+     * @return the boolean result
+     */
     bool Equal(Matrix<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
             return false;
@@ -402,76 +402,76 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Operator for equality check
-   *
-   * @param other the matrix object to compare to
-   * @return the boolean result
-   */
+     * Operator for equality check
+     *
+     * @param other the matrix object to compare to
+     * @return the boolean result
+     */
     bool operator==(Matrix<Element> const& other) const {
         return Equal(other);
     }
 
     /**
-   * Operator for non-equality check
-   *
-   * @param other the matrix object to compare to
-   * @return the boolean result
-   */
+     * Operator for non-equality check
+     *
+     * @param other the matrix object to compare to
+     * @return the boolean result
+     */
     bool operator!=(Matrix<Element> const& other) const {
         return !Equal(other);
     }
 
     /**
-   * Get property to access the data as a vector of vectors
-   *
-   * @return the data as vector of vectors
-   */
+     * Get property to access the data as a vector of vectors
+     *
+     * @return the data as vector of vectors
+     */
     const data_t& GetData() const {
         return data;
     }
 
     /**
-   * Get property to access the number of rows in the matrix
-   *
-   * @return the number of rows
-   */
+     * Get property to access the number of rows in the matrix
+     *
+     * @return the number of rows
+     */
     size_t GetRows() const {
         return rows;
     }
 
     /**
-   * Get property to access the number of columns in the matrix
-   *
-   * @return the number of columns
-   */
+     * Get property to access the number of columns in the matrix
+     *
+     * @return the number of columns
+     */
     size_t GetCols() const {
         return cols;
     }
 
     /**
-   * Get property to access the zero allocator for the matrix
-   *
-   * @return the lambda function corresponding to the element zero allocator
-   */
+     * Get property to access the zero allocator for the matrix
+     *
+     * @return the lambda function corresponding to the element zero allocator
+     */
     alloc_func GetAllocator() const {
         return allocZero;
     }
 
     /**
-   * Sets the evaluation or coefficient representation for all ring elements
-   * that support the SetFormat method
-   *
-   * @param format the enum value corresponding to coefficient or evaluation
-   * representation
-   */
+     * Sets the evaluation or coefficient representation for all ring elements
+     * that support the SetFormat method
+     *
+     * @param format the enum value corresponding to coefficient or evaluation
+     * representation
+     */
     void SetFormat(Format format);
 
     /**
-   * Matrix addition
-   *
-   * @param other the matrix to be added
-   * @return the resulting matrix
-   */
+     * Matrix addition
+     *
+     * @param other the matrix to be added
+     * @return the resulting matrix
+     */
     Matrix<Element> Add(Matrix<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
             OPENFHE_THROW("Addition operands have incompatible dimensions");
@@ -487,29 +487,29 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Operator for matrix addition
-   *
-   * @param other the matrix to be added
-   * @return the resulting matrix
-   */
+     * Operator for matrix addition
+     *
+     * @param other the matrix to be added
+     * @return the resulting matrix
+     */
     Matrix<Element> operator+(Matrix<Element> const& other) const {
         return this->Add(other);
     }
 
     /**
-   * Operator for in-place addition
-   *
-   * @param other the matrix to be added
-   * @return the resulting matrix (same object)
-   */
+     * Operator for in-place addition
+     *
+     * @param other the matrix to be added
+     * @return the resulting matrix (same object)
+     */
     Matrix<Element>& operator+=(Matrix<Element> const& other);
 
     /**
-   * Matrix subtraction
-   *
-   * @param other the matrix to be subtracted
-   * @return the resulting matrix
-   */
+     * Matrix subtraction
+     *
+     * @param other the matrix to be subtracted
+     * @return the resulting matrix
+     */
     Matrix<Element> Sub(Matrix<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
             OPENFHE_THROW("Subtraction operands have incompatible dimensions");
@@ -526,92 +526,92 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Operator for matrix subtraction
-   *
-   * @param other the matrix to be subtracted
-   * @return the resulting matrix
-   */
+     * Operator for matrix subtraction
+     *
+     * @param other the matrix to be subtracted
+     * @return the resulting matrix
+     */
     Matrix<Element> operator-(Matrix<Element> const& other) const {
         return this->Sub(other);
     }
 
     /**
-   * Operator for in-place matrix subtraction
-   *
-   * @param other the matrix to be subtracted
-   * @return the resulting matrix (same object)
-   */
+     * Operator for in-place matrix subtraction
+     *
+     * @param other the matrix to be subtracted
+     * @return the resulting matrix (same object)
+     */
     Matrix<Element>& operator-=(Matrix<Element> const& other);
 
     /**
-   * Matrix transposition
-   *
-   * @return the resulting matrix
-   */
+     * Matrix transposition
+     *
+     * @return the resulting matrix
+     */
     Matrix<Element> Transpose() const;
 
     // YSP The signature of this method needs to be changed in the future
     /**
-   * Matrix determinant - found using Laplace formula with complexity O(d!),
-   * where d is the dimension
-   *
-   * @param result where the result is stored
-   */
+     * Matrix determinant - found using Laplace formula with complexity O(d!),
+     * where d is the dimension
+     *
+     * @param result where the result is stored
+     */
     void Determinant(Element* result) const;
     // Element Determinant() const;
 
     /**
-   * Cofactor matrix - the matrix of determinants of the minors A_{ij}
-   * multiplied by -1^{i+j}
-   *
-   * @return the cofactor matrix for the given matrix
-   */
+     * Cofactor matrix - the matrix of determinants of the minors A_{ij}
+     * multiplied by -1^{i+j}
+     *
+     * @return the cofactor matrix for the given matrix
+     */
     Matrix<Element> CofactorMatrix() const;
 
     /**
-   * Add rows to bottom of the matrix
-   *
-   * @param other the matrix to be added to the bottom of current matrix
-   * @return the resulting matrix
-   */
+     * Add rows to bottom of the matrix
+     *
+     * @param other the matrix to be added to the bottom of current matrix
+     * @return the resulting matrix
+     */
     Matrix<Element>& VStack(Matrix<Element> const& other);
 
     /**
-   * Add columns the right of the matrix
-   *
-   * @param other the matrix to be added to the right of current matrix
-   * @return the resulting matrix
-   */
+     * Add columns the right of the matrix
+     *
+     * @param other the matrix to be added to the right of current matrix
+     * @return the resulting matrix
+     */
     Matrix<Element>& HStack(Matrix<Element> const& other);
 
     /**
-   * Matrix indexing operator - writeable instance of the element
-   *
-   * @param row row index
-   * @param col column index
-   * @return the element at the index
-   */
+     * Matrix indexing operator - writeable instance of the element
+     *
+     * @param row row index
+     * @param col column index
+     * @return the element at the index
+     */
     Element& operator()(size_t row, size_t col) {
         return data[row][col];
     }
 
     /**
-   * Matrix indexing operator - read-only instance of the element
-   *
-   * @param row row index
-   * @param col column index
-   * @return the element at the index
-   */
+     * Matrix indexing operator - read-only instance of the element
+     *
+     * @param row row index
+     * @param col column index
+     * @return the element at the index
+     */
     Element const& operator()(size_t row, size_t col) const {
         return data[row][col];
     }
 
     /**
-   * Matrix row extractor
-   *
-   * @param row row index
-   * @return the row at the index
-   */
+     * Matrix row extractor
+     *
+     * @param row row index
+     * @return the row at the index
+     */
     Matrix<Element> ExtractRow(size_t row) const {
         Matrix<Element> result(this->allocZero, 1, this->cols);
         int i = 0;
@@ -624,11 +624,11 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Matrix column extractor
-   *
-   * @param col col index
-   * @return the col at the index
-   */
+     * Matrix column extractor
+     *
+     * @param col col index
+     * @return the col at the index
+     */
     Matrix<Element> ExtractCol(size_t col) const {
         Matrix<Element> result(this->allocZero, this->rows, 1);
         for (size_t i = 0; i < this->rows; i++) {
@@ -639,12 +639,12 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Matrix rows extractor in a range from row_start to row_end; inclusive
-   *
-   * @param row_start index of the first row to extract
-   * @param row_end index of the last row to extract
-   * @return the rows in the range delimited by indices inclusive
-   */
+     * Matrix rows extractor in a range from row_start to row_end; inclusive
+     *
+     * @param row_start index of the first row to extract
+     * @param row_end index of the last row to extract
+     * @return the rows in the range delimited by indices inclusive
+     */
     inline Matrix<Element> ExtractRows(size_t row_start, size_t row_end) const {
         Matrix<Element> result(this->allocZero, row_end - row_start + 1, this->cols);
 
@@ -674,9 +674,9 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Call switch format for each (ring) element
-   *
-   */
+     * Call switch format for each (ring) element
+     *
+     */
     void SwitchFormat();
 #define NOT_AN_ELEMENT_MATRIX(T)                   \
     template <>                                    \
@@ -685,22 +685,22 @@ class Matrix : public Serializable {
     }
 
     /**
-   * Multiply the matrix by a vector whose elements are all 1's.  This causes
-   * the elements of each row of the matrix to be added and placed into the
-   * corresponding position in the output vector.
-   *
-   * @return the rows x 1 matrix of row sums
-   */
+     * Multiply the matrix by a vector whose elements are all 1's.  This causes
+     * the elements of each row of the matrix to be added and placed into the
+     * corresponding position in the output vector.
+     *
+     * @return the rows x 1 matrix of row sums
+     */
     Matrix<Element> MultByUnityVector() const;
 
     /**
-   * Multiply the matrix by a vector of random 1's and 0's, which is the same as
-   * adding select elements in each row together. Return a vector that is a rows
-   * x 1 matrix.
-   *
-   * @param ranvec the 0/1 vector of length cols selecting the columns to add
-   * @return the rows x 1 matrix of selected row sums
-   */
+     * Multiply the matrix by a vector of random 1's and 0's, which is the same as
+     * adding select elements in each row together. Return a vector that is a rows
+     * x 1 matrix.
+     *
+     * @param ranvec the 0/1 vector of length cols selecting the columns to add
+     * @return the rows x 1 matrix of selected row sums
+     */
     Matrix<Element> MultByRandomVector(std::vector<int> ranvec) const;
 
     template <class Archive>

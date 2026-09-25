@@ -82,13 +82,13 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     constexpr PolyImpl() = default;
 
     /**
-   * @brief Constructs an element with the given parameters and format; the values are set to zero if requested and
-   * left unallocated otherwise.
-   *
-   * @param params the element parameters (cyclotomic order, modulus, root of unity).
-   * @param format the format of the element (COEFFICIENT or EVALUATION).
-   * @param initializeElementToZero if true, the values are allocated and set to zero.
-   */
+     * @brief Constructs an element with the given parameters and format; the values are set to zero if requested and
+     * left unallocated otherwise.
+     *
+     * @param params the element parameters (cyclotomic order, modulus, root of unity).
+     * @param format the format of the element (COEFFICIENT or EVALUATION).
+     * @param initializeElementToZero if true, the values are allocated and set to zero.
+     */
     PolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
              bool initializeElementToZero = false)
         : m_format{format}, m_params{params} {
@@ -96,14 +96,14 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
             PolyImpl::SetValuesToZero();
     }
     /**
-   * @brief Constructs an element from double-CRT parameters: a single-modulus parameter set with the same cyclotomic
-   * order, the composite modulus and a root of unity of 1 is created; the values are set to zero if requested and
-   * left unallocated otherwise.
-   *
-   * @param params the double-CRT parameters.
-   * @param format the format of the element (COEFFICIENT or EVALUATION).
-   * @param initializeElementToZero if true, the values are allocated and set to zero.
-   */
+     * @brief Constructs an element from double-CRT parameters: a single-modulus parameter set with the same cyclotomic
+     * order, the composite modulus and a root of unity of 1 is created; the values are set to zero if requested and
+     * left unallocated otherwise.
+     *
+     * @param params the double-CRT parameters.
+     * @param format the format of the element (COEFFICIENT or EVALUATION).
+     * @param initializeElementToZero if true, the values are allocated and set to zero.
+     */
     PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>>& params, Format format = Format::EVALUATION,
              bool initializeElementToZero = false)
         : m_format(format), m_params(std::make_shared<Params>(params->GetCyclotomicOrder(), params->GetModulus(), 1)) {
@@ -112,65 +112,65 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     }
 
     /**
-   * @brief Constructs an element with the given parameters and format whose values are all set to modulus - 1 if
-   * requested and left unallocated otherwise.
-   *
-   * @param initializeElementToMax if true, the values are allocated and set to modulus - 1.
-   * @param params the element parameters (cyclotomic order, modulus, root of unity).
-   * @param format the format of the element (COEFFICIENT or EVALUATION).
-   */
+     * @brief Constructs an element with the given parameters and format whose values are all set to modulus - 1 if
+     * requested and left unallocated otherwise.
+     *
+     * @param initializeElementToMax if true, the values are allocated and set to modulus - 1.
+     * @param params the element parameters (cyclotomic order, modulus, root of unity).
+     * @param format the format of the element (COEFFICIENT or EVALUATION).
+     */
     PolyImpl(bool initializeElementToMax, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION)
         : m_format{format}, m_params{params} {
         if (initializeElementToMax)
             PolyImpl::SetValuesToMax();
     }
     /**
-   * @brief Constructs an element whose coefficients are sampled from a discrete Gaussian distribution and converted
-   * to the requested format.
-   *
-   * @param dgg the discrete Gaussian generator.
-   * @param params the element parameters.
-   * @param format the format of the resulting element.
-   */
+     * @brief Constructs an element whose coefficients are sampled from a discrete Gaussian distribution and converted
+     * to the requested format.
+     *
+     * @param dgg the discrete Gaussian generator.
+     * @param params the element parameters.
+     * @param format the format of the resulting element.
+     */
     PolyImpl(const DggType& dgg, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     /**
-   * @brief Constructs an element with values sampled uniformly modulo the modulus, recorded as already being in the
-   * requested format (no transform is applied).
-   *
-   * @param dug the discrete uniform generator.
-   * @param params the element parameters.
-   * @param format the format recorded for the resulting element.
-   */
+     * @brief Constructs an element with values sampled uniformly modulo the modulus, recorded as already being in the
+     * requested format (no transform is applied).
+     *
+     * @param dug the discrete uniform generator.
+     * @param params the element parameters.
+     * @param format the format recorded for the resulting element.
+     */
     PolyImpl(DugType& dug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     /**
-   * @brief Constructs an element whose coefficients are sampled from the binary uniform distribution and converted
-   * to the requested format.
-   *
-   * @param bug the binary uniform generator.
-   * @param params the element parameters.
-   * @param format the format of the resulting element.
-   */
+     * @brief Constructs an element whose coefficients are sampled from the binary uniform distribution and converted
+     * to the requested format.
+     *
+     * @param bug the binary uniform generator.
+     * @param params the element parameters.
+     * @param format the format of the resulting element.
+     */
     PolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     /**
-   * @brief Constructs an element whose coefficients are sampled from the ternary uniform distribution and converted
-   * to the requested format.
-   *
-   * @param tug the ternary uniform generator.
-   * @param params the element parameters.
-   * @param format the format of the resulting element.
-   * @param h the Hamming weight (number of nonzero coefficients) for the sparse distribution; 0 samples every
-   * coefficient uniformly.
-   */
+     * @brief Constructs an element whose coefficients are sampled from the ternary uniform distribution and converted
+     * to the requested format.
+     *
+     * @param tug the ternary uniform generator.
+     * @param params the element parameters.
+     * @param format the format of the resulting element.
+     * @param h the Hamming weight (number of nonzero coefficients) for the sparse distribution; 0 samples every
+     * coefficient uniformly.
+     */
     PolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
              uint32_t h = 0);
 
     /**
-   * @brief Copy-converts a native polynomial when this instantiation is itself the native polynomial: the
-   * parameters and values are copied and the element is converted to the requested format.
-   *
-   * @param rhs the native polynomial to copy.
-   * @param format the format of the resulting element.
-   */
+     * @brief Copy-converts a native polynomial when this instantiation is itself the native polynomial: the
+     * parameters and values are copied and the element is converted to the requested format.
+     *
+     * @param rhs the native polynomial to copy.
+     * @param format the format of the resulting element.
+     */
     template <typename T = VecType>
     PolyImpl(const PolyNative& rhs, Format format,
              typename std::enable_if_t<std::is_same_v<T, NativeVector>, bool> = true)
@@ -181,13 +181,13 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     }
 
     /**
-   * @brief Converts a native polynomial to this instantiation: new parameters are built from the cyclotomic order,
-   * modulus and root of unity of rhs, every value is converted to Integer and the element is converted to the
-   * requested format.
-   *
-   * @param rhs the native polynomial to convert.
-   * @param format the format of the resulting element.
-   */
+     * @brief Converts a native polynomial to this instantiation: new parameters are built from the cyclotomic order,
+     * modulus and root of unity of rhs, every value is converted to Integer and the element is converted to the
+     * requested format.
+     *
+     * @param rhs the native polynomial to convert.
+     * @param format the format of the resulting element.
+     */
     template <typename T = VecType>
     PolyImpl(const PolyNative& rhs, Format format,
              typename std::enable_if_t<!std::is_same_v<T, NativeVector>, bool> = true)
@@ -223,44 +223,44 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
         return *this;
     }
     /**
-   * @brief Assigns signed coefficients reduced modulo the modulus (including the most negative values), used for
-   * trapdoor sampling; missing trailing coefficients are zero and the format becomes COEFFICIENT.
-   *
-   * @param rhs the signed coefficients.
-   * @return the resulting element.
-   */
+     * @brief Assigns signed coefficients reduced modulo the modulus (including the most negative values), used for
+     * trapdoor sampling; missing trailing coefficients are zero and the format becomes COEFFICIENT.
+     *
+     * @param rhs the signed coefficients.
+     * @return the resulting element.
+     */
     PolyType& operator=(const std::vector<int32_t>& rhs);
     /**
-   * @brief Assigns signed coefficients reduced modulo the modulus (including the most negative values), used for
-   * trapdoor sampling; missing trailing coefficients are zero and the format becomes COEFFICIENT.
-   *
-   * @param rhs the signed coefficients.
-   * @return the resulting element.
-   */
+     * @brief Assigns signed coefficients reduced modulo the modulus (including the most negative values), used for
+     * trapdoor sampling; missing trailing coefficients are zero and the format becomes COEFFICIENT.
+     *
+     * @param rhs the signed coefficients.
+     * @return the resulting element.
+     */
     PolyType& operator=(const std::vector<int64_t>& rhs);
     /**
-   * @brief Assigns unsigned coefficients as given (they are assumed to be less than the modulus); missing trailing
-   * coefficients are zero and the format is kept.
-   *
-   * @param rhs the coefficients.
-   * @return the resulting element.
-   */
+     * @brief Assigns unsigned coefficients as given (they are assumed to be less than the modulus); missing trailing
+     * coefficients are zero and the format is kept.
+     *
+     * @param rhs the coefficients.
+     * @return the resulting element.
+     */
     PolyType& operator=(std::initializer_list<uint64_t> rhs) override;
     /**
-   * @brief Assigns coefficients given as decimal strings, reduced modulo the modulus; missing trailing coefficients
-   * are zero and the format is kept.
-   *
-   * @param rhs the coefficients as decimal strings.
-   * @return the resulting element.
-   */
+     * @brief Assigns coefficients given as decimal strings, reduced modulo the modulus; missing trailing coefficients
+     * are zero and the format is kept.
+     *
+     * @param rhs the coefficients as decimal strings.
+     * @return the resulting element.
+     */
     PolyType& operator=(std::initializer_list<std::string> rhs);
     /**
-   * @brief Assigns the constant polynomial: every entry is set to val (allocating the values if needed) and the
-   * format becomes EVALUATION.
-   *
-   * @param val the constant to assign.
-   * @return the resulting element.
-   */
+     * @brief Assigns the constant polynomial: every entry is set to val (allocating the values if needed) and the
+     * format becomes EVALUATION.
+     *
+     * @param val the constant to assign.
+     * @return the resulting element.
+     */
     PolyType& operator=(uint64_t val);
 
     PolyNative DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
@@ -332,11 +332,11 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     }
 
     /**
-   * @brief Adds rhs entry-wise after checking that the ring dimension, modulus and format match.
-   *
-   * @param rhs the element to add.
-   * @return the result of the addition.
-   */
+     * @brief Adds rhs entry-wise after checking that the ring dimension, modulus and format match.
+     *
+     * @param rhs the element to add.
+     * @return the result of the addition.
+     */
     PolyImpl Plus(const PolyImpl& rhs) const override {
         if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
             OPENFHE_THROW("RingDimension mismatch");
@@ -349,22 +349,22 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
         return tmp;
     }
     /**
-   * @brief Adds rhs entry-wise without checking the parameters.
-   *
-   * @param rhs the element to add.
-   * @return the result of the addition.
-   */
+     * @brief Adds rhs entry-wise without checking the parameters.
+     *
+     * @param rhs the element to add.
+     * @return the result of the addition.
+     */
     PolyImpl PlusNoCheck(const PolyImpl& rhs) const {
         auto tmp(*this);
         tmp.m_values->ModAddNoCheckEq(*rhs.m_values);
         return tmp;
     }
     /**
-   * @brief Adds rhs entry-wise in place without checking the parameters.
-   *
-   * @param rhs the element to add.
-   * @return the resulting element.
-   */
+     * @brief Adds rhs entry-wise in place without checking the parameters.
+     *
+     * @param rhs the element to add.
+     * @return the resulting element.
+     */
     PolyImpl& PlusNoCheckEq(const PolyImpl& rhs) {
         m_values->ModAddNoCheckEq(*rhs.m_values);
         return *this;
@@ -372,13 +372,13 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     PolyImpl& operator+=(const PolyImpl& element) override;
 
     /**
-   * @brief Element addition reusing the storage of the rvalue operand a, after checking that the ring dimension,
-   * modulus and format match.
-   *
-   * @param a the element to add to, consumed.
-   * @param b the element to add.
-   * @return a, holding the sum.
-   */
+     * @brief Element addition reusing the storage of the rvalue operand a, after checking that the ring dimension,
+     * modulus and format match.
+     *
+     * @param a the element to add to, consumed.
+     * @param b the element to add.
+     * @return a, holding the sum.
+     */
     friend PolyImpl operator+(PolyImpl&& a, const PolyImpl& b) {
         if (a.m_params->GetRingDimension() != b.m_params->GetRingDimension())
             OPENFHE_THROW("RingDimension mismatch");
@@ -390,22 +390,22 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
         return std::move(a);
     }
     /**
-   * @brief Element addition reusing the storage of the rvalue operand b.
-   *
-   * @param a the element to add.
-   * @param b the element to add to, consumed.
-   * @return b, holding the sum.
-   */
+     * @brief Element addition reusing the storage of the rvalue operand b.
+     *
+     * @param a the element to add.
+     * @param b the element to add to, consumed.
+     * @return b, holding the sum.
+     */
     friend PolyImpl operator+(const PolyImpl& a, PolyImpl&& b) {
         return std::move(b) + a;
     }
     /**
-   * @brief Element addition of two rvalues, reusing the storage of a.
-   *
-   * @param a the element to add to, consumed.
-   * @param b the element to add.
-   * @return a, holding the sum.
-   */
+     * @brief Element addition of two rvalues, reusing the storage of a.
+     *
+     * @param a the element to add to, consumed.
+     * @param b the element to add.
+     * @return a, holding the sum.
+     */
     friend PolyImpl operator+(PolyImpl&& a, PolyImpl&& b) {
         return std::move(a) + static_cast<const PolyImpl&>(b);
     }
@@ -436,35 +436,35 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
         return tmp;
     }
     /**
-   * @brief Multiplies by rhs entry-wise (EVALUATION format) without checking the parameters.
-   *
-   * @param rhs the element to multiply by.
-   * @return the result of the multiplication.
-   */
+     * @brief Multiplies by rhs entry-wise (EVALUATION format) without checking the parameters.
+     *
+     * @param rhs the element to multiply by.
+     * @return the result of the multiplication.
+     */
     PolyImpl TimesNoCheck(const PolyImpl& rhs) const {
         auto tmp(*this);
         tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
         return tmp;
     }
     /**
-   * @brief Multiplies by rhs entry-wise (EVALUATION format) in place without checking the parameters.
-   *
-   * @param rhs the element to multiply by.
-   * @return the resulting element.
-   */
+     * @brief Multiplies by rhs entry-wise (EVALUATION format) in place without checking the parameters.
+     *
+     * @param rhs the element to multiply by.
+     * @return the resulting element.
+     */
     PolyImpl& TimesNoCheckEq(const PolyImpl& rhs) {
         m_values->ModMulNoCheckEq(*rhs.m_values);
         return *this;
     }
 
     /**
-   * @brief Element multiplication (EVALUATION format only) reusing the storage of the rvalue operand a, after
-   * checking that the ring dimension, modulus and format match.
-   *
-   * @param a the element to multiply, consumed.
-   * @param b the element to multiply by.
-   * @return a, holding the product.
-   */
+     * @brief Element multiplication (EVALUATION format only) reusing the storage of the rvalue operand a, after
+     * checking that the ring dimension, modulus and format match.
+     *
+     * @param a the element to multiply, consumed.
+     * @param b the element to multiply by.
+     * @return a, holding the product.
+     */
     friend PolyImpl operator*(PolyImpl&& a, const PolyImpl& b) {
         if (a.m_params->GetRingDimension() != b.m_params->GetRingDimension())
             OPENFHE_THROW("RingDimension mismatch");
@@ -476,32 +476,32 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
         return std::move(a);
     }
     /**
-   * @brief Element multiplication (EVALUATION format only) reusing the storage of the rvalue operand b.
-   *
-   * @param a the element to multiply by.
-   * @param b the element to multiply, consumed.
-   * @return b, holding the product.
-   */
+     * @brief Element multiplication (EVALUATION format only) reusing the storage of the rvalue operand b.
+     *
+     * @param a the element to multiply by.
+     * @param b the element to multiply, consumed.
+     * @return b, holding the product.
+     */
     friend PolyImpl operator*(const PolyImpl& a, PolyImpl&& b) {
         return std::move(b) * a;
     }
     /**
-   * @brief Element multiplication (EVALUATION format only) of two rvalues, reusing the storage of a.
-   *
-   * @param a the element to multiply, consumed.
-   * @param b the element to multiply by.
-   * @return a, holding the product.
-   */
+     * @brief Element multiplication (EVALUATION format only) of two rvalues, reusing the storage of a.
+     *
+     * @param a the element to multiply, consumed.
+     * @param b the element to multiply by.
+     * @return a, holding the product.
+     */
     friend PolyImpl operator*(PolyImpl&& a, PolyImpl&& b) {
         return std::move(a) * static_cast<const PolyImpl&>(b);
     }
     /**
-   * @brief Element subtraction reusing the storage of the rvalue operand a, without checking the parameters.
-   *
-   * @param a the element to subtract from, consumed.
-   * @param b the element to subtract.
-   * @return a, holding the difference.
-   */
+     * @brief Element subtraction reusing the storage of the rvalue operand a, without checking the parameters.
+     *
+     * @param a the element to subtract from, consumed.
+     * @param b the element to subtract.
+     * @return a, holding the difference.
+     */
     friend PolyImpl operator-(PolyImpl&& a, const PolyImpl& b) {
         a.m_values->ModSubEq(*b.m_values);
         return std::move(a);
@@ -530,12 +530,12 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     PolyImpl Times(NativeInteger::SignedNativeInt element) const override;
 #if NATIVEINT != 64
     /**
-   * @brief Scalar multiplication by a 64-bit signed integer, forwarded to Times(NativeInteger::SignedNativeInt);
-   * provided for builds with 128-bit native integers.
-   *
-   * @param element the signed integer to multiply by.
-   * @return the result of the multiplication.
-   */
+     * @brief Scalar multiplication by a 64-bit signed integer, forwarded to Times(NativeInteger::SignedNativeInt);
+     * provided for builds with 128-bit native integers.
+     *
+     * @param element the signed integer to multiply by.
+     * @return the result of the multiplication.
+     */
     inline PolyImpl Times(int64_t element) const {
         return this->Times(static_cast<NativeInteger::SignedNativeInt>(element));
     }
@@ -567,13 +567,13 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
                            const Integer& rootOfUnityArb) override;
 
     /**
-   * @brief Fused multiply-accumulate: *this += a * b (mod the modulus) entry-wise, without parameter validation;
-   * all three operands must hold reduced values.
-   *
-   * @param a the element to multiply.
-   * @param b the element to multiply a by.
-   * @return the resulting element.
-   */
+     * @brief Fused multiply-accumulate: *this += a * b (mod the modulus) entry-wise, without parameter validation;
+     * all three operands must hold reduced values.
+     *
+     * @param a the element to multiply.
+     * @param b the element to multiply a by.
+     * @return the resulting element.
+     */
     PolyImpl& MultAccEqNoCheck(const PolyImpl& a, const PolyImpl& b) {
         m_values->MultAccEqNoCheck(*a.m_values, *b.m_values);
         return *this;
@@ -625,10 +625,10 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
     std::shared_ptr<Params> m_params{nullptr};
     std::unique_ptr<VecType> m_values{nullptr};
     /**
-   * @brief Switches the format of an element over an arbitrary (non-power-of-two) cyclotomic ring with the
-   * Bluestein-based transform, using the root of unity, big modulus and big root of unity of the parameters;
-   * throws if the values are unallocated.
-   */
+     * @brief Switches the format of an element over an arbitrary (non-power-of-two) cyclotomic ring with the
+     * Bluestein-based transform, using the root of unity, big modulus and big root of unity of the parameters;
+     * throws if the values are unallocated.
+     */
     void ArbitrarySwitchFormat();
 };
 

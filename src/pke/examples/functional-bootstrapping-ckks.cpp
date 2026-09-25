@@ -146,16 +146,16 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     /* 4. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-    * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
-    * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
-    * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
-    * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
-    * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
-    * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
+     * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
+     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+     * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
+     * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
+     * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
+     * The supported rescaling techniques are FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
      * COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL.
-    * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
-    * hence they yield less noise than the FIXED* techniques for the same parameters.
-    */
+     * The FLEXIBLEAUTO and FLEXIBLEAUTOEXT techniques track the exact level-specific scaling factors,
+     * hence they yield less noise than the FIXED* techniques for the same parameters.
+     */
     uint32_t dcrtBits = Bigq.GetMSB() - 1;
     uint32_t firstMod = Bigq.GetMSB() - 1;
     uint32_t levelsAvailableAfterBootstrap = 0;
@@ -218,12 +218,12 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     SchemeletRLWEMP::ModSwitch(ctxtBFV, Q, QBFVInit);
 
     /* 7. Convert from the RLWE ciphertext to a CKKS ciphertext (both use the same secret key).
-    */
+     */
     auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, Bigq, numSlotsCKKS,
                                                    depth - (levelsAvailableBeforeBootstrap > 0));
 
     /* 8. Apply the LUT over the ciphertext.
-    */
+     */
     Ciphertext<DCRTPoly> ctxtAfterFBT;
     if (binaryLUT)
         ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
@@ -231,7 +231,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
         ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, PInput.GetMSB() - 1, ep->GetModulus(), scaleTHI, 0, order);
 
     /* 9. Convert the result back to RLWE.
-    */
+     */
     auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, Q);
 
     auto computed = SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots);
@@ -400,7 +400,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     SchemeletRLWEMP::ModSwitch(ctxtBFV, Q, QBFVInit);
 
     /* 9. Convert from the RLWE ciphertext to a CKKS ciphertext (both use the same secret key).
-    */
+     */
     auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, Bigq, numSlotsCKKS,
                                                    depth - (levelsAvailableBeforeBootstrap > 0));
 
@@ -408,7 +408,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
      * First, compute the complex exponential and its powers to reuse.
      * Second, apply multiple LUTs over these powers. All LUTs which reuse the precomputations must be interpolated
      * with the same shape (same PInput and order) as the coefficients used for the precomputation.
-    */
+     */
     std::vector<Ciphertext<DCRTPoly>> complexExp;
     Ciphertext<DCRTPoly> ctxtAfterFBT1, ctxtAfterFBT2;
 
@@ -468,7 +468,7 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT1, Q);
 
     /* 11. Convert the results back to RLWE.
-    */
+     */
     auto computed =
             SchemeletRLWEMP::DecryptCoeff(polys, Q, POutput, keyPair.secretKey, ep, numSlotsCKKS, numSlots, flagBR);
 
@@ -656,7 +656,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     /* 9. Start the sign loop. For arbitrary digit size, pNew > 2, the last iteration needs
      * to evaluate step pNew not mod pNew.
      * Currently this only works when log(pNew) divides log(p).
-    */
+     */
     while (go) {
         auto encryptedDigit = ctxtBFV;
 

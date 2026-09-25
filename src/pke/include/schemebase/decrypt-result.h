@@ -44,14 +44,14 @@ namespace lbcrypto {
  */
 struct EncryptResult {
     /**
-   * Default constructor; the fields are left uninitialized.
-   */
+     * Default constructor; the fields are left uninitialized.
+     */
     EncryptResult() = default;
 
     /**
-   * Constructor for a successful encryption.
-   * @param len the number of plaintext bytes that were encrypted.
-   */
+     * Constructor for a successful encryption.
+     * @param len the number of plaintext bytes that were encrypted.
+     */
     explicit EncryptResult(uint32_t len) : isValid(true), numBytesEncrypted(len) {}
 
     bool isValid;               /**< whether the encryption was successful */
@@ -74,21 +74,21 @@ struct EncryptResult {
  */
 struct DecryptResult {
     /**
-   * Constructor that initializes all message lengths to 0.
-   */
+     * Constructor that initializes all message lengths to 0.
+     */
     DecryptResult() = default;
 
     /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   */
+     * Constructor that initializes all message lengths.
+     * @param len the new length.
+     */
     explicit DecryptResult(uint32_t len) : isValid(true), messageLength(len) {}
 
     /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   * @param scf the new scaling factor.
-   */
+     * Constructor that initializes all message lengths.
+     * @param len the new length.
+     * @param scf the new scaling factor.
+     */
     DecryptResult(uint32_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
 
     bool isValid;                      /**< whether the decryption was successful */

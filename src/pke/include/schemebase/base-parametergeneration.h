@@ -62,23 +62,23 @@ class ParameterGenerationBase {
     virtual ~ParameterGenerationBase() = default;
 
     /**
-   * Method for computing all derived parameters based on chosen primitive
-   * parameters
-   *
-   * @param cryptoParams the crypto parameters object to be populated with
-   * parameters.
-   * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch
-   * operations are performed.
-   * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and
-   * KeySwitch operations are performed.
-   * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd
-   * and EvalMult operations are performed.
-   * @param dcrtBits number of bits in each CRT modulus*
-   * @param n ring dimension in case the user wants to use a custom ring
-   * dimension
-   * @param numPartQ number of partitions of Q for HYBRID key switching
-   * @return true if the parameters were generated successfully (errors are reported by throwing).
-   */
+     * Method for computing all derived parameters based on chosen primitive
+     * parameters
+     *
+     * @param cryptoParams the crypto parameters object to be populated with
+     * parameters.
+     * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch
+     * operations are performed.
+     * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and
+     * KeySwitch operations are performed.
+     * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd
+     * and EvalMult operations are performed.
+     * @param dcrtBits number of bits in each CRT modulus*
+     * @param n ring dimension in case the user wants to use a custom ring
+     * dimension
+     * @param numPartQ number of partitions of Q for HYBRID key switching
+     * @return true if the parameters were generated successfully (errors are reported by throwing).
+     */
     virtual bool ParamsGenBFVRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                                          uint32_t evalAddCount, uint32_t multiplicativeDepth, uint32_t keySwitchCount,
                                          size_t dcrtBits, uint32_t n, uint32_t numPartQ) const {
@@ -86,20 +86,20 @@ class ParameterGenerationBase {
     }
 
     /**
-   * Method for computing all derived parameters based on chosen primitive
-   * parameters.
-   *
-   * @param cryptoParams the crypto parameters object to be populated with
-   * parameters.
-   * @param cyclOrder the cyclotomic order.
-   * @param numPrimes number of modulus towers to support.
-   * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
-   * @param firstModSize the bit-size of the first modulus
-   * @param numPartQ number of partitions of Q for HYBRID key switching
-   * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in
-   * multi-party interactive bootstrapping
-   * @return true if the parameters were generated successfully (errors are reported by throwing).
-   */
+     * Method for computing all derived parameters based on chosen primitive
+     * parameters.
+     *
+     * @param cryptoParams the crypto parameters object to be populated with
+     * parameters.
+     * @param cyclOrder the cyclotomic order.
+     * @param numPrimes number of modulus towers to support.
+     * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
+     * @param firstModSize the bit-size of the first modulus
+     * @param numPartQ number of partitions of Q for HYBRID key switching
+     * @param mPIntBootCiphertextCompressionLevel compression level of the ciphertexts used in
+     * multi-party interactive bootstrapping
+     * @return true if the parameters were generated successfully (errors are reported by throwing).
+     */
     virtual bool ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                                           uint32_t cyclOrder, uint32_t numPrimes, uint32_t scalingModSize,
                                           uint32_t firstModSize, uint32_t numPartQ,
@@ -108,20 +108,20 @@ class ParameterGenerationBase {
     }
 
     /**
-   * Method for computing all derived parameters based on chosen primitive
-   * parameters. This is intended for BGVrns
-   * @param cryptoParams the crypto parameters object to be populated with
-   * parameters.
-   * @param evalAddCount number of EvalAdds per level.
-   * @param keySwitchCount number of KeySwitch operations per level.
-   * @param cyclOrder the cyclotomic order.
-   * @param numPrimes number of modulus towers to support.
-   * @param firstModSize the bit-size of the first modulus
-   * @param dcrtBits the bit-width of moduli
-   * @param numPartQ number of partitions of Q for HYBRID key switching
-   * @param PRENumHops bound for the HRA-secure mode of PRE
-   * @return true if the parameters were generated successfully (errors are reported by throwing).
-   */
+     * Method for computing all derived parameters based on chosen primitive
+     * parameters. This is intended for BGVrns
+     * @param cryptoParams the crypto parameters object to be populated with
+     * parameters.
+     * @param evalAddCount number of EvalAdds per level.
+     * @param keySwitchCount number of KeySwitch operations per level.
+     * @param cyclOrder the cyclotomic order.
+     * @param numPrimes number of modulus towers to support.
+     * @param firstModSize the bit-size of the first modulus
+     * @param dcrtBits the bit-width of moduli
+     * @param numPartQ number of partitions of Q for HYBRID key switching
+     * @param PRENumHops bound for the HRA-secure mode of PRE
+     * @return true if the parameters were generated successfully (errors are reported by throwing).
+     */
     virtual bool ParamsGenBGVRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                          uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t cyclOrder,
                                          uint32_t numPrimes, uint32_t firstModSize, uint32_t dcrtBits,

@@ -54,36 +54,36 @@ class KeyPair {
     PrivateKey<Element> secretKey;
 
     /**
-   * Constructs a key pair from existing shared pointers to a public key and a secret key.
-   *
-   * @param a the public key
-   * @param b the secret key
-   */
+     * Constructs a key pair from existing shared pointers to a public key and a secret key.
+     *
+     * @param a the public key
+     * @param b the secret key
+     */
     KeyPair(const PublicKey<Element>& a, const PrivateKey<Element>& b) : publicKey(a), secretKey(b) {}
 
     /**
-   * Constructs a key pair that takes ownership of raw key pointers; by default it creates an empty pair.
-   *
-   * @param a raw pointer to a public key (ownership is transferred); nullptr for an empty public key
-   * @param b raw pointer to a secret key (ownership is transferred); nullptr for an empty secret key
-   */
+     * Constructs a key pair that takes ownership of raw key pointers; by default it creates an empty pair.
+     *
+     * @param a raw pointer to a public key (ownership is transferred); nullptr for an empty public key
+     * @param b raw pointer to a secret key (ownership is transferred); nullptr for an empty secret key
+     */
     explicit KeyPair(PublicKeyImpl<Element>* a = nullptr, PrivateKeyImpl<Element>* b = nullptr)
         : publicKey(a), secretKey(b) {}
 
     /**
-   * Checks whether both keys of the pair are present.
-   *
-   * @return true if both the public key and the secret key are non-null
-   */
+     * Checks whether both keys of the pair are present.
+     *
+     * @return true if both the public key and the secret key are non-null
+     */
     bool good() const {
         return publicKey && secretKey;
     }
 
     /**
-   * Alias of good(): checks whether both keys of the pair are present.
-   *
-   * @return true if both the public key and the secret key are non-null
-   */
+     * Alias of good(): checks whether both keys of the pair are present.
+     *
+     * @return true if both the public key and the secret key are non-null
+     */
     bool is_allocated() const {
         return good();
     }

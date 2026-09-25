@@ -74,57 +74,57 @@ class KeySwitchBV : public KeySwitchRNS {
 
   public:
     /**
-   * Default constructor.
-   */
+     * Default constructor.
+     */
     KeySwitchBV() = default;
 
     /**
-   * Virtual destructor.
-   */
+     * Virtual destructor.
+     */
     virtual ~KeySwitchBV() = default;
 
     /**
-   * Generates a BV key switching key from oldPrivateKey to newPrivateKey. The key has one (b_i, a_i) pair per RNS
-   * limb of the old key (or per radix digit of every limb when a digit size is set), with a_i uniformly random and
-   * b_i = -a_i * sB + noiseScale * e_i + [sA]_{q_i} placed in limb i.
-   *
-   * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
-   * @param newPrivateKey private key the switched ciphertexts should decrypt under
-   * @return the key switching key
-   */
+     * Generates a BV key switching key from oldPrivateKey to newPrivateKey. The key has one (b_i, a_i) pair per RNS
+     * limb of the old key (or per radix digit of every limb when a digit size is set), with a_i uniformly random and
+     * b_i = -a_i * sB + noiseScale * e_i + [sA]_{q_i} placed in limb i.
+     *
+     * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
+     * @param newPrivateKey private key the switched ciphertexts should decrypt under
+     * @return the key switching key
+     */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
     /**
-   * Generates a BV key switching key from oldPrivateKey to newPrivateKey reusing the "a" components of evalKey
-   * (threshold FHE); see KeySwitchBase::KeySwitchGenInternal.
-   *
-   * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
-   * @param newPrivateKey private key the switched ciphertexts should decrypt under
-   * @param evalKey key switching key whose "a" components are reused; if null, fresh components are sampled
-   * @return the key switching key
-   */
+     * Generates a BV key switching key from oldPrivateKey to newPrivateKey reusing the "a" components of evalKey
+     * (threshold FHE); see KeySwitchBase::KeySwitchGenInternal.
+     *
+     * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
+     * @param newPrivateKey private key the switched ciphertexts should decrypt under
+     * @param evalKey key switching key whose "a" components are reused; if null, fresh components are sampled
+     * @return the key switching key
+     */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PrivateKey<DCRTPoly> newPrivateKey,
                                            const EvalKey<DCRTPoly> evalKey) const override;
 
     /**
-   * Generates a BV key switching key from oldPrivateKey to the secret key of newPublicKey by encrypting every CRT
-   * component of the old key with the public key (proxy re-encryption).
-   *
-   * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
-   * @param newPublicKey public key of the party the switched ciphertexts should decrypt for
-   * @return the key switching key
-   */
+     * Generates a BV key switching key from oldPrivateKey to the secret key of newPublicKey by encrypting every CRT
+     * component of the old key with the public key (proxy re-encryption).
+     *
+     * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
+     * @param newPublicKey public key of the party the switched ciphertexts should decrypt for
+     * @return the key switching key
+     */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PublicKey<DCRTPoly> newPublicKey) const override;
 
     /**
-   * Key switches a ciphertext in place; see KeySwitchBase::KeySwitchInPlace.
-   *
-   * @param ciphertext ciphertext to be key switched; holds the result
-   * @param evalKey key switching key
-   */
+     * Key switches a ciphertext in place; see KeySwitchBase::KeySwitchInPlace.
+     *
+     * @param ciphertext ciphertext to be key switched; holds the result
+     * @param evalKey key switching key
+     */
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 
     /////////////////////////////////////////
@@ -132,34 +132,34 @@ class KeySwitchBV : public KeySwitchRNS {
     /////////////////////////////////////////
 
     /**
-   * Key switches a single ring element: digit decomposition followed by EvalFastKeySwitchCore.
-   *
-   * @param a ring element to be key switched, in basis Ql
-   * @param evalKey key switching key
-   * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
-   */
+     * Key switches a single ring element: digit decomposition followed by EvalFastKeySwitchCore.
+     *
+     * @param a ring element to be key switched, in basis Ql
+     * @param evalKey key switching key
+     * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
+     */
     std::vector<DCRTPoly> KeySwitchCore(const DCRTPoly& a, const EvalKey<DCRTPoly> evalKey) const override;
 
     /**
-   * Computes the BV digits of a ring element: its CRT decomposition (one digit per RNS limb, each extended to the
-   * whole basis Ql), further split in radix base 2^digitSize when the crypto parameters set a digit size.
-   *
-   * @param c ring element to be decomposed, in basis Ql
-   * @param cryptoParamsBase crypto parameters (used for the digit size)
-   * @return the digits of c
-   */
+     * Computes the BV digits of a ring element: its CRT decomposition (one digit per RNS limb, each extended to the
+     * whole basis Ql), further split in radix base 2^digitSize when the crypto parameters set a digit size.
+     *
+     * @param c ring element to be decomposed, in basis Ql
+     * @param cryptoParamsBase crypto parameters (used for the digit size)
+     * @return the digits of c
+     */
     std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
             const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
     /**
-   * Computes the inner products of the digits with the two component vectors of the key switching key, limb by
-   * limb in the basis Ql. Only the key components that correspond to the limbs of Ql are used.
-   *
-   * @param digits digits of the element computed by EvalKeySwitchPrecomputeCore
-   * @param evalKey key switching key
-   * @param paramsQl parameters of the basis Ql of the element (its current level)
-   * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
-   */
+     * Computes the inner products of the digits with the two component vectors of the key switching key, limb by
+     * limb in the basis Ql. Only the key components that correspond to the limbs of Ql are used.
+     *
+     * @param digits digits of the element computed by EvalKeySwitchPrecomputeCore
+     * @param evalKey key switching key
+     * @param paramsQl parameters of the basis Ql of the element (its current level)
+     * @return the pair (b', a') in basis Ql such that b' + a' * sB = a * sA + noise
+     */
     std::vector<DCRTPoly> EvalFastKeySwitchCore(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                 const EvalKey<DCRTPoly> evalKey,
                                                 const std::shared_ptr<ParmType> paramsQl) const override;
@@ -169,30 +169,30 @@ class KeySwitchBV : public KeySwitchRNS {
     /////////////////////////////////////////
 
     /**
-   * Serializes the object (no state of its own beyond the base class).
-   *
-   * @param ar archive to write to
-   */
+     * Serializes the object (no state of its own beyond the base class).
+     *
+     * @param ar archive to write to
+     */
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::base_class<KeySwitchRNS>(this));
     }
 
     /**
-   * Deserializes the object.
-   *
-   * @param ar archive to read from
-   */
+     * Deserializes the object.
+     *
+     * @param ar archive to read from
+     */
     template <class Archive>
     void load(Archive& ar) {
         ar(cereal::base_class<KeySwitchRNS>(this));
     }
 
     /**
-   * Name used to identify the class in serialized objects.
-   *
-   * @return the name of the class
-   */
+     * Name used to identify the class in serialized objects.
+     *
+     * @return the name of the class
+     */
     std::string SerializedObjectName() const override {
         return "KeySwitchBV";
     }

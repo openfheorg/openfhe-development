@@ -64,26 +64,26 @@ class ThreadException {
     ThreadException() : Ptr(nullptr) {}
     ~ThreadException() {}
     /**
-   * @brief Rethrows the captured exception, if any, in the calling thread; does nothing when none was captured.
-   */
+     * @brief Rethrows the captured exception, if any, in the calling thread; does nothing when none was captured.
+     */
     void Rethrow() {
         if (this->Ptr)
             std::rethrow_exception(this->Ptr);
     }
     /**
-   * @brief Stores the exception currently being handled (call from inside a catch block); thread-safe, the last
-   * captured exception wins.
-   */
+     * @brief Stores the exception currently being handled (call from inside a catch block); thread-safe, the last
+     * captured exception wins.
+     */
     void CaptureException() {
         std::unique_lock<std::mutex> guard(this->Lock);
         this->Ptr = std::current_exception();
     }
 
     /**
-   * @brief Invokes f(params...) and captures any exception it throws instead of letting it escape the thread.
-   * @param f callable to run
-   * @param params arguments forwarded to f
-   */
+     * @brief Invokes f(params...) and captures any exception it throws instead of letting it escape the thread.
+     * @param f callable to run
+     * @param params arguments forwarded to f
+     */
     template <typename Function, typename... Parameters>
     void Run(Function f, Parameters... params) {
         try {
@@ -164,27 +164,27 @@ public:
     OpenFHEException& operator=(const OpenFHEException&) = default;
 
     /**
-   * @brief Returns the formatted error message "file:l.line:function(): description".
-   * @return the error message
-   */
+     * @brief Returns the formatted error message "file:l.line:function(): description".
+     * @return the error message
+     */
     const char* what() const noexcept override {
         return m_errorMessage.c_str();
     }
 
     /**
-   * @brief Returns the call stack captured when the exception was constructed, one frame per entry (empty when
-   * call-stack capture is not available in this build).
-   * @return the call stack frames
-   */
+     * @brief Returns the call stack captured when the exception was constructed, one frame per entry (empty when
+     * call-stack capture is not available in this build).
+     * @return the call stack frames
+     */
     std::vector<std::string> getCallStackAsVector() const {
         return m_callStack;
     }
 
     // getCallStackAsString() was added to be used by JSON logger. the implementtion will follow
     /**
-   * @brief Placeholder for a single-string rendering of the call stack intended for a JSON logger.
-   * @return an empty string; the implementation is not yet provided
-   */
+     * @brief Placeholder for a single-string rendering of the call stack intended for a JSON logger.
+     * @return an empty string; the implementation is not yet provided
+     */
     std::string getCallStackAsString() const {
         return std::string();
 

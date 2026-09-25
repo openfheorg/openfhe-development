@@ -58,28 +58,28 @@ class CryptoContextBGVRNS {
 
   public:
     /**
-   * The crypto context type produced by this generator (required by GenCryptoContext()).
-   */
+     * The crypto context type produced by this generator (required by GenCryptoContext()).
+     */
     using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
     /**
-   * The factory that registers and returns the generated contexts.
-   */
+     * The factory that registers and returns the generated contexts.
+     */
     using Factory = CryptoContextFactory<Element>;
     /**
-   * The scheme implementation class instantiated for the context.
-   */
+     * The scheme implementation class instantiated for the context.
+     */
     using PublicKeyEncryptionScheme = SchemeBGVRNS;
     /**
-   * The crypto parameters class instantiated for the context.
-   */
+     * The crypto parameters class instantiated for the context.
+     */
     using CryptoParams = CryptoParametersBGVRNS;
 
     /**
-   * Validates the parameters and generates a BGV crypto context from them.
-   *
-   * @param parameters the BGV parameters.
-   * @return the generated crypto context.
-   */
+     * Validates the parameters and generates a BGV crypto context from them.
+     *
+     * @param parameters the BGV parameters.
+     * @return the generated crypto context.
+     */
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBGVRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
         return genCryptoContextBGVRNSInternal<CryptoContextBGVRNS, Element>(parameters);

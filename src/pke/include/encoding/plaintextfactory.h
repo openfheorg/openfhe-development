@@ -60,14 +60,14 @@ class PlaintextFactory {
 
   public:
     /**
-   * @brief Creates an empty plaintext of the given encoding type.
-   * @param encoding the encoding type
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param schemeID scheme the plaintext is created for (used by the coefficient-packed encoding)
-   * @param cdt CKKS data type (used by the CKKS packed encoding)
-   * @return the plaintext
-   */
+     * @brief Creates an empty plaintext of the given encoding type.
+     * @param encoding the encoding type
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param schemeID scheme the plaintext is created for (used by the coefficient-packed encoding)
+     * @param cdt CKKS data type (used by the CKKS packed encoding)
+     * @return the plaintext
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -89,18 +89,18 @@ class PlaintextFactory {
     }
 
     /**
-   * @brief Creates and encodes a plaintext from an integer vector (packed or coefficient-packed encoding). The
-   * vector may hold at most ringDim values (ringDim/2 for CKKS).
-   * @param value the integer values to encode
-   * @param encoding the encoding type
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param schemeID scheme the plaintext is created for
-   * @param noiseScaleDeg noise scale degree of the plaintext (BGV)
-   * @param level level of the plaintext
-   * @param scalingFactor integer scaling factor of the plaintext (BGV)
-   * @return the encoded plaintext
-   */
+     * @brief Creates and encodes a plaintext from an integer vector (packed or coefficient-packed encoding). The
+     * vector may hold at most ringDim values (ringDim/2 for CKKS).
+     * @param value the integer values to encode
+     * @param encoding the encoding type
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param schemeID scheme the plaintext is created for
+     * @param noiseScaleDeg noise scale degree of the plaintext (BGV)
+     * @param level level of the plaintext
+     * @param scalingFactor integer scaling factor of the plaintext (BGV)
+     * @return the encoded plaintext
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -130,18 +130,18 @@ class PlaintextFactory {
     }
 
     /**
-   * @brief Creates and encodes a plaintext from a string (string encoding). The string may hold at most ringDim
-   * characters (ringDim/2 for CKKS).
-   * @param value the string to encode
-   * @param encoding the encoding type
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param schemeID scheme the plaintext is created for
-   * @param noiseScaleDeg noise scale degree of the plaintext (BGV)
-   * @param level level of the plaintext
-   * @param scalingFactor integer scaling factor of the plaintext (BGV)
-   * @return the encoded plaintext
-   */
+     * @brief Creates and encodes a plaintext from a string (string encoding). The string may hold at most ringDim
+     * characters (ringDim/2 for CKKS).
+     * @param value the string to encode
+     * @param encoding the encoding type
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param schemeID scheme the plaintext is created for
+     * @param noiseScaleDeg noise scale degree of the plaintext (BGV)
+     * @param level level of the plaintext
+     * @param scalingFactor integer scaling factor of the plaintext (BGV)
+     * @return the encoded plaintext
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,

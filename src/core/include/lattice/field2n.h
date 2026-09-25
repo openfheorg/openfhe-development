@@ -60,274 +60,274 @@ class Field2n : public std::vector<std::complex<double>>, public Serializable {
 
   public:
     /**
-   * @brief Default Constructor
-   */
+     * @brief Default Constructor
+     */
     Field2n() noexcept = default;
 
     /**
-   * @brief Constructor for an empty field element (no values) in the given format.
-   * @param f format/representation of the element.
-   */
+     * @brief Constructor for an empty field element (no values) in the given format.
+     * @param f format/representation of the element.
+     */
     explicit Field2n(Format f) : format(f) {}
 
     /**
-   * @brief Constructor for field element
-   * @param size element size
-   * @param f format/representation of the element.  Initially set to
-   * Format::EVALUATION representation.
-   * @param initializeElementToZero flag for initializing values to zero.  It is
-   * set to false by default.
-   */
+     * @brief Constructor for field element
+     * @param size element size
+     * @param f format/representation of the element.  Initially set to
+     * Format::EVALUATION representation.
+     * @param initializeElementToZero flag for initializing values to zero.  It is
+     * set to false by default.
+     */
     Field2n(uint32_t size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
         : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()),
           format(f) {}
 
     /**
-   * @brief Constructor from ring element
-   * @param element ring element
-   */
+     * @brief Constructor from ring element
+     * @param element ring element
+     */
     explicit Field2n(const Poly& element);
 
     /**
-   * @brief Constructor from ring element
-   * @param element ring element
-   */
+     * @brief Constructor from ring element
+     * @param element ring element
+     */
     explicit Field2n(const NativePoly& element);
 
     /**
-   * @brief Constructor from DCRTPoly ring element
-   * @param element ring element
-   */
+     * @brief Constructor from DCRTPoly ring element
+     * @param element ring element
+     */
     explicit Field2n(const DCRTPoly& element);
 
     /**
-   * @brief Constructor from a ring element matrix
-   * @param element ring element matrix
-   */
+     * @brief Constructor from a ring element matrix
+     * @param element ring element matrix
+     */
     explicit Field2n(const Matrix<int64_t>& element);
 
     /**
-   * @brief Method for getting the format/representation of the element
-   *
-   * @return format/representation of the field element
-   */
+     * @brief Method for getting the format/representation of the element
+     *
+     * @return format/representation of the field element
+     */
     Format GetFormat() const {
         return format;
     }
 
     /**
-   * @brief Inverse operation for the field elements
-   *
-   * @return the inverse field element
-   */
+     * @brief Inverse operation for the field elements
+     *
+     * @return the inverse field element
+     */
     Field2n Inverse() const;
 
     /**
-   * @brief Addition operation for field elements
-   *
-   * @param rhs right hand side element for operation
-   * @return result of the operation
-   */
+     * @brief Addition operation for field elements
+     *
+     * @param rhs right hand side element for operation
+     * @return result of the operation
+     */
     Field2n Plus(const Field2n& rhs) const;
 
     /**
-   * @brief Scalar addition operation for field elements
-   *
-   * @param rhs right hand side element for operation
-   * @return result of the operation
-   */
+     * @brief Scalar addition operation for field elements
+     *
+     * @param rhs right hand side element for operation
+     * @return result of the operation
+     */
     Field2n Plus(double rhs) const;
 
     /**
-   * @brief Subtraction operation for field elements
-   *
-   * @param rhs right hand side element for operation
-   * @return result of the operation
-   */
+     * @brief Subtraction operation for field elements
+     *
+     * @param rhs right hand side element for operation
+     * @return result of the operation
+     */
     Field2n Minus(const Field2n& rhs) const;
 
     /**
-   * @brief Multiplication operation for field elements
-   *
-   * @param rhs right hand side element for operation
-   * @return result of the operation
-   */
+     * @brief Multiplication operation for field elements
+     *
+     * @param rhs right hand side element for operation
+     * @return result of the operation
+     */
     Field2n Times(const Field2n& rhs) const;
 
     /**
-   * @brief Right shift operation for the field element
-   *
-   * @return the shifted field element
-   */
+     * @brief Right shift operation for the field element
+     *
+     * @return the shifted field element
+     */
     Field2n ShiftRight();
 
     /**
-   * @brief Performs an automorphism transform operation and returns the result.
-   *
-   * @param i is the automorphism index (an odd integer) to apply.
-   * @return is the result of the automorphism transform.
-   */
+     * @brief Performs an automorphism transform operation and returns the result.
+     *
+     * @param i is the automorphism index (an odd integer) to apply.
+     * @return is the result of the automorphism transform.
+     */
     Field2n AutomorphismTransform(size_t i) const;
 
     /**
-   * @brief Transpose operation defined in section VI.B4 of
-   * https://eprint.iacr.org/2017/844.pdf
-   *
-   * @return the transpose of the element
-   */
+     * @brief Transpose operation defined in section VI.B4 of
+     * https://eprint.iacr.org/2017/844.pdf
+     *
+     * @return the transpose of the element
+     */
     Field2n Transpose() const;
 
     /**
-   * @brief Function for extracting odd factors of the field element
-   *
-   * @return the field element with odd parts of the initial element
-   */
+     * @brief Function for extracting odd factors of the field element
+     *
+     * @return the field element with odd parts of the initial element
+     */
     Field2n ExtractOdd() const;
 
     /**
-   * @brief Function for extracting even factors of the field element
-   *
-   * @return the field element with even parts of the initial element
-   */
+     * @brief Function for extracting even factors of the field element
+     *
+     * @return the field element with even parts of the initial element
+     */
     Field2n ExtractEven() const;
 
     /**
-   * @brief Permutation operation defined in Algorithm 4 of
-   * https://eprint.iacr.org/2017/844.pdf
-   *
-   * @return permuted new field element
-   */
+     * @brief Permutation operation defined in Algorithm 4 of
+     * https://eprint.iacr.org/2017/844.pdf
+     *
+     * @return permuted new field element
+     */
     Field2n Permute() const;
 
     /**
-   * @brief Inverse operation for permutation operation defined in
-   * Algorithm 4 of https://eprint.iacr.org/2017/844.pdf
-   *
-   * @return non permuted version of the element
-   */
+     * @brief Inverse operation for permutation operation defined in
+     * Algorithm 4 of https://eprint.iacr.org/2017/844.pdf
+     *
+     * @return non permuted version of the element
+     */
     Field2n InversePermute() const;
 
     /**
-   * @brief Operation for scalar multiplication
-   *
-   * @param d scalar for multiplication
-   * @return the field element with the scalar multiplication
-   */
+     * @brief Operation for scalar multiplication
+     *
+     * @param d scalar for multiplication
+     * @return the field element with the scalar multiplication
+     */
     Field2n ScalarMult(double d);
 
     /**
-   * @brief Method for switching format of the field elements
-   */
+     * @brief Method for switching format of the field elements
+     */
     void SwitchFormat();
 
     /**
-   * @brief Sets the evaluation or coefficient representation of the field
-   * elements
-   * @param f the enum value corresponding to coefficient or evaluation
-   * representation
-   */
+     * @brief Sets the evaluation or coefficient representation of the field
+     * elements
+     * @param f the enum value corresponding to coefficient or evaluation
+     * representation
+     */
     inline void SetFormat(Format f) {
         if (format != f)
             SwitchFormat();
     }
 
     /**
-   * @brief Method for getting the size of the element
-   *
-   * @return the size of the element
-   */
+     * @brief Method for getting the size of the element
+     *
+     * @return the size of the element
+     */
     size_t Size() const {
         return this->std::vector<std::complex<double>>::size();
     }
 
     /**
-   * @brief Indexing operator for field elements
-   *
-   * @param idx index of the element
-   * @return element at the index
-   */
+     * @brief Indexing operator for field elements
+     *
+     * @param idx index of the element
+     * @return element at the index
+     */
     inline std::complex<double>& operator[](size_t idx) {
         return this->std::vector<std::complex<double>>::operator[](idx);
     }
 
     /**
-   * @brief Indexing operator for field elements
-   *
-   * @param idx index of the element
-   * @return element at the index
-   */
+     * @brief Indexing operator for field elements
+     *
+     * @param idx index of the element
+     * @return element at the index
+     */
     inline const std::complex<double>& operator[](size_t idx) const {
         return this->std::vector<std::complex<double>>::operator[](idx);
     }
 
     /**
-   * @brief In-place addition operation for field elements
-   *
-   * @param element  right hand side element for operation
-   * @return result of the operation
-   */
+     * @brief In-place addition operation for field elements
+     *
+     * @param element  right hand side element for operation
+     * @return result of the operation
+     */
     Field2n& operator+=(const Field2n& element) {
         return *this = this->Plus(element);
     }
 
     /**
-   * @brief In-place subtraction operation for field elements
-   *
-   * @param element  right hand side element for operation
-   * @return result of the operation
-   */
+     * @brief In-place subtraction operation for field elements
+     *
+     * @param element  right hand side element for operation
+     * @return result of the operation
+     */
     Field2n& operator-=(const Field2n& element) {
         return *this = this->Minus(element);
     }
 
     /**
-   * @brief Unary minus on a field element.
-   * @return negation of the field element.
-   */
+     * @brief Unary minus on a field element.
+     * @return negation of the field element.
+     */
     Field2n operator-() const {
         return Field2n(size(), this->GetFormat(), true) - *this;
     }
 
     /**
-   * @brief Subtraction operator for field elements
-   *
-   * @param a left hand side field element
-   * @param b right hand side field element
-   * @return result of the subtraction operation
-   */
+     * @brief Subtraction operator for field elements
+     *
+     * @param a left hand side field element
+     * @param b right hand side field element
+     * @return result of the subtraction operation
+     */
     friend inline Field2n operator-(const Field2n& a, const Field2n& b) {
         return a.Minus(b);
     }
 
     /**
-   * @brief Addition operator for field elements
-   *
-   * @param a left hand side field element
-   * @param b right hand side field element
-   * @return result of the addition operation
-   */
+     * @brief Addition operator for field elements
+     *
+     * @param a left hand side field element
+     * @param b right hand side field element
+     * @return result of the addition operation
+     */
     friend inline Field2n operator+(const Field2n& a, const Field2n& b) {
         return a.Plus(b);
     }
 
     /**
-   * @brief Scalar addition operator for field elements
-   *
-   * @param a left hand side field element
-   * @param scalar the scalar to be added
-   * @return result of the addition operation
-   */
+     * @brief Scalar addition operator for field elements
+     *
+     * @param a left hand side field element
+     * @param scalar the scalar to be added
+     * @return result of the addition operation
+     */
     friend inline Field2n operator+(const Field2n& a, double scalar) {
         return a.Plus(scalar);
     }
 
     /**
-   * @brief Multiplication operator for field elements
-   *
-   * @param a left hand side field element
-   * @param b right hand side field element
-   * @return result of the multiplication operation
-   */
+     * @brief Multiplication operator for field elements
+     *
+     * @param a left hand side field element
+     * @param b right hand side field element
+     * @return result of the multiplication operation
+     */
     friend inline Field2n operator*(const Field2n& a, const Field2n& b) {
         return a.Times(b);
     }

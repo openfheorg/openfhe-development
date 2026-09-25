@@ -58,9 +58,9 @@ class CoefPackedEncoding : public PlaintextImpl {
 
   protected:
     /**
-    * @brief PrintValue() is called by operator<<
-    * @param out stream to print to
-    */
+     * @brief PrintValue() is called by operator<<
+     * @param out stream to print to
+     */
     void PrintValue(std::ostream& out) const override {
         out << "(";
 
@@ -83,12 +83,12 @@ class CoefPackedEncoding : public PlaintextImpl {
     }
 
     /**
-    * Method to compare two plaintext to test for equivalence
-    * Testing that the plaintexts are of the same type done in operator==
-    *
-    * @param rhs - the other plaintext to compare to.
-    * @return whether the two plaintext are equivalent.
-    */
+     * Method to compare two plaintext to test for equivalence
+     * Testing that the plaintexts are of the same type done in operator==
+     *
+     * @param rhs - the other plaintext to compare to.
+     * @return whether the two plaintext are equivalent.
+     */
     bool CompareTo(const PlaintextImpl& rhs) const override {
         if (typeid(rhs) != typeid(CoefPackedEncoding))
             return false;
@@ -99,11 +99,11 @@ class CoefPackedEncoding : public PlaintextImpl {
 
   public:
     /**
-   * @brief Constructs an empty coefficient-packed plaintext over the given element parameters.
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param schemeId scheme the plaintext is created for
-   */
+     * @brief Constructs an empty coefficient-packed plaintext over the given element parameters.
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param schemeId scheme the plaintext is created for
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -112,13 +112,13 @@ class CoefPackedEncoding : public PlaintextImpl {
         : PlaintextImpl(vp, ep, COEF_PACKED_ENCODING, schemeId) {}
 
     /**
-   * @brief Constructs a coefficient-packed plaintext holding the given coefficients (not encoded yet; call
-   * Encode).
-   * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
-   * @param ep encoding parameters
-   * @param coeffs the integer coefficients
-   * @param schemeId scheme the plaintext is created for
-   */
+     * @brief Constructs a coefficient-packed plaintext holding the given coefficients (not encoded yet; call
+     * Encode).
+     * @param vp element parameters of the polynomial (Poly, NativePoly or DCRTPoly parameters)
+     * @param ep encoding parameters
+     * @param coeffs the integer coefficients
+     * @param schemeId scheme the plaintext is created for
+     */
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                           std::is_same<T, NativePoly::Params>::value ||
                                                           std::is_same<T, DCRTPoly::Params>::value,
@@ -130,46 +130,46 @@ class CoefPackedEncoding : public PlaintextImpl {
     ~CoefPackedEncoding() override = default;
 
     /**
-   * GetCoefPackedValue
-   * @return the un-encoded integer vector
-   */
+     * GetCoefPackedValue
+     * @return the un-encoded integer vector
+     */
     const std::vector<int64_t>& GetCoefPackedValue() const override {
         return value;
     }
 
     /**
-   * SetIntVectorValue
-   * @param val integer vector to initialize the plaintext
-   */
+     * SetIntVectorValue
+     * @param val integer vector to initialize the plaintext
+     */
     void SetIntVectorValue(const std::vector<int64_t>& val) override {
         value = val;
     }
 
     /**
-   * Encode the plaintext into the Poly
-   * @return true on success
-   */
+     * Encode the plaintext into the Poly
+     * @return true on success
+     */
     bool Encode() override;
 
     /**
-   * Decode the Poly into the string
-   * @return true on success
-   */
+     * Decode the Poly into the string
+     * @return true on success
+     */
     bool Decode() override;
 
     /**
-   * Get length of the plaintext
-   *
-   * @return number of elements in this plaintext
-   */
+     * Get length of the plaintext
+     *
+     * @return number of elements in this plaintext
+     */
     size_t GetLength() const override {
         return value.size();
     }
 
     /**
-   * SetLength of the plaintext to the given size
-   * @param siz the new number of elements
-   */
+     * SetLength of the plaintext to the given size
+     * @param siz the new number of elements
+     */
     void SetLength(size_t siz) override {
         value.resize(siz);
     }

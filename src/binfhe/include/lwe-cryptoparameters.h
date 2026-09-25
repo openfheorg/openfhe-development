@@ -53,17 +53,17 @@ class LWECryptoParams : public Serializable {
     LWECryptoParams() = default;
 
     /**
-   * Main constructor for LWECryptoParams
-   *
-   * @param n lattice parameter for additive LWE scheme
-   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param q modulus for additive LWE
-   * @param Q modulus for RingGSW/RLWE used in bootstrapping
-   * @param q_KS modulus for key switching
-   * @param std standard deviation
-   * @param baseKS the base used for key switching
-   * @param keyDist the key distribution
-   */
+     * Main constructor for LWECryptoParams
+     *
+     * @param n lattice parameter for additive LWE scheme
+     * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+     * @param q modulus for additive LWE
+     * @param Q modulus for RingGSW/RLWE used in bootstrapping
+     * @param q_KS modulus for key switching
+     * @param std standard deviation
+     * @param baseKS the base used for key switching
+     * @param keyDist the key distribution
+     */
     explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, NativeInteger q_KS, double std,
                              uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
@@ -135,21 +135,21 @@ class LWECryptoParams : public Serializable {
     }
 
     /**
-   * Gets the number of base-baseKS digits needed to represent a value below the key-switching modulus qKS
-   *
-   * @return the digit count
-   */
+     * Gets the number of base-baseKS digits needed to represent a value below the key-switching modulus qKS
+     *
+     * @return the digit count
+     */
     uint32_t GetDigitCountKS() const {
         return GetDigitCount(m_qKS.ConvertToInt(), m_baseKS);
     }
 
     /**
-   * Gets the number of values the digit at position pos can take when a value below qKS is written in base baseKS:
-   * every position spans the whole base except the top one
-   *
-   * @param pos digit position, 0 being the least significant
-   * @return the number of values the digit can take
-   */
+     * Gets the number of values the digit at position pos can take when a value below qKS is written in base baseKS:
+     * every position spans the whole base except the top one
+     *
+     * @param pos digit position, 0 being the least significant
+     * @return the number of values the digit can take
+     */
     uint32_t GetDigitExtentKS(uint32_t pos) const {
         const uint32_t digits = GetDigitCountKS();
         if (pos + 1 < digits)

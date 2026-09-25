@@ -57,24 +57,24 @@ class PKEBGVRNS : public PKERNS {
     virtual ~PKEBGVRNS() {}
 
     /**
-   * Method for decrypting plaintext using LBC
-   *
-   * @param ciphertext ciphertext to be decrypted.
-   * @param privateKey private key used for decryption.
-   * @param plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext using LBC
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           NativePoly* plaintext) const override;
 
     /**
-   * Method for decrypting plaintext using LBC
-   *
-   * @param ciphertext ciphertext to be decrypted.
-   * @param privateKey private key used for decryption.
-   * @param plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext using LBC
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           Poly* plaintext) const override {
         std::string errMsg =

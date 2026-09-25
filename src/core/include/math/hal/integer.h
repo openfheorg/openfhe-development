@@ -64,28 +64,28 @@ class BigIntegerInterface {
     // well as copy and move assignment
 
     /**
-   * Set from a string
-   *
-   * @param str is the string representation of the value
-   */
+     * Set from a string
+     *
+     * @param str is the string representation of the value
+     */
     void SetValue(const std::string& str);
 
     // ARITHMETIC OPERATIONS
 
     /**
-   * Addition operation.
-   *
-   * @param b is the value to add.
-   * @return result of the addition operation.
-   */
+     * Addition operation.
+     *
+     * @param b is the value to add.
+     * @return result of the addition operation.
+     */
     T Add(const T& b) const;
 
     /**
-   * Addition operation. In-place variant.
-   *
-   * @param b is the value to add.
-   * @return result of the addition operation.
-   */
+     * Addition operation. In-place variant.
+     *
+     * @param b is the value to add.
+     * @return result of the addition operation.
+     */
     T& AddEq(const T& b);
 
     /// inline operators for the addition operation.
@@ -98,19 +98,19 @@ class BigIntegerInterface {
     }
 
     /**
-   * Subtraction operation.
-   *
-   * @param b is the value to subtract.
-   * @return is the result of the subtraction operation.
-   */
+     * Subtraction operation.
+     *
+     * @param b is the value to subtract.
+     * @return is the result of the subtraction operation.
+     */
     T Sub(const T& b) const;
 
     /**
-   * Subtraction operation. In-place variant.
-   *
-   * @param b is the value to subtract.
-   * @return is the result of the subtraction operation.
-   */
+     * Subtraction operation. In-place variant.
+     *
+     * @param b is the value to subtract.
+     * @return is the result of the subtraction operation.
+     */
     T& SubEq(const T& b);
 
     /// inline operators for the subtraction operation.
@@ -123,19 +123,19 @@ class BigIntegerInterface {
     }
 
     /**
-   * Multiplication operation.
-   *
-   * @param b is the value to multiply with.
-   * @return is the result of the multiplication operation.
-   */
+     * Multiplication operation.
+     *
+     * @param b is the value to multiply with.
+     * @return is the result of the multiplication operation.
+     */
     T Mul(const T& b) const;
 
     /**
-   * Multiplication operation. In-place variant.
-   *
-   * @param b is the value to multiply with.
-   * @return is the result of the multiplication operation.
-   */
+     * Multiplication operation. In-place variant.
+     *
+     * @param b is the value to multiply with.
+     * @return is the result of the multiplication operation.
+     */
     T& MulEq(const T& b);
 
     /// inline operators for the multiplication operation.
@@ -148,19 +148,19 @@ class BigIntegerInterface {
     }
 
     /**
-   * Division operation.
-   *
-   * @param b is the value to divide by.
-   * @return is the result of the division operation.
-   */
+     * Division operation.
+     *
+     * @param b is the value to divide by.
+     * @return is the result of the division operation.
+     */
     T DividedBy(const T& b) const;
 
     /**
-   * Division operation. In-place variant.
-   *
-   * @param b is the value to divide by.
-   * @return is the result of the division operation.
-   */
+     * Division operation. In-place variant.
+     *
+     * @param b is the value to divide by.
+     * @return is the result of the division operation.
+     */
     T& DividedByEq(const T& b);
 
     /// inline operators for the division operation.
@@ -173,59 +173,59 @@ class BigIntegerInterface {
     }
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     T MultiplyAndRound(const T& p, const T& q) const;
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     T& MultiplyAndRoundEq(const T& p, const T& q);
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     T DivideAndRound(const T& q) const;
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     T& DivideAndRoundEq(const T& q);
 
     // MODULAR ARITHMETIC OPERATIONS
 
     /**
-   * Naive modulus operation.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus operation.
-   */
+     * Naive modulus operation.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus operation.
+     */
     T Mod(const T& modulus) const;
 
     /**
-   * Naive modulus operation. In-place variant.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus operation.
-   */
+     * Naive modulus operation. In-place variant.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus operation.
+     */
     T& ModEq(const T& modulus);
 
     /// inline operators for the modulus operation.
@@ -238,292 +238,292 @@ class BigIntegerInterface {
     }
 
     /**
-   * Precomputes a parameter mu for Barrett modular reduction.
-   *
-   * @return the precomputed parameter mu.
-   */
+     * Precomputes a parameter mu for Barrett modular reduction.
+     *
+     * @return the precomputed parameter mu.
+     */
     T ComputeMu() const;
 
     /**
-   * Barrett modulus operation.
-   * Implements generalized Barrett modular reduction algorithm. Uses one
-   * precomputed value of mu.
-   *
-   * @param modulus is the modulus to perform.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus operation.
-   */
+     * Barrett modulus operation.
+     * Implements generalized Barrett modular reduction algorithm. Uses one
+     * precomputed value of mu.
+     *
+     * @param modulus is the modulus to perform.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus operation.
+     */
     T Mod(const T& modulus, const T& mu) const;
 
     /**
-   * Barrett modulus operation using the precomputed value mu. In-place variant.
-   *
-   * @param modulus is the modulus to perform.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus operation.
-   */
+     * Barrett modulus operation using the precomputed value mu. In-place variant.
+     *
+     * @param modulus is the modulus to perform.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus operation.
+     */
     T& ModEq(const T& modulus, const T& mu);
 
     /**
-   * Modulus addition operation.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition operation.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     T ModAdd(const T& b, const T& modulus) const;
 
     /**
-   * Modulus addition operation. In-place variant.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     T& ModAddEq(const T& b, const T& modulus);
 
     /**
-   * Modulus addition where operands are < modulus.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition where operands are < modulus.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     T ModAddFast(const T& b, const T& modulus) const;
 
     /**
-   * Modulus addition where operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Modulus addition where operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus addition operation.
+     */
     T& ModAddFastEq(const T& b, const T& modulus);
 
     /**
-   * Barrett modulus addition operation.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus addition operation.
-   */
+     * Barrett modulus addition operation.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus addition operation.
+     */
     T ModAdd(const T& b, const T& modulus, const T& mu) const;
 
     /**
-   * Barrett modulus addition operation. In-place variant.
-   *
-   * @param b is the scalar to add.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus addition operation.
-   */
+     * Barrett modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to add.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus addition operation.
+     */
     T& ModAddEq(const T& b, const T& modulus, const T& mu);
 
     /**
-   * Modulus subtraction operation.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction operation.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     T ModSub(const T& b, const T& modulus) const;
 
     /**
-   * Modulus subtraction operation. In-place variant.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction operation. In-place variant.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     T& ModSubEq(const T& b, const T& modulus);
 
     /**
-   * Modulus subtraction where operands are < modulus.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction where operands are < modulus.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     T ModSubFast(const T& b, const T& modulus) const;
 
     /**
-   * Modulus subtraction where operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Modulus subtraction where operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus subtraction operation.
+     */
     T& ModSubFastEq(const T& b, const T& modulus);
 
     /**
-   * Barrett modulus subtraction operation.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Barrett modulus subtraction operation.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus subtraction operation.
+     */
     T ModSub(const T& b, const T& modulus, const T& mu) const;
 
     /**
-   * Barrett modulus subtraction operation. In-place variant.
-   *
-   * @param b is the scalar to subtract.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Barrett modulus subtraction operation. In-place variant.
+     *
+     * @param b is the scalar to subtract.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus subtraction operation.
+     */
     T& ModSubEq(const T& b, const T& modulus, const T& mu);
 
     /**
-   * Modulus multiplication operation.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication operation.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     T ModMul(const T& b, const T& modulus) const;
 
     /**
-   * Modulus multiplication operation. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication operation. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     T& ModMulEq(const T& b, const T& modulus);
 
     /**
-   * Barrett modulus multiplication.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     T ModMul(const T& b, const T& modulus, const T& mu) const;
 
     /**
-   * Barrett modulus multiplication. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     T& ModMulEq(const T& b, const T& modulus, const T& mu);
 
     /**
-   * Modulus multiplication that assumes the operands are < modulus.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication that assumes the operands are < modulus.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     T ModMulFast(const T& b, const T& modulus) const;
 
     /**
-   * Modulus multiplication that assumes the operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Modulus multiplication that assumes the operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus multiplication operation.
+     */
     T& ModMulFastEq(const T& b, const T& modulus);
 
     /**
-   * Barrett modulus multiplication that assumes the operands are < modulus.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication that assumes the operands are < modulus.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     T ModMulFast(const T& b, const T& modulus, const T& mu) const;
 
     /**
-   * Barrett modulus multiplication that assumes the operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Barrett modulus multiplication that assumes the operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param mu is the Barrett value.
+     * @return is the result of the modulus multiplication operation.
+     */
     T& ModMulFastEq(const T& b, const T& modulus, const T& mu);
 
     /**
-   * NTL-optimized modular multiplication using a precomputation for the
-   * multiplicand. Assumes operands are < modulus.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param bInv NTL precomputation for b.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * NTL-optimized modular multiplication using a precomputation for the
+     * multiplicand. Assumes operands are < modulus.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param bInv NTL precomputation for b.
+     * @return is the result of the modulus multiplication operation.
+     */
     T ModMulFastConst(const T& b, const T& modulus, const T& bInv) const;
 
     /**
-   * NTL-optimized modular multiplication using a precomputation for the
-   * multiplicand. Assumes operands are < modulus. In-place variant.
-   *
-   * @param b is the scalar to multiply.
-   * @param modulus is the modulus to perform operations with.
-   * @param bInv NTL precomputation for b.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * NTL-optimized modular multiplication using a precomputation for the
+     * multiplicand. Assumes operands are < modulus. In-place variant.
+     *
+     * @param b is the scalar to multiply.
+     * @param modulus is the modulus to perform operations with.
+     * @param bInv NTL precomputation for b.
+     * @return is the result of the modulus multiplication operation.
+     */
     T& ModMulFastConstEq(const T& b, const T& modulus, const T& bInv);
 
     /**
-   * Modulus exponentiation operation.
-   *
-   * @param b is the exponent.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Modulus exponentiation operation.
+     *
+     * @param b is the exponent.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     T ModExp(const T& b, const T& modulus) const;
 
     /**
-   * Modulus exponentiation operation. In-place variant.
-   *
-   * @param b is the exponent.
-   * @param modulus is the modulus to perform operations with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Modulus exponentiation operation. In-place variant.
+     *
+     * @param b is the exponent.
+     * @param modulus is the modulus to perform operations with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     T& ModExpEq(const T& b, const T& modulus);
 
     /**
-   * Modulus inverse operation.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus inverse operation.
-   */
+     * Modulus inverse operation.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus inverse operation.
+     */
     T ModInverse(const T& modulus) const;
 
     /**
-   * Modulus inverse operation. In-place variant.
-   *
-   * @param modulus is the modulus to perform.
-   * @return is the result of the modulus inverse operation.
-   */
+     * Modulus inverse operation. In-place variant.
+     *
+     * @param modulus is the modulus to perform.
+     * @return is the result of the modulus inverse operation.
+     */
     T& ModInverseEq(const T& modulus);
 
     // SHIFT OPERATIONS
 
     /**
-   * Left shift operation.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Left shift operation.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     T LShift(uint16_t shift) const;
 
     /**
-   * Left shift operation. In-place variant.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Left shift operation. In-place variant.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     T& LShiftEq(uint16_t shift);
 
     /// inline operators for the left shift operations.
@@ -536,19 +536,19 @@ class BigIntegerInterface {
     }
 
     /**
-   * Right shift operation.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Right shift operation.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     T RShift(uint16_t shift) const;
 
     /**
-   * Right shift operation. In-place variant.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
+     * Right shift operation. In-place variant.
+     *
+     * @param shift # of bits.
+     * @return result of the shift operation.
+     */
     T& RShiftEq(uint16_t shift);
 
     /// inline operators for the right shift operations.
@@ -561,12 +561,12 @@ class BigIntegerInterface {
     }
 
     /**
-   * Compares the current BigInteger to BigInteger a.
-   *
-   * @param a is the BigInteger to be compared with.
-   * @return  -1 for strictly less than, 0 for equal to and 1 for strictly
-   * greater than conditions.
-   */
+     * Compares the current BigInteger to BigInteger a.
+     *
+     * @param a is the BigInteger to be compared with.
+     * @return  -1 for strictly less than, 0 for equal to and 1 for strictly
+     * greater than conditions.
+     */
     int Compare(const T& a) const;
 
     //// relational operators, using Compare
@@ -596,43 +596,43 @@ class BigIntegerInterface {
     }
 
     /**
-   * Convert the value to an int.
-   *
-   * @return the int representation of the value.
-   */
+     * Convert the value to an int.
+     *
+     * @return the int representation of the value.
+     */
     uint64_t ConvertToInt() const;
 
     // OTHER FUNCTIONS
 
     /**
-   * Returns the MSB location of the value.
-   *
-   * @return the index of the most significant bit.
-   */
+     * Returns the MSB location of the value.
+     *
+     * @return the index of the most significant bit.
+     */
     uint32_t GetMSB() const;
 
     /**
-   * Get the number of digits using a specific base - support for arbitrary base
-   * may be needed.
-   *
-   * @param base is the base with which to determine length in.
-   * @return the length of the representation in a specific base.
-   */
+     * Get the number of digits using a specific base - support for arbitrary base
+     * may be needed.
+     *
+     * @param base is the base with which to determine length in.
+     * @return the length of the representation in a specific base.
+     */
     uint32_t GetLengthForBase(uint32_t base) const;
 
     /**
-   * Get the digit at a specific index using a specific base - support for arbitrary base
-   * may be needed. Example: for number 83, index 2 and base 4 we have:
-   *
-   *                         index:0,1,2,3
-   * 83 --base 4 decomposition--> (3,0,1,1) --at index 2--> 1
-   *
-   * The return number is 1.
-   *
-   * @param index is the location to return value from in the specific base.
-   * @param base is the base of the digit decomposition.
-   * @return the digit at the specific index in the specific base.
-   */
+     * Get the digit at a specific index using a specific base - support for arbitrary base
+     * may be needed. Example: for number 83, index 2 and base 4 we have:
+     *
+     *                         index:0,1,2,3
+     * 83 --base 4 decomposition--> (3,0,1,1) --at index 2--> 1
+     *
+     * The return number is 1.
+     *
+     * @param index is the location to return value from in the specific base.
+     * @param base is the base of the digit decomposition.
+     * @return the digit at the specific index in the specific base.
+     */
     uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
     // STRINGS
@@ -641,10 +641,10 @@ class BigIntegerInterface {
     // required to
 
     /**
-   * Convert this integer into a std::string, for serialization
-   *
-   * @return the value of this T as a string.
-   */
+     * Convert this integer into a std::string, for serialization
+     *
+     * @return the value of this T as a string.
+     */
     const std::string ToString() const;
 
   protected:

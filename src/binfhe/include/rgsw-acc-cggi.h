@@ -50,78 +50,78 @@ class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
 
 #if NATIVEINT != 32
     /**
-   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf, producing the
-   * refreshing key directly in its 32-bit internal form: the RGSW encryptions are sampled on 32-bit words, so the
-   * 64-bit key is never materialised. Used when Q fits a 32-bit word (RingGSWACCKey32Impl::Fits)
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param skNTT secret key polynomial in the EVALUATION representation
-   * @param LWEsk the secret key, which must be ternary
-   * @return a shared pointer to the resulting 32-bit keys, laid out as [1][2][n] like the 64-bit key
-   */
+     * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf, producing the
+     * refreshing key directly in its 32-bit internal form: the RGSW encryptions are sampled on 32-bit words, so the
+     * 64-bit key is never materialised. Used when Q fits a 32-bit word (RingGSWACCKey32Impl::Fits)
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param skNTT secret key polynomial in the EVALUATION representation
+     * @param LWEsk the secret key, which must be ternary
+     * @return a shared pointer to the resulting 32-bit keys, laid out as [1][2][n] like the 64-bit key
+     */
     RingGSWACCKey32 KeyGenAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                                 ConstLWEPrivateKey& LWEsk) const override;
 
     /**
-   * Main accumulator function used in bootstrapping - GINX variant on the 32-bit internal key. The accumulator is
-   * narrowed to 32 bits, updated with 32-bit external products and the 32-bit monomial table, and widened back;
-   * the result is bit-identical to EvalAcc on the 64-bit key
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param ek the 32-bit accumulator key
-   * @param acc previous value of the accumulator
-   * @param a value to update the accumulator with
-   */
+     * Main accumulator function used in bootstrapping - GINX variant on the 32-bit internal key. The accumulator is
+     * narrowed to 32 bits, updated with 32-bit external products and the 32-bit monomial table, and widened back;
+     * the result is bit-identical to EvalAcc on the 64-bit key
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param ek the 32-bit accumulator key
+     * @param acc previous value of the accumulator
+     * @param a value to update the accumulator with
+     */
     void EvalAcc32(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey32& ek, RLWECiphertext& acc,
                    const NativeVector& a) const override;
 #endif
 
     /**
-   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param skNTT secret key polynomial in the EVALUATION representation
-   * @param LWEsk the secret key
-   * @return a shared pointer to the resulting keys
-   */
+     * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param skNTT secret key polynomial in the EVALUATION representation
+     * @param LWEsk the secret key
+     * @return a shared pointer to the resulting keys
+     */
     RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey& LWEsk) const override;
 
     /**
-   * Main accumulator function used in bootstrapping - GINX variant
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param ek the accumulator key
-   * @param acc previous value of the accumulator
-   * @param a value to update the accumulator with
-   */
+     * Main accumulator function used in bootstrapping - GINX variant
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param ek the accumulator key
+     * @param acc previous value of the accumulator
+     * @param a value to update the accumulator with
+     */
     void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
   private:
     /**
-   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2020/086
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param skNTT secret key polynomial in the EVALUATION representation
-   * @param m a plaintext
-   * @param index LWE secret-key coefficient index
-   * @return a shared pointer to the resulting keys
-   */
+     * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2020/086
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param skNTT secret key polynomial in the EVALUATION representation
+     * @param m a plaintext
+     * @param index LWE secret-key coefficient index
+     * @return a shared pointer to the resulting keys
+     */
     RingGSWEvalKey KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                               LWEPlaintext m, uint32_t index) const;
 
     /**
-   * CGGI Accumulation as described in https://eprint.iacr.org/2020/086
-   * with ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param ek1 first evaluation key for Ring GSW (for secret-key coefficient +1)
-   * @param ek2 second evaluation key for Ring GSW (for secret-key coefficient -1)
-   * @param a a value to add to the accumulator
-   * @param acc previous value of the accumulator
-   * @param index LWE secret-key coefficient index
-   */
+     * CGGI Accumulation as described in https://eprint.iacr.org/2020/086
+     * with ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
+     *
+     * @param params a shared pointer to RingGSW scheme parameters
+     * @param ek1 first evaluation key for Ring GSW (for secret-key coefficient +1)
+     * @param ek2 second evaluation key for Ring GSW (for secret-key coefficient -1)
+     * @param a a value to add to the accumulator
+     * @param acc previous value of the accumulator
+     * @param index LWE secret-key coefficient index
+     */
     void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
                       ConstRingGSWEvalKey& ek2, NativeInteger a, RLWECiphertext& acc, uint32_t index) const;
 };

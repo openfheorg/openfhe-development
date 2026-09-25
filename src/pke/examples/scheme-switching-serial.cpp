@@ -187,18 +187,18 @@ std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int> serverSetupAndWrite(
     std::cout << "Ciphertext have been generated from Plaintext" << std::endl;
 
     /*
-   * Part 2:
-   * We serialize the following:
-   *  Cryptocontext
-   *  Public key
-   *  relinearization (eval mult keys)
-   *  rotation keys
-   *  binfhe cryptocontext
-   *  binfhe bootstrapping keys
-   *  Some of the ciphertext
-   *
-   *  We serialize all of them to files
-   */
+     * Part 2:
+     * We serialize the following:
+     *  Cryptocontext
+     *  Public key
+     *  relinearization (eval mult keys)
+     *  rotation keys
+     *  binfhe cryptocontext
+     *  binfhe bootstrapping keys
+     *  Some of the ciphertext
+     *
+     *  We serialize all of them to files
+     */
 
     demarcate("Scheme Switching Part 2: Data Serialization (server)");
 

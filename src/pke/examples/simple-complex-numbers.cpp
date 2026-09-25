@@ -62,85 +62,85 @@ void SimpleComplexNumbers() {
 
     // A. Specify main parameters
     /* A1) Multiplicative depth:
-   * The CKKS scheme we setup here will work for any computation
-   * that has a multiplicative depth equal to 'multDepth'.
-   * This is the maximum possible depth of a given multiplication,
-   * but not the total number of multiplications supported by the
-   * scheme.
-   *
-   * For example, computation f(x, y) = x^2 + x*y + y^2 + x + y has
-   * a multiplicative depth of 1, but requires a total of 3 multiplications.
-   * On the other hand, computation g(x_i) = x1*x2*x3*x4 can be implemented
-   * either as a computation of multiplicative depth 3 as
-   * g(x_i) = ((x1*x2)*x3)*x4, or as a computation of multiplicative depth 2
-   * as g(x_i) = (x1*x2)*(x3*x4).
-   *
-   * For performance reasons, it's generally preferable to perform operations
-   * in the shorted multiplicative depth possible.
-   */
+     * The CKKS scheme we setup here will work for any computation
+     * that has a multiplicative depth equal to 'multDepth'.
+     * This is the maximum possible depth of a given multiplication,
+     * but not the total number of multiplications supported by the
+     * scheme.
+     *
+     * For example, computation f(x, y) = x^2 + x*y + y^2 + x + y has
+     * a multiplicative depth of 1, but requires a total of 3 multiplications.
+     * On the other hand, computation g(x_i) = x1*x2*x3*x4 can be implemented
+     * either as a computation of multiplicative depth 3 as
+     * g(x_i) = ((x1*x2)*x3)*x4, or as a computation of multiplicative depth 2
+     * as g(x_i) = (x1*x2)*(x3*x4).
+     *
+     * For performance reasons, it's generally preferable to perform operations
+     * in the shorted multiplicative depth possible.
+     */
     uint32_t multDepth = 1;
 
     /* A2) Bit-length of scaling factor.
-   * CKKS works for real numbers, but these numbers are encoded as integers.
-   * For instance, real number m=0.01 is encoded as m'=round(m*D), where D is
-   * a scheme parameter called scaling factor. Suppose D=1000, then m' is 10 (an
-   * integer). Say the result of a computation based on m' is 130, then at
-   * decryption, the scaling factor is removed so the user is presented with
-   * the real number result of 0.13.
-   *
-   * Parameter 'scaleModSize' determines the bit-length of the scaling
-   * factor D, but not the scaling factor itself. The latter is implementation
-   * specific, and it may also vary between ciphertexts in certain versions of
-   * CKKS (e.g., in FLEXIBLEAUTO).
-   *
-   * Choosing 'scaleModSize' depends on the desired accuracy of the
-   * computation, as well as the remaining parameters like multDepth or security
-   * standard. This is because the remaining parameters determine how much noise
-   * will be incurred during the computation (remember CKKS is an approximate
-   * scheme that incurs small amounts of noise with every operation). The
-   * scaling factor should be large enough to both accommodate this noise and
-   * support results that match the desired accuracy.
-   */
+     * CKKS works for real numbers, but these numbers are encoded as integers.
+     * For instance, real number m=0.01 is encoded as m'=round(m*D), where D is
+     * a scheme parameter called scaling factor. Suppose D=1000, then m' is 10 (an
+     * integer). Say the result of a computation based on m' is 130, then at
+     * decryption, the scaling factor is removed so the user is presented with
+     * the real number result of 0.13.
+     *
+     * Parameter 'scaleModSize' determines the bit-length of the scaling
+     * factor D, but not the scaling factor itself. The latter is implementation
+     * specific, and it may also vary between ciphertexts in certain versions of
+     * CKKS (e.g., in FLEXIBLEAUTO).
+     *
+     * Choosing 'scaleModSize' depends on the desired accuracy of the
+     * computation, as well as the remaining parameters like multDepth or security
+     * standard. This is because the remaining parameters determine how much noise
+     * will be incurred during the computation (remember CKKS is an approximate
+     * scheme that incurs small amounts of noise with every operation). The
+     * scaling factor should be large enough to both accommodate this noise and
+     * support results that match the desired accuracy.
+     */
     uint32_t scaleModSize = 50;
 
     /* A3) Number of plaintext slots used in the ciphertext.
-   * CKKS packs multiple plaintext values in each ciphertext.
-   * The maximum number of slots depends on a security parameter called ring
-   * dimension. In this instance, we don't specify the ring dimension directly,
-   * but let the library choose it for us, based on the security level we
-   * choose, the multiplicative depth we want to support, and the scaling factor
-   * size.
-   *
-   * Please use method GetRingDimension() to find out the exact ring dimension
-   * being used for these parameters. Give ring dimension N, the maximum batch
-   * size is N/2, because of the way CKKS works.
-   */
+     * CKKS packs multiple plaintext values in each ciphertext.
+     * The maximum number of slots depends on a security parameter called ring
+     * dimension. In this instance, we don't specify the ring dimension directly,
+     * but let the library choose it for us, based on the security level we
+     * choose, the multiplicative depth we want to support, and the scaling factor
+     * size.
+     *
+     * Please use method GetRingDimension() to find out the exact ring dimension
+     * being used for these parameters. Give ring dimension N, the maximum batch
+     * size is N/2, because of the way CKKS works.
+     */
     uint32_t batchSize = 8;
 
     /* A4) Desired security level based on FHE standards.
-   * This parameter can take four values. Three of the possible values
-   * correspond to 128-bit, 192-bit, and 256-bit security, and the fourth value
-   * corresponds to "NotSet", which means that the user is responsible for
-   * choosing security parameters. Naturally, "NotSet" should be used only in
-   * non-production environments, or by experts who understand the security
-   * implications of their choices.
-   *
-   * If a given security level is selected, the library will consult the current
-   * security parameter tables defined by the FHE standards consortium
-   * (https://homomorphicencryption.org/introduction/) to automatically
-   * select the security parameters. Please see "TABLES of RECOMMENDED
-   * PARAMETERS" in  the following reference for more details:
-   * http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
-   */
+     * This parameter can take four values. Three of the possible values
+     * correspond to 128-bit, 192-bit, and 256-bit security, and the fourth value
+     * corresponds to "NotSet", which means that the user is responsible for
+     * choosing security parameters. Naturally, "NotSet" should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices.
+     *
+     * If a given security level is selected, the library will consult the current
+     * security parameter tables defined by the FHE standards consortium
+     * (https://homomorphicencryption.org/introduction/) to automatically
+     * select the security parameters. Please see "TABLES of RECOMMENDED
+     * PARAMETERS" in  the following reference for more details:
+     * http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
+     */
 
     /* A5) Data type to be encoded.
-   * For a ring dimension N, CKKS plaintexts can pack vectors of up to N/2 values.
-   * Packing N/2 complex numbers achieves better throughput, as it translates to
-   * packing N real numbers. However, packing complex numbers does not currently allow
-   * noise estimation (since the noise estimation is uses the imaginary slots).
-   * By default, the CKKSDataType is set to REAL, which enables packing up to N/2
-   * real numbers and allows noise estimation.
-   */
+     * For a ring dimension N, CKKS plaintexts can pack vectors of up to N/2 values.
+     * Packing N/2 complex numbers achieves better throughput, as it translates to
+     * packing N real numbers. However, packing complex numbers does not currently allow
+     * noise estimation (since the noise estimation is uses the imaginary slots).
+     * By default, the CKKSDataType is set to REAL, which enables packing up to N/2
+     * real numbers and allows noise estimation.
+     */
     CKKSDataType ckksDataType = COMPLEX;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -159,41 +159,41 @@ void SimpleComplexNumbers() {
 
     // B. Step 2: Key Generation
     /* B1) Generate encryption keys.
-   * These are used for encryption/decryption, as well as in generating
-   * different kinds of keys.
-   */
+     * These are used for encryption/decryption, as well as in generating
+     * different kinds of keys.
+     */
     auto keys = cc->KeyGen();
 
     /* B2) Generate the digit size
-   * In CKKS, whenever someone multiplies two ciphertexts encrypted with key s,
-   * we get a result with some components that are valid under key s, and
-   * with an additional component that's valid under key s^2.
-   *
-   * In most cases, we want to perform relinearization of the multiplicaiton
-   * result, i.e., we want to transform the s^2 component of the ciphertext so
-   * it becomes valid under original key s. To do so, we need to create what we
-   * call a relinearization key with the following line.
-   */
+     * In CKKS, whenever someone multiplies two ciphertexts encrypted with key s,
+     * we get a result with some components that are valid under key s, and
+     * with an additional component that's valid under key s^2.
+     *
+     * In most cases, we want to perform relinearization of the multiplicaiton
+     * result, i.e., we want to transform the s^2 component of the ciphertext so
+     * it becomes valid under original key s. To do so, we need to create what we
+     * call a relinearization key with the following line.
+     */
     cc->EvalMultKeyGen(keys.secretKey);
 
     /* B3) Generate the rotation keys
-   * CKKS supports rotating the contents of a packed ciphertext, but to do so,
-   * we need to create what we call a rotation key. This is done with the
-   * following call, which takes as input a vector with indices that correspond
-   * to the rotation offset we want to support. Negative indices correspond to
-   * right shift and positive to left shift. Look at the output of this demo for
-   * an illustration of this.
-   *
-   * Keep in mind that rotations work over the batch size or entire ring dimension (if the batch size is not specified).
-   * This means that, if ring dimension is 8 and batch
-   * size is not specified, then an input (1,2,3,4,0,0,0,0) rotated by 2 will become
-   * (3,4,0,0,0,0,1,2) and not (3,4,1,2,0,0,0,0).
-   * If ring dimension is 8 and batch
-   * size is set to 4, then the rotation of (1,2,3,4) by 2 will become (3,4,1,2).
-   * Also, as someone can observe
-   * in the output of this demo, since CKKS is approximate, zeros are not exact
-   * - they're just very small numbers.
-   */
+     * CKKS supports rotating the contents of a packed ciphertext, but to do so,
+     * we need to create what we call a rotation key. This is done with the
+     * following call, which takes as input a vector with indices that correspond
+     * to the rotation offset we want to support. Negative indices correspond to
+     * right shift and positive to left shift. Look at the output of this demo for
+     * an illustration of this.
+     *
+     * Keep in mind that rotations work over the batch size or entire ring dimension (if the batch size is not specified).
+     * This means that, if ring dimension is 8 and batch
+     * size is not specified, then an input (1,2,3,4,0,0,0,0) rotated by 2 will become
+     * (3,4,0,0,0,0,1,2) and not (3,4,1,2,0,0,0,0).
+     * If ring dimension is 8 and batch
+     * size is set to 4, then the rotation of (1,2,3,4) by 2 will become (3,4,1,2).
+     * Also, as someone can observe
+     * in the output of this demo, since CKKS is approximate, zeros are not exact
+     * - they're just very small numbers.
+     */
     cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
     /* B4) Generate the conjugation key
@@ -338,32 +338,32 @@ void SimpleBootstrappingComplex() {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-    * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
-    * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
-    * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
-    * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
-    */
+     * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+     * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
+     * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
+     * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
+     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
     /*  A2) Desired security level based on FHE standards.
-    * In this example, we use the "NotSet" option, so the example can run more quickly with
-    * a smaller ring dimension. Note that this should be used only in
-    * non-production environments, or by experts who understand the security
-    * implications of their choices. In production-like environments, we recommend using
-    * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively. If you choose one of these as your security level,
-    * you do not need to set the ring dimension.
-    */
+     * In this example, we use the "NotSet" option, so the example can run more quickly with
+     * a smaller ring dimension. Note that this should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices. In production-like environments, we recommend using
+     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * you do not need to set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_NotSet);
     uint32_t ringDim = 1 << 6;
     parameters.SetRingDim(ringDim);
 
     /*  A3) Scaling parameters.
-    * By default, we set the modulus sizes and rescaling technique to the following values
-    * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-    * below unless you are an FHE expert.
-    */
+     * By default, we set the modulus sizes and rescaling technique to the following values
+     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+     * below unless you are an FHE expert.
+     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
     uint32_t dcrtBits = 78;
@@ -379,32 +379,32 @@ void SimpleBootstrappingComplex() {
     parameters.SetFirstModSize(firstMod);
 
     /* A4) Data type to be encoded.
-   * For a ring dimension N, CKKS plaintexts can pack vectors of up to N/2 values.
-   * Packing N/2 complex numbers achieves better throughput, as it translates to
-   * packing N real numbers. However, packing complex numbers does not currently allow
-   * noise estimation (since the noise estimation is uses the imaginary slots).
-   * By default, the CKKSDataType is set to REAL, which enables packing up to N/2
-   * real numbers and allows noise estimation.
-   */
+     * For a ring dimension N, CKKS plaintexts can pack vectors of up to N/2 values.
+     * Packing N/2 complex numbers achieves better throughput, as it translates to
+     * packing N real numbers. However, packing complex numbers does not currently allow
+     * noise estimation (since the noise estimation is uses the imaginary slots).
+     * By default, the CKKSDataType is set to REAL, which enables packing up to N/2
+     * real numbers and allows noise estimation.
+     */
     parameters.SetCKKSDataType(COMPLEX);
 
     /* A5) Batch size.
-   * Bootstrapping fewer or equal than N/4 complex numbers in the StC variant of bootstrapping requires evaluating
-   * the modular approximation polynomial on a single ciphertext, while bootstrapping N/2 complex numbers
-   * requires evaluating the modular approximation polynomial on two ciphertexts. For comparison,
-   * bootstrapping up to N/2 real numbers in the StC variant of bootstrapping requires evaluating the modular
-   * approximation polynomial on a single ciphertext.
-   */
+     * Bootstrapping fewer or equal than N/4 complex numbers in the StC variant of bootstrapping requires evaluating
+     * the modular approximation polynomial on a single ciphertext, while bootstrapping N/2 complex numbers
+     * requires evaluating the modular approximation polynomial on two ciphertexts. For comparison,
+     * bootstrapping up to N/2 real numbers in the StC variant of bootstrapping requires evaluating the modular
+     * approximation polynomial on a single ciphertext.
+     */
     uint32_t numSlots = ringDim / 2;
     // parameters.SetBatchSize(numSlots);
 
     /*  A6) Multiplicative depth.
-    * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
-    * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
-    * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-    * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
-    * depth. We recommend using the input parameters below to get started.
-    */
+     * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
+     * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
+     * needs to consume a few levels to run. We compute the number of bootstrapping levels required
+     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
+     * depth. We recommend using the input parameters below to get started.
+     */
     std::vector<uint32_t> levelBudget = {2, 2};
 
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
@@ -466,32 +466,32 @@ void SimpleBootstrappingStCFirstComplex() {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-    * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
-    * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
-    * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
-    * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
-    */
+     * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+     * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
+     * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
+     * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
+     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
     /*  A2) Desired security level based on FHE standards.
-    * In this example, we use the "NotSet" option, so the example can run more quickly with
-    * a smaller ring dimension. Note that this should be used only in
-    * non-production environments, or by experts who understand the security
-    * implications of their choices. In production-like environments, we recommend using
-    * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively. If you choose one of these as your security level,
-    * you do not need to set the ring dimension.
-    */
+     * In this example, we use the "NotSet" option, so the example can run more quickly with
+     * a smaller ring dimension. Note that this should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices. In production-like environments, we recommend using
+     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * you do not need to set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_NotSet);
     uint32_t ringDim = 1 << 6;
     parameters.SetRingDim(ringDim);
 
     /*  A3) Scaling parameters.
-    * By default, we set the modulus sizes and rescaling technique to the following values
-    * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-    * below unless you are an FHE expert.
-    */
+     * By default, we set the modulus sizes and rescaling technique to the following values
+     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+     * below unless you are an FHE expert.
+     */
 #if NATIVEINT == 128
     ScalingTechnique rescaleTech = FIXEDAUTO;
     uint32_t dcrtBits = 78;
@@ -507,32 +507,32 @@ void SimpleBootstrappingStCFirstComplex() {
     parameters.SetFirstModSize(firstMod);
 
     /* A4) Data type to be encoded.
-   * For a ring dimension N, CKKS plaintexts can pack vectors of up to N/2 values.
-   * Packing N/2 complex numbers achieves better throughput, as it translates to
-   * packing N real numbers. However, packing complex numbers does not currently allow
-   * noise estimation (since the noise estimation is uses the imaginary slots).
-   * By default, the CKKSDataType is set to REAL, which enables packing up to N/2
-   * real numbers and allows noise estimation.
-   */
+     * For a ring dimension N, CKKS plaintexts can pack vectors of up to N/2 values.
+     * Packing N/2 complex numbers achieves better throughput, as it translates to
+     * packing N real numbers. However, packing complex numbers does not currently allow
+     * noise estimation (since the noise estimation is uses the imaginary slots).
+     * By default, the CKKSDataType is set to REAL, which enables packing up to N/2
+     * real numbers and allows noise estimation.
+     */
     parameters.SetCKKSDataType(COMPLEX);
 
     /* A5) Batch size.
-   * Bootstrapping fewer or equal than N/4 complex numbers in the StC variant of bootstrapping requires evaluating
-   * the modular approximation polynomial on a single ciphertext, while bootstrapping N/2 complex numbers
-   * requires evaluating the modular approximation polynomial on two ciphertexts. For comparison,
-   * bootstrapping up to N/2 real numbers in the StC variant of bootstrapping requires evaluating the modular
-   * approximation polynomial on a single ciphertext.
-   */
+     * Bootstrapping fewer or equal than N/4 complex numbers in the StC variant of bootstrapping requires evaluating
+     * the modular approximation polynomial on a single ciphertext, while bootstrapping N/2 complex numbers
+     * requires evaluating the modular approximation polynomial on two ciphertexts. For comparison,
+     * bootstrapping up to N/2 real numbers in the StC variant of bootstrapping requires evaluating the modular
+     * approximation polynomial on a single ciphertext.
+     */
     uint32_t numSlots = ringDim / 2;
     // parameters.SetBatchSize(numSlots);
 
     /*  A6) Multiplicative depth.
-    * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
-    * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
-    * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-    * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
-    * depth. We recommend using the input parameters below to get started.
-    */
+     * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
+     * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
+     * needs to consume a few levels to run. We compute the number of bootstrapping levels required
+     * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
+     * depth. We recommend using the input parameters below to get started.
+     */
     std::vector<uint32_t> levelBudget = {2, 2};
 
     // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping

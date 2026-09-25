@@ -59,7 +59,7 @@ typedef uint32_t usint;
 typedef uint64_t PlaintextModulus;
 
 /**
-* @brief Represents whether the polynomial ring is in EVALUATION or COEFFICIENT
+ * @brief Represents whether the polynomial ring is in EVALUATION or COEFFICIENT
  * representation.
  */
 enum Format { EVALUATION = 0, COEFFICIENT = 1 };

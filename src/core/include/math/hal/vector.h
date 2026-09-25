@@ -68,55 +68,55 @@ class BigVectorInterface {
     // ASSIGNMENT OPERATORS
 
     /**
-   * Copy assignment operator.
-   *
-   * @param vec is the vector to be assigned from.
-   * @return assigned vector ref.
-   */
+     * Copy assignment operator.
+     *
+     * @param vec is the vector to be assigned from.
+     * @return assigned vector ref.
+     */
     T& operator=(const T& vec);
 
     /**
-   * Move assignment operator.
-   *
-   * @param vec is the vector to be assigned from.
-   * @return assigned vector ref.
-   */
+     * Move assignment operator.
+     *
+     * @param vec is the vector to be assigned from.
+     * @return assigned vector ref.
+     */
     T& operator=(T&& vec);
 
     /**
-   * Assignment operator from initializer list of strings.
-   *
-   * @param strvec is the list of strings.
-   * @return assigned vector ref.
-   */
+     * Assignment operator from initializer list of strings.
+     *
+     * @param strvec is the list of strings.
+     * @return assigned vector ref.
+     */
     T& operator=(std::initializer_list<std::string> strvec);
 
     /**
-   * Assignment operator from initializer list of unsigned integers.
-   *
-   * @param vec is the list of integers.
-   * @return assigned vector ref.
-   */
+     * Assignment operator from initializer list of unsigned integers.
+     *
+     * @param vec is the list of integers.
+     * @return assigned vector ref.
+     */
     T& operator=(std::initializer_list<uint64_t> vec);
 
     /**
-   * Assignment operator to assign value val to first entry, 0 for the rest of
-   * entries.
-   *
-   * @param val is the unsigned integer the first entry to be assigned from.
-   * @return assigned vector ref.
-   */
+     * Assignment operator to assign value val to first entry, 0 for the rest of
+     * entries.
+     *
+     * @param val is the unsigned integer the first entry to be assigned from.
+     * @return assigned vector ref.
+     */
     T& operator=(uint64_t val);
 
     // EQUALS OPERATORS
 
     /**
-   * Equals to operator.
-   *
-   * @param a is the first vector to be compared.
-   * @param b is the second vector to be compared.
-   * @return true if equal and false otherwise.
-   */
+     * Equals to operator.
+     *
+     * @param a is the first vector to be compared.
+     * @param b is the second vector to be compared.
+     * @return true if equal and false otherwise.
+     */
     friend inline bool operator==(const T& a, const T& b) {
         if ((a.GetLength() != b.GetLength()) || (a.GetModulus() != b.GetModulus())) {
             return false;
@@ -130,12 +130,12 @@ class BigVectorInterface {
     }
 
     /**
-   * Not equal to operator.
-   *
-   * @param a is the first vector to be compared.
-   * @param b is the second vector to be compared.
-   * @return true if not equal and false otherwise.
-   */
+     * Not equal to operator.
+     *
+     * @param a is the first vector to be compared.
+     * @param b is the second vector to be compared.
+     * @return true if not equal and false otherwise.
+     */
     friend inline bool operator!=(const T& a, const T& b) {
         return !(a == b);
     }
@@ -145,100 +145,100 @@ class BigVectorInterface {
     // The derived class must implement at and operator[]
 
     /**
-   * Range-checked access to an entry.
-   *
-   * @param idx is the index of the entry.
-   * @return reference to the entry at the index; throws if idx is out of range.
-   */
+     * Range-checked access to an entry.
+     *
+     * @param idx is the index of the entry.
+     * @return reference to the entry at the index; throws if idx is out of range.
+     */
     I& at(size_t idx);
 
     /**
-   * Range-checked read access to an entry.
-   *
-   * @param idx is the index of the entry.
-   * @return const reference to the entry at the index; throws if idx is out of range.
-   */
+     * Range-checked read access to an entry.
+     *
+     * @param idx is the index of the entry.
+     * @return const reference to the entry at the index; throws if idx is out of range.
+     */
     const I& at(size_t idx) const;
 
     /**
-   * Unchecked access to an entry.
-   *
-   * @param idx is the index of the entry.
-   * @return reference to the entry at the index; no range check is performed.
-   */
+     * Unchecked access to an entry.
+     *
+     * @param idx is the index of the entry.
+     * @return reference to the entry at the index; no range check is performed.
+     */
     I& operator[](size_t idx);
 
     /**
-   * Unchecked read access to an entry.
-   *
-   * @param idx is the index of the entry.
-   * @return const reference to the entry at the index; no range check is performed.
-   */
+     * Unchecked read access to an entry.
+     *
+     * @param idx is the index of the entry.
+     * @return const reference to the entry at the index; no range check is performed.
+     */
     const I& operator[](size_t idx) const;
 
     /**
-   * Sets the vector modulus.
-   *
-   * @param value is the modulus value to set.
-   */
+     * Sets the vector modulus.
+     *
+     * @param value is the modulus value to set.
+     */
     void SetModulus(const I& value);
 
     /**
-   * Sets the vector modulus and changes the values to match the new modulus.
-   *
-   * @param value is the modulus value to set.
-   */
+     * Sets the vector modulus and changes the values to match the new modulus.
+     *
+     * @param value is the modulus value to set.
+     */
     void SwitchModulus(const I& value);
 
     /**
-   * Sets the vector modulus and reduces every entry modulo the new modulus as a non-negative
-   * integer, without the centered (signed) adjustment performed by SwitchModulus.
-   *
-   * @param value is the modulus value to set.
-   */
+     * Sets the vector modulus and reduces every entry modulo the new modulus as a non-negative
+     * integer, without the centered (signed) adjustment performed by SwitchModulus.
+     *
+     * @param value is the modulus value to set.
+     */
     void LazySwitchModulus(const I& value);
 
     /**
-   * Fused multiply-accumulate: *this += vec * value (mod the vector modulus), without length
-   * or modulus validation. The entries of *this must be reduced; the entries of vec need not
-   * be reduced, and value is reduced internally.
-   *
-   * @param vec is the vector to multiply and accumulate.
-   * @param value is the scalar multiplier.
-   * @return *this after the accumulation.
-   */
+     * Fused multiply-accumulate: *this += vec * value (mod the vector modulus), without length
+     * or modulus validation. The entries of *this must be reduced; the entries of vec need not
+     * be reduced, and value is reduced internally.
+     *
+     * @param vec is the vector to multiply and accumulate.
+     * @param value is the scalar multiplier.
+     * @return *this after the accumulation.
+     */
     T& MultAccEqNoCheck(const T& vec, const I& value);
 
     /**
-   * Gets the vector modulus.
-   *
-   * @return the vector modulus.
-   */
+     * Gets the vector modulus.
+     *
+     * @return the vector modulus.
+     */
     const I& GetModulus() const;
 
     /**
-   * Gets the vector length.
-   *
-   * @return vector length.
-   */
+     * Gets the vector length.
+     *
+     * @return vector length.
+     */
     size_t GetLength() const;
 
     // MODULUS ARITHMETIC OPERATIONS
 
     /**
-   * Vector modulus operator.
-   *
-   * @param modulus is the modulus to perform on the current vector entries.
-   * @return is the result of the modulus operation on current vector.
-   */
+     * Vector modulus operator.
+     *
+     * @param modulus is the modulus to perform on the current vector entries.
+     * @return is the result of the modulus operation on current vector.
+     */
     T Mod(const I& modulus) const;
 
     /**
-   * Vector modulus operator. In-place variant.
-   *
-   * @param modulus is the modulus to perform on the current vector entries.
-   * @return is the result of the modulus operation on current vector.
-   */
+     * Vector modulus operator. In-place variant.
+     *
+     * @param modulus is the modulus to perform on the current vector entries.
+     * @return is the result of the modulus operation on current vector.
+     */
     T& ModEq(const I& modulus);
 
     /// inline operators for the modulus operations.
@@ -251,19 +251,19 @@ class BigVectorInterface {
     }
 
     /**
-   * Scalar-to-vector modulus addition operation.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar-to-vector modulus addition operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus addition operation.
+     */
     T ModAdd(const I& b) const;
 
     /**
-   * Scalar-to-vector modulus addition operation. In-place variant.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar-to-vector modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus addition operation.
+     */
     T& ModAddEq(const I& b);
 
     /// inline operators for the scalar-to-vector modulus addition operations.
@@ -276,46 +276,46 @@ class BigVectorInterface {
     }
 
     /**
-   * Scalar modulus addition at a particular index.
-   *
-   * @param i is the index of the entry to add.
-   * @param b is the scalar to add.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar modulus addition at a particular index.
+     *
+     * @param i is the index of the entry to add.
+     * @param b is the scalar to add.
+     * @return is the result of the modulus addition operation.
+     */
     T ModAddAtIndex(uint32_t i, const I& b) const;
 
     /**
-   * Scalar modulus addition at a particular index. In-place variant.
-   *
-   * @param i is the index of the entry to add.
-   * @param b is the scalar to add.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar modulus addition at a particular index. In-place variant.
+     *
+     * @param i is the index of the entry to add.
+     * @param b is the scalar to add.
+     * @return is the result of the modulus addition operation.
+     */
     T& ModAddAtIndexEq(uint32_t i, const I& b);
 
     /**
-   * Vector component wise modulus addition.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     T ModAdd(const T& b) const;
 
     /**
-   * Vector component wise modulus addition. In-place variant.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     T& ModAddEq(const T& b);
 
     /**
-   * Vector component wise modulus addition. In-place variant that skips the length and
-   * modulus compatibility check of ModAddEq; b must have the same length and modulus.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition. In-place variant that skips the length and
+     * modulus compatibility check of ModAddEq; b must have the same length and modulus.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     T& ModAddNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus addition
@@ -329,19 +329,19 @@ class BigVectorInterface {
     }
 
     /**
-   * Scalar-from-vector modulus subtraction operation.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Scalar-from-vector modulus subtraction operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus subtraction operation.
+     */
     T ModSub(const I& b) const;
 
     /**
-   * Scalar-from-vector modulus subtraction operation. In-place variant.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Scalar-from-vector modulus subtraction operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus subtraction operation.
+     */
     T& ModSubEq(const I& b);
 
     /// inline operators for the scalar-from-vector modulus subtraction
@@ -355,19 +355,19 @@ class BigVectorInterface {
     }
 
     /**
-   * Vector component wise modulus subtraction.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus subtraction operation.
-   */
+     * Vector component wise modulus subtraction.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus subtraction operation.
+     */
     T ModSub(const T& b) const;
 
     /**
-   * Vector component wise modulus subtraction. In-place variant.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus subtraction operation.
-   */
+     * Vector component wise modulus subtraction. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus subtraction operation.
+     */
     T& ModSubEq(const T& b);
 
     /// inline operators for the vector component wise modulus subtraction
@@ -386,19 +386,19 @@ class BigVectorInterface {
     }
 
     /**
-   * Scalar-to-vector modulus multiplication operation.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Scalar-to-vector modulus multiplication operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus multiplication operation.
+     */
     T ModMul(const I& b) const;
 
     /**
-   * Scalar-to-vector modulus multiplication operation. In-place variant.
-   *
-   * @param b is the scalar to perform operation with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Scalar-to-vector modulus multiplication operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus multiplication operation.
+     */
     T& ModMulEq(const I& b);
 
     /// inline operators for the scalar-to-vector modulus multiplication
@@ -412,30 +412,30 @@ class BigVectorInterface {
     }
 
     /**
-   * Vector component wise modulus multiplication.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication
-   * operation.
-   */
+     * Vector component wise modulus multiplication.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication
+     * operation.
+     */
     T ModMul(const T& b) const;
 
     /**
-   * Vector component wise modulus multiplication. In-place variant.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication
-   * operation.
-   */
+     * Vector component wise modulus multiplication. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication
+     * operation.
+     */
     T& ModMulEq(const T& b);
 
     /**
-   * Vector component wise modulus multiplication. In-place variant that skips the length and
-   * modulus compatibility check of ModMulEq; b must have the same length and modulus.
-   *
-   * @param b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication operation.
-   */
+     * Vector component wise modulus multiplication. In-place variant that skips the length and
+     * modulus compatibility check of ModMulEq; b must have the same length and modulus.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication operation.
+     */
     T& ModMulNoCheckEq(const T& b);
 
     /// inline operators for the vector component wise modulus multiplication
@@ -449,113 +449,113 @@ class BigVectorInterface {
     }
 
     /**
-   * Scalar modulus exponentiation operation.
-   * Computes this[i]^b mod modulus for each component. The exponent is used
-   * as given and is not reduced by the vector modulus, matching the scalar
-   * ModExp semantics.
-   *
-   * @param b is the scalar exponent to perform operation with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Scalar modulus exponentiation operation.
+     * Computes this[i]^b mod modulus for each component. The exponent is used
+     * as given and is not reduced by the vector modulus, matching the scalar
+     * ModExp semantics.
+     *
+     * @param b is the scalar exponent to perform operation with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     T ModExp(const I& b) const;
 
     /**
-   * Scalar modulus exponentiation operation. In-place variant.
-   * Computes this[i]^b mod modulus for each component. The exponent is used
-   * as given and is not reduced by the vector modulus, matching the scalar
-   * ModExp semantics.
-   *
-   * @param b is the scalar exponent to perform operation with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Scalar modulus exponentiation operation. In-place variant.
+     * Computes this[i]^b mod modulus for each component. The exponent is used
+     * as given and is not reduced by the vector modulus, matching the scalar
+     * ModExp semantics.
+     *
+     * @param b is the scalar exponent to perform operation with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     T& ModExpEq(const I& b);
 
     /**
-   * Modulus inverse operation.
-   *
-   * @return is the result of the component wise modulus inverse operation.
-   */
+     * Modulus inverse operation.
+     *
+     * @return is the result of the component wise modulus inverse operation.
+     */
     T ModInverse() const;
 
     /**
-   * Modulus inverse operation. In-place variant.
-   *
-   * @return is the result of the component wise modulus inverse operation.
-   */
+     * Modulus inverse operation. In-place variant.
+     *
+     * @return is the result of the component wise modulus inverse operation.
+     */
     T& ModInverseEq();
 
     /**
-   * Modulus 2 operation, also a least significant bit.
-   *
-   * @return is the result of the component wise modulus 2 operation, also a
-   * least significant bit.
-   */
+     * Modulus 2 operation, also a least significant bit.
+     *
+     * @return is the result of the component wise modulus 2 operation, also a
+     * least significant bit.
+     */
     T ModByTwo() const;
 
     /**
-   * Modulus 2 operation, also a least significant bit. In-place variant.
-   *
-   * @return is the result of the component wise modulus 2 operation, also a
-   * least significant bit.
-   */
+     * Modulus 2 operation, also a least significant bit. In-place variant.
+     *
+     * @return is the result of the component wise modulus 2 operation, also a
+     * least significant bit.
+     */
     T& ModByTwoEq();
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     T MultiplyAndRound(const I& p, const I& q) const;
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param p is the numerator to be multiplied.
-   * @param q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     T& MultiplyAndRoundEq(const I& p, const I& q);
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     T DivideAndRound(const I& q) const;
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     T& DivideAndRoundEq(const I& q);
 
     // OTHER FUNCTIONS
 
     /**
-   * Digit vector at a specific index for all entries for a given number base.
-   * Example: for vector (83, 1, 45), index 2 and base 4 we have:
-   *
-   *                           index:0,1,2,3
-   * |83|                           |3,0,1,1|                 |1|
-   * |1 | --base 4 decomposition--> |1,0,0,0| --at index 2--> |0|
-   * |45|                           |1,3,2,0|                 |2|
-   *
-   * The return vector is (1,0,2)
-   *
-   * @param index is the index to return the digit from in all entries.
-   * @param base is the base to use for the operation.
-   * @return is the digit at a specific index for all entries for a given number
-   * base
-   */
+     * Digit vector at a specific index for all entries for a given number base.
+     * Example: for vector (83, 1, 45), index 2 and base 4 we have:
+     *
+     *                           index:0,1,2,3
+     * |83|                           |3,0,1,1|                 |1|
+     * |1 | --base 4 decomposition--> |1,0,0,0| --at index 2--> |0|
+     * |45|                           |1,3,2,0|                 |2|
+     *
+     * The return vector is (1,0,2)
+     *
+     * @param index is the index to return the digit from in all entries.
+     * @param base is the base to use for the operation.
+     * @return is the digit at a specific index for all entries for a given number
+     * base
+     */
     T GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
   protected:

@@ -105,7 +105,7 @@ There are `.clang-format` files in the repository, the following setting will en
 
 .. note:: ``clang-format`` output differs between versions, so the extension may
    reformat code differently from the ``pre-commit`` hook, which uses a pinned
-   version. To make them agree, run ``pip3 install clang-format==18.1.8`` and
+   version. To make them agree, run ``pip3 install clang-format==23.1.1`` and
    point the extension at that binary with ``"clang-format.executable"``. The
    pinned version is the one recorded in ``.pre-commit-config.yaml``; the hook
    is what decides whether a change is correctly formatted.

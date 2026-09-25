@@ -57,11 +57,11 @@ struct longDiv {
     std::vector<VecDType> r;  ///< coefficients of the remainder
     longDiv() = default;
     /**
-   * Constructs the result from the quotient and remainder coefficients.
-   *
-   * @param q0 coefficients of the quotient
-   * @param r0 coefficients of the remainder
-   */
+     * Constructs the result from the quotient and remainder coefficients.
+     *
+     * @param q0 coefficients of the quotient
+     * @param r0 coefficients of the remainder
+     */
     longDiv(const std::vector<VecDType>& q0, const std::vector<VecDType>& r0) : q(q0), r(r0) {}
 };
 
@@ -373,7 +373,7 @@ struct ckks_boot_params GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudg
  * taking into account the cost efficiency of hoisted automorphisms.
  * @param slots number of slots.
  * @return the value for the inner dimension in the baby-step giant-step strategy
-*/
+ */
 uint32_t getRatioBSGSLT(uint32_t slots);
 
 /**
@@ -383,7 +383,7 @@ uint32_t getRatioBSGSLT(uint32_t slots);
  * @param m cyclotomic order
  * @param blockDimension dimension related to the linear transform computation matrix
  * @return vector of rotation indices necessary
-*/
+ */
 std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension);
 
 /**
@@ -393,7 +393,7 @@ std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint
  * @param blockDimension dimension related to the linear transform computation matrix
  * @param cols dimension of columns of the linear transform
  * @return vector of rotation indices necessary
-*/
+ */
 std::vector<int32_t> FindLTRotationIndicesSwitchArgmin(uint32_t m, uint32_t blockDimension, uint32_t cols);
 
 }  // namespace lbcrypto

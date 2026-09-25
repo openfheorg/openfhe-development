@@ -89,14 +89,14 @@ template <typename VecType>
 class DiscreteGaussianGeneratorImpl {
   public:
     /**
-   * @brief         Basic constructor for specifying the distribution parameter.
-   * @param std     The standard deviation for this Gaussian Distribution.
-   */
+     * @brief         Basic constructor for specifying the distribution parameter.
+     * @param std     The standard deviation for this Gaussian Distribution.
+     */
     explicit DiscreteGaussianGeneratorImpl(double std = 1.0);
 
     /**
-   * @brief Destructor
-   */
+     * @brief Destructor
+     */
     ~DiscreteGaussianGeneratorImpl() = default;
 
     /**
@@ -106,109 +106,109 @@ class DiscreteGaussianGeneratorImpl {
     bool IsInitialized() const;
 
     /**
-   * @brief Initializes the generator.
-   */
+     * @brief Initializes the generator.
+     */
     void Initialize();
 
     /**
-   * @brief  Returns the standard deviation of the generator.
-   * @return The analytically obtained standard deviation of the generator.
-   */
+     * @brief  Returns the standard deviation of the generator.
+     * @return The analytically obtained standard deviation of the generator.
+     */
     double GetStd() const;
 
     /**
-   * @brief     Sets the standard deviation of the generator.
-   * @param std The analytic standard deviation of the generator.
-   */
+     * @brief     Sets the standard deviation of the generator.
+     * @param std The analytic standard deviation of the generator.
+     */
     void SetStd(double std);
 
     /**
-   * @brief      Returns a generated signed integer. Uses Peikert's inversion method
-   * @return     a value generated with the distribution.
-   */
+     * @brief      Returns a generated signed integer. Uses Peikert's inversion method
+     * @return     a value generated with the distribution.
+     */
     int64_t GenerateInt() const;
 
     /**
-   * @brief      Returns a generated signed integer. Uses Peikert's inversion method
-   * @param g    The pseudorandom generator to draw from.
-   * @return     a value generated with the distribution.
-   */
+     * @brief      Returns a generated signed integer. Uses Peikert's inversion method
+     * @param g    The pseudorandom generator to draw from.
+     * @return     a value generated with the distribution.
+     */
     int64_t GenerateInt(PRNG& g) const;
 
     /**
-   * @brief      Returns a generated integer vector. Uses Peikert's inversion method
-   * if enabled at initialization, and Karney's method otherwise.
-   * @param size The number of values to return.
-   * @return     vector of integer values generated with the distribution
-   */
+     * @brief      Returns a generated integer vector. Uses Peikert's inversion method
+     * if enabled at initialization, and Karney's method otherwise.
+     * @param size The number of values to return.
+     * @return     vector of integer values generated with the distribution
+     */
     std::vector<int64_t> GenerateIntVector(uint32_t size) const;
 
     /**
-   * @brief  Returns a generated integer. Uses Peikert's inversion method
-   * if enabled at initialization, and Karney's method otherwise.
-   * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
-   * @return A random value within this Discrete Gaussian Distribution.
-   */
+     * @brief  Returns a generated integer. Uses Peikert's inversion method
+     * if enabled at initialization, and Karney's method otherwise.
+     * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
+     * @return A random value within this Discrete Gaussian Distribution.
+     */
     typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const;
 
     /**
-   * @brief           Generates a vector of random values within this Discrete
-   * Gaussian Distribution. Uses Peikert's inversion method if enabled at
-   * initialization, and Karney's method otherwise.
-   *
-   * @param  size     The number of values to return.
-   * @param  modulus  modulus of the polynomial ring.
-   * @return          The vector of values within this Discrete Gaussian
-   * Distribution.
-   */
+     * @brief           Generates a vector of random values within this Discrete
+     * Gaussian Distribution. Uses Peikert's inversion method if enabled at
+     * initialization, and Karney's method otherwise.
+     *
+     * @param  size     The number of values to return.
+     * @param  modulus  modulus of the polynomial ring.
+     * @return          The vector of values within this Discrete Gaussian
+     * Distribution.
+     */
     VecType GenerateVector(uint32_t size, const typename VecType::Integer& modulus) const;
 
     /**
-   * @brief  Returns a generated integer. Uses rejection method.
-   * @param mean center of discrete Gaussian distribution.
-   * @param stddev standard deviatin of discrete Gaussian distribution.
-   * @param n is ring dimension
-   * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
-   * @return A random value within this Discrete Gaussian Distribution.
-   */
+     * @brief  Returns a generated integer. Uses rejection method.
+     * @param mean center of discrete Gaussian distribution.
+     * @param stddev standard deviatin of discrete Gaussian distribution.
+     * @param n is ring dimension
+     * @param modulus modulus of the polynomial ring; negative samples are returned as modulus - |value|.
+     * @return A random value within this Discrete Gaussian Distribution.
+     */
     typename VecType::Integer GenerateInteger(double mean, double stddev, size_t n,
                                               const typename VecType::Integer& modulus) const;
 
     /**
-   * @brief  Returns a generated integer. Uses rejection method.
-   * @param mean center of discrete Gaussian distribution.
-   * @param stddev standard deviatin of discrete Gaussian distribution.
-   * @param n is ring dimension
-   * @return A random value within this Discrete Gaussian Distribution.
-   */
+     * @brief  Returns a generated integer. Uses rejection method.
+     * @param mean center of discrete Gaussian distribution.
+     * @param stddev standard deviatin of discrete Gaussian distribution.
+     * @param n is ring dimension
+     * @return A random value within this Discrete Gaussian Distribution.
+     */
     int32_t GenerateInteger(double mean, double stddev, size_t n) const;
 
     /*
-   * Returns a generated integer (int32_t). Uses rejection method.
-   * mean: center of discrete Gaussian distribution.
-   * stddev: standard deviation of discrete Gaussian distribution.
-   * returns a random value within this Discrete Gaussian Distribution.
-   */
+     * Returns a generated integer (int32_t). Uses rejection method.
+     * mean: center of discrete Gaussian distribution.
+     * stddev: standard deviation of discrete Gaussian distribution.
+     * returns a random value within this Discrete Gaussian Distribution.
+     */
     // int32_t GenerateInt32 (double mean, double stddev);
     // will be defined later
 
     /**
-   * @brief Returns a generated integer. Uses Karney's method defined as
-   * Algorithm D in https://arxiv.org/pdf/1303.6257.pdf
-   * @param mean center of discrecte Gaussian distribution.
-   * @param stddev standard deviation of discrete Gaussian distribution.
-   * @return A random value within this Discrete Gaussian Distribution.
-   */
+     * @brief Returns a generated integer. Uses Karney's method defined as
+     * Algorithm D in https://arxiv.org/pdf/1303.6257.pdf
+     * @param mean center of discrecte Gaussian distribution.
+     * @param stddev standard deviation of discrete Gaussian distribution.
+     * @return A random value within this Discrete Gaussian Distribution.
+     */
     static int64_t GenerateIntegerKarney(double mean, double stddev);
 
     /**
-   * @brief Returns a generated integer. Uses Karney's method defined as
-   * Algorithm D in https://arxiv.org/pdf/1303.6257.pdf
-   * @param mean center of discrecte Gaussian distribution.
-   * @param stddev standard deviation of discrete Gaussian distribution.
-   * @param g The pseudorandom generator to draw from.
-   * @return A random value within this Discrete Gaussian Distribution.
-   */
+     * @brief Returns a generated integer. Uses Karney's method defined as
+     * Algorithm D in https://arxiv.org/pdf/1303.6257.pdf
+     * @param mean center of discrecte Gaussian distribution.
+     * @param stddev standard deviation of discrete Gaussian distribution.
+     * @param g The pseudorandom generator to draw from.
+     * @return A random value within this Discrete Gaussian Distribution.
+     */
     static int64_t GenerateIntegerKarney(double mean, double stddev, PRNG& g);
 
   private:
@@ -231,50 +231,50 @@ class DiscreteGaussianGeneratorImpl {
     }
 
     /**
-   * @brief Subroutine used by Karney's Method to accept an integer with
-   * probability exp(-n/2).
-   * @param g Mersenne Twister Engine used for deviates
-   * @param n Number to test with exp(-n/2) probability
-   * @return Accept/Reject result
-   */
+     * @brief Subroutine used by Karney's Method to accept an integer with
+     * probability exp(-n/2).
+     * @param g Mersenne Twister Engine used for deviates
+     * @param n Number to test with exp(-n/2) probability
+     * @return Accept/Reject result
+     */
     static bool AlgorithmP(PRNG& g, int32_t n);
     /**
-   * @brief Subroutine used by Karney's Method to generate an integer with
-   * probability exp(-k/2)(1 - exp(-1/2)).
-   * @param g Mersenne Twister Engine used for deviates
-   * @return Random number k
-   */
+     * @brief Subroutine used by Karney's Method to generate an integer with
+     * probability exp(-k/2)(1 - exp(-1/2)).
+     * @param g Mersenne Twister Engine used for deviates
+     * @return Random number k
+     */
     static int32_t AlgorithmG(PRNG& g);
     /**
-   * @brief Generates a Bernoulli random value H which is true with probability
-   * exp(-1/2).
-   * @param g Mersenne Twister Engine used for uniform deviates
-   * @return Bernoulli random value H
-   */
+     * @brief Generates a Bernoulli random value H which is true with probability
+     * exp(-1/2).
+     * @param g Mersenne Twister Engine used for uniform deviates
+     * @return Bernoulli random value H
+     */
     static bool AlgorithmH(PRNG& g);
     /**
-   * @brief Generates a Bernoulli random value H which is true with probability
-   * exp(-1/2). Uses double precision.
-   * @param g Mersenne Twister Engine used for uniform deviates
-   * @return Bernoulli random value H
-   */
+     * @brief Generates a Bernoulli random value H which is true with probability
+     * exp(-1/2). Uses double precision.
+     * @param g Mersenne Twister Engine used for uniform deviates
+     * @return Bernoulli random value H
+     */
     static bool AlgorithmHDouble(PRNG& g);
     /**
-   * @brief Bernoulli trial with probability exp(-x(2k + x)/(2k + 2)).
-   * @param g Mersenne Twister Engine used for uniform deviates
-   * @param k Deviate k used for calculations
-   * @param x Deviate x used for calculations
-   * @return Whether the number of runs are even or not
-   */
+     * @brief Bernoulli trial with probability exp(-x(2k + x)/(2k + 2)).
+     * @param g Mersenne Twister Engine used for uniform deviates
+     * @param k Deviate k used for calculations
+     * @param x Deviate x used for calculations
+     * @return Whether the number of runs are even or not
+     */
     static bool AlgorithmB(PRNG& g, int32_t k, double x);
     /**
-   * @brief Bernoulli trial with probability exp(-x(2k + x)/(2k + 2)). Uses
-   * double precision.
-   * @param g Mersenne Twister Engine used for uniform deviates
-   * @param k Deviate k used for calculations
-   * @param x Deviate x used for calculations
-   * @return Whether the number of runs are even or not
-   */
+     * @brief Bernoulli trial with probability exp(-x(2k + x)/(2k + 2)). Uses
+     * double precision.
+     * @param g Mersenne Twister Engine used for uniform deviates
+     * @param k Deviate k used for calculations
+     * @param x Deviate x used for calculations
+     * @return Whether the number of runs are even or not
+     */
     static bool AlgorithmBDouble(PRNG& g, int32_t k, double x);
 };
 

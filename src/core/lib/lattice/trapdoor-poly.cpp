@@ -61,8 +61,8 @@ std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::Trapd
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;    // for a balanced digit representation, there is an extra digit
-                // required
+        k++;  // for a balanced digit representation, there is an extra digit
+              // required
     }
 
     auto a = uniform_alloc();
@@ -100,8 +100,8 @@ std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;    // for a balanced digit representation, there is an extra digit
-                // required
+        k++;  // for a balanced digit representation, there is an extra digit
+              // required
     }
 
     auto a = uniform_alloc();
@@ -139,8 +139,8 @@ std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::Trapd
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;    // for a balanced digit representation, there is an extra digit
-                // required
+        k++;  // for a balanced digit representation, there is an extra digit
+              // required
     }
 
     Matrix<Poly> R(zero_alloc, d, d * k, gaussian_alloc);
@@ -186,8 +186,8 @@ std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>> RLWETrapdoorUtility<
     size_t k = std::ceil(nBits / std::log2(base)); /* (+1) is for balanced representation */
 
     if (bal == true) {
-        k++;    // for a balanced digit representation, there is an extra digit
-                // required
+        k++;  // for a balanced digit representation, there is an extra digit
+              // required
     }
 
     Matrix<NativePoly> R(zero_alloc, d, d * k, gaussian_alloc);

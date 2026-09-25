@@ -86,9 +86,9 @@ class Serializable {
   public:
     virtual ~Serializable() = default;
     /**
-   * @brief Returns the name identifying the derived class in serialized form; every serializable class provides it.
-   * @return the serialized object name
-   */
+     * @brief Returns the name identifying the derived class in serialized form; every serializable class provides it.
+     * @return the serialized object name
+     */
     virtual std::string SerializedObjectName() const = 0;
 };
 

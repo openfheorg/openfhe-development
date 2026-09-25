@@ -61,10 +61,10 @@ class CCParams<CryptoContextBGVRNS> : public Params {
   public:
     CCParams() : Params(BGVRNS_SCHEME) {}
     /**
-   * Constructor from string values; to be used by unit tests only.
-   *
-   * @param vals vector with override values in the order given by Params::getAllParamsDataMembers().
-   */
+     * Constructor from string values; to be used by unit tests only.
+     *
+     * @param vals vector with override values in the order given by Params::getAllParamsDataMembers().
+     */
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj) = default;
@@ -74,82 +74,82 @@ class CCParams<CryptoContextBGVRNS> : public Params {
     // DISABLE FUNCTIONS that are not applicable to BGVRNS
     //================================================================================================================
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param encryptionTechnique0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param encryptionTechnique0 ignored.
+     */
     void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param multiplicationTechnique0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param multiplicationTechnique0 ignored.
+     */
     void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param executionMode0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param executionMode0 ignored.
+     */
     void SetExecutionMode(ExecutionMode executionMode0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param decryptionNoiseMode0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param decryptionNoiseMode0 ignored.
+     */
     void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param noiseEstimate0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param noiseEstimate0 ignored.
+     */
     void SetNoiseEstimate(double noiseEstimate0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param desiredPrecision0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param desiredPrecision0 ignored.
+     */
     void SetDesiredPrecision(double desiredPrecision0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param interactiveBootCompressionLevel0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param interactiveBootCompressionLevel0 ignored.
+     */
     void SetInteractiveBootCompressionLevel(CompressionLevel interactiveBootCompressionLevel0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param compositeDegree0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param compositeDegree0 ignored.
+     */
     void SetCompositeDegree(uint32_t compositeDegree0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param registerWordSize0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param registerWordSize0 ignored.
+     */
     void SetRegisterWordSize(uint32_t registerWordSize0) override {
         DISABLED_FOR_BGVRNS;
     }
     /**
-   * Not applicable to BGVRNS (throws).
-   *
-   * @param ckksDataType0 ignored.
-   */
+     * Not applicable to BGVRNS (throws).
+     *
+     * @param ckksDataType0 ignored.
+     */
     void SetCKKSDataType(CKKSDataType ckksDataType0) override {
         DISABLED_FOR_BGVRNS;
     }

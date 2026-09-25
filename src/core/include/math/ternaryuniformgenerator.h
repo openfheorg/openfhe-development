@@ -53,38 +53,38 @@ template <typename VecType>
 class TernaryUniformGeneratorImpl {
   public:
     /**
-   * @brief Basic constructor for Ternary Uniform Generator.
-   */
+     * @brief Basic constructor for Ternary Uniform Generator.
+     */
     TernaryUniformGeneratorImpl() = default;
     ~TernaryUniformGeneratorImpl() = default;
 
     /**
-   * @brief Single-integer generation is not implemented for the ternary distribution; this
-   * method ignores its argument and always returns 0. Use GenerateVector or GenerateIntVector.
-   * @return always 0.
-   */
+     * @brief Single-integer generation is not implemented for the ternary distribution; this
+     * method ignores its argument and always returns 0. Use GenerateVector or GenerateIntVector.
+     * @return always 0.
+     */
     typename VecType::Integer GenerateInteger(const typename VecType::Integer&) const {
         return 0;
     }
 
     /**
-   * @brief  Generates a vector of random values within the Ternary Uniform
-   * Distribution.
-   * @param size length of the vector.
-   * @param modulus the modulus applied to all values of the vector.
-   * @param h - Hamming weight for sparse ternary distribution (by default, when
-   * h = 0, the distribution is NOT sparse)
-   * @return A vector of random values within the Ternary Uniform Distribution.
-   */
+     * @brief  Generates a vector of random values within the Ternary Uniform
+     * Distribution.
+     * @param size length of the vector.
+     * @param modulus the modulus applied to all values of the vector.
+     * @param h - Hamming weight for sparse ternary distribution (by default, when
+     * h = 0, the distribution is NOT sparse)
+     * @return A vector of random values within the Ternary Uniform Distribution.
+     */
     VecType GenerateVector(uint32_t size, const typename VecType::Integer& modulus, uint32_t h = 0) const;
 
     /**
-   * @brief      Returns a generated vector of integers.
-   * @param size The number of values to return.
-   * @param h - Hamming weight for sparse ternary distribution (by default, when
-   * h = 0, the distribution is NOT sparse)
-   * @return     vector of integer values generated with the distribution
-   */
+     * @brief      Returns a generated vector of integers.
+     * @param size The number of values to return.
+     * @param h - Hamming weight for sparse ternary distribution (by default, when
+     * h = 0, the distribution is NOT sparse)
+     * @return     vector of integer values generated with the distribution
+     */
     std::vector<int32_t> GenerateIntVector(uint32_t size, uint32_t h = 0) const;
 
   private:

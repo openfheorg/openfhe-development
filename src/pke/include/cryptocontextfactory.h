@@ -64,27 +64,27 @@ class CryptoContextFactory {
 
   protected:
     /**
-   * Looks up a registered context with equal crypto parameters and scheme.
-   * If found and the context uses packed encoding, the PackedEncoding parameters are (re)initialized for it.
-   *
-   * @param params crypto parameters to match (compared by value)
-   * @param scheme scheme object to match (compared by value)
-   * @return the matching registered context, or nullptr if there is none
-   */
+     * Looks up a registered context with equal crypto parameters and scheme.
+     * If found and the context uses packed encoding, the PackedEncoding parameters are (re)initialized for it.
+     *
+     * @param params crypto parameters to match (compared by value)
+     * @param scheme scheme object to match (compared by value)
+     * @return the matching registered context, or nullptr if there is none
+     */
     static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                               std::shared_ptr<SchemeBase<Element>> scheme);
 
     /**
-   * Registers the given context and, if it uses packed encoding, initializes the PackedEncoding parameters
-   * for it.
-   */
+     * Registers the given context and, if it uses packed encoding, initializes the PackedEncoding parameters
+     * for it.
+     */
     static void AddContext(CryptoContext<Element>);
 
   public:
     /**
-   * Releases all registered contexts: clears their CKKS caches and the static evaluation-key maps, empties the
-   * registry and returns freed memory to the system.
-   */
+     * Releases all registered contexts: clears their CKKS caches and the static evaluation-key maps, empties the
+     * registry and returns freed memory to the system.
+     */
     static void ReleaseAllContexts() {
         for (auto& cc : AllContexts) {
             if (cc)
@@ -97,42 +97,42 @@ class CryptoContextFactory {
     }
 
     /**
-   * Returns the number of registered contexts.
-   *
-   * @return the number of contexts currently held by the factory
-   */
+     * Returns the number of registered contexts.
+     *
+     * @return the number of contexts currently held by the factory
+     */
     static int GetContextCount() {
         return AllContexts.size();
     }
 
     /**
-   * Returns the registered context with equal crypto parameters and scheme, creating and registering a new one
-   * if none exists yet.
-   *
-   * @param params crypto parameters of the context
-   * @param scheme scheme object of the context
-   * @param schemeId scheme identifier stored in a newly created context (ignored if an existing one is found)
-   * @return the shared context
-   */
+     * Returns the registered context with equal crypto parameters and scheme, creating and registering a new one
+     * if none exists yet.
+     *
+     * @param params crypto parameters of the context
+     * @param scheme scheme object of the context
+     * @param schemeId scheme identifier stored in a newly created context (ignored if an existing one is found)
+     * @return the shared context
+     */
     static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                              std::shared_ptr<SchemeBase<Element>> scheme,
                                              SCHEME schemeId = SCHEME::INVALID_SCHEME);
 
     /**
-   * Returns the full registered context matching a (partial) context obtained by deserialization, registering
-   * the deserialized context itself if no equal one exists. Callers that only include cryptocontext-fwd.h use
-   * this instead of GetContext() to avoid circular dependencies.
-   *
-   * @param context the deserialized context
-   * @return the registered context with the same crypto parameters, scheme and scheme identifier
-   */
+     * Returns the full registered context matching a (partial) context obtained by deserialization, registering
+     * the deserialized context itself if no equal one exists. Callers that only include cryptocontext-fwd.h use
+     * this instead of GetContext() to avoid circular dependencies.
+     *
+     * @param context the deserialized context
+     * @return the registered context with the same crypto parameters, scheme and scheme identifier
+     */
     static CryptoContext<Element> GetFullContextByDeserializedContext(const CryptoContext<Element> context);
 
     /**
-   * Returns all registered contexts.
-   *
-   * @return reference to the vector of registered contexts
-   */
+     * Returns all registered contexts.
+     *
+     * @return reference to the vector of registered contexts
+     */
     static const std::vector<CryptoContext<Element>>& GetAllContexts() {
         return AllContexts;
     }

@@ -99,30 +99,30 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-	* The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
-	* The SPARSE_TERNARY distribution was used in the original CKKS paper,
-	* but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
-	* encryption standard.
-	*/
+     * The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
+     * The SPARSE_TERNARY distribution was used in the original CKKS paper,
+     * but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
+     * encryption standard.
+     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
     /*  A2) Desired security level based on FHE standards.
-	* In this example, we use the "NotSet" option, so the example can run more quickly with
-	* a smaller ring dimension. Note that this should be used only in
-	* non-production environments, or by experts who understand the security
-	* implications of their choices. In production-like environments, we recommend using
-	* HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-	* or 256-bit security, respectively. If you choose one of these as your security level,
-	* you do not need to set the ring dimension.
-	*/
+     * In this example, we use the "NotSet" option, so the example can run more quickly with
+     * a smaller ring dimension. Note that this should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices. In production-like environments, we recommend using
+     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * you do not need to set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_128_classic);
 
     /*  A3) Scaling parameters.
-	* By default, we set the modulus sizes and rescaling technique to the following values
-	* to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-	* below unless you are an FHE expert.
-	*/
+     * By default, we set the modulus sizes and rescaling technique to the following values
+     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+     * below unless you are an FHE expert.
+     */
     uint32_t dcrtBits = 50;
     uint32_t firstMod = 60;
 
@@ -131,15 +131,15 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     parameters.SetFirstModSize(firstMod);
 
     /*  A4) Multiplicative depth.
-    * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set
-    * according the following formula:
-    * multDepth >= desired_depth + interactive_bootstrapping_depth
-    * where,
-    *   The desired_depth is the depth of the computation, as chosen by the user.
-    *   The interactive_bootstrapping_depth is either 3 or 4, depending on the ciphertext compression mode: COMPACT vs SLACK (see below)
-    * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels
-    * for computation and 4 for interactive bootstrapping. You will need to bootstrap 3 times.
-    */
+     * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set
+     * according the following formula:
+     * multDepth >= desired_depth + interactive_bootstrapping_depth
+     * where,
+     *   The desired_depth is the depth of the computation, as chosen by the user.
+     *   The interactive_bootstrapping_depth is either 3 or 4, depending on the ciphertext compression mode: COMPACT vs SLACK (see below)
+     * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels
+     * for computation and 4 for interactive bootstrapping. You will need to bootstrap 3 times.
+     */
     parameters.SetMultiplicativeDepth(10);
     parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
 
@@ -147,16 +147,16 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     parameters.SetBatchSize(batchSize);
 
     /*  Protocol-specific parameters (SLACK or COMPACT)
-    * SLACK (default) uses larger masks, which makes it more secure theoretically. However, it is also slightly less efficient.
-    * COMPACT uses smaller masks, which makes it more efficient. However, it is relatively less secure theoretically.
-    * Both options can be used for practical security.
-    * The following table summarizes the differences between SLACK and COMPACT:
-    * Parameter	        SLACK	                                        COMPACT
-    * Mask size	        Larger	                                        Smaller
-    * Security	        More secure	                                    Less secure
-    * Efficiency	    Less efficient	                                More efficient
-    * Recommended use	For applications where security is paramount	For applications where efficiency is paramount
-    */
+     * SLACK (default) uses larger masks, which makes it more secure theoretically. However, it is also slightly less efficient.
+     * COMPACT uses smaller masks, which makes it more efficient. However, it is relatively less secure theoretically.
+     * Both options can be used for practical security.
+     * The following table summarizes the differences between SLACK and COMPACT:
+     * Parameter	        SLACK	                                        COMPACT
+     * Mask size	        Larger	                                        Smaller
+     * Security	        More secure	                                    Less secure
+     * Efficiency	    Less efficient	                                More efficient
+     * Recommended use	For applications where security is paramount	For applications where efficiency is paramount
+     */
     auto compressionLevel = CompressionLevel::COMPACT;
     parameters.SetInteractiveBootCompressionLevel(compressionLevel);
 
