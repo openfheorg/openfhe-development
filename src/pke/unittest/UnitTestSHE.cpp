@@ -487,9 +487,15 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // TestType,               Descr, Scheme,        RDim,  MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod,      StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { RING_DIM_ERROR_HANDLING, "01", {BFVRNS_SCHEME, 1<<13, 3,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    4293918721, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     // ==========================================
-    // TestType,    Descr, Scheme,        RDim,  MultDepth, SModSize, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,            KSTech, ScalTech, LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
-    { EVAL_MUTABLE, "01", {BGVRNS_SCHEME, DFLT,  2,         DFLT,     DFLT, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   DFLT,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
-    { EVAL_MUTABLE, "02", {CKKSRNS_SCHEME, DFLT, 2,         DFLT,     DFLT, DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   DFLT,     DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    // TestType,    Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,            KSTech, ScalTech,     LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_MUTABLE, "01", {BGVRNS_SCHEME,  DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   DFLT,         DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MUTABLE, "02", {CKKSRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   DFLT,         DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MUTABLE, "03", {BGVRNS_SCHEME,  DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   FIXEDAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MUTABLE, "04", {BGVRNS_SCHEME,  DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   FLEXIBLEAUTO, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MUTABLE, "05", {CKKSRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   FIXEDAUTO,    DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#if NATIVEINT != 128
+    { EVAL_MUTABLE, "06", {CKKSRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   FLEXIBLEAUTO, DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#endif
 };
 // clang-format on
 //===========================================================================================================
@@ -1231,6 +1237,7 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
                                Plaintext& plaintext2,
                                Plaintext& plaintextResult1,
                                Plaintext& plaintextResult2,
+                               double tolerance,
                                const std::string& errMsg) {
         auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
         auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
@@ -1242,7 +1249,7 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
 
         std::string errMsg1 = errMsg + " (1)";
         if (CKKSRNS_SCHEME == schemeId)
-            checkEquality(plaintextResult12->GetCKKSPackedValue(), plaintextResult1->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextResult12->GetCKKSPackedValue(), plaintextResult1->GetCKKSPackedValue(), tolerance,
                           errMsg1);
         else
             checkEquality(plaintextResult12->GetPackedValue(), plaintextResult1->GetPackedValue(), eps, errMsg1);
@@ -1254,10 +1261,55 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
 
         std::string errMsg2 = errMsg + " (2)";
         if (CKKSRNS_SCHEME == schemeId)
-            checkEquality(plaintextResult122->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextResult122->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), tolerance,
                           errMsg2);
         else
             checkEquality(plaintextResult122->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg2);
+    }
+
+    // helper function for UnitTest_EvalMutable(): passing the same ciphertext object as both arguments must match
+    // the result for two separate copies and leave the operand holding its original value
+    void EvalMutableAliasedOperations(const CryptoContext<DCRTPoly>& cryptoContext,
+                                      const KeyPair<DCRTPoly>& keyPair,
+                                      SCHEME schemeId,
+                                      ConstCiphertext<DCRTPoly>& ciphertext,
+                                      const Plaintext& plaintextIn,
+                                      const Plaintext& plaintextSquare,
+                                      double tolerance,
+                                      const std::string& errMsg) {
+        auto check = [&](ConstCiphertext<DCRTPoly>& result, const Plaintext& expected, const std::string& msg) {
+            Plaintext plaintextResult{nullptr};
+            cryptoContext->Decrypt(keyPair.secretKey, result, &plaintextResult);
+            plaintextResult->SetLength(expected->GetLength());
+            if (CKKSRNS_SCHEME == schemeId)
+                checkEquality(plaintextResult->GetCKKSPackedValue(), expected->GetCKKSPackedValue(), tolerance,
+                              errMsg + msg);
+            else
+                checkEquality(plaintextResult->GetPackedValue(), expected->GetPackedValue(), tolerance, errMsg + msg);
+        };
+
+        const uint32_t squareLevel = cryptoContext->EvalMult(ciphertext, ciphertext)->GetLevel();
+
+        auto ct = ciphertext->Clone();
+        auto ctSquare = cryptoContext->EvalMultMutable(ct, ct);
+        check(ctSquare, plaintextSquare, " EvalMultMutable(ct, ct) result");
+        check(ct, plaintextIn, " EvalMultMutable(ct, ct) operand");
+        EXPECT_EQ(ctSquare->GetLevel(), squareLevel) << errMsg << " EvalMultMutable(ct, ct) level";
+
+        ct = ciphertext->Clone();
+        cryptoContext->EvalMultMutableInPlace(ct, ct);
+        check(ct, plaintextSquare, " EvalMultMutableInPlace(ct, ct) result");
+        EXPECT_EQ(ct->GetLevel(), squareLevel) << errMsg << " EvalMultMutableInPlace(ct, ct) level";
+
+        ct = ciphertext->Clone();
+        auto ct1 = ciphertext->Clone();
+        auto ct2 = ciphertext->Clone();
+        cryptoContext->GetScheme()->AdjustLevelsAndDepthToOneInPlace(ct, ct);
+        cryptoContext->GetScheme()->AdjustLevelsAndDepthToOneInPlace(ct1, ct2);
+        check(ct, plaintextIn, " AdjustLevelsAndDepthToOneInPlace(ct, ct) operand");
+        EXPECT_EQ(ct->GetLevel(), ct1->GetLevel()) << errMsg << " AdjustLevelsAndDepthToOneInPlace(ct, ct) level";
+        EXPECT_EQ(ct->GetNoiseScaleDeg(), ct1->GetNoiseScaleDeg())
+                << errMsg << " AdjustLevelsAndDepthToOneInPlace(ct, ct) noise scale degree";
     }
 
     void UnitTest_EvalMutable(const TEST_CASE_UTGENERAL_SHE& testData, const std::string& failmsg = std::string()) {
@@ -1281,6 +1333,13 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
             std::vector<int64_t> vectorOfIntsSubResult1 = {-7, -5, -3, -1, 1, 3, 5, 7};
             std::vector<int64_t> vectorOfIntsSubResult2 = {-14, -11, -8, -5, -2, 1, 4, 7};
 
+            std::vector<int64_t> vectorOfIntsSquareResult1 = {0, 1, 4, 9, 16, 25, 36, 49};
+            std::vector<int64_t> vectorOfIntsSquareResult2 = {0, 36, 100, 144, 144, 100, 36, 0};
+
+            // the CKKS approximation error of the squared product reaches ~3e-7 for FIXEDAUTO and ~1e-8 for
+            // FLEXIBLEAUTO, above EPSILON; the failures checked here are exceptions or errors of order 1
+            const double tolerance = (CKKSRNS_SCHEME == testData.params.schemeId) ? EPSILON_HIGH : eps;
+
             Plaintext plaintext1(nullptr);
             Plaintext plaintext2(nullptr);
 
@@ -1290,6 +1349,8 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
             Plaintext plaintextAddResult2(nullptr);
             Plaintext plaintextSubResult1(nullptr);
             Plaintext plaintextSubResult2(nullptr);
+            Plaintext plaintextSquareResult1(nullptr);
+            Plaintext plaintextSquareResult2(nullptr);
             if (CKKSRNS_SCHEME == testData.params.schemeId) {
                 std::vector<std::complex<double>> vectorOfDbls1(vectorOfInts1.begin(), vectorOfInts1.end());
                 std::vector<std::complex<double>> vectorOfDbls2(vectorOfInts2.begin(), vectorOfInts2.end());
@@ -1310,6 +1371,11 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
                 std::vector<std::complex<double>> vectorOfDblsSubResult2(vectorOfIntsSubResult2.begin(), vectorOfIntsSubResult2.end());
                 plaintextSubResult1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsSubResult1);
                 plaintextSubResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsSubResult2);
+
+                std::vector<std::complex<double>> vectorOfDblsSquareResult1(vectorOfIntsSquareResult1.begin(), vectorOfIntsSquareResult1.end());
+                std::vector<std::complex<double>> vectorOfDblsSquareResult2(vectorOfIntsSquareResult2.begin(), vectorOfIntsSquareResult2.end());
+                plaintextSquareResult1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsSquareResult1);
+                plaintextSquareResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfDblsSquareResult2);
             }
             else {
                 plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
@@ -1323,6 +1389,9 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
 
                 plaintextSubResult1 = cryptoContext->MakePackedPlaintext(vectorOfIntsSubResult1);
                 plaintextSubResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsSubResult2);
+
+                plaintextSquareResult1 = cryptoContext->MakePackedPlaintext(vectorOfIntsSquareResult1);
+                plaintextSquareResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsSquareResult2);
             }
 
             EvalMutableOperations(cryptoContext,
@@ -1334,6 +1403,7 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
                                   plaintext2,
                                   plaintextMultResult1,
                                   plaintextMultResult2,
+                                  tolerance,
                                   failmsg + " EvalMultMutable() failed");
 
             EvalMutableOperations(cryptoContext,
@@ -1345,6 +1415,7 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
                                   plaintext2,
                                   plaintextAddResult1,
                                   plaintextAddResult2,
+                                  tolerance,
                                   failmsg + " EvalAddMutable() failed");
 
             EvalMutableOperations(cryptoContext,
@@ -1356,7 +1427,18 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
                                   plaintext2,
                                   plaintextSubResult1,
                                   plaintextSubResult2,
+                                  tolerance,
                                   failmsg + " EvalSubMutable() failed");
+
+            // the same ciphertext object as both arguments, both fresh and after a multiplication (noise scale
+            // degree 2), so that every automatic scaling technique rescales it before multiplying
+            auto ciphertext = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+            EvalMutableAliasedOperations(cryptoContext, keyPair, testData.params.schemeId, ciphertext, plaintext1,
+                                         plaintextSquareResult1, tolerance, failmsg + " fresh:");
+            auto ciphertextProduct =
+                    cryptoContext->EvalMult(ciphertext, cryptoContext->Encrypt(keyPair.publicKey, plaintext2));
+            EvalMutableAliasedOperations(cryptoContext, keyPair, testData.params.schemeId, ciphertextProduct,
+                                         plaintextMultResult1, plaintextSquareResult2, tolerance, failmsg + " product:");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

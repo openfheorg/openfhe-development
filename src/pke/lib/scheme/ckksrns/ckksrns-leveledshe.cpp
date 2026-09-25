@@ -841,7 +841,8 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& c
         const auto cryptoParams =
                 std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
         ModReduceInternalInPlace(ciphertext1, cryptoParams->GetCompositeDegree());
-        ModReduceInternalInPlace(ciphertext2, cryptoParams->GetCompositeDegree());
+        if (ciphertext2 != ciphertext1)
+            ModReduceInternalInPlace(ciphertext2, cryptoParams->GetCompositeDegree());
     }
 }
 
