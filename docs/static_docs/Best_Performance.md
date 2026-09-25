@@ -34,7 +34,7 @@ The three bootstrapping methods differ in how they respond to threads. Boolean g
 | LMKCDEY (`STD128_LMKCDEY`) | 28 ms | 22 ms | 22 ms | 29 ms | 21 ms | 19 ms | 15 ms |
 | AP (`STD128_AP`) | 40 ms | 27 ms | 27 ms | 39 ms | 26 ms | 26 ms | 18 ms |
 
-This table and every measurement in this document come from two machines, both built with `WITH_NATIVEOPT=ON`: a two-socket Intel Xeon Platinum 8360Y (Ice Lake, 36 cores per socket, no SMT) with clang 18, and an 8-core Intel Core i7-9700 desktop running Ubuntu with clang 15. Both hold every core at its base clock with turbo disabled, 2.4 GHz on the Xeon and 3.0 GHz on the i7, which makes the numbers repeatable from run to run; at these clocks the two machines are within about 10% of each other on one thread. A desktop or laptop at its turbo clock is correspondingly faster: with turbo enabled the same i7 runs one core at 4.7 GHz and takes about two thirds of the time on one thread, while at 8 threads its all-core clock settles near 3.8 to 4.2 GHz under load and the gain is 10 to 30%.
+This table and every measurement in this document come from two machines, both built with `WITH_NATIVEOPT=ON`: a two-socket Intel Xeon Platinum 8360Y (Ice Lake, 36 cores per socket, no SMT, 128 GB of memory) with clang 18, and an 8-core Intel Core i7-9700 desktop (64 GB) running Ubuntu with clang 15. Both hold every core at its base clock with turbo disabled, 2.4 GHz on the Xeon and 3.0 GHz on the i7, which makes the numbers repeatable from run to run; at these clocks the two machines are within about 10% of each other on one thread. A desktop or laptop at its turbo clock is correspondingly faster: with turbo enabled the same i7 runs one core at 4.7 GHz and takes about two thirds of the time on one thread, while at 8 threads its all-core clock settles near 3.8 to 4.2 GHz under load and the gain is 10 to 30%.
 
 Single-threaded, GINX and LMKCDEY are within about 10% of each other across the predefined sets on both machines, and which one leads depends on the set. From 8 threads on, GINX is 10 to 30% faster than LMKCDEY on every set. AP is the slowest and has the largest keys. A single gate does not benefit from more than about 8 threads under any method, because the blind rotation parallelizes over the gadget digits of one ciphertext and there are only a handful of those; running many gates concurrently at the application level is the way to use a larger machine, with `OMP_NUM_THREADS` kept small so the per-gate teams do not oversubscribe the cores. Setting `OMP_NUM_THREADS=1` gives the same runtimes as a build with `WITH_OPENMP=OFF`.
 
@@ -68,6 +68,25 @@ The default configuration is within a modest factor of the best one for these sc
 | SlotsToCoeffs-first (`BTSlotsEncoding = true`) | 17.7 s | 4.6 s | 3.5 s | 18.9 s | 6.1 s | 13.0 s | 5.5 s |
 
 SlotsToCoeffs-first takes about three quarters of the time of ModRaise-first at every thread count on both machines. Turbo gives one thread the full clock ratio, while at 8 threads, where the all-core clock is lower and the bootstrap is limited by memory traffic rather than by the core clock, it gains only about 10%.
+
+**Other bootstrapping configurations.** The table below changes one parameter at a time from the configuration above (ring dimension 2^16, all 2^15 slots in use, `SPARSE_ENCAPSULATED` secrets, level budget {3, 3}): the number of slots, with the smaller level budgets that suit fewer slots, the ring dimension, and the secret key distribution. `UNIFORM_TERNARY` secrets need a modular reduction four levels deeper than sparse ones, so at this ring dimension and scaling modulus the uniform configuration can leave only one level for the application after bootstrapping instead of five; everything else, including the number of primes and the key-switching modulus, stays the same. The 2^17 configuration needs more memory than the i7's 64 GB, so it has no i7 columns. Latency of one bootstrap:
+
+| configuration | variant | Xeon, 1 thread | Xeon, 36 threads | i7, 1 thread | i7, 8 threads | i7 turbo, 1 thread | i7 turbo, 8 threads |
+|---|---|---|---|---|---|---|---|
+| 2^16, 2^15 slots, {3, 3}, `SPARSE_ENCAPSULATED` (as above) | ModRaise-first | 24.3 s | 4.5 s | 26.2 s | 8.1 s | 17.9 s | 7.3 s |
+|  | SlotsToCoeffs-first | 17.7 s | 3.5 s | 18.9 s | 6.1 s | 13.0 s | 5.5 s |
+| 2^16, 2^12 slots, {2, 2} | ModRaise-first | 19.9 s | 4.1 s | 21.0 s | 7.3 s | 14.6 s | 6.6 s |
+|  | SlotsToCoeffs-first | 18.4 s | 3.8 s | 19.4 s | 6.7 s | 13.5 s | 6.1 s |
+| 2^16, 2^5 slots, {1, 1} | ModRaise-first | 8.8 s | 1.5 s | 9.7 s | 2.8 s | 6.5 s | 2.5 s |
+|  | SlotsToCoeffs-first | 8.5 s | 1.5 s | 9.3 s | 2.7 s | 6.3 s | 2.4 s |
+| 2^17, 2^16 slots, {4, 4} | ModRaise-first | 49.4 s | 9.1 s |  |  |  |  |
+|  | SlotsToCoeffs-first | 34.9 s | 6.7 s |  |  |  |  |
+| 2^16, 2^15 slots, {3, 3}, `SPARSE_TERNARY` | ModRaise-first | 25.4 s | 4.7 s | 27.4 s | 8.5 s | 18.8 s | 7.6 s |
+|  | SlotsToCoeffs-first | 18.1 s | 3.6 s | 19.4 s | 6.3 s | 13.3 s | 5.6 s |
+| 2^16, 2^15 slots, {3, 3}, `UNIFORM_TERNARY`, 1 level after | ModRaise-first | 31.5 s | 5.8 s | 34.6 s | 10.4 s | 23.5 s | 9.0 s |
+|  | SlotsToCoeffs-first | 21.8 s | 4.2 s | 23.6 s | 7.4 s | 16.2 s | 6.7 s |
+
+Fewer slots make the linear transforms cheaper but leave the modular reduction unchanged, so 2^12 slots take about four fifths of the full-packing time and 2^5 slots about a third. The SlotsToCoeffs-first saving comes from running the slots-to-coefficients transform at the lowest level instead of the raised one, so it shrinks with that transform: about a quarter at full packing, a few percent at 2^5 slots. Doubling the ring dimension doubles the time at every thread count. `SPARSE_TERNARY` secrets cost about 5% more than `SPARSE_ENCAPSULATED`, `UNIFORM_TERNARY` about 30% more on top of the four levels.
 
 **CKKS functional bootstrapping.** `EvalFBT` evaluates an arbitrary lookup table on small integers while bootstrapping (the `ckks-functional-bootstrapping` benchmark). Time for one evaluation over a fully packed ciphertext with `SPARSE_ENCAPSULATED` secrets, for lookup tables of 1, 2, 4 and 8 bits, with the input modulus q chosen so that the failure probability per ciphertext stays below 2^-40, on the Xeon (the 18-thread column uses the cores of one socket; 36 threads add nothing over 18) and on the i7 with turbo enabled:
 
