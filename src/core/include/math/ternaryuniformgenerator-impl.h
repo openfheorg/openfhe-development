@@ -75,8 +75,8 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, cons
     BinaryUniformGeneratorImpl<VecType> bug;
     uint32_t counterPlus = 0;
 
-    // makes sure the +1's and -1's are roughly evenly distributed
-    while ((counterPlus < h / 2 - 1) || (counterPlus > h / 2 + 1)) {
+    // makes sure the +1's and -1's are roughly evenly distributed: counterPlus within one of h / 2
+    do {
         // initializes all values
         counterPlus = 0;
         for (uint32_t k = 0; k < size; ++k)
@@ -96,7 +96,7 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, cons
                 ++i;
             }
         }
-    }
+    } while ((counterPlus + 1 < h / 2) || (counterPlus > h / 2 + 1));
     return v;
 }
 
@@ -118,8 +118,8 @@ std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uin
     BinaryUniformGeneratorImpl<VecType> bug;
     uint32_t counterPlus = 0;
 
-    // makes sure the +1's and -1's are roughly evenly distributed
-    while ((counterPlus < h / 2 - 1) || (counterPlus > h / 2 + 1)) {
+    // makes sure the +1's and -1's are roughly evenly distributed: counterPlus within one of h / 2
+    do {
         // initializes all values
         counterPlus = 0;
         for (uint32_t k = 0; k < size; ++k)
@@ -139,7 +139,7 @@ std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uin
                 ++i;
             }
         }
-    }
+    } while ((counterPlus + 1 < h / 2) || (counterPlus > h / 2 + 1));
     return v;
 }
 
