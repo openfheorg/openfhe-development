@@ -32,9 +32,12 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "include/gtest/gtest.h"
+#include "utils/exception.h"
+#include "utils/hashutil.h"
 #include "utils/utilities.h"
 
 using namespace lbcrypto;
@@ -50,4 +53,28 @@ TEST(Utilities, IsPowerOfTwo) {
     for (auto not_power_of_two : not_powers_of_two) {
         EXPECT_FALSE(IsPowerOfTwo(not_power_of_two));
     }
+}
+
+TEST(Utilities, HashUtil) {
+    const std::string abc = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+    EXPECT_EQ(abc, HashUtil::HashString("abc"));
+
+    std::vector<int64_t> digest;
+    HashUtil::Hash("abc", SHA_256, digest);
+    ASSERT_EQ(32u, digest.size());
+    for (size_t i = 0; i < digest.size(); ++i)
+        EXPECT_EQ(std::stoll(abc.substr(2 * i, 2), nullptr, 16), digest[i]) << "byte " << i;
+
+    // a message byte above 0x7f must not be sign-extended into the message schedule
+    std::vector<int64_t> digestHigh;
+    HashUtil::Hash("\xff", SHA_256, digestHigh);
+    const std::string ff = "a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89";
+    ASSERT_EQ(32u, digestHigh.size());
+    for (size_t i = 0; i < digestHigh.size(); ++i)
+        EXPECT_EQ(std::stoll(ff.substr(2 * i, 2), nullptr, 16), digestHigh[i]) << "byte " << i;
+    EXPECT_EQ(ff, HashUtil::HashString("\xff"));
+
+    // an unimplemented algorithm must not silently return another algorithm's digest
+    std::vector<int64_t> digest512;
+    EXPECT_THROW(HashUtil::Hash("abc", SHA_512, digest512), OpenFHEException);
 }

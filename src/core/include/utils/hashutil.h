@@ -45,8 +45,8 @@
 namespace lbcrypto {
 
 /**
- * @brief Hash algorithm selector for HashUtil::Hash. SHA_512 is currently not implemented and falls back to
- * SHA-256.
+ * @brief Hash algorithm selector for HashUtil::Hash. SHA_512 is currently not implemented, and requesting it
+ * throws.
  */
 enum HashAlgorithm { SHA_256 = 0, SHA_512 = 1 };
 
@@ -58,7 +58,7 @@ class HashUtil {
     /**
      * @brief Hashes a message and appends the digest bytes to a vector.
      * @param message input bytes to hash
-     * @param algo hash algorithm; SHA_512 currently computes SHA-256, any other value throws
+     * @param algo hash algorithm; only SHA_256 is implemented, any other value throws
      * @param digest receives the 32 digest bytes, one per entry, appended to the existing contents
      */
     static void Hash(std::string message, HashAlgorithm algo, std::vector<int64_t>& digest) {
@@ -68,9 +68,7 @@ class HashUtil {
                 return;
 
             case SHA_512:
-                // TODO SHA512 disabled, returning SHA256 instead
-                SHA256(message, digest);
-                return;
+                OPENFHE_THROW("SHA_512 is not implemented");
 
             default:
                 OPENFHE_THROW("ERROR: Unknown Hash Algorithm");
