@@ -1,3 +1,16 @@
+09/28/2026: OpenFHE 1.6.0 (development) is released
+
+* Adds the CKKS-based Fourier-extension functional bootstrapping method proposed in https://ia.cr/2026/367 and presented at EUROCRYPT '26 (#1207)
+* Adds COMPOSITESCALING* support for all flavors of regular and functional CKKS bootstrapping, which also adds support for scaling factors larger than 60 bits
+* Includes many optimizations throughout the library reducing the latency for all flavors of bootstrapping (both FHEW/TFHE and CKKS) up to 2x, with extra optimizations applied for the multithreaded setting (see https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Best_Performance.md for selected benchmarking results)
+* Provides a more granular FHEW/TFHE parameterization mechanism using the method proposed in https://ia.cr/2025/1892 (#1144)
+* Improves the sparse-secret encapsulation implementation and applies it to all flavors of CKKS bootstrapping (now this is the recommended mode for CKKS bootstrapping)
+* Reduces the probability of failure for all variants of CKKS bootstrapping
+* Significantly improves the documentation throughout the library
+* Code cleanup and many bug fixes
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.6.0%22
+
 04/10/2026: OpenFHE 1.5.1 (stable) is released
 
 * Fixes the compilation error when OpenMP is disabled using the CMake flag (#1131)
