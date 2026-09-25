@@ -1,7 +1,7 @@
 OpenFHE Lattice Cryptography Library - Arbitrary Smooth Function Evaluation
 ============================================================================
 
-[License Information](License.md)
+[License Information](../../../LICENSE)
 
 Document Description
 ===================

@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Simple examples for CKKS
+  Simple examples for CKKS in the COMPOSITESCALINGAUTO mode
  */
 
 #define PROFILE

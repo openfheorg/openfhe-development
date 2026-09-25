@@ -69,6 +69,9 @@ int main() {
     std::cout << "This program requires the `" << DATAFOLDER << "' directory to exist." << std::endl;
 
     CCParams<CryptoContextCKKSRNS> parameters;
+    // SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128). UNIFORM_TERNARY,
+    // used here, is the distribution of the homomorphic encryption security guidelines; its probability of failure is
+    // 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);

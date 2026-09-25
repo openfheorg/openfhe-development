@@ -1,7 +1,7 @@
 OpenFHE Lattice Cryptography Library - Examples
 =============================================
 
-[License Information](License.md)
+[License Information](../../../LICENSE)
 
 Document Description
 ===================
@@ -22,7 +22,9 @@ File Listing
 - [advanced-ckks-bootstrapping.cpp](advanced-ckks-bootstrapping.cpp): an example showing CKKS bootstrapping for a ciphertext with sparse packing
 - [advanced-real-numbers.cpp](advanced-real-numbers.cpp): shows several advanced examples of approximate homomorphic encryption using CKKS
 - [advanced-real-numbers-128.cpp](advanced-real-numbers-128.cpp): shows several advanced examples of approximate homomorphic encryption using high-precision CKKS
+- [ckks-bootstrap-keys-serial.cpp](ckks-bootstrap-keys-serial.cpp): demonstrates serialization and deserialization of the CKKS bootstrapping keys (`SerializeEvalBootstrapKey` and `DeserializeEvalBootstrapKey`), so that bootstrapping can run on a party that did not generate the keys
 - [ckks-noise-flooding.cpp](ckks-noise-flooding.cpp): demonstrates use of experimental feature NOISE_FLOODING_DECRYPT mode in CKKS, which enhances security
+- [ckks-release-memory.cpp](ckks-release-memory.cpp): demonstrates how to release the memory held by the CKKS bootstrapping precomputations, comparing `ClearBootstrapPrecom` with `CryptoContextFactory<DCRTPoly>::ReleaseAllContexts`
 - [depth-bfvrns.cpp](depth-bfvrns.cpp): demonstrates use of the BFVrns scheme for basic homomorphic encryption
 - [depth-bfvrns-behz.cpp](depth-bfvrns-behz.cpp): demonstrates use of the BEHZ BFV variant for basic homomorphic encryption
 - [depth-bgvrns.cpp](depth-bgvrns.cpp): demonstrates use of the BGVrns scheme for basic homomorphic encryption
@@ -43,18 +45,29 @@ File Listing
 - [scheme-switching-serial.cpp](scheme-switching-serial.cpp): provides an example of CKKS <-> FHEW scheme switching with serialization
 - [simple-ckks-bootstrapping.cpp](simple-ckks-bootstrapping.cpp): simple example showing CKKS bootstrapping for a ciphertext with full packing
 - [simple-ckks-bootstrapping-composite-scaling.cpp](simple-ckks-bootstrapping-composite-scaling.cpp): single-precision CKKS bootstrapping in the CKKS composite scaling mode
-- [simple-complex-numbers.cpp.cpp](simple-complex-numbers.cpp): leveled FHE and bootstrapping examples for CKKS over complex numbers
+- [simple-complex-numbers.cpp](simple-complex-numbers.cpp): leveled FHE and bootstrapping examples for CKKS over complex numbers
+- [simple-composite-scaling-manual.cpp](simple-composite-scaling-manual.cpp): basic CKKS arithmetic in the COMPOSITESCALINGMANUAL mode, with the register word size and composite degree set explicitly
 - [simple-integers.cpp](simple-integers.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
 - [simple-integers-bgvrns.cpp](simple-integers-bgvrns.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BGV
 - [simple-integers-serial.cpp](simple-integers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
 - [simple-integers-serial-bgvrns.cpp](simple-integers-serial-bgvrns.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BGV
-- [simple-real-numbers.cpp](simple-real-numbers): simple example showing homomorphic additions, multiplications, and rotations for vectors of real numbers using CKKS
+- [simple-real-numbers.cpp](simple-real-numbers.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of real numbers using CKKS
 - [simple-real-numbers-composite-scaling.cpp](simple-real-numbers-composite-scaling.cpp): basic CKKS arithmetic in the CKKS composite scaling mode
 - [simple-real-numbers-serial.cpp](simple-real-numbers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using CKKS
 - [tckks-interactive-mp-bootstrapping.cpp](tckks-interactive-mp-bootstrapping.cpp): an example of $n$-party interactive bootstrapping
 - [tckks-interactive-mp-bootstrapping-Chebyshev.cpp](tckks-interactive-mp-bootstrapping-Chebyshev.cpp): an example of $n$-party interactive bootstrapping with Chebyshev interpolation
 - [threshold-fhe.cpp](threshold-fhe.cpp): shows several examples of threshold FHE in BGV, BFV, and CKKS
 - [threshold-fhe-5p.cpp](threshold-fhe-5p.cpp): shows example of threshold FHE with 5 parties in BFV
+
+*Documentation for advanced capabilities*
+
+- [CKKS_BOOTSTRAPPING.md](CKKS_BOOTSTRAPPING.md): the CKKS bootstrapping pipeline and its variants, the secret key distributions and their probabilities of failure, and the bootstrapping parameters
+- [CKKS_FUNCTIONAL_BOOTSTRAPING.md](CKKS_FUNCTIONAL_BOOTSTRAPING.md): CKKS functional bootstrapping, for lookup tables over integers and for smooth functions over real numbers (Fourier extension)
+- [CKKS_NOISE_FLOODING.md](CKKS_NOISE_FLOODING.md): the NOISE_FLOODING_DECRYPT mode of CKKS for $\textsf{IND-CPA}^D$ security
+- [COMPOSITE_SCALING.md](COMPOSITE_SCALING.md): the CKKS composite scaling modes, for scaling factors larger than the hardware word size
+- [FUNCTION_EVALUATION.md](FUNCTION_EVALUATION.md): evaluation of smooth functions in CKKS using Chebyshev approximation
+- [INTERACTIVE_BOOTSTRAPPING.md](INTERACTIVE_BOOTSTRAPPING.md): 2-party and $n$-party interactive CKKS bootstrapping
+- [SCHEME_SWITCHING_CAPABILITY.md](SCHEME_SWITCHING_CAPABILITY.md): switching between CKKS and FHEW ciphertexts
 
 How To Link Your Own Project After Having OpenFHE Installed
 ===================
@@ -79,17 +92,17 @@ Generating Cryptocontext using GenCryptoContext()
 1. Pick the scheme you want to use. I chose CKKS for our tutorial example.
 2. Include openfhe.h\
     **NOTE for OpenFHE contributors**\
-    Instead of including openfhe.h, your code should include gen-cryptocontext.h and the header with the scheme-specific context generator (scheme/<scheme>/cryptocontext-<scheme>.h). Example:
+    Instead of including openfhe.h, your code should include gen-cryptocontext.h and the header with the scheme-specific context generator (scheme/<scheme>rns/gen-cryptocontext-<scheme>rns.h). Example:
 ```
-    #include "scheme/ckks/cryptocontext-ckks.h"
+    #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
     #include "gen-cryptocontext.h"
 ```
-3. Create a parameter object to be passed to GenCryptoContext(). Its generic form would look like this: CCParams<GeneratorName> parameters where GeneratorName is the name of the class defined in cryptocontext-<scheme>.h. In our case it is CryptoContextCKKS and the line to add is
+3. Create a parameter object to be passed to GenCryptoContext(). Its generic form would look like this: CCParams<GeneratorName> parameters where GeneratorName is the name of the class defined in gen-cryptocontext-<scheme>rns.h. In our case it is CryptoContextCKKSRNS and the line to add is
 ```
-    CCParams<CryptoContextCKKS<Element>> parameters;
+    CCParams<CryptoContextCKKSRNS> parameters;
     // std::cout << parameters << std::endl;  // prints all parameter values
 ```
-4. Adjust the parameters' values with set functions for CCParams<CryptoContextCKKS> as the object is created using default values from scheme/cryptocontextparams-defaults.h. The set functions can be found in scheme/cryptocontextparams-base.h. For example, we can set the multiplicative depth to be 1 as shown below.
+4. Adjust the parameters' values with set functions for CCParams<CryptoContextCKKSRNS> as the object is created using default values from scheme/gen-cryptocontext-params-defaults.h. The set functions can be found in scheme/gen-cryptocontext-params.h. For example, we can set the multiplicative depth to be 1 as shown below.
 ```
     parameters.SetMultiplicativeDepth(1);
 ```
@@ -106,9 +119,9 @@ Generating Cryptocontext using GenCryptoContext()
 
 Now your code should look like this:
 ```
-    #include "openfhe.h
+    #include "openfhe.h"
     ...........................................
-    CCParams<CryptoContextCKKS> parameters;
+    CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(1);
     parameters.SetScalingModSize(50);
     parameters.SetBatchSize(8);
@@ -150,11 +163,11 @@ If the set function is called for a parameter which is not available for the giv
 
 **uint32_t batchSize** - max batch size of messages to be packed in encoding (number of slots). The set method is `SetBatchSize`.
 
-**ProxyReEncryptionMode PREMode** - PRE security mode IND-CPA, FIXED_NOISE_HRA. NOISE_FLOODING_HRA supported only in BGV for scaleTech=FIXEDMANUAL. The set method is `SetPREMode`.
+**ProxyReEncryptionMode PREMode** - PRE security mode: NOT_SET (the default), INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA. With the default NOT_SET, proxy re-encryption is disabled and `ReKeyGen`/`ReEncrypt` throw for HYBRID key switching, so the mode has to be set explicitly to use PRE. NOISE_FLOODING_HRA supported only in BGV for scaleTech=FIXEDMANUAL. The set method is `SetPREMode`.
 
 **MultipartyMode multipartyMode (BFV/BGV only)** - multiparty security mode. The NOISE_FLOODING_MULTIPARTY mode adds extra noise and gives enhanced security compared to the FIXED_NOISE_MULTIPARTY mode. Not available for CKKS, but FIXED_NOISE_MULTIPARTY is used for CKKS internally. The set method is `SetMultipartyMode`.
 
-**DecryptionNoiseMode decryptionNoiseMode (CKKS only)** - NOISE_FLOODING_DECRYPT mode is more secure (provable secure) than FIXED_NOISE_DECRYPT, but it requires executing all computations twice. The set method is `SetPREMode`.
+**DecryptionNoiseMode decryptionNoiseMode (CKKS only)** - NOISE_FLOODING_DECRYPT mode is more secure (provable secure) than FIXED_NOISE_DECRYPT, but it requires executing all computations twice. The set method is `SetDecryptionNoiseMode`.
 
 **ExecutionMode executionMode (CKKS only)** - The execution mode is only used in NOISE_FLOODING_DECRYPT mode. The set method is `SetExecutionMode`.
 - EXEC_NOISE_ESTIMATION - we estimate the noise we need to add to the actual computation to guarantee good security.
@@ -179,7 +192,7 @@ If the set function is called for a parameter which is not available for the giv
 - **scalingModSize** is allowed for BGV with **scalTech = FIXEDMANUAL** and **scalingModSize** must be < 60 for CKKS and NATIVEINT=64
 - **firstModSize and scalingModSize** are not available for BGV if PREMode=NOISE_FLOODING_HRA.
 
-The set method is `SetFirstModSize`.
+The set methods are `SetFirstModSize` and `SetScalingModSize`.
 
 **uint32_t numLargeDigits** - number of digits in HYBRID key switching (see KeySwitchTechnique). The set method is `SetNumLargeDigits`.
 
