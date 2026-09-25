@@ -104,6 +104,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const PolyType& rhs, const std::shared_ptr<D
 
 template <typename VecType>
 DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyType& rhs) noexcept {
+    m_format = rhs.GetFormat();
     m_vectors.clear();
     const auto& p = m_params->GetParams();
     const uint32_t size = p.size();
@@ -213,8 +214,12 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::CloneWithNoise(const DiscreteGaussi
     const auto& m{m_params->GetModulus()};
     auto parm{std::make_shared<ILParamsImpl<Integer>>(c, m, 1)};
     DCRTPolyImpl<VecType>::PolyLargeType element(parm);
-    element.SetValues(dgg.GenerateVector(c / 2, m), m_format);
-    return (DCRTPolyImpl(m_params, m_format) = element);
+    // the samples are the coefficients of the noise polynomial, whatever format is requested
+    element.SetValues(dgg.GenerateVector(c / 2, m), Format::COEFFICIENT);
+    DCRTPolyImpl<VecType> result(m_params, Format::COEFFICIENT);
+    result = element;
+    result.SetFormat(format);
+    return result;
 }
 
 template <typename VecType>
@@ -506,6 +511,7 @@ template <typename VecType>
 DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(uint64_t val) noexcept {
     for (auto& v : m_vectors)
         v = val;
+    m_format = Format::EVALUATION;
     return *this;
 }
 
@@ -683,7 +689,7 @@ void DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, cons
 template <typename VecType>
 void DCRTPolyImpl<VecType>::AddILElementOne() {
     if (m_format != Format::EVALUATION)
-        OPENFHE_THROW("Only available in COEFFICIENT format.");
+        OPENFHE_THROW("Only available in EVALUATION format.");
     uint32_t size(m_vectors.size());
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
     for (uint32_t i = 0; i < size; ++i)
@@ -1968,7 +1974,11 @@ void DCRTPolyImpl<VecType>::SwitchModulusAtIndex(size_t index, const Integer& mo
         OPENFHE_THROW("Index out of range");
     m_vectors[index].SwitchModulus(PolyType::Integer(modulus.ConvertToInt()),
                                    PolyType::Integer(rootOfUnity.ConvertToInt()), 0, 0);
-    m_params->RecalculateModulus();
+    // m_params may be shared with other elements, so the updated tower goes into a copy
+    auto newP = std::make_shared<Params>(*m_params);
+    (*newP)[index] = m_vectors[index].GetParams();
+    newP->RecalculateModulus();
+    m_params = std::move(newP);
 }
 
 template <typename VecType>

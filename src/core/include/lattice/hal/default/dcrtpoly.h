@@ -101,7 +101,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
     DCRTPolyImpl(const PolyLargeType& e, const std::shared_ptr<Params>& params) noexcept;
     /**
      * @brief Assigns a big-integer polynomial: the towers are rebuilt from this element's parameters and every
-     * coefficient of rhs is reduced modulo each tower modulus; this element's format is kept.
+     * coefficient of rhs is reduced modulo each tower modulus; this element's format is kept. Reduction preserves
+     * the polynomial only for coefficients, so rhs and this element must both be in COEFFICIENT format.
      *
      * @param rhs the polynomial with coefficients modulo the composite modulus.
      * @return the resulting element.
@@ -110,7 +111,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
 
     /**
      * @brief Constructs an element whose first tower is the native polynomial e and whose other towers are copies of e
-     * switched (centered) to the remaining tower moduli of params; if e is empty, all towers are empty.
+     * switched (centered) to the remaining tower moduli of params; if e is empty, all towers are empty. The switch
+     * preserves the polynomial only for coefficients, so e must be in COEFFICIENT format.
      *
      * @param e the native polynomial, with the modulus of the first tower.
      * @param params the double-CRT parameters defining the towers.
@@ -118,7 +120,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
     DCRTPolyImpl(const PolyType& e, const std::shared_ptr<Params>& params) noexcept;
     /**
      * @brief Assigns a native polynomial: rhs becomes the first tower and copies of it switched (centered) to each
-     * remaining tower modulus become the other towers; if rhs is empty, all towers are empty.
+     * remaining tower modulus become the other towers; if rhs is empty, all towers are empty. The element takes the
+     * format of rhs, which must be COEFFICIENT because the switch preserves the polynomial only for coefficients.
      *
      * @param rhs the native polynomial, with the modulus of the first tower.
      * @return the resulting element.
@@ -200,8 +203,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
 
     DCRTPolyType& operator=(std::initializer_list<uint64_t> rhs) noexcept override;
     /**
-     * @brief Assigns the constant val to every entry of every tower (each tower's format becomes EVALUATION, as in
-     * PolyImpl::operator=(uint64_t)).
+     * @brief Assigns the constant val to every entry of every tower; the element and each tower become EVALUATION, as
+     * in PolyImpl::operator=(uint64_t).
      *
      * @param val the value to assign.
      * @return the resulting element.
@@ -826,7 +829,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
 
     /**
      * @brief Switches the tower at index to a new modulus and root of unity (values converted to native integers and
-     * switched with centering) and recalculates the composite modulus of the shared parameters.
+     * switched with centering). The element moves to its own copy of the parameters, updated with the new tower and
+     * composite modulus, so other elements sharing the original parameters are unaffected.
      *
      * @param index the index of the tower; throws if out of range.
      * @param modulus the new modulus of the tower.

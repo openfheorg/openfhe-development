@@ -241,9 +241,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
      *
      * @param dgg the input discrete Gaussian generator. The dgg will be the seed
      * to populate the towers of the DCRTPoly with random numbers.
-     * @param format the input format fixed to EVALUATION. Format is a enum type
-     * that indicates if the polynomial is in Evaluation representation or
-     * Coefficient representation. It is defined in inttypes.h.
+     * @param format the format of the resulting element; the noise is sampled as
+     * coefficients and then converted to this format.
      * @return the new element.
      */
     DerivedType CloneWithNoise(const DiscreteGaussianGeneratorImpl<BigVecType>& dgg, Format format) const override = 0;
@@ -474,8 +473,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     DerivedType& operator=(std::initializer_list<uint64_t> rhs) override = 0;
 
     /**
-     * @brief Assigns the constant val to every entry of every tower (each tower's format becomes EVALUATION, as in
-     * PolyImpl::operator=(uint64_t)).
+     * @brief Assigns the constant val to every entry of every tower; the element and each tower become EVALUATION, as
+     * in PolyImpl::operator=(uint64_t).
      *
      * @param val the value to assign.
      * @return the resulting element.
