@@ -215,11 +215,9 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
                     ct, (Q == ctvector[i]->GetModulus()) ? SwitchCTtoqn(LWEParams, EK, ctvector[i]) : ctvector[i]);
         }
 
-        auto p = ctvector[0]->GetptModulus();
+        const NativeInteger p{(gate == AND3 || gate == OR3) ? 6 : (gate == AND4 || gate == OR4) ? 8 : 4};
         ct->SetptModulus(p);
 
-        // the accumulator result is encrypted w.r.t. the transposed secret key
-        // we can transpose "a" to get an encryption under the original secret key
         auto acc{BootstrapGateCore(params, gate, EK, ct)};
         auto& accVec{acc->GetElements()};
         accVec[0] = accVec[0].Transpose();
@@ -593,7 +591,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     // TODO: fix this?
     // the OUTPUT encoding, not the input's. The 2-input caller and Bootstrap both pass a
     // ciphertext whose copy or ModSwitch has reset this to 4 -- that reset is what re-spaces the
-    // result to q/4 -- while the multi-input caller restores 6 or 8 just above.
+    // result to q/4 -- while the multi-input caller sets the gate's 6 or 8 just above.
     NativeInteger Q2p = Q / (ct->GetptModulus() * 2) + 1;
     NativeInteger Q2pNeg = Q - Q2p;
 
