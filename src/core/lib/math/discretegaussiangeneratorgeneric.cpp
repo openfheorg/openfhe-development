@@ -67,7 +67,7 @@ const int32_t MAX_TREE_DEPTH = 64;
 const int32_t PRECISION = 53;
 const int32_t BERNOULLI_FLIPS = 23;
 
-BaseSampler::BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType type = PEIKERT)
+BaseSampler::BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType type)
     : b_mean(mean), b_std(std), bg(generator), b_type(type) {
     double acc = 1e-17;
     fin = static_cast<int>(std::ceil(b_std * std::sqrt(-2 * std::log(acc))));
