@@ -155,9 +155,9 @@ class BaseSampler {
      * @param std Standard deviation of the distribution
      * @param generator Pointer to the bit generator that the sampler will use the
      * random bits from
-     * @param bType Type of the base sampler
+     * @param bType Type of the base sampler, PEIKERT by default
      */
-    BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType);
+    BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType = PEIKERT);
     BaseSampler() = default;
     /**
      * @brief Method for generating integer from the base sampler

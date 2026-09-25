@@ -496,7 +496,7 @@ MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input) {
     }
 
     for (size_t k = 0; k < rows; ++k) {
-        result(k, k) = std::sqrt(input(k, k));
+        result(k, k) = std::sqrt(result(k, k));
 
         for (size_t i = k + 1; i < rows; ++i) {
             // result(i, k) = input(i, k) / result(k, k);

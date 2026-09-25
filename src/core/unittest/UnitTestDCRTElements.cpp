@@ -30,6 +30,7 @@
 //==================================================================================
 
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -40,6 +41,7 @@
 #include "math/distrgen.h"
 #include "testdefs.h"
 #include "utils/debug.h"
+#include "utils/exception.h"
 
 using namespace lbcrypto;
 
@@ -247,6 +249,62 @@ void DCRT_getters_and_ops(const std::string& msg) {
     {
         Element ilva1 = ilva;
         EXPECT_EQ(ilva, ilva1) << msg << " Failure: ilva operator=";
+    }
+
+    {
+        // a constant is the same value in every slot only in EVALUATION format, which the element and its towers
+        // must agree on
+        Element ilvaConst(ildcrtparams, Format::COEFFICIENT, true);
+        ilvaConst = uint64_t{5};
+        EXPECT_EQ(Format::EVALUATION, ilvaConst.GetFormat()) << msg << " Failure: operator=(uint64_t) format";
+        for (uint32_t i = 0; i < ilvaConst.GetNumOfElements(); ++i)
+            EXPECT_EQ(Format::EVALUATION, ilvaConst.GetElementAtIndex(i).GetFormat())
+                    << msg << " Failure: operator=(uint64_t) tower format";
+    }
+
+    {
+        Element ilvaCoeff(ildcrtparams, Format::COEFFICIENT, true);
+        EXPECT_THROW(ilvaCoeff.AddILElementOne(), OpenFHEException) << msg << " Failure: AddILElementOne format check";
+    }
+
+    {
+        // assigning a native polynomial gives the element that polynomial's format
+        NativePoly coeff(ilparams0, Format::COEFFICIENT, true);
+        coeff[1] = NativeInteger(3);
+        Element ilvaNative(ildcrtparams, Format::EVALUATION, true);
+        ilvaNative = coeff;
+        EXPECT_EQ(Format::COEFFICIENT, ilvaNative.GetFormat()) << msg << " Failure: operator=(PolyType) format";
+        for (uint32_t i = 0; i < ilvaNative.GetNumOfElements(); ++i) {
+            EXPECT_EQ(Format::COEFFICIENT, ilvaNative.GetElementAtIndex(i).GetFormat())
+                    << msg << " Failure: operator=(PolyType) tower format";
+            EXPECT_EQ(NativeInteger(3), ilvaNative.GetElementAtIndex(i)[1]) << msg << " Failure: operator=(PolyType)";
+        }
+    }
+
+    {
+        // the noise is a small polynomial, the same integers in every tower, whatever the source and requested
+        // formats
+        DiscreteGaussianGeneratorImpl<typename Element::Vector> dgg(4);
+        for (auto src : {Format::COEFFICIENT, Format::EVALUATION}) {
+            for (auto dst : {Format::COEFFICIENT, Format::EVALUATION}) {
+                Element noise = Element(ildcrtparams, src, true).CloneWithNoise(dgg, dst);
+                EXPECT_EQ(dst, noise.GetFormat()) << msg << " Failure: CloneWithNoise format";
+                noise.SetFormat(Format::COEFFICIENT);
+                for (uint32_t j = 0; j < noise.GetRingDimension(); ++j) {
+                    int64_t first = 0;
+                    for (uint32_t i = 0; i < noise.GetNumOfElements(); ++i) {
+                        const auto q = static_cast<int64_t>(noise.GetElementAtIndex(i).GetModulus().ConvertToInt());
+                        auto v = static_cast<int64_t>(noise.GetElementAtIndex(i)[j].ConvertToInt());
+                        if (v > q / 2)
+                            v -= q;
+                        if (i == 0)
+                            first = v;
+                        EXPECT_LE(std::abs(v), 64) << msg << " Failure: CloneWithNoise coefficient is not small";
+                        EXPECT_EQ(first, v) << msg << " Failure: CloneWithNoise towers disagree";
+                    }
+                }
+            }
+        }
     }
 
     {
@@ -521,9 +579,23 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
 
     {
         Element ilvaCopy(ilva);
+        const auto originalModulus = ilva.GetModulus();
+        const auto originalTower0 = ilva.GetParams()->GetParams()[0];
         typename Element::Integer modulus2("113");
         typename Element::Integer rootOfUnity2(lbcrypto::RootOfUnity<typename Element::Integer>(m, modulus2));
         ilvaCopy.SwitchModulusAtIndex(0, modulus2, rootOfUnity2);
+
+        // the copy's parameters record the new tower and composite modulus; the original's are untouched
+        const auto& towers = ilvaCopy.GetParams()->GetParams();
+        EXPECT_EQ(modulus2.ConvertToInt(), towers[0]->GetModulus().ConvertToInt())
+                << msg << " Failure: SwitchModulusAtIndex tower parameters";
+        typename Element::Integer composite(1);
+        for (const auto& t : towers)
+            composite *= typename Element::Integer(t->GetModulus().ConvertToInt());
+        EXPECT_EQ(composite, ilvaCopy.GetModulus()) << msg << " Failure: SwitchModulusAtIndex composite modulus";
+        EXPECT_EQ(originalModulus, ilva.GetModulus()) << msg << " Failure: SwitchModulusAtIndex changed the source";
+        EXPECT_EQ(originalTower0, ilva.GetParams()->GetParams()[0])
+                << msg << " Failure: SwitchModulusAtIndex changed the source's tower";
 
         for (uint32_t i = 0; i < ilvaCopy.GetNumOfElements(); ++i) {
             NativePoly ilv = ilvaCopy.GetElementAtIndex(i);

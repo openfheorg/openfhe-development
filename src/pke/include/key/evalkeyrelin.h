@@ -75,7 +75,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
      *@param rhs key to copy from
      */
     EvalKeyRelinImpl(const EvalKeyRelinImpl<Element>& rhs)
-        : EvalKeyImpl<Element>(rhs.context), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
+        : EvalKeyImpl<Element>(rhs), m_AKey(rhs.m_AKey), m_BKey(rhs.m_BKey) {}
 
     /**
      * Move constructor
@@ -83,7 +83,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
      *@param rhs key to move from
      */
     EvalKeyRelinImpl(EvalKeyRelinImpl<Element>&& rhs) noexcept
-        : EvalKeyImpl<Element>(rhs.context), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
+        : EvalKeyImpl<Element>(std::move(rhs)), m_AKey(std::move(rhs.m_AKey)), m_BKey(std::move(rhs.m_BKey)) {}
 
     /**
      * Checks whether the key is usable: it has a crypto context and both key vectors A and B are non-empty.
@@ -101,7 +101,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
      * @return the resulting EvalKeyRelinImpl
      */
     EvalKeyRelinImpl<Element>& operator=(const EvalKeyRelinImpl<Element>& rhs) {
-        this->context = rhs.context;
+        EvalKeyImpl<Element>::operator=(rhs);
         m_AKey = rhs.m_AKey;
         m_BKey = rhs.m_BKey;
         return *this;
@@ -114,7 +114,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
      * @return the resulting EvalKeyRelinImpl
      */
     EvalKeyRelinImpl<Element>& operator=(EvalKeyRelinImpl<Element>&& rhs) noexcept {
-        this->context = std::move(rhs.context);
+        EvalKeyImpl<Element>::operator=(std::move(rhs));
         m_AKey = std::move(rhs.m_AKey);
         m_BKey = std::move(rhs.m_BKey);
         return *this;

@@ -405,8 +405,10 @@ class RingGSWCryptoParams : public Serializable {
     }
 
     bool operator==(const RingGSWCryptoParams& other) const {
-        return m_N == other.m_N && m_Q == other.m_Q && m_baseR == other.m_baseR && m_baseG == other.m_baseG &&
-               m_baseG_map == other.m_baseG_map;
+        return m_N == other.m_N && m_Q == other.m_Q && m_q == other.m_q && m_baseR == other.m_baseR &&
+               m_baseG == other.m_baseG && m_baseG_map == other.m_baseG_map && m_method == other.m_method &&
+               m_keyDist == other.m_keyDist && m_numAutoKeys == other.m_numAutoKeys &&
+               m_dgg.GetStd() == other.m_dgg.GetStd();
     }
 
     bool operator!=(const RingGSWCryptoParams& other) const {

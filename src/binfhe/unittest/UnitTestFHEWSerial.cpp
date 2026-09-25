@@ -31,9 +31,11 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "binfhecontext-ser.h"
 #include "gtest/gtest.h"
+#include "lwe-keyswitchkey.h"
 
 using namespace lbcrypto;
 
@@ -145,4 +147,63 @@ TEST(UnitTestFHEWSerialGaussian, BINARY) {
     std::string msg = "UnitTestFHEWSerialGaussian.BINARY serialization test failed: ";
     BinFHEContextParams p{27, 1024, 64, 512, 0, 25, 512, 23, 9, GAUSSIAN, 3.19, {}};
     UnitTestFHEWSerial(SerType::BINARY, p, LMKCDEY, SMALL_DIM, msg);
+}
+
+TEST(UnitTestFHEWSerial, SwitchingKeyHasCorrectSerializedName) {
+    LWESwitchingKeyImpl key;
+    EXPECT_EQ("LWESwitchingKey", key.SerializedObjectName());
+}
+
+// A ciphertext has to come back from an archive with the plaintext modulus it was encrypted with, not
+// the default of 4, and a multi-input gate has to give the same result on it as on the original.
+template <typename ST>
+void UnitTestFHEWSerialMultiInput(const ST& sertype, const std::string& errMsg) {
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, GINX);
+    auto sk = cc.KeyGen();
+    cc.BTKeyGen(sk);
+
+    struct Case {
+        BINGATE gate;
+        std::vector<LWEPlaintext> in;
+        LWEPlaintextModulus p;
+        LWEPlaintext expected;
+    };
+    const std::vector<Case> cases = {
+            {AND3, {1, 1, 0}, 6, 0},
+            {OR3, {1, 1, 0}, 6, 1},
+            {AND4, {1, 1, 1, 1}, 8, 1},
+            {OR4, {1, 0, 0, 0}, 8, 1},
+    };
+    for (const auto& c : cases) {
+        std::vector<LWECiphertext> in, inSer, inCopy;
+        for (auto m : c.in) {
+            in.push_back(cc.Encrypt(sk, m, SMALL_DIM, c.p));
+            std::stringstream s;
+            Serial::Serialize(in.back(), s, sertype);
+            LWECiphertext ct;
+            Serial::Deserialize(ct, s, sertype);
+            EXPECT_EQ(NativeInteger(c.p), ct->GetptModulus()) << errMsg << " plaintext modulus lost";
+            EXPECT_EQ(*in.back(), *ct) << errMsg << " ciphertext mismatch";
+            inSer.push_back(ct);
+            // a copy resets the plaintext modulus to 4, which the gate must not depend on either
+            inCopy.push_back(std::make_shared<LWECiphertextImpl>(*in.back()));
+        }
+        auto out = cc.EvalBinGate(c.gate, in);
+        auto outSer = cc.EvalBinGate(c.gate, inSer);
+        EXPECT_EQ(*out, *outSer) << errMsg << " gate " << c.gate << " differs on deserialized inputs";
+        EXPECT_EQ(*out, *cc.EvalBinGate(c.gate, inCopy)) << errMsg << " gate " << c.gate << " differs on copies";
+        EXPECT_EQ(NativeInteger(c.p), out->GetptModulus()) << errMsg << " gate " << c.gate << " output modulus";
+        LWEPlaintext result;
+        cc.Decrypt(sk, outSer, &result, c.p);
+        EXPECT_EQ(c.expected, result) << errMsg << " gate " << c.gate;
+    }
+}
+
+TEST(UnitTestFHEWSerialMultiInput, BINARY) {
+    UnitTestFHEWSerialMultiInput(SerType::BINARY, "UnitTestFHEWSerialMultiInput.BINARY failed:");
+}
+
+TEST(UnitTestFHEWSerialMultiInput, JSON) {
+    UnitTestFHEWSerialMultiInput(SerType::JSON, "UnitTestFHEWSerialMultiInput.JSON failed:");
 }

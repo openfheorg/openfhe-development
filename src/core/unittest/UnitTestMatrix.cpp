@@ -440,6 +440,37 @@ TEST(UTMatrix, cholesky) {
     OPENFHE_DEBUGEXP(cc);
 }
 
+// Beyond 1x1 the pivots come from the updated trailing block, not the input, which a 3x3 case
+// exercises for every overload
+TEST(UTMatrix, cholesky3x3) {
+    const int32_t a[3][3] = {{4, 2, 2}, {2, 5, 3}, {2, 3, 6}};
+    const double lower[3][3] = {{2, 0, 0}, {1, 2, 0}, {1, 1, 2}};
+
+    Matrix<int32_t> m([]() { return 0; }, 3, 3);
+    MatrixStrassen<int32_t> ms([]() { return 0; }, 3, 3);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            m(i, j) = a[i][j];
+            ms(i, j) = a[i][j];
+        }
+    }
+
+    auto c = Cholesky(m);
+    Matrix<double> c2([]() { return 0; }, 3, 3);
+    Cholesky(m, c2);
+    auto cs = Cholesky(ms);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            EXPECT_LE(std::fabs(lower[i][j] - c(i, j)), 1e-12) << "Cholesky(input) at " << i << "," << j;
+            EXPECT_LE(std::fabs(lower[i][j] - c2(i, j)), 1e-12) << "Cholesky(input, result) at " << i << "," << j;
+            EXPECT_LE(std::fabs(lower[i][j] - cs(i, j)), 1e-12) << "Cholesky(MatrixStrassen) at " << i << "," << j;
+        }
+    }
+
+    Matrix<double> wrongSize([]() { return 0; }, 2, 2);
+    EXPECT_THROW(Cholesky(m, wrongSize), OpenFHEException);
+}
+
 template <typename Element>
 void gadget_vector(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 1, 4).GadgetVector();

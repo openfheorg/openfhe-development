@@ -417,6 +417,67 @@ TEST(UTDistrGen, TernaryUniformGenerator) {
     RUN_ALL_BACKENDS(TernaryUniformGeneratorTest, "TernaryUniformGeneratorTest")
 }
 
+template <typename V>
+void TernaryUniformGeneratorIntegerTest(const std::string& msg) {
+    auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
+    auto modulus = typename V::Integer("1041");
+    const auto minusOne = modulus - typename V::Integer(1);
+
+    int32_t sum = 0;
+    uint32_t counts[3]{};
+    const uint32_t length = 100000;
+    for (uint32_t i = 0; i < length; ++i) {
+        auto x = ternaryUniGen.GenerateInteger(modulus);
+        if (x == minusOne) {
+            --sum;
+            ++counts[0];
+        } else {
+            ASSERT_LE(x, typename V::Integer(1)) << msg << " value outside {-1, 0, 1}";
+            sum += x.ConvertToInt();
+            ++counts[1 + x.ConvertToInt()];
+        }
+    }
+    EXPECT_LT(std::abs(static_cast<double>(sum) / length), 0.01) << msg << " mean is incorrect";
+    for (auto c : counts)
+        EXPECT_GT(c, length / 4) << msg << " a value of {-1, 0, 1} is under-represented";
+}
+
+TEST(UTDistrGen, TernaryUniformGeneratorInteger) {
+    RUN_ALL_BACKENDS(TernaryUniformGeneratorIntegerTest, "TernaryUniformGeneratorIntegerTest")
+}
+
+// the smallest Hamming weights sit at the boundary of the balance check on the +1 count
+template <typename V>
+void TernaryUniformGeneratorSparseTest(const std::string& msg) {
+    auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
+    auto modulus = typename V::Integer("1041");
+    const auto minusOne = modulus - typename V::Integer(1);
+    const uint32_t size = 16;
+    for (uint32_t h = 1; h <= 5; ++h) {
+        V v = ternaryUniGen.GenerateVector(size, modulus, h);
+        uint32_t weight = 0;
+        for (uint32_t i = 0; i < size; ++i) {
+            if (v[i] != typename V::Integer(0)) {
+                EXPECT_TRUE(v[i] == typename V::Integer(1) || v[i] == minusOne) << msg << " h = " << h;
+                ++weight;
+            }
+        }
+        EXPECT_EQ(h, weight) << msg << " GenerateVector Hamming weight";
+
+        auto iv = ternaryUniGen.GenerateIntVector(size, h);
+        weight = 0;
+        for (auto x : iv) {
+            EXPECT_LE(std::abs(x), 1) << msg << " h = " << h;
+            weight += (x != 0);
+        }
+        EXPECT_EQ(h, weight) << msg << " GenerateIntVector Hamming weight";
+    }
+}
+
+TEST(UTDistrGen, TernaryUniformGeneratorSparse) {
+    RUN_ALL_BACKENDS(TernaryUniformGeneratorSparseTest, "TernaryUniformGeneratorSparseTest")
+}
+
 ////////////////////////////////////////////////
 // Testing Methods of BigInteger DiscreteGaussianGenerator
 ////////////////////////////////////////////////

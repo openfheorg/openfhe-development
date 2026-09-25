@@ -56,6 +56,7 @@ enum TEST_CASE_TYPE : int {
     EVAL_FAST_ROTATION_UTBGVRNS,
     METADATA_UTBGVRNS,
     CRYPTOPARAMS_VALIDATION_UTBGVRNS,
+    MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -90,6 +91,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case CRYPTOPARAMS_VALIDATION_UTBGVRNS:
             typeName = "CRYPTOPARAMS_VALIDATION_UTBGVRNS";
+            break;
+        case MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS:
+            typeName = "MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS";
             break;
         default:
             typeName = "UNKNOWN_UTBGVRNS";
@@ -246,6 +250,12 @@ static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {
     { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "01", {BGVRNS_SCHEME, 3,        MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, 60,             SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     NORESCALE,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    // ==========================================
+    // TestType,                        Descr,  Scheme,        RDim,     MultDepth,  SModSize,   DSize,    BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 };
 // clang-format on
 //===========================================================================================================
@@ -378,6 +388,58 @@ class UTBGVRNS : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS> {
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(negatives1->GetLength());
             checkEquality(negatives1->GetPackedValue(), results->GetPackedValue(), eps, failmsg + " EvalNegate fails");
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // Under FLEXIBLEAUTO* a plaintext multiply sets the result's scaling factor to the ciphertext's factor
+    // squared, which is right only if the level adjustment gives the plaintext the ciphertext's factor. This
+    // multiplies ciphertexts at several levels and noise-scale degrees by plaintexts encoded at other levels.
+    void UnitTest_Mult_PlaintextAtLevel(const TEST_CASE_UTBGVRNS& testData,
+                                        const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            KeyPair<Element> kp = cc->KeyGen();
+            cc->EvalMultKeyGen(kp.secretKey);
+
+            const std::vector<int64_t>& x = vectorOfInts0_7;
+            const std::vector<int64_t>& y = vectorOfInts7_0;
+            std::vector<int64_t> xy(VECTOR_SIZE);
+            for (uint32_t i = 0; i < VECTOR_SIZE; ++i)
+                xy[i] = x[i] * y[i];
+
+            // x at three levels (one higher under FLEXIBLEAUTOEXT) with noise-scale degree 1, 2, 2, 2: each
+            // multiply by an encryption of ones leaves degree 2, and the next one rescales first
+            auto ctOnes = cc->Encrypt(kp.publicKey, cc->MakePackedPlaintext(std::vector<int64_t>(VECTOR_SIZE, 1)));
+            std::vector<Ciphertext<Element>> cts{cc->Encrypt(kp.publicKey, cc->MakePackedPlaintext(x))};
+            for (int i = 0; i < 3; ++i)
+                cts.push_back(cc->EvalMult(cts.back(), ctOnes));
+            ASSERT_GE(cts.back()->GetLevel(), cts.front()->GetLevel() + 2)
+                    << failmsg << " the ciphertexts do not span the intended levels";
+
+            Plaintext result;
+            for (uint32_t ptLevel = 0; ptLevel <= 3; ++ptLevel) {
+                for (size_t c = 0; c < cts.size(); ++c) {
+                    const std::string msg = failmsg + " ciphertext at level " + std::to_string(cts[c]->GetLevel()) +
+                                            " (degree " + std::to_string(cts[c]->GetNoiseScaleDeg()) +
+                                            ") times plaintext at level " + std::to_string(ptLevel);
+
+                    cc->Decrypt(kp.secretKey, cc->EvalMult(cts[c], cc->MakePackedPlaintext(y, 1, ptLevel)), &result);
+                    result->SetLength(VECTOR_SIZE);
+                    checkEquality(xy, result->GetPackedValue(), eps, msg + ": EvalMult fails");
+
+                    auto ctMutable = cts[c]->Clone();
+                    Plaintext ptMutable = cc->MakePackedPlaintext(y, 1, ptLevel);
+                    cc->Decrypt(kp.secretKey, cc->EvalMultMutable(ctMutable, ptMutable), &result);
+                    result->SetLength(VECTOR_SIZE);
+                    checkEquality(xy, result->GetPackedValue(), eps, msg + ": EvalMultMutable fails");
+                }
+            }
         } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
@@ -1132,6 +1194,9 @@ TEST_P(UTBGVRNS, BGVRNS) {
             break;
         case CRYPTOPARAMS_VALIDATION_UTBGVRNS:
             UnitTest_CryptoparamsValidation(test, test.buildTestName());
+            break;
+        case MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS:
+            UnitTest_Mult_PlaintextAtLevel(test, test.buildTestName());
             break;
         default:
             break;

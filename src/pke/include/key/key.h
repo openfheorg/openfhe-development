@@ -72,7 +72,15 @@ class Key : public CryptoObject<Element>, public Serializable {
     explicit Key(const std::shared_ptr<CryptoObject<Element>>& co, const std::string& id = "")
         : CryptoObject<Element>(co, id) {}
 
+    Key(const Key&) = default;
+
+    Key(Key&&) noexcept = default;
+
     virtual ~Key() = default;
+
+    Key& operator=(const Key&) = default;
+
+    Key& operator=(Key&&) noexcept = default;
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

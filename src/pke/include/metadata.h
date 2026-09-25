@@ -60,9 +60,7 @@ class Metadata {
      *
      * @param mdata metadata object to copy (the base class carries no state)
      */
-    Metadata(const Metadata& mdata) {
-        Metadata();
-    }
+    Metadata(const Metadata& mdata) = default;
 
     /**
      * Destructor

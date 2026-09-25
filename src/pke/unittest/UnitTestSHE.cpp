@@ -39,6 +39,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "UnitTestCCParams.h"
@@ -46,6 +47,7 @@
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
 #include "gtest/gtest.h"
+#include "key/evalkeyrelin.h"
 
 using namespace lbcrypto;
 
@@ -1502,3 +1504,44 @@ TEST_P(UTGENERAL_SHE, SHE) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_SHE, ::testing::ValuesIn(testCases), testName);
+
+TEST(UnitTestSHE, EvalKeyRelinPreservesKeyTag) {
+    constexpr auto tag = "evaluation-key-tag";
+    auto context = std::make_shared<CryptoContextImpl<DCRTPoly>>();
+
+    EvalKeyRelinImpl<DCRTPoly> source(context);
+    source.SetKeyTag(tag);
+
+    EvalKeyRelinImpl<DCRTPoly> copyConstructed(source);
+    EXPECT_EQ(tag, copyConstructed.GetKeyTag());
+
+    EvalKeyRelinImpl<DCRTPoly> copyAssigned;
+    copyAssigned = source;
+    EXPECT_EQ(tag, copyAssigned.GetKeyTag());
+
+    EvalKeyRelinImpl<DCRTPoly> moveSource(context);
+    moveSource.SetKeyTag(tag);
+    EvalKeyRelinImpl<DCRTPoly> moveConstructed(std::move(moveSource));
+    EXPECT_EQ(tag, moveConstructed.GetKeyTag());
+    EXPECT_EQ(nullptr, moveSource.GetCryptoContext());
+
+    EvalKeyRelinImpl<DCRTPoly> moveAssignSource(context);
+    moveAssignSource.SetKeyTag(tag);
+    EvalKeyRelinImpl<DCRTPoly> moveAssigned;
+    moveAssigned = std::move(moveAssignSource);
+    EXPECT_EQ(tag, moveAssigned.GetKeyTag());
+    EXPECT_EQ(nullptr, moveAssignSource.GetCryptoContext());
+}
+
+TEST(UnitTestSHE, GetMetadataByKeyClonesDynamicType) {
+    CiphertextImpl<DCRTPoly> ciphertext;
+    auto stored = std::make_shared<MetadataTest>();
+    stored->SetMetadata("derived metadata");
+    ciphertext.SetMetadataByKey("test", stored);
+
+    auto cloned = std::dynamic_pointer_cast<MetadataTest>(ciphertext.GetMetadataByKey("test"));
+
+    ASSERT_NE(nullptr, cloned);
+    EXPECT_NE(stored.get(), cloned.get());
+    EXPECT_EQ("derived metadata", cloned->GetMetadata());
+}

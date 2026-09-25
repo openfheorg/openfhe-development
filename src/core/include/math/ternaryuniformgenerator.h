@@ -59,12 +59,13 @@ class TernaryUniformGeneratorImpl {
     ~TernaryUniformGeneratorImpl() = default;
 
     /**
-     * @brief Single-integer generation is not implemented for the ternary distribution; this
-     * method ignores its argument and always returns 0. Use GenerateVector or GenerateIntVector.
-     * @return always 0.
+     * @brief Generates a single value uniformly from {-1, 0, 1}, as GenerateVector does for each entry when h = 0.
+     * @param modulus the modulus -1 is represented under
+     * @return 0, 1 or modulus - 1
      */
-    typename VecType::Integer GenerateInteger(const typename VecType::Integer&) const {
-        return 0;
+    typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const {
+        auto rn = m_distribution(PseudoRandomNumberGenerator::GetPRNG());
+        return rn >= 0 ? typename VecType::Integer(rn) : modulus - typename VecType::Integer(1);
     }
 
     /**

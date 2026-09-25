@@ -159,7 +159,7 @@ class LWESwitchingKeyImpl : public Serializable {
     }
 
     std::string SerializedObjectName() const override {
-        return "LWEPrivateKey";
+        return "LWESwitchingKey";
     }
 
     static uint32_t SerializedVersion() {

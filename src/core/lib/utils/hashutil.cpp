@@ -82,7 +82,7 @@ void HashUtil::SHA256(std::string message, std::vector<int64_t>& digest) {
     while ((m_len + pad_len) % 512 != 448) {
         pad_len++;
     }
-    message.push_back(0);
+    message.push_back(static_cast<char>(0x80));
     for (int a = 0; a < (pad_len) / 8 - 1; a++) {
         message.push_back(0);
     }
@@ -99,8 +99,8 @@ void HashUtil::SHA256(std::string message, std::vector<int64_t>& digest) {
         uint32_t w[64];
         short counter = 0;  // NOLINT
         for (size_t m = 64 * n; m < (64 * (n + 1)); m += 4) {
-            w[counter] = ((uint32_t)message.at(m) << 24) ^ ((uint32_t)message.at(m + 1) << 16) ^
-                         ((uint32_t)message.at(m + 2) << 8) ^ ((uint32_t)message.at(m + 3));
+            w[counter] = ((uint32_t)(message[m] & 0xff) << 24) ^ ((uint32_t)(message[m + 1] & 0xff) << 16) ^
+                         ((uint32_t)(message[m + 2] & 0xff) << 8) ^ ((uint32_t)(message[m + 3] & 0xff));
             counter++;
         }
         for (int i = 16; i < 64; i++) {
@@ -185,8 +185,8 @@ std::string HashUtil::HashString(std::string message) {
         uint32_t w[64];
         short counter = 0;  // NOLINT
         for (size_t m = 64 * n; m < (64 * (n + 1)); m += 4) {
-            w[counter] = ((uint32_t)(message.at(m) & 0xff) << 24) ^ ((uint32_t)(message.at(m + 1) & 0xff) << 16) ^
-                         ((uint32_t)(message.at(m + 2) & 0xff) << 8) ^ ((uint32_t)(message.at(m + 3) & 0xff));
+            w[counter] = ((uint32_t)(message[m] & 0xff) << 24) ^ ((uint32_t)(message[m + 1] & 0xff) << 16) ^
+                         ((uint32_t)(message[m + 2] & 0xff) << 8) ^ ((uint32_t)(message[m + 3] & 0xff));
             counter++;
         }
         for (int i = 16; i < 64; i++) {
@@ -285,14 +285,14 @@ lbcrypto::BytePlaintextEncoding HashUtil::SHA512(
     uint64_t w[80];
     short counter = 0; // NOLINT
     for (int m = 128 * n; m < (128 * (n + 1)); m += 8) {
-      w[counter] = ((uint64_t)message.at(m) << 56) ^
-                   ((uint64_t)message.at(m + 1) << 48) ^
-                   ((uint64_t)message.at(m + 2) << 40) ^
-                   ((uint64_t)message.at(m + 3) << 32) ^
-                   ((uint64_t)message.at(m + 4) << 24) ^
-                   ((uint64_t)message.at(m + 5) << 16) ^
-                   ((uint64_t)message.at(m + 6) << 8) ^
-                   ((uint64_t)message.at(m + 7));
+      w[counter] = ((uint64_t)(message[m] & 0xff) << 56) ^
+                   ((uint64_t)(message[m + 1] & 0xff) << 48) ^
+                   ((uint64_t)(message[m + 2] & 0xff) << 40) ^
+                   ((uint64_t)(message[m + 3] & 0xff) << 32) ^
+                   ((uint64_t)(message[m + 4] & 0xff) << 24) ^
+                   ((uint64_t)(message[m + 5] & 0xff) << 16) ^
+                   ((uint64_t)(message[m + 6] & 0xff) << 8) ^
+                   ((uint64_t)(message[m + 7] & 0xff));
       counter++;
     }
     for (int i = 16; i < 80; i++) {

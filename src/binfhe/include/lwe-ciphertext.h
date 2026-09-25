@@ -152,18 +152,18 @@ class LWECiphertextImpl : public Serializable {
     }
 
     /**
-     * Compares "a" and "b"; the plaintext modulus is not compared
+     * Compares "a", "b" and the plaintext modulus
      *
      * @param other the ciphertext to compare with
-     * @return true if both ciphertexts have the same "a" and "b"
+     * @return true if both ciphertexts have the same "a", "b" and plaintext modulus
      */
     bool operator==(const LWECiphertextImpl& other) const {
-        return m_a == other.m_a && m_b == other.m_b;
+        return m_a == other.m_a && m_b == other.m_b && m_p == other.m_p;
     }
 
     /**
      * @param other the ciphertext to compare with
-     * @return true if the ciphertexts differ in "a" or "b"
+     * @return true if the ciphertexts differ in "a", "b" or the plaintext modulus
      */
     bool operator!=(const LWECiphertextImpl& other) const {
         return !(*this == other);
@@ -173,6 +173,7 @@ class LWECiphertextImpl : public Serializable {
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
+        ar(::cereal::make_nvp("p", m_p));
     }
 
     template <class Archive>
@@ -183,6 +184,7 @@ class LWECiphertextImpl : public Serializable {
         }
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
+        ar(::cereal::make_nvp("p", m_p));
     }
 
     std::string SerializedObjectName() const override {

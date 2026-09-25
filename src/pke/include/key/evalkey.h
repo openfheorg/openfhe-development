@@ -67,7 +67,15 @@ class EvalKeyImpl : public Key<Element> {
      */
     explicit EvalKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc) {}
 
+    EvalKeyImpl(const EvalKeyImpl&) = default;
+
+    EvalKeyImpl(EvalKeyImpl&&) noexcept = default;
+
     virtual ~EvalKeyImpl() = default;
+
+    EvalKeyImpl& operator=(const EvalKeyImpl&) = default;
+
+    EvalKeyImpl& operator=(EvalKeyImpl&&) noexcept = default;
 
     /**
      * Setter function to store Relinearization Element Vector A.

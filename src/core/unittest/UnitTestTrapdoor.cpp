@@ -38,6 +38,7 @@
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "lattice/trapdoor.h"
+#include "lattice/trapdoorparameters.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
@@ -757,4 +758,12 @@ TEST(UTTrapdoor, TrapDoorPerturbationSamplingTest) {
     // 0)) / count << std::endl; std::cout << (double(pCovarianceMatrix(2, 0)) -
     // meanMatrix(2, 0)) / count << std::endl; std::cout <<
     // (double(pCovarianceMatrix(3, 0)) - meanMatrix(3, 0)) / count << std::endl;
+}
+
+// the getters are const members, so they have to be callable on const objects
+TEST(UTTrapdoor, ParameterConstGetters) {
+    const TrapdoorParams<DCRTPoly> params;
+    EXPECT_EQ(nullptr, params.GetElemParams());
+    const PerturbationVector<DCRTPoly> perturbation;
+    EXPECT_EQ(nullptr, perturbation.GetVector());
 }

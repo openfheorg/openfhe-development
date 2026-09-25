@@ -75,7 +75,7 @@ class TrapdoorParams {
      * @brief Accessor function for the ring element parameters
      * @return the ring element parameters
      */
-    std::shared_ptr<ParmType>& GetElemParams() const {
+    const std::shared_ptr<ParmType>& GetElemParams() const {
         return m_elemparams;
     }
     /**
@@ -270,7 +270,7 @@ class PerturbationVector {
      * @brief Accessor for the perturbation vector
      * @return column matrix of ring elements holding the perturbation vector
      */
-    std::shared_ptr<Matrix<Element>>& GetVector() const {
+    const std::shared_ptr<Matrix<Element>>& GetVector() const {
         return m_pvector;
     }
 

@@ -30,7 +30,9 @@
 //==================================================================================
 
 #include <cstdint>
+#include <cstring>
 #include <iostream>
+#include <new>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -39,6 +41,7 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
 #include "include/gtest/gtest.h"
+#include "schemebase/decrypt-result.h"
 #include "utils/exception.h"
 
 using namespace lbcrypto;
@@ -232,3 +235,27 @@ TEST_P(UTGENERAL_ENCRYPT_DECRYPT, ENCRYPT) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_ENCRYPT_DECRYPT, ::testing::ValuesIn(testCases), testName);
+
+// Default-initializes T in storage pre-filled with 0xFF bytes, so a member without an initializer
+// keeps a non-zero garbage value instead of passing the check by chance.
+template <typename T, typename Check>
+static void CheckDefaultInitOnDirtyStorage(Check check) {
+    alignas(T) unsigned char storage[sizeof(T)];
+    std::memset(storage, 0xFF, sizeof(storage));
+    T* obj = ::new (static_cast<void*>(storage)) T;  // no parentheses: default-, not value-initialization
+    check(*obj);
+    obj->~T();
+}
+
+TEST(UnitTestENCRYPT, ResultDefaultsAreInvalidAndEmpty) {
+    CheckDefaultInitOnDirtyStorage<EncryptResult>([](const EncryptResult& r) {
+        EXPECT_FALSE(r.isValid);
+        EXPECT_EQ(0u, r.numBytesEncrypted);
+    });
+
+    CheckDefaultInitOnDirtyStorage<DecryptResult>([](const DecryptResult& r) {
+        EXPECT_FALSE(r.isValid);
+        EXPECT_EQ(0u, r.messageLength);
+        EXPECT_EQ(NativeInteger(1), r.scalingFactorInt);
+    });
+}
