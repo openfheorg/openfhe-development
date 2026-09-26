@@ -51,8 +51,7 @@ void SimpleBootstrapStCFirstExample();
 
 int main(int argc, char* argv[]) {
     SimpleBootstrapExample();
-    // TODO: enable following once STC Composite Scaling operational
-    // SimpleBootstrapStCFirstExample();
+    SimpleBootstrapStCFirstExample();
 }
 
 // CalculateApproximationError() calculates the precision number (or approximation error).
