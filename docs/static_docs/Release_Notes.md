@@ -2,7 +2,7 @@
 
 * Adds the CKKS-based Fourier-extension functional bootstrapping method proposed in https://ia.cr/2026/367 and presented at EUROCRYPT '26 (#1207)
 * Adds COMPOSITESCALING* support for all flavors of regular and functional CKKS bootstrapping, which also adds support for scaling factors larger than 60 bits
-* Includes many optimizations throughout the library reducing the latency for all flavors of bootstrapping (both FHEW/TFHE and CKKS) up to 2x, with extra optimizations applied for the multithreaded setting (see https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Best_Performance.md for selected benchmarking results)
+* Includes many optimizations throughout the library reducing the latency for all flavors of bootstrapping (both FHEW/TFHE and CKKS) up to 2x, with extra optimizations applied for the multithreaded setting (see [Best_Performance.md](Best_Performance.md) for selected benchmarking results)
 * Provides a more granular FHEW/TFHE parameterization mechanism using the method proposed in https://ia.cr/2025/1892 (#1144)
 * Improves the sparse-secret encapsulation implementation and applies it to all flavors of CKKS bootstrapping (now this is the recommended mode for CKKS bootstrapping)
 * Reduces the probability of failure for all variants of CKKS bootstrapping
