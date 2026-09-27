@@ -249,7 +249,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         NativeInteger registerCeiling(std::numeric_limits<uint64_t>::max());
         if (registerWordSize < 63) {
             NativeInteger top(uint64_t(1) << registerWordSize);
-            registerCeiling = top - top.Mod(cyclOrder) + NativeInteger(1) + NativeInteger(cyclOrder);
+            registerCeiling = top - top.Mod(cyclOrder) + NativeInteger(1);
         }
 
         // Nominal scaling factor Delta_L = 2^dcrtBits. Pinning the per-level prime product to
