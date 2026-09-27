@@ -63,10 +63,7 @@ class TernaryUniformGeneratorImpl {
      * @param modulus the modulus -1 is represented under
      * @return 0, 1 or modulus - 1
      */
-    typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const {
-        auto rn = m_distribution(PseudoRandomNumberGenerator::GetPRNG());
-        return rn >= 0 ? typename VecType::Integer(rn) : modulus - typename VecType::Integer(1);
-    }
+    typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const;
 
     /**
      * @brief  Generates a vector of random values within the Ternary Uniform

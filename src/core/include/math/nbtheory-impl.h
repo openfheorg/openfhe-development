@@ -391,7 +391,10 @@ IntType NextPrime(const IntType& q, uint64_t m) {
 
 template <typename IntType>
 IntType PreviousPrime(const IntType& q, uint64_t m) {
-    IntType M(m), qNew(q - M);
+    IntType M(m);
+    if (q <= M)
+        OPENFHE_THROW("Overflow shrinking candidate");
+    IntType qNew(q - M);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew -= M) > q)
             OPENFHE_THROW("Overflow shrinking candidate");

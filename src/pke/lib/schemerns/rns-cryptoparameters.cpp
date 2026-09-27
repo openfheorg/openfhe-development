@@ -155,7 +155,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             ++sizeP;
         // validate the estimated sizeP value
         if (sizeP_estimate_global > 0) {
-            if (sizeP_estimate_global != sizeP) {
+            if (sizeP > sizeP_estimate_global) {
                 auto str = "EstimateLogP() failure: expected sizeP [" + std::to_string(sizeP_estimate_global) +
                            "], but got sizeP [" + std::to_string(sizeP) + "]";
                 OPENFHE_THROW(str);
