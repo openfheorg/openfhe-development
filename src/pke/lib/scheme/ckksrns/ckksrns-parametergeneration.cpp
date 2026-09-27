@@ -356,24 +356,17 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
                 flag = true;
             } else {
                 NativeInteger qNextPrev = NativeInteger(qPrev[qPrev.size() - 1].ConvertToInt());
-                fitsRegister = true;
                 while (primeProduct < targetProduct) {
                     qCurrentRecord.erase(qNextPrev.ConvertToInt());
                     do {
                         try {
-                            if (fitsRegister) {
-                                qNextPrev = lbcrypto::NextPrime(qNextPrev, cyclOrder);
-                            } else {
-                                qNextPrev = lbcrypto::PreviousPrime(qNextPrev, cyclOrder);
-                            }
+                            qNextPrev = lbcrypto::NextPrime(qNextPrev, cyclOrder);
                         } catch (const OpenFHEException& ex) {
                             OPENFHE_THROW(compositeScalingErrMsg);
                         }
-                        if (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize) {
-                            fitsRegister = false;
-                        }
-                    } while (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize ||
-                             moduliQRecord.find(qNextPrev.ConvertToInt()) != moduliQRecord.end() ||
+                        if (std::log2(qNextPrev.ConvertToDouble()) > registerWordSize)
+                            OPENFHE_THROW(compositeScalingErrMsg);
+                    } while (moduliQRecord.find(qNextPrev.ConvertToInt()) != moduliQRecord.end() ||
                              qCurrentRecord.find(qNextPrev.ConvertToInt()) != qCurrentRecord.end());
                     qCurrentRecord.emplace(qNextPrev.ConvertToInt());
 
