@@ -89,7 +89,7 @@ class TernaryUniformGeneratorImpl {
     std::vector<int32_t> GenerateIntVector(uint32_t size, uint32_t h = 0) const;
 
   private:
-    static std::uniform_int_distribution<int32_t> m_distribution;
+    static inline std::uniform_int_distribution<int32_t> m_distribution{-1, 1};
 };
 
 }  // namespace lbcrypto
