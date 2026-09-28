@@ -35,6 +35,11 @@
  */
 
 #define PROFILE  // for TIC TOC
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -42,8 +47,8 @@ using namespace lbcrypto;
 using CT = Ciphertext<DCRTPoly>;  // ciphertext
 using PT = Plaintext;             // plaintext
 
-using vecInt  = std::vector<int64_t>;  // vector of ints
-using vecChar = std::vector<char>;     // vector of characters
+using vecInt = std::vector<int64_t>;  // vector of ints
+using vecChar = std::vector<char>;    // vector of characters
 
 bool run_demo_pre(void);
 
@@ -203,7 +208,7 @@ bool run_demo_pre(void) {
     auto unpacked0 = pt->GetPackedValue();
     auto unpacked1 = ptDec1->GetPackedValue();
     auto unpacked2 = ptDec2->GetPackedValue();
-    bool good      = true;
+    bool good = true;
 
     // note that OpenFHE assumes that plaintext is in the range of -p/2..p/2
     // to recover 0...q simply add q if the unpacked value is negative
@@ -223,8 +228,7 @@ bool run_demo_pre(void) {
     }
     if (good) {
         std::cout << "PRE passes" << std::endl;
-    }
-    else {
+    } else {
         std::cout << "PRE fails" << std::endl;
     }
 

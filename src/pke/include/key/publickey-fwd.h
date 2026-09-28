@@ -32,8 +32,8 @@
  * It is a lightweight file to be included where we need the declaration of PublicKey only
  *
  */
-#ifndef __PUBLICKEY_FWD_H__
-#define __PUBLICKEY_FWD_H__
+#ifndef SRC_PKE_INCLUDE_KEY_PUBLICKEY_FWD_H_
+#define SRC_PKE_INCLUDE_KEY_PUBLICKEY_FWD_H_
 
 #include <memory>
 
@@ -42,9 +42,13 @@ namespace lbcrypto {
 template <typename Element>
 class PublicKeyImpl;
 
+/**
+ * @brief Shared pointer to a public key; this is the type the public API passes around
+ * @tparam Element a ring element.
+ */
 template <typename Element>
 using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
 
 }  // namespace lbcrypto
 
-#endif  // __PUBLICKEY_FWD_H__
+#endif  // SRC_PKE_INCLUDE_KEY_PUBLICKEY_FWD_H_

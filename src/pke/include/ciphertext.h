@@ -33,19 +33,20 @@
   Operations for the representation of ciphertext in OpenFHE
  */
 
-#ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H
-#define LBCRYPTO_CRYPTO_CIPHERTEXT_H
+#ifndef SRC_PKE_INCLUDE_CIPHERTEXT_H_
+#define SRC_PKE_INCLUDE_CIPHERTEXT_H_
 
-#include "ciphertext-fwd.h"
-#include "cryptoobject.h"
-#include "key/key.h"
-#include "metadata.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "ciphertext-fwd.h"
+#include "cryptoobject.h"
+#include "key/key.h"
+#include "metadata.h"
 
 namespace lbcrypto {
 /**
@@ -58,34 +59,43 @@ namespace lbcrypto {
  */
 template <class Element>
 class CiphertextImpl : public CryptoObject<Element> {
-public:
+  public:
     /**
-   * Default constructor
-   */
+     * Default constructor
+     */
     CiphertextImpl() = default;
 
     /**
-   * Construct a new ciphertext in the given context
-   *
-   * @param cc
-   */
+     * Construct a new ciphertext in the given context
+     *
+     * @param cc the crypto context the ciphertext belongs to
+     * @param id key tag of the key used to encrypt the ciphertext
+     * @param encType encoding type of the plaintext the ciphertext was created from
+     */
     explicit CiphertextImpl(const CryptoContext<Element>& cc, const std::string& id = "",
                             PlaintextEncodings encType = INVALID_ENCODING)
         : CryptoObject<Element>(cc, id), m_encodingType(encType) {}
 
     /**
-   * Construct a new ciphertext from the parameters of a given public key
-   *
-   * @param k key whose CryptoObject parameters will get cloned
-   */
+     * Construct a new ciphertext from the parameters of a given public key
+     *
+     * @param k key whose CryptoObject parameters will get cloned
+     */
     explicit CiphertextImpl(const std::shared_ptr<Key<Element>>& k)
         : CryptoObject<Element>(k->GetCryptoContext(), k->GetKeyTag()) {}
 
     /**
-   * Copy constructor
-   */
+     * Copy constructor
+     *
+     * @param ct the ciphertext to copy from
+     */
     CiphertextImpl(const CiphertextImpl<Element>& ct) = default;
 
+    /**
+     * Copy constructor from a shared pointer: copies all elements and metadata of the pointed-to ciphertext.
+     *
+     * @param ct shared pointer to the ciphertext to copy from
+     */
     explicit CiphertextImpl(const Ciphertext<Element>& ct)
         : CryptoObject<Element>(*ct),
           m_elements(ct->m_elements),
@@ -99,10 +109,18 @@ public:
           m_metadataMap(ct->m_metadataMap) {}
 
     /**
-   * Move constructor
-   */
+     * Move constructor
+     *
+     * @param ct the ciphertext to move from
+     */
     CiphertextImpl(CiphertextImpl<Element>&& ct) noexcept = default;
 
+    /**
+     * Move constructor from a shared pointer: moves all elements and metadata out of the pointed-to ciphertext,
+     * leaving that ciphertext in an unspecified state.
+     *
+     * @param ct shared pointer to the ciphertext to move from
+     */
     explicit CiphertextImpl(Ciphertext<Element>&& ct) noexcept
         : CryptoObject<Element>(std::move(*ct)),
           m_elements(std::move(ct->m_elements)),
@@ -116,32 +134,32 @@ public:
           m_metadataMap(std::move(ct->m_metadataMap)) {}
 
     /**
-   * Destructor
-   */
+     * Destructor
+     */
     virtual ~CiphertextImpl() = default;
 
     /**
-   * Assignment Operator.
-   *
-   * @param &rhs the CiphertextImpl to assign from
-   * @return this CiphertextImpl
-   */
+     * Assignment Operator.
+     *
+     * @param rhs the CiphertextImpl to assign from
+     * @return this CiphertextImpl
+     */
     CiphertextImpl<Element>& operator=(const CiphertextImpl<Element>& rhs) = default;
 
     /**
-   * Move Assignment Operator.
-   *
-   * @param &rhs the CiphertextImpl to move from
-   * @return this CiphertextImpl
-   */
+     * Move Assignment Operator.
+     *
+     * @param rhs the CiphertextImpl to move from
+     * @return this CiphertextImpl
+     */
     CiphertextImpl<Element>& operator=(CiphertextImpl<Element>&& rhs) noexcept = default;
 
     /**
-   * GetElement - get the ring element for the cases that use only one element
-   * in the vector this method will throw an exception if it's ever called in
-   * cases with other than 1 element
-   * @return the first (and only!) ring element
-   */
+     * GetElement - get the ring element for the cases that use only one element
+     * in the vector this method will throw an exception if it's ever called in
+     * cases with other than 1 element
+     * @return the first (and only!) ring element
+     */
     const Element& GetElement() const {
         if (m_elements.size() == 1)
             return m_elements[0];
@@ -149,11 +167,11 @@ public:
     }
 
     /**
-   * GetElement - get the ring element for the cases that use only one element
-   * in the vector this method will throw an exception if it's ever called in
-   * cases with other than 1 element
-   * @return the first (and only!) ring element
-   */
+     * GetElement - get the ring element for the cases that use only one element
+     * in the vector this method will throw an exception if it's ever called in
+     * cases with other than 1 element
+     * @return the first (and only!) ring element
+     */
     Element& GetElement() {
         if (m_elements.size() == 1)
             return m_elements[0];
@@ -161,31 +179,37 @@ public:
     }
 
     /**
-   * GetElements: get all of the ring elements in the CiphertextImpl
-   * @return vector of ring elements
-   */
+     * GetElements: get all of the ring elements in the CiphertextImpl
+     * @return vector of ring elements
+     */
     const std::vector<Element>& GetElements() const {
         return m_elements;
     }
 
     /**
-   * GetElements: get all of the ring elements in the CiphertextImpl
-   * @return vector of ring elements
-   */
+     * GetElements: get all of the ring elements in the CiphertextImpl
+     * @return vector of ring elements
+     */
     std::vector<Element>& GetElements() {
         return m_elements;
     }
 
+    /**
+     * Returns the number of ring elements (polynomials) in the ciphertext, e.g. 2 for a fresh encryption and 3
+     * after a multiplication without relinearization.
+     *
+     * @return the number of ring elements
+     */
     size_t NumberCiphertextElements() const {
         return m_elements.size();
     }
 
     /**
-   * SetElement - sets the ring element for the cases that use only one element
-   * in the vector this method will throw an exception if it's ever called in
-   * cases with other than 1 element
-   * @param &element is a polynomial ring element.
-   */
+     * SetElement - sets the ring element for the cases that use only one element
+     * in the vector this method will throw an exception if it's ever called in
+     * cases with other than 1 element
+     * @param element is a polynomial ring element.
+     */
     void SetElement(const Element& element) {
         if (m_elements.size() == 0)
             m_elements.push_back(element);
@@ -196,215 +220,261 @@ public:
     }
 
     /**
-   * Sets the data elements.
-   *
-   * @param &element is a polynomial ring element.
-   */
+     * Sets the data element by std::move.
+     *
+     * @param element is a polynomial ring element.
+     */
+    void SetElement(Element&& element) {
+        if (m_elements.size() == 0)
+            m_elements.push_back(std::move(element));
+        else if (m_elements.size() == 1)
+            m_elements[0] = std::move(element);
+        else
+            OPENFHE_THROW("Can be called on a Ciphertext with a single element ONLY");
+    }
+
+    /**
+     * Sets the data elements.
+     *
+     * @param elements is a vector of polynomial ring elements.
+     */
     void SetElements(const std::vector<Element>& elements) {
         m_elements = elements;
     }
 
     /**
-   * Sets the data elements by std::move.
-   *
-   * @param &&element is a polynomial ring element.
-   */
+     * Sets the data elements by std::move.
+     *
+     * @param elements is a vector of polynomial ring elements.
+     */
     void SetElements(std::vector<Element>&& elements) noexcept {
         m_elements = std::move(elements);
     }
 
     /**
-   * Get the degree of the scaling factor for the encrypted message.
-   */
+     * Get the degree of the scaling factor for the encrypted message.
+     * @return the degree of the scaling factor (1 for a fresh ciphertext, 2 after a multiplication)
+     */
     size_t GetNoiseScaleDeg() const {
         return m_noiseScaleDeg;
     }
 
     /**
-   * Set the degree of the scaling factor for the encrypted message.
-   */
+     * Set the degree of the scaling factor for the encrypted message.
+     * @param noiseScaleDeg the degree of the scaling factor
+     */
     void SetNoiseScaleDeg(size_t noiseScaleDeg) {
         m_noiseScaleDeg = noiseScaleDeg;
     }
 
     /**
-   * Get the number of scalings performed
-   */
+     * Get the number of scalings performed
+     * @return the level (number of RNS limbs dropped so far) of the ciphertext
+     */
     size_t GetLevel() const {
         return m_level;
     }
 
     /**
-   * Set the number of scalings
-   */
-    // Generic case: no multiplicativeDepth validation. SetLevel() has a specialization for DCRTPoly
+     * Set the number of scalings.
+     * This generic version performs no validation. The DCRTPoly specialization additionally checks, for CKKS,
+     * that the ciphertext still has at least as many RNS limbs as its noise scale degree and throws an exception
+     * asking for a larger multiplicative depth otherwise.
+     * @param level the number of scalings (level) of the ciphertext
+     */
     void SetLevel(size_t level) {
         m_level = level;
     }
 
     /**
-   * Get the re-encryption level of the ciphertext.
-   */
+     * Get the re-encryption level of the ciphertext.
+     * @return the number of times the ciphertext has been re-encrypted (proxy re-encryption hops)
+     */
     size_t GetHopLevel() const {
         return m_hopslevel;
     }
 
     /**
-   * Set the re-encryption level of the ciphertext.
-   */
+     * Set the re-encryption level of the ciphertext.
+     * @param hoplevel the re-encryption (hop) level
+     */
     void SetHopLevel(size_t hoplevel) {
         m_hopslevel = hoplevel;
     }
 
     /**
-   * Get the scaling factor of the ciphertext.
-   */
+     * Get the scaling factor of the ciphertext.
+     * @return the (approximate, double-precision) scaling factor of the encrypted message
+     */
     double GetScalingFactor() const {
         return m_scalingFactor;
     }
 
     /**
-   * Set the scaling factor of the ciphertext.
-   */
+     * Set the scaling factor of the ciphertext.
+     * @param sf the scaling factor
+     */
     void SetScalingFactor(double sf) {
         m_scalingFactor = sf;
     }
 
     /**
-   * Get the scaling factor of the ciphertext.
-   */
+     * Get the integer scaling factor of the ciphertext.
+     * @return the exact integer scaling factor of the encrypted message (used by BGV)
+     */
     NativeInteger GetScalingFactorInt() const {
         return m_scalingFactorInt;
     }
 
     /**
-   * Set the scaling factor of the ciphertext.
-   */
+     * Set the integer scaling factor of the ciphertext.
+     * @param sf the integer scaling factor
+     */
     void SetScalingFactorInt(NativeInteger sf) {
         m_scalingFactorInt = sf;
     }
 
     /**
-   * Get the number of slots of the ciphertext.
-   */
+     * Get the number of slots of the ciphertext.
+     * @return the number of plaintext slots the ciphertext encrypts
+     */
     uint32_t GetSlots() const {
         return m_slots;
     }
 
     /**
-   * Set the number of slots of the ciphertext.
-   */
+     * Set the number of slots of the ciphertext.
+     * @param slots the number of slots
+     */
     void SetSlots(uint32_t slots) {
         m_slots = slots;
     }
 
     /**
-   * GetEncodingType
-   * @return how the Plaintext that this CiphertextImpl was created from was
-   * encoded
-   */
+     * GetEncodingType
+     * @return how the Plaintext that this CiphertextImpl was created from was
+     * encoded
+     */
     PlaintextEncodings GetEncodingType() const {
         return m_encodingType;
     }
 
     /**
-   * SetEncodingType - after Encrypt, remember the CiphertextImpl's encoding
-   * type
-   * @param et
-   */
+     * SetEncodingType - after Encrypt, remember the CiphertextImpl's encoding
+     * type
+     * @param et the encoding type of the plaintext the ciphertext was created from
+     */
     void SetEncodingType(PlaintextEncodings et) {
         m_encodingType = et;
     }
 
     /**
-   * Get the Metadata map of the ciphertext.
-   */
+     * Get the Metadata map of the ciphertext.
+     * @return shared pointer to the map of metadata objects keyed by name
+     */
     MetadataMap GetMetadataMap() const {
         return m_metadataMap;
     }
 
     /**
-   * Set the Metadata map of the ciphertext.
-   */
+     * Set the Metadata map of the ciphertext.
+     * @param mdata the metadata map
+     */
     void SetMetadataMap(const MetadataMap& mdata) {
         m_metadataMap = mdata;
     }
 
     /**
-   * This method searches the metadata map for metadata of a specific key.
-   *
-   * @param key the string value which serves as a key in the metadata map
-   * @return an iterator pointing at the position in the map where the key
-   *         was found (or the map.end() if not found).
-   */
+     * This method searches the metadata map for metadata of a specific key.
+     *
+     * @param key the string value which serves as a key in the metadata map
+     * @return an iterator pointing at the position in the map where the key
+     *         was found (or the map.end() if not found).
+     */
     std::map<std::string, std::shared_ptr<Metadata>>::iterator FindMetadataByKey(std::string key) const {
         return m_metadataMap->find(key);
     }
 
     /**
-   * This method checks whether an iterator return from FindMetadataByKey
-   * corresponds to whether the key was found or not.
-   *
-   * @param it iterator pointing at the position in the map where the key
-   *         was found (or the map.end() if not found).
-   * @return a boolean value indicating whether the key was found or not.
-   */
+     * This method checks whether an iterator return from FindMetadataByKey
+     * corresponds to whether the key was found or not.
+     *
+     * @param it iterator pointing at the position in the map where the key
+     *         was found (or the map.end() if not found).
+     * @return a boolean value indicating whether the key was found or not.
+     */
     bool MetadataFound(std::map<std::string, std::shared_ptr<Metadata>>::iterator it) const {
         return (it != m_metadataMap->end());
     }
 
     /**
-   * This method returns the Metadata object stored in the iterator position
-   * returned by FindMetadataByKey.
-   *
-   * @param it iterator pointing at the position in the map where the key
-   *         was found (or the map.end() if not found).
-   * @return a shared pointer pointing to the Metadata object in the map.
-   */
+     * This method returns the Metadata object stored in the iterator position
+     * returned by FindMetadataByKey.
+     *
+     * @param it iterator pointing at the position in the map where the key
+     *         was found (or the map.end() if not found).
+     * @return a shared pointer pointing to the Metadata object in the map.
+     */
     std::shared_ptr<Metadata>& GetMetadata(std::map<std::string, std::shared_ptr<Metadata>>::iterator it) const {
         return it->second;
     }
 
     /**
-   * Get a Metadata element from the Metadata map of the ciphertext.
-   */
+     * Get a copy of a Metadata element from the Metadata map of the ciphertext.
+     * @param key the string key of the metadata element
+     * @return a new shared pointer to a copy of the metadata element; throws an exception if the key is not found
+     */
     std::shared_ptr<Metadata> GetMetadataByKey(const std::string& key) const {
         auto it = m_metadataMap->find(key);
         if (it == m_metadataMap->end())
             OPENFHE_THROW("Metadata element with key [" + key + "] is not found in the Metadata map.");
-        return std::make_shared<Metadata>(*(it->second));
+        return it->second->Clone();
     }
 
     /**
-   * Set a Metadata element in the Metadata map of the ciphertext.
-   */
+     * Set a Metadata element in the Metadata map of the ciphertext.
+     * @param key the string key of the metadata element
+     * @param value the metadata element to store
+     */
     void SetMetadataByKey(const std::string& key, const std::shared_ptr<Metadata>& value) {
         (*m_metadataMap)[key] = value;
     }
 
     /**
-   * This method creates a copy of this, skipping the actual encrypted
-   * elements. This means it copies parameters, key tags, encoding type,
-   * and metadata.
-   */
+     * This method creates a copy of this, skipping the actual encrypted
+     * elements. This means it copies parameters, key tags, encoding type,
+     * and metadata.
+     * @return a new ciphertext with the same context, key tag, level/scaling data and metadata but no elements
+     */
     virtual Ciphertext<Element> CloneEmpty() const {
         auto ct(std::make_shared<CiphertextImpl<Element>>(this->GetCryptoContext(), this->GetKeyTag(), m_encodingType));
-        ct->m_slots            = m_slots;
-        ct->m_level            = m_level;
-        ct->m_hopslevel        = m_hopslevel;
-        ct->m_noiseScaleDeg    = m_noiseScaleDeg;
-        ct->m_scalingFactor    = m_scalingFactor;
+        ct->m_slots = m_slots;
+        ct->m_level = m_level;
+        ct->m_hopslevel = m_hopslevel;
+        ct->m_noiseScaleDeg = m_noiseScaleDeg;
+        ct->m_scalingFactor = m_scalingFactor;
         ct->m_scalingFactorInt = m_scalingFactorInt;
-        *(ct->m_metadataMap)   = *(m_metadataMap);
+        *(ct->m_metadataMap) = *(m_metadataMap);
         return ct;
     }
 
+    /**
+     * Creates a deep copy of this ciphertext, including the encrypted elements.
+     * @return a new ciphertext equal to this one
+     */
     virtual Ciphertext<Element> Clone() const {
-        auto ct        = this->CloneEmpty();
+        auto ct = this->CloneEmpty();
         ct->m_elements = m_elements;
         return ct;
     }
 
+    /**
+     * Equality: same crypto context (by pointer) and key tag, equal slots, level, hop level, noise scale degree,
+     * scaling factors, encoding type, metadata entries and ring elements.
+     *
+     * @param rhs the ciphertext to compare with
+     * @return true if the ciphertexts are equal
+     */
     bool operator==(const CiphertextImpl<Element>& rhs) const {
         if (!CryptoObject<Element>::operator==(rhs))
             return false;
@@ -432,10 +502,23 @@ public:
         return true;
     }
 
+    /**
+     * Inequality: negation of operator==.
+     *
+     * @param rhs the ciphertext to compare with
+     * @return true if the ciphertexts differ
+     */
     bool operator!=(const CiphertextImpl<Element>& rhs) const {
         return !(*this == rhs);
     }
 
+    /**
+     * Prints the encoding type, noise scale degree, metadata entries and every ring element of the ciphertext.
+     *
+     * @param out the output stream
+     * @param c the ciphertext to print
+     * @return the output stream
+     */
     friend std::ostream& operator<<(std::ostream& out, const CiphertextImpl<Element>& c) {
         out << "enc=" << c.m_encodingType << " noiseScaleDeg=" << c.m_noiseScaleDeg << std::endl;
         out << "metadata: [ ";
@@ -450,6 +533,13 @@ public:
         return out;
     }
 
+    /**
+     * Prints the ciphertext a shared pointer refers to (see the reference overload).
+     *
+     * @param out the output stream
+     * @param c shared pointer to the ciphertext to print
+     * @return the output stream
+     */
     friend std::ostream& operator<<(std::ostream& out, Ciphertext<Element> c) {
         return out << *c;
     }
@@ -492,7 +582,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // vector of ring elements for this Ciphertext
     std::vector<Element> m_elements;
 
@@ -518,6 +608,13 @@ private:
     MetadataMap m_metadataMap{std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>()};
 };
 
+/**
+ * DCRTPoly specialization of SetLevel(): stores the level and, for CKKS, checks that the ciphertext still has at
+ * least as many RNS limbs as its noise scale degree, throwing an exception that asks for a larger multiplicative
+ * depth otherwise.
+ *
+ * @param level the number of scalings (level) of the ciphertext
+ */
 template <>
 void CiphertextImpl<DCRTPoly>::SetLevel(size_t level);
 
@@ -525,8 +622,8 @@ void CiphertextImpl<DCRTPoly>::SetLevel(size_t level);
  * operator+ overload for Ciphertexts.  Performs EvalAdd.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext operand
- * @param &b ciphertext operand
+ * @param a ciphertext operand
+ * @param b ciphertext operand
  *
  * @return The result of addition.
  */
@@ -539,10 +636,10 @@ Ciphertext<Element> operator+(const Ciphertext<Element>& a, const Ciphertext<Ele
  * operator+= overload for Ciphertexts.  Performs EvalAdd.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext to be added to
- * @param &b ciphertext to add to &a
+ * @param a ciphertext to be added to
+ * @param b ciphertext to add to a
  *
- * @return &a
+ * @return a
  */
 template <class Element>
 Ciphertext<Element>& operator+=(Ciphertext<Element>& a, const Ciphertext<Element>& b) {
@@ -552,7 +649,7 @@ Ciphertext<Element>& operator+=(Ciphertext<Element>& a, const Ciphertext<Element
 /**
  * Unary negation operator.
  *
- * @param &a ciphertext operand
+ * @param a ciphertext operand
  * @return the result of the negation.
  */
 template <class Element>
@@ -564,8 +661,8 @@ Ciphertext<Element> operator-(const Ciphertext<Element>& a) {
  * operator- overload.  Performs EvalSub.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext operand
- * @param &b ciphertext operand
+ * @param a ciphertext operand
+ * @param b ciphertext operand
  *
  * @return The result of subtraction.
  */
@@ -575,13 +672,13 @@ Ciphertext<Element> operator-(const Ciphertext<Element>& a, const Ciphertext<Ele
 }
 
 /**
- * operator-= overload for Ciphertexts.  Performs EvalAdd.
+ * operator-= overload for Ciphertexts.  Performs EvalSub.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext to be subtracted from
- * @param &b ciphertext to subtract from &a
+ * @param a ciphertext to be subtracted from
+ * @param b ciphertext to subtract from a
  *
- * @return &a
+ * @return a
  */
 template <class Element>
 Ciphertext<Element>& operator-=(Ciphertext<Element>& a, const Ciphertext<Element>& b) {
@@ -592,8 +689,8 @@ Ciphertext<Element>& operator-=(Ciphertext<Element>& a, const Ciphertext<Element
  * operator* overload.  Performs EvalMult.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext operand
- * @param &b ciphertext operand
+ * @param a ciphertext operand
+ * @param b ciphertext operand
  *
  * @return The result of multiplication.
  */
@@ -606,10 +703,10 @@ Ciphertext<Element> operator*(const Ciphertext<Element>& a, const Ciphertext<Ele
  * operator*= overload for Ciphertexts.  Performs EvalMult.
  *
  * @tparam Element a ring element.
- * @param &a ciphertext to be multiplied
- * @param &b ciphertext to multiply by &a
+ * @param a ciphertext to be multiplied
+ * @param b ciphertext to multiply a by
  *
- * @return &a
+ * @return a
  */
 template <class Element>
 Ciphertext<Element>& operator*=(Ciphertext<Element>& a, const Ciphertext<Element>& b) {
@@ -618,4 +715,4 @@ Ciphertext<Element>& operator*=(Ciphertext<Element>& a, const Ciphertext<Element
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_CIPHERTEXT_H_

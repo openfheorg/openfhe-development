@@ -28,10 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#include "cryptocontext.h"
 #include "cryptocontextfactory.h"
-#include "schemebase/base-scheme.h"
+
+#include <memory>
+#include <vector>
+
+#include "cryptocontext.h"
 #include "scheme/scheme-id.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 
@@ -78,7 +82,7 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr
 
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetFullContextByDeserializedContext(
-    const CryptoContext<Element> context) {
+        const CryptoContext<Element> context) {
     return CryptoContextFactory<Element>::GetContext(context->GetCryptoParameters(), context->GetScheme(),
                                                      context->getSchemeId());
 }

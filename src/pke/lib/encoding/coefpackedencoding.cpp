@@ -34,6 +34,10 @@
  */
 
 #include "encoding/coefpackedencoding.h"
+
+#include <cstdint>
+#include <vector>
+
 #include "constants.h"
 
 namespace lbcrypto {
@@ -55,14 +59,12 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, i
                 // TODO: Investigate why this doesn't work with q instead of t.
                 uint64_t adjustedVal{mod - static_cast<uint64_t>(llabs(value[i]))};
                 poly[i] = typename P::Integer(adjustedVal);
-            }
-            else {
+            } else {
                 // It is more efficient to encode negative numbers using the ciphertext
                 // modulus no noise growth occurs
                 poly[i] = poly.GetModulus() - typename P::Integer(static_cast<uint64_t>(llabs(value[i])));
             }
-        }
-        else
+        } else
             poly[i] = value[i];
     }
 }
@@ -71,7 +73,7 @@ bool CoefPackedEncoding::Encode() {
     if (this->isEncoded)
         return true;
 
-    PlaintextModulus mod     = this->encodingParams->GetPlaintextModulus();
+    PlaintextModulus mod = this->encodingParams->GetPlaintextModulus();
     NativeInteger originalSF = scalingFactorInt;
     for (size_t j = 1; j < noiseScaleDeg; j++) {
         scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
@@ -80,13 +82,12 @@ bool CoefPackedEncoding::Encode() {
     if (this->typeFlag == IsNativePoly) {
         encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
         encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
-    }
-    else {
+    } else {
         encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
 
         if (this->typeFlag == IsDCRTPoly) {
             this->encodedVectorDCRT = this->encodedVector;
-            encodedVectorDCRT       = encodedVectorDCRT.Times(scalingFactorInt);
+            encodedVectorDCRT = encodedVectorDCRT.Times(scalingFactorInt);
             this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
         }
     }
@@ -100,9 +101,9 @@ inline static void fillVec(const P& poly, const PlaintextModulus& mod, std::vect
     value.clear();
     value.reserve(poly.GetLength());
 
-    int64_t half                 = int64_t(mod) / 2;
+    int64_t half = int64_t(mod) / 2;
     const typename P::Integer& q = poly.GetModulus();
-    typename P::Integer qHalf    = q >> 1;
+    typename P::Integer qHalf = q >> 1;
 
     for (size_t i = 0; i < poly.GetLength(); i++) {
         int64_t val;
@@ -121,12 +122,11 @@ bool CoefPackedEncoding::Decode() {
 
     if (this->typeFlag == IsNativePoly) {
         NativeInteger scfInv = scalingFactorInt.ModInverse(mod);
-        NativePoly temp      = encodedNativeVector.Times(scfInv).Mod(mod);
+        NativePoly temp = encodedNativeVector.Times(scfInv).Mod(mod);
         fillVec(temp, mod, this->value);
         // clears the values containing information about the noise
         encodedNativeVector.SetValuesToZero();
-    }
-    else {
+    } else {
         fillVec(this->encodedVector, mod, this->value);
         // clears the values containing information about the noise
         this->encodedVector.SetValuesToZero();

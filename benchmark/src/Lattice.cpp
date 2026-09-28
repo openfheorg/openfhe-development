@@ -36,14 +36,15 @@
 
 #define _USE_MATH_DEFINES
 
-#include "benchmark/benchmark.h"
-#include "lattice/lat-hal.h"
-#include "math/discreteuniformgenerator.h"
-
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
+
+#include "benchmark/benchmark.h"
+#include "lattice/lat-hal.h"
+#include "math/discreteuniformgenerator.h"
 
 using namespace lbcrypto;
 
@@ -107,7 +108,7 @@ std::map<uint32_t, std::vector<M6DCRTPoly>> BE6DCRTpolys;
 #endif
 
 class Setup {
-public:
+  public:
     Setup() {
         GenerateParms<ILNativeParams>(Nativeparms);
         GeneratePolys<ILNativeParams, NativePoly>(Nativeparms, Nativepolys);

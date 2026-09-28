@@ -285,6 +285,7 @@ int crypto_hash(unsigned char *out, unsigned char *in,
 
 #if defined(BLAKE2B_SELFTEST)
 #include <string.h>
+
 #include "blake2-kat.h"
 int main(void) {
   uint8_t key[BLAKE2B_KEYBYTES];

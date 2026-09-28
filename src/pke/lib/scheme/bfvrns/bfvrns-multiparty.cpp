@@ -37,11 +37,16 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include "scheme/bfvrns/bfvrns-multiparty.h"
 
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "ciphertext.h"
+#include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "cryptocontext.h"
-#include "ciphertext.h"
 
 namespace lbcrypto {
 
@@ -78,7 +83,11 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     DCRTPoly b(ns * e - a * s);
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<DCRTPoly>{std::move(b), std::move(a)});
+    std::vector<DCRTPoly> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
 
     return keyPair;
 }
@@ -124,14 +133,18 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
     // When PRE is not used, a joint key is computed
     DCRTPoly b = fresh ? (ns * e - a * s) : (ns * e - a * s + pk[0]);
 
-    usint sizeQ  = elementParams->GetParams().size();
-    usint sizePK = paramsPK->GetParams().size();
+    uint32_t sizeQ = elementParams->GetParams().size();
+    uint32_t sizePK = paramsPK->GetParams().size();
     if (sizePK > sizeQ) {
         s.DropLastElements(sizePK - sizeQ);
     }
 
     keyPair.secretKey->SetPrivateElement(std::move(s));
-    keyPair.publicKey->SetPublicElements(std::vector<DCRTPoly>{std::move(b), std::move(a)});
+    std::vector<DCRTPoly> pkElems;
+    pkElems.reserve(2);
+    pkElems.push_back(std::move(b));
+    pkElems.push_back(std::move(a));
+    keyPair.publicKey->SetPublicElements(std::move(pkElems));
 
     return keyPair;
 }
@@ -139,7 +152,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
 DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                         NativePoly* plaintext) const {
     const auto cryptoParams =
-        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
+            std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
@@ -160,34 +173,31 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
         if (cryptoParams->GetMultiplicationTechnique() == HPS ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
             cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-            *plaintext =
-                b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
-                                cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
-                                cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
-                                cryptoParams->GettQHatInvModqBDivqFrac());
-        }
-        else {
             *plaintext = b.ScaleAndRound(
-                cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
-                cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
-                cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
+                    cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
+                    cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
+                    cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
+                    cryptoParams->GettQHatInvModqBDivqFrac());
+        } else {
+            *plaintext = b.ScaleAndRound(
+                    cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
+                    cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
+                    cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
         }
-    }
-    else {
-    	// for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
+    } else {
+        // for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
         size_t diffQl = sizeQ - sizeQl;
         size_t levels = sizeQl - 1;
         for (size_t l = 0; l < levels; ++l) {
-			b.DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
-										  cryptoParams->GetqlInvModq(diffQl + l));
+            b.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + l));
         }
 
         b.SetFormat(Format::COEFFICIENT);
 
         const NativeInteger t = cryptoParams->GetPlaintextModulus();
-        NativePoly element    = b.GetElementAtIndex(0);
+        NativePoly element = b.GetElementAtIndex(0);
         const NativeInteger q = element.GetModulus();
-        element               = element.MultiplyAndRound(t, q);
+        element = element.MultiplyAndRound(t, q);
 
         // Setting the root of unity to ONE as the calculation is expensive
         // It is assumed that no polynomial multiplications in evaluation

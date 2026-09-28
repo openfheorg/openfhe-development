@@ -33,22 +33,23 @@
  * This code benchmarks CKKS serialization.
  */
 
-
 // #define PROFILE
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
-
-#include <iostream>
+#include <complex>
 #include <fstream>
-#include <limits>
+#include <iostream>
 #include <iterator>
+#include <limits>
 #include <random>
+#include <sstream>
+#include <vector>
 
-#include "cryptocontext-ser.h"
+#include "benchmark/benchmark.h"
 #include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "gen-cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -100,10 +101,10 @@ void CKKS_serialize(benchmark::State& state) {
 
     // DEBUG("step 3");
     std::vector<std::complex<double>> vals = {1.0, 3.0, 5.0, 7.0, 9.0, 2.0, 4.0, 6.0, 8.0, 11.0};
-    Plaintext plaintextShort               = cc->MakeCKKSPackedPlaintext(vals);
-    Plaintext plaintextShortL2D2           = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
-    Ciphertext<DCRTPoly> ciphertext        = cc->Encrypt(kp.publicKey, plaintextShort);
-    Ciphertext<DCRTPoly> ciphertextL2D2    = cc->Encrypt(kp.publicKey, plaintextShortL2D2);
+    Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
+    Plaintext plaintextShortL2D2 = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
+    Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
+    Ciphertext<DCRTPoly> ciphertextL2D2 = cc->Encrypt(kp.publicKey, plaintextShortL2D2);
 
     Ciphertext<DCRTPoly> newC;
     Ciphertext<DCRTPoly> newCL2D2;

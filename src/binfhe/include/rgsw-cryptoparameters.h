@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_CRYPTOPARAMETERS_H_
-#define _RGSW_CRYPTOPARAMETERS_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_CRYPTOPARAMETERS_H_
+#define SRC_BINFHE_INCLUDE_RGSW_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
@@ -42,12 +50,6 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 /**
@@ -55,23 +57,23 @@ namespace lbcrypto {
  * bootstrapping
  */
 class RingGSWCryptoParams : public Serializable {
-public:
+  public:
     RingGSWCryptoParams() = default;
 
     /**
-   * Main constructor for RingGSWCryptoParams
-   *
-   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param Q modulus for RingGSW/RLWE used in bootstrapping
-   * @param q ciphertext modulus for additive LWE
-   * @param baseG the gadget base used in the bootstrapping
-   * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
-   * @param std standar deviation
-   * @param keyDist secret key distribution
-   * @param signEval flag if sign evaluation is needed
-   * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
-   */
+     * Main constructor for RingGSWCryptoParams
+     *
+     * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+     * @param Q modulus for RingGSW/RLWE used in bootstrapping
+     * @param q ciphertext modulus for additive LWE
+     * @param baseG the gadget base used in the bootstrapping
+     * @param baseR the base for the refreshing key
+     * @param method bootstrapping method (DM or CGGI or LMKCDEY)
+     * @param std standard deviation
+     * @param keyDist secret key distribution
+     * @param signEval flag if sign evaluation is needed
+     * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
+     */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
                                  BINFHE_METHOD method, double std, SecretKeyDist keyDist = UNIFORM_TERNARY,
                                  bool signEval = false, uint32_t numAutoKeys = 10)
@@ -84,20 +86,91 @@ public:
           m_method(method),
           m_keyDist(keyDist),
           m_numAutoKeys(numAutoKeys) {
-        if (!IsPowerOfTwo(baseG))
+        if (baseG <= 1 || !IsPowerOfTwo(baseG))
             OPENFHE_THROW("Gadget base should be a power of two.");
         if ((method == LMKCDEY) && (numAutoKeys == 0))
             OPENFHE_THROW("numAutoKeys should be greater than 0.");
-        auto logQ{std::log(m_Q.ConvertToDouble())};
-        m_digitsG = static_cast<uint32_t>(std::ceil(logQ / std::log(static_cast<double>(m_baseG))));
+        m_digitsG = DigitsForBase(m_Q, m_baseG);
+        CheckDigitsG(m_baseG, m_digitsG);
         m_dgg.SetStd(std);
         PreCompute(signEval);
     }
 
     /**
-   * Performs precomputations based on the supplied parameters
-   */
+     * Constructor for using multiple gadget bases in bootstrapping
+     *
+     * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+     * @param Q modulus for RingGSW/RLWE used in bootstrapping
+     * @param q ciphertext modulus for additive LWE
+     * @param baseG the default gadget base, also used for automorphism keys
+     * @param baseGMap number of LWE secret-key coefficients assigned to each gadget base
+     * @param baseR the base for the refreshing key
+     * @param method bootstrapping method (DM or CGGI or LMKCDEY)
+     * @param std standard deviation
+     * @param keyDist secret key distribution
+     * @param signEval flag if sign evaluation is needed
+     * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
+     */
+    explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG,
+                                 const std::map<uint32_t, uint32_t>& baseGMap, uint32_t baseR, BINFHE_METHOD method,
+                                 double std, SecretKeyDist keyDist = UNIFORM_TERNARY, bool signEval = false,
+                                 uint32_t numAutoKeys = 10)
+        : m_Q(Q),
+          m_q(q),
+          m_N(N),
+          m_baseG(baseG),
+          m_baseG_map(baseGMap),
+          m_baseR(baseR),
+          m_polyParams{std::make_shared<ILNativeParams>(2 * N, Q)},
+          m_method(method),
+          m_keyDist(keyDist),
+          m_numAutoKeys(numAutoKeys) {
+        if (baseGMap.empty())
+            OPENFHE_THROW("Gadget base map should not be empty.");
+        if (!IsPowerOfTwo(baseG))
+            OPENFHE_THROW("Gadget base should be a power of two.");
+        for (const auto& [baseG, count] : baseGMap) {
+            if (count == 0 || baseG <= 1 || !IsPowerOfTwo(baseG))
+                OPENFHE_THROW("Gadget base should be a power of two and its count should be greater than zero.");
+            CheckDigitsG(baseG, DigitsForBase(Q, baseG));
+        }
+        if ((method == LMKCDEY) && (numAutoKeys == 0))
+            OPENFHE_THROW("numAutoKeys should be greater than 0.");
+        m_digitsG = DigitsForBase(m_Q, m_baseG);
+        CheckDigitsG(m_baseG, m_digitsG);
+        m_dgg.SetStd(std);
+        PreCompute(signEval);
+    }
+
+    /**
+     * @brief Gadget parameters for one LWE secret-key index: the base, its digit count, and its gadget powers
+     */
+    struct BaseGParams {
+        uint32_t baseG{0};                                ///< gadget base, a power of two
+        uint32_t digitsG{0};                              ///< number of base-baseG digits needed to represent Q
+        uint32_t gBits{0};                                ///< log2(baseG), the width of one digit in bits
+        const std::vector<NativeInteger>* gpow{nullptr};  ///< powers baseG^i mod Q for i < digitsG, owned by the params
+        uint32_t teamWidth{0};                            ///< thread-team size for the external product: the largest
+                                                          ///< 2(digitsG - 1) over all gadget bases in use
+    };
+
+    /**
+     * Performs precomputations based on the supplied parameters: the powers of baseR (AP only), the gadget powers of
+     * every gadget base in use, the gate constants, the CGGI monomials X^m - 1, the per-index gadget table when a
+     * gadget base map is in use, and the discrete-log and automorphism tables for LMKCDEY
+     *
+     * @param signEval whether to also precompute the gadget powers of the bases 2^14, 2^18 and 2^27 that the
+     *        large-precision sign evaluation switches between through Change_BaseG
+     */
     void PreCompute(bool signEval = false);
+
+    /**
+     * Computes the gadget powers baseG^i mod Q for i < digitsG, once per base, and caches them in the gadget power map
+     *
+     * @param baseG the gadget base
+     * @return the cached vector of gadget powers for baseG
+     */
+    const std::vector<NativeInteger>& PrecomputeGPower(uint32_t baseG);
 
     uint32_t GetN() const {
         return m_N;
@@ -119,6 +192,59 @@ public:
         return m_digitsG;
     }
 
+    /**
+     * Gets the gadget parameters of the default gadget base. The result is built by value from the live members, so
+     * a base switched by Change_BaseG() after PreCompute() takes effect; when no gadget base map is in use these
+     * parameters apply to every LWE index
+     *
+     * @return the gadget parameters of the default base
+     */
+    BaseGParams GetDefaultBaseGParams() const {
+        return {m_baseG, m_digitsG, lbcrypto::GetMSB(m_baseG) - 1, &m_Gpower,
+                m_baseGByIndex.empty() ? ((m_digitsG - 1) << 1) : m_teamWidth};
+    }
+
+    /**
+     * Gets the gadget parameters assigned to an LWE secret-key coefficient; PreCompute() expands the gadget base map
+     * into one entry per index
+     *
+     * @param index LWE secret-key coefficient index
+     * @return the gadget parameters for that index, or the default ones when no gadget base map is in use
+     */
+    BaseGParams GetBaseGParams(uint32_t index) const {
+        if (m_baseGByIndex.empty())
+            return GetDefaultBaseGParams();
+        if (index >= m_baseGByIndex.size())
+            OPENFHE_THROW("Gadget base map does not cover the LWE dimension.");
+        return m_baseGByIndex[index];
+    }
+
+    uint32_t GetBaseG(uint32_t index) const {
+        return GetBaseGParams(index).baseG;
+    }
+
+    uint32_t GetDigitsG(uint32_t index) const {
+        return GetBaseGParams(index).digitsG;
+    }
+
+    // empty when no per-dimension base map is in use; then GetDefaultBaseGParams() applies to
+    // every index
+    const std::vector<BaseGParams>& GetBaseGByIndex() const {
+        return m_baseGByIndex;
+    }
+
+    /**
+     * Checks that the per-index gadget table, when present, has exactly one entry per LWE secret-key coefficient. The
+     * table is built from a map that never sees the LWE dimension, so only a caller holding both can reconcile them;
+     * call this before entering a parallel region
+     *
+     * @param n the LWE dimension
+     */
+    void VerifyBaseGCoverage(uint32_t n) const {
+        if (!m_baseGByIndex.empty() && m_baseGByIndex.size() != n)
+            OPENFHE_THROW("Gadget base map does not cover the LWE dimension.");
+    }
+
     uint32_t GetBaseR() const {
         return m_baseR;
     }
@@ -131,12 +257,64 @@ public:
         return m_digitsR;
     }
 
+    /**
+     * Gets the number of values the digit at position pos can take when a coefficient below q is written in base
+     * baseR: every position spans the whole base except the top one (AP bootstrapping only)
+     *
+     * @param pos digit position, 0 being the least significant
+     * @return the number of values the digit can take
+     */
+    uint32_t GetDigitExtentR(uint32_t pos) const {
+        if (pos + 1 < m_digitsR.size())
+            return m_baseR;
+        return static_cast<uint32_t>((m_q.ConvertToInt<uint64_t>() - 1) / m_digitsR.back().ConvertToInt<uint64_t>()) +
+               1;
+    }
+
     const std::shared_ptr<ILNativeParams> GetPolyParams() const {
         return m_polyParams;
     }
 
     const std::vector<NativeInteger>& GetGPower() const {
         return m_Gpower;
+    }
+
+    /**
+     * Gets the precomputed gadget powers of a given gadget base
+     *
+     * @param baseG the gadget base, which must have been precomputed
+     * @return the vector of powers baseG^i mod Q
+     */
+    const std::vector<NativeInteger>& GetGPower(uint32_t baseG) const {
+        auto it = m_Gpower_map.find(baseG);
+        if (it == m_Gpower_map.end())
+            OPENFHE_THROW("No GPower found for the requested gadget base.");
+        return it->second;
+    }
+
+    /**
+     * Gets the gadget powers of the base assigned to an LWE secret-key coefficient
+     *
+     * @param index LWE secret-key coefficient index
+     * @return the vector of gadget powers for that index, or the default powers when none is assigned
+     */
+    const std::vector<NativeInteger>& GetGPowerByIndex(uint32_t index) const {
+        const auto* gpow = GetBaseGParams(index).gpow;
+        return (gpow == nullptr) ? m_Gpower : *gpow;
+    }
+
+    /**
+     * Gets the precomputed automorphism index map for X -> X^index (LMKCDEY only); maps exist for the generator
+     * powers 5^k, k in [1, numAutoKeys], and for 2N - 5
+     *
+     * @param index the automorphism index
+     * @return the coefficient permutation map of length N
+     */
+    const std::vector<uint32_t>& GetAutoMap(uint32_t index) const {
+        auto it = m_autoMap.find(index);
+        if (it == m_autoMap.end())
+            OPENFHE_THROW("No automorphism map precomputed for index " + std::to_string(index));
+        return it->second;
     }
 
     const std::vector<int32_t>& GetLogGen() const {
@@ -155,9 +333,68 @@ public:
         return m_gateConst;
     }
 
+    /**
+     * Gets a precomputed CGGI monomial in EVALUATION format: X^i - 1 for i < N and -X^(i-N) - 1 for N <= i < 2N
+     *
+     * @param i index in [0, 2N), the exponent modulo 2N with X^N = -1
+     * @return the monomial polynomial
+     */
     const NativePoly& GetMonomial(uint32_t i) const {
         return m_monomials[i];
     }
+
+    /**
+     * Checks whether the CGGI monomials X^m - 1 are resident
+     *
+     * @return true if the monomial table is built
+     */
+    bool HasMonomials() const {
+        return !m_monomials.empty();
+    }
+
+    /**
+     * Releases the precomputed CGGI monomials X^m - 1 and their storage; used once every resident refreshing key is in
+     * the 32-bit internal form, which keeps its own 32-bit monomial table
+     */
+    void ClearMonomials() {
+        std::vector<NativePoly>().swap(m_monomials);
+    }
+
+    /**
+     * Builds the CGGI monomials X^m - 1 if the method is GINX and they are not resident, e.g. after ClearMonomials()
+     */
+    void EnsureMonomials() {
+        if (m_method == BINFHE_METHOD::GINX && m_monomials.empty())
+            BuildMonomials();
+    }
+
+#if NATIVEINT != 32
+    /**
+     * Gets the 32-bit polynomial parameters (cyclotomic order 2N, and Q and its root of unity narrowed to 32 bits) for
+     * the 32-bit internal path, building them on first use. Requires Q to fit MAX_MODULUS_SIZE32 bits. The cache is
+     * unguarded, so build it before entering a parallel region
+     *
+     * @return a shared pointer to the 32-bit polynomial parameters
+     */
+    const std::shared_ptr<ILNativeParams32>& GetPolyParams32();
+
+    /**
+     * Gets the 2N monomials X^m - 1, m < 2N with X^N = -1, in EVALUATION format at 32 bits for the CGGI accumulator on
+     * the 32-bit internal key, built natively on first use; the table equals the narrowed 64-bit one, which need not
+     * exist. The cache is unguarded, so build it before entering a parallel region
+     *
+     * @return a shared pointer to the 32-bit monomial table
+     */
+    const std::shared_ptr<const std::vector<NativePoly32>>& GetMonomials32();
+
+    /**
+     * Gets the Shoup precomputation of every coefficient of the 32-bit monomials, for multiplication by a constant
+     * mod Q, built on first use together with the monomials themselves
+     *
+     * @return a shared pointer to the precomputed vectors, one per monomial
+     */
+    const std::shared_ptr<const std::vector<NativeVector32>>& GetMonomialsPrecon32();
+#endif
 
     BINFHE_METHOD GetMethod() const {
         return m_method;
@@ -168,7 +405,10 @@ public:
     }
 
     bool operator==(const RingGSWCryptoParams& other) const {
-        return m_N == other.m_N && m_Q == other.m_Q && m_baseR == other.m_baseR && m_baseG == other.m_baseG;
+        return m_N == other.m_N && m_Q == other.m_Q && m_q == other.m_q && m_baseR == other.m_baseR &&
+               m_baseG == other.m_baseG && m_baseG_map == other.m_baseG_map && m_method == other.m_method &&
+               m_keyDist == other.m_keyDist && m_numAutoKeys == other.m_numAutoKeys &&
+               m_dgg.GetStd() == other.m_dgg.GetStd();
     }
 
     bool operator!=(const RingGSWCryptoParams& other) const {
@@ -187,6 +427,8 @@ public:
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
         ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
+        ar(::cereal::make_nvp("baseGMap", m_baseG_map));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
     }
 
     template <class Archive>
@@ -207,7 +449,8 @@ public:
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
         ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
-
+        ar(::cereal::make_nvp("baseGMap", m_baseG_map));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
         PreCompute();
     }
 
@@ -219,16 +462,39 @@ public:
         return 1;
     }
 
+    /**
+     * Switches the default gadget base, updating the digit count and the gadget powers (computed if not cached); a
+     * no-op when the base is unchanged. Used by the large-precision sign evaluation
+     *
+     * @param BaseG the new gadget base, a power of two that leaves at least two digits mod Q; not supported when a
+     *        gadget base map is in use
+     */
     void Change_BaseG(uint32_t BaseG) {
         if (m_baseG != BaseG) {
-            m_baseG  = BaseG;
-            m_Gpower = m_Gpower_map[m_baseG];
-            m_digitsG =
-                static_cast<uint32_t>(std::ceil(std::log(m_Q.ConvertToDouble()) / std::log(static_cast<double>(m_baseG))));
+            if (!m_baseGByIndex.empty())
+                OPENFHE_THROW("Change_BaseG is not supported with per-dimension gadget bases");
+            CheckDigitsG(BaseG, DigitsForBase(m_Q, BaseG));
+            m_baseG = BaseG;
+            m_Gpower = PrecomputeGPower(BaseG);
+            m_digitsG = DigitsForBase(m_Q, m_baseG);
         }
     }
 
-private:
+  private:
+    // the approximate gadget decomposition drops the first digit, so a single-digit gadget
+    // leaves the external product with no rows at all
+    static void CheckDigitsG(uint32_t baseG, uint32_t digitsG) {
+        if (digitsG < 2)
+            OPENFHE_THROW("Gadget base " + std::to_string(baseG) +
+                          " is too large for Q: the approximate gadget decomposition needs at least two digits.");
+    }
+
+    static uint32_t DigitsForBase(const NativeInteger& Q, uint32_t baseG) {
+        return lbcrypto::GetDigitCount(Q.ConvertToInt(), baseG);
+    }
+
+    void BuildMonomials();
+
     // modulus for the RingGSW/RingLWE scheme
     NativeInteger m_Q;
 
@@ -241,10 +507,17 @@ private:
     // gadget base used in bootstrapping
     uint32_t m_baseG;
 
+    // number of LWE secret-key coefficients assigned to each gadget base, in ascending base order
+    std::map<uint32_t, uint32_t> m_baseG_map;
+
+    // m_baseG_map expanded to one entry per LWE index, filled by PreCompute()
+    std::vector<BaseGParams> m_baseGByIndex;
+    uint32_t m_teamWidth{0};
+
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;
 
-    // number of digits in decomposing integers mod Q
+    // number of digits in decomposing integers mod Q for given baseG
     uint32_t m_digitsG;
 
     // powers of m_baseR (used only for DM bootstrapping)
@@ -261,10 +534,12 @@ private:
     // m_logGen[-1 (mod M)] = M (special case for efficiency)
     std::vector<int32_t> m_logGen;
 
+    std::unordered_map<uint32_t, std::vector<uint32_t>> m_autoMap;
+
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
 
-    // A map of vectors of powers of baseG for sign evaluation
+    // A map of vectors of powers for each gadget base
     std::map<uint32_t, std::vector<NativeInteger>> m_Gpower_map;
 
     // Parameters for polynomials in RingGSW/RingLWE
@@ -276,6 +551,13 @@ private:
     // Precomputed polynomials in Format::EVALUATION representation for X^m - 1
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
+
+#if NATIVEINT != 32
+    // transient caches for the 32-bit internal path; never serialized, rebuilt on demand
+    std::shared_ptr<ILNativeParams32> m_polyParams32;
+    std::shared_ptr<const std::vector<NativePoly32>> m_monomials32;
+    std::shared_ptr<const std::vector<NativeVector32>> m_monomialsPrecon32;
+#endif
 
     // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method{BINFHE_METHOD::INVALID_METHOD};
@@ -289,4 +571,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_CRYPTOPARAMETERS_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_CRYPTOPARAMETERS_H_

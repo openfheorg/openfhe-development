@@ -18,4 +18,3 @@ We provide the following examples:
 ## lib
 
 - implementation of the header files
-

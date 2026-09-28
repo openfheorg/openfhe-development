@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _BINFHE_BASE_PARAMS_H_
-#define _BINFHE_BASE_PARAMS_H_
+#ifndef SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
+#define SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "lattice/lat-hal.h"
@@ -43,12 +50,6 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 /**
@@ -56,39 +57,52 @@ namespace lbcrypto {
  * bootstrapping
  */
 class BinFHECryptoParams : public Serializable {
-public:
+  public:
     BinFHECryptoParams() = default;
 
     /**
-   * Main constructor for BinFHECryptoParams
-   *
-   * @param lweparams a shared poiter to an instance of LWECryptoParams
-   * @param rgswparams a shared poiter to an instance of RingGSWCryptoParams
-   */
+     * Main constructor for BinFHECryptoParams
+     *
+     * @param lweparams a shared poiter to an instance of LWECryptoParams
+     * @param rgswparams a shared poiter to an instance of RingGSWCryptoParams
+     */
     BinFHECryptoParams(const std::shared_ptr<LWECryptoParams>& lweparams,
                        const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
-        : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {}
+        : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {
+        auto keyDist = m_LWEParams->GetKeyDist();
+        if (keyDist != m_RGSWParams->GetKeyDist())
+            OPENFHE_THROW("LWE and RingGSW parameters disagree on the secret key distribution");
+        if (keyDist != UNIFORM_TERNARY && keyDist != GAUSSIAN)
+            OPENFHE_THROW("BinFHE implements UNIFORM_TERNARY and GAUSSIAN secret key distributions only");
+        if (m_RGSWParams->GetMethod() == GINX && keyDist == GAUSSIAN)
+            OPENFHE_THROW("GINX/CGGI requires a ternary LWE secret key; use AP or LMKCDEY for GAUSSIAN");
+        if (m_RGSWParams->GetMethod() == LMKCDEY && m_RGSWParams->GetNumAutoKeys() >= m_LWEParams->Getn())
+            OPENFHE_THROW("numAutoKeys must be less than the LWE dimension n");
+        if ((2 * static_cast<uint64_t>(m_LWEParams->GetN())) % m_LWEParams->Getq().ConvertToInt<uint64_t>() != 0)
+            OPENFHE_THROW("the LWE modulus q must divide 2N");
+    }
 
     /**
-   * Getter for LWE params
-   * @return
-   */
+     * Getter for LWE params
+     * @return a shared pointer to the LWE crypto parameters
+     */
     const std::shared_ptr<LWECryptoParams>& GetLWEParams() const {
         return m_LWEParams;
     }
 
     /**
-   * Getter for RingGSW params
-   * @return
-   */
+     * Getter for RingGSW params
+     * @return a shared pointer to the RingGSW crypto parameters
+     */
     const std::shared_ptr<RingGSWCryptoParams>& GetRingGSWParams() const {
         return m_RGSWParams;
     }
 
     /**
-   * Compare two BinFHE sets of parameters
-   * @return
-   */
+     * Compare two BinFHE sets of parameters
+     * @param other the parameters to compare with
+     * @return true if the LWE and RingGSW parameters are both equal
+     */
     bool operator==(const BinFHECryptoParams& other) const {
         return *m_LWEParams == *other.m_LWEParams && *m_RGSWParams == *other.m_RGSWParams;
     }
@@ -121,7 +135,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // shared pointer to an instance of LWECryptoParams
     std::shared_ptr<LWECryptoParams> m_LWEParams{nullptr};
 
@@ -131,4 +145,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _BINFHE_BASE_PARAMS_H_
+#endif  // SRC_BINFHE_INCLUDE_BINFHE_BASE_PARAMS_H_

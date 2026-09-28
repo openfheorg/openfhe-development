@@ -29,8 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_KEYTRIPLE_H_
-#define _LWE_KEYTRIPLE_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_KEYPAIR_H_
+#define SRC_BINFHE_INCLUDE_LWE_KEYPAIR_H_
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lwe-keypair-fwd.h"
 #include "lwe-keyswitchkey.h"
@@ -39,24 +44,35 @@
 #include "math/math-hal.h"
 #include "utils/serializable.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 /**
  * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
  */
 class LWEKeyPairImpl {
-public:
-    LWEPublicKey publicKey{nullptr};
-    LWEPrivateKey secretKey{nullptr};
+  public:
+    LWEPublicKey publicKey{nullptr};   ///< the public key (A, v) with v = A s + e
+    LWEPrivateKey secretKey{nullptr};  ///< the secret key s the public key was generated from
 
+    /**
+     * Constructs a key pair from a public key and the matching secret key
+     *
+     * @param Av the public key (A, v)
+     * @param s the secret key s that (A, v) was generated from
+     */
     LWEKeyPairImpl(const LWEPublicKey& Av, const LWEPrivateKey& s) : publicKey(Av), secretKey(s) {}
+
+    /**
+     * Constructs a key pair from a public key and the matching secret key, moving both pointers
+     *
+     * @param Av the public key (A, v)
+     * @param s the secret key s that (A, v) was generated from
+     */
     LWEKeyPairImpl(LWEPublicKey&& Av, LWEPrivateKey&& s) noexcept : publicKey(std::move(Av)), secretKey(std::move(s)) {}
 
+    /**
+     * @return true if both the public key and the secret key are set (non-null)
+     */
     bool good() {
         return publicKey && secretKey;
     }
@@ -64,4 +80,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_KEYPAIR_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_KEYPAIR_H_

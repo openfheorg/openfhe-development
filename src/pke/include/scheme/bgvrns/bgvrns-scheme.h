@@ -29,16 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_BGVRNS_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_
 
-#include "schemerns/rns-scheme.h"
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
+#include "schemerns/rns-scheme.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -46,18 +46,34 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief The BGV scheme in the RNS representation: instantiates the BGV parameter generation, PKE, PRE,
+ * leveled SHE, advanced SHE, multiparty and FHE components.
+ */
 class SchemeBGVRNS : public SchemeRNS {
-public:
+  public:
     SchemeBGVRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationBGVRNS>();
     }
 
     virtual ~SchemeBGVRNS() {}
 
+    /**
+     * Compares two schemes by type.
+     *
+     * @param sch the scheme to compare to.
+     * @return true if sch is also a SchemeBGVRNS.
+     */
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
         return (typeid(sch) == typeid(SchemeBGVRNS));
     }
 
+    /**
+     * Instantiates the BGV implementation of the given feature (PKE, PRE, LEVELEDSHE, MULTIPARTY, ADVANCEDSHE
+     * or FHE) if it has not been instantiated yet. KEYSWITCH is set up separately by SetKeySwitchingTechnique().
+     *
+     * @param feature the feature to enable; unsupported features throw.
+     */
     void Enable(PKESchemeFeature feature) override;
 
     /////////////////////////////////////
@@ -80,4 +96,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_SCHEME_H_

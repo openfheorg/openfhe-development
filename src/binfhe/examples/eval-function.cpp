@@ -33,6 +33,8 @@
   Example for the FHEW scheme small precision arbitrary function evaluation
  */
 
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;

@@ -29,12 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -50,8 +51,7 @@ static void parthrow(const std::string& msg) {
         try {
             if (i == 7)
                 regthrow("inside throw");
-        }
-        catch (...) {
+        } catch (...) {
             e.CaptureException();
         }
     }

@@ -32,8 +32,8 @@
  * It is a lightweight file to be included where we need the declaration of EvalKeyRelin only
  *
  */
-#ifndef __EVALKEYRELIN_FWD_H__
-#define __EVALKEYRELIN_FWD_H__
+#ifndef SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_FWD_H_
+#define SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_FWD_H_
 
 #include <memory>
 
@@ -42,9 +42,14 @@ namespace lbcrypto {
 template <typename Element>
 class EvalKeyRelinImpl;
 
+/**
+ * @brief Shared pointer to a relinearization (key-switching) evaluation key; this is the type the public API
+ * passes around
+ * @tparam Element a ring element.
+ */
 template <typename Element>
 using EvalKeyRelin = std::shared_ptr<EvalKeyRelinImpl<Element>>;
 
 }  // namespace lbcrypto
 
-#endif  // __EVALKEYRELIN_FWD_H__
+#endif  // SRC_PKE_INCLUDE_KEY_EVALKEYRELIN_FWD_H_

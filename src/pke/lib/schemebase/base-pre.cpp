@@ -30,9 +30,12 @@
 //==================================================================================
 #include "schemebase/base-pre.h"
 
+#include <memory>
+#include <vector>
+
+#include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
-#include "cryptocontext.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-scheme.h"
 
@@ -48,11 +51,11 @@ EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivate
 template <class Element>
 Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
                                                 const PublicKey<Element> publicKey) const {
-    auto algo               = ciphertext->GetCryptoContext()->GetScheme();
+    auto algo = ciphertext->GetCryptoContext()->GetScheme();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     Ciphertext<Element> result = ciphertext->Clone();
-    std::vector<Element>& cv   = result->GetElements();
+    std::vector<Element>& cv = result->GetElements();
     if (publicKey != nullptr) {
         std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey);
 

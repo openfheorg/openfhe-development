@@ -33,6 +33,9 @@
   Example of integer Gaussian sampling
  */
 
+#include <cmath>
+#include <iostream>
+
 #include "openfhecore.h"
 // #include <vld.h>
 using namespace lbcrypto;
@@ -41,8 +44,8 @@ int main() {
     // double std = 1000;
     // double std = 10000;
 
-    double stdBase   = 34;
-    double std       = (1 << 22);
+    double stdBase = 34;
+    double std = (1 << 22);
     int CENTER_COUNT = 1024;
 
     // Random bit generator required by the base samplers
@@ -51,14 +54,14 @@ int main() {
     DiscreteGaussianGeneratorImpl<NativeVector> dggRejection(4);
     DiscreteGaussianGeneratorImpl<NativeVector> dgg4(stdBase);  // for Peikert's method
     double start, finish;
-    size_t count               = 1000;
+    size_t count = 1000;
     double SMOOTHING_PARAMETER = 6;
 
     std::cout << "Distribution parameter = " << std << std::endl;
 
     // Initialization of the base samplers used in generic sampler
     BaseSampler** peikert_samplers = new BaseSampler*[CENTER_COUNT];
-    BaseSampler** ky_samplers      = new BaseSampler*[CENTER_COUNT];
+    BaseSampler** ky_samplers = new BaseSampler*[CENTER_COUNT];
 
     // BaseSampler sampler(mean,std,bg,PEIKERT);
     std::cout << "Started creating base samplers" << std::endl;
@@ -68,7 +71,7 @@ int main() {
         // deviation of distribution, bit generator used for random bits and the
         // type of the sampler
         peikert_samplers[i] = new BaseSampler(static_cast<double>(center), stdBase, &bg, PEIKERT);
-        ky_samplers[i]      = new BaseSampler(static_cast<double>(center), stdBase, &bg, KNUTH_YAO);
+        ky_samplers[i] = new BaseSampler(static_cast<double>(center), stdBase, &bg, KNUTH_YAO);
     }
     std::cout << "Ended creating base samplers, Started sampling" << std::endl;
 

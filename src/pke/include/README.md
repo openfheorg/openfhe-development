@@ -27,8 +27,8 @@
   - SecretKeyDistribution
     - Ring Learning with Error (GAUSSIAN)
     - Optimized (UNIFORM_TERNARY)
-    - Sparse (SPARSE_TERNARY; Hamming weight is 192)
-    - Sparse encapsulated (SPARSE_ENCAPSULATED; Hamming weight of 32 for the key used in bootstrapping and 192 for other operations)
+    - Sparse (SPARSE_TERNARY; Hamming weight is 192; discouraged for CKKS bootstrapping because of a high probability of failure)
+    - Sparse encapsulated (SPARSE_ENCAPSULATED; Hamming weight of 32 for the key used in bootstrapping and 192 for other operations; recommended for CKKS bootstrapping, probability of failure below 2^-128)
 
   - Scaling Technique
     - Fixed Manual (FIXEDMANUAL)

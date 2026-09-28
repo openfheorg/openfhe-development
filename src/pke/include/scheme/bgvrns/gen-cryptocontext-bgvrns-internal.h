@@ -33,14 +33,14 @@
   API to generate BGVRNS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
-#define __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
-
-#include "encoding/encodingparams.h"
-#include "scheme/scheme-utils.h"
-#include "scheme/scheme-id.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_
 
 #include <memory>
+
+#include "encoding/encodingparams.h"
+#include "scheme/scheme-id.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 
@@ -49,14 +49,26 @@ template <typename T>
 class CCParams;
 
 template <typename ContextGeneratorType, typename Element>
+/**
+ * Builds a BGV crypto context from the parameters: creates the crypto parameters object (with the noise
+ * scale set to the plaintext modulus), computes the number of HYBRID digits, creates the scheme object
+ * with the requested key switching technique, runs the BGV parameter generation for multiplicativeDepth + 1
+ * primes and registers the context with the factory. MUST NOT be used without the wrapper
+ * CryptoContextBGVRNS::genCryptoContext(), which validates the parameters first.
+ *
+ * @tparam ContextGeneratorType the context generator class (CryptoContextBGVRNS).
+ * @tparam Element the ring element type (DCRTPoly).
+ * @param parameters the BGV parameters.
+ * @return the generated crypto context.
+ */
 typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
-    const CCParams<ContextGeneratorType>& parameters) {
-    using ParmType                   = typename Element::Params;
+        const CCParams<ContextGeneratorType>& parameters) {
+    using ParmType = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
     auto ep = std::make_shared<ParmType>();
     EncodingParams encodingParams(
-        std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
+            std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
 
     // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
@@ -113,4 +125,4 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H_

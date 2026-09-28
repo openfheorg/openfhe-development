@@ -34,11 +34,14 @@
  */
 
 #define _USE_MATH_DEFINES
-#include "lattice/lat-hal.h"
+#include <cstdint>
+#include <iostream>
+#include <set>
+#include <sstream>
+#include <string>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
+#include "lattice/lat-hal.h"
 
 using namespace lbcrypto;
 
@@ -191,8 +194,8 @@ BENCHMARK(BM_FACT1);  // register benchmark
 // Prime Modulus tests
 //
 static BigInteger PM_foundPrimeModulus(void) {
-    const usint m     = 2048;
-    const usint nBits = 30;
+    const uint32_t m = 2048;
+    const uint32_t nBits = 30;
 
     return lbcrypto::FirstPrime<BigInteger>(nBits, m);
 }
@@ -215,8 +218,8 @@ BENCHMARK(BM_PM1);  // register benchmark
 
 // note this returns a refrence to BBI
 static BigInteger& PM_returns_higher_bit_length(void) {
-  usint m = 4096;
-  usint nBits = 49;
+  uint32_t m = 4096;
+  uint32_t nBits = 49;
 
   BigInteger primeModulus = lbcrypto::FirstPrime<BigInteger>(nBits, m);
   return primeModulus;
@@ -240,15 +243,15 @@ BENCHMARK(BM_PM2);  // register benchmark
 // Note this benchmark returns two BBIs so we return a string and suffer
 // some overhead
 static std::string PROU_equals_m_not_equals_mbytwo(void) {
-    usint m     = 4096;
-    usint nBits = 33;
+    uint32_t m = 4096;
+    uint32_t nBits = 33;
 
-    BigInteger primeModulus         = lbcrypto::FirstPrime<BigInteger>(nBits, m);
+    BigInteger primeModulus = lbcrypto::FirstPrime<BigInteger>(nBits, m);
     BigInteger primitiveRootOfUnity = lbcrypto::RootOfUnity<BigInteger>(m, primeModulus);
 
     BigInteger M(std::to_string(m)), MbyTwo(M.DividedBy(2));
 
-    BigInteger wpowerm      = primitiveRootOfUnity.ModExp(M, primeModulus);
+    BigInteger wpowerm = primitiveRootOfUnity.ModExp(M, primeModulus);
     BigInteger wpowermbytwo = primitiveRootOfUnity.ModExp(MbyTwo, primeModulus);
     return (wpowerm.ToString() + " " + wpowermbytwo.ToString());
 }
@@ -268,9 +271,9 @@ BENCHMARK(BM_PROU1);  // register benchmark
 #if 0  // this takes a long time to run so comment out for quick check
 // similarly this outputs 3 values with a string
 static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_single_input(void) {
-  const usint n = 2048;
-  const usint m = 2*n;
-  const usint nBits = 43;
+  const uint32_t n = 2048;
+  const uint32_t m = 2*n;
+  const uint32_t nBits = 43;
   const int ITERATIONS = m*2;
 
   BigInteger M(std::to_string(m)),
@@ -312,68 +315,68 @@ BENCHMARK(BM_PROU2);
 
 // similarly this outputs 3 values with a string
 static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void) {
-    usint nqBitsArray[] = {
-        1,
-        1,
-        2,
-        4,
-        8,
-        20,
-        1024,
-        30,
-        2048,
-        31,
-        2048,
-        33,
-        2048,
-        40,
-        2048,
-        41
-        // const usint BIT_LENGTH = 200 and const usint FRAGMENTATION_FACTOR = 27
-        // ,2048, 51
-        ,
-        4096,
-        32,
-        4096,
-        43
-        // ,4096, 53
-        ,
-        8192,
-        33,
-        8192,
-        44
-        // ,8192, 55
-        ,
-        16384,
-        34,
-        16384,
-        46
-        // ,16384, 57
-        ,
-        32768,
-        35,
-        32768,
-        47
-        // ,32768, 59
+    uint32_t nqBitsArray[] = {
+            1,
+            1,
+            2,
+            4,
+            8,
+            20,
+            1024,
+            30,
+            2048,
+            31,
+            2048,
+            33,
+            2048,
+            40,
+            2048,
+            41
+            // const uint32_t BIT_LENGTH = 200 and const uint32_t FRAGMENTATION_FACTOR = 27
+            // ,2048, 51
+            ,
+            4096,
+            32,
+            4096,
+            43
+            // ,4096, 53
+            ,
+            8192,
+            33,
+            8192,
+            44
+            // ,8192, 55
+            ,
+            16384,
+            34,
+            16384,
+            46
+            // ,16384, 57
+            ,
+            32768,
+            35,
+            32768,
+            47
+            // ,32768, 59
     };
     int length = sizeof(nqBitsArray) / sizeof(nqBitsArray[0]);
 
-    usint n, qBits, m;
+    uint32_t n, qBits, m;
     BigInteger wpowerm("0");
     BigInteger wpowermbytwo("0");
     BigInteger wpowermbyfour("0");
 
     for (int i = 2; i < length; i += 2) {
-        n     = nqBitsArray[i];
+        n = nqBitsArray[i];
         qBits = nqBitsArray[i + 1];
-        m     = 2 * n;
+        m = 2 * n;
 
         BigInteger M(std::to_string(m)), MbyTwo(M.DividedBy(2)), MbyFour(MbyTwo.DividedBy(2));
 
         BigInteger primeModulus = lbcrypto::FirstPrime<BigInteger>(qBits, m);
         BigInteger primitiveRootOfUnity(lbcrypto::RootOfUnity<BigInteger>(m, primeModulus));
-        wpowerm       = primitiveRootOfUnity.ModExp(M, primeModulus);
-        wpowermbytwo  = primitiveRootOfUnity.ModExp(MbyTwo, primeModulus);
+        wpowerm = primitiveRootOfUnity.ModExp(M, primeModulus);
+        wpowermbytwo = primitiveRootOfUnity.ModExp(MbyTwo, primeModulus);
         wpowermbyfour = primitiveRootOfUnity.ModExp(MbyFour, primeModulus);
     }
     return (wpowerm.ToString() + " " + wpowermbytwo.ToString() + " " + wpowermbyfour.ToString());

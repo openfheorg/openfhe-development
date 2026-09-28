@@ -33,6 +33,8 @@
   Example for the FHEW scheme; it prints out the truth tables for all supported binary gates
  */
 
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;

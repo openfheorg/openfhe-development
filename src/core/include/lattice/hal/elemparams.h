@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,183 +33,149 @@
   base class for parameters for a lattice element
  */
 
-#ifndef LBCRYPTO_LATTICE_ELEMPARAMS_H
-#define LBCRYPTO_LATTICE_ELEMPARAMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_
 
-#include "math/math-hal.h"
-#include "math/nbtheory.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
-
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <utility>
+
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
 /**
  * @class ElemParams
- * @file elemparams.h
  * @brief Wrapper class to hold the parameters for Element types and their
  * inheritors.
  */
 template <typename IntegerType>
 class ElemParams : public Serializable {
-public:
+  public:
     constexpr ElemParams() = default;
-    virtual ~ElemParams()  = default;
+    virtual ~ElemParams() = default;
 
     /**
-   * @brief Simple constructor method that takes as input root of unity, big
-   * root of unity, cyclotomic order and the ciphertext modulus and big
-   * ciphertext Modulus.  This is used for bit-packing operations.
-   * @param order the cyclotomic order wrapped by the parameter set.
-   * @param ctModulus the ciphertext modulus wrapped by the parameter set.
-   * @param rUnity the root of unity.
-   * @param bigCtModulus the big ciphertext modulus used for bit packing
-   * operations.
-   * @param bigRUnity the big root of unity used for bit packing operations.
-   */
-
-    // TODO: uint32_t version of GetTotient
-
+     * @brief Constructor taking the cyclotomic order and the ciphertext modulus; the ring dimension is set to the
+     * totient of the order and the roots of unity and big modulus are left at zero.
+     * @param order the cyclotomic order wrapped by the parameter set.
+     * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+     */
     ElemParams(uint32_t order, const IntegerType& ctModulus)
-        : m_ringDimension(GetTotient(order)), m_cyclotomicOrder(order), m_ciphertextModulus(ctModulus) {}
+        : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
+          m_cyclotomicOrder(order),
+          m_ciphertextModulus(ctModulus) {}
 
+    /**
+     * @brief Constructor taking the cyclotomic order, the ciphertext modulus and its root of unity; the ring
+     * dimension is set to the totient of the order and the big modulus and big root of unity are left at zero.
+     * @param order the cyclotomic order wrapped by the parameter set.
+     * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+     * @param rUnity the root of unity.
+     */
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity)
-        : m_ringDimension(GetTotient(order)),
+        : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus),
           m_rootOfUnity(rUnity) {}
 
+    /**
+     * @brief Constructor taking the cyclotomic order, the ciphertext modulus and
+     * root of unity, and the big ciphertext modulus and big root of unity used
+     * for bit-packing operations.
+     * @param order the cyclotomic order wrapped by the parameter set.
+     * @param ctModulus the ciphertext modulus wrapped by the parameter set.
+     * @param rUnity the root of unity.
+     * @param bigCtModulus the big ciphertext modulus used for bit packing
+     * operations.
+     * @param bigRUnity the big root of unity used for bit packing operations.
+     */
     ElemParams(uint32_t order, const IntegerType& ctModulus, const IntegerType& rUnity, const IntegerType& bigCtModulus,
                const IntegerType& bigRUnity)
-        : m_ringDimension(GetTotient(order)),
+        : m_ringDimension(static_cast<uint32_t>(GetTotient(order))),
           m_cyclotomicOrder(order),
           m_ciphertextModulus(ctModulus),
           m_rootOfUnity(rUnity),
           m_bigCiphertextModulus(bigCtModulus),
           m_bigRootOfUnity(bigRUnity) {}
 
-    /**
-   * @brief Copy constructor using assignment to copy wrapped elements.
-   * @param rhs the input ElemParams copied.
-   * @return the resulting parameter set with parameters copied.
-   */
-    ElemParams(const ElemParams& rhs)
-        : m_ringDimension(rhs.m_ringDimension),
-          m_cyclotomicOrder(rhs.m_cyclotomicOrder),
-          m_ciphertextModulus(rhs.m_ciphertextModulus),
-          m_rootOfUnity(rhs.m_rootOfUnity),
-          m_bigCiphertextModulus(rhs.m_bigCiphertextModulus),
-          m_bigRootOfUnity(rhs.m_bigRootOfUnity) {}
+    ElemParams(const ElemParams& rhs) = default;
+    ElemParams(ElemParams&& rhs) noexcept = default;
+    ElemParams& operator=(const ElemParams& rhs) = default;
+    ElemParams& operator=(ElemParams&& rhs) noexcept = default;
 
     /**
-   * @brief Copy constructor using move semnantics to copy wrapped elements.
-   * @param rhs the input ElemParams copied.
-   * @return the resulting copy of the parameter set.
-   */
-    ElemParams(ElemParams&& rhs) noexcept
-        : m_ringDimension(rhs.m_ringDimension),
-          m_cyclotomicOrder(rhs.m_cyclotomicOrder),
-          m_ciphertextModulus(std::move(rhs.m_ciphertextModulus)),
-          m_rootOfUnity(std::move(rhs.m_rootOfUnity)),
-          m_bigCiphertextModulus(std::move(rhs.m_bigCiphertextModulus)),
-          m_bigRootOfUnity(std::move(rhs.m_bigRootOfUnity)) {}
-
-    /**
-   * @brief Assignment operator using assignment operations of wrapped elements.
-   * @param rhs the ElemParams instance to copy.
-   */
-    ElemParams& operator=(const ElemParams& rhs) {
-        m_ringDimension        = rhs.m_ringDimension;
-        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
-        m_ciphertextModulus    = rhs.m_ciphertextModulus;
-        m_rootOfUnity          = rhs.m_rootOfUnity;
-        m_bigCiphertextModulus = rhs.m_bigCiphertextModulus;
-        m_bigRootOfUnity       = rhs.m_bigRootOfUnity;
-        return *this;
-    }
-
-    ElemParams& operator=(ElemParams&& rhs) noexcept {
-        m_ringDimension        = rhs.m_ringDimension;
-        m_cyclotomicOrder      = rhs.m_cyclotomicOrder;
-        m_ciphertextModulus    = std::move(rhs.m_ciphertextModulus);
-        m_rootOfUnity          = std::move(rhs.m_rootOfUnity);
-        m_bigCiphertextModulus = std::move(rhs.m_bigCiphertextModulus);
-        m_bigRootOfUnity       = std::move(rhs.m_bigRootOfUnity);
-        return *this;
-    }
-
-    /**
-   * @brief Simple getter method for cyclotomic order.
-   * @return The cyclotomic order.
-   */
+     * @brief Simple getter method for cyclotomic order.
+     * @return The cyclotomic order.
+     */
     uint32_t GetCyclotomicOrder() const {
         return m_cyclotomicOrder;
     }
 
     /**
-   * @brief Simple ring dimension getter method.  The ring dimension is the
-   * evaluation of the totient function of the cyclotomic order.
-   * @return the ring dimension.
-   */
+     * @brief Simple ring dimension getter method.  The ring dimension is the
+     * evaluation of the totient function of the cyclotomic order.
+     * @return the ring dimension.
+     */
     uint32_t GetRingDimension() const {
         return m_ringDimension;
     }
 
     /**
-   * @brief Simple getter method for the ciphertext modulus, not the big
-   * ciphertext modulus.
-   * @return The ciphertext modulus, not the big ciphertext modulus.
-   */
+     * @brief Simple getter method for the ciphertext modulus, not the big
+     * ciphertext modulus.
+     * @return The ciphertext modulus, not the big ciphertext modulus.
+     */
     const IntegerType& GetModulus() const {
         return m_ciphertextModulus;
     }
 
     /**
-   * @brief Simpler getter method for the big ciphertext modulus.
-   * This is not relevant for all applications.
-   * @return The big ciphertext modulus.
-   */
+     * @brief Simpler getter method for the big ciphertext modulus.
+     * This is not relevant for all applications.
+     * @return The big ciphertext modulus.
+     */
     const IntegerType& GetBigModulus() const {
         return m_bigCiphertextModulus;
     }
 
     /**
-   * @brief Simple getter method for the root of unity, not the big root of
-   * unity.
-   * @return The root of unity, not the big root of unity.
-   */
+     * @brief Simple getter method for the root of unity, not the big root of
+     * unity.
+     * @return The root of unity, not the big root of unity.
+     */
     const IntegerType& GetRootOfUnity() const {
         return m_rootOfUnity;
     }
 
     /**
-   * @brief Simple getter method for the big root of unity.
-   * @return The the big root of unity.
-   */
+     * @brief Simple getter method for the big root of unity.
+     * @return The the big root of unity.
+     */
     const IntegerType& GetBigRootOfUnity() const {
         return m_bigRootOfUnity;
     }
 
     /**
-   * @brief Output strem operator.
-   * @param out the preceding output stream.
-   * @param item what to add to the output stream.
-   * @return the appended output stream.
-   */
+     * @brief Output strem operator.
+     * @param out the preceding output stream.
+     * @param item what to add to the output stream.
+     * @return the appended output stream.
+     */
     friend std::ostream& operator<<(std::ostream& out, const ElemParams& item) {
         return item.doprint(out);
     }
 
     /**
-   * @brief Equality operator that tests the equality of all wrapped values.
-   * @param other the other ElemenParams to compare to.
-   * @return True if all elements are equal, and False otherwise.
-   */
+     * @brief Equality operator that tests the equality of all wrapped values.
+     * @param other the other ElemenParams to compare to.
+     * @return True if all elements are equal, and False otherwise.
+     */
     virtual bool operator==(const ElemParams<IntegerType>& other) const {
         return m_ringDimension == other.m_ringDimension && m_cyclotomicOrder == other.m_cyclotomicOrder &&
                m_ciphertextModulus == other.m_ciphertextModulus && m_rootOfUnity == other.m_rootOfUnity &&
@@ -217,10 +183,10 @@ public:
     }
 
     /**
-   * @brief Inequality operator that tests the equality of all wrapped values.
-   * @param other the other ElemenParams to compare to.
-   * @return False if all elements are equal, and True otherwise.
-   */
+     * @brief Inequality operator that tests the equality of all wrapped values.
+     * @param other the other ElemenParams to compare to.
+     * @return False if all elements are equal, and True otherwise.
+     */
     bool operator!=(const ElemParams<IntegerType>& other) const {
         return !(*this == other);
     }
@@ -255,7 +221,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     uint32_t m_ringDimension{0};
     uint32_t m_cyclotomicOrder{0};
     IntegerType m_ciphertextModulus{0};
@@ -264,10 +230,10 @@ protected:
     IntegerType m_bigRootOfUnity{0};        // Used for only some applications.
 
     /**
-   * @brief Pretty print operator for the ElemParams type.
-   * @param out the ElemParams to output
-   * @return the resulting output stream.
-   */
+     * @brief Pretty print operator for the ElemParams type.
+     * @param out the output stream to print to
+     * @return the resulting output stream.
+     */
     virtual std::ostream& doprint(std::ostream& out) const {
         out << "[m=" << m_cyclotomicOrder << " n=" << m_ringDimension << " q=" << m_ciphertextModulus
             << " ru=" << m_rootOfUnity << " bigq=" << m_bigCiphertextModulus << " bigru=" << m_bigRootOfUnity << "]";
@@ -277,4 +243,4 @@ protected:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_ELEMPARAMS_H_

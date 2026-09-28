@@ -33,10 +33,11 @@
   Functions for scheme id enums
  */
 
-#include "scheme/scheme-id.h"
-#include "utils/exception.h"
 #include <ostream>
 #include <string>
+
+#include "scheme/scheme-id.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 

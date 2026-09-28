@@ -33,8 +33,12 @@
   API to generate CKKS crypto context. MUST NOT (!) be used without a wrapper function
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
-#define __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
+
+#include <cmath>
+#include <cstdint>
+#include <memory>
 
 #include "constants.h"
 #include "cryptocontext-fwd.h"
@@ -43,41 +47,36 @@
 #include "scheme/scheme-utils.h"
 #include "utils/exception.h"
 
-#include <memory>
-
 namespace lbcrypto {
 
 // forward declarations (don't include headers as compilation fails when you do)
 template <typename T>
 class CCParams;
 
+/**
+ * Generates a CKKS cryptocontext from validated parameters: builds the encoding parameters (the scaling modulus
+ * size acts as the plaintext modulus), the crypto parameters and the scheme, adjusts the scaling and first
+ * modulus sizes for the NOISE_FLOODING_DECRYPT mode, runs the CKKS parameter generation and registers the context
+ * with the factory. Must not be called directly; use GenCryptoContext.
+ *
+ * @param parameters the CKKS parameters
+ * @return the cryptocontext
+ */
 template <typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
-    const CCParams<ContextGeneratorType>& parameters) {
-#if NATIVEINT == 128
-    if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT ||
-        parameters.GetScalingTechnique() == COMPOSITESCALINGAUTO ||
-        parameters.GetScalingTechnique() == COMPOSITESCALINGMANUAL) {
-        OPENFHE_THROW(
-            "128-bit CKKS is not supported for the FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO or COMPOSITESCALINGMANUAL methods.");
-    }
-#endif
-    using ParmType                   = typename Element::Params;
+        const CCParams<ContextGeneratorType>& parameters) {
+    using ParmType = typename Element::Params;
     constexpr float assuranceMeasure = 36.0f;
 
     auto ep = std::make_shared<ParmType>();
 
-    usint scalingModSize    = parameters.GetScalingModSize();
-    usint firstModSize      = parameters.GetFirstModSize();
+    uint32_t scalingModSize = parameters.GetScalingModSize();
+    uint32_t firstModSize = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
-        if (parameters.GetNoiseEstimate() == 0) {
-            OPENFHE_THROW(
-                "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
-        }
-        double logstd =
-            parameters.GetStatisticalSecurity() / 2 + std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
+        double logstd = parameters.GetStatisticalSecurity() / 2 +
+                        std::log2(std::sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = std::pow(2, logstd + parameters.GetNoiseEstimate());
 #if NATIVEINT == 128
         scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +
@@ -85,7 +84,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         firstModSize = scalingModSize + 11;
 #else
         scalingModSize = MAX_MODULUS_SIZE - 1;
-        firstModSize   = MAX_MODULUS_SIZE;
+        firstModSize = MAX_MODULUS_SIZE;
         if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
             OPENFHE_THROW("Precision of less than 3 bits is not supported. logstd " + std::to_string(logstd) +
                           " + noiseEstimate " + std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
@@ -148,4 +147,4 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 }
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_

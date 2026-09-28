@@ -33,49 +33,62 @@
   This file contains the functionality for parallel operation
  */
 
-#ifndef SRC_CORE_LIB_UTILS_PARALLEL_H_
-#define SRC_CORE_LIB_UTILS_PARALLEL_H_
+#ifndef SRC_CORE_INCLUDE_UTILS_PARALLEL_H_
+#define SRC_CORE_INCLUDE_UTILS_PARALLEL_H_
 
 #ifdef PARALLEL
     #include <omp.h>
+
+    #include <atomic>
 #endif
 
 namespace lbcrypto {
 
+/**
+ * @brief Runtime control of the number of OpenMP threads OpenFHE uses. Holds the thread count reported by the
+ * system at construction (machine threads) and a current thread limit in [1, machine threads] that the library's
+ * parallel regions consult through GetThreadLimit(). Without the PARALLEL build option every query returns 1 and
+ * the setters are no-ops. A single global instance, OpenFHEParallelControls, is used throughout the library.
+ */
 class ParallelControls {
-public:
-    // @Brief CTOR, enables parallel operations as default
-    // Cache the number of machine threads the system reports (can be
-    // overridden by environment variables)
-    // enable on startup by default
+  public:
+    /**
+     * @brief Constructor; latches the number of machine threads the system reports (can be overridden by the
+     * OpenMP environment variables) and allows all of them by default.
+     */
     ParallelControls() {
 #ifdef PARALLEL
         machineThreads = omp_get_max_threads();
-        Enable();
-            // omp_set_dynamic(0);
-            // omp_set_nested(0);
-            // omp_set_max_active_levels(1);
+        threadLimit.store(machineThreads, std::memory_order_relaxed);
 #endif
     }
 
-    // @Brief Enable() enables parallel operation
-    void Enable() const {
-#ifdef PARALLEL
-        omp_set_num_threads(machineThreads);
-#endif
+    /**
+     * @brief Enables parallel operation by setting the thread limit to the number of machine threads.
+     */
+    void Enable() {
+        SetNumThreads(machineThreads);
     }
 
-    // @Brief Disable() disables parallel operation
-    void Disable() const {
-#ifdef PARALLEL
-        omp_set_num_threads(1);
-#endif
+    /**
+     * @brief Disables parallel operation by setting the thread limit to 1.
+     */
+    void Disable() {
+        SetNumThreads(1);
     }
 
+    /**
+     * @brief Returns the number of machine threads latched at construction.
+     * @return number of machine threads (1 without PARALLEL)
+     */
     int GetMachineThreads() const {
         return machineThreads;
     }
 
+    /**
+     * @brief Returns the number of processors available to the process, as reported by OpenMP.
+     * @return number of processors (1 without PARALLEL)
+     */
     static int GetNumProcs() {
 #ifdef PARALLEL
         return omp_get_num_procs();
@@ -84,66 +97,92 @@ public:
 #endif
     }
 
-    // @Brief returns current number of threads that are usable
-    // @return int # threads
+    /**
+     * @brief Returns the current thread limit.
+     * @return number of threads the library may currently use (1 without PARALLEL)
+     */
     int GetNumThreads() const {
 #ifdef PARALLEL
-        int nthreads = 1;
-        int tid      = 1;
-            // Fork a team of threads giving them their own copies of variables
-            // so we can see how many threads we have to work with
-    #pragma omp parallel private(tid)
-        {
-            /* Obtain thread number */
-            tid = omp_get_thread_num();
-
-            /* Only main thread does this */
-            if (tid == 0) {
-                nthreads = omp_get_num_threads();
-            }
-        }
-        return nthreads;
+        return threadLimit.load(std::memory_order_relaxed);
 #else
         return 1;
 #endif
     }
 
-    // @Brief returns min of int n and machineThreads
+    /**
+     * @brief Reports whether the caller is inside an active OpenMP parallel region, where a nested region would
+     * get one thread.
+     * @return true inside an active parallel region; false otherwise and without PARALLEL
+     */
+    static bool InParallelRegion() {
+#ifdef PARALLEL
+        return omp_in_parallel() != 0;
+#else
+        return false;
+#endif
+    }
+
+    /**
+     * @brief Clamps a requested thread count to [1, current thread limit]; used as the num_threads value of the
+     * library's parallel regions.
+     * @param n requested number of threads (typically the amount of independent work available)
+     * @return n clamped to [1, current thread limit] (1 without PARALLEL)
+     */
     int GetThreadLimit(int n) const {
 #ifdef PARALLEL
-        return n > machineThreads ? machineThreads : n;
+        int lim = threadLimit.load(std::memory_order_relaxed);
+        return n > lim ? lim : (n < 1 ? 1 : n);
 #else
         return 1;
 #endif
     }
 
-    // @Brief sets number of threads to use (limited by system value)
+    /**
+     * @brief Sets the thread limit, clamped to [1, machine threads], and passes it to omp_set_num_threads().
+     * @param nthreads requested number of threads
+     */
     void SetNumThreads(int nthreads) {
 #ifdef PARALLEL
-        // set number of thread, but limit to the system set number of machine threads...
-        omp_set_num_threads(nthreads > machineThreads ? machineThreads : nthreads);
+        if (nthreads < 1)
+            nthreads = 1;
+        else if (nthreads > machineThreads)
+            nthreads = machineThreads;
+        threadLimit.store(nthreads, std::memory_order_relaxed);
+        omp_set_num_threads(nthreads);
 #endif
     }
 
+    /**
+     * @brief Saves the current thread limit and caps it at half the processors for the duration of unit tests;
+     * the saved value is restored by UnitTestStop().
+     */
     void UnitTestStart() {
 #ifdef PARALLEL
-        int nthreads = omp_get_max_threads() >> 1;
-        omp_set_num_threads(nthreads > machineThreads ? machineThreads : nthreads);
+        savedLimit = threadLimit.load(std::memory_order_relaxed);
+        SetNumThreads(GetNumProcs() / 2);
 #endif
     }
 
+    /**
+     * @brief Restores the thread limit saved by UnitTestStart().
+     */
     void UnitTestStop() {
 #ifdef PARALLEL
-        omp_set_num_threads(machineThreads);
+        SetNumThreads(savedLimit);
 #endif
     }
 
-private:
+  private:
+#ifdef PARALLEL
+    std::atomic<int> threadLimit{1};
+    int savedLimit{1};
+#endif
     int machineThreads{1};
 };
 
+/** the global instance consulted by all parallel regions in the library */
 extern ParallelControls OpenFHEParallelControls;
 
 }  // namespace lbcrypto
 
-#endif /* SRC_CORE_LIB_UTILS_PARALLEL_H_ */
+#endif  // SRC_CORE_INCLUDE_UTILS_PARALLEL_H_

@@ -29,16 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CIPHERTEXT_H_
-#define _LWE_CIPHERTEXT_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+#define SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lwe-ciphertext-fwd.h"
 #include "math/math-hal.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -47,13 +48,36 @@ namespace lbcrypto {
  * and integer "b"
  */
 class LWECiphertextImpl : public Serializable {
-public:
+  public:
     LWECiphertextImpl() = default;
 
+    /**
+     * Constructs an LWE ciphertext (a, b) from its components
+     *
+     * @param a the vector "a"; its modulus is the ciphertext modulus q. For a fresh encryption of m under the
+     * secret key s, b = <a, s> + e + m * (q / p) mod q
+     * @param b the integer "b"
+     * @param p the plaintext modulus the ciphertext encodes for (4 for binary gates)
+     */
     LWECiphertextImpl(const NativeVector& a, NativeInteger b, NativeInteger p = 4) : m_a(a), m_b(b), m_p(p) {}
 
-    LWECiphertextImpl(NativeVector&& a, NativeInteger b, NativeInteger p = 4) noexcept : m_a(std::move(a)), m_b(b), m_p(p) {}
+    /**
+     * Constructs an LWE ciphertext (a, b) from its components, moving the vector "a"
+     *
+     * @param a the vector "a"; its modulus is the ciphertext modulus q. For a fresh encryption of m under the
+     * secret key s, b = <a, s> + e + m * (q / p) mod q
+     * @param b the integer "b"
+     * @param p the plaintext modulus the ciphertext encodes for (4 for binary gates)
+     */
+    LWECiphertextImpl(NativeVector&& a, NativeInteger b, NativeInteger p = 4) noexcept
+        : m_a(std::move(a)), m_b(b), m_p(p) {}
 
+    // TODO: m_p deliberately not copied, and completing this copy breaks multi-input gates.
+    /**
+     * Copies "a" and "b" only; the plaintext modulus of the copy is left at its default of 4
+     *
+     * @param rhs the ciphertext to copy
+     */
     LWECiphertextImpl(const LWECiphertextImpl& rhs) : m_a(rhs.m_a), m_b(rhs.m_b) {}
 
     LWECiphertextImpl(LWECiphertextImpl&& rhs) noexcept : m_a(std::move(rhs.m_a)), m_b(rhs.m_b) {}
@@ -82,10 +106,16 @@ public:
         return m_b;
     }
 
+    /**
+     * @return the ciphertext modulus q (the modulus of the vector "a")
+     */
     NativeInteger GetModulus() const {
         return m_a.GetModulus();
     }
 
+    /**
+     * @return the LWE dimension (the length of the vector "a")
+     */
     uint32_t GetLength() const {
         return m_a.GetLength();
     }
@@ -106,9 +136,14 @@ public:
         m_b = b;
     }
 
+    /**
+     * Sets the ciphertext modulus and reduces "a" and "b" modulo it
+     *
+     * @param q the new ciphertext modulus
+     */
     void SetModulus(NativeInteger q) {
-        m_a.ModEq(q);
         m_a.SetModulus(q);
+        m_a.ModReduceEq();
         m_b.ModEq(q);
     }
 
@@ -116,10 +151,20 @@ public:
         m_p = pmod;
     }
 
+    /**
+     * Compares "a", "b" and the plaintext modulus
+     *
+     * @param other the ciphertext to compare with
+     * @return true if both ciphertexts have the same "a", "b" and plaintext modulus
+     */
     bool operator==(const LWECiphertextImpl& other) const {
-        return m_a == other.m_a && m_b == other.m_b;
+        return m_a == other.m_a && m_b == other.m_b && m_p == other.m_p;
     }
 
+    /**
+     * @param other the ciphertext to compare with
+     * @return true if the ciphertexts differ in "a", "b" or the plaintext modulus
+     */
     bool operator!=(const LWECiphertextImpl& other) const {
         return !(*this == other);
     }
@@ -128,6 +173,7 @@ public:
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
+        ar(::cereal::make_nvp("p", m_p));
     }
 
     template <class Archive>
@@ -138,6 +184,7 @@ public:
         }
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
+        ar(::cereal::make_nvp("p", m_p));
     }
 
     std::string SerializedObjectName() const override {
@@ -148,12 +195,12 @@ public:
         return 1;
     }
 
-private:
-    NativeVector m_a;
-    NativeInteger m_b;
-    NativeInteger m_p{4};  // pt modulus
+  private:
+    NativeVector m_a;      ///< the vector "a"; its modulus is the ciphertext modulus q
+    NativeInteger m_b;     ///< the integer "b" = <a, s> + e + encoded message mod q
+    NativeInteger m_p{4};  ///< plaintext modulus; see the copy constructor for why copies reset it
 };
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CIPHERTEXT_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CIPHERTEXT_H_

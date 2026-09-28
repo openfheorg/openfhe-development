@@ -64,12 +64,15 @@ Important CMake Flags Used
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We point out a number of the standard CMake variables that can be set using -D from the CMake command line, which may be of use to OpenFHE users. To set one of these variables, use -D*VARIABLE_NAME*=*VALUE* on the command line.
 
- ======================= ============================== ================================================================================================================================================================================================================================================================================================================================
-  *VARIABLE_NAME*         Definition                     Notes
- ======================= ============================== ================================================================================================================================================================================================================================================================================================================================
-  CMAKE_INSTALL_PREFIX    Base directory for installs    Base directory for installation of OpenFHE. Libraries are installed in ${CMAKE_INSTALL_PREFIX}/lib and include files are installed in ${CMAKE_INSTALL_PREFIX}/include/openfhe. OpenFHE is also exported as a CMake package for the benefit of any users wanting to use OpenFHE; the package files are also installed here
-  CMAKE_BUILD_TYPE        Debug, Release                 Default is to build OpenFHE for release, with no debug information; developers may want to specify -DCMAKE_BUILD_TYPE=Debug
- ======================= ============================== ================================================================================================================================================================================================================================================================================================================================
+ ========================= ============================ =============================================================================================================================================================================================================================================================================================================================================================================================================================================
+  *VARIABLE_NAME*           Definition                   Notes
+ ========================= ============================ =============================================================================================================================================================================================================================================================================================================================================================================================================================================
+  CMAKE_INSTALL_PREFIX      Base directory for installs  Base directory for installation of OpenFHE. What goes where underneath it is decided by CMAKE_INSTALL_INCLUDEDIR, CMAKE_INSTALL_LIBDIR and CMAKE_INSTALL_BINDIR below. OpenFHE is also exported as a CMake package so that applications can locate it with find_package(OpenFHE); those package files are installed next to the libraries
+  CMAKE_INSTALL_INCLUDEDIR  Header directory name        Directory for header files, taken relative to CMAKE_INSTALL_PREFIX unless given as an absolute path. Defaults to include. OpenFHE places its own headers in an openfhe subdirectory of it, so by default they end up in ${CMAKE_INSTALL_PREFIX}/include/openfhe
+  CMAKE_INSTALL_LIBDIR      Library directory name       Directory for the libraries and the exported CMake package files, taken relative to CMAKE_INSTALL_PREFIX unless given as an absolute path. Defaults to lib, which is the layout OpenFHE has always installed; distribution packagers can set it to lib64 or lib/<arch-triplet>. OpenFHE seeds this default before including GNUInstallDirs, so the lib64 or multiarch value GNUInstallDirs would otherwise derive is used only when asked for
+  CMAKE_INSTALL_BINDIR      Runtime directory name       Directory for runtime binaries, taken relative to CMAKE_INSTALL_PREFIX unless given as an absolute path. Defaults to bin. This is where the DLLs are installed on Windows, with the import libraries going to CMAKE_INSTALL_LIBDIR; on Unix-like systems OpenFHE installs nothing here. Applications can read the location as OpenFHE_BINDIR from OpenFHEConfig.cmake
+  CMAKE_BUILD_TYPE          Debug, Release               Default is to build OpenFHE for release, with no debug information; developers may want to specify -DCMAKE_BUILD_TYPE=Debug
+ ========================= ============================ =============================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 
 Flags for OpenFHE Builds
@@ -81,28 +84,32 @@ Each of the options is enabled by saying ``-DOPTION_NAME=ON`` and is disabled by
 
 The table below shows the current list of options, definition for the option, and a default value.
 
- ================== ===================================================================================================================================================================== ==========
-  OPTION_NAME        Description                                                                                                                                                           Default
- ================== ===================================================================================================================================================================== ==========
-  BUILD_UNITTESTS    Set to ON to build unit tests for the library                                                                                                                         ON
-  BUILD_EXAMPLES     Set to ON to build examples for the library                                                                                                                           ON
-  BUILD_BENCHMARKS   Set to ON to build benchmarks for the library                                                                                                                         ON
-  BUILD_EXTRAS       Set to ON to build extra examples for the library                                                                                                                     OFF
-  BUILD_SHARED       Set to ON to include shared versions of the library                                                                                                                   ON
-  BUILD_STATIC       Set to ON to include static versions of the library                                                                                                                   OFF
-  WITH_BE2           Include Backend 2 in build by setting WITH_BE2 to ON                                                                                                                  ON
-  WITH_BE4           Include Backend 4 in build by setting WITH_BE4 to ON                                                                                                                  ON
-  WITH_NTL           Include Backend 6 and NTL in build by setting WITH_NTL to ON                                                                                                          OFF
-  WITH_TCM           Activate tcmalloc by setting WITH_TCM to ON                                                                                                                           OFF
-  WITH_OPENMP        Use OpenMP to enable <omp.h>                                                                                                                                          ON
-  WITH_NATIVEOPT     Use machine-specific optimizations (major speedup for clang)                                                                                                          OFF
-  NATIVE_SIZE        Set default word size for native integer arithmetic to 64 or 128 bits                                                                                                 64
-  CKKS_M_FACTOR      Parameter used to strengthen the CKKS adversarial model in scenarios where decryption results are shared among multiple parties (See Security.md for more details)    1
- ================== ===================================================================================================================================================================== ==========
+ ============================== ===================================================================================================================================================================== =======
+  OPTION_NAME                   Description                                                                                                                                                           Default
+ ============================== ===================================================================================================================================================================== =======
+  BUILD_UNITTESTS               Set to ON to build unit tests for the library                                                                                                                         ON
+  BUILD_EXAMPLES                Set to ON to build examples for the library                                                                                                                           ON
+  BUILD_BENCHMARKS              Set to ON to build benchmarks for the library                                                                                                                         ON
+  BUILD_EXTRAS                  Set to ON to build extra examples for the library                                                                                                                     OFF
+  BUILD_SHARED                  Set to ON to include shared versions of the library                                                                                                                   ON
+  BUILD_STATIC                  Set to ON to include static versions of the library                                                                                                                   OFF
+  WITH_BE2                      Include Backend 2 in build by setting WITH_BE2 to ON                                                                                                                  ON
+  WITH_BE4                      Include Backend 4 in build by setting WITH_BE4 to ON                                                                                                                  ON
+  WITH_NTL                      Include Backend 6 and NTL in build by setting WITH_NTL to ON                                                                                                          OFF
+  WITH_TCM                      Activate tcmalloc by setting WITH_TCM to ON                                                                                                                           OFF
+  WITH_MALLOC_TUNING            Tune glibc malloc to retain freed memory for reuse (higher performance, higher resident memory; see AllocTrim())                                                      ON
+  WITH_OPENMP                   Use OpenMP to enable <omp.h>                                                                                                                                          ON
+  WITH_NATIVEOPT                Use machine-specific optimizations (major speedup for clang)                                                                                                          OFF
+  WITH_NUMA_INTERLEAVE          Interleave memory across NUMA nodes at library load (multi-socket Linux only; no effect elsewhere)                                                                    ON
+  WITH_DEFAULT_DIAGNOSTIC_SINK  Build the built-in diagnostic sink into the library; OFF leaves it free of std::cerr/std::cout and the application supplies the sink (static builds)                  ON
+  NATIVE_SIZE                   Set default word size for native integer arithmetic to 64 or 128 bits                                                                                                 64
+  CKKS_M_FACTOR                 Parameter used to strengthen the CKKS adversarial model in scenarios where decryption results are shared among multiple parties (See Security.md for more details)    1
+  PARTIAL_SUM_RADIX             Radix of the rotation-fold accumulations (bootstrap partial sums, EvalSum); higher powers of two reduce runtime but need more evaluation keys                         4
+ ============================== ===================================================================================================================================================================== =======
 
 .. note:: More Options will be added as development progresses
 
-The default math backend for the OpenFHE build is Backend 2 (basic fixed-maximum-length big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
+The default math backend for the OpenFHE build is Backend 4 (dynamically-sized big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
 
 Detecting Local Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

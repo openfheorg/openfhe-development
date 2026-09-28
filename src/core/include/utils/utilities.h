@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,17 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_UTILS_UTILITIES_H
-#define LBCRYPTO_UTILS_UTILITIES_H
+#ifndef SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
+#define SRC_CORE_INCLUDE_UTILS_UTILITIES_H_
+
+#include <climits>  // CHAR_BIT
+#include <cmath>
+#include <cstdint>
+#include <limits>  // std::numeric_limits
+#include <string>
+#include <type_traits>  // std::is_integral
 
 #include "config_core.h"
 #include "utils/inttypes.h"
-
-#include <cmath>
-#include <climits>  // CHAR_BIT
-#include <limits>   // std::numeric_limits
-#include <string>
-#include <type_traits>  // std::is_integral
 
 /**
  * @namespace lbcrypto
@@ -97,21 +98,42 @@ inline uint64_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
 
 // TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
 // that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
+/**
+ * @brief Returns the largest magnitude, 2^63 - 2^9 - 1, that a double is allowed to have when it is converted
+ * to int64_t; this is not the maximum int64_t value.
+ * @return the conversion bound
+ */
 inline constexpr int64_t Max64BitValue() {
     return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 9) - 1);
 }
 
 // TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if double can be
 // converted to int64_t. The name should reflect that. Something like isConvertableToInt64(). The function must be renamed!!!
+/**
+ * @brief Checks whether a double is too large in magnitude to be converted to int64_t.
+ * @param d value to test
+ * @return true if |d| exceeds Max64BitValue()
+ */
 inline bool is64BitOverflow(double d) {
     return std::abs(d) > static_cast<double>(Max64BitValue());
 }
 
 #if NATIVEINT == 128
+/**
+ * @brief Returns the largest magnitude, 2^127 - 2^73 - 1, that a double is allowed to have when it is converted
+ * to a 128-bit signed integer.
+ * @return the conversion bound
+ */
 inline constexpr __int128 Max128BitValue() {
-    return static_cast<__int128>(((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1);
+    return static_cast<int128_t>((static_cast<uint128_t>(1) << 127) - (static_cast<uint128_t>(1) << 73) -
+                                 static_cast<uint128_t>(1));
 }
 
+/**
+ * @brief Checks whether a double is too large in magnitude to be converted to a 128-bit signed integer.
+ * @param d value to test
+ * @return true if |d| exceeds Max128BitValue()
+ */
 inline bool is128BitOverflow(double d) {
     return std::abs(d) > static_cast<double>(Max128BitValue());
 }
@@ -119,6 +141,43 @@ inline bool is128BitOverflow(double d) {
 enum { MAX_DOUBLE_PRECISION = 52 };
 #endif
 
+/**
+ * @brief Converts a signed integer to its residue in [0, modulus) for a modulus that fits in 64 bits.
+ *
+ * @param value the signed integer to convert.
+ * @param modulus the modulus to reduce against, non-zero.
+ * @return value modulo modulus, in [0, modulus).
+ */
+inline uint64_t SignedToResidue(int64_t value, uint64_t modulus) {
+    const bool negative = value < 0;
+    const uint64_t magnitude = negative ? uint64_t(0) - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
+    const uint64_t residue = (magnitude < modulus) ? magnitude : magnitude % modulus;
+    return (negative && residue != 0) ? modulus - residue : residue;
+}
+
+/**
+ * @brief Converts a signed integer to its residue in [0, modulus) for a library integer type.
+ *
+ * @param value the signed integer to convert.
+ * @param modulus the modulus to reduce against.
+ * @return value modulo modulus, in [0, modulus).
+ */
+template <typename IntType, std::enable_if_t<!std::is_integral_v<IntType>, bool> = true>
+IntType SignedToResidue(int64_t value, const IntType& modulus) {
+    if (modulus.GetMSB() <= 64)
+        return IntType(SignedToResidue(value, modulus.template ConvertToInt<uint64_t>()));
+    if (value >= 0)
+        return IntType(static_cast<uint64_t>(value));
+    const uint64_t magnitude = uint64_t(0) - static_cast<uint64_t>(value);
+    return modulus - IntType(magnitude);
+}
+
+/**
+ * @brief Checks whether a double fits the signed range of the native integer type: int32_t max for 32-bit
+ * NativeInteger, Max64BitValue() for 64-bit, Max128BitValue() for 128-bit.
+ * @param d value to test
+ * @return true if |d| is within the bound for the configured NATIVEINT size
+ */
 inline bool isConvertableToNativeInt(double d) {
     if constexpr (NATIVEINT == 32)
         return std::abs(d) <= static_cast<double>(std::numeric_limits<int32_t>::max());
@@ -132,4 +191,4 @@ inline bool isConvertableToNativeInt(double d) {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_UTILITIES_H_

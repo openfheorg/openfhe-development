@@ -29,6 +29,25 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <numeric>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+#include "UnitTestUtils.h"
 #include "config_core.h"
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
@@ -38,17 +57,7 @@
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "schemelet/rlwe-mp.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
-#include "UnitTestUtils.h"
 #include "utils/debug.h"
-
-#include <chrono>
-#include <complex>
-#include <iterator>
-#include <numeric>
-#include <ostream>
-#include <vector>
 
 // Define BENCH below to enable more fine-grained benchmarking.
 // The benchmarks using SPARSE_TERNARY distribution correspond exactly to Tables 2 and A.3 in
@@ -63,6 +72,10 @@ enum TEST_CASE_TYPE : int {
     FBT_SIGNDIGIT,
     FBT_CONSECLEV,
     FBT_MVB,
+    FBT_NOISE,
+    FBT_NOISE_VS_FLEXIBLE,
+    FBT_MVB_REUSE,
+    FBT_INVALID,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -80,11 +93,71 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case FBT_MVB:
             typeName = "FBT_MVB";
             break;
+        case FBT_NOISE:
+            typeName = "FBT_NOISE";
+            break;
+        case FBT_NOISE_VS_FLEXIBLE:
+            typeName = "FBT_NOISE_VS_FLEXIBLE";
+            break;
+        case FBT_MVB_REUSE:
+            typeName = "FBT_MVB_REUSE";
+            break;
+        case FBT_INVALID:
+            typeName = "FBT_INVALID";
+            break;
         default:
             typeName = "UNKNOWN";
             break;
     }
     return os << typeName;
+}
+
+static std::string ScalTechName(ScalingTechnique st) {
+    switch (st) {
+        case FIXEDMANUAL:
+            return "FIXEDMANUAL";
+        case FIXEDAUTO:
+            return "FIXEDAUTO";
+        case FLEXIBLEAUTO:
+            return "FLEXIBLEAUTO";
+        case FLEXIBLEAUTOEXT:
+            return "FLEXIBLEAUTOEXT";
+        case COMPOSITESCALINGAUTO:
+            return "COMPOSITESCALINGAUTO";
+        case COMPOSITESCALINGMANUAL:
+            return "COMPOSITESCALINGMANUAL";
+        default:
+            return "UNKNOWN";
+    }
+}
+
+// The CKKS scaling factor has the same bit length as the RLWE ciphertext modulus. The first modulus has the
+// same size too, except for composite scaling, whose parameter generation requires firstModSize > scalingModSize;
+// there the first modulus is one bit larger (the ratio between the first modulus and the RLWE ciphertext
+// modulus is compensated exactly by the scale bookkeeping of functional bootstrapping).
+static uint32_t FirstModSize(uint32_t dcrtBits, ScalingTechnique st) {
+    return (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ? dcrtBits + 1 : dcrtBits;
+}
+
+// Composite scaling with a register word size of w bits yields composite degree ceil(dcrtBits / w), i.e., with the
+// default w = 32, 2 for the scaling factor sizes used in most composite rows and 3 for the 90-bit rows (the default
+// register word size of the library would yield composite degree 1, which is rejected). COMPOSITESCALINGMANUAL
+// requires the composite degree to be set explicitly; the same degree as the one COMPOSITESCALINGAUTO would choose
+// is used.
+static uint32_t CompositeDegreeForTest(uint32_t dcrtBits, ScalingTechnique st, uint32_t registerWordSize) {
+    return (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) ?
+                   (dcrtBits + registerWordSize - 1) / registerWordSize :
+                   1;
+}
+
+static void SetScalingTechniqueParams(CCParams<CryptoContextCKKSRNS>& parameters, ScalingTechnique st,
+                                      uint32_t dcrtBits, uint32_t registerWordSize) {
+    parameters.SetScalingTechnique(st);
+    if (st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) {
+        parameters.SetRegisterWordSize(registerWordSize);
+        if (st == COMPOSITESCALINGMANUAL)
+            parameters.SetCompositeDegree(CompositeDegreeForTest(dcrtBits, st, registerWordSize));
+    }
 }
 
 struct TEST_CASE_FBT {
@@ -107,10 +180,14 @@ struct TEST_CASE_FBT {
     uint32_t levelsComputation;
     std::vector<uint32_t> lvlb;
     SecretKeyDist skd;
+    // scaling technique used for the CKKS cryptocontext; FIXEDMANUAL by default
+    ScalingTechnique scalTech = FIXEDMANUAL;
+    // register word size for the COMPOSITESCALING* techniques; 32 by default
+    uint32_t registerWordSize = 32;
 
     std::string buildTestName() const {
         std::stringstream ss;
-        ss << testCaseType << "_" << description;
+        ss << testCaseType << "_" << description << "_" << ScalTechName(scalTech);
         return ss.str();
     }
 };
@@ -133,18 +210,28 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 [[maybe_unused]] const BigInteger Q40(BigInteger(1) << 40);
 [[maybe_unused]] const BigInteger Q42(BigInteger(1) << 42);
 [[maybe_unused]] const BigInteger Q43(BigInteger(1) << 43);
+[[maybe_unused]] const BigInteger Q44(BigInteger(1) << 44);
 [[maybe_unused]] const BigInteger Q45(BigInteger(1) << 45);
 [[maybe_unused]] const BigInteger Q46(BigInteger(1) << 46);
 [[maybe_unused]] const BigInteger Q47(BigInteger(1) << 47);
 [[maybe_unused]] const BigInteger Q48(BigInteger(1) << 48);
+[[maybe_unused]] const BigInteger Q54(BigInteger(1) << 54);
 [[maybe_unused]] const BigInteger Q55(BigInteger(1) << 55);
 [[maybe_unused]] const BigInteger Q56(BigInteger(1) << 56);
 [[maybe_unused]] const BigInteger Q57(BigInteger(1) << 57);
 [[maybe_unused]] const BigInteger Q58(BigInteger(1) << 58);
 [[maybe_unused]] const BigInteger Q59(BigInteger(1) << 59);
 [[maybe_unused]] const BigInteger Q60(BigInteger(1) << 60);
+[[maybe_unused]] const BigInteger Q63(BigInteger(1) << 63);
+[[maybe_unused]] const BigInteger Q64(BigInteger(1) << 64);
 [[maybe_unused]] const BigInteger Q71(BigInteger(1) << 71);
 [[maybe_unused]] const BigInteger Q80(BigInteger(1) << 80);
+[[maybe_unused]] const BigInteger Q90(BigInteger(1) << 90);
+[[maybe_unused]] const BigInteger Q110(BigInteger(1) << 110);
+[[maybe_unused]] const BigInteger Q119(BigInteger(1) << 119);
+[[maybe_unused]] const BigInteger Q120(BigInteger(1) << 120);
+[[maybe_unused]] const BigInteger Q140(BigInteger(1) << 140);
+[[maybe_unused]] const BigInteger Q130(BigInteger(1) << 130);
 
 [[maybe_unused]] constexpr double SCALETHI(32.0);
 [[maybe_unused]] constexpr double SCALESTEPTHI(1.0);
@@ -158,8 +245,11 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 
 // clang-format off
 static std::vector<TEST_CASE_FBT> testCases = {
-// Functional Bootstrapping does not support NATIVE_SIZE == 128
-// For higher precision, consider using composite scaling instead
+// Functional Bootstrapping does not support NATIVE_SIZE == 128: every case below fails there, for the
+// FIXED* modes as well, because the 128-bit scaling path that standard CKKS bootstrapping implements
+// (the correction factor) has no counterpart here. The supported rescaling modes are FIXEDMANUAL,
+// FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and COMPOSITESCALINGMANUAL on the 64-bit
+// build (composite scaling rows are 10xx below).
 #if NATIVEINT != 128
 #ifndef BENCH
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
@@ -212,6 +302,170 @@ static std::vector<TEST_CASE_FBT> testCases = {
     {       FBT_MVB, "122",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
     {       FBT_MVB, "123",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
     {       FBT_MVB, "124",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED},
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "201",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "202",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "203",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, FIXEDAUTO},
+    { FBT_SIGNDIGIT, "204",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    { FBT_CONSECLEV, "205",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    {       FBT_MVB, "206",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "301",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "302",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "303",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, FLEXIBLEAUTO},
+    { FBT_SIGNDIGIT, "304",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    { FBT_CONSECLEV, "305",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {       FBT_MVB, "306",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "401",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    {    FBT_ARBLUT, "402",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    {    FBT_ARBLUT, "403",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, FLEXIBLEAUTOEXT},
+    { FBT_SIGNDIGIT, "404",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    { FBT_CONSECLEV, "405",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    {       FBT_MVB, "406",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    // Noise-comparison tests: the same LUT is evaluated with FIXEDMANUAL and with the scaling technique below,
+    // and the test checks that the FLEXIBLE* technique yields smaller noise in the output RLWE ciphertext.
+    {     FBT_NOISE, "501",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {     FBT_NOISE, "502",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    // Multi-limb initial scaling: the RLWE ciphertext is imported with one level available before
+    // bootstrapping, so initialScaling in EvalFBT covers two RNS limbs (q0*q1) and must be
+    // corrected before the modulus raise.
+    {    FBT_ARBLUT, "601",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "602",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "603",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTOEXT},
+    {    FBT_ARBLUT, "604",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FIXEDAUTO},
+    // Repeated LUT evaluation on the same precomputed powers (checks the precomputation is not
+    // corrupted in place) and rejection of invalid arguments.
+    { FBT_MVB_REUSE, "701",      Q60,      2,       4, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "702",      Q60,      2,       4, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    { FBT_MVB_REUSE, "703",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "704",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "705",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    {   FBT_INVALID, "801",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    // UNIFORM_TERNARY: the uniform secret distribution uses six double-angle iterations instead of two
+    // and a degree-104 Chebyshev interpolation instead of degree 64/46 (the mod-raise overflow bound is
+    // K_UNIFORM_FBT = 672 vs 28/16 for the sparse distributions), which adds 5 levels of multiplicative
+    // depth. Larger scaling factors are used as well, because the mod-raised message is scaled down by
+    // K_UNIFORM_FBT before CoeffsToSlots, which amplifies the (fixed-size) encoding noise relative to the
+    // message.
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
+    {    FBT_ARBLUT, "901",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "902",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "903",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "904",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "905",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "906",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "907",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "908",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "909",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     3,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "910",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "911",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    {    FBT_ARBLUT, "912",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_SIGNDIGIT, "913",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_SIGNDIGIT, "914",      Q80,    Q21,       2, Q63, Q43,        1,            1,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_SIGNDIGIT, "915",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_SIGNDIGIT, "916",      Q80,    Q21,       2, Q63, Q43,        1,            1,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_CONSECLEV, "917",      Q60,      2,       2, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_CONSECLEV, "918",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_CONSECLEV, "919",      Q60,      2,       2, Q42, Q42,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    { FBT_CONSECLEV, "920",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    {       FBT_MVB, "921",      Q60,      2,       2, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    {       FBT_MVB, "922",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    {       FBT_MVB, "923",      Q60,      2,       2, Q42, Q42,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    {       FBT_MVB, "924",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY},
+    // UNIFORM_TERNARY with the other supported scaling techniques
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "931",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "932",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "933",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "934",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    { FBT_SIGNDIGIT, "935",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "936",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTOEXT},
+    {    FBT_ARBLUT, "937",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTOEXT},
+    {       FBT_MVB, "938",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    // UNIFORM_TERNARY, sparse packing (numSlots < ringDim/2), with the other supported scaling techniques
+    {    FBT_ARBLUT, "941",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "942",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FIXEDAUTO},
+    {    FBT_ARBLUT, "943",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "944",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    {    FBT_ARBLUT, "945",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTOEXT},
+    { FBT_SIGNDIGIT, "946",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    // COMPOSITESCALINGAUTO (composite degree 2 for these scaling factor sizes, with the default register word
+    // size of 32 bits). The parameter generation for composite scaling requires primes of at least 19 bits,
+    // hence the larger moduli (the same ones as for UNIFORM_TERNARY are used), and a first modulus larger than
+    // the scaling factor (see FirstModSize). The FBT_NOISE_VS_FLEXIBLE rows check that the output noise is
+    // within 3 bits of FLEXIBLEAUTO for the same parameters (measured differences are below 1 bit; the tolerance
+    // covers the run-to-run variation of the maximum noise over the few slots of these small rings, and the rows
+    // are chosen among the configurations whose noise is stable across runs; binary LUTs with UNIFORM_TERNARY
+    // vary by ~3 bits across runs for both techniques and are therefore not used here).
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1001",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1002",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1003",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1004",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     3, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1005",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_CONSECLEV, "1006",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1007",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_MVB_REUSE, "1008",      Q60,      2,       4, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_MVB_REUSE, "1067",      Q60,      4,       4, Q42, Q42,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1009",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,              1,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1010",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1011",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1012",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1013",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1014",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1021", Q60,  2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1022", Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1023", Q60,  PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_NOISE_VS_FLEXIBLE, "1024", Q60,     16,      16, Q48, Q48,       16, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+    // Large scaling factors (90 bits, composite degree 3 with 30-bit primes), which only composite scaling supports
+    // on the 64-bit build; the RLWE ciphertext modulus has the same bit length as the scaling factor.
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1031",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1032",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+#if MATHBACKEND != 2
+    // Excluded for MATHBACKEND 2: the modulus chain of these deeper 90-bit rows exceeds the fixed 3500-bit
+    // width of its multiprecision integers.
+    {    FBT_ARBLUT, "1033",     Q110,   4096,    4096, Q90, Q90,     2000, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1034",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGAUTO},
+#endif
+    { FBT_SIGNDIGIT, "1035",     Q130,    Q21,       2, Q110, Q90,       1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1036",     Q110, PINPUT,  PINPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    { FBT_CONSECLEV, "1037",     Q110, PINPUT,  PINPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO},
+    // COMPOSITESCALINGMANUAL (composite degree set explicitly, see SetScalingTechniqueParams)
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1041",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {    FBT_ARBLUT, "1042",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {    FBT_ARBLUT, "1043",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGMANUAL},
+    { FBT_SIGNDIGIT, "1044",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {       FBT_MVB, "1045",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    {    FBT_ARBLUT, "1046",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    { FBT_NOISE_VS_FLEXIBLE, "1047", Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI, 1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGMANUAL},
+    // SPARSE_ENCAPSULATED with composite scaling (sparse key switching over the composite bottom basis): the K = 16
+    // approximations for first moduli of at most 60 bits (Q40/Q54/Q55 rows, Hamming weight 32) and the K = 28
+    // approximations of SPARSE_TERNARY for larger first moduli (Q64/Q90 rows, Hamming weight 64)
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique
+    {    FBT_ARBLUT, "1051",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1052",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1053",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    { FBT_SIGNDIGIT, "1054",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {       FBT_MVB, "1055",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1056",     Q110, PINPUT, POUTPUT, Q90, Q90, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1057",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGMANUAL},
+    // Largest scaling factors: 119 bits (120-bit first modulus) is the maximum for a register word size of 64 bits
+    // (composite degree 2 with 60-bit primes), and 120 bits (121-bit first modulus), the maximum of composite scaling,
+    // requires a smaller register word size (32 bits: composite degree 4).
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique, registerWordSize
+#if MATHBACKEND != 2
+    // Excluded for MATHBACKEND 2: the modulus chains of the 119/120-bit rows exceed the fixed 3500-bit width of
+    // its multiprecision integers.
+    {    FBT_ARBLUT, "1061",     Q140, PINPUT, POUTPUT, Q119, Q119, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO, 64},
+    {    FBT_ARBLUT, "1062",     Q140, PINPUT, POUTPUT, Q119, Q119, SCALETHI, SCALESTEPTHI,   2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO, 64},
+    {    FBT_ARBLUT, "1063",     Q140, PINPUT, POUTPUT, Q119, Q119, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, COMPOSITESCALINGMANUAL, 64},
+    {    FBT_ARBLUT, "1064",     Q140, PINPUT, POUTPUT, Q120, Q120, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO, 32},
+    {    FBT_ARBLUT, "1065",     Q140, PINPUT, POUTPUT, Q120, Q120, SCALETHI, SCALESTEPTHI,   1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO, 32},
+    {       FBT_MVB, "1066",     Q140, PINPUT,  PINPUT, Q120, Q120, SCALETHI, SCALESTEPTHI,   1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY, COMPOSITESCALINGAUTO, 32},
+#endif
+    { FBT_CONSECLEV, "947",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
+    {       FBT_MVB, "948",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
 #else
     // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
     {    FBT_ARBLUT, "01",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,  1 << 15, 1 << 15,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,    {3, 3}, SPARSE_TERNARY},
@@ -286,8 +540,66 @@ static std::vector<TEST_CASE_FBT> testCases = {
 };
 // clang-format on
 
+// Measures the maximum noise (in bits) in the message coefficients of an RLWE ciphertext encrypting
+// delta*m for delta = Q/p. It follows SchemeletRLWEMP::DecryptCoeff, but instead of rounding to the
+// nearest multiple of delta, it returns the centered residual modulo delta (the rounding error).
+static double MeasureNoiseBits(const std::vector<Poly>& input, const BigInteger& Q, const BigInteger& p,
+                               const PrivateKey<DCRTPoly>& privateKey,
+                               const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep, uint32_t numSlots,
+                               uint32_t length) {
+    const auto& bigQPrime = ep->GetModulus();
+
+    Poly bPoly = input[0];
+    Poly aPoly = input[1];
+    if (Q < bigQPrime) {
+        bPoly.SwitchModulus(bigQPrime, 1, 0, 0);
+        bPoly = bPoly.MultiplyAndRound(bigQPrime, Q);
+        aPoly.SwitchModulus(bigQPrime, 1, 0, 0);
+        aPoly = aPoly.MultiplyAndRound(bigQPrime, Q);
+    } else {
+        bPoly = bPoly.MultiplyAndRound(bigQPrime, Q);
+        bPoly.SwitchModulus(bigQPrime, 1, 0, 0);
+        aPoly = aPoly.MultiplyAndRound(bigQPrime, Q);
+        aPoly.SwitchModulus(bigQPrime, 1, 0, 0);
+    }
+
+    std::vector<DCRTPoly> ba{DCRTPoly(bPoly, ep), DCRTPoly(aPoly, ep)};
+    ba[0].SetFormat(Format::EVALUATION);
+    ba[1].SetFormat(Format::EVALUATION);
+
+    auto scopy(privateKey->GetPrivateElement());
+    scopy.DropLastElements(scopy.GetParams()->GetParams().size() - ep->GetParams().size());
+
+    auto m = ba[0] + ba[1] * scopy;
+    m.SetFormat(Format::COEFFICIENT);
+    auto mPoly = m.CRTInterpolate();
+
+    if (Q < bigQPrime) {
+        mPoly = mPoly.MultiplyAndRound(Q, bigQPrime);
+        mPoly.SwitchModulus(Q, 1, 0, 0);
+    } else {
+        mPoly.SwitchModulus(Q, 1, 0, 0);
+        mPoly = mPoly.MultiplyAndRound(Q, bigQPrime);
+    }
+
+    BigInteger delta = Q / p;
+    BigInteger half = delta >> 1;
+    uint32_t gap = mPoly.GetLength() / (2 * numSlots);
+    gap = (gap == 0) ? 1 : gap;
+
+    BigInteger maxNoise(0);
+    for (uint32_t i = 0, idx = 0; i < length; ++i, idx += gap) {
+        BigInteger r = mPoly[idx].Mod(delta);
+        if (r > half)
+            r = delta - r;
+        if (r > maxNoise)
+            maxNoise = r;
+    }
+    return std::log2(maxNoise.ConvertToDouble() + 1);
+}
+
 class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     };
@@ -312,9 +624,14 @@ protected:
                 return (x % a - a / 2) % b;
             };
 
-            std::vector<int64_t> x = {
-                (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-                (t.PInput.ConvertToInt<int64_t>() - 1)};
+            std::vector<int64_t> x = {(t.PInput.ConvertToInt<int64_t>() / 2),
+                                      (t.PInput.ConvertToInt<int64_t>() / 2) + 1,
+                                      0,
+                                      3,
+                                      16,
+                                      33,
+                                      64,
+                                      (t.PInput.ConvertToInt<int64_t>() - 1)};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -337,17 +654,19 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -388,8 +707,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -407,10 +726,10 @@ protected:
             Ciphertext<DCRTPoly> ctxtAfterFBT;
             if (binaryLUT)
                 ctxtAfterFBT =
-                    cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                        cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
             else
                 ctxtAfterFBT =
-                    cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                        cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
 
             auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
 
@@ -420,8 +739,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto computed =
-                SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+            auto computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS,
+                                                          t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -429,26 +748,24 @@ protected:
 #endif
 
             auto exact(x);
-            std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+            std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f(elem) > t.POutput.ConvertToDouble() / 2.) ? f(elem) - t.POutput.ConvertToInt<int64_t>() :
                                                                       f(elem);
             });
 
             std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
             std::transform(exact.begin(), exact.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                           [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
             auto max_error_it = std::max_element(exact.begin(), exact.end());
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
-            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+            checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -473,14 +790,14 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                t.PInput.ConvertToInt<int64_t>() - 1};
+                    t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                    t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
             auto exact(x);
             std::transform(x.begin(), x.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
+                           [&](int64_t elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
 
             std::vector<int64_t> coeffintMod;
             std::vector<std::complex<double>> coeffcompMod;
@@ -489,10 +806,9 @@ protected:
             if (binaryLUT) {
                 coeffintMod = {funcMod(1),
                                funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
-            }
-            else {
-                coeffcompMod =
-                    GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
+            } else {
+                coeffcompMod = GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order,
+                                                          t.scaleTHI);  // divided by 2
                 coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
                                                            t.scaleStepTHI);  // divided by 2
             }
@@ -508,8 +824,8 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
@@ -517,9 +833,11 @@ protected:
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.POutput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.POutput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -560,8 +878,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -582,19 +900,19 @@ protected:
 
             uint32_t QBFVBits = t.Q.GetMSB() - 1;
 
-            auto Q      = t.Q;       // Will get modified in the loop.
+            auto Q = t.Q;            // Will get modified in the loop.
             auto PInput = t.PInput;  // Will get modified in the loop.
 
             BigInteger QNew;
 
-            const bool checkeq2       = t.POutput.ConvertToInt() == 2;
-            const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+            const bool checkeq2 = t.POutput.ConvertToInt() == 2;
+            const bool checkgt2 = t.POutput.ConvertToInt() > 2;
             const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
 
-            uint64_t scaleTHI        = t.scaleTHI;
-            bool step                = false;
-            bool go                  = QBFVBits > dcrtBits;
-            size_t levelsToDrop      = 0;
+            uint64_t scaleTHI = t.scaleTHI;
+            bool step = false;
+            bool go = QBFVBits > dcrtBits;
+            size_t levelsToDrop = 0;
             uint32_t postScalingBits = 0;
 
             // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
@@ -607,8 +925,8 @@ protected:
                 encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
                 auto ctxt =
-                    SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
-                                                       depth - (t.levelsAvailableBeforeBootstrap > 0));
+                        SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth - (t.levelsAvailableBeforeBootstrap > 0));
 
                 // Bootstrap the digit.
                 Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -633,8 +951,7 @@ protected:
                     PInput >>= pDigitBits;
                     QBFVBits -= pDigitBits;
                     postScalingBits += pDigitBits;
-                }
-                else {
+                } else {
                     ctxtBFV[0] = std::move(polys[0]);
                     ctxtBFV[1] = std::move(polys[1]);
                 }
@@ -660,19 +977,20 @@ protected:
 
                     std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
                     std::transform(exact.begin(), exact.end(), exact.begin(),
-                                   [&](const int64_t& elem) { return (std::abs(elem)) % (t.PInput.ConvertToInt()); });
+                                   [&](int64_t elem) { return (std::abs(elem)) % (t.PInput.ConvertToInt()); });
                     auto max_error_it = std::max_element(exact.begin(), exact.end());
                     // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
                     // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
-                    checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " MP sign evaluation fails");
+                    checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001,
+                                  failmsg + " MP sign evaluation fails");
                 }
 
                 if (checkgt2 && !go && !step) {
                     if (!binaryLUT)
                         coeffcomp = coeffcompStep;
                     scaleTHI = t.scaleStepTHI;
-                    step     = true;
-                    go       = true;
+                    step = true;
+                    go = true;
 
                     int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
                                          GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
@@ -682,12 +1000,10 @@ protected:
             }
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -710,8 +1026,8 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                t.PInput.ConvertToInt<int64_t>() - 1};
+                    t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                    t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -734,17 +1050,19 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -788,13 +1106,20 @@ protected:
 
             auto mask_real = Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, t.numSlots);
 
+            // The mask level is counted in towers on the full modulus chain, which has an extra modulus for
+            // FLEXIBLEAUTOEXT and compositeDegree towers per level for composite scaling
+            const uint32_t extOff = (t.scalTech == FLEXIBLEAUTOEXT) ? 1 : 0;
+            const uint32_t cd =
+                    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
+
             // Note that the corresponding plaintext mask for full packing can be just real, as real times complex multiplies both real and imaginary parts
             Plaintext ptxt_mask = cc->MakeCKKSPackedPlaintext(
-                Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
-                depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation, nullptr, numSlotsCKKS);
+                    Fill<double>({1, 1, 1, 1, 0, 0, 0, 0}, numSlotsCKKS), 1,
+                    cd * (depth - t.lvlb[1] - t.levelsAvailableAfterBootstrap - t.levelsComputation) + extOff, nullptr,
+                    numSlotsCKKS);
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             // Set bitReverse true to be able to perform correct rotations in CKKS
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep, flagBR);
@@ -860,10 +1185,10 @@ protected:
 #endif
 
             auto exact(x);
-            std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+            std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f(elem) % t.POutput.ConvertToInt();
+                               f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f(elem) % t.POutput.ConvertToInt();
             });
 
             // Apply a rotation
@@ -875,34 +1200,32 @@ protected:
 
             std::transform(exact2.begin(), exact2.end(), computed1.begin(), exact2.begin(), std::minus<int64_t>());
             std::transform(exact2.begin(), exact2.end(), exact2.begin(),
-                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                           [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
 
             auto max_error_it = std::max_element(exact2.begin(), exact2.end());
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
-            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+            checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
-            std::transform(exact3.begin(), exact3.end(), exact.begin(), [&](const int64_t& elem) {
+            std::transform(exact3.begin(), exact3.end(), exact.begin(), [&](int64_t elem) {
                 return (f(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f(elem) % t.POutput.ConvertToInt();
+                               f(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f(elem) % t.POutput.ConvertToInt();
             });
 
             std::transform(exact.begin(), exact.end(), computed2.begin(), exact.begin(), std::minus<int64_t>());
             std::transform(exact.begin(), exact.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                           [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
             max_error_it = std::max_element(exact.begin(), exact.end());
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
-            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+            checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -916,8 +1239,8 @@ protected:
             // t.numSlots represents number of values to be encrypted in BFV. If same as ring dimension, CKKS slots is halved.
             auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
 
-            auto a  = t.PInput.ConvertToInt<int64_t>();
-            auto b  = t.POutput.ConvertToInt<int64_t>();
+            auto a = t.PInput.ConvertToInt<int64_t>();
+            auto b = t.POutput.ConvertToInt<int64_t>();
             auto f1 = [a, b](int64_t x) -> int64_t {
                 return (x % a - a / 2) % b;
             };
@@ -926,8 +1249,8 @@ protected:
             };
 
             std::vector<int64_t> x = {
-                t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-                t.PInput.ConvertToInt<int64_t>() - 1};
+                    t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+                    t.PInput.ConvertToInt<int64_t>() - 1};
             if (x.size() < t.numSlots)
                 x = Fill<int64_t>(x, t.numSlots);
 
@@ -939,8 +1262,7 @@ protected:
             if (binaryLUT) {
                 coeffint1 = {f1(1), f1(0) - f1(1)};
                 coeffint2 = {f2(1), f2(0) - f2(1)};
-            }
-            else {
+            } else {
                 coeffcomp1 = GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
                 coeffcomp2 = GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
             }
@@ -956,17 +1278,19 @@ protected:
             parameters.SetSecretKeyDist(t.skd);
             parameters.SetSecurityLevel(HEStd_NotSet);
             parameters.SetScalingModSize(dcrtBits);
-            parameters.SetScalingTechnique(FIXEDMANUAL);
-            parameters.SetFirstModSize(dcrtBits);
+            SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
+            parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
             if (binaryLUT)
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint1, t.PInput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
             else
-                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd);
+                depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp1, t.PInput, t.order, t.skd,
+                                                 FirstModSize(dcrtBits, t.scalTech));
 
             parameters.SetMultiplicativeDepth(depth);
 
@@ -1007,8 +1331,8 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto ep =
-                SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth - (t.levelsAvailableBeforeBootstrap > 0));
+            auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey,
+                                                        depth - (t.levelsAvailableBeforeBootstrap > 0));
 
             auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
 
@@ -1029,17 +1353,16 @@ protected:
             if (binaryLUT) {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
-                    cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                        cc->EvalMVBPrecompute(ctxt, coeffint1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
                 ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffint1, t.PInput.GetMSB() - 1, t.scaleTHI,
                                             t.levelsComputation, t.order);
                 ctxtAfterFBT2 = cc->EvalMVBNoDecoding(complexExpPowers, coeffint2, t.PInput.GetMSB() - 1, t.order);
                 ctxtAfterFBT2 = cc->EvalHomDecoding(ctxtAfterFBT2, t.scaleTHI, t.levelsComputation);
-            }
-            else {
+            } else {
                 // Compute the complex exponential and its powers to reuse
                 auto complexExpPowers =
-                    cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+                        cc->EvalMVBPrecompute(ctxt, coeffcomp1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
                 // Apply multiple LUTs
                 ctxtAfterFBT1 = cc->EvalMVB(complexExpPowers, coeffcomp1, t.PInput.GetMSB() - 1, t.scaleTHI,
                                             t.levelsComputation, t.order);
@@ -1057,11 +1380,11 @@ protected:
             start = std::chrono::high_resolution_clock::now();
 #endif
 
-            auto computed1 =
-                SchemeletRLWEMP::DecryptCoeff(polys1, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+            auto computed1 = SchemeletRLWEMP::DecryptCoeff(polys1, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS,
+                                                           t.numSlots);
 
-            auto computed2 =
-                SchemeletRLWEMP::DecryptCoeff(polys2, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+            auto computed2 = SchemeletRLWEMP::DecryptCoeff(polys2, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS,
+                                                           t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1069,41 +1392,390 @@ protected:
 #endif
 
             auto exact(x);
-            std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+            std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f1(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f1(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f1(elem);
+                               f1(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f1(elem);
             });
 
             std::transform(exact.begin(), exact.end(), computed1.begin(), exact.begin(), std::minus<int64_t>());
             std::transform(exact.begin(), exact.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                           [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
             auto max_error_it = std::max_element(exact.begin(), exact.end());
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
-            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+            checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
-            std::transform(x.begin(), x.end(), exact.begin(), [&](const int64_t& elem) {
+            std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
                 return (f2(elem) % t.POutput.ConvertToInt() > t.POutput.ConvertToDouble() / 2.) ?
-                           f2(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
-                           f2(elem);
+                               f2(elem) % t.POutput.ConvertToInt() - t.POutput.ConvertToInt() :
+                               f2(elem);
             });
 
             std::transform(exact.begin(), exact.end(), computed2.begin(), exact.begin(), std::minus<int64_t>());
             std::transform(exact.begin(), exact.end(), exact.begin(),
-                           [&](const int64_t& elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                           [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
             max_error_it = std::max_element(exact.begin(), exact.end());
             // std::cerr << "\n=======Error count: " << std::accumulate(exact.begin(), exact.end(), 0) << "\n";
             // std::cerr << "\n=======Max absolute error: " << *max_error_it << "\n";
-            checkEquality((*max_error_it), int64_t(0), 0.0001, failmsg + " LUT evaluation fails");
+            checkEquality((*max_error_it), static_cast<int64_t>(0), 0.0001, failmsg + " LUT evaluation fails");
 
             cc->ClearStaticMapsAndVectors();
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
-        catch (...) {
+    }
+    // Evaluates the same LUT with FIXEDMANUAL and with t.scalTech (a FLEXIBLE* technique) and checks that
+    // the FLEXIBLE* technique yields smaller noise in the output RLWE ciphertext. The FLEXIBLE* techniques
+    // track the exact level-specific scaling factors, so the scaling-factor drift of the FIXED* techniques
+    // is absent; for the same parameters this shows up as smaller output noise (equivalently, correctness
+    // can be achieved with a smaller CKKS scaling factor).
+    void UnitTest_Noise(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
+        try {
+            auto runOnce = [&t](ScalingTechnique scalTech, int64_t& maxErr) -> double {
+                bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
+                auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
+
+                auto a = t.PInput.ConvertToInt<int64_t>();
+                auto b = t.POutput.ConvertToInt<int64_t>();
+                auto f = [a, b](int64_t x) -> int64_t {
+                    return (x % a - a / 2) % b;
+                };
+
+                std::vector<int64_t> x = {(t.PInput.ConvertToInt<int64_t>() / 2),
+                                          (t.PInput.ConvertToInt<int64_t>() / 2) + 1,
+                                          0,
+                                          3,
+                                          16,
+                                          33,
+                                          64,
+                                          (t.PInput.ConvertToInt<int64_t>() - 1)};
+                if (x.size() < t.numSlots)
+                    x = Fill<int64_t>(x, t.numSlots);
+
+                std::vector<int64_t> coeffint;
+                std::vector<std::complex<double>> coeffcomp;
+                bool binaryLUT = (t.PInput.ConvertToInt() == 2) && (t.order == 1);
+                if (binaryLUT)  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
+                    coeffint = {f(1), f(0) - f(1)};
+                else  // divided by 2
+                    coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
+
+                const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+                CCParams<CryptoContextCKKSRNS> parameters;
+                parameters.SetSecretKeyDist(t.skd);
+                parameters.SetSecurityLevel(HEStd_NotSet);
+                parameters.SetScalingModSize(dcrtBits);
+                SetScalingTechniqueParams(parameters, scalTech, dcrtBits, t.registerWordSize);
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
+                parameters.SetNumLargeDigits(t.dnum);
+                parameters.SetBatchSize(numSlotsCKKS);
+                parameters.SetRingDim(t.ringDim);
+                uint32_t depth = t.levelsAvailableAfterBootstrap;
+
+                if (binaryLUT)
+                    depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                     FirstModSize(dcrtBits, t.scalTech));
+                else
+                    depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd,
+                                                     FirstModSize(dcrtBits, t.scalTech));
+
+                parameters.SetMultiplicativeDepth(depth);
+
+                auto cc = GenCryptoContext(parameters);
+                cc->Enable(PKE);
+                cc->Enable(KEYSWITCH);
+                cc->Enable(LEVELEDSHE);
+                cc->Enable(ADVANCEDSHE);
+                cc->Enable(FHE);
+
+                auto keyPair = cc->KeyGen();
+
+                if (binaryLUT)
+                    cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                else
+                    cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+
+                cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
+                cc->EvalMultKeyGen(keyPair.secretKey);
+
+                auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
+
+                auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
+
+                SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
+
+                auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                               depth);
+
+                Ciphertext<DCRTPoly> ctxtAfterFBT;
+                if (binaryLUT)
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                               t.order);
+                else
+                    ctxtAfterFBT = cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0,
+                                               t.order);
+
+                auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
+
+                auto computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
+                                                              numSlotsCKKS, t.numSlots);
+
+                auto exact(x);
+                std::transform(x.begin(), x.end(), exact.begin(), [&](int64_t elem) {
+                    return (f(elem) > t.POutput.ConvertToDouble() / 2.) ? f(elem) - t.POutput.ConvertToInt<int64_t>() :
+                                                                          f(elem);
+                });
+
+                std::transform(exact.begin(), exact.end(), computed.begin(), exact.begin(), std::minus<int64_t>());
+                std::transform(exact.begin(), exact.end(), exact.begin(),
+                               [&](int64_t elem) { return (std::abs(elem)) % (t.POutput.ConvertToInt()); });
+                maxErr = *std::max_element(exact.begin(), exact.end());
+
+                double noiseBits =
+                        MeasureNoiseBits(polys, t.Q, t.POutput, keyPair.secretKey, ep, numSlotsCKKS, t.numSlots);
+
+                cc->ClearStaticMapsAndVectors();
+                return noiseBits;
+            };
+
+            // FBT_NOISE checks that t.scalTech yields less noise than FIXEDMANUAL; FBT_NOISE_VS_FLEXIBLE checks
+            // that t.scalTech (composite scaling) yields roughly the same noise as FLEXIBLEAUTO. Both runs use
+            // the same modulus sizes (see FirstModSize).
+            const bool vsFlexible = (t.testCaseType == FBT_NOISE_VS_FLEXIBLE);
+            const ScalingTechnique refSt = vsFlexible ? FLEXIBLEAUTO : FIXEDMANUAL;
+            int64_t errRef = -1;
+            int64_t errFlex = -1;
+            double noiseRef = runOnce(refSt, errRef);
+            double noiseFlex = runOnce(t.scalTech, errFlex);
+            if (vsFlexible) {
+                // The noise of a single run occasionally lands well below the typical value (the approximation
+                // error depends on the key-dependent mod-raise overflows), so the comparison uses the largest
+                // noise over several runs; row 1023 needs seven (it is bimodal, modes ~3 bits apart).
+                for (uint32_t run = 1; run < 7; ++run) {
+                    int64_t err = -1;
+                    noiseRef = std::max(noiseRef, runOnce(refSt, err));
+                    errRef = std::max(errRef, err);
+                    noiseFlex = std::max(noiseFlex, runOnce(t.scalTech, err));
+                    errFlex = std::max(errFlex, err);
+                }
+            }
+
+            checkEquality(errRef, static_cast<int64_t>(0), 0.0001,
+                          failmsg + " " + ScalTechName(refSt) + " LUT evaluation fails");
+            checkEquality(errFlex, static_cast<int64_t>(0), 0.0001,
+                          failmsg + " " + ScalTechName(t.scalTech) + " LUT evaluation fails");
+            if (vsFlexible) {
+                // roughly the same noise: within 3 bits of FLEXIBLEAUTO
+                EXPECT_LE(noiseFlex, noiseRef + 3.0) << failmsg << " " << ScalTechName(t.scalTech)
+                                                     << " noise exceeds FLEXIBLEAUTO by more than 3 bits (" << noiseFlex
+                                                     << " vs " << noiseRef << " bits)";
+            } else {
+                EXPECT_LT(noiseFlex, noiseRef) << failmsg << " " << ScalTechName(t.scalTech)
+                                               << " did not yield smaller noise than FIXEDMANUAL (" << noiseFlex
+                                               << " vs " << noiseRef << " bits)";
+            }
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // Evaluates two LUTs on the same precomputed powers, in the order f1, f2, f1, and checks every result, so
+    // that the later evaluations detect any in-place corruption of the shared precomputation by the earlier
+    // ones. The binary rows (PInput = 2 at order 1) take the special-cased degree-1 path, with the
+    // coefficients {1, 1} for f1 and {1, -1} for f2 covering its two branches. The PInput = 4 rows have Hermite
+    // trigonometric coefficients of degree 3, which are evaluated straight from the shared powers rather than
+    // by Paterson-Stockmeyer (degree 5 and above).
+    void UnitTest_MVBReuse(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
+        try {
+            bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
+            auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
+
+            auto a = t.PInput.ConvertToInt<int64_t>();
+            auto b = t.POutput.ConvertToInt<int64_t>();
+            auto f1 = [a, b](int64_t x) -> int64_t {
+                return (a - x % a) % b;
+            };
+            auto f2 = [a, b](int64_t x) -> int64_t {
+                return (x % a) % b;
+            };
+
+            std::vector<int64_t> x(t.numSlots);
+            for (size_t i = 0; i < x.size(); ++i)
+                x[i] = static_cast<int64_t>(3 * i + 1) % a;
+
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+
+            // coefficients1 (of f1) fix the depth and the precomputation; coefficients2 belong to f2
+            auto run = [&](const auto& coefficients1, const auto& coefficients2) {
+                CCParams<CryptoContextCKKSRNS> parameters;
+                parameters.SetSecretKeyDist(t.skd);
+                parameters.SetSecurityLevel(HEStd_NotSet);
+                parameters.SetScalingModSize(dcrtBits);
+                SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
+                parameters.SetNumLargeDigits(t.dnum);
+                parameters.SetBatchSize(numSlotsCKKS);
+                parameters.SetRingDim(t.ringDim);
+                uint32_t depth = t.levelsAvailableAfterBootstrap +
+                                 FHECKKSRNS::GetFBTDepth(t.lvlb, coefficients1, t.PInput, t.order, t.skd,
+                                                         FirstModSize(dcrtBits, t.scalTech));
+                parameters.SetMultiplicativeDepth(depth);
+
+                auto cc = GenCryptoContext(parameters);
+                cc->Enable(PKE);
+                cc->Enable(KEYSWITCH);
+                cc->Enable(LEVELEDSHE);
+                cc->Enable(ADVANCEDSHE);
+                cc->Enable(FHE);
+
+                auto keyPair = cc->KeyGen();
+
+                cc->EvalFBTSetup(coefficients1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
+                cc->EvalMultKeyGen(keyPair.secretKey);
+
+                auto ep = SchemeletRLWEMP::GetElementParams(keyPair.secretKey, depth);
+                auto ctxtBFV = SchemeletRLWEMP::EncryptCoeff(x, t.QBFVInit, t.PInput, keyPair.secretKey, ep);
+                SchemeletRLWEMP::ModSwitch(ctxtBFV, t.Q, t.QBFVInit);
+                auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ctxtBFV, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                               depth);
+
+                auto powers =
+                        cc->EvalMVBPrecompute(ctxt, coefficients1, t.PInput.GetMSB() - 1, ep->GetModulus(), t.order);
+
+                auto evalAndCheck = [&](const auto& coefficients, const auto& f, const std::string& label) {
+                    auto ctxtAfterFBT =
+                            cc->EvalMVB(powers, coefficients, t.PInput.GetMSB() - 1, t.scaleTHI, 0, t.order);
+                    auto polys = SchemeletRLWEMP::ConvertCKKSToRLWE(ctxtAfterFBT, t.Q);
+                    auto computed = SchemeletRLWEMP::DecryptCoeff(polys, t.Q, t.POutput, keyPair.secretKey, ep,
+                                                                  numSlotsCKKS, t.numSlots);
+
+                    std::vector<int64_t> err(x.size());
+                    std::transform(x.begin(), x.end(), computed.begin(), err.begin(),
+                                   [&](int64_t in, int64_t out) { return std::abs(f(in) - out) % b; });
+                    checkEquality(*std::max_element(err.begin(), err.end()), static_cast<int64_t>(0), 0.0001,
+                                  failmsg + " " + label + " on the reused precomputation fails");
+                };
+
+                evalAndCheck(coefficients1, f1, "LUT evaluation 1 (first function)");
+                evalAndCheck(coefficients2, f2, "LUT evaluation 2 (second function)");
+                evalAndCheck(coefficients1, f1, "LUT evaluation 3 (first function again)");
+
+                cc->ClearStaticMapsAndVectors();
+            };
+
+            if ((a == 2) && (t.order == 1)) {
+                run(std::vector<int64_t>{f1(1), f1(0) - f1(1)}, std::vector<int64_t>{f2(1), f2(0) - f2(1)});
+            } else {
+                run(GetHermiteTrigCoefficients(f1, t.PInput.ConvertToInt(), t.order, t.scaleTHI),
+                    GetHermiteTrigCoefficients(f2, t.PInput.ConvertToInt(), t.order, t.scaleTHI));
+            }
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // Checks that invalid usage is rejected with an exception instead of silently corrupting results:
+    // 1) more levels requested after bootstrapping than the modulus chain has, 2) an oversized
+    // levelToReduce in EvalHomDecoding under FLEXIBLE*, and 3) a FLEXIBLEAUTOEXT input that still
+    // includes the extra modulus.
+    void UnitTest_InvalidArgs(TEST_CASE_FBT t, const std::string& failmsg = std::string()) {
+        try {
+            bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
+            auto numSlotsCKKS = flagSP ? t.numSlots : t.numSlots / 2;
+
+            auto a = t.PInput.ConvertToInt<int64_t>();
+            auto b = t.POutput.ConvertToInt<int64_t>();
+            auto f = [a, b](int64_t x) -> int64_t {
+                return (x % a - a / 2) % b;
+            };
+            std::vector<int64_t> coeffint = {f(1), f(0) - f(1)};
+
+            const uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+            uint32_t depth = t.levelsAvailableAfterBootstrap +
+                             FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd,
+                                                     FirstModSize(dcrtBits, t.scalTech));
+
+            auto makeParams = [&](ScalingTechnique st) {
+                CCParams<CryptoContextCKKSRNS> parameters;
+                parameters.SetSecretKeyDist(t.skd);
+                parameters.SetSecurityLevel(HEStd_NotSet);
+                parameters.SetScalingModSize(dcrtBits);
+                SetScalingTechniqueParams(parameters, st, dcrtBits, t.registerWordSize);
+                parameters.SetFirstModSize(FirstModSize(dcrtBits, st));
+                parameters.SetNumLargeDigits(t.dnum);
+                parameters.SetBatchSize(numSlotsCKKS);
+                parameters.SetRingDim(t.ringDim);
+                parameters.SetMultiplicativeDepth(depth);
+                return parameters;
+            };
+            auto enableAll = [](CryptoContext<DCRTPoly>& cc) {
+                cc->Enable(PKE);
+                cc->Enable(KEYSWITCH);
+                cc->Enable(LEVELEDSHE);
+                cc->Enable(ADVANCEDSHE);
+                cc->Enable(FHE);
+            };
+
+            {
+                // an oversized levelToReduce under FLEXIBLE* is rejected instead of silently zeroing the result
+                auto parameters = makeParams(FLEXIBLEAUTO);
+                auto cc = GenCryptoContext(parameters);
+                enableAll(cc);
+                auto keyPair = cc->KeyGen();
+
+                // more levels after bootstrapping than the chain provides is rejected at setup, rather
+                // than reading past the modulus vector and wrapping the level arithmetic
+                const std::vector<uint32_t> dim1{0, 0};
+                EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
+                                              dim1, t.lvlb, depth + 1, 0, t.order),
+                             OpenFHEException)
+                        << failmsg << " oversized lvlsAfterBoot not rejected";
+
+                cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
+                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                std::vector<double> y(numSlotsCKKS, 0.5);
+                auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
+                EXPECT_THROW(cc->EvalHomDecoding(ctxt, 1, depth), OpenFHEException)
+                        << failmsg << " oversized levelToReduce not rejected";
+                cc->ClearStaticMapsAndVectors();
+            }
+
+            {
+                // a FLEXIBLEAUTOEXT input that includes the extra modulus is rejected
+                auto parameters = makeParams(FLEXIBLEAUTOEXT);
+                auto cc = GenCryptoContext(parameters);
+                enableAll(cc);
+                auto keyPair = cc->KeyGen();
+                cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
+                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
+                cc->EvalMultKeyGen(keyPair.secretKey);
+                std::vector<double> y(numSlotsCKKS, 0.5);
+                // a level-0 ciphertext still includes the FLEXIBLEAUTOEXT extra modulus
+                auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
+                EXPECT_THROW(cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, t.Bigq, t.scaleTHI, 0, t.order),
+                             OpenFHEException)
+                        << failmsg << " FLEXIBLEAUTOEXT level-0 input not rejected";
+                cc->ClearStaticMapsAndVectors();
+            }
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -1126,6 +1798,16 @@ TEST_P(UTCKKSRNS_FBT, CKKSRNS) {
             break;
         case FBT_MVB:
             UnitTest_MVB(test, test.buildTestName());
+            break;
+        case FBT_NOISE:
+        case FBT_NOISE_VS_FLEXIBLE:
+            UnitTest_Noise(test, test.buildTestName());
+            break;
+        case FBT_MVB_REUSE:
+            UnitTest_MVBReuse(test, test.buildTestName());
+            break;
+        case FBT_INVALID:
+            UnitTest_InvalidArgs(test, test.buildTestName());
             break;
         default:
             break;

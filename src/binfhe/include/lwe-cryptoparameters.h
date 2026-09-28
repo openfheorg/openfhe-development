@@ -29,17 +29,19 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_CRYPTOPARAMETERS_H_
-#define _LWE_CRYPTOPARAMETERS_H_
+#ifndef SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+#define SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhe-constants.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/math-hal.h"
+#include "math/nbtheory.h"
 #include "utils/serializable.h"
-
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -47,24 +49,23 @@ namespace lbcrypto {
  * @brief Class that stores all parameters for the LWE scheme
  */
 class LWECryptoParams : public Serializable {
-public:
+  public:
     LWECryptoParams() = default;
 
     /**
-   * Main constructor for LWECryptoParams
-   *
-   * @param n lattice parameter for additive LWE scheme
-   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param q modulus for additive LWE
-   * @param Q modulus for RingGSW/RLWE used in bootstrapping
-   * @param q_KS modulus for key switching
-   * @param std standard deviation
-   * @param baseKS the base used for key switching
-   * @param keyDist the key distribution
-   */
-    explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q,
-                             NativeInteger q_KS, double std, uint32_t baseKS,
-                             SecretKeyDist keyDist = UNIFORM_TERNARY)
+     * Main constructor for LWECryptoParams
+     *
+     * @param n lattice parameter for additive LWE scheme
+     * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+     * @param q modulus for additive LWE
+     * @param Q modulus for RingGSW/RLWE used in bootstrapping
+     * @param q_KS modulus for key switching
+     * @param std standard deviation
+     * @param baseKS the base used for key switching
+     * @param keyDist the key distribution
+     */
+    explicit LWECryptoParams(uint32_t n, uint32_t N, NativeInteger q, NativeInteger Q, NativeInteger q_KS, double std,
+                             uint32_t baseKS, SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_n == 0)
             OPENFHE_THROW("m_n (lattice parameter) can not be zero");
@@ -87,24 +88,25 @@ public:
     LWECryptoParams(const LWECryptoParams& rhs)
         : m_q(rhs.m_q),
           m_Q(rhs.m_Q),
-          // m_qKS(rhs.m_qKS),
+          m_qKS(rhs.m_qKS),
           m_n(rhs.m_n),
           m_N(rhs.m_N),
           m_baseKS(rhs.m_baseKS),
           m_keyDist(rhs.m_keyDist) {
         m_dgg.SetStd(rhs.m_dgg.GetStd());
-        // m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
+        m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
     }
 
     LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        m_q      = rhs.m_q;
-        m_Q      = rhs.m_Q;
-        // m_qKS    = rhs.m_qKS;
-        m_n      = rhs.m_n;
-        m_N      = rhs.m_N;
+        m_q = rhs.m_q;
+        m_Q = rhs.m_Q;
+        m_qKS = rhs.m_qKS;
+        m_n = rhs.m_n;
+        m_N = rhs.m_N;
         m_baseKS = rhs.m_baseKS;
+        m_keyDist = rhs.m_keyDist;
         m_dgg.SetStd(rhs.m_dgg.GetStd());
-        // m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
+        m_ks_dgg.SetStd(rhs.m_ks_dgg.GetStd());
         return *this;
     }
 
@@ -132,6 +134,32 @@ public:
         return m_baseKS;
     }
 
+    /**
+     * Gets the number of base-baseKS digits needed to represent a value below the key-switching modulus qKS
+     *
+     * @return the digit count
+     */
+    uint32_t GetDigitCountKS() const {
+        return GetDigitCount(m_qKS.ConvertToInt(), m_baseKS);
+    }
+
+    /**
+     * Gets the number of values the digit at position pos can take when a value below qKS is written in base baseKS:
+     * every position spans the whole base except the top one
+     *
+     * @param pos digit position, 0 being the least significant
+     * @return the number of values the digit can take
+     */
+    uint32_t GetDigitExtentKS(uint32_t pos) const {
+        const uint32_t digits = GetDigitCountKS();
+        if (pos + 1 < digits)
+            return m_baseKS;
+        uint64_t top{m_qKS.ConvertToInt<uint64_t>() - 1};
+        for (uint32_t k = 1; k < digits; ++k)
+            top /= m_baseKS;
+        return static_cast<uint32_t>(top) + 1;
+    }
+
     const DiscreteGaussianGeneratorImpl<NativeVector>& GetDgg() const {
         return m_dgg;
     }
@@ -145,8 +173,9 @@ public:
     }
 
     bool operator==(const LWECryptoParams& other) const {
-        return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q &&
-               m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS;
+        return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q && m_qKS == other.m_qKS &&
+               m_baseKS == other.m_baseKS && m_keyDist == other.m_keyDist && m_dgg.GetStd() == other.m_dgg.GetStd() &&
+               m_ks_dgg.GetStd() == other.m_ks_dgg.GetStd();
     }
 
     bool operator!=(const LWECryptoParams& other) const {
@@ -163,6 +192,7 @@ public:
         ar(::cereal::make_nvp("sigma", m_dgg.GetStd()));
         ar(::cereal::make_nvp("sigmaKS", m_ks_dgg.GetStd()));
         ar(::cereal::make_nvp("bKS", m_baseKS));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
     }
 
     template <class Archive>
@@ -184,6 +214,7 @@ public:
         ar(::cereal::make_nvp("sigmaKS", sigmaKS));
         m_ks_dgg.SetStd(sigmaKS);
         ar(::cereal::make_nvp("bKS", m_baseKS));
+        ar(::cereal::make_nvp("keyDist", m_keyDist));
     }
 
     std::string SerializedObjectName() const override {
@@ -194,7 +225,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // modulus for the additive LWE scheme
     NativeInteger m_q;
     // modulus for the RingGSW/RingLWE scheme
@@ -217,4 +248,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_CRYPTOPARAMETERS_H_
+#endif  // SRC_BINFHE_INCLUDE_LWE_CRYPTOPARAMETERS_H_

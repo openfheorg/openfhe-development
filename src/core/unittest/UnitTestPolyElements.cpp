@@ -29,14 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
 #include "utils/debug.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace lbcrypto;
 
@@ -50,7 +53,7 @@ using namespace lbcrypto;
 template <typename Element>
 void rounding_ops(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -140,7 +143,7 @@ TEST(UTDCRTPoly, rounding_ops) {
 template <typename Element>
 void set_get_values(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -180,12 +183,11 @@ void set_get_values(const std::string& msg) {
         EXPECT_EQ(bbv.GetValues(), ilvector2n.GetValues()) << msg << "Failure: GetValues()";
 
         uint32_t index = 3;
-        bbv[index]     = 11;
+        bbv[index] = 11;
         for (uint32_t i = 0; i < m / 2; ++i) {
             if (i == index) {
                 EXPECT_NE(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
-            }
-            else {
+            } else {
                 EXPECT_EQ(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
             }
         }
@@ -207,7 +209,7 @@ TEST(UTDCRTPoly, set_get_values) {
 template <typename Element>
 void at(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -228,12 +230,11 @@ void at(const std::string& msg) {
         EXPECT_EQ(ilvector2n.GetLength(), m / 2) << msg << " Failure: ={init list string}";
 
         uint32_t index = 3;
-        bbv[index]     = 11;
+        bbv[index] = 11;
         for (uint32_t i = 0; i < m / 2; ++i) {
             if (i == index) {
                 EXPECT_NE(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
-            }
-            else {
+            } else {
                 EXPECT_EQ(bbv[i], ilvector2n[i]) << msg << " Failure: lhs[] at(" << i << ")";
             }
         }
@@ -260,7 +261,7 @@ TEST(UTDCRTPoly, at) {
 template <typename Element>
 void switch_modulus(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
     // using IntType = typename Element::Vector::Integer;
 
@@ -311,7 +312,7 @@ TEST(UTDCRTPoly, switch_modulus) {
 // template fore rn_generators()
 template <typename Element>
 void rn_generators(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
@@ -362,7 +363,7 @@ TEST(UTDCRTPoly, rn_generators) {
 // template fore poly_other_methods()
 template <typename Element>
 void poly_other_methods(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
@@ -414,7 +415,7 @@ void poly_other_methods(const std::string& msg) {
 
         for (uint32_t i = 0; i < m / 2; ++i) {
             EXPECT_EQ(ilvProduct1[i], typename Element::Integer(1))
-                << msg << " Failure: ilvProduct1.MultiplicativeInverse() @ index " << i;
+                    << msg << " Failure: ilvProduct1.MultiplicativeInverse() @ index " << i;
         }
     }
 
@@ -442,7 +443,7 @@ TEST(UTDCRTPoly, poly_other_methods) {
 // numbers It is used in decoding/decryption of homomorphic encryption schemes
 template <typename Element>
 void signed_mod(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t m = 8;
@@ -487,7 +488,7 @@ TEST(UTDCRTPoly, signed_mod) {
 // template fore automorphismTransform()
 template <typename Element>
 void automorphismTransform(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
@@ -527,7 +528,7 @@ TEST(UTDCRTPoly, automorphismTransform) {
 
 template <typename Element>
 void transposition(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     OPENFHE_DEBUG_FLAG(false);
@@ -575,14 +576,14 @@ TEST(UTDCRTPoly, transposition) {
 
 template <typename Element>
 void Poly_mod_ops_on_two_elements(const std::string& msg) {
-    using VecType  = typename Element::Vector;
+    using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
 
     uint32_t order = 8;
     uint32_t nBits = 7;
 
     typename VecType::Integer primeModulus = LastPrime<typename VecType::Integer>(nBits, order);
-    auto ilparams                          = std::make_shared<ParmType>(order, primeModulus);
+    auto ilparams = std::make_shared<ParmType>(order, primeModulus);
 
     typename Element::DugType distrUniGen;
 
@@ -598,7 +599,7 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
 
         for (uint32_t i = 0; i < order / 2; i++) {
             EXPECT_EQ(bbvResult[i], (bbv1[i] + bbv2[i]).Mod(primeModulus))
-                << msg << " Poly + operation returns incorrect results.";
+                    << msg << " Poly + operation returns incorrect results.";
         }
     }
 
@@ -608,7 +609,7 @@ void Poly_mod_ops_on_two_elements(const std::string& msg) {
 
         for (uint32_t i = 0; i < order / 2; i++) {
             EXPECT_EQ(bbvResult[i], (bbv1[i] * bbv2[i]).Mod(primeModulus))
-                << msg << " Poly * operation returns incorrect results.";
+                    << msg << " Poly * operation returns incorrect results.";
         }
     }
 }

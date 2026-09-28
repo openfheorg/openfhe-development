@@ -30,8 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_INC_MATH_HERMITE_H
-#define LBCRYPTO_INC_MATH_HERMITE_H
+#ifndef SRC_CORE_INCLUDE_MATH_HERMITE_H_
+#define SRC_CORE_INCLUDE_MATH_HERMITE_H_
 
 #include <complex>
 #include <cstdint>
@@ -41,7 +41,7 @@
 namespace lbcrypto {
 
 /**
- * Method for calculating the intermediate Hermite trigonometric interpolation (of order 1)
+ * Method for calculating the intermediate Hermite trigonometric interpolation
  * coefficients for an input function. These coefficents can be input into
  * EvalPoly over ciphertexts encrypting exp(2*Pi*x) to evaluate the function.
  * The coefficients are divided by 2 to account for the fact that the real part
@@ -51,6 +51,8 @@ namespace lbcrypto {
  *
  * @param func is the function to be approximated
  * @param p number of interpolation points
+ * @param order order of the Hermite interpolation (1 or 2)
+ * @param scale scaling factor the coefficients are divided by
  * @return the coefficients of the intermediate Hermite trigonometric interpolation.
  */
 
@@ -60,4 +62,4 @@ std::vector<std::complex<double>> GetHermiteTrigCoefficients(std::function<int64
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_HERMITE_H_

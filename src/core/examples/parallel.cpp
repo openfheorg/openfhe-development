@@ -36,9 +36,11 @@
 #define PROFILE  // by defining this we activate the PROFILELOG() outputs
 
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <thread>
+
 #include "openfhecore.h"
 #include "time.h"
 
@@ -53,8 +55,7 @@ void verify(float* foo, uint32_t array_size) {
     }
     if (goodflag) {
         std::cout << "verification succeeded" << std::endl;
-    }
-    else {
+    } else {
         std::cout << "verification failed" << std::endl;
         for (size_t i = 0; i < array_size; ++i) {
             std::cout << foo[i] << " ";
@@ -77,8 +78,7 @@ int main(int argc, char* argv[]) {
 
     if (argc < 2) {
         std::cout << "running " << argv[0] << " with default array size of 1000" << std::endl;
-    }
-    else {
+    } else {
         array_size = atoi(argv[1]);
         if (array_size <= 0) {
             std::cout << "error in argment " << argv[1] << " must be greater than zero " << std::endl;
@@ -152,8 +152,7 @@ int main(int argc, char* argv[]) {
     // look at debug.h to find other timers you can use
 
     timeTotal = TOC_MS(t_total);
-    PROFILELOG("Total time with internal delay: "
-               << "\t" << timeTotal << " ms");
+    PROFILELOG("Total time with internal delay: " << "\t" << timeTotal << " ms");
     verify(foo, array_size);
     std::cout << std::endl;
 
@@ -169,13 +168,12 @@ int main(int argc, char* argv[]) {
 #pragma omp parallel for
     for (size_t i = 0; i < array_size; ++i) {
         float tmp = i;
-        foo[i]    = tmp;
+        foo[i] = tmp;
     }
 
     // read the timer to get the computation time in micro seconds
     timeTotal = TOC_US(t_total);
-    PROFILELOG("Total time without internal delay: "
-               << "\t" << timeTotal << " us");
+    PROFILELOG("Total time without internal delay: " << "\t" << timeTotal << " us");
     verify(foo, array_size);
 
     return 0;

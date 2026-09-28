@@ -29,25 +29,30 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <iostream>
+#include <string>
+
 // ATTENTION: enable this example for g++ on Linux only
 //==================================================================================
 #if (defined(__linux__) || defined(__unix__)) && !defined(__APPLE__) && defined(__GNUC__) && !defined(__clang__)
-//==================================================================================
-#pragma GCC push_options
-#pragma GCC optimize("O0")  // Disable optimizations for this file
+    //==================================================================================
+    #pragma GCC push_options
+    // Disable optimizations for this file
+    #pragma GCC optimize("O0")
 //==================================================================================
 
-#include "math/distributiongenerator.h"
-#include <random>
-#include <iostream>
+    #include <random>
+
+    #include "math/distributiongenerator.h"
 
 void usage() {
     std::cerr << "Usage: ./external-prng [absolute path to the external PRNG library]" << std::endl;
-    std::cerr << "       " << "If no absolute library path is provided, then the built-in OpenFHE's PRNG is used" << std::endl;
+    std::cerr << "       " << "If no absolute library path is provided, then the built-in OpenFHE's PRNG is used"
+              << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-    if(argc > 1) {
+    if (argc > 1) {
         std::string arg = argv[1];
         // handle -h
         if (arg == "-h") {
@@ -57,25 +62,24 @@ int main(int argc, char* argv[]) {
 
         std::cerr << "==== Using external PRNG" << std::endl;
         lbcrypto::PseudoRandomNumberGenerator::InitPRNGEngine(arg);
-    }
-    else {
+    } else {
         std::cerr << "==== Using OpenFHE's built-in PRNG" << std::endl;
     }
 
     std::uniform_int_distribution<> dis(0, 10);
-    for ( size_t i = 0; i < 5; ++i) {
+    for (size_t i = 0; i < 5; ++i) {
         [[maybe_unused]] int randomNum = dis(lbcrypto::PseudoRandomNumberGenerator::GetPRNG());
     }
 
     return 0;
 }
 
-//==================================================================================
-#pragma GCC pop_options  // Restore the previous optimization level
+    //==================================================================================
+    // Restore the previous optimization level
+    #pragma GCC pop_options
 //==================================================================================
 #else
 // had to add the code below as clang++ didn't like linking this file without main. :)
-#include <iostream>
 
 int main(int argc, char* argv[]) {
     std::cerr << "This example is for g++ on Linux only" << std::endl;

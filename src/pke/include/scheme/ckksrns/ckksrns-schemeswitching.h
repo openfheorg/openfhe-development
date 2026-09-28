@@ -29,8 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_SCHEMESWITCH_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "binfhecontext.h"
 #include "constants.h"
@@ -39,23 +47,39 @@
 #include "scheme/scheme-swch-params.h"
 #include "schemerns/rns-fhe.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of scheme switching between CKKS and FHEW (Boolean) ciphertexts.
+ *
+ * Provides the setup, key generation, precomputation and evaluation of the CKKS to FHEW switching (a
+ * homomorphic linear transform followed by the extraction of LWE ciphertexts), of the FHEW to CKKS switching
+ * (homomorphic decryption of LWE ciphertexts inside CKKS), and of the comparison, minimum and maximum
+ * operations that combine both directions. The precomputations and the FHEW cryptocontext are stored in this
+ * object, one instance per CKKS cryptocontext.
+ */
 class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
-public:
+  public:
     virtual ~SWITCHCKKSRNS() = default;
+
+    /**
+     * Clear cached CKKS/FHEW scheme-switch data held by this object.
+     * Any shared object already returned to the caller stays alive until released.
+     */
+    void ClearSchemeSwitchPrecom() noexcept override {
+        std::vector<ReadOnlyPlaintext>().swap(m_U0Pre);
+        m_ccLWE.reset();
+        m_ccKS.reset();
+        m_CKKStoFHEWswk.reset();
+        m_FHEWtoCKKSswk.reset();
+        m_ctxtKS.reset();
+    }
 
     //------------------------------------------------------------------------------
     // Scheme Switching Wrappers
@@ -86,7 +110,7 @@ public:
     LWEPrivateKey EvalSchemeSwitchingSetup(const SchSwchParams& params) override;
 
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
+            const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk) override;
 
     void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, double scaleSign,
                                      bool unit) override;
@@ -116,21 +140,57 @@ public:
                                                                 uint32_t numSlots, uint32_t pLWE,
                                                                 double scaleSign) override;
 
+    /**
+     * Gets the FHEW (binary FHE) cryptocontext used for scheme switching.
+     *
+     * @return the FHEW cryptocontext
+     */
     std::shared_ptr<lbcrypto::BinFHEContext> GetBinCCForSchemeSwitch() override {
         return m_ccLWE;
     }
+
+    /**
+     * Sets the FHEW (binary FHE) cryptocontext used for scheme switching (e.g., after deserialization).
+     *
+     * @param ccLWE the FHEW cryptocontext
+     */
     void SetBinCCForSchemeSwitch(std::shared_ptr<lbcrypto::BinFHEContext> ccLWE) override {
         m_ccLWE = ccLWE;
     }
+
+    /**
+     * Gets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key.
+     *
+     * @return the switching key
+     */
     Ciphertext<DCRTPoly> GetSwkFC() override {
         return m_FHEWtoCKKSswk;
     }
+
+    /**
+     * Sets the FHEW to CKKS switching key, i.e., the CKKS encryption of the FHEW secret key (it is not serialized
+     * with this object, so it has to be restored after deserialization).
+     *
+     * @param FHEWtoCKKSswk the switching key
+     */
     void SetSwkFC(Ciphertext<DCRTPoly> FHEWtoCKKSswk) override {
         m_FHEWtoCKKSswk = FHEWtoCKKSswk;
     }
+
+    /**
+     * Gets the number of values (LWE ciphertexts) the scheme switching was set up for.
+     *
+     * @return the number of ciphertexts to switch
+     */
     uint32_t GetNumCtxtsToSwitch() {
         return m_numCtxts;
     }
+
+    /**
+     * Gets the LWE ciphertext modulus the CKKS ciphertexts are switched to.
+     *
+     * @return the LWE modulus
+     */
     NativeInteger GetModulusLWEToSwitch() {
         return m_modulus_LWE;
     }
@@ -183,7 +243,7 @@ public:
         return "SWITCHCKKSRNS";
     }
 
-private:
+  private:
     std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                           const std::vector<std::vector<std::complex<double>>>& A,
                                                           uint32_t dim1, uint32_t L, double scale) const;
@@ -195,7 +255,8 @@ private:
 
     Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                     ConstCiphertext<DCRTPoly> ctxt,
-                                                    const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1) const;
+                                                    const std::vector<ReadOnlyPlaintext>& A, uint32_t dim1,
+                                                    bool ext = false) const;
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                         const std::vector<std::vector<std::complex<double>>>& A,
@@ -231,23 +292,25 @@ private:
 
 #if NATIVEINT == 128
     /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
-   */
+     * Set modulus and recalculates the vector values to fit the modulus
+     *
+     * @param ringDim ring dimension (number of coefficients to fit).
+     * @param vec input vector
+     * @param bigBound big bound of the vector values.
+     * @param nativeVec output native vector (its modulus is used to fit the values).
+     */
     void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                            NativeVector* nativeVec) const;
 
 #else  // NATIVEINT == 64
     /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
-   */
+     * Set modulus and recalculates the vector values to fit the modulus
+     *
+     * @param ringDim ring dimension (number of coefficients to fit).
+     * @param vec input vector
+     * @param bigBound big bound of the vector values.
+     * @param nativeVec output native vector (its modulus is used to fit the values).
+     */
     void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                            NativeVector* nativeVec) const;
 #endif
@@ -292,4 +355,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_SCHEMESWITCHING_H_

@@ -33,16 +33,27 @@
   This file contains template instantiations for all math classes & functions using math be4
  */
 
+#include <cstdint>
+#include <memory>
+#include <set>
+#include <vector>
+
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include "math/math-hal.h"
     #include "math/binaryuniformgenerator-impl.h"
     #include "math/discretegaussiangenerator-impl.h"
     #include "math/discreteuniformgenerator-impl.h"
+    #include "math/hal/bigintdyn/transformdyn-impl.h"
+    #include "math/math-hal.h"
     #include "math/matrix-impl.h"
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
+
+template class bigintdyn::NumberTheoreticTransformDyn<bigintdyn::BigVector>;
+template class bigintdyn::ChineseRemainderTransformFTTDyn<bigintdyn::BigVector>;
+template class bigintdyn::BluesteinFFTDyn<bigintdyn::BigVector>;
+template class bigintdyn::ChineseRemainderTransformArbDyn<bigintdyn::BigVector>;
 
 namespace lbcrypto {
 
@@ -51,10 +62,10 @@ template class BinaryUniformGeneratorImpl<M4Vector>;
 template class TernaryUniformGeneratorImpl<M4Vector>;
 template class DiscreteUniformGeneratorImpl<M4Vector>;
 
-template M4Integer RootOfUnity<M4Integer>(usint m, const M4Integer& modulo);
-template std::vector<M4Integer> RootsOfUnity(usint m, const std::vector<M4Integer>& moduli);
+template M4Integer RootOfUnity<M4Integer>(uint32_t m, const M4Integer& modulo);
+template std::vector<M4Integer> RootsOfUnity(uint32_t m, const std::vector<M4Integer>& moduli);
 template M4Integer GreatestCommonDivisor(const M4Integer& a, const M4Integer& b);
-template bool MillerRabinPrimalityTest(const M4Integer& p, const usint niter);
+template bool MillerRabinPrimalityTest(const M4Integer& p, const uint32_t niter);
 template const M4Integer PollardRhoFactorization(const M4Integer& n);
 template void PrimeFactorize(M4Integer n, std::set<M4Integer>& primeFactors);
 template M4Integer FirstPrime(uint32_t nBits, uint64_t m);
@@ -64,10 +75,10 @@ template M4Integer PreviousPrime(const M4Integer& q, uint64_t m);
 template std::vector<M4Integer> GetTotientList(const M4Integer& n);
 template M4Vector PolyMod(const M4Vector& dividend, const M4Vector& divisor, const M4Integer& modulus);
 template M4Vector PolynomialMultiplication(const M4Vector& a, const M4Vector& b);
-template M4Vector GetCyclotomicPolynomial(usint m, const M4Integer& modulus);
+template M4Vector GetCyclotomicPolynomial(uint32_t m, const M4Integer& modulus);
 template M4Integer SyntheticRemainder(const M4Vector& dividend, const M4Integer& a, const M4Integer& modulus);
 template M4Vector SyntheticPolyRemainder(const M4Vector& dividend, const M4Vector& aList, const M4Integer& modulus);
-template M4Vector PolynomialPower<M4Vector>(const M4Vector& input, usint power);
+template M4Vector PolynomialPower<M4Vector>(const M4Vector& input, uint32_t power);
 template M4Vector SyntheticPolynomialDivision(const M4Vector& dividend, const M4Integer& a, const M4Integer& modulus);
 template M4Integer FindGeneratorCyclic(const M4Integer& modulo);
 template bool IsGenerator(const M4Integer& g, const M4Integer& modulo);

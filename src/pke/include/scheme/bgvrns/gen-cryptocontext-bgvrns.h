@@ -33,31 +33,53 @@
   API to generate BGV crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_BGVRNS_H__
-#define __GEN_CRYPTOCONTEXT_BGVRNS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_H_
 
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns-params.h"
-#include "scheme/bgvrns/bgvrns-scheme.h"
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-#include "scheme/gen-cryptocontext-params-validation.h"
 #include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "scheme/bgvrns/bgvrns-scheme.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns-params.h"
+#include "scheme/gen-cryptocontext-params-validation.h"
 
 namespace lbcrypto {
 
 template <typename Element>
 class CryptoContextFactory;
 
+/**
+ * @brief Context generator for the BGV scheme: binds the BGV scheme, crypto parameters and factory types
+ * used by GenCryptoContext() and builds a CryptoContext from CCParams<CryptoContextBGVRNS>.
+ */
 class CryptoContextBGVRNS {
     using Element = DCRTPoly;
 
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
+  public:
+    /**
+     * The crypto context type produced by this generator (required by GenCryptoContext()).
+     */
+    using ContextType = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
+    /**
+     * The factory that registers and returns the generated contexts.
+     */
+    using Factory = CryptoContextFactory<Element>;
+    /**
+     * The scheme implementation class instantiated for the context.
+     */
     using PublicKeyEncryptionScheme = SchemeBGVRNS;
-    using CryptoParams              = CryptoParametersBGVRNS;
+    /**
+     * The crypto parameters class instantiated for the context.
+     */
+    using CryptoParams = CryptoParametersBGVRNS;
 
+    /**
+     * Validates the parameters and generates a BGV crypto context from them.
+     *
+     * @param parameters the BGV parameters.
+     * @return the generated crypto context.
+     */
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBGVRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
         return genCryptoContextBGVRNSInternal<CryptoContextBGVRNS, Element>(parameters);
@@ -66,4 +88,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_GEN_CRYPTOCONTEXT_BGVRNS_H_

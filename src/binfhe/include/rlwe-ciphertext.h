@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_CIPHERTEXT_H_
-#define _RGSW_CIPHERTEXT_H_
+#ifndef SRC_BINFHE_INCLUDE_RLWE_CIPHERTEXT_H_
+#define SRC_BINFHE_INCLUDE_RLWE_CIPHERTEXT_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
@@ -42,29 +49,34 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 class RLWECiphertextImpl;
-using RLWECiphertext      = std::shared_ptr<RLWECiphertextImpl>;
+using RLWECiphertext = std::shared_ptr<RLWECiphertextImpl>;
 using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
 
 /**
- * @brief Class that stores a RingGSW ciphertext; a two-dimensional vector of
- * ring elements
+ * @brief Class that stores an RLWE ciphertext; a vector of ring elements
  */
 class RLWECiphertextImpl : public Serializable {
-public:
+  public:
     RLWECiphertextImpl() = default;
 
-    RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
+    /**
+     * Constructs an RLWE ciphertext from its ring elements
+     *
+     * @param elements the RLWE pair (a, b) as a vector of two ring elements, elements[0] = a and elements[1] = b,
+     * where b = a * s + e + encoded message for the RLWE secret key s
+     */
+    explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
-    RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
+    /**
+     * Constructs an RLWE ciphertext from its ring elements, moving them
+     *
+     * @param elements the RLWE pair (a, b) as a vector of two ring elements, elements[0] = a and elements[1] = b,
+     * where b = a * s + e + encoded message for the RLWE secret key s
+     */
+    explicit RLWECiphertextImpl(std::vector<NativePoly>&& elements) noexcept : m_elements(std::move(elements)) {}
 
     RLWECiphertextImpl(const RLWECiphertextImpl& rhs) : m_elements(rhs.m_elements) {}
 
@@ -88,15 +100,28 @@ public:
         return m_elements;
     }
 
+    /**
+     * Switches all ring elements between COEFFICIENT and EVALUATION representation using NTT
+     *
+     * @param format the representation to switch the ring elements to
+     */
     void SetFormat(const Format format) {
         for (size_t i = 0; i < m_elements.size(); ++i)
             m_elements[i].SetFormat(format);
     }
 
+    /**
+     * @param other the RLWE ciphertext to compare with
+     * @return true if both ciphertexts have equal ring elements
+     */
     bool operator==(const RLWECiphertextImpl& other) const {
         return m_elements == other.m_elements;
     }
 
+    /**
+     * @param other the RLWE ciphertext to compare with
+     * @return true if the ring elements differ
+     */
     bool operator!=(const RLWECiphertextImpl& other) const {
         return !(*this == other);
     }
@@ -123,10 +148,10 @@ public:
         return 1;
     }
 
-private:
-    std::vector<NativePoly> m_elements;
+  private:
+    std::vector<NativePoly> m_elements;  ///< the ring elements (a, b) of the ciphertext
 };
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_CIPHERTEXT_H_
+#endif  // SRC_BINFHE_INCLUDE_RLWE_CIPHERTEXT_H_

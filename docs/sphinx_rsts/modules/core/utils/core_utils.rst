@@ -7,7 +7,6 @@ Documentation for `core/include/utils/ <https://github.com/openfheorg/openfhe-de
    :maxdepth: 3
    :caption: Sub-Contents:
 
-   block_allocator.rst
    prng.rst
 
 .. contents:: Page Contents

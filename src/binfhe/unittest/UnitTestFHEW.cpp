@@ -29,11 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 #include "utils/demangle.h"
-
-#include <sstream>
 
 using namespace lbcrypto;
 
@@ -168,74 +173,109 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_FHEW
 //===========================================================================================================
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_FHEW> testCasesUTGENERAL_FHEW = {
-    // TestType, Descr,  ParamSet, Method,  num_of_inputs, ptmodulus, Gate, Results
-    { FHEW_AND,  "01",   TOY,      GINX,    2,              4,        AND,   {1, 0, 0, 0} },
-    { FHEW_AND,  "02",   TOY,      AP,      2,              4,        AND,   {1, 0, 0, 0} },
-    { FHEW_AND,  "03",   TOY,      LMKCDEY, 2,              4,        AND,   {1, 0, 0, 0} },
+    // TestType,          Descr, ParamSet,         Method,  num_of_inputs, ptmodulus, Gate,     Results
+    { FHEW_AND,           "01",  TOY,              GINX,    2,             4,         AND,      {1, 0, 0, 0} },
+    { FHEW_AND,           "02",  TOY,              AP,      2,             4,         AND,      {1, 0, 0, 0} },
+    { FHEW_AND,           "03",  TOY,              LMKCDEY, 2,             4,         AND,      {1, 0, 0, 0} },
+    { FHEW_AND,           "04",  TOY_MULTI_BASE,   GINX,    2,             4,         AND,      {1, 0, 0, 0} },
+    { FHEW_AND,           "05",  TOY_MULTI_BASE,   AP,      2,             4,         AND,      {1, 0, 0, 0} },
+    { FHEW_AND,           "06",  TOY_MULTI_BASE,   LMKCDEY, 2,             4,         AND,      {1, 0, 0, 0} },
     // ==========================================
-    { FHEW_NAND, "01",   TOY,      GINX,    2,              4,        NAND,  {0, 1, 1, 1} },
-    { FHEW_NAND, "02",   TOY,      AP,      2,              4,        NAND,  {0, 1, 1, 1} },
-    { FHEW_NAND, "03",   TOY,      LMKCDEY, 2,              4,        NAND,  {0, 1, 1, 1} },
+    { FHEW_NAND,          "01",  TOY,              GINX,    2,             4,         NAND,     {0, 1, 1, 1} },
+    { FHEW_NAND,          "02",  TOY,              AP,      2,             4,         NAND,     {0, 1, 1, 1} },
+    { FHEW_NAND,          "03",  TOY,              LMKCDEY, 2,             4,         NAND,     {0, 1, 1, 1} },
+    { FHEW_NAND,          "04",  TOY_MULTI_BASE,   GINX,    2,             4,         NAND,     {0, 1, 1, 1} },
+    { FHEW_NAND,          "05",  TOY_MULTI_BASE,   AP,      2,             4,         NAND,     {0, 1, 1, 1} },
+    { FHEW_NAND,          "06",  TOY_MULTI_BASE,   LMKCDEY, 2,             4,         NAND,     {0, 1, 1, 1} },
     // ==========================================
-    { FHEW_OR,   "01",   TOY,      GINX,    2,              4,        OR,    {1, 1, 1, 0} },
-    { FHEW_OR,   "02",   TOY,      AP,      2,              4,        OR,    {1, 1, 1, 0} },
-    { FHEW_OR,   "03",   TOY,      LMKCDEY, 2,              4,        OR,    {1, 1, 1, 0} },
+    { FHEW_OR,            "01",  TOY,              GINX,    2,             4,         OR,       {1, 1, 1, 0} },
+    { FHEW_OR,            "02",  TOY,              AP,      2,             4,         OR,       {1, 1, 1, 0} },
+    { FHEW_OR,            "03",  TOY,              LMKCDEY, 2,             4,         OR,       {1, 1, 1, 0} },
+    { FHEW_OR,            "04",  TOY_MULTI_BASE,   GINX,    2,             4,         OR,       {1, 1, 1, 0} },
+    { FHEW_OR,            "05",  TOY_MULTI_BASE,   AP,      2,             4,         OR,       {1, 1, 1, 0} },
+    { FHEW_OR,            "06",  TOY_MULTI_BASE,   LMKCDEY, 2,             4,         OR,       {1, 1, 1, 0} },
     // ==========================================
-    { FHEW_NOR,  "01",   TOY,      GINX,    2,              4,        NOR,   {0, 0, 0, 1} },
-    { FHEW_NOR,  "02",   TOY,      AP,      2,              4,        NOR,   {0, 0, 0, 1} },
-    { FHEW_NOR,  "03",   TOY,      LMKCDEY, 2,              4,        NOR,   {0, 0, 0, 1} },
+    { FHEW_NOR,           "01",  TOY,              GINX,    2,             4,         NOR,      {0, 0, 0, 1} },
+    { FHEW_NOR,           "02",  TOY,              AP,      2,             4,         NOR,      {0, 0, 0, 1} },
+    { FHEW_NOR,           "03",  TOY,              LMKCDEY, 2,             4,         NOR,      {0, 0, 0, 1} },
+    { FHEW_NOR,           "04",  TOY_MULTI_BASE,   GINX,    2,             4,         NOR,      {0, 0, 0, 1} },
+    { FHEW_NOR,           "05",  TOY_MULTI_BASE,   AP,      2,             4,         NOR,      {0, 0, 0, 1} },
+    { FHEW_NOR,           "06",  TOY_MULTI_BASE,   LMKCDEY, 2,             4,         NOR,      {0, 0, 0, 1} },
     // ==========================================
-    { FHEW_XOR,  "01",   TOY,      GINX,    2,              4,        XOR,   {0, 1, 1, 0} },
-    { FHEW_XOR,  "02",   TOY,      AP,      2,              4,        XOR,   {0, 1, 1, 0} },
-    { FHEW_XOR,  "03",   TOY,      LMKCDEY, 2,              4,        XOR,   {0, 1, 1, 0} },
+    { FHEW_XOR,           "01",  TOY,              GINX,    2,             4,         XOR,      {0, 1, 1, 0} },
+    { FHEW_XOR,           "02",  TOY,              AP,      2,             4,         XOR,      {0, 1, 1, 0} },
+    { FHEW_XOR,           "03",  TOY,              LMKCDEY, 2,             4,         XOR,      {0, 1, 1, 0} },
+    { FHEW_XOR,           "04",  TOY_MULTI_BASE,   GINX,    2,             4,         XOR,      {0, 1, 1, 0} },
+    { FHEW_XOR,           "05",  TOY_MULTI_BASE,   AP,      2,             4,         XOR,      {0, 1, 1, 0} },
+    { FHEW_XOR,           "06",  TOY_MULTI_BASE,   LMKCDEY, 2,             4,         XOR,      {0, 1, 1, 0} },
     // ==========================================
-
-    { FHEW_XNOR,  "01",  TOY,      GINX,    2,              4,        XNOR,  {1, 0, 0, 1} },
-    { FHEW_XNOR,  "02",  TOY,      AP,      2,              4,        XNOR,  {1, 0, 0, 1} },
-    { FHEW_XNOR,  "03",  TOY,      LMKCDEY, 2,              4,        XNOR,  {1, 0, 0, 1} },
+    { FHEW_XNOR,          "01",  TOY,              GINX,    2,             4,         XNOR,     {1, 0, 0, 1} },
+    { FHEW_XNOR,          "02",  TOY,              AP,      2,             4,         XNOR,     {1, 0, 0, 1} },
+    { FHEW_XNOR,          "03",  TOY,              LMKCDEY, 2,             4,         XNOR,     {1, 0, 0, 1} },
+    { FHEW_XNOR,          "04",  TOY_MULTI_BASE,   GINX,    2,             4,         XNOR,     {1, 0, 0, 1} },
+    { FHEW_XNOR,          "05",  TOY_MULTI_BASE,   AP,      2,             4,         XNOR,     {1, 0, 0, 1} },
+    { FHEW_XNOR,          "06",  TOY_MULTI_BASE,   LMKCDEY, 2,             4,         XNOR,     {1, 0, 0, 1} },
     // ==========================================
-    { FHEW_AND3, "01", TOY,      GINX,         3,           6,        AND3,      {0} },
-    { FHEW_AND3, "02", TOY,      AP,           3,           6,        AND3,      {0} },
-    { FHEW_AND3, "03", TOY,      LMKCDEY,      3,           6,        AND3,      {0} },
+    { FHEW_AND3,          "01",  TOY,              GINX,    3,             6,         AND3,     {0} },
+    { FHEW_AND3,          "02",  TOY,              AP,      3,             6,         AND3,     {0} },
+    { FHEW_AND3,          "03",  TOY,              LMKCDEY, 3,             6,         AND3,     {0} },
+    { FHEW_AND3,          "04",  TOY_MULTI_BASE,   GINX,    3,             6,         AND3,     {0} },
+    { FHEW_AND3,          "05",  TOY_MULTI_BASE,   AP,      3,             6,         AND3,     {0} },
+    { FHEW_AND3,          "06",  TOY_MULTI_BASE,   LMKCDEY, 3,             6,         AND3,     {0} },
     // ==========================================
-    { FHEW_OR3, "01", TOY,      GINX,         3,            6,        OR3,      {1} },
-    { FHEW_OR3, "02", TOY,      AP,           3,            6,        OR3,      {1} },
-    { FHEW_OR3, "03", TOY,      LMKCDEY,      3,            6,        OR3,      {1} },
+    { FHEW_OR3,           "01",  TOY,              GINX,    3,             6,         OR3,      {1} },
+    { FHEW_OR3,           "02",  TOY,              AP,      3,             6,         OR3,      {1} },
+    { FHEW_OR3,           "03",  TOY,              LMKCDEY, 3,             6,         OR3,      {1} },
+    { FHEW_OR3,           "04",  TOY_MULTI_BASE,   GINX,    3,             6,         OR3,      {1} },
+    { FHEW_OR3,           "05",  TOY_MULTI_BASE,   AP,      3,             6,         OR3,      {1} },
+    { FHEW_OR3,           "06",  TOY_MULTI_BASE,   LMKCDEY, 3,             6,         OR3,      {1} },
     // ==========================================
-    { FHEW_AND4, "01", TOY,      GINX,         4,           8,        AND4,      {0} },
-    { FHEW_AND4, "02", TOY,      AP,           4,           8,        AND4,      {0} },
-    { FHEW_AND4, "03", TOY,      LMKCDEY,      4,           8,        AND4,      {0} },
+    { FHEW_AND4,          "01",  TOY,              GINX,    4,             8,         AND4,     {0} },
+    { FHEW_AND4,          "02",  TOY,              AP,      4,             8,         AND4,     {0} },
+    { FHEW_AND4,          "03",  TOY,              LMKCDEY, 4,             8,         AND4,     {0} },
+    { FHEW_AND4,          "04",  TOY_MULTI_BASE,   GINX,    4,             8,         AND4,     {0} },
+    { FHEW_AND4,          "05",  TOY_MULTI_BASE,   AP,      4,             8,         AND4,     {0} },
+    { FHEW_AND4,          "06",  TOY_MULTI_BASE,   LMKCDEY, 4,             8,         AND4,     {0} },
     // ==========================================
-    { FHEW_OR4, "01", TOY,      GINX,         4,            8,        OR4,      {1} },
-    { FHEW_OR4, "02", TOY,      AP,           4,            8,        OR4,      {1} },
-    { FHEW_OR4, "03", TOY,      LMKCDEY,      4,            8,        OR4,      {1} },
+    { FHEW_OR4,           "01",  TOY,              GINX,    4,             8,         OR4,      {1} },
+    { FHEW_OR4,           "02",  TOY,              AP,      4,             8,         OR4,      {1} },
+    { FHEW_OR4,           "03",  TOY,              LMKCDEY, 4,             8,         OR4,      {1} },
+    { FHEW_OR4,           "04",  TOY_MULTI_BASE,   GINX,    4,             8,         OR4,      {1} },
+    { FHEW_OR4,           "05",  TOY_MULTI_BASE,   AP,      4,             8,         OR4,      {1} },
+    { FHEW_OR4,           "06",  TOY_MULTI_BASE,   LMKCDEY, 4,             8,         OR4,      {1} },
     // ==========================================
-    { FHEW_MAJORITY, "01", TOY,      GINX,       3,         4,        MAJORITY,      {1} },
-    { FHEW_MAJORITY, "02", TOY,      AP,         3,         4,        MAJORITY,      {1} },
-    { FHEW_MAJORITY, "03", TOY,      LMKCDEY,    3,         4,        MAJORITY,      {1} },
+    { FHEW_MAJORITY,      "01",  TOY,              GINX,    3,             4,         MAJORITY, {1} },
+    { FHEW_MAJORITY,      "02",  TOY,              AP,      3,             4,         MAJORITY, {1} },
+    { FHEW_MAJORITY,      "03",  TOY,              LMKCDEY, 3,             4,         MAJORITY, {1} },
+    { FHEW_MAJORITY,      "04",  TOY_MULTI_BASE,   GINX,    3,             4,         MAJORITY, {1} },
+    { FHEW_MAJORITY,      "05",  TOY_MULTI_BASE,   AP,      3,             4,         MAJORITY, {1} },
+    { FHEW_MAJORITY,      "06",  TOY_MULTI_BASE,   LMKCDEY, 3,             4,         MAJORITY, {1} },
     // ==========================================
-    { FHEW_CMUX, "01", TOY,      GINX,         3,           4,        CMUX,      {1, 0} },
-    { FHEW_CMUX, "02", TOY,      AP,           3,           4,        CMUX,      {1, 0} },
-    { FHEW_CMUX, "03", TOY,      LMKCDEY,      3,           4,        CMUX,      {1, 0} },
+    { FHEW_CMUX,          "01",  TOY,              GINX,    3,             4,         CMUX,     {1, 0} },
+    { FHEW_CMUX,          "02",  TOY,              AP,      3,             4,         CMUX,     {1, 0} },
+    { FHEW_CMUX,          "03",  TOY,              LMKCDEY, 3,             4,         CMUX,     {1, 0} },
+    { FHEW_CMUX,          "04",  TOY_MULTI_BASE,   GINX,    3,             4,         CMUX,     {1, 0} },
+    { FHEW_CMUX,          "05",  TOY_MULTI_BASE,   AP,      3,             4,         CMUX,     {1, 0} },
+    { FHEW_CMUX,          "06",  TOY_MULTI_BASE,   LMKCDEY, 3,             4,         CMUX,     {1, 0} },
     // ==========================================
-    { FHEW_SIGNED_MODE, "01", SIGNED_MOD_TEST, GINX, 2,     4,        AND, {1, 0, 0, 0} },
+    { FHEW_SIGNED_MODE,   "01",  SIGNED_MOD_TEST,  GINX,    2,             4,         AND,      {1, 0, 0, 0} },
     // ==========================================
-    { FHEW_KEY_SWITCH, "01", TOY,      GINX,    2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
-    { FHEW_KEY_SWITCH, "02", TOY,      AP,      2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
-    { FHEW_KEY_SWITCH, "03", TOY,      LMKCDEY, 2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH,    "01",  TOY,              GINX,    2,             4,         OR,       {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH,    "02",  TOY,              AP,      2,             4,         OR,       {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH,    "03",  TOY,              LMKCDEY, 2,             4,         OR,       {1, 0} },  // OR is not needed; added as a random value
     // ==========================================
-    { FHEW_MOD_SWITCH, "01", TOY,      GINX,    2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
-    { FHEW_MOD_SWITCH, "02", TOY,      AP,      2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
-    { FHEW_MOD_SWITCH, "03", TOY,      LMKCDEY, 2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH,    "01",  TOY,              GINX,    2,             4,         OR,       {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH,    "02",  TOY,              AP,      2,             4,         OR,       {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH,    "03",  TOY,              LMKCDEY, 2,             4,         OR,       {1, 0} },  // OR is not needed; added as a random value
     // ==========================================
-    { FHEW_NOT, "01", TOY,      GINX,    2,                 4,        OR, {0, 1} },  // OR is not needed; added as a random value
-    { FHEW_NOT, "02", TOY,      AP,      2,                 4,        OR, {0, 1} },  // OR is not needed; added as a random value
-    { FHEW_NOT, "03", TOY,      LMKCDEY, 2,                 4,        OR, {0, 1} },  // OR is not needed; added as a random value
+    { FHEW_NOT,           "01",  TOY,              GINX,    2,             4,         OR,       {0, 1} },  // OR is not needed; added as a random value
+    { FHEW_NOT,           "02",  TOY,              AP,      2,             4,         OR,       {0, 1} },  // OR is not needed; added as a random value
+    { FHEW_NOT,           "03",  TOY,              LMKCDEY, 2,             4,         OR,       {0, 1} },  // OR is not needed; added as a random value
 };
 // clang-format on
 //===========================================================================================================
 class UTGENERAL_FHEW : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_FHEW> {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -251,7 +291,7 @@ protected:
 
             NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
 
-            auto sk  = cc.KeyGen();
+            auto sk = cc.KeyGen();
             auto skN = cc.KeyGenN();
 
             auto ctQN1 = cc.Encrypt(skN, 1, SMALL_DIM, 4, Q);
@@ -276,13 +316,11 @@ protected:
 
             EXPECT_EQ(testData.results[0], resultAfterKeySwitch1) << failed;
             EXPECT_EQ(testData.results[1], resultAfterKeySwitch0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -318,13 +356,11 @@ protected:
 
             EXPECT_EQ(1, resultAfterModSwitch1) << failed;
             EXPECT_EQ(0, resultAfterModSwitch0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -352,13 +388,11 @@ protected:
 
             EXPECT_EQ(testData.results[0], result1) << failed;
             EXPECT_EQ(testData.results[1], result0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -372,8 +406,8 @@ protected:
 
             cc.BTKeyGen(sk);
 
-            auto ct1    = cc.Encrypt(sk, 1);
-            auto ct0    = cc.Encrypt(sk, 0);
+            auto ct1 = cc.Encrypt(sk, 1);
+            auto ct0 = cc.Encrypt(sk, 0);
             auto ct1Alt = cc.Encrypt(sk, 1);
             auto ct0Alt = cc.Encrypt(sk, 0);
 
@@ -397,13 +431,11 @@ protected:
             EXPECT_EQ(testData.results[1], result01) << failed;
             EXPECT_EQ(testData.results[2], result10) << failed;
             EXPECT_EQ(testData.results[3], result00) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -426,8 +458,7 @@ protected:
                 ctvec.push_back(ct1);
                 ctvec.push_back(ct2);
                 ctvec.push_back(ct3);
-            }
-            else if (testData.num_of_inputs == 4) {
+            } else if (testData.num_of_inputs == 4) {
                 auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
                 auto ct2 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
                 auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
@@ -445,13 +476,11 @@ protected:
             std::string failed = testData.toString() + " failed";
 
             EXPECT_EQ(testData.results[0], result11) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }
@@ -497,13 +526,11 @@ protected:
 
             EXPECT_EQ(testData.results[0], result1) << failed;
             EXPECT_EQ(testData.results[1], result0) << failed;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS_BINFHE;
         }
     }

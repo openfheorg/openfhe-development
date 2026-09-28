@@ -36,27 +36,28 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
 using namespace lbcrypto;
 
-usint mult_depth = 3;
+uint32_t mult_depth = 3;
 
 /*
  * Context setup utility methods
  */
-CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
+CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t ptm) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(mult_depth);
@@ -73,7 +74,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
+CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t ptm) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetPlaintextModulus(ptm);
@@ -93,7 +94,7 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
  * BFVrns benchmarks
  */
 void BFVrns_EvalMultManyP2(benchmark::State& state) {
-    usint ptm = 2;
+    uint32_t ptm = 2;
 
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm);
 
@@ -102,7 +103,7 @@ void BFVrns_EvalMultManyP2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
@@ -126,7 +127,7 @@ void BFVrns_EvalMultManyP2(benchmark::State& state) {
 BENCHMARK(BFVrns_EvalMultManyP2)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 
 void BGVrns_EvalMultManyP2(benchmark::State& state) {
-    usint ptm = 2;
+    uint32_t ptm = 2;
 
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm);
 
@@ -135,7 +136,7 @@ void BGVrns_EvalMultManyP2(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
@@ -163,7 +164,7 @@ BENCHMARK(BGVrns_EvalMultManyP2)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
  */
 
 void BFVrns_EvalMultManyP65537(benchmark::State& state) {
-    usint ptm = 65537;
+    uint32_t ptm = 65537;
 
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm);
 
@@ -172,7 +173,7 @@ void BFVrns_EvalMultManyP65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
@@ -196,7 +197,7 @@ void BFVrns_EvalMultManyP65537(benchmark::State& state) {
 BENCHMARK(BFVrns_EvalMultManyP65537)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 
 void BGVrns_EvalMultManyP65537(benchmark::State& state) {
-    usint ptm = 65537;
+    uint32_t ptm = 65537;
 
     CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm);
 
@@ -205,7 +206,7 @@ void BGVrns_EvalMultManyP65537(benchmark::State& state) {
     cc->EvalMultKeyGen(keyPair.secretKey);
 
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-    Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
+    Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)

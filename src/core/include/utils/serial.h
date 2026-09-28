@@ -33,8 +33,8 @@
   Serialization utilities
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_SERIAL_H_
+#define SRC_CORE_INCLUDE_UTILS_SERIAL_H_
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -62,8 +62,8 @@
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-#include "cereal/archives/portable_binary.hpp"
 #include "cereal/archives/json.hpp"
+#include "cereal/archives/portable_binary.hpp"
 #include "cereal/cereal.hpp"
 #include "cereal/types/map.hpp"
 #include "cereal/types/memory.hpp"
@@ -79,14 +79,14 @@
     #pragma clang diagnostic pop
 #endif
 
-#include "utils/sertype.h"
-
-#include <type_traits>
-#include <istream>
 #include <fstream>
+#include <istream>
+#include <memory>
 #include <sstream>
 #include <string>
-#include <memory>
+#include <type_traits>
+
+#include "utils/sertype.h"
 
 namespace lbcrypto {
 
@@ -132,7 +132,7 @@ namespace Serial {
  * Serialize an object
  * @param obj - object to serialize
  * @param stream - Stream to serialize to
- * @param sertype - type of serialization; default is BINARY
+ * @param st - type of serialization (BINARY)
  */
 template <typename T>
 void Serialize(const T& obj, std::ostream& stream, const SerType::SERBINARY& st) {
@@ -144,7 +144,7 @@ void Serialize(const T& obj, std::ostream& stream, const SerType::SERBINARY& st)
  * Deserialize an object
  * @param obj - object to deserialize into
  * @param stream - Stream to deserialize from
- * @param sertype - type of de-serialization; default is BINARY
+ * @param st - type of de-serialization (BINARY)
  */
 template <typename T>
 void Deserialize(T& obj, std::istream& stream, const SerType::SERBINARY& st) {
@@ -185,7 +185,7 @@ bool DeserializeFromFile(const std::string& filename, T& obj, const SerType::SER
  * Serialize an object
  * @param obj - object to serialize
  * @param stream - Stream to serialize to
- * @param sertype - type of serialization; default is BINARY
+ * @param ser - type of serialization (JSON)
  */
 template <typename T>
 void Serialize(const T& obj, std::ostream& stream, const SerType::SERJSON& ser) {
@@ -197,7 +197,7 @@ void Serialize(const T& obj, std::ostream& stream, const SerType::SERJSON& ser) 
  * Deserialize an object
  * @param obj - object to deserialize into
  * @param stream - Stream to deserialize from
- * @param sertype - type of serialization; default is BINARY
+ * @param ser - type of de-serialization (JSON)
  */
 template <typename T>
 void Deserialize(T& obj, std::istream& stream, const SerType::SERJSON& ser) {
@@ -266,4 +266,4 @@ void DeserializeFromString(T& obj, const std::string& json) {
 
 }  // namespace lbcrypto
 
-#endif  // __SERIAL_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_SERIAL_H_

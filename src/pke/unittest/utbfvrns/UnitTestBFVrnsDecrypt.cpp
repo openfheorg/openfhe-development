@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "encoding/encodings.h"
 #include "gen-cryptocontext.h"
@@ -36,13 +41,10 @@
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "utils/debug.h"
 
-#include <iostream>
-#include <vector>
-
 using namespace lbcrypto;
 
-class UTBFVRNS_DECRYPT : public ::testing::TestWithParam<std::tuple<usint, usint>> {
-protected:
+class UTBFVRNS_DECRYPT : public ::testing::TestWithParam<std::tuple<uint32_t, uint32_t>> {
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -52,7 +54,7 @@ protected:
         OpenFHEParallelControls.UnitTestStop();
     }
 
-public:
+  public:
 };
 
 /**
@@ -63,21 +65,21 @@ public:
  */
 static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64_t>& b, int vectorSize,
                           const std::string& failmsg) {
-    std::vector<usint> allTrue(vectorSize);
-    std::vector<usint> tmp(vectorSize);
+    std::vector<uint32_t> allTrue(vectorSize);
+    std::vector<uint32_t> tmp(vectorSize);
     for (int i = 0; i < vectorSize; i++) {
         allTrue[i] = 1;
-        tmp[i]     = (a[i] == b[i]);
+        tmp[i] = (a[i] == b[i]);
     }
     EXPECT_TRUE(tmp == allTrue) << failmsg;
 }
 
-// static std::vector<usint> ptm_args{2, 65537, 5308417};
-// static std::vector<usint> dcrtbit_args{30, 40, 50, 60};
+// static std::vector<uint32_t> ptm_args{2, 65537, 5308417};
+// static std::vector<uint32_t> dcrtbit_args{30, 40, 50, 60};
 
 TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
-    usint ptm      = std::get<0>(GetParam());
-    usint dcrtBits = std::get<1>(GetParam());
+    uint32_t ptm = std::get<0>(GetParam());
+    uint32_t dcrtBits = std::get<1>(GetParam());
 
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
@@ -90,13 +92,12 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
 
     KeyPair<DCRTPoly> kp = cc->KeyGen();
 
-    usint vecsize = 8;
+    uint32_t vecsize = 8;
     std::vector<int64_t> vectorOfInts(8);
-    for (usint i = 0; i < vecsize; ++i) {
+    for (uint32_t i = 0; i < vecsize; ++i) {
         if (ptm == 2) {
             vectorOfInts[i] = rand() % ptm;  // NOLINT
-        }
-        else {
+        } else {
             vectorOfInts[i] = (rand() % ptm) / 2;  // NOLINT
         }
     }
@@ -114,8 +115,7 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
         auto tmp_a = plaintext->GetCoefPackedValue();
         auto tmp_b = result->GetCoefPackedValue();
         checkEquality(tmp_a, tmp_b, vecsize, "BFVrns Decrypt fails");
-    }
-    else {
+    } else {
         auto tmp_a = plaintext->GetPackedValue();
         auto tmp_b = result->GetPackedValue();
         checkEquality(tmp_a, tmp_b, vecsize, "BFVrns Decrypt fails");

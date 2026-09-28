@@ -33,6 +33,12 @@
   This code exercises serialization in CORE for the OpenFHE lattice encryption library
  */
 
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -41,8 +47,6 @@
 #include "testdefs.h"
 #include "utils/serial.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -118,7 +122,7 @@ void vector_of_bigint(const std::string& msg) {
     typename V::Integer ranval;
 
     for (int i = 0; i < vecsize; i++) {
-        ranval        = dug.GenerateInteger();
+        ranval = dug.GenerateInteger();
         testvec.at(i) = ranval;
     }
 
@@ -267,7 +271,7 @@ void serialize_matrix_bigint(const std::string& msg) {
     // load up the matix with random values
     for (size_t i = 0; i < nrows; i++) {
         for (size_t j = 0; j < ncols; j++) {
-            ranval        = dug.GenerateInteger();
+            ranval = dug.GenerateInteger();
             testmat(i, j) = ranval;
         }
     }

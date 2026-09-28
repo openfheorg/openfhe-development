@@ -29,8 +29,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_FHE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_FHE_H_
+
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "constants.h"
 #include "encoding/plaintext-fwd.h"
@@ -39,22 +48,24 @@
 #include "schemerns/rns-fhe.h"
 #include "utils/caller_info.h"
 
-#include <complex>
-#include <map>
-#include <memory>
-#include <string>
-#include <tuple>
-#include <utility>
-#include <vector>
-
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
 
+/**
+ * @brief Precomputations of CKKS bootstrapping for one number of slots.
+ *
+ * Holds the baby-step giant-step parameters of the homomorphic encoding (CoeffsToSlots) and decoding
+ * (SlotsToCoeffs) linear transforms, the encoded plaintexts of their matrices (either a single linear
+ * transform or one set of plaintexts per level of the FFT-like decomposition), the cached complex
+ * exponentials of EvalHermiteTrigSeries, and the flag selecting the bootstrapping variant.
+ * FHECKKSRNS keeps one instance per number of slots set up by EvalBootstrapSetup, EvalFBTSetup or
+ * EvalFEFuncBootstrapSetup.
+ */
 class CKKSBootstrapPrecom {
-public:
+  public:
     CKKSBootstrapPrecom() = default;
 
     virtual ~CKKSBootstrapPrecom() = default;
@@ -63,41 +74,41 @@ public:
 
     CKKSBootstrapPrecom(CKKSBootstrapPrecom&& rhs) noexcept = default;
 
-    // level budget for homomorphic encoding, number of layers to collapse in one level,
-    // number of layers remaining to be collapsed in one level to have exactly the number
-    // of levels specified in the level budget, the number of rotations in one level,
-    // the baby step and giant step in the baby-step giant-step strategy, the number of
-    // rotations in the remaining level, the baby step and giant step in the baby-step
-    // giant-step strategy for the remaining level
+    /// level budget for homomorphic encoding, number of layers to collapse in one level,
+    /// number of layers remaining to be collapsed in one level to have exactly the number
+    /// of levels specified in the level budget, the number of rotations in one level,
+    /// the baby step and giant step in the baby-step giant-step strategy, the number of
+    /// rotations in the remaining level, the baby step and giant step in the baby-step
+    /// giant-step strategy for the remaining level
     struct ckks_boot_params m_paramsEnc;
 
-    // level budget for homomorphic decoding, number of layers to collapse in one level,
-    // number of layers remaining to be collapsed in one level to have exactly the number
-    // of levels specified in the level budget, the number of rotations in one level,
-    // the baby step and giant step in the baby-step giant-step strategy, the number of
-    // rotations in the remaining level, the baby step and giant step in the baby-step
-    // giant-step strategy for the remaining level
+    /// level budget for homomorphic decoding, number of layers to collapse in one level,
+    /// number of layers remaining to be collapsed in one level to have exactly the number
+    /// of levels specified in the level budget, the number of rotations in one level,
+    /// the baby step and giant step in the baby-step giant-step strategy, the number of
+    /// rotations in the remaining level, the baby step and giant step in the baby-step
+    /// giant-step strategy for the remaining level
     struct ckks_boot_params m_paramsDec;
 
-    // number of slots for which the bootstrapping is performed
+    /// number of slots for which the bootstrapping is performed
     uint32_t m_slots;
 
-    // Linear map U0; used in decoding
+    /// Linear map U0; used in decoding
     std::vector<ReadOnlyPlaintext> m_U0Pre;
 
-    // Conj(U0^T); used in encoding
+    /// Conj(U0^T); used in encoding
     std::vector<ReadOnlyPlaintext> m_U0hatTPre;
 
-    // coefficients corresponding to U0; used in decoding
+    /// coefficients corresponding to U0; used in decoding
     std::vector<std::vector<ReadOnlyPlaintext>> m_U0PreFFT;
 
-    // coefficients corresponding to conj(U0^T); used in encoding
+    /// coefficients corresponding to conj(U0^T); used in encoding
     std::vector<std::vector<ReadOnlyPlaintext>> m_U0hatTPreFFT;
 
-    Ciphertext<DCRTPoly> m_precompExp;
-    Ciphertext<DCRTPoly> m_precompExpI;
+    Ciphertext<DCRTPoly> m_precompExp;   ///< first cached complex exponential of EvalHermiteTrigSeries
+    Ciphertext<DCRTPoly> m_precompExpI;  ///< second cached complex exponential of EvalHermiteTrigSeries
 
-    // flag indicating whether we perform StC before ModRaise
+    /// flag indicating whether we perform StC before ModRaise
     bool BTSlotsEncoding;
 
     template <class Archive>
@@ -123,8 +134,17 @@ public:
 
 using namespace std::literals::complex_literals;
 
+/**
+ * @brief CKKS implementation of the FHE (bootstrapping) capability.
+ *
+ * Provides regular CKKS bootstrapping (EvalBootstrap, in the coefficients-encoding and slots-encoding
+ * variants), functional bootstrapping of look-up tables imported from an RLWE scheme (EvalFBT and the
+ * multi-value flavor EvalMVB), FE functional bootstrapping of Fourier series (EvalFEFuncBootstrap), the
+ * homomorphic encoding/decoding linear transforms they share, and the static helpers that estimate the
+ * multiplicative depth these procedures consume. All bootstrapping flavors require HYBRID key switching.
+ */
 class FHECKKSRNS : public FHERNS {
-private:
+  private:
     // correction factor, which we scale the message by to improve precision
     uint32_t m_correctionFactor;
 
@@ -132,17 +152,40 @@ private:
     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
 
     using ParmType = typename DCRTPoly::Params;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~FHECKKSRNS() = default;
+
+    void ClearBootstrapPrecom() noexcept override {
+        m_bootPrecomMap.clear();
+    }
 
     //------------------------------------------------------------------------------
     // Bootstrap Wrapper
     //------------------------------------------------------------------------------
 
+    /**
+     * Sets up the CKKS bootstrapping parameters for a given number of slots and, optionally, precomputes the
+     * plaintexts of the homomorphic encoding and decoding linear transforms. Requires HYBRID key switching.
+     *
+     * @param cc the crypto context the bootstrapping parameters are set up for
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively; each must be between 1
+     * and log2(slots)
+     * @param dim1 baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = chosen automatically)
+     * @param slots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+     * @param correctionFactor number of bits the message is scaled down by in total before the approximate modular
+     * reduction, emulating a larger first modulus to improve precision: the modulus raise contributes
+     * log2(q_0/Delta) bits and the remaining 2^-(correctionFactor - log2(q_0/Delta)) is applied explicitly before
+     * the modulus raise and undone afterwards (0 = heuristic default depending on the ring dimension, the number of
+     * slots and the scaling technique; used only in the 64-bit build)
+     * @param precompute whether to encode the linear transform plaintexts now (otherwise EvalBootstrapPrecompute
+     * has to be called before EvalBootstrap)
+     * @param BTSlotsEncoding true to select the slots-encoding variant (EvalBootstrapStCFirst), in which the
+     * approximate modular reduction is applied to the message values themselves; false for the regular variant
+     */
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor, bool precompute,
                             bool BTSlotsEncoding) override;
@@ -150,71 +193,393 @@ public:
     std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
                                                                                uint32_t slots) override;
 
+    std::vector<uint32_t> EvalBootstrapKeyMapIndices(const CryptoContext<DCRTPoly>& cc, uint32_t slots) override;
+
     void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots) override;
 
+    /**
+     * Refreshes a CKKS ciphertext: modulus raise, CoeffsToSlots, approximate modular reduction (Chebyshev
+     * interpolation of the scaled cosine or sine followed by double-angle iterations) and SlotsToCoeffs. Dispatches
+     * to EvalBootstrapStCFirst when the precomputation for the ciphertext's slot count was set up with
+     * BTSlotsEncoding = true. The input should be scaled to [-1, 1] for the best precision; if the input has at
+     * least as many towers as bootstrapping produces, a copy of the input is returned.
+     *
+     * @param ciphertext the input ciphertext
+     * @param numIterations number of Meta-BTS iterations (1 or 2); two iterations refine the precision of the
+     * first one
+     * @param precision precision (in bits) of a single bootstrapping round, used by the second iteration; unused
+     * when numIterations = 1
+     * @return the refreshed ciphertext
+     */
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
 
+    /**
+     * Slots-encoding variant of CKKS bootstrapping, selected by BTSlotsEncoding = true in EvalBootstrapSetup:
+     * SlotsToCoeffs is applied first to the depleted ciphertext, then the modulus is raised, CoeffsToSlots moves
+     * the coefficients back to the slots and the approximate modular reduction is evaluated over the message values
+     * themselves, so no final SlotsToCoeffs is needed. Requires HYBRID key switching. Note that for FIXEDMANUAL the
+     * noise scale degree of the output differs from that of EvalBootstrap.
+     *
+     * @param ciphertext the input ciphertext
+     * @param numIterations number of Meta-BTS iterations (1 or 2)
+     * @param precision precision (in bits) of a single bootstrapping round, used by the second iteration; unused
+     * when numIterations = 1
+     * @return the refreshed ciphertext
+     */
     Ciphertext<DCRTPoly> EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const override;
 
+    /**
+     * Sets up FE (Fourier extension) functional bootstrapping for a given number of slots and precomputes the
+     * plaintexts of its SlotsToCoeffs and CoeffsToSlots transforms. Requires HYBRID key switching and the 64-bit
+     * build. The precomputation occupies the same slot-count entry as EvalBootstrapSetup and EvalFBTSetup, so a
+     * context holds the precomputation of only one of them per number of slots.
+     *
+     * @param cc the crypto context the parameters are set up for
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+     * @param dim1 baby-step dimensions for the two linear transforms (0 = chosen automatically)
+     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+     */
+    void EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<uint32_t>& levelBudget,
+                                  const std::vector<uint32_t>& dim1, uint32_t numSlots) override;
+
+    /**
+     * Refreshes a ciphertext and evaluates a function on it in one pass by evaluating the Fourier extension of
+     * the function over the bootstrapped message: SlotsToCoeffs, modulus raise, CoeffsToSlots, the complex
+     * exponential exp(2*Pi*i*t) with t = m/2 (the message is embedded into half of the period), the series
+     * sum_j c_j exp(2*Pi*i*j*t) and twice its real part. The result is real-valued; with CKKSDataType COMPLEX the
+     * imaginary parts of the input slots are discarded.
+     *
+     * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2)
+     * @param coefficients Fourier coefficients c_j of the target function over [-1/2, 1/2), c_0 first
+     * @return the refreshed ciphertext holding the function values
+     */
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
+                                             const std::vector<std::complex<double>>& coefficients) const override;
+
+    /**
+     * Runs the function-independent part of FE functional bootstrapping (SlotsToCoeffs, modulus raise,
+     * CoeffsToSlots and the complex exponential) and returns the powers of the complex exponential, so that
+     * several functions can be evaluated on one bootstrapped ciphertext with EvalFEFuncBootstrapWithPrecomp.
+     *
+     * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2)
+     * @param coefficients Fourier coefficients of the longest series to be evaluated against the powers (their
+     * number fixes the Paterson-Stockmeyer shape; a degree of at least 5 is required for that shape)
+     * @return the powers of the complex exponential
+     */
+    std::shared_ptr<seriesPowers<DCRTPoly>> EvalFEFuncBootstrapPrecompute(
+            ConstCiphertext<DCRTPoly>& ciphertext,
+            const std::vector<std::complex<double>>& coefficients) const override;
+
+    /**
+     * Evaluates one function's Fourier series against the powers of the complex exponential returned by
+     * EvalFEFuncBootstrapPrecompute and returns twice the real part of the series.
+     *
+     * @param powers powers of the complex exponential from EvalFEFuncBootstrapPrecompute
+     * @param coefficients Fourier coefficients c_j of this function, c_0 first; the degree may not exceed the
+     * capacity of the shape the powers were computed for
+     * @return the refreshed ciphertext holding the function values
+     */
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrapWithPrecomp(
+            const std::shared_ptr<seriesPowers<DCRTPoly>>& powers,
+            const std::vector<std::complex<double>>& coefficients) const override;
+
+    /**
+     * Sets up CKKS functional bootstrapping of a look-up table for a given number of slots: computes the depth of
+     * the procedure, the scalings folded into the homomorphic encoding and decoding matrices (including the
+     * division by the modulus-raise overflow bound K) and precomputes the plaintexts of those matrices. Requires
+     * HYBRID key switching, the 64-bit build and one of the FIXED*, FLEXIBLE* or COMPOSITESCALING* techniques. The
+     * precomputation occupies the same slot-count entry as EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
+     *
+     * @param cc the crypto context the parameters are set up for
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table (only their number
+     * is used here, to compute the depth of the series evaluation)
+     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+     * @param PIn plaintext modulus of the RLWE input (the size of the look-up table domain)
+     * @param POut plaintext modulus of the RLWE output
+     * @param Bigq ciphertext modulus of the RLWE scheme the input is converted from
+     * @param pubKey public key, whose element parameters define the modulus chain of the output
+     * @param dim1 baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = chosen automatically)
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively; each must be between 1 and
+     * log2(slots)
+     * @param lvlsAfterBoot number of levels that remain available after functional bootstrapping
+     * @param depthLeveledComputation multiplicative depth reserved for a leveled computation applied between
+     * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     */
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
                       uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
+    /**
+     * Sets up CKKS functional bootstrapping of a look-up table for a given number of slots: computes the depth of
+     * the procedure, the scalings folded into the homomorphic encoding and decoding matrices (including the
+     * division by the modulus-raise overflow bound K) and precomputes the plaintexts of those matrices. Requires
+     * HYBRID key switching, the 64-bit build and one of the FIXED*, FLEXIBLE* or COMPOSITESCALING* techniques. The
+     * precomputation occupies the same slot-count entry as EvalBootstrapSetup and EvalFEFuncBootstrapSetup.
+     *
+     * @param cc the crypto context the parameters are set up for
+     * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, e.g., [f(1),
+     * f(0) - f(1)] for a Boolean function of order 1 (only their number is used here, to compute the depth of the
+     * series evaluation)
+     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+     * @param PIn plaintext modulus of the RLWE input (the size of the look-up table domain)
+     * @param POut plaintext modulus of the RLWE output
+     * @param Bigq ciphertext modulus of the RLWE scheme the input is converted from
+     * @param pubKey public key, whose element parameters define the modulus chain of the output
+     * @param dim1 baby-step dimensions for CoeffsToSlots and SlotsToCoeffs (0 = chosen automatically)
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively; each must be between 1 and
+     * log2(slots)
+     * @param lvlsAfterBoot number of levels that remain available after functional bootstrapping
+     * @param depthLeveledComputation multiplicative depth reserved for a leveled computation applied between
+     * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     */
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
                       uint32_t depthLeveledComputation = 0, size_t order = 1) override;
 
+    /**
+     * Functional bootstrapping of a look-up table: modulus raise, CoeffsToSlots, approximation of the complex
+     * exponential (or of the cosine for a Boolean function of order 1) with double-angle iterations, evaluation of
+     * the trigonometric Hermite series of the look-up table in the power basis, SlotsToCoeffs and the final
+     * scalings. Equivalent to EvalMVBPrecompute followed by EvalMVBNoDecoding and EvalHomDecoding.
+     *
+     * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients (from
+     * SchemeletRLWEMP::ConvertRLWEToCKKS)
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table, scaled so that
+     * their magnitude is at most one
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+     * under); the ratio between the CKKS scaling factor and this value is corrected after the modulus raise
+     * @param postScaling integer the result is multiplied by after SlotsToCoeffs, typically the scale the Hermite
+     * coefficients were divided by (values of at most 1 are ignored)
+     * @param levelToReduce number of levels to drop before SlotsToCoeffs
+     * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+     */
     Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext,
                                  const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                  const BigInteger& initialScaling, uint64_t postScaling, uint32_t levelToReduce = 0,
                                  size_t order = 1) override;
+    /**
+     * Functional bootstrapping of a look-up table: modulus raise, CoeffsToSlots, approximation of the complex
+     * exponential (or of the cosine for a Boolean function of order 1) with double-angle iterations, evaluation of
+     * the trigonometric Hermite series of the look-up table in the power basis, SlotsToCoeffs and the final
+     * scalings. Equivalent to EvalMVBPrecompute followed by EvalMVBNoDecoding and EvalHomDecoding.
+     *
+     * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients (from
+     * SchemeletRLWEMP::ConvertRLWEToCKKS)
+     * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, e.g., [f(1),
+     * f(0) - f(1)] for a Boolean function of order 1
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+     * under); the ratio between the CKKS scaling factor and this value is corrected after the modulus raise
+     * @param postScaling integer the result is multiplied by after SlotsToCoeffs, typically the scale the Hermite
+     * coefficients were divided by (values of at most 1 are ignored)
+     * @param levelToReduce number of levels to drop before SlotsToCoeffs
+     * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+     */
     Ciphertext<DCRTPoly> EvalFBT(ConstCiphertext<DCRTPoly>& ciphertext, const std::vector<int64_t>& coefficients,
                                  uint32_t digitBitSize, const BigInteger& initialScaling, uint64_t postScaling,
                                  uint32_t levelToReduce = 0, size_t order = 1) override;
 
+    /**
+     * Functional bootstrapping of a look-up table without the final homomorphic decoding: the output stays in
+     * the slots, so a leveled computation can be applied to it before EvalHomDecoding. Equivalent to
+     * EvalMVBPrecompute followed by EvalMVBNoDecoding.
+     *
+     * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+     * under)
+     * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its slots
+     */
     Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                            const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                            const BigInteger& initialScaling, size_t order = 1) override;
+    /**
+     * Functional bootstrapping of a look-up table without the final homomorphic decoding: the output stays in
+     * the slots, so a leveled computation can be applied to it before EvalHomDecoding. Equivalent to
+     * EvalMVBPrecompute followed by EvalMVBNoDecoding.
+     *
+     * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+     * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+     * under)
+     * @param order order of the trigonometric Hermite interpolation used to compute the coefficients (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its slots
+     */
     Ciphertext<DCRTPoly> EvalFBTNoDecoding(ConstCiphertext<DCRTPoly>& ciphertext,
                                            const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
                                            const BigInteger& initialScaling, size_t order = 1) override;
 
+    /**
+     * Homomorphic decoding step of functional bootstrapping: optionally drops levels, applies SlotsToCoeffs (with
+     * the folding of the two halves for sparse packing), multiplies by postScaling and rescales to noise scale
+     * degree 1, so the result can be converted back to RLWE.
+     *
+     * @param ciphertext CKKS ciphertext with the look-up table outputs in its slots (from EvalFBTNoDecoding or
+     * EvalMVBNoDecoding, possibly after a leveled computation)
+     * @param postScaling integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are ignored)
+     * @param levelToReduce number of levels to drop before SlotsToCoeffs
+     * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+     */
     Ciphertext<DCRTPoly> EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
                                          uint32_t levelToReduce = 0) override;
 
+    /**
+     * Function-independent part of functional bootstrapping, shared by all look-up tables evaluated on the same
+     * input (multi-value bootstrapping): modulus raise, CoeffsToSlots, approximation of the complex exponential
+     * (or of the cosine for a Boolean function of order 1) with double-angle iterations, and the powers of the
+     * complex exponential needed by the Hermite series.
+     *
+     * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+     * @param coeffs trigonometric Hermite interpolation coefficients of one of the look-up tables; their number
+     * (and, below degree 5, their sparsity) fixes which powers are computed, so every look-up table later
+     * evaluated on the result must have the same shape
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+     * under)
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @return the powers of the complex exponential (real and imaginary parts for full packing)
+     */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<std::complex<double>>& coeffs,
                                                               uint32_t digitBitSize, const BigInteger& initialScaling,
                                                               size_t order = 1) override;
+    /**
+     * Function-independent part of functional bootstrapping, shared by all look-up tables evaluated on the same
+     * input (multi-value bootstrapping): modulus raise, CoeffsToSlots, approximation of the complex exponential
+     * (or of the cosine for a Boolean function of order 1) with double-angle iterations, and the powers of the
+     * complex exponential needed by the Hermite series.
+     *
+     * @param ciphertext CKKS ciphertext holding the RLWE input in its coefficients
+     * @param coeffs integer trigonometric Hermite interpolation coefficients of one of the look-up tables; their number
+     * (and, below degree 5, their sparsity) fixes which powers are computed, so every look-up table later
+     * evaluated on the result must have the same shape
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
+     * under)
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @return the powers of the complex exponential (real and imaginary parts for full packing)
+     */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
                                                               const BigInteger& initialScaling,
                                                               size_t order = 1) override;
 
+    /**
+     * Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the powers of
+     * the complex exponential from EvalMVBPrecompute and applies the homomorphic decoding (EvalHomDecoding).
+     *
+     * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+     * @param coeffs trigonometric Hermite interpolation coefficients of the look-up table, with the same shape as
+     * the ones passed to EvalMVBPrecompute
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param postScaling integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are ignored)
+     * @param levelToReduce number of levels to drop before SlotsToCoeffs
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+     */
     Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                  const std::vector<std::complex<double>>& coeffs, uint32_t digitBitSize,
                                  const uint64_t postScaling, uint32_t levelToReduce = 0, size_t order = 1) override;
+    /**
+     * Multi-value bootstrapping: evaluates the trigonometric Hermite series of a look-up table on the powers of
+     * the complex exponential from EvalMVBPrecompute and applies the homomorphic decoding (EvalHomDecoding).
+     *
+     * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+     * @param coeffs integer trigonometric Hermite interpolation coefficients of the look-up table, with the same shape as
+     * the ones passed to EvalMVBPrecompute
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param postScaling integer the result is multiplied by after SlotsToCoeffs (values of at most 1 are ignored)
+     * @param levelToReduce number of levels to drop before SlotsToCoeffs
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its coefficients, at noise scale degree 1
+     */
     Ciphertext<DCRTPoly> EvalMVB(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                  const std::vector<int64_t>& coeffs, uint32_t digitBitSize, const uint64_t postScaling,
                                  uint32_t levelToReduce = 0, size_t order = 1) override;
 
+    /**
+     * Multi-value bootstrapping without the final homomorphic decoding: evaluates the trigonometric Hermite series
+     * of a look-up table on the powers of the complex exponential from EvalMVBPrecompute and leaves the outputs in
+     * the slots, so a leveled computation can be applied before EvalHomDecoding.
+     *
+     * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table, with the same shape
+     * as the ones passed to EvalMVBPrecompute
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its slots
+     */
     Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                            const std::vector<std::complex<double>>& coefficients, uint32_t digitBitSize,
                                            size_t order = 1) override;
+    /**
+     * Multi-value bootstrapping without the final homomorphic decoding: evaluates the trigonometric Hermite series
+     * of a look-up table on the powers of the complex exponential from EvalMVBPrecompute and leaves the outputs in
+     * the slots, so a leveled computation can be applied before EvalHomDecoding.
+     *
+     * @param ciphertexts powers of the complex exponential returned by EvalMVBPrecompute
+     * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, with the same
+     * shape as the ones passed to EvalMVBPrecompute
+     * @param digitBitSize bit size of the look-up table input, i.e., log2 of the input plaintext modulus
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @return CKKS ciphertext holding the look-up table outputs in its slots
+     */
     Ciphertext<DCRTPoly> EvalMVBNoDecoding(const std::shared_ptr<seriesPowers<DCRTPoly>> ciphertexts,
                                            const std::vector<int64_t>& coefficients, uint32_t digitBitSize,
                                            size_t order = 1) override;
 
+    /**
+     * Evaluates a trigonometric Hermite series on a ciphertext: approximates exp(i*Pi/2*x) by the Chebyshev
+     * series given over [a, b], squares the result twice (with rescaling) to obtain exp(2*Pi*i*x), evaluates the
+     * Hermite series in the power basis of that exponential and returns its real part (by adding the conjugate; the
+     * Hermite coefficients are expected to be already divided by 2). The complex exponential can be cached in the
+     * bootstrapping precomputation for the ciphertext's slot count and reused by later calls.
+     *
+     * @param ciphertext the input ciphertext
+     * @param coefficientsCheb Chebyshev series coefficients of exp(i*Pi/2*x) over [a, b]
+     * @param a lower bound of the Chebyshev interpolation interval
+     * @param b upper bound of the Chebyshev interpolation interval
+     * @param coefficientsHerm coefficients of the trigonometric Hermite series in the power basis of the complex
+     * exponential, divided by 2
+     * @param precomp 0 or 1: compute the complex exponential and cache it in the first or second cache slot of the
+     * precomputation, respectively; 2: reuse the first cached exponential; any other value: reuse the second one
+     * @return the real part of the evaluated series
+     */
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
                                                double b, const std::vector<std::complex<double>>& coefficientsHerm,
                                                size_t precomp) override;
+    /**
+     * Evaluates a trigonometric Hermite series on a ciphertext: approximates exp(i*Pi/2*x) by the Chebyshev
+     * series given over [a, b], squares the result twice (with rescaling) to obtain exp(2*Pi*i*x), evaluates the
+     * Hermite series in the power basis of that exponential and returns its real part (by adding the conjugate; the
+     * Hermite coefficients are expected to be already divided by 2). The complex exponential can be cached in the
+     * bootstrapping precomputation for the ciphertext's slot count and reused by later calls.
+     *
+     * @param ciphertext the input ciphertext
+     * @param coefficientsCheb Chebyshev series coefficients of exp(i*Pi/2*x) over [a, b]
+     * @param a lower bound of the Chebyshev interpolation interval
+     * @param b upper bound of the Chebyshev interpolation interval
+     * @param coefficientsHerm integer coefficients of the trigonometric Hermite series in the power basis of the complex
+     * exponential, divided by 2
+     * @param precomp 0 or 1: compute the complex exponential and cache it in the first or second cache slot of the
+     * precomputation, respectively; 2: reuse the first cached exponential; any other value: reuse the second one
+     * @return the real part of the evaluated series
+     */
     Ciphertext<DCRTPoly> EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>& ciphertext,
                                                const std::vector<std::complex<double>>& coefficientsCheb, double a,
                                                double b, const std::vector<int64_t>& coefficientsHerm,
@@ -224,41 +589,155 @@ public:
     // Precomputations for CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
 
+    /**
+     * Encodes the shifted diagonals of a square linear map into the plaintexts used by EvalLinearTransform (the
+     * single-level CoeffsToSlots/SlotsToCoeffs): each diagonal is scaled, rotated according to the baby-step
+     * giant-step decomposition of the precomputation for A.size() slots, and encoded over the extended basis Q*P.
+     *
+     * @param cc the crypto context
+     * @param A square matrix of the linear map (slots x slots)
+     * @param scale factor all matrix entries are multiplied by before encoding
+     * @param L number of towers the plaintexts are encoded with (0 = all towers of the modulus chain)
+     * @return the encoded shifted diagonals, one plaintext per rotation index
+     */
     std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(
-        const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
-        double scale = 1., uint32_t L = 0) const;
+            const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
+            double scale = 1., uint32_t L = 0) const;
 
+    /**
+     * Encodes the shifted diagonals of the concatenation of two square linear maps, used for sparse packing
+     * where the encoding and decoding maps act on the two halves of the slots.
+     *
+     * @param cc the crypto context
+     * @param A first square matrix (slots x slots)
+     * @param B second square matrix (slots x slots)
+     * @param orientation 0 to concatenate A and B vertically (homomorphic encoding), 1 to concatenate them
+     * horizontally into a slots x 2*slots map (homomorphic decoding)
+     * @param scale factor all matrix entries are multiplied by before encoding
+     * @param L number of towers the plaintexts are encoded with (0 = all towers of the modulus chain)
+     * @return the encoded shifted diagonals, one plaintext per rotation index
+     */
     std::vector<ReadOnlyPlaintext> EvalLinearTransformPrecompute(
-        const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
-        const std::vector<std::vector<std::complex<double>>>& B, uint32_t orientation = 0, double scale = 1,
-        uint32_t L = 0) const;
+            const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::vector<std::complex<double>>>& A,
+            const std::vector<std::vector<std::complex<double>>>& B, uint32_t orientation = 0, double scale = 1,
+            uint32_t L = 0) const;
 
+    /**
+     * Precomputes the plaintexts of the FFT-like homomorphic encoding (CoeffsToSlots): the layers of the inverse
+     * FFT are collapsed into as many levels as the encoding level budget of the precomputation for rotGroup.size()
+     * slots, and the coefficients of each level are rotated according to its baby-step giant-step decomposition
+     * and encoded with one fewer tower per level.
+     *
+     * @param cc the crypto context
+     * @param A powers of the primitive 4*slots-th root of unity
+     * @param rotGroup indices of the primitive roots of unity used by the canonical embedding (powers of 5)
+     * @param flag_i false to compute the coefficients for conj(U_0^T), true for conj(i*U_0^T)
+     * @param scale factor folded into the first level of the transform
+     * @param L number of towers the plaintexts of the first level are encoded with (0 = all towers)
+     * @param flagStCComplex true when the transform packs both the real and the imaginary parts of a complex
+     * message (slots-encoding bootstrapping of complex data)
+     * @return the encoded plaintexts, one inner vector per level of the transform
+     */
     std::vector<std::vector<ReadOnlyPlaintext>> EvalCoeffsToSlotsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                             const std::vector<std::complex<double>>& A,
                                                                             const std::vector<uint32_t>& rotGroup,
                                                                             bool flag_i, double scale = 1,
-                                                                            uint32_t L          = 0,
+                                                                            uint32_t L = 0,
                                                                             bool flagStCComplex = false) const;
 
+    /**
+     * Precomputes the plaintexts of the FFT-like homomorphic decoding (SlotsToCoeffs): the layers of the FFT are
+     * collapsed into as many levels as the decoding level budget of the precomputation for rotGroup.size() slots,
+     * and the coefficients of each level are rotated according to its baby-step giant-step decomposition and
+     * encoded with one fewer tower per level.
+     *
+     * @param cc the crypto context
+     * @param A powers of the primitive 4*slots-th root of unity
+     * @param rotGroup indices of the primitive roots of unity used by the canonical embedding (powers of 5)
+     * @param flag_i false to compute the coefficients for U_0, true for i*U_0
+     * @param scale factor folded into the first level of the transform
+     * @param L number of towers the plaintexts of the first level are encoded with (0 = all towers)
+     * @param flagStCComplex true when the transform unpacks both the real and the imaginary parts of a complex
+     * message (slots-encoding bootstrapping of complex data)
+     * @return the encoded plaintexts, one inner vector per level of the transform
+     */
     std::vector<std::vector<ReadOnlyPlaintext>> EvalSlotsToCoeffsPrecompute(const CryptoContextImpl<DCRTPoly>& cc,
                                                                             const std::vector<std::complex<double>>& A,
                                                                             const std::vector<uint32_t>& rotGroup,
                                                                             bool flag_i, double scale = 1,
-                                                                            uint32_t L          = 0,
+                                                                            uint32_t L = 0,
                                                                             bool flagStCComplex = false) const;
 
     //------------------------------------------------------------------------------
     // EVALUATION: CoeffsToSlots and SlotsToCoeffs
     //------------------------------------------------------------------------------
+    // The transforms below use a baby-step/giant-step (BSGS) decomposition in
+    // which the giant steps are accumulated in Horner form with a single giant-
+    // step stride. This requires only one giant-step rotation key per level
+    // (instead of one per giant step), minimizing the number of distinct
+    // rotation keys that EvalBootstrapKeyGen must generate and store.
 
+    /**
+     * Single-level linear transform, used for CoeffsToSlots/SlotsToCoeffs when the
+     * level budget is 1. Evaluated with a BSGS decomposition (Horner giant steps).
+     * @param A precomputed diagonal plaintexts of the linear transform
+     * @param ct input ciphertext
+     * @return the transformed ciphertext
+     */
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A,
                                              ConstCiphertext<DCRTPoly>& ct) const;
 
+    /**
+     * Homomorphic encoding (CoeffsToSlots) over multiple BSGS levels, evaluated
+     * with Horner giant steps to minimize the number of rotation keys.
+     * @param A precomputed encoding plaintexts, one inner vector per BSGS level
+     * @param ctxt input ciphertext
+     * @return the ciphertext with the coefficients of the input moved to its slots
+     */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt) const;
 
+    /**
+     * Homomorphic decoding (SlotsToCoeffs); the inverse of EvalCoeffsToSlots,
+     * evaluated with the same Horner giant-step BSGS structure.
+     * @param A precomputed decoding plaintexts, one inner vector per BSGS level
+     * @param ctxt input ciphertext
+     * @return the ciphertext with the slot values of the input moved to its coefficients
+     */
     Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt) const;
+
+    /**
+     * Bootstrapping PartialSum: raised += Rotate(raised, j * slots) for j = 1, 2, 4, ...
+     * while j < N / (2 * slots). For HYBRID key switching, element 0 accumulates in the
+     * extended (QlP) basis with a single deferred ApproxModDown instead of one per level.
+     * @param raised input/output ciphertext at the raised level
+     * @param slots number of plaintext slots (sparse packing; slots < N / 2)
+     */
+    static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots);
+
+    /**
+     * Rotation fold: ct = sum_{j=0}^{size-1} Rotate(ct, j * stride), evaluated as a doubling
+     * (radix-2) loop. For HYBRID key switching, element 0 accumulates in the extended (QlP)
+     * basis with a single deferred ApproxModDown; element 1 settles once per level.
+     * @param ct input/output ciphertext
+     * @param stride slot distance between consecutive summands
+     * @param size number of summands (power of two)
+     */
+    static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size);
+
+    /**
+     * Generalized rotation fold: ct = sum_{j=0}^{size-1} Rotate(ct, j * stride), evaluated in
+     * radix-bStep levels so each level shares one digit decomposition across its (up to
+     * bStep - 1) rotations. For HYBRID key switching, element 0 accumulates in the extended
+     * (QlP) basis with a single deferred ApproxModDown. Higher radix trades more rotation keys
+     * for fewer digit decompositions. Entry point for callers that carry a runtime radix;
+     * @param ct input/output ciphertext
+     * @param stride slot distance between consecutive summands
+     * @param size number of summands (power of two)
+     * @param radix accumulation branching factor (power of two; 2 = plain doubling)
+     */
+    static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix);
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -278,57 +757,240 @@ public:
         ar(cereal::make_nvp("corFactor", m_correctionFactor));
     }
 
-    // To be deprecated; left for backwards compatibility
+    /**
+     * Multiplicative depth of CKKS bootstrapping for a user-supplied depth of the approximate modular reduction.
+     * To be deprecated; left for backwards compatibility. Prefer GetBootstrapDepth(levelBudget, secretKeyDist).
+     *
+     * @param approxModDepth depth of the Chebyshev interpolation of the approximate modular reduction; the
+     * double-angle iterations of UNIFORM_TERNARY are added internally
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+     * @param secretKeyDist secret key distribution of the cryptocontext
+     * @return the multiplicative depth consumed by EvalBootstrap
+     */
     static uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                       SecretKeyDist secretKeyDist);
 
+    /**
+     * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
+     * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
+     * and SlotsToCoeffs level budgets. Add the number of levels needed after bootstrapping to obtain the
+     * multiplicative depth of the cryptocontext.
+     *
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+     * @param secretKeyDist secret key distribution of the cryptocontext
+     * @return the multiplicative depth consumed by EvalBootstrap
+     */
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
+    /**
+     * Multiplicative depth consumed by functional bootstrapping (EvalFBT): the CoeffsToSlots and SlotsToCoeffs
+     * level budgets plus AdjustDepthFBT. For SPARSE_ENCAPSULATED, firstModSize (the size of the first modulus in
+     * bits) selects the approximation tables: a first modulus above 60 bits gives the sparse secret Hamming weight
+     * 64 and uses the K = 28 tables of SPARSE_TERNARY, which need one more level than the K = 16 tables of the
+     * default Hamming weight 32 (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
+     *
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+     * @param PInput plaintext modulus of the RLWE input
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @param skd secret key distribution of the cryptocontext
+     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED)
+     * @return the multiplicative depth consumed by EvalFBT
+     */
     template <typename VectorDataType>
     static uint32_t GetFBTDepth(const std::vector<uint32_t>& levelBudget,
                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
-                                SecretKeyDist skd);
+                                SecretKeyDist skd, uint32_t firstModSize = 60);
 
+    /**
+     * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
+     * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
+     * by the secret key distribution and, for SPARSE_ENCAPSULATED, by firstModSize as in GetFBTDepth), and the
+     * evaluation of the Fourier series.
+     *
+     * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
+     * @param coefficients Fourier coefficients of the function to be evaluated
+     * @param skd secret key distribution of the cryptocontext
+     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED)
+     * @return the multiplicative depth consumed by EvalFEFuncBootstrap
+     */
+    template <typename VectorDataType>
+    static uint32_t GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
+                                  const std::vector<VectorDataType>& coefficients, SecretKeyDist skd = SPARSE_TERNARY,
+                                  uint32_t firstModSize = 60);
+
+    /**
+     * Multiplicative depth of the look-up table evaluation in functional bootstrapping, excluding the linear
+     * transforms: the approximation of the complex exponential (or of the cosine for a Boolean function of order
+     * 1), the double-angle iterations and the trigonometric Hermite series.
+     *
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+     * @param PInput plaintext modulus of the RLWE input
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @param skd secret key distribution of the cryptocontext
+     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED, see GetFBTDepth)
+     * @return the multiplicative depth of the look-up table evaluation
+     */
     template <typename VectorDataType>
     static uint32_t AdjustDepthFBT(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
-                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY);
+                                   size_t order, SecretKeyDist skd = SPARSE_TERNARY, uint32_t firstModSize = 60);
 
-    // generates a key going from a denser secret to a sparser one
+    /**
+     * Same as AdjustDepthFBT, with the approximation tables of SPARSE_ENCAPSULATED selected directly by the Hamming
+     * weight of its sparse secret (32 or 64; see CryptoParametersCKKSRNS::GetSparseKSHammingWeight).
+     *
+     * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
+     * @param PInput plaintext modulus of the RLWE input
+     * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @param skd secret key distribution of the cryptocontext
+     * @param sparseKSHammingWeight Hamming weight of the sparse secret of SPARSE_ENCAPSULATED (32 or 64)
+     * @return the multiplicative depth of the look-up table evaluation
+     */
+    template <typename VectorDataType>
+    static uint32_t AdjustDepthFBTInternal(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
+                                           size_t order, SecretKeyDist skd, uint32_t sparseKSHammingWeight);
+
+    /**
+     * Generates the switching key of sparse secret encapsulation, going from a denser secret to a sparser one.
+     * The GHS-style key is generated over Ql*P', where Ql is the bottom basis of the modulus chain and P' the
+     * auxiliary modulus precomputed in CryptoParametersCKKSRNS for SPARSE_ENCAPSULATED.
+     *
+     * @param oldPrivateKey the (dense) secret the ciphertexts are currently encrypted under
+     * @param newPrivateKey the (sparse) secret to switch to
+     * @return the switching key
+     */
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
                                                 const PrivateKey<DCRTPoly>& newPrivateKey);
 
-    // generates a key going from a denser secret to a sparser one
+    /**
+     * Switches the bottom basis Ql of a ciphertext to the secret of a key generated by KeySwitchGenSparse: the
+     * second ciphertext element is extended to Ql*P', multiplied by the key and switched back to Ql with an exact
+     * CRT basis switch. Only the bottom basis of the input is used; the other towers are dropped.
+     *
+     * @param ciphertext the input ciphertext
+     * @param ek the switching key from KeySwitchGenSparse
+     * @return the ciphertext over Ql under the new secret
+     */
     static Ciphertext<DCRTPoly> KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly>& ek);
 
     std::string SerializedObjectName() const {
         return "FHECKKSRNS";
     }
 
+    /**
+     * Gets the correction factor of CKKS bootstrapping, i.e., the number of bits the message is scaled down by in
+     * total before the approximate modular reduction to improve precision (set by EvalBootstrapSetup).
+     *
+     * @return the correction factor
+     */
     uint32_t GetCKKSBootCorrectionFactor() const override {
         return m_correctionFactor;
     }
 
+    /**
+     * Sets the correction factor of CKKS bootstrapping.
+     *
+     * @param cf the correction factor
+     */
     void SetCKKSBootCorrectionFactor(uint32_t cf) override {
         m_correctionFactor = cf;
     }
 
+    /**
+     * Encodes a complex vector into a CKKS plaintext over arbitrary element parameters, which may include the
+     * auxiliary basis P of HYBRID key switching so that the plaintext can multiply ciphertexts in the extended
+     * basis (EvalMultExt). The vector is encoded at the scaling factor of the given level. Used for the matrices
+     * of the homomorphic encoding and decoding linear transforms.
+     *
+     * @param cc the crypto context
+     * @param params element parameters (moduli) the plaintext is encoded over
+     * @param value the complex values to encode
+     * @param noiseScaleDeg noise scale degree of the plaintext
+     * @param level level of the plaintext (selects its scaling factor)
+     * @param slots number of slots
+     * @return the encoded plaintext
+     */
     static Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                       const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
                                       uint32_t level, uint32_t slots);
 
+    /**
+     * Multiplies a ciphertext in the extended basis Ql*P (as produced by hoisted rotations) by a plaintext encoded
+     * over the same basis (MakeAuxPlaintext), without rescaling; the noise scale degree and the scaling factor of
+     * the result are the products of those of the operands.
+     *
+     * @param ciphertext the input ciphertext in the extended basis
+     * @param plaintext the plaintext encoded over the extended basis
+     * @return the product
+     */
     static Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext);
 
+    /**
+     * Adds two ciphertexts in the extended basis Ql*P element-wise, without any level or scaling factor checks.
+     *
+     * @param ciphertext1 the first addend, replaced by the sum
+     * @param ciphertext2 the second addend
+     */
     static void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2);
 
+    /**
+     * Adds two ciphertexts in the extended basis Ql*P element-wise, without any level or scaling factor checks.
+     *
+     * @param ciphertext1 the first addend
+     * @param ciphertext2 the second addend
+     * @return the sum
+     */
     static Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,
                                            ConstCiphertext<DCRTPoly> ciphertext2);
 
+    /**
+     * Loads the loop-invariant automorphism key, index and O(N) permutation map for a constant Horner giant
+     * stride, so they are built once instead of re-derived inside the BSGS accumulation loop. Shared by the
+     * bootstrapping and scheme-switching linear transforms.
+     *
+     * @param ct a ciphertext of the linear transform (provides the crypto context and the key tag)
+     * @param stride slot rotation of the giant step
+     * @param autoIndex output: the automorphism index of the rotation by stride
+     * @param map output: the coefficient permutation of that automorphism
+     * @return the automorphism key for autoIndex
+     */
+    static EvalKey<DCRTPoly> GetGiantStepRotation(ConstCiphertext<DCRTPoly> ct, int32_t stride, uint32_t& autoIndex,
+                                                  std::vector<uint32_t>& map);
+
+    /**
+     * Inlined giant-step rotation for the Horner accumulation: equivalent to
+     * EvalFastRotationExt(KeySwitchDown(outer), stride, precompute(.), addFirst=true), reusing the caller-supplied
+     * loop-invariant (autoIndex, map, giantKey) from GetGiantStepRotation.
+     *
+     * @param outer the accumulated ciphertext in the extended basis Ql*P
+     * @param autoIndex automorphism index of the giant step
+     * @param map coefficient permutation of that automorphism
+     * @param giantKey automorphism key of the giant step
+     * @return the rotated ciphertext in the extended basis
+     */
+    static Ciphertext<DCRTPoly> EvalHornerGiantRotate(ConstCiphertext<DCRTPoly> outer, uint32_t autoIndex,
+                                                      const std::vector<uint32_t>& map,
+                                                      const EvalKey<DCRTPoly>& giantKey);
+
+    /**
+     * Generates the automorphism key for complex conjugation (automorphism index 2N - 1).
+     *
+     * @param privateKey the private key
+     * @return the conjugation key
+     */
     static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey);
 
+    /**
+     * Conjugates the slot values of a ciphertext (automorphism index 2N - 1).
+     *
+     * @param ciphertext the input ciphertext
+     * @param evalKeys map of automorphism keys containing the conjugation key from ConjugateKeyGen
+     * @return the conjugated ciphertext
+     */
     static Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys);
 
-private:
+  private:
     CKKSBootstrapPrecom& GetBootPrecom(uint32_t slots) const {
         auto pair = m_bootPrecomMap.find(slots);
         if (pair != m_bootPrecomMap.end())
@@ -362,26 +1024,54 @@ private:
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
                           const std::shared_ptr<DCRTPoly::Params> params) const;
 
+    /**
+     * Raises the modulus of a depleted ciphertext (bottom level, noise degree 1) to the raised basis, i.e.,
+     * extends its bottom RNS limbs (a single prime, or compositeDegree primes for composite scaling) to
+     * elementParamsRaisedPtr. For SPARSE_ENCAPSULATED, the ciphertext is switched to the sparse secret before
+     * and back to the dense secret after the modulus raise.
+     */
+    void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
+                         const std::shared_ptr<DCRTPoly::Params>& elementParamsRaisedPtr) const;
+
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
     /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
-   */
+     * The function-independent part of FE functional bootstrapping: SlotsToCoeffs, modulus raise,
+     * CoeffsToSlots and the complex exponential.
+     *
+     * @param ciphertext input ciphertext, with slot values in [-1/2, 1/2)
+     * @return a ciphertext of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message
+     */
+    Ciphertext<DCRTPoly> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
+
+    /**
+     * Twice the real part of an evaluated Fourier series, obtained by adding its conjugate to it.
+     *
+     * @param ctxtSeries the evaluated series
+     * @return the real-valued FE functional bootstrapping output
+     */
+    static Ciphertext<DCRTPoly> TwiceRealPart(const Ciphertext<DCRTPoly>& ctxtSeries);
+
+    /**
+     * Set modulus and recalculates the vector values to fit the modulus
+     *
+     * @param ringDim ring dimension (number of coefficients to fit).
+     * @param vec input vector
+     * @param bigBound big bound of the vector values.
+     * @param nativeVec output native vector (its modulus is used to fit the values).
+     */
     static void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                                   NativeVector* nativeVec);
 
 #if NATIVEINT == 128
     /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
-   */
+     * Set modulus and recalculates the vector values to fit the modulus
+     *
+     * @param ringDim ring dimension (number of coefficients to fit).
+     * @param vec input vector
+     * @param bigBound big bound of the vector values.
+     * @param nativeVec output native vector (its modulus is used to fit the values).
+     */
     static void FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                                   NativeVector* nativeVec);
 #endif
@@ -412,241 +1102,389 @@ private:
                                                    const std::vector<VectorDataType>& coefficients,
                                                    uint32_t digitBitSize, size_t order = 1);
 
-    // upper bound for the number of overflows in the sparse secret case
+    // upper bounds for the number of overflows in the sparse secret cases; the failure probability depends only on
+    // K and on the Hamming weight h of the sparse secret (equation (1) of https://eprint.iacr.org/2022/024)
 
-    // TODO: unify this
-    static constexpr uint32_t K_SPARSE     = 28;
-    static constexpr uint32_t K_SPARSE_ALT = 25;
-    // corresponds to probability of less than 2^{-128}
+    // SPARSE_TERNARY (h = 192): failure probability of about 2^{-39} per coefficient, i.e., 2^{-22} for 2^16 slots.
+    // Also used for SPARSE_ENCAPSULATED with the denser sparse secret (h = 64: first modulus above 60 bits), where
+    // the failure probability is below 2^{-142} for 2^16 slots.
+    static constexpr uint32_t K_SPARSE = 28;
+    // SPARSE_ENCAPSULATED (h = 32): failure probability below 2^{-137} for 2^16 slots
     static constexpr uint32_t K_SPARSE_ENCAPSULATED = 16;
 
-    // upper bound for the number of overflows in the uniform secret case
-    static constexpr uint32_t K_UNIFORM = 512;
-    // upper bound for the number of overflows in the uniform secret case for compositeDegreee > 2
-    static constexpr uint32_t K_UNIFORMEXT = 768;
+    // upper bounds for the number of overflows in the uniform ternary secret case; used for all scaling techniques,
+    // including composite scaling of any degree (the overflow depends only on the secret key distribution and the
+    // ring dimension). Each value is the largest one for which the corresponding approximation below keeps its
+    // precision without an additional level of multiplicative depth; the degree of the depth-8 tables is capped at
+    // 104 because higher degrees fall into a noisier regime of the Paterson-Stockmeyer evaluation (8 baby-step
+    // pieces, or exactly 7 * 15 = 105), which costs about 3 bits of precision.
+    // Probabilities of failure for fully packed slots (N/2), computed with the estimator of the Security Guidelines for
+    // Implementing Homomorphic Encryption (https://cic.iacr.org/p/1/4/26, Appendix A: Irwin-Hall model of the overflow
+    // with the correction for the spread of the Hamming weight of the uniform ternary secret):
+    //   K = 648 (regular bootstrapping):        2^{-67} for N = 2^16, 2^{-27} for N = 2^17
+    //   K = 672 (functional bootstrapping):     2^{-73} for N = 2^16, 2^{-30} for N = 2^17
+    //   K = 696 (FE functional bootstrapping):  2^{-79} for N = 2^16, 2^{-33} for N = 2^17
+    static constexpr uint32_t K_UNIFORM = 648;
+    static constexpr uint32_t K_UNIFORM_FBT = 672;
+    static constexpr uint32_t K_UNIFORM_FEFBT = 696;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static constexpr uint32_t R_UNIFORM = 6;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     // same value is used for both SPARSE and ENCAPSULATED_SPARSE
     static constexpr uint32_t R_SPARSE = 3;
+    // number of double-angle iterations in CKKS functional bootstrapping for UNIFORM_TERNARY; matches the
+    // interval [-K_UNIFORM_FBT, K_UNIFORM_FBT] of coeff_exp_672_double_104 and coeff_cos_672_double_104.
+    // Must be static because it is used in a static function.
+    static constexpr uint32_t R_UNIFORM_FBT = 6;
+    // number of double-angle iterations in CKKS functional bootstrapping for the sparse distributions;
+    // matches the intervals of coeff_exp_28_double_* / coeff_exp_16_double_46 and the corresponding cos tables.
+    // Must be static because it is used in a static function.
+    static constexpr uint32_t R_SPARSE_FBT = 2;
+    // number of double-angle iterations in CKKS functional bootstrapping. Must be static because it is used in a static
+    // function.
+    // for SPARSE_TERNARY secret key distribution (K_SPARSE)
+    static const uint32_t R_func_28_double_48 = 3;
+    // for SPARSE_ENCAPSULATED secret key distribution
+    static const uint32_t R_func_16_double_23 = 4;
+    // for UNIFORM_TERNARY secret key distribution (K_UNIFORM_FEFBT)
+    static const uint32_t R_func_696_double_27 = 9;
 
     // TODO: regenerate these as hexfloat
 
-    // Chebyshev series coefficients for the SPARSE case (degree 44)
+    // Chebyshev series coefficients for the SPARSE case with K = K_SPARSE = 28 (degree 48); also used for
+    // SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64: first modulus
+    // above 60 bits)
     static const inline std::vector<double> g_coefficientsSparse{
-        -0.18646470117093214,   0.036680543700430925,    -0.20323558926782626,     0.029327390306199311,
-        -0.24346234149506416,   0.011710240188138248,    -0.27023281815251715,     -0.017621188001030602,
-        -0.21383614034992021,   -0.048567932060728937,   -0.013982336571484519,    -0.051097367628344978,
-        0.24300487324019346,    0.0016547743046161035,   0.23316923792642233,      0.060707936480887646,
-        -0.18317928363421143,   0.0076878773048247966,   -0.24293447776635235,     -0.071417413140564698,
-        0.37747441314067182,    0.065154496937795681,    -0.24810721693607704,     -0.033588418808958603,
-        0.10510660697380972,    0.012045222815124426,    -0.032574751830745423,    -0.0032761730196023873,
-        0.0078689491066424744,  0.00070965574480802061,  -0.0015405394287521192,   -0.00012640521062948649,
-        0.00025108496615830787, 0.000018944629154033562, -0.000034753284216308228, -2.4309868106111825e-6,
-        4.1486274737866247e-6,  2.7079833113674568e-7,   -4.3245388569898879e-7,   -2.6482744214856919e-8,
-        3.9770028771436554e-8,  2.2951153557906580e-9,   -3.2556026220554990e-9,   -1.7691071323926939e-10,
-        2.5459052150406730e-10};
+            -0.18646470117093252861,   0.036680543700430681686,    -0.20323558926782631096,
+            0.029327390306199328102,   -0.24346234149506401634,    0.011710240188138305514,
+            -0.27023281815251748439,   -0.017621188001030563958,   -0.21383614034992018405,
+            -0.048567932060728895294,  -0.013982336571484154861,   -0.051097367628345061186,
+            0.24300487324019379165,    0.0016547743046159961878,   0.23316923792642238467,
+            0.060707936480887646213,   -0.18317928363421173699,    0.0076878773048246725266,
+            -0.24293447776635196389,   -0.071417413140564683927,   0.37747441314067164964,
+            0.065154496937795861045,   -0.24810721693607740157,    -0.033588418808958492301,
+            0.10510660697380984352,    0.012045222815124597554,    -0.032574751830745422854,
+            -0.0032761730196024336711, 0.0078689491066424796517,   0.00070965574480790578806,
+            -0.0015405394287521703266, -0.00012640521062950351035, 0.00025108496615861448107,
+            1.8944629154051014614e-05, -3.475328421629313028e-05,  -2.4309868105444819976e-06,
+            4.1486274733754325284e-06, 2.707983312645711086e-07,   -4.3245388298161974387e-07,
+            -2.648274647458271498e-08, 3.9769976862509400954e-08,  2.2951601321890868824e-09,
+            -3.254653203623324375e-09, -1.7769046100728302511e-10, 2.3878362964407593422e-10,
+            1.2373864205906022264e-11, -1.5809540399549927648e-11, -7.7742106845205528309e-13,
+            1.001495233948273455e-12};
 
-    // Chebyshev series coefficients for the SPARSE ENCAPSULATED case (degree 32)
+    // Chebyshev series coefficients for the SPARSE ENCAPSULATED case with K = K_SPARSE_ENCAPSULATED = 16 (degree 36);
+    // used for first moduli of at most 60 bits (Hamming weight 32), with or without composite scaling
     static const inline std::vector<double> g_coefficientsSparseEncapsulated{
-        0.24554573401685137,    -0.047919064883347899,   0.28388702040840819,      -0.029944538735513584,
-        0.35576522619036460,    0.015106561885073030,    0.29532946674499999,      0.071203602333739374,
-        -0.10347347339668074,   0.044997590512555294,    -0.42750712431925747,     -0.090342129729094875,
-        0.36762876269324946,    0.049318066039335348,    -0.14535986272411980,     -0.015106938483063579,
-        0.035951935499240355,   0.0031036582188686437,   -0.0062644606607068463,   -0.00046609430477154916,
-        0.00082128798852385086, 0.000053910533892372678, -0.000084551549768927401, -4.9773801787288514e-6,
-        7.0466620439083618e-6,  3.7659807574103204e-7,   -4.8648510153626034e-7,   -2.3830267651437146e-8,
-        2.8329709716159918e-8,  1.2817720050334158e-9,   -1.4122220430105397e-9,   -5.9306213139085216e-11,
-        6.3298928388417848e-11};
+            0.24554573401685125811,     -0.047919064883347899098,   0.2838870204084082971,
+            -0.029944538735513632349,   0.35576522619036476947,     0.015106561885073123419,
+            0.29532946674499999107,     0.071203602333739499097,    -0.10347347339668094834,
+            0.044997590512555328546,    -0.4275071243192573589,     -0.09034212972909490269,
+            0.36762876269324940015,     0.0493180660393352302,      -0.14535986272411996478,
+            -0.01510693848306368485,    0.035951935499240340877,    0.0031036582188687005315,
+            -0.0062644606607068610907,  -0.00046609430477142572069, 0.00082128798852389086217,
+            5.3910533892471557279e-05,  -8.4551549768872405238e-05, -4.9773801788208594927e-06,
+            7.0466620440941974484e-06,  3.765980756677792052e-07,   -4.86485101424265225e-07,
+            -2.3830267712305952681e-08, 2.8329707187359534301e-08,  1.281774628407396656e-09,
+            -1.4121452243480404948e-09, -5.9391368843495201655e-11, 6.0992579610647666324e-11,
+            2.3973045543634602219e-12,  -2.306346026629356268e-12,  -8.5029643608477862378e-14,
+            7.9314691251993335928e-14};
 
-    // Chebyshev series coefficients for the OPTIMIZED/uniform case
+    // Chebyshev series coefficients for the UNIFORM_TERNARY case with K = K_UNIFORM = 648 (degree 104): interpolation
+    // of (2 Pi)^(-1/64) cos(2 Pi K x / 64 - Pi/128) on [-1, 1], followed by R_UNIFORM = 6 scaled double-angle
+    // iterations (ApplyDoubleAngleIterations) to get sin(2 Pi K x) / (2 Pi); the approximation error is about 2^-36
     static const inline std::vector<double> g_coefficientsUniform{
-        0.15421426400235561,    -0.0037671538417132409,  0.16032011744533031,      -0.0034539657223742453,
-        0.17711481926851286,    -0.0027619720033372291,  0.19949802549604084,      -0.0015928034845171929,
-        0.21756948616367638,    0.00010729951647566607,  0.21600427371240055,      0.0022171399198851363,
-        0.17647500259573556,    0.0042856217194480991,   0.086174491919472254,     0.0054640252312780444,
-        -0.046667988130649173,  0.0047346914623733714,   -0.17712686172280406,     0.0016205080004247200,
-        -0.22703114241338604,   -0.0028145845916205865,  -0.13123089730288540,     -0.0056345646688793190,
-        0.078818395388692147,   -0.0037868875028868542,  0.23226434602675575,      0.0021116338645426574,
-        0.13985510526186795,    0.0059365649669377071,   -0.13918475289368595,     0.0018580676740836374,
-        -0.23254376365752788,   -0.0054103844866927788,  0.056840618403875359,     -0.0035227192748552472,
-        0.25667909012207590,    0.0055029673963982112,   -0.073334392714092062,    0.0027810273357488265,
-        -0.24912792167850559,   -0.0069524866497120566,  0.21288810409948347,      0.0017810057298691725,
-        0.088760951809475269,   0.0055957188940032095,   -0.31937177676259115,     -0.0087539416335935556,
-        0.34748800245527145,    0.0075378299617709235,   -0.25116537379803394,     -0.0047285674679876204,
-        0.13970502851683486,    0.0023672533925155220,   -0.063649401080083698,    -0.00098993213448982727,
-        0.024597838934816905,   0.00035553235917057483,  -0.0082485030307578155,   -0.00011176184313622549,
-        0.0024390574829093264,  0.000031180384864488629, -0.00064373524734389861,  -7.8036008952377965e-6,
-        0.00015310015145922058, 1.7670804180220134e-6,   -0.000033066844379476900, -3.6460909134279425e-7,
-        6.5276969021754105e-6,  6.8957843666189918e-8,   -1.1842811187642386e-6,   -1.2015133285307312e-8,
-        1.9839339947648331e-7,  1.9372045971100854e-9,   -3.0815418032523593e-8,   -2.9013806338735810e-10,
-        4.4540904298173700e-9,  4.0505136697916078e-11,  -6.0104912807134771e-10,  -5.2873323696828491e-12,
-        7.5943206779351725e-11, 6.4679566322060472e-13,  -9.0081200925539902e-12,  -7.4396949275292252e-14,
-        1.0057423059167244e-12, 8.1701187638005194e-15,  -1.0611736208855373e-13,  -8.9597492970451533e-16,
-        1.1421575296031385e-14};
-
-    // Chebyshev series coefficients for the COMPOSITESCALING case where d > 2
-    static const inline std::vector<double> g_coefficientsUniformExt{
-        // New Coefficients (K_UNIFORM = 768)
-        0.12602195635248634,    -0.0030834928649740388,  0.1293538007310393,      -0.0029150296085609707,
-        0.13880323885842225,    -0.0025534902415420128,  0.15259900956315636,     -0.0019572806381606537,
-        0.16740348080390202,    -0.0010852123927167594,  0.17795704156012629,     7.3594791671716396e-05,
-        0.17708229644467954,    0.0014573280941530976,   0.15661113656175465,     0.0028850600459592078,
-        0.10984969661272398,    0.0040295575406054489,   0.035829873357113948,    0.004449523200499763,
-        -0.055520186697616318,  0.0037264589074560098,   -0.14007871037019429,    0.001719720247528076,
-        -0.18281801001428047,   -0.0011373848818829857,  -0.15209319897288492,    -0.0037123962122311092,
-        -0.043785371196750272,  -0.0045107273507656552,  0.09756154430583093,     -0.002604845726688627,
-        0.18481556762187912,    0.0012462519210521535,   0.1403768476069214,      0.0043541760219966428,
-        -0.024293645826662724,  0.0037846793397644275,   -0.17560536795332429,    -0.0005605968506360667,
-        -0.1519811728143392,    -0.0045192348096649545,  0.048231020943727741,    -0.0032001529516056853,
-        0.19692074387699257,    0.0024419388214462485,   0.078182928643403107,    0.0047838249172446005,
-        -0.16476594792427054,   -0.00036614509861925492, -0.14537982038722122,    -0.0050995116137312257,
-        0.13564231010825495,    -0.00050653194386865278, 0.16465075644913021,     0.0052831338103145531,
-        -0.1493249604350485,    -0.00016209880585104635, -0.13934114757550983,    -0.0054247353644288178,
-        0.20649654831497111,    0.0026431561325639561,   0.032277990808412343,    0.0039463054621702767,
-        -0.23636345040634044,   -0.0059041496654351176,  0.17831596275657194,     0.0017594032442182191,
-        0.05094162125752931,    0.0040150842221901416,   -0.24841268578463685,    -0.0073080801617375155,
-        0.3122522704364516,     0.0073316847629231194,   -0.26606798599442621,    -0.0054892692910619113,
-        0.17878607636323862,    0.0033586935001791839,   -0.10066311654486482,    -0.001754132071278842,
-        0.049074577561330504,   0.00080234886593034873,  -0.021150143470356698,   -0.0003269871328764949,
-        0.0081757002802533667,  0.00012021127618051574,  -0.0028652357611661534,  -4.0244300629116574e-05,
-        0.00091801734966694636, 1.2361006806444711e-05,  -0.0002707191913116332,  -3.504631720275642e-06,
-        7.3888955616723944e-05, 9.2189772261859728e-07,  -1.8752943907614565e-05, -2.2597387576370175e-07,
-        4.4436168671606267e-06, 5.1807959456553769e-08,  -9.8651004908533913e-07, -1.1146078152883018e-08,
-        2.0582706963882007e-07, 2.2568126993711184e-09,  -4.0469622058265335e-08, -4.31163542777443e-10,
-        7.517057515198321e-09,  7.7904840375183328e-11,  -1.3219720621636946e-09, -1.3342979848924908e-11,
-        2.2055962238660182e-10, 2.1724065123826773e-12,  -3.4974624736954921e-11, -3.3609296485004418e-13,
-        5.2789108285402917e-12, 4.9471164793087018e-14,  -7.5998777765849013e-13, -4.2492853307002972e-15,
-        1.0768090434260388e-13, -2.1478500584069139e-15, -1.3891315735425435e-14};
-
-    // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-25, 25] of degree 58
-    // Need two double-angle iterations to get std::exp(1i * 2Pi * x)
-    static const inline std::vector<std::complex<double>> coeff_exp_25_double_58{
-        0.18062800362446170148,      std::complex<double>(0, 0.18179610866714050365),
-        0.17136920383910273595,      std::complex<double>(0, 0.19925163243335862054),
-        0.140925796907040235261,     std::complex<double>(0, 0.22796080003261620565),
-        0.082876055856841891882,     std::complex<double>(0, 0.2532858572234829137),
-        -0.0074221436141012927592,   std::complex<double>(0, 0.2502618038615061697),
-        -0.122133704690862182825,    std::complex<double>(0, 0.18805961883854130208),
-        -0.22748947981900530554,     std::complex<double>(0, 0.049028290014482440571),
-        -0.25995035380074054116,     std::complex<double>(0, -0.136319989256637197586),
-        -0.15580955316508673281,     std::complex<double>(0, -0.26328503536051185873),
-        0.072143391454352810524,     std::complex<double>(0, -0.19714884575899848364),
-        0.26291684848498283958,      std::complex<double>(0, 0.070656057015580154821),
-        0.18734869635645170151,      std::complex<double>(0, 0.28057105360852117596),
-        -0.14130673136093645043,     std::complex<double>(0, 0.107850428034749020676),
-        -0.27862616125139272005,     std::complex<double>(0, -0.26109773253640144443),
-        0.080408993503120812777,     std::complex<double>(0, -0.14643223302221210279),
-        0.29668323276411614112,      std::complex<double>(0, 0.30686635603595534211),
-        -0.18780259775854393014,     std::complex<double>(0, 0.00079570762613856392926),
-        -0.18913992462719792024,     std::complex<double>(0, -0.32672007924592542835),
-        0.39325017030968779458,      std::complex<double>(0, 0.39429032240354476156),
-        -0.3497483549643555904,      std::complex<double>(0, -0.28258610069142125034),
-        0.21153933021645939407,      std::complex<double>(0, 0.14835828410599586121),
-        -0.098249509728547702833,    std::complex<double>(0, -0.061801586436542218611),
-        0.037094235170279237596,     std::complex<double>(0, 0.021322944460262382422),
-        -0.011774353804612492335,    std::complex<double>(0, -0.0062615496337554710171),
-        0.0032138570962519864094,    std::complex<double>(0, 0.0015951094513301143899),
-        -0.00076681754685412470337,  std::complex<double>(0, -0.00035757527803024873063),
-        0.00016195195640370844877,   std::complex<double>(0, 0.000071327121189423030151),
-        -0.000030582578262368427032, std::complex<double>(0, -0.0000127704805524093099689),
-        5.2199382983514741049e-6,    std::complex<double>(0, 2.0288493823845387861e-6),
-        -9.1760095813876081637e-7};
+            0.19434469187614321534,      0.000028121235020924102279,  0.19430867862208346732,
+            0.00032804053246704692819,   0.19304837049242552267,      0.0009239885061941122757,
+            0.18713187486250454703,      0.001790513781902917009,     0.1710808161611283042,
+            0.0028467803069684297558,    0.13826944065298560445,      0.0039138884205377515022,
+            0.083134222110841322102,     0.0046838043398685844379,    0.0051565848584134534659,
+            0.0047395193765435668118,    -0.085887877787818373445,    0.0036789622404267100274,
+            -0.16598229147968197156,     0.0013731896243041756715,    -0.19939503130900015958,
+            -0.0017045122122027995596,   -0.15355473811750672653,     -0.0043116748182450947258,
+            -0.0265552968643165264,      -0.0048035383439814405066,   0.12723510977929983817,
+            -0.0022504694585396847506,   0.2050503858225569312,       0.0021805212378252080809,
+            0.12406879690587807423,      0.0050530609514554468551,    -0.076537335732015209183,
+            0.0031628706316878016706,    -0.2102040717970232038,      -0.0023528499510093846267,
+            -0.10474346864253283546,     -0.0052629751162979429097,   0.1446361839152810378,
+            -0.0010212475903697487815,   0.19564246110042237424,      0.0050183127524795356486,
+            -0.067850826119918975175,    0.0028190017533414893933,    -0.22308658761062895557,
+            -0.0047564467969067889091,   0.051022309299662099956,     -0.0029451060417833152454,
+            0.22828884989526551481,      0.0055117347285916102588,    -0.11758072675055333497,
+            0.0009745301618288099474,    -0.18122999806870273465,     -0.006298504301385854314,
+            0.24627507693859122916,      0.00396501821133928375,      -0.033002360377489771823,
+            0.0025387038817746142413,    -0.21831919675046630088,     -0.007233716354980785084,
+            0.3282453555161819341,       0.0079658800471704635092,    -0.29404285358349151936,
+            -0.0061038101356206023911,   0.19841553574150252155,      0.0036964558747683769604,
+            -0.10928401189842060286,     -0.0018700514063383011434,   0.051172121536912933883,
+            0.00081544485078443772862,   -0.020884129076554210245,    -0.00031278250256438376398,
+            0.0075558173289240873231,    0.00010706943547419701814,   -0.0024537740300429110688,
+            -0.000033066172316610842618, 0.000722172359408322777,     9.2919471033685940617e-6,
+            -0.00019410177880310225361,  -2.3924506921144603714e-6,   0.000047944305886204967721,
+            5.6766877139124484611e-7,    -0.000010941143964258805288, -1.2473400549852736843e-7,
+            2.3172504983237698351e-6,    2.5488321926472057185e-8,    -4.5727131961892729324e-7,
+            -4.8613939867917865351e-9,   8.4365334825726498476e-8,    8.6826695107008327309e-10,
+            -1.4597300587689942755e-8,   -1.4563807651909241906e-10,  2.3751401758947863432e-9,
+            2.300141701919308214e-11,    -3.6432330443102090491e-10,  -3.4285743886268137456e-12,
+            5.2800674988089143861e-11,   4.8337223759462070528e-13,   -7.244959258689594979e-12,
+            -6.4581668444616276355e-14,  9.42973904271209616e-13,     8.1905428832214402662e-15,
+            -1.1678129518123648459e-13,  -9.7570242043553113173e-16,  1.5265533469878859254e-14};
 
     // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-16, 16] of degree 46
     // Need two double-angle iterations to get std::exp(1i * 2Pi * x)
     static const inline std::vector<std::complex<double>> coeff_exp_16_double_46{
-        0.22393566906777406473,      std::complex<double>(0, -0.22176384914036407179),
-        0.24158307546266121784,      std::complex<double>(0, -0.1833147085131391692),
-        0.28534623846463528672,      std::complex<double>(0, -0.092486179824488319267),
-        0.32214532018151837923,      std::complex<double>(0, 0.061326880477941559726),
-        0.28798365357787248334,      std::complex<double>(0, 0.24466296846427114248),
-        0.112756709876058827492,     std::complex<double>(0, 0.33439190718203861982),
-        -0.17995397739265354314,     std::complex<double>(0, 0.16254851699551065311),
-        -0.34811157721125466184,     std::complex<double>(0, -0.22527723082929950144),
-        -0.079206690817227674462,    std::complex<double>(0, -0.3261263217854052566),
-        0.3619825467512375429,       std::complex<double>(0, 0.19237548287066772936),
-        0.071116210979945962808,     std::complex<double>(0, 0.30556044798491294876),
-        -0.43951407397686912164,     std::complex<double>(0, -0.46389876376571955078),
-        0.40955141151976834921,      std::complex<double>(0, 0.31828681535789012283),
-        -0.22366008829505166164,     std::complex<double>(0, -0.14446909676096391009),
-        0.086745018497586218893,     std::complex<double>(0, 0.04881348199387849059),
-        -0.025904132260782119283,    std::complex<double>(0, -0.0130280784432671331155),
-        0.0062348555293592804908,    std::complex<double>(0, 0.0028488507881147057589),
-        -0.00124638777412574748091,  std::complex<double>(0, -0.00052341839132927634389),
-        0.00021144315086686549321,   std::complex<double>(0, 0.00008232161624935662744),
-        -0.000030941853907267914894, std::complex<double>(0, -0.0000112448146641020618181),
-        3.9566691191479419628e-6,    std::complex<double>(0, 1.3496535335845760936e-6),
-        -4.4681665467734785701e-7,   std::complex<double>(0, -1.4370869519524496369e-7),
-        4.4978579841297345023e-8,    std::complex<double>(0, 1.35960020237312162173e-8),
-        -4.3910914593632557649e-9};
+            0.22393566906777406473,      std::complex<double>(0, -0.22176384914036407179),
+            0.24158307546266121784,      std::complex<double>(0, -0.1833147085131391692),
+            0.28534623846463528672,      std::complex<double>(0, -0.092486179824488319267),
+            0.32214532018151837923,      std::complex<double>(0, 0.061326880477941559726),
+            0.28798365357787248334,      std::complex<double>(0, 0.24466296846427114248),
+            0.112756709876058827492,     std::complex<double>(0, 0.33439190718203861982),
+            -0.17995397739265354314,     std::complex<double>(0, 0.16254851699551065311),
+            -0.34811157721125466184,     std::complex<double>(0, -0.22527723082929950144),
+            -0.079206690817227674462,    std::complex<double>(0, -0.3261263217854052566),
+            0.3619825467512375429,       std::complex<double>(0, 0.19237548287066772936),
+            0.071116210979945962808,     std::complex<double>(0, 0.30556044798491294876),
+            -0.43951407397686912164,     std::complex<double>(0, -0.46389876376571955078),
+            0.40955141151976834921,      std::complex<double>(0, 0.31828681535789012283),
+            -0.22366008829505166164,     std::complex<double>(0, -0.14446909676096391009),
+            0.086745018497586218893,     std::complex<double>(0, 0.04881348199387849059),
+            -0.025904132260782119283,    std::complex<double>(0, -0.0130280784432671331155),
+            0.0062348555293592804908,    std::complex<double>(0, 0.0028488507881147057589),
+            -0.00124638777412574748091,  std::complex<double>(0, -0.00052341839132927634389),
+            0.00021144315086686549321,   std::complex<double>(0, 0.00008232161624935662744),
+            -0.000030941853907267914894, std::complex<double>(0, -0.0000112448146641020618181),
+            3.9566691191479419628e-6,    std::complex<double>(0, 1.3496535335845760936e-6),
+            -4.4681665467734785701e-7,   std::complex<double>(0, -1.4370869519524496369e-7),
+            4.4978579841297345023e-8,    std::complex<double>(0, 1.35960020237312162173e-8),
+            -4.3910914593632557649e-9};
 
-    // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-25, 25] of degree 66
+    // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-28, 28] of degree 69
     // Need two double-angle iterations to get std::exp(1i * 2Pi * x)
-    static const inline std::vector<std::complex<double>> coeff_exp_25_double_66{
-        0.18062800362446170148,      std::complex<double>(0, 0.18179610866714050365),
-        0.17136920383910273595,      std::complex<double>(0, 0.19925163243335862054),
-        0.140925796907040235261,     std::complex<double>(0, 0.22796080003261620565),
-        0.082876055856841891882,     std::complex<double>(0, 0.2532858572234829137),
-        -0.0074221436141012927592,   std::complex<double>(0, 0.2502618038615061697),
-        -0.122133704690862182825,    std::complex<double>(0, 0.18805961883854130208),
-        -0.22748947981900530554,     std::complex<double>(0, 0.049028290014482440571),
-        -0.25995035380074054116,     std::complex<double>(0, -0.136319989256637197586),
-        -0.15580955316508673281,     std::complex<double>(0, -0.26328503536051185873),
-        0.072143391454352810524,     std::complex<double>(0, -0.19714884575899848364),
-        0.26291684848498283958,      std::complex<double>(0, 0.070656057015580154821),
-        0.18734869635645170151,      std::complex<double>(0, 0.28057105360852117596),
-        -0.14130673136093645043,     std::complex<double>(0, 0.107850428034749020676),
-        -0.27862616125139272005,     std::complex<double>(0, -0.26109773253640144443),
-        0.080408993503120812777,     std::complex<double>(0, -0.14643223302221210279),
-        0.29668323276411614112,      std::complex<double>(0, 0.30686635603595534211),
-        -0.18780259775854393014,     std::complex<double>(0, 0.00079570762613856393499),
-        -0.18913992462719792022,     std::complex<double>(0, -0.32672007924592542844),
-        0.39325017030968779421,      std::complex<double>(0, 0.39429032240354476303),
-        -0.34974835496435558469,     std::complex<double>(0, -0.28258610069142127212),
-        0.21153933021645931215,      std::complex<double>(0, 0.14835828410599616488),
-        -0.098249509728546593889,    std::complex<double>(0, -0.061801586436546207273),
-        0.037094235170265110974,     std::complex<double>(0, 0.021322944460311634018),
-        -0.0117743538044435084438,   std::complex<double>(0, -0.0062615496343258715024),
-        0.0032138570943584019707,    std::complex<double>(0, 0.0015951094575104763515),
-        -0.00076681752702904489585,  std::complex<double>(0, -0.00035757534050833235054),
-        0.00016195176303594945892,   std::complex<double>(0, 0.000071327708688519499983),
-        -0.000030580826759715102478, std::complex<double>(0, -0.0000127756020643569477767),
-        5.2052571039403208247e-6,    std::complex<double>(0, 2.0700857100449401148e-6),
-        -8.0417306853858198433e-7,   std::complex<double>(0, -3.0537377027147436668e-7),
-        1.1342790483574502448e-7,    std::complex<double>(0, 4.1236278712476395809e-8),
-        -1.4681363476970724015e-8,   std::complex<double>(0, -5.1209415689329717112e-9),
-        1.7533962434723710773e-9,    std::complex<double>(0, 5.8131873597716769476e-10),
-        -2.1319283919649474434e-10};
+    static const inline std::vector<std::complex<double>> coeff_exp_28_double_69{
+            0.16965420038096151734,     std::complex<double>(0, -0.16870362365122679171),
+            0.17732563341570653503,     std::complex<double>(0, -0.15257662302550620281),
+            0.19813991091980195924,     std::complex<double>(0, -0.11653668445787843111),
+            0.22463618146696168187,     std::complex<double>(0, -0.055247612438869928009),
+            0.24222204269430455681,     std::complex<double>(0, 0.032868582808249349747),
+            0.22877039216938352406,     std::complex<double>(0, 0.13689697922776022931),
+            0.16029435207712292022,     std::complex<double>(0, 0.22436545402588617404),
+            0.027661402398664831914,    std::complex<double>(0, 0.24197524972429224066),
+            -0.1373881280278361483,     std::complex<double>(0, 0.14201639396304749363),
+            -0.247172239081603351,      std::complex<double>(0, -0.060296836210872721551),
+            -0.19507673874460537689,    std::complex<double>(0, -0.23771070623058818128),
+            0.031920264790175678637,    std::complex<double>(0, -0.20577759355187671964),
+            0.24713797547609867022,     std::complex<double>(0, 0.063935986489801283073),
+            0.17445420196675215374,     std::complex<double>(0, 0.2701921188441360755),
+            -0.15727868519323690011,    std::complex<double>(0, 0.069938677312154154397),
+            -0.24950768519855445748,    std::complex<double>(0, -0.27043602073441558309),
+            0.13171463314130862909,     std::complex<double>(0, -0.078773986979217017201),
+            0.24992317333798480528,     std::complex<double>(0, 0.30762638062603936406),
+            -0.23967941768304551475,    std::complex<double>(0, -0.084734164213724622039),
+            -0.097114600515942006709,   std::complex<double>(0, -0.25254508172894241103),
+            0.35075914986051726085,     std::complex<double>(0, 0.3854555186711972059),
+            -0.36787890633417613673,    std::complex<double>(0, -0.31714143815669676441),
+            0.25223794632358659262,     std::complex<double>(0, 0.18753750575212232987),
+            -0.13151589581952086161,    std::complex<double>(0, -0.087560958842858249707),
+            0.055621444986257415066,    std::complex<double>(0, 0.033843766800251973148),
+            -0.019788193921275291226,   std::complex<double>(0, -0.011147502877347430922),
+            0.006064145932755984382,    std::complex<double>(0, 0.0031917021635365192163),
+            -0.0016280495926178602858,  std::complex<double>(0, -0.00080602800053480242858),
+            0.00038783147325554135753,  std::complex<double>(0, 0.00018157673634949862587),
+            -8.2806699030771099422e-05, std::complex<double>(0, -3.6819702905957927218e-05),
+            1.5976793949398898349e-05,  std::complex<double>(0, 6.7709097248534839074e-06),
+            -2.8046482984350999447e-06, std::complex<double>(0, -1.136281417032234328e-06),
+            4.5055512401421694507e-07,  std::complex<double>(0, 1.7496170925212740869e-07),
+            -6.6554613614985004105e-08, std::complex<double>(0, -2.4877274695896239424e-08),
+            8.9502114311674543983e-09,  std::complex<double>(0, 3.660317554231398248e-09)};
 
-    // Coefficients for the function std::cos(Pi/2.0 * x) in [-25, 25] of degree 58
+    // Coefficients for the function std::exp(1i * Pi/32.0 * x) in [-672, 672] of degree 104
+    // Need six double-angle iterations to get std::exp(1i * 2Pi * x); the approximation error is about 2^-37
+    static const inline std::vector<std::complex<double>> coeff_exp_672_double_104{
+            -0.13865640020720140504,     std::complex<double>(0, 0.13813596624226116641),
+            -0.14284402341600731954,     std::complex<double>(0, 0.1294752681783404008),
+            -0.15461923995242540729,     std::complex<double>(0, 0.11072599858935725765),
+            -0.17140265900412296688,     std::complex<double>(0, 0.079549335229813563413),
+            -0.18828355223278841015,     std::complex<double>(0, 0.03388646583438599404),
+            -0.19752903544671496754,     std::complex<double>(0, -0.025994910157078572118),
+            -0.18886057774880706391,     std::complex<double>(0, -0.094699126166024544186),
+            -0.15153984585062114253,     std::complex<double>(0, -0.15901463427938507611),
+            -0.079231374223438053755,    std::complex<double>(0, -0.197445308125096151),
+            0.022523815344751298692,     std::complex<double>(0, -0.18515464566998900174),
+            0.12917091340214858433,      std::complex<double>(0, -0.10683773377800005517),
+            0.19718592716016723574,      std::complex<double>(0, 0.024672462478262568778),
+            0.1799830470995404837,       std::complex<double>(0, 0.15562190987772900789),
+            0.062040208002197508074,     std::complex<double>(0, 0.20452174799658166397),
+            -0.10536312026697861916,     std::complex<double>(0, 0.11508675380951229742),
+            -0.20654067204647062958,     std::complex<double>(0, -0.07275306850887542149),
+            -0.13816937207942001221,     std::complex<double>(0, -0.20678941776810897185),
+            0.068703278312457181925,     std::complex<double>(0, -0.13597573092971731976),
+            0.21297800976577739848,      std::complex<double>(0, 0.096457432664093635148),
+            0.10478523707274244496,      std::complex<double>(0, 0.21716778710999025202),
+            -0.15197090486181950937,     std::complex<double>(0, 0.032886486424986638922),
+            -0.19284631855589696027,     std::complex<double>(0, -0.21265307241697576284),
+            0.084358608771748837098,     std::complex<double>(0, -0.10012965499817908671),
+            0.2209540048550028878,       std::complex<double>(0, 0.20799080503167236388),
+            -0.075394555660674391672,    std::complex<double>(0, 0.098281856774635855026),
+            -0.22138695999871551576,     std::complex<double>(0, -0.2372879434147286879),
+            0.14547837441247786916,      std::complex<double>(0, -0.0079570243980798104651),
+            0.15826298156650308698,      std::complex<double>(0, 0.25112300122813083426),
+            -0.26044381525713537002,     std::complex<double>(0, -0.19102015179464764051),
+            0.069632885529930186818,     std::complex<double>(0, -0.068585820335076390561),
+            0.19230537459813255042,      std::complex<double>(0, 0.28120104766985390587),
+            -0.32769971894394244005,     std::complex<double>(0, -0.3347250223158035811),
+            0.31157798359331894313,      std::complex<double>(0, 0.26979065003445531408),
+            -0.22004173277665193018,     std::complex<double>(0, -0.17046994886498567397),
+            0.12620322830953890588,      std::complex<double>(0, 0.08968986030340164974),
+            -0.061405598026279630264,    std::complex<double>(0, -0.040616865821882818332),
+            0.026017377737559705452,     std::complex<double>(0, 0.016171169925157083977),
+            -0.0097696087251537019993,   std::complex<double>(0, -0.0057452553187404773702),
+            0.0032930453220255790614,    std::complex<double>(0, 0.0018417803960741896979),
+            -0.00100617200514044393,     std::complex<double>(0, -0.00053740157746205312952),
+            0.00028085261977364370105,   std::complex<double>(0, 0.00014372730203941707144),
+            -0.000072074571983240335437, std::complex<double>(0, -0.000035439174340384266047),
+            0.000017096197798761963378,  std::complex<double>(0, 8.0959358636116793622e-6),
+            -3.7653637231702013512e-6,   std::complex<double>(0, -1.7207798356271559445e-6),
+            7.7306364115820468632e-7,    std::complex<double>(0, 3.4155296127100880813e-7),
+            -1.4846511086886219427e-7,   std::complex<double>(0, -6.3514860525519981166e-8),
+            2.6752425346657149724e-8,    std::complex<double>(0, 1.1097678044250190165e-8),
+            -4.5354374229282876681e-9,   std::complex<double>(0, -1.8266466735865899414e-9),
+            7.2520744426710813965e-10,   std::complex<double>(0, 2.8389682949674376298e-10),
+            -1.0961315283851321073e-10,  std::complex<double>(0, -4.1751736176627815189e-11),
+            1.5693401797664281026e-11,   std::complex<double>(0, 5.8203382574910978539e-12),
+            -2.1360361410828636656e-12,  std::complex<double>(0, -7.5933766397977714821e-13),
+            3.0921791889667285116e-13};
+
+    // Coefficients for the function std::exp(1i * Pi/4.0 * x) in [-28, 28] of degree 48
+    // Need three double-angle iterations to get std::exp(1i * 2Pi * x)
+    static const inline std::vector<std::complex<double>> coeff_exp_28_double_48{
+            std::complex<double>(-0.23921872631172760859, 0),    std::complex<double>(0, 0.23657700115383345496),
+            std::complex<double>(-0.26073438297200735025, 0),    std::complex<double>(0, 0.18915166871496458256),
+            std::complex<double>(-0.31234196537783687209, 0),    std::complex<double>(0, 0.075527056772289380415),
+            std::complex<double>(-0.34668626372781419231, 0),    std::complex<double>(0, -0.11365065491116921326),
+            std::complex<double>(-0.27433400966883908501, 0),    std::complex<double>(0, -0.3132466032403833367),
+            std::complex<double>(-0.017938176633367983182, 0),   std::complex<double>(0, -0.32956060027613220953),
+            std::complex<double>(0.31175507159809806579, 0),     std::complex<double>(0, 0.010672730092816636385),
+            std::complex<double>(0.29913676830824320607, 0),     std::complex<double>(0, 0.3915454927871518942),
+            std::complex<double>(-0.23500380845541923858, 0),    std::complex<double>(0, 0.049584187542800486903),
+            std::complex<double>(-0.31166476005127552451, 0),    std::complex<double>(0, -0.46061796599707383049),
+            std::complex<double>(0.48426832402987213255, 0),     std::complex<double>(0, 0.42022429174214681602),
+            std::complex<double>(-0.3183009548267689004, 0),     std::complex<double>(0, -0.21663384982020056357),
+            std::complex<double>(0.13484304798350604804, 0),     std::complex<double>(0, 0.077687580508749382036),
+            std::complex<double>(-0.041790701371023239452, 0),   std::complex<double>(0, -0.021130199011459616792),
+            std::complex<double>(0.010095208213039949877, 0),    std::complex<double>(0, 0.0045770376068954687215),
+            std::complex<double>(-0.0019763841502700657884, 0),  std::complex<double>(0, -0.00081527051248687140012),
+            std::complex<double>(0.00032212115978693571863, 0),  std::complex<double>(0, 0.00012218639913956890202),
+            std::complex<double>(-4.458557750152673685e-05, 0),  std::complex<double>(0, -1.5679036117348630903e-05),
+            std::complex<double>(5.3223445183205814063e-06, 0),  std::complex<double>(0, 1.7465569117845625818e-06),
+            std::complex<double>(-5.5480241790974107052e-07, 0), std::complex<double>(0, -1.7080468583728841092e-07),
+            std::complex<double>(5.1021577626973641342e-08, 0),  std::complex<double>(0, 1.4803000335283182599e-08),
+            std::complex<double>(-4.1754496927145128673e-09, 0), std::complex<double>(0, -1.1460429476765435588e-09),
+            std::complex<double>(3.0633949336333896473e-10, 0),  std::complex<double>(0, 7.9807924002750502126e-11),
+            std::complex<double>(-2.0278895741891271972e-11, 0), std::complex<double>(0, -5.0292161546394711216e-12),
+            std::complex<double>(1.2181923617996896608e-12, 0)};
+
+    // Coefficients for the function std::exp(1i * Pi/8.0 * x) in [-16, 16] of degree 23
+    // Need four double-angle iterations to get std::exp(1i * 2Pi * x)
+    static const inline std::vector<std::complex<double>> coeff_exp_16_double_23{
+            std::complex<double>(0.44055381707986857043, 0),     std::complex<double>(0, -0.42476506015273823857),
+            std::complex<double>(0.5757607350319376982, 0),      std::complex<double>(0, -0.058224392078514659865),
+            std::complex<double>(0.63136093387883518435, 0),     std::complex<double>(0, 0.74564931593694050438),
+            std::complex<double>(-0.55537681056570964433, 0),    std::complex<double>(0, -0.31504226022478565294),
+            std::complex<double>(0.14659065140093999191, 0),     std::complex<double>(0, 0.058247768279542422309),
+            std::complex<double>(-0.020276913022748938725, 0),   std::complex<double>(0, -0.0062956504847548480988),
+            std::complex<double>(0.0017667326590585323825, 0),   std::complex<double>(0, 0.00045277117471014590583),
+            std::complex<double>(-0.00010684737510145241024, 0), std::complex<double>(0, -2.3376886594863650919e-05),
+            std::complex<double>(4.7690365669779870709e-06, 0),  std::complex<double>(0, 9.1161719769832763422e-07),
+            std::complex<double>(-1.6396846620747584922e-07, 0), std::complex<double>(0, -2.7852909912067652654e-08),
+            std::complex<double>(4.4828133381284258415e-09, 0),  std::complex<double>(0, 6.8557357458132878181e-10),
+            std::complex<double>(-9.9853771085012255071e-11, 0), std::complex<double>(0, -1.4132101422613974449e-11)};
+
+    // Coefficients for the function std::exp(1i * Pi/256.0 * x) in [-696, 696] of degree 27
+    // Need nine double-angle iterations to get std::exp(1i * 2Pi * x); the approximation error is about 2^-30
+    static const inline std::vector<std::complex<double>> coeff_exp_696_double_27{
+            std::complex<double>(0.061360158967239699428, 0),     std::complex<double>(0, 0.54659344251322940602),
+            std::complex<double>(-0.066629613152442052538, 0),    std::complex<double>(0, 0.51538959577627480304),
+            std::complex<double>(-0.42867894517308958682, 0),     std::complex<double>(0, 0.11387346888727482038),
+            std::complex<double>(-0.56200143131878844197, 0),     std::complex<double>(0, -0.6757126790331047618),
+            std::complex<double>(0.54556798969587122002, 0),      std::complex<double>(0, 0.34628454590107307674),
+            std::complex<double>(-0.18420278697486780942, 0),     std::complex<double>(0, -0.085042852033324798733),
+            std::complex<double>(0.034846251050841244725, 0),     std::complex<double>(0, 0.01287190619828963608),
+            std::complex<double>(-0.004336693287768814029, 0),    std::complex<double>(0, -0.0013447542933420345281),
+            std::complex<double>(0.00038660145494971688697, 0),   std::complex<double>(0, 0.00010366504788206930291),
+            std::complex<double>(-0.000026058306391956842504, 0), std::complex<double>(0, -6.1671159813166895155e-6),
+            std::complex<double>(1.3793217355337668007e-6, 0),    std::complex<double>(0, 2.9249589397493124655e-7),
+            std::complex<double>(-5.8979711163383584045e-8, 0),   std::complex<double>(0, -1.1337966028205898537e-8),
+            std::complex<double>(2.082682964567321823e-9, 0),     std::complex<double>(0, 3.6633741022437148116e-10),
+            std::complex<double>(-6.1784072322089938085e-11, 0),  std::complex<double>(0, -1.0260866652079843544e-11)};
+
+    // Coefficients for the function std::cos(Pi/2.0 * x) in [-28, 28] of degree 68
     // Need one double-angle iteration to get std::cos(Pi x)
-    static const inline std::vector<double> coeff_cos_25_double{
-        0.18062800362446170148,      0, 0.17136920383910273595,     0, 0.14092579690704023526,    0,
-        0.082876055856841891882,     0, -0.0074221436141012927592,  0, -0.12213370469086218282,   0,
-        -0.22748947981900530554,     0, -0.25995035380074054116,    0, -0.15580955316508673281,   0,
-        0.072143391454352810524,     0, 0.26291684848498283958,     0, 0.18734869635645170151,    0,
-        -0.14130673136093645043,     0, -0.27862616125139272005,    0, 0.080408993503120812777,   0,
-        0.29668323276411614112,      0, -0.18780259775854393014,    0, -0.18913992462719792024,   0,
-        0.39325017030968779458,      0, -0.3497483549643555904,     0, 0.21153933021645939407,    0,
-        -0.098249509728547702833,    0, 0.037094235170279237596,    0, -0.011774353804612492335,  0,
-        0.0032138570962519864094,    0, -0.00076681754685412470337, 0, 0.00016195195640370844877, 0,
-        -0.000030582578262368427032, 0, 5.2199382983514741049e-6,   0, -9.1760095813876081637e-7};
+    static const inline std::vector<double> coeff_cos_28_double_68{
+            0.16965420038096151734,     0, 0.17732563341570653503,     0, 0.19813991091980195924,     0,
+            0.22463618146696168187,     0, 0.24222204269430455681,     0, 0.22877039216938352406,     0,
+            0.16029435207712292022,     0, 0.027661402398664835384,    0, -0.1373881280278361483,     0,
+            -0.247172239081603351,      0, -0.19507673874460537689,    0, 0.031920264790175678637,    0,
+            0.24713797547609867022,     0, 0.17445420196675215374,     0, -0.15727868519323690011,    0,
+            -0.24950768519855445748,    0, 0.13171463314130862909,     0, 0.24992317333798480528,     0,
+            -0.23967941768304551475,    0, -0.097114600515942020587,   0, 0.35075914986051726085,     0,
+            -0.36787890633417613673,    0, 0.25223794632358659262,     0, -0.13151589581952086161,    0,
+            0.055621444986257415066,    0, -0.019788193921275291226,   0, 0.0060641459327559904535,   0,
+            -0.0016280495926179615503,  0, 0.0003878314732567864553,   0, -8.2806699045358104529e-05, 0,
+            1.5976794110764587091e-05,  0, -2.8046499783036893006e-06, 0, 4.5057154372838970687e-07,  0,
+            -6.6704930345709428275e-08, 0, 1.0235563061480933036e-08};
 
     // Coefficients for the function std::cos(Pi/2.0 * x) in [-16, 16] of degree 50
     // Need one double-angle iteration to get std::cos(Pi x)
-    static const inline std::vector<double> coeff_cos_16_double{
-        0.22393566906777406473,    0, 0.24158307546266121784,      0, 0.28534623846463528672,    0,
-        0.32214532018151837923,    0, 0.28798365357787248334,      0, 0.11275670987605882749,    0,
-        -0.17995397739265354314,   0, -0.34811157721125466184,     0, -0.079206690817227674462,  0,
-        0.3619825467512375429,     0, 0.071116210979945962808,     0, -0.43951407397686912164,   0,
-        0.40955141151976834921,    0, -0.22366008829505166164,     0, 0.086745018497586218891,   0,
-        -0.025904132260782119253,  0, 0.0062348555293592797941,    0, -0.0012463877741257321947, 0,
-        0.00021144315086655356181, 0, -0.000030941853901365542544, 0, 3.9566690159249453134e-6,  0,
-        -4.4681499226586877671e-7, 0, 4.4954022829997224556e-8,    0, -4.0598440976489881572e-9, 0,
-        3.3135648780960312982e-10, 0, -2.6219749998085732829e-11};
+    static const inline std::vector<double> coeff_cos_16_double_50{
+            0.22393566906777406473,    0, 0.24158307546266121784,      0, 0.28534623846463528672,    0,
+            0.32214532018151837923,    0, 0.28798365357787248334,      0, 0.11275670987605882749,    0,
+            -0.17995397739265354314,   0, -0.34811157721125466184,     0, -0.079206690817227674462,  0,
+            0.3619825467512375429,     0, 0.071116210979945962808,     0, -0.43951407397686912164,   0,
+            0.40955141151976834921,    0, -0.22366008829505166164,     0, 0.086745018497586218891,   0,
+            -0.025904132260782119253,  0, 0.0062348555293592797941,    0, -0.0012463877741257321947, 0,
+            0.00021144315086655356181, 0, -0.000030941853901365542544, 0, 3.9566690159249453134e-6,  0,
+            -4.4681499226586877671e-7, 0, 4.4954022829997224556e-8,    0, -4.0598440976489881572e-9, 0,
+            3.3135648780960312982e-10, 0, -2.6219749998085732829e-11};
+
+    // Coefficients for the function std::cos(Pi/32.0 * x) in [-672, 672] of degree 104
+    // Need five double-angle iterations to get std::cos(Pi x); the approximation error is about 2^-34
+    static const inline std::vector<double> coeff_cos_672_double_104{
+            -0.13865640020720140504,    0, -0.14284402341600731954,    0, -0.15461923995242540729,     0,
+            -0.17140265900412296688,    0, -0.18828355223278841015,    0, -0.19752903544671496754,     0,
+            -0.18886057774880706391,    0, -0.15153984585062114253,    0, -0.079231374223438053755,    0,
+            0.022523815344751298692,    0, 0.12917091340214858433,     0, 0.19718592716016723574,      0,
+            0.1799830470995404837,      0, 0.062040208002197508074,    0, -0.10536312026697861916,     0,
+            -0.20654067204647062958,    0, -0.13816937207942001221,    0, 0.068703278312457181925,     0,
+            0.21297800976577739848,     0, 0.10478523707274244496,     0, -0.15197090486181950937,     0,
+            -0.19284631855589696027,    0, 0.084358608771748837098,    0, 0.2209540048550028878,       0,
+            -0.075394555660674391672,   0, -0.22138695999871551576,    0, 0.14547837441247786916,      0,
+            0.15826298156650308698,     0, -0.26044381525713537002,    0, 0.069632885529930186818,     0,
+            0.19230537459813255042,     0, -0.32769971894394244005,    0, 0.31157798359331894313,      0,
+            -0.22004173277665193018,    0, 0.12620322830953890588,     0, -0.061405598026279630264,    0,
+            0.026017377737559705452,    0, -0.0097696087251537019993,  0, 0.0032930453220255790614,    0,
+            -0.00100617200514044393,    0, 0.00028085261977364370105,  0, -0.000072074571983240335437, 0,
+            0.000017096197798761963378, 0, -3.7653637231702013512e-6,  0, 7.7306364115820468632e-7,    0,
+            -1.4846511086886219427e-7,  0, 2.6752425346657149724e-8,   0, -4.5354374229282876681e-9,   0,
+            7.2520744426710813965e-10,  0, -1.0961315283851321073e-10, 0, 1.5693401797664281026e-11,   0,
+            -2.1360361410828636656e-12, 0, 3.0921791889667285116e-13};
+
+    // Fourier coefficients for the y = x in [-0.5, 0.5] of degree 25
+    static const inline std::vector<std::complex<double>> coeff_identity_1_double_25{
+            std::complex<double>(0, 0.000000000000e+00),  std::complex<double>(0, -3.078625958366e-01),
+            std::complex<double>(0, 1.392185588975e-01),  std::complex<double>(0, -7.841132880780e-02),
+            std::complex<double>(0, 4.632469997106e-02),  std::complex<double>(0, -2.714371637884e-02),
+            std::complex<double>(0, 1.534409830487e-02),  std::complex<double>(0, -8.217909893393e-03),
+            std::complex<double>(0, 4.107119760690e-03),  std::complex<double>(0, -1.885469837262e-03),
+            std::complex<double>(0, 7.796207954152e-04),  std::complex<double>(0, -2.821494030521e-04),
+            std::complex<double>(0, 8.502045350971e-05),  std::complex<double>(0, -1.904381272352e-05),
+            std::complex<double>(0, 1.955327257209e-06),  std::complex<double>(0, 6.059635912051e-07),
+            std::complex<double>(0, -3.233437045926e-07), std::complex<double>(0, 3.188100072853e-08),
+            std::complex<double>(0, 2.572697405112e-08),  std::complex<double>(0, -9.811813990468e-09),
+            std::complex<double>(0, -1.258193476489e-09), std::complex<double>(0, 1.704301981199e-09),
+            std::complex<double>(0, -1.285522356967e-10), std::complex<double>(0, -2.757124392618e-10),
+            std::complex<double>(0, 7.211314011213e-11),  std::complex<double>(0, 4.426391086890e-11)};
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_FHE_H_

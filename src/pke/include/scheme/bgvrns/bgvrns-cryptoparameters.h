@@ -29,14 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
-#define LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_
 
-#include "schemerns/rns-cryptoparameters.h"
-#include "globals.h"
-
-#include <string>
+#include <cstdint>
 #include <memory>
+#include <string>
+
+#include "globals.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -44,18 +45,40 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief Crypto parameters for the BGV scheme in the RNS (double-CRT) representation. Adds to
+ * CryptoParametersRNS the precomputation of the BGV modulus switching tables and of the FLEXIBLEAUTO /
+ * FLEXIBLEAUTOEXT scaling factors modulo the plaintext modulus.
+ */
 class CryptoParametersBGVRNS : public CryptoParametersRNS {
     using ParmType = typename DCRTPoly::Params;
-    #define DISABLED_FOR_BGVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BGVRNS.");
+#define DISABLED_FOR_BGVRNS_PARAMS OPENFHE_THROW("This parameter is not available for BGVRNS.");
 
-public:
+  public:
     CryptoParametersBGVRNS() : CryptoParametersRNS() {}
 
     CryptoParametersBGVRNS(const CryptoParametersBGVRNS& rhs) : CryptoParametersRNS(rhs) {}
 
+    /**
+     * Constructor that initializes the BGV crypto parameters from a plaintext modulus.
+     *
+     * @param params element parameters (the DCRT modulus chain).
+     * @param plaintextModulus plaintext modulus t.
+     * @param distributionParameter standard deviation of the error distribution.
+     * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+     * @param securityLevel security level from the homomorphic encryption standard.
+     * @param digitSize the size of the digit (relinearization window) for BV key switching.
+     * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
+     * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+     * @param ksTech key switching technique (BV or HYBRID).
+     * @param scalTech scaling (modulus switching) technique.
+     * @param encTech encryption technique (BFV-only; kept for a uniform interface).
+     * @param multTech multiplication technique (BFV-only; kept for a uniform interface).
+     * @param multipartyMode security mode for multiparty (threshold) decryption.
+     */
     CryptoParametersBGVRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
                            float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
-                           usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                           uint32_t digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                            KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
@@ -63,13 +86,37 @@ public:
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
                               multipartyMode) {}
 
+    /**
+     * Constructor that initializes the BGV crypto parameters from explicit encoding parameters.
+     *
+     * @param params element parameters (the DCRT modulus chain).
+     * @param encodingParams encoding parameters (plaintext modulus, batch size).
+     * @param distributionParameter standard deviation of the error distribution.
+     * @param assuranceMeasure assurance measure (the number of standard deviations used for noise bounds).
+     * @param securityLevel security level from the homomorphic encryption standard.
+     * @param digitSize the size of the digit (relinearization window) for BV key switching.
+     * @param secretKeyDist secret key distribution: GAUSSIAN, UNIFORM_TERNARY or SPARSE_TERNARY.
+     * @param maxRelinSkDeg the maximum power of the secret key for which a relinearization key is generated.
+     * @param ksTech key switching technique (BV or HYBRID).
+     * @param scalTech scaling (modulus switching) technique.
+     * @param encTech encryption technique (BFV-only; kept for a uniform interface).
+     * @param multTech multiplication technique (BFV-only; kept for a uniform interface).
+     * @param PREMode security mode for proxy re-encryption.
+     * @param multipartyMode security mode for multiparty (threshold) decryption.
+     * @param executionMode execution mode (CKKS-only; kept for a uniform interface).
+     * @param decryptionNoiseMode decryption noise mode (CKKS-only; kept for a uniform interface).
+     * @param noiseScale multiplier applied to the fresh encryption noise (the plaintext modulus t for BGV).
+     * @param statisticalSecurity statistical security parameter in bits (CKKS-only).
+     * @param numAdversarialQueries number of adversarial decryption queries assumed (CKKS-only).
+     * @param thresholdNumOfParties number of parties in a threshold-FHE application (bounds the joint secret key).
+     */
     CryptoParametersBGVRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
-                           float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                           float assuranceMeasure, SecurityLevel securityLevel, uint32_t digitSize,
                            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                            MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET,
-                           MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
-                           ExecutionMode executionMode             = EXEC_EVALUATION,
+                           MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                           ExecutionMode executionMode = EXEC_EVALUATION,
                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
                            PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
                            uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
@@ -80,12 +127,38 @@ public:
 
     virtual ~CryptoParametersBGVRNS() {}
 
+    /**
+     * Computes the RNS tables shared by all schemes (via CryptoParametersRNS::PrecomputeCRTTables) and the
+     * BGV-specific tables: [t]_{q_i}, [-t^{-1}]_{q_i} and [q_l^{-1}]_{q_i} for modulus switching, t^{-1} modulo
+     * the q_i and p_j for HYBRID key switching, the Barrett constants for the q_i, and, for FLEXIBLEAUTO and
+     * FLEXIBLEAUTOEXT, the per-level scaling factors and [q_i]_t.
+     *
+     * @param ksTech the technique to use for key switching (BV or HYBRID).
+     * @param scalTech the technique to use for scaling (e.g., FLEXIBLEAUTOEXT or FIXEDMANUAL).
+     * @param encTech the technique to use for encryption (unused by BGV).
+     * @param multTech the technique to use for homomorphic multiplication (unused by BGV).
+     * @param numPartQ the number of digits (partitions of Q) for HYBRID key switching.
+     * @param auxBits the number of bits in the auxiliary (special) prime moduli.
+     * @param extraBits the number of extra bits reserved for the auxiliary modulus in HYBRID key switching.
+     */
     void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
                              MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
                              uint32_t extraBits) override;
 
+    /**
+     * Returns the step for the auxiliary prime search of HYBRID key switching; for BGV the auxiliary primes
+     * must be 1 modulo both the cyclotomic order 2n and the plaintext modulus t, so the step is their least
+     * common multiple.
+     *
+     * @return lcm(2n, t).
+     */
     uint64_t FindAuxPrimeStep() const override;
 
+    /**
+     * CKKS noise estimate for noise flooding; not available for BGV (always throws).
+     *
+     * @return never returns.
+     */
     double GetNoiseEstimate() const override {
         DISABLED_FOR_BGVRNS_PARAMS;
     }
@@ -124,4 +197,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_CRYPTOPARAMETERS_H_

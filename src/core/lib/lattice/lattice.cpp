@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,18 +34,15 @@
  */
 
 #include "config_core.h"
-
 #include "lattice/field2n-impl.h"
 #include "lattice/lat-hal.h"
 #include "lattice/matrix-lattice-impl.h"
-
+#include "math/binaryuniformgenerator-impl.h"
+#include "math/discretegaussiangenerator-impl.h"
+#include "math/discreteuniformgenerator-impl.h"
 #include "math/matrix-impl.h"
 #include "math/nbtheory-impl.h"
-
 #include "math/ternaryuniformgenerator-impl.h"
-#include "math/discreteuniformgenerator-impl.h"
-#include "math/discretegaussiangenerator-impl.h"
-#include "math/binaryuniformgenerator-impl.h"
 
 #include ILPARAMS_IMPLEMENTATION
 #include ILDCRTPARAMS_IMPLEMENTATION
@@ -59,6 +56,12 @@ template class ElemParams<NativeInteger>;
 
 MAKE_ILPARAMS_TYPE(NativeInteger)
 MAKE_POLY_TYPE(NativeVector)
+
+#if NATIVEINT != 32
+template class ElemParams<NativeInteger32>;
+MAKE_ILPARAMS_TYPE(NativeInteger32)
+MAKE_POLY_TYPE(NativeVector32)
+#endif
 
 template class Matrix<NativePoly>;
 SPLIT64_FOR_TYPE(NativePoly)

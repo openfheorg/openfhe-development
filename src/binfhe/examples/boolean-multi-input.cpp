@@ -33,6 +33,9 @@
   Example for the FHEW scheme using the default bootstrapping method (GINX)
  */
 
+#include <iostream>
+#include <vector>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;
@@ -60,7 +63,7 @@ int main() {
 
     // Encrypt several ciphertexts representing Boolean True (1) or False (0).
     // plaintext modulus is set higher than 4 to 2 * num_of_inputs
-    auto p          = 6;
+    auto p = 6;
     auto ct1_3input = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2_3input = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct3_3input = cc.Encrypt(sk, 0, SMALL_DIM, p);
@@ -92,7 +95,7 @@ int main() {
     std::cout << "Result of encrypted computation of OR(1, 1, 0) = " << result << std::endl;
 
     // majority gate and cmux for 3 input does not need higher plaintext modulus
-    p                  = 4;
+    p = 4;
     auto ct1_3input_p4 = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2_3input_p4 = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct3_3input_p4 = cc.Encrypt(sk, 0, SMALL_DIM, p);
@@ -143,7 +146,7 @@ int main() {
     std::cout << "Result of encrypted computation of CMUX(1, 0, 1) = " << result << std::endl;
 
     // for 4 input gates
-    p               = 8;
+    p = 8;
     auto ct1_4input = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2_4input = cc.Encrypt(sk, 0, SMALL_DIM, p);
     auto ct3_4input = cc.Encrypt(sk, 0, SMALL_DIM, p);

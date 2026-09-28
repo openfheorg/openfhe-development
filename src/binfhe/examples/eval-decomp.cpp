@@ -33,8 +33,12 @@
   Example for the FHEW scheme homomorphic digit decomposition
  */
 
-#include "binfhecontext.h"
 #include <chrono>
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+
+#include "binfhecontext.h"
 
 using namespace lbcrypto;
 
@@ -54,7 +58,7 @@ int main() {
 
     uint32_t Q = 1 << logQ;
 
-    int q      = 4096;                                               // q
+    int q = 4096;                                                    // q
     int factor = 1 << int(logQ - std::log2(q));                      // Q/q
     uint64_t P = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
@@ -86,7 +90,7 @@ int main() {
         if (i == decomp.size() - 1) {
             // after every evalfloor, the least significant digit is dropped so the last modulus is computed as log p = (log P) mod (log GetMaxPlaintextSpace)
             auto logp = GetMSB(P - 1) % GetMSB(p - 1);
-            p         = 1 << logp;
+            p = 1 << logp;
         }
         cc.Decrypt(sk, ct1, &result, p);
         std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";

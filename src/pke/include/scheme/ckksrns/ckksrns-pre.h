@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_PRE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_PRE_H
-
-#include "schemerns/rns-pre.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PRE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PRE_H_
 
 #include <string>
+
+#include "schemerns/rns-pre.h"
 
 /**
  * @namespace lbcrypto
@@ -42,8 +42,11 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of the proxy re-encryption capability; the RNS implementation is used unchanged.
+ */
 class PRECKKSRNS : public PRERNS {
-public:
+  public:
     virtual ~PRECKKSRNS() = default;
 
     /////////////////////////////////////
@@ -67,4 +70,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PRE_H_

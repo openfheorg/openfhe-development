@@ -42,10 +42,15 @@ double the precision of a single bootstrapping.
 
 */
 
-#include "openfhe.h"
-
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <iostream>
 #include <ostream>
+#include <random>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -88,13 +93,13 @@ void IterativeBootstrapExample() {
 #if NATIVEINT == 128
     // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89;
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89;
 #else
     // All modes are supported for 64-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -106,11 +111,11 @@ void IterativeBootstrapExample() {
     uint32_t numIterations = 2;
 
     std::vector<uint32_t> levelBudget = {3, 3};
-    std::vector<uint32_t> bsgsDim     = {0, 0};
+    std::vector<uint32_t> bsgsDim = {0, 0};
 
     uint32_t levelsAvailableAfterBootstrap = 10;
-    uint32_t depth =
-        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
+    uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) +
+                     (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.
@@ -168,7 +173,7 @@ void IterativeBootstrapExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
     uint32_t precision =
-        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+            std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << "\n\n";
     // Set precision equal to empirically measured value after many test runs. One could add a buffer to reduce this value as below.
     precision -= 5;
@@ -204,13 +209,13 @@ void IterativeBootstrapStcExample() {
 #if NATIVEINT == 128
     // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    uint32_t dcrtBits            = 78;
-    uint32_t firstMod            = 89;
+    uint32_t dcrtBits = 78;
+    uint32_t firstMod = 89;
 #else
     // All modes are supported for 64-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    uint32_t dcrtBits            = 59;
-    uint32_t firstMod            = 60;
+    uint32_t dcrtBits = 59;
+    uint32_t firstMod = 60;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -222,7 +227,7 @@ void IterativeBootstrapStcExample() {
     uint32_t numIterations = 2;
 
     std::vector<uint32_t> levelBudget = {3, 3};
-    std::vector<uint32_t> bsgsDim     = {0, 0};
+    std::vector<uint32_t> bsgsDim = {0, 0};
 
     uint32_t levelsAvailableAfterBootstrap = 10 + levelBudget[1];
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(9, levelBudget, secretKeyDist);
@@ -285,7 +290,7 @@ void IterativeBootstrapStcExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
     uint32_t precision =
-        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+            std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << "\n\n";
 
     // Set precision equal to empirically measured value after many test runs. One could add a buffer to reduce this value as below.

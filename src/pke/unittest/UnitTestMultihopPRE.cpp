@@ -33,20 +33,22 @@
   unit tests for Proxy Re-Encryption. Demo software for multiparty proxy reencryption operations for various schemes
  */
 
+#include <chrono>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "gen-cryptocontext.h"
 #include "include/gtest/gtest.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-
 using namespace lbcrypto;
 
 class UTGENERAL_MULTIHOP_PRE : public ::testing::TestWithParam<uint32_t> {
-protected:
+  protected:
     int run_demo_pre(uint32_t security_model, uint32_t num_of_hops) {
         // Generate parameters.
         PlaintextModulus plaintextModulus{2};
@@ -56,37 +58,33 @@ protected:
 
         if (security_model == 0) {
             ringDimension = 1024;
-            digitSize     = 9;
+            digitSize = 9;
             parameters.SetPREMode(INDCPA);
             parameters.SetKeySwitchTechnique(BV);
             parameters.SetFirstModSize(27);
-        }
-        else if (security_model == 1) {
+        } else if (security_model == 1) {
             ringDimension = 2048;
-            digitSize     = 16;
+            digitSize = 16;
             parameters.SetPREMode(FIXED_NOISE_HRA);
             parameters.SetKeySwitchTechnique(BV);
             parameters.SetFirstModSize(54);
-        }
-        else if (security_model == 2) {
+        } else if (security_model == 2) {
             ringDimension = 8192;
-            digitSize     = 10;
+            digitSize = 10;
             parameters.SetPREMode(NOISE_FLOODING_HRA);
             parameters.SetKeySwitchTechnique(BV);
             parameters.SetPRENumHops(num_of_hops);
             parameters.SetStatisticalSecurity(40);
             parameters.SetNumAdversarialQueries(1048576);
-        }
-        else if (security_model == 3) {
+        } else if (security_model == 3) {
             ringDimension = 8192;
-            digitSize     = 0;
+            digitSize = 0;
             parameters.SetPREMode(NOISE_FLOODING_HRA);
             parameters.SetKeySwitchTechnique(HYBRID);
             parameters.SetPRENumHops(num_of_hops);
             parameters.SetStatisticalSecurity(40);
             parameters.SetNumAdversarialQueries(1048576);
-        }
-        else {
+        } else {
             OPENFHE_THROW("invalid security model");
         }
 
@@ -178,7 +176,7 @@ protected:
         cc->Decrypt(keyPairs.back().secretKey, reEncryptedCTs.back(), &plaintextDec);
 
         // verification
-        auto& unpackedPT    = plaintextDec1->GetCoefPackedValue();
+        auto& unpackedPT = plaintextDec1->GetCoefPackedValue();
         auto& unpackedDecPT = plaintextDec->GetCoefPackedValue();
         EXPECT_EQ(unpackedPT.size(), unpackedDecPT.size());
         for (size_t j = 0; j < unpackedPT.size(); ++j) {

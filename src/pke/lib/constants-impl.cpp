@@ -29,11 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <ostream>
+#include <string>
+
 #include "constants.h"
 #include "utils/exception.h"
-
-#include <string>
-#include <ostream>
 
 namespace lbcrypto {
 

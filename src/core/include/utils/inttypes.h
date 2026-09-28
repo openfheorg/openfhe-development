@@ -33,13 +33,13 @@
   This code provides basic integer types and enums
  */
 
-#ifndef LBCRYPTO_UTILS_INTTYPES_H
-#define LBCRYPTO_UTILS_INTTYPES_H
-
-#include "math/hal/basicint.h"
+#ifndef SRC_CORE_INCLUDE_UTILS_INTTYPES_H_
+#define SRC_CORE_INCLUDE_UTILS_INTTYPES_H_
 
 #include <cstdint>
 #include <iosfwd>
+
+#include "math/hal/basicint.h"
 
 /**
  * @brief Type used for representing unsigned 8-bit integers.
@@ -59,10 +59,10 @@ typedef uint32_t usint;
 typedef uint64_t PlaintextModulus;
 
 /**
-* @brief Represents whether the polynomial ring is in EVALUATION or COEFFICIENT
+ * @brief Represents whether the polynomial ring is in EVALUATION or COEFFICIENT
  * representation.
  */
 enum Format { EVALUATION = 0, COEFFICIENT = 1 };
 std::ostream& operator<<(std::ostream& s, Format f);
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_INTTYPES_H_

@@ -29,22 +29,22 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BFVRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_BFVRNS_SCHEME_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_
+#define SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_
 
-#include "schemerns/rns-scheme.h"
+#include <cstdint>
+#include <memory>
+#include <string>
 
+#include "scheme/bfvrns/bfvrns-advancedshe.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-#include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/bfvrns/bfvrns-fhe.h"
+#include "scheme/bfvrns/bfvrns-leveledshe.h"
+#include "scheme/bfvrns/bfvrns-multiparty.h"
+#include "scheme/bfvrns/bfvrns-parametergeneration.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 #include "scheme/bfvrns/bfvrns-pre.h"
-#include "scheme/bfvrns/bfvrns-leveledshe.h"
-#include "scheme/bfvrns/bfvrns-advancedshe.h"
-#include "scheme/bfvrns/bfvrns-multiparty.h"
-
-#include <string>
-#include <memory>
+#include "schemerns/rns-scheme.h"
 
 /**
  * @namespace lbcrypto
@@ -52,18 +52,34 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief The BFV scheme in the RNS representation: instantiates the BFV parameter generation, PKE, PRE,
+ * leveled SHE, advanced SHE, multiparty and FHE components.
+ */
 class SchemeBFVRNS : public SchemeRNS {
-public:
+  public:
     SchemeBFVRNS() {
         this->m_ParamsGen = std::make_shared<ParameterGenerationBFVRNS>();
     }
 
     virtual ~SchemeBFVRNS() {}
 
+    /**
+     * Compares two schemes by type.
+     *
+     * @param sch the scheme to compare to.
+     * @return true if sch is also a SchemeBFVRNS.
+     */
     bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
         return (typeid(sch) == typeid(SchemeBFVRNS));
     }
 
+    /**
+     * Instantiates the BFV implementation of the given feature (PKE, PRE, LEVELEDSHE, MULTIPARTY, ADVANCEDSHE
+     * or FHE) if it has not been instantiated yet. KEYSWITCH is set up separately by SetKeySwitchingTechnique().
+     *
+     * @param feature the feature to enable; unsupported features throw.
+     */
     void Enable(PKESchemeFeature feature) override;
 
     /////////////////////////////////////
@@ -86,4 +102,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BFVRNS_BFVRNS_SCHEME_H_

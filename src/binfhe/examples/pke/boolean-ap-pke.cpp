@@ -33,6 +33,8 @@
   Example for the FHEW scheme using the AP bootstrapping
  */
 
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;

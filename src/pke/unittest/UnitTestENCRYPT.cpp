@@ -29,15 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "include/gtest/gtest.h"
-#include "utils/exception.h"
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <new>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <sstream>
-#include <vector>
+#include "include/gtest/gtest.h"
+#include "schemebase/decrypt-result.h"
+#include "utils/exception.h"
 
 using namespace lbcrypto;
 
@@ -94,8 +99,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_ENCR
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint BATCH    = 16;
-constexpr usint BV_DSIZE = 4;
+constexpr uint32_t BATCH = 16;
+constexpr uint32_t BV_DSIZE = 4;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode
@@ -139,7 +144,7 @@ static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
 class UTGENERAL_ENCRYPT_DECRYPT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> {
     using Element = DCRTPoly;
 
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -154,7 +159,7 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            std::string value   = "You keep using that word. I do not think it means what you think it means";
+            std::string value = "You keep using that word. I do not think it means what you think it means";
             Plaintext plaintext = cc->MakeStringPlaintext(value);
 
             KeyPair<Element> kp = cc->KeyGen();
@@ -164,13 +169,11 @@ protected:
             Plaintext plaintextNew;
             cc->Decrypt(kp.secretKey, ciphertext, &plaintextNew);
             EXPECT_EQ(*plaintext, *plaintextNew) << failmsg << " string encrypt/decrypt failed";
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -181,8 +184,8 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             size_t intSize = cc->GetRingDimension();
-            auto ptm       = cc->GetCryptoParameters()->GetPlaintextModulus();
-            int half       = ptm / 2;
+            auto ptm = cc->GetCryptoParameters()->GetPlaintextModulus();
+            int half = ptm / 2;
 
             std::vector<int64_t> intvec;
             for (size_t ii = 0; ii < intSize; ii++)
@@ -205,20 +208,18 @@ protected:
             Plaintext plaintextIntNew;
             cc->Decrypt(kp.secretKey, ciphertext4, &plaintextIntNew);
             EXPECT_EQ(*plaintextIntNew, *plaintextInt)
-                << failmsg << "coef packed encrypt/decrypt failed for integer plaintext";
+                    << failmsg << "coef packed encrypt/decrypt failed for integer plaintext";
 
             Ciphertext<Element> ciphertext5 = cc->Encrypt(kp.publicKey, plaintextSInt);
             Plaintext plaintextSIntNew;
             cc->Decrypt(kp.secretKey, ciphertext5, &plaintextSIntNew);
             EXPECT_EQ(*plaintextSIntNew, *plaintextSInt)
-                << failmsg << "coef packed encrypt/decrypt failed for signed integer plaintext";
-        }
-        catch (std::exception& e) {
+                    << failmsg << "coef packed encrypt/decrypt failed for signed integer plaintext";
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
@@ -234,3 +235,27 @@ TEST_P(UTGENERAL_ENCRYPT_DECRYPT, ENCRYPT) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_ENCRYPT_DECRYPT, ::testing::ValuesIn(testCases), testName);
+
+// Default-initializes T in storage pre-filled with 0xFF bytes, so a member without an initializer
+// keeps a non-zero garbage value instead of passing the check by chance.
+template <typename T, typename Check>
+static void CheckDefaultInitOnDirtyStorage(Check check) {
+    alignas(T) unsigned char storage[sizeof(T)];
+    std::memset(storage, 0xFF, sizeof(storage));
+    T* obj = ::new (static_cast<void*>(storage)) T;  // no parentheses: default-, not value-initialization
+    check(*obj);
+    obj->~T();
+}
+
+TEST(UnitTestENCRYPT, ResultDefaultsAreInvalidAndEmpty) {
+    CheckDefaultInitOnDirtyStorage<EncryptResult>([](const EncryptResult& r) {
+        EXPECT_FALSE(r.isValid);
+        EXPECT_EQ(0u, r.numBytesEncrypted);
+    });
+
+    CheckDefaultInitOnDirtyStorage<DecryptResult>([](const DecryptResult& r) {
+        EXPECT_FALSE(r.isValid);
+        EXPECT_EQ(0u, r.messageLength);
+        EXPECT_EQ(NativeInteger(1), r.scalingFactorInt);
+    });
+}

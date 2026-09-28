@@ -31,6 +31,8 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Saroja Erabelli (Duality Technologies)
 
+* Yunhao Fu (Beihang University)
+
 * Huijing Gong (Intel Labs)
 
 * Arnab Bobby Deb Gupta (New Jersey Institute of Technology)

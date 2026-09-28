@@ -33,14 +33,15 @@
   matrix class implementations and type specific implementations
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
-#define LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_
+
+#include <cstdint>
+#include <memory>
 
 #include "math/matrix-impl.h"
-
+#include "math/matrix-utils.h"
 #include "utils/parallel.h"
-
-#include <memory>
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations
@@ -51,22 +52,22 @@ template <typename Element>
 Matrix<typename Element::Integer> Rotate(Matrix<Element> const& inMat) {
     Matrix<Element> mat(inMat);
     mat.SetFormat(Format::COEFFICIENT);
-    size_t n                                 = mat(0, 0).GetLength();
+    size_t n = mat(0, 0).GetLength();
     typename Element::Integer const& modulus = mat(0, 0).GetModulus();
-    size_t rows                              = mat.GetRows() * n;
-    size_t cols                              = mat.GetCols() * n;
+    size_t rows = mat.GetRows() * n;
+    size_t cols = mat.GetCols() * n;
     Matrix<typename Element::Integer> result(Element::Integer::Allocator, rows, cols);
     for (size_t row = 0; row < mat.GetRows(); ++row) {
         for (size_t col = 0; col < mat.GetCols(); ++col) {
             for (size_t rotRow = 0; rotRow < n; ++rotRow) {
                 for (size_t rotCol = 0; rotCol < n; ++rotCol) {
                     result(row * n + rotRow, col * n + rotCol) =
-                        mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
+                            mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
                     //  negate (mod q) upper-right triangle to account for
                     //  (mod x^n + 1)
                     if (rotRow < rotCol) {
                         result(row * n + rotRow, col * n + rotCol) =
-                            modulus.ModSub(result(row * n + rotRow, col * n + rotCol), modulus);
+                                modulus.ModSub(result(row * n + rotRow, col * n + rotCol), modulus);
                     }
                 }
             }
@@ -83,11 +84,11 @@ template <typename Element>
 Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat) {
     Matrix<Element> mat(inMat);
     mat.SetFormat(Format::COEFFICIENT);
-    size_t n                                 = mat(0, 0).GetLength();
+    size_t n = mat(0, 0).GetLength();
     typename Element::Integer const& modulus = mat(0, 0).GetModulus();
     typename Element::Vector zero(1, modulus);
-    size_t rows                = mat.GetRows() * n;
-    size_t cols                = mat.GetCols() * n;
+    size_t rows = mat.GetRows() * n;
+    size_t cols = mat.GetCols() * n;
     auto singleElemBinVecAlloc = [=]() {
         return typename Element::Vector(1, modulus);
     };
@@ -97,7 +98,7 @@ Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat) {
             for (size_t rotRow = 0; rotRow < n; ++rotRow) {
                 for (size_t rotCol = 0; rotCol < n; ++rotCol) {
                     typename Element::Vector& elem = result(row * n + rotRow, col * n + rotCol);
-                    elem.at(0)                     = mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
+                    elem.at(0) = mat(row, col).GetValues().at((rotRow - rotCol + n) % n);
                     //  negate (mod q) upper-right triangle to account for
                     //  (mod x^n + 1)
                     if (rotRow < rotCol) {
@@ -124,8 +125,7 @@ void Matrix<Element>::SwitchFormat() {
         for (size_t col = 0; col < cols; ++col) {
             data[0][col].SwitchFormat();
         }
-    }
-    else {
+    } else {
         // #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(rows))
         for (size_t row = 0; row < rows; ++row) {
             for (size_t col = 0; col < cols; ++col) {
@@ -135,41 +135,46 @@ void Matrix<Element>::SwitchFormat() {
     }
 }
 
-//  Convert from Z_q to [-q/2, q/2]
+/**
+ * @brief Converts a matrix of integers modulo q to their centered representatives in (-q/2, q/2] as int32_t.
+ *
+ * @param input the matrix of integers in [0, q).
+ * @param modulus the modulus q.
+ * @return the matrix of centered representatives; throws if one does not fit in an int32_t.
+ */
 template <typename T>
 Matrix<int32_t> ConvertToInt32(const Matrix<T>& input, const T& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    T negativeThreshold(modulus / BigInteger(2));
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32ConverterImpl<T> converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            if (input(i, j) > negativeThreshold) {
-                result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
-            }
-            else {
-                result(i, j) = input(i, j).ConvertToInt();
-            }
+            result(i, j) = converter.Convert(inputRow[j]);
         }
     }
     return result;
 }
 
+/**
+ * @brief Converts a matrix of vectors modulo q to the centered representatives in (-q/2, q/2] of their first
+ * entries, as int32_t.
+ *
+ * @param input the matrix of vectors with entries in [0, q); only entry 0 of each vector is used.
+ * @param modulus the modulus q.
+ * @return the matrix of centered representatives; throws if one does not fit in an int32_t.
+ */
 template <typename V>
 Matrix<int32_t> ConvertToInt32(const Matrix<V>& input, const typename V::Integer& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    typename V::Integer negativeThreshold(modulus / BigInteger(2));
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32ConverterImpl<typename V::Integer> converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            const typename V::Integer& elem = input(i, j).at(0);
-            if (elem > negativeThreshold) {
-                result(i, j) = -1 * (modulus - elem).ConvertToInt();
-            }
-            else {
-                result(i, j) = elem.ConvertToInt();
-            }
+            result(i, j) = converter.Convert(inputRow[j][0]);
         }
     }
     return result;
@@ -177,4 +182,4 @@ Matrix<int32_t> ConvertToInt32(const Matrix<V>& input, const typename V::Integer
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_MATRIX_LATTICE_IMPL_H_

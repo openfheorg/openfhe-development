@@ -41,6 +41,12 @@
 
 #define PROFILE
 
+#include <complex>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -49,8 +55,8 @@ using namespace lbcrypto;
  * A utility class defining a party that is involved in the collective bootstrapping protocol
  */
 struct Party {
-public:
-    usint id;  // unique party identifier starting from 0
+  public:
+    uint32_t id;  // unique party identifier starting from 0
 
     std::vector<Ciphertext<DCRTPoly>> sharesPair;  // (h_{0,i}, h_{1,i}) = (masked decryption
                                                    // share, re-encryption share)
@@ -89,47 +95,47 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-	* The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
-	* The SPARSE_TERNARY distribution was used in the original CKKS paper,
-	* but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
-	* encryption standard.
-	*/
+     * The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
+     * The SPARSE_TERNARY distribution was used in the original CKKS paper,
+     * but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
+     * encryption standard.
+     */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
 
     /*  A2) Desired security level based on FHE standards.
-	* In this example, we use the "NotSet" option, so the example can run more quickly with
-	* a smaller ring dimension. Note that this should be used only in
-	* non-production environments, or by experts who understand the security
-	* implications of their choices. In production-like environments, we recommend using
-	* HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-	* or 256-bit security, respectively. If you choose one of these as your security level,
-	* you do not need to set the ring dimension.
-	*/
+     * In this example, we use the "NotSet" option, so the example can run more quickly with
+     * a smaller ring dimension. Note that this should be used only in
+     * non-production environments, or by experts who understand the security
+     * implications of their choices. In production-like environments, we recommend using
+     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * you do not need to set the ring dimension.
+     */
     parameters.SetSecurityLevel(HEStd_128_classic);
 
     /*  A3) Scaling parameters.
-	* By default, we set the modulus sizes and rescaling technique to the following values
-	* to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-	* below unless you are an FHE expert.
-	*/
-    usint dcrtBits = 50;
-    usint firstMod = 60;
+     * By default, we set the modulus sizes and rescaling technique to the following values
+     * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+     * below unless you are an FHE expert.
+     */
+    uint32_t dcrtBits = 50;
+    uint32_t firstMod = 60;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(scaleTech);
     parameters.SetFirstModSize(firstMod);
 
     /*  A4) Multiplicative depth.
-    * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set
-    * according the following formula:
-    * multDepth >= desired_depth + interactive_bootstrapping_depth
-    * where,
-    *   The desired_depth is the depth of the computation, as chosen by the user.
-    *   The interactive_bootstrapping_depth is either 3 or 4, depending on the ciphertext compression mode: COMPACT vs SLACK (see below)
-    * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels
-    * for computation and 4 for interactive bootstrapping. You will need to bootstrap 3 times.
-    */
+     * The multiplicative depth detemins the computational capability of the instantiated scheme. It should be set
+     * according the following formula:
+     * multDepth >= desired_depth + interactive_bootstrapping_depth
+     * where,
+     *   The desired_depth is the depth of the computation, as chosen by the user.
+     *   The interactive_bootstrapping_depth is either 3 or 4, depending on the ciphertext compression mode: COMPACT vs SLACK (see below)
+     * Example 1, if you want to perform a computation of depth 24, you can set multDepth to 10, use 6 levels
+     * for computation and 4 for interactive bootstrapping. You will need to bootstrap 3 times.
+     */
     uint32_t multiplicativeDepth = 7;
     parameters.SetMultiplicativeDepth(multiplicativeDepth);
     parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
@@ -138,16 +144,16 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     parameters.SetBatchSize(batchSize);
 
     /*  Protocol-specific parameters (SLACK or COMPACT)
-    * SLACK (default) uses larger masks, which makes it more secure theoretically. However, it is also slightly less efficient.
-    * COMPACT uses smaller masks, which makes it more efficient. However, it is relatively less secure theoretically.
-    * Both options can be used for practical security.
-    * The following table summarizes the differences between SLACK and COMPACT:
-    * Parameter	        SLACK	                                        COMPACT
-    * Mask size	        Larger	                                        Smaller
-    * Security	        More secure	                                    Less secure
-    * Efficiency	    Less efficient	                                More efficient
-    * Recommended use	For applications where security is paramount	For applications where efficiency is paramount
-    */
+     * SLACK (default) uses larger masks, which makes it more secure theoretically. However, it is also slightly less efficient.
+     * COMPACT uses smaller masks, which makes it more efficient. However, it is relatively less secure theoretically.
+     * Both options can be used for practical security.
+     * The following table summarizes the differences between SLACK and COMPACT:
+     * Parameter	        SLACK	                                        COMPACT
+     * Mask size	        Larger	                                        Smaller
+     * Security	        More secure	                                    Less secure
+     * Efficiency	    Less efficient	                                More efficient
+     * Recommended use	For applications where security is paramount	For applications where efficiency is paramount
+     */
     auto compressionLevel = CompressionLevel::SLACK;
     parameters.SetInteractiveBootCompressionLevel(compressionLevel);
 
@@ -159,15 +165,15 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(MULTIPARTY);
 
-    usint ringDim = cryptoContext->GetRingDimension();
+    uint32_t ringDim = cryptoContext->GetRingDimension();
     // This is the maximum number of slots that can be used for full packing.
-    usint maxNumSlots = ringDim / 2;
+    uint32_t maxNumSlots = ringDim / 2;
     std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
     std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
     std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
     std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
 
-    const usint numParties = 3;  // n: number of parties involved in the interactive protocol
+    const uint32_t numParties = 3;  // n: number of parties involved in the interactive protocol
 
     std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
     std::cout << "number of parties: " << numParties << "\n";
@@ -186,7 +192,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Initialization - Assuming numParties (n) of parties
     // P0 is the leading party
-    for (usint i = 0; i < numParties; i++) {
+    for (uint32_t i = 0; i < numParties; i++) {
         parties[i].id = i;
         std::cout << "Party " << parties[i].id << " started.\n";
         if (0 == i)
@@ -198,7 +204,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     std::cout << "Joint public key for (s_0 + s_1 + ... + s_n) is generated..." << std::endl;
 
     // Assert everything is good
-    for (usint i = 0; i < numParties; i++) {
+    for (uint32_t i = 0; i < numParties; i++) {
         if (!parties[i].kpShard.good()) {
             std::cout << "Key generation failed for party " << i << "!" << std::endl;
             exit(1);
@@ -207,7 +213,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Generate the collective public key
     std::vector<PrivateKey<DCRTPoly>> secretKeys;
-    for (usint i = 0; i < numParties; i++) {
+    for (uint32_t i = 0; i < numParties; i++) {
         secretKeys.push_back(parties[i].kpShard.secretKey);
     }
     kpMultiparty = cryptoContext->MultipartyKeyGen(secretKeys);  // This is the same core key generation operation.
@@ -218,7 +224,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
     // Encryption
     Ciphertext<DCRTPoly> inCtxt = cryptoContext->Encrypt(kpMultiparty.publicKey, ptxt1);
-    DCRTPoly ptxtpoly           = ptxt1->GetElement<DCRTPoly>();
+    DCRTPoly ptxtpoly = ptxt1->GetElement<DCRTPoly>();
 
     std::cout << "Compressing ctxt to the smallest possible number of towers!\n";
     inCtxt = cryptoContext->IntMPBootAdjustScale(inCtxt);
@@ -239,7 +245,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     // c1 for IntMPBootDecrypt
     auto c1 = inCtxt->Clone();
     c1->GetElements().erase(c1->GetElements().begin());
-    for (usint i = 0; i < numParties; i++) {
+    for (uint32_t i = 0; i < numParties; i++) {
         std::cout << "Party " << i << " started its part in the Collective Bootstrapping Protocol\n";
         parties[i].sharesPair = cryptoContext->IntMPBootDecrypt(parties[i].kpShard.secretKey, c1, a);
         sharesPairVec.push_back(parties[i].sharesPair);
@@ -262,10 +268,10 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
     std::cout << "Party 0 started its part in the collective decryption protocol\n";
     partialCiphertextVec.push_back(cryptoContext->MultipartyDecryptLead({outCtxt}, parties[0].kpShard.secretKey)[0]);
 
-    for (usint i = 1; i < numParties; i++) {
+    for (uint32_t i = 1; i < numParties; i++) {
         std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
         partialCiphertextVec.push_back(
-            cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
+                cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
     }
 
     // Checking the results

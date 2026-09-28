@@ -37,25 +37,29 @@
 //==================================================================================
 // This file is included only if WITH_NTL is set to ON in CMakeLists.txt
 //==================================================================================
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_
+
+#include <cstdint>
+#include <type_traits>
+
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #ifndef LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-        #define LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
+    #include <NTL/SmartPtr.h>
+    #include <NTL/vec_ZZ.h>
+    #include <NTL/vector.h>
 
-        #include <NTL/SmartPtr.h>
-        #include <NTL/vec_ZZ.h>
-        #include <NTL/vector.h>
+    #include <initializer_list>
+    #include <ostream>
+    #include <string>
+    #include <vector>
 
-        #include "math/hal/bigintntl/ubintntl.h"
-        #include "utils/exception.h"
-        #include "utils/inttypes.h"
-        #include "utils/serializable.h"
-
-        #include <initializer_list>
-        #include <ostream>
-        #include <string>
-        #include <vector>
+    #include "math/hal/bigintntl/ubintntl.h"
+    #include "math/hal/vector.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
+    #include "utils/serializable.h"
 
 // defining this forces modulo when you write to the vector (except with at())
 // this is becuase NTL required inputs to modmath to be < modulus but BU does
@@ -89,7 +93,7 @@ template <typename myT>
 class myVecP : public NTL::Vec<myT>,
                public lbcrypto::BigVectorInterface<myVecP<myT>, myT>,
                public lbcrypto::Serializable {
-public:
+  public:
     // CONSTRUCTORS
 
     myVecP() : Vec<myT>() {
@@ -116,9 +120,9 @@ public:
     myVecP(myVecP<myT>&& a);
 
     myVecP(const long n, const myT& q);  // NOLINT
-    myVecP(usint n, const myT& q, const myT& v) : Vec<myT>(INIT_SIZE, n) {
+    myVecP(uint32_t n, const myT& q, const myT& v) : Vec<myT>(INIT_SIZE, n) {
         this->SetModulus(q);
-        for (usint i{0}; i < n; ++i)
+        for (uint32_t i{0}; i < n; ++i)
             (*this)[i] = v;
     }
 
@@ -180,6 +184,9 @@ public:
     void SwitchModulus(const myT& newModulus);
     void LazySwitchModulus(const myT& newModulus);
 
+    myVecP& MultAccEqNoCheck(const myVecP& a, const myVecP& b) {
+        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
+    }
     myT& MultAccEqNoCheck(const myVecP& v, const myT& i) {
         OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
     }
@@ -195,11 +202,11 @@ public:
     }
 
     // sets modulus and the NTL init function uint64_t argument
-    inline void SetModulus(const uint64_t& value) {
+    inline void SetModulus(uint64_t value) {
         if (value == 0) {
             OPENFHE_THROW("SetModulus(uint64_t) cannot be zero");
         }
-        this->m_modulus       = myT(value);
+        this->m_modulus = myT(value);
         this->m_modulus_state = INITIALIZED;
     }
 
@@ -208,7 +215,7 @@ public:
         if (value == myT(0)) {
             OPENFHE_THROW("SetModulus(myT) cannot be zero");
         }
-        this->m_modulus       = value;
+        this->m_modulus = value;
         this->m_modulus_state = INITIALIZED;
     }
 
@@ -233,19 +240,17 @@ public:
     const myT& GetModulus() const {
         if (this->isModulusSet()) {
             return (this->m_modulus);
-        }
-        else {
+        } else {
             OPENFHE_THROW("modulus not set");
         }
     }
 
     inline int CopyModulus(const myVecP& rhs) {
-        this->m_modulus       = rhs.m_modulus;
+        this->m_modulus = rhs.m_modulus;
         this->m_modulus_state = rhs.m_modulus_state;
         if (isModulusSet()) {
             return (0);
-        }
-        else {
+        } else {
             this->m_modulus_state = GARBAGE;
             return (-1);
         }
@@ -263,27 +268,27 @@ public:
     // MODULUS ARITHMETIC OPERATIONS
 
     /**
-   * Vector modulus operator.
-   *
-   * @param &modulus is the modulus to perform on the current vector entries.
-   * @return is the result of the modulus operation on current vector.
-   */
+     * Vector modulus operator.
+     *
+     * @param b is the modulus to perform on the current vector entries.
+     * @return is the result of the modulus operation on current vector.
+     */
     myVecP Mod(const myT& b) const;
 
     /**
-   * Vector modulus operator. In-place variant.
-   *
-   * @param &modulus is the modulus to perform on the current vector entries.
-   * @return is the result of the modulus operation on current vector.
-   */
+     * Vector modulus operator. In-place variant.
+     *
+     * @param b is the modulus to perform on the current vector entries.
+     * @return is the result of the modulus operation on current vector.
+     */
     myVecP& ModEq(const myT& b);
 
     /**
-   * Scalar-to-vector modulus addition operation.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar-to-vector modulus addition operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus addition operation.
+     */
     myVecP ModAdd(const myT& b) const {
         ModulusCheck("Warning: myVecP::ModAdd");
         myVecP ans(*this);
@@ -292,43 +297,43 @@ public:
     }
 
     /**
-   * Scalar-to-vector modulus addition operation. In-place variant.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar-to-vector modulus addition operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus addition operation.
+     */
     myVecP& ModAddEq(const myT& b) {
         ModulusCheck("Warning: myVecP::ModAdd");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModAddEq(b, this->m_modulus);
         }
         return *this;
     }
 
     /**
-   * Scalar modulus addition at a particular index.
-   *
-   * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar modulus addition at a particular index.
+     *
+     * @param i is the index of the entry to add.
+     * @param b is the scalar to add.
+     * @return is the result of the modulus addition operation.
+     */
     myVecP ModAddAtIndex(size_t i, const myT& b) const;
 
     /**
-   * Scalar modulus addition at a particular index. In-place variant.
-   *
-   * @param i is the index of the entry to add.
-   * @param &b is the scalar to add.
-   * @return is the result of the modulus addition operation.
-   */
+     * Scalar modulus addition at a particular index. In-place variant.
+     *
+     * @param i is the index of the entry to add.
+     * @param b is the scalar to add.
+     * @return is the result of the modulus addition operation.
+     */
     myVecP& ModAddAtIndexEq(size_t i, const myT& b);
 
     /**
-   * Vector component wise modulus addition.
-   *
-   * @param &b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     myVecP ModAdd(const myVecP& b) const {
         ArgCheckVector(b, "myVecP ModAdd()");
         myVecP ans(*this);
@@ -337,21 +342,21 @@ public:
     }
 
     /**
-   * Vector component wise modulus addition. In-place variant.
-   *
-   * @param &b is the vector to perform operation with.
-   * @return is the result of the component wise modulus addition operation.
-   */
+     * Vector component wise modulus addition. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus addition operation.
+     */
     myVecP& ModAddEq(const myVecP& b) {
         ArgCheckVector(b, "myVecP ModAddEq()");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModAddEq(b[i], this->m_modulus);
         }
         return *this;
     }
 
     myVecP& ModAddNoCheckEq(const myVecP& b) {
-        for (usint i = 0; i < this->GetLength(); i++)
+        for (uint32_t i = 0; i < this->GetLength(); i++)
             this->operator[](i).ModAddEq(b[i], this->m_modulus);
         return *this;
     }
@@ -361,11 +366,11 @@ public:
     void modadd_p(myVecP& x, const myVecP& a, const myVecP& b) const;
 
     /**
-   * Scalar-from-vector modulus subtraction operation.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Scalar-from-vector modulus subtraction operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus subtraction operation.
+     */
     myVecP ModSub(const myT& b) const {
         ModulusCheck("Warning: myVecP::ModSub");
         myVecP ans(*this);
@@ -374,25 +379,25 @@ public:
     }
 
     /**
-   * Scalar-from-vector modulus subtraction operation. In-place variant.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus subtraction operation.
-   */
+     * Scalar-from-vector modulus subtraction operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus subtraction operation.
+     */
     myVecP& ModSubEq(const myT& b) {
         ModulusCheck("Warning: myVecP::ModSubEq");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModSubEq(b, this->m_modulus);
         }
         return (*this);
     }
 
     /**
-   * Vector component wise modulus subtraction.
-   *
-   * @param &b is the vector to perform operation with.
-   * @return is the result of the component wise modulus subtraction operation.
-   */
+     * Vector component wise modulus subtraction.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus subtraction operation.
+     */
     myVecP ModSub(const myVecP& b) const {
         ArgCheckVector(b, "myVecP ModSub()");
         myVecP ans(*this);
@@ -401,14 +406,14 @@ public:
     }
 
     /**
-   * Vector component wise modulus subtraction. In-place variant.
-   *
-   * @param &b is the vector to perform operation with.
-   * @return is the result of the component wise modulus subtraction operation.
-   */
+     * Vector component wise modulus subtraction. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus subtraction operation.
+     */
     myVecP& ModSubEq(const myVecP& b) {
         ArgCheckVector(b, "myVecP ModSubEq()");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModSubEq(b[i], this->m_modulus);
         }
         return (*this);
@@ -419,11 +424,11 @@ public:
     void modsub_p(myVecP& x, const myVecP& a, const myVecP& b) const;
 
     /**
-   * Scalar-to-vector modulus multiplication operation.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Scalar-to-vector modulus multiplication operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus multiplication operation.
+     */
     myVecP ModMul(const myT& b) const {
         ModulusCheck("Warning: myVecP::ModMul");
         myVecP ans(*this);
@@ -432,26 +437,26 @@ public:
     }
 
     /**
-   * Scalar-to-vector modulus multiplication operation. In-place variant.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus multiplication operation.
-   */
+     * Scalar-to-vector modulus multiplication operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus multiplication operation.
+     */
     myVecP& ModMulEq(const myT& b) {
         ModulusCheck("Warning: myVecP::ModMul");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModMulEq(b, this->m_modulus);
         }
         return (*this);
     }
 
     /**
-   * Vector component wise modulus multiplication.
-   *
-   * @param &b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication
-   * operation.
-   */
+     * Vector component wise modulus multiplication.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication
+     * operation.
+     */
     myVecP ModMul(const myVecP& b) const {
         ArgCheckVector(b, "myVecP Mul()");
         myVecP ans(*this);
@@ -460,22 +465,22 @@ public:
     }
 
     /**
-   * Vector component wise modulus multiplication. In-place variant.
-   *
-   * @param &b is the vector to perform operation with.
-   * @return is the result of the component wise modulus multiplication
-   * operation.
-   */
+     * Vector component wise modulus multiplication. In-place variant.
+     *
+     * @param b is the vector to perform operation with.
+     * @return is the result of the component wise modulus multiplication
+     * operation.
+     */
     myVecP& ModMulEq(const myVecP& b) {
         ArgCheckVector(b, "myVecP Mul()");
-        for (usint i = 0; i < this->GetLength(); i++) {
+        for (uint32_t i = 0; i < this->GetLength(); i++) {
             this->operator[](i).ModMulEq(b[i], this->m_modulus);
         }
         return (*this);
     }
 
     myVecP& ModMulNoCheckEq(const myVecP& b) {
-        for (usint i = 0; i < this->GetLength(); i++)
+        for (uint32_t i = 0; i < this->GetLength(); i++)
             this->operator[](i).ModMulEq(b[i], this->m_modulus);
         return (*this);
     }
@@ -485,119 +490,119 @@ public:
     void modmul_p(myVecP& x, const myVecP& a, const myVecP& b) const;
 
     /**
-   * Scalar modulus exponentiation operation.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Scalar modulus exponentiation operation.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     myVecP ModExp(const myT& b) const;
 
     /**
-   * Scalar modulus exponentiation operation. In-place variant.
-   *
-   * @param &b is the scalar to perform operation with.
-   * @return is the result of the modulus exponentiation operation.
-   */
+     * Scalar modulus exponentiation operation. In-place variant.
+     *
+     * @param b is the scalar to perform operation with.
+     * @return is the result of the modulus exponentiation operation.
+     */
     myVecP& ModExpEq(const myT& b);
 
     /**
-   * Modulus inverse operation.
-   *
-   * @return is the result of the component wise modulus inverse operation.
-   */
+     * Modulus inverse operation.
+     *
+     * @return is the result of the component wise modulus inverse operation.
+     */
     myVecP ModInverse() const;
 
     /**
-   * Modulus inverse operation. In-place variant.
-   *
-   * @return is the result of the component wise modulus inverse operation.
-   */
+     * Modulus inverse operation. In-place variant.
+     *
+     * @return is the result of the component wise modulus inverse operation.
+     */
     myVecP& ModInverseEq();
 
     /**
-   * Modulus 2 operation, also a least significant bit.
-   *
-   * @return is the result of the component wise modulus 2 operation, also a
-   * least significant bit.
-   */
+     * Modulus 2 operation, also a least significant bit.
+     *
+     * @return is the result of the component wise modulus 2 operation, also a
+     * least significant bit.
+     */
     myVecP ModByTwo() const;
 
     /**
-   * Modulus 2 operation, also a least significant bit. In-place variant.
-   *
-   * @return is the result of the component wise modulus 2 operation, also a
-   * least significant bit.
-   */
+     * Modulus 2 operation, also a least significant bit. In-place variant.
+     *
+     * @return is the result of the component wise modulus 2 operation, also a
+     * least significant bit.
+     */
     myVecP& ModByTwoEq();
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation.
-   *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     myVecP MultiplyAndRound(const myT& p, const myT& q) const;
 
     /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
+     * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param p is the numerator to be multiplied.
+     * @param q is the denominator to be divided.
+     * @return is the result of multiply and round operation.
+     */
     myVecP& MultiplyAndRoundEq(const myT& p, const myT& q);
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation.
-   *
-   * @param &q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     myVecP DivideAndRound(const myT& q) const;
 
     /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param &q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
+     * Divide and Rounding operation. Returns [x/q] where [] is the rounding
+     * operation. In-place variant.
+     *
+     * @param q is the denominator to be divided.
+     * @return is the result of divide and round operation.
+     */
     myVecP& DivideAndRoundEq(const myT& q);
 
     // OTHER FUNCTIONS
 
     /**
-   * Digit vector at a specific index for all entries for a given number base.
-   * Warning: only power-of-2 bases are currently supported.
-   * Example: for vector (83, 1, 45), index 2 and base 4 we have:
-   *
-   *                           index:0,1,2,3
-   * |83|                           |3,0,1,1|                 |1|
-   * |1 | --base 4 decomposition--> |1,0,0,0| --at index 2--> |0|
-   * |45|                           |1,3,2,0|                 |2|
-   *
-   * The return vector is (1,0,2)
-   *
-   * @param index is the index to return the digit from in all entries.
-   * @param base is the base to use for the operation.
-   * @return is the digit at a specific index for all entries for a given number
-   * base
-   */
-    myVecP GetDigitAtIndexForBase(size_t index, usint base) const;
+     * Digit vector at a specific index for all entries for a given number base.
+     * Warning: only power-of-2 bases are currently supported.
+     * Example: for vector (83, 1, 45), index 2 and base 4 we have:
+     *
+     *                           index:0,1,2,3
+     * |83|                           |3,0,1,1|                 |1|
+     * |1 | --base 4 decomposition--> |1,0,0,0| --at index 2--> |0|
+     * |45|                           |1,3,2,0|                 |2|
+     *
+     * The return vector is (1,0,2)
+     *
+     * @param index is the index to return the digit from in all entries.
+     * @param base is the base to use for the operation.
+     * @return is the digit at a specific index for all entries for a given number
+     * base
+     */
+    myVecP GetDigitAtIndexForBase(size_t index, uint32_t base) const;
 
     // STRINGS & STREAMS
 
     /**
-   * ostream operator to output vector values to console
-   *
-   * @param os is the std ostream object.
-   * @param &ptr_obj is the BigVectorImpl object to be printed.
-   * @return std ostream object which captures the vector values.
-   */
+     * ostream operator to output vector values to console
+     *
+     * @param os is the std ostream object.
+     * @param ptr_obj is the myVecP object to be printed.
+     * @return std ostream object which captures the vector values.
+     */
     friend std::ostream& operator<<(std::ostream& os, const myVecP<myT>& ptr_obj) {
         auto len = ptr_obj.GetLength();
         os << "[";
@@ -613,7 +618,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         // YSP. This was seg-faulting in MINGW
         // ar( m_modulus.ToString() );
         // ar( m_modulus_state );
@@ -630,7 +635,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
-        Archive& ar, std::uint32_t const version) const {
+            Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("m", m_modulus.ToString()));
         ar(::cereal::make_nvp("ms", m_modulus_state));
         ar(::cereal::make_nvp("l", this->GetLength()));
@@ -641,7 +646,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -673,7 +678,7 @@ public:
 
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
-        Archive& ar, std::uint32_t const version) {
+            Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW("serialized object version " + std::to_string(version) +
                           " is from a later version of the library");
@@ -700,7 +705,7 @@ public:
         return 1;
     }
 
-private:
+  private:
     // utility function to warn if modulus is no good
     // use when argument to function is myT
     void ModulusCheck(std::string msg) const {
@@ -714,11 +719,9 @@ private:
     void ArgCheckVector(const myVecP& b, std::string fname) const {
         if (this->m_modulus != b.m_modulus) {
             OPENFHE_THROW(fname + " modulus vector modulus vector op of different moduli");
-        }
-        else if (!isModulusSet()) {
+        } else if (!isModulusSet()) {
             OPENFHE_THROW(fname + " modulus vector modulus vector op  GARBAGE  moduli");
-        }
-        else if (this->GetLength() != b.GetLength()) {
+        } else if (this->GetLength() != b.GetLength()) {
             OPENFHE_THROW(fname + " vectors of different lengths");
         }
     }
@@ -740,7 +743,7 @@ private:
     // enum to store the state of the
     ModulusState m_modulus_state;
 
-protected:
+  protected:
     bool IndexCheck(size_t index) const {
         return index < this->GetLength();
     }
@@ -749,6 +752,6 @@ protected:
 
 }  // namespace NTL
 
-    #endif  // LBCRYPTO_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H
-
 #endif  // WITH_NTL
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_MUBINTVECNTL_H_

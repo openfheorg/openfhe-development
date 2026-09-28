@@ -33,66 +33,79 @@
 CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
+#include "scheme/ckksrns/ckksrns-advancedshe.h"
+
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-advancedshe.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "schemebase/base-scheme.h"
 
-#include <complex>
-#include <vector>
-
 namespace lbcrypto {
-
-Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalMultMany(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
-                                                      const std::vector<EvalKey<DCRTPoly>>& evalKeys) const {
-    const uint32_t inSize = ciphertextVec.size();
-
-    if (inSize == 0)
-        OPENFHE_THROW("Input ciphertext vector is empty.");
-
-    if (inSize == 1)
-        return ciphertextVec[0]->Clone();
-
-    const uint32_t lim = inSize * 2 - 2;
-    std::vector<Ciphertext<DCRTPoly>> ciphertextMultVec(inSize - 1);
-
-    auto algo               = ciphertextVec[0]->GetCryptoContext()->GetScheme();
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertextVec[0]->GetCryptoParameters());
-    uint32_t levelsToDrop   = cryptoParams->GetCompositeDegree();
-
-    uint32_t i = 0, j = 0;
-    for (; i < (inSize - 1); i += 2) {
-        ciphertextMultVec[j] = algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextVec[i + 1], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-    }
-    if (i < inSize) {
-        ciphertextMultVec[j] =
-            algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-        i += 2;
-    }
-    for (; i < lim; i += 2) {
-        ciphertextMultVec[j] =
-            algo->EvalMultAndRelinearize(ciphertextMultVec[i - inSize], ciphertextMultVec[i + 1 - inSize], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-    }
-
-    return ciphertextMultVec.back();
-}
 
 //------------------------------------------------------------------------------
 // LINEAR WEIGHTED SUM
 //------------------------------------------------------------------------------
 
+// streamed accumulation: one scaled term live at a time instead of `limit` clones
+template <typename CtType, typename VectorDataType>
+static Ciphertext<DCRTPoly> evalStreamedLinearWSum(const std::vector<CtType>& ciphertexts,
+                                                   const VectorDataType* constants, uint32_t limit) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
+
+    auto cc = ciphertexts[0]->GetCryptoContext();
+
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        auto acc = cc->EvalMult(ciphertexts[0], constants[0]);
+        for (uint32_t i = 1; i < limit; ++i)
+            cc->EvalAddInPlaceNoCheck(acc, cc->EvalMult(ciphertexts[i], constants[i]));
+        cc->ModReduceInPlace(acc);
+        return acc;
+    }
+
+    // Check to see if input ciphertexts are of same level
+    // and adjust if needed to the max level among them
+    uint32_t maxLevel = ciphertexts[0]->GetLevel();
+    uint32_t maxIdx = 0;
+    for (uint32_t i = 1; i < limit; ++i) {
+        if ((ciphertexts[i]->GetLevel() > maxLevel) ||
+            ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetNoiseScaleDeg() == 2))) {
+            maxLevel = ciphertexts[i]->GetLevel();
+            maxIdx = i;
+        }
+    }
+
+    auto algo = cc->GetScheme();
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    auto ctm = ciphertexts[maxIdx]->Clone();
+    const bool reduceAll = (ctm->GetNoiseScaleDeg() == 2);
+
+    Ciphertext<DCRTPoly> acc;
+    for (uint32_t i = 0; i < limit; ++i) {
+        auto term = ciphertexts[i]->Clone();
+        algo->AdjustLevelsAndDepthInPlace(term, ctm);
+        if (reduceAll)
+            algo->ModReduceInternalInPlace(term, compositeDegree);
+        cc->EvalMultInPlace(term, constants[i]);
+        if (i == 0)
+            acc = std::move(term);
+        else
+            cc->EvalAddInPlaceNoCheck(acc, term);
+    }
+    cc->ModReduceInPlace(acc);
+    return acc;
+}
+
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> internalEvalLinearWSum(const std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
                                             const std::vector<VectorDataType>& constants) {
-    const uint32_t limit = ciphertexts.size();
-    std::vector<Ciphertext<DCRTPoly>> cts(limit);
-    for (uint32_t i = 0; i < limit; ++i)
-        cts[i] = ciphertexts[i]->Clone();
-    return internalEvalLinearWSumMutable(cts, constants);
+    return evalStreamedLinearWSum(ciphertexts, constants.data(), static_cast<uint32_t>(ciphertexts.size()));
 }
 
 template <typename VectorDataType>
@@ -108,12 +121,12 @@ Ciphertext<DCRTPoly> internalEvalLinearWSumMutable(std::vector<Ciphertext<DCRTPo
         // Check to see if input ciphertexts are of same level
         // and adjust if needed to the max level among them
         uint32_t maxLevel = ciphertexts[0]->GetLevel();
-        uint32_t maxIdx   = 0;
+        uint32_t maxIdx = 0;
         for (uint32_t i = 1; i < limit; ++i) {
             if ((ciphertexts[i]->GetLevel() > maxLevel) ||
                 ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetNoiseScaleDeg() == 2))) {
                 maxLevel = ciphertexts[i]->GetLevel();
-                maxIdx   = i;
+                maxIdx = i;
             }
         }
 
@@ -144,52 +157,7 @@ Ciphertext<DCRTPoly> EvalPartialLinearWSum(const std::vector<Ciphertext<DCRTPoly
                                            const std::vector<VectorDataType>& constants, uint32_t limit = 0) {
     if (0 == limit)
         limit = ciphertexts.size();
-
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
-
-    auto cc = ciphertexts[0]->GetCryptoContext();
-
-    std::vector<Ciphertext<DCRTPoly>> cts(limit);
-    if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-        cts[0] = ciphertexts[0]->Clone();
-        // Check to see if input ciphertexts are of same level
-        // and adjust if needed to the max level among them
-        uint32_t maxLevel = cts[0]->GetLevel();
-        uint32_t maxIdx   = 0;
-        for (uint32_t i = 1; i < limit; ++i) {
-            cts[i] = ciphertexts[i]->Clone();
-            if ((cts[i]->GetLevel() > maxLevel) ||
-                ((cts[i]->GetLevel() == maxLevel) && (cts[i]->GetNoiseScaleDeg() == 2))) {
-                maxLevel = cts[i]->GetLevel();
-                maxIdx   = i;
-            }
-        }
-
-        auto algo = cc->GetScheme();
-        auto& ctm = cts[maxIdx];
-        for (uint32_t i = 0; i < maxIdx; ++i)
-            algo->AdjustLevelsAndDepthInPlace(cts[i], ctm);
-        for (uint32_t i = maxIdx + 1; i < limit; ++i)
-            algo->AdjustLevelsAndDepthInPlace(cts[i], ctm);
-
-        uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-        if (ctm->GetNoiseScaleDeg() == 2) {
-            for (uint32_t i = 0; i < limit; ++i)
-                algo->ModReduceInternalInPlace(cts[i], compositeDegree);
-        }
-    }
-    else {
-        for (uint32_t i = 0; i < limit; ++i)
-            cts[i] = ciphertexts[i]->Clone();
-    }
-
-    cc->EvalMultInPlace(cts[0], constants[1]);
-    for (uint32_t i = 1; i < limit; ++i) {
-        cc->EvalMultInPlace(cts[i], constants[i + 1]);
-        cc->EvalAddInPlaceNoCheck(cts[0], cts[i]);
-    }
-    cc->ModReduceInPlace(cts[0]);
-    return cts[0];
+    return evalStreamedLinearWSum(ciphertexts, constants.data() + 1, limit);
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ReadOnlyCiphertext<DCRTPoly>>& ciphertexts,
@@ -214,7 +182,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphe
     return internalEvalLinearWSumMutable(ciphertexts, constants);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
-    std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<std::complex<double>>& constants) const {
+        std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<std::complex<double>>& constants) const {
     return internalEvalLinearWSumMutable(ciphertexts, constants);
 }
 
@@ -232,8 +200,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
     for (uint32_t i = k; i > 0; --i) {
         if (0 == (i & (i - 1))) {  // if i is a power of 2
             indices[i - 1] = true;
-        }
-        else {  // non-power of 2
+        } else {  // non-power of 2
             if (IsNotEqualZero(coefficients[i])) {
                 uint32_t rem = i;
 
@@ -249,9 +216,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
 
     std::vector<Ciphertext<DCRTPoly>> powers(k);
     powers[0] = x->Clone();
-    auto cc   = x->GetCryptoContext();
+    auto cc = x->GetCryptoContext();
 
-    auto cryptoParams        = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters());
+    auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     // computes all powers up to k for x
@@ -259,11 +226,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
         if (0 == (i & (i - 1))) {
             powers[i - 1] = cc->EvalSquare(powers[i / 2 - 1]);
             cc->ModReduceInPlace(powers[i - 1]);
-        }
-        else {
+        } else {
             if (indices[i - 1]) {
-                uint64_t p    = (uint64_t(1) << (GetMSB(i) - 1)) - 1;
-                uint64_t r    = (i & p) - 1;
+                uint64_t p = (uint64_t(1) << (GetMSB(i) - 1)) - 1;
+                uint64_t r = (i & p) - 1;
                 uint32_t diff = powers[p]->GetLevel() - powers[r]->GetLevel();
                 cc->LevelReduceInPlace(powers[r], nullptr, diff / compositeDegree);
 
@@ -273,19 +239,20 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
         }
     }
 
-    // brings all powers of x to the same level
+    // Bring all computed powers to the level and the noise-scale degree of the top power, so that the terms of
+    // every series later evaluated from this basis add without any adjustment (under FIXEDMANUAL every power
+    // has degree 1, so only the number of towers is aligned), as in the Paterson-Stockmeyer basis.
+    auto algo = cc->GetScheme();
     for (uint32_t i = 1; i < k; ++i) {
-        if (indices[i - 1]) {
-            uint32_t diff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
-            cc->LevelReduceInPlace(powers[i - 1], nullptr, diff / compositeDegree);
-        }
+        if (indices[i - 1])
+            algo->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
     }
 
     return std::make_shared<seriesPowers<DCRTPoly>>(std::move(powers));
 }
 
 std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersPS(ConstCiphertext<DCRTPoly>& x, uint32_t degree) {
-    auto degs  = ComputeDegreesPS(degree);
+    auto degs = ComputeDegreesPS(degree);
     uint32_t k = degs[0];
     uint32_t m = degs[1];
 
@@ -294,16 +261,15 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersPS(ConstCiphertext<DCR
 
     auto cc = x->GetCryptoContext();
     uint32_t compositeDegree =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
 
     // computes all powers up to k for x
     uint32_t powerOf2 = 2;
-    uint32_t rem      = 0;
+    uint32_t rem = 0;
     for (uint32_t i = 2; i <= k; ++i) {
         if (rem == 0) {
             powers[i - 1] = cc->EvalSquare(powers[(powerOf2 >> 1) - 1]);
-        }
-        else {
+        } else {
             uint32_t diff = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
             cc->LevelReduceInPlace(powers[rem - 1], nullptr, diff / compositeDegree);
             powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
@@ -316,17 +282,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersPS(ConstCiphertext<DCR
         cc->ModReduceInPlace(powers[i - 1]);
     }
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-        // brings all powers of x to the same level
-        uint32_t levelk = powers[k - 1]->GetLevel();
-        for (uint32_t i = 1; i < k; ++i)
-            cc->LevelReduceInPlace(powers[i - 1], nullptr, levelk - powers[i - 1]->GetLevel());
-    }
-    else {
-        for (uint32_t i = 1; i < k; ++i)
-            cc->GetScheme()->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
-    }
+    // Bring all powers to the level and the noise-scale degree of the top power (under FIXEDMANUAL every power
+    // has degree 1, so only the number of towers is aligned).
+    for (uint32_t i = 1; i < k; ++i)
+        cc->GetScheme()->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
 
     // computes powers of form k*2^i for x and the product of the powers in power2, that yield x^{k(2*m - 1)}
     std::vector<Ciphertext<DCRTPoly>> powers2(m);
@@ -355,13 +314,15 @@ std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalPowers(ConstCiph
     return (d < 5) ? internalEvalPowersLinear(x, coefficients) : internalEvalPowersPS(x, d);
 }
 std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalPowers(
-    ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const {
+        ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients) const {
     uint32_t d = Degree(coefficients);
     return (d < 5) ? internalEvalPowersLinear(x, coefficients) : internalEvalPowersPS(x, d);
 }
 
+// The powers may be a precomputation shared across several polynomials (EvalPolyWithPrecomp), so every
+// term is scaled into a fresh ciphertext and the powers are left untouched.
 template <typename VectorDataType>
-static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& powers,
+static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(const std::vector<Ciphertext<DCRTPoly>>& powers,
                                                                      const std::vector<VectorDataType>& coefficients) {
     if (coefficients.size() < 2)
         OPENFHE_THROW("The coefficients vector should contain at least 2 elements");
@@ -378,8 +339,8 @@ static inline Ciphertext<DCRTPoly> internalEvalPolyLinearWithPrecomp(std::vector
     // perform scalar multiplication for all other terms and sum them up
     for (uint32_t i = 1; i < k; ++i) {
         if (IsNotEqualZero(coefficients[i])) {
-            cc->EvalMultInPlace(powers[i - 1], coefficients[i]);
-            cc->EvalAddInPlace(result, powers[i - 1]);
+            auto term = cc->EvalMult(powers[i - 1], coefficients[i]);
+            cc->EvalAddMutableInPlace(result, term);
         }
     }
 
@@ -409,14 +370,13 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
     if (auto n = Degree(r2); static_cast<int32_t>(k2m2k - n) <= 0) {
         r2.resize(n + 1);
         r2[k2m2k] -= 1;
-    }
-    else {
+    } else {
         r2.resize(k2m2k + 1);
         r2.back() = -1;
     }
 
     auto divcs = LongDivisionPoly(r2, divqr->q);
-    auto cc    = x->GetCryptoContext();
+    auto cc = x->GetCryptoContext();
 
     Ciphertext<DCRTPoly> cu, qu, su;
 
@@ -427,8 +387,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
 
         if (Degree(divqr->q) > k) {
             qu = InnerEvalPolyPS(x, divqr->q, k, m - 1, powers, powers2);
-        }
-        else {
+        } else {
             qu = cc->EvalAdd(powers[k - 1], divqr->q.front());
             divqr->q.resize(k);
             if (uint32_t n = Degree(divqr->q); n > 0)
@@ -445,8 +404,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
 
         if (Degree(s2) > k) {
             su = InnerEvalPolyPS(x, s2, k, m - 1, powers, powers2);
-        }
-        else {
+        } else {
             su = cc->EvalAdd(powers[k - 1], s2.front());
             s2.resize(k);
             if (uint32_t n = Degree(s2); n > 0)
@@ -456,19 +414,16 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
 
     if (uint32_t n = Degree(divcs->q); n == 0) {
         cu = cc->EvalAdd(powers2[m - 1], divcs->q.front());
-    }
-    else if (n == 1) {
+    } else if (n == 1) {
         if (IsNotEqualOne(divcs->q[1])) {
             cu = cc->EvalMult(powers.front(), divcs->q[1]);
             cc->ModReduceInPlace(cu);
             cc->EvalAddInPlace(cu, powers2[m - 1]);
-        }
-        else {
+        } else {
             cu = cc->EvalAdd(powers2[m - 1], powers.front());
         }
         cc->EvalAddInPlace(cu, divcs->q.front());
-    }
-    else {
+    } else {
         cu = cc->EvalAdd(powers2[m - 1], EvalPartialLinearWSum(powers, divcs->q, n));
         cc->EvalAddInPlace(cu, divcs->q.front());
     }
@@ -484,11 +439,11 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> internalEvalPolyPSWithPrecomp(const std::shared_ptr<seriesPowers<DCRTPoly>>& ctxtPowers,
                                                    const std::vector<VectorDataType>& coefficients) {
-    auto& powers    = ctxtPowers->powersRe;
-    auto& powers2   = ctxtPowers->powers2Re;
+    auto& powers = ctxtPowers->powersRe;
+    auto& powers2 = ctxtPowers->powers2Re;
     auto& power2km1 = ctxtPowers->power2km1Re;
-    auto k          = ctxtPowers->k;
-    auto m          = ctxtPowers->m;
+    auto k = ctxtPowers->k;
+    auto m = ctxtPowers->m;
 
     // Compute k*2^{m-1}-k because we use it a lot
     uint32_t k2m2k = k * (1 << (m - 1)) - k;
@@ -499,12 +454,16 @@ Ciphertext<DCRTPoly> internalEvalPolyPSWithPrecomp(const std::shared_ptr<seriesP
     f2.resize(2 * k2m2k + k + 1);
     f2.back() = 1;
 
+    // Serialize tree if k*2^{m-1} < 128
+    if (k * (1U << (m - 1)) < 128)
+        return powers[0]->GetCryptoContext()->EvalSub(InnerEvalPolyPS(powers[0], f2, k, m, powers, powers2), power2km1);
+
     Ciphertext<DCRTPoly> result;
 #pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(6 * m + 2))
     {
 #pragma omp single
-        result =
-            powers[0]->GetCryptoContext()->EvalSub(InnerEvalPolyPS(powers[0], f2, k, m, powers, powers2), power2km1);
+        result = powers[0]->GetCryptoContext()->EvalSub(InnerEvalPolyPS(powers[0], f2, k, m, powers, powers2),
+                                                        power2km1);
     }
     return result;
 }
@@ -581,11 +540,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysLinear(ConstCipher
     // consumes one level when a <> -1 && b <> 1
     if (!IsNotEqualNegOne(a) && !IsNotEqualOne(b)) {
         T[0] = x->Clone();
-    }
-    else {
+    } else {
         // linear transformation is needed
         double alpha = 2 / (b - a);
-        double beta  = a * alpha;
+        double beta = a * alpha;
 
         T[0] = cc->EvalMult(x, alpha);
         cc->ModReduceInPlace(T[0]);
@@ -602,8 +560,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysLinear(ConstCipher
             cc->EvalAddInPlaceNoCheck(T[i - 1], T[i - 1]);
             cc->ModReduceInPlace(T[i - 1]);
             cc->EvalSubInPlace(T[i - 1], T[0]);
-        }
-        else {
+        } else {
             // compute T_{2i}(y) = 2*T_i(y)^2 - 1
             T[i - 1] = cc->EvalSquare(T[i / 2 - 1]);
             cc->EvalAddInPlaceNoCheck(T[i - 1], T[i - 1]);
@@ -612,28 +569,31 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysLinear(ConstCipher
         }
     }
 
-    uint32_t compositeDegree =
-        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+    // Bring all polynomials to the level and the noise-scale degree of the top one, so that the terms of every
+    // series later evaluated from this basis add without any adjustment (see internalEvalPowersLinear).
+    auto algo = cc->GetScheme();
     for (uint32_t i = 1; i < k; ++i)
-        cc->LevelReduceInPlace(T[i - 1], nullptr, (T[k - 1]->GetLevel() - T[i - 1]->GetLevel()) / compositeDegree);
+        algo->AdjustLevelsAndDepthInPlace(T[i - 1], T[k - 1]);
 
     return std::make_shared<seriesPowers<DCRTPoly>>(std::move(T));
 }
 
+// The Chebyshev polynomials may be a precomputation shared across several series
+// (EvalChebyshevSeriesWithPrecomp), so every term is scaled into a fresh ciphertext and T is left untouched.
 template <typename VectorDataType>
-Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(std::vector<Ciphertext<DCRTPoly>>& T,
+Ciphertext<DCRTPoly> internalEvalChebyshevSeriesLinearWithPrecomp(const std::vector<Ciphertext<DCRTPoly>>& T,
                                                                   const std::vector<VectorDataType>& coefficients) {
     const uint32_t k = coefficients.size() - 2;
 
     // perform scalar multiplication for the highest-order term
-    auto cc     = T[0]->GetCryptoContext();
+    auto cc = T[0]->GetCryptoContext();
     auto result = cc->EvalMult(T[k], coefficients[k + 1]);
 
     // perform scalar multiplication for all other terms and sum them up
     for (uint32_t i = 0; i < k; ++i) {
         if (IsNotEqualZero(coefficients[i + 1])) {
-            cc->EvalMultInPlace(T[i], coefficients[i + 1]);
-            cc->EvalAddInPlace(result, T[i]);
+            auto term = cc->EvalMult(T[i], coefficients[i + 1]);
+            cc->EvalAddMutableInPlace(result, term);
         }
     }
 
@@ -663,30 +623,29 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
     if (uint32_t n = Degree(r2); static_cast<int32_t>(k2m2k - n) <= 0) {
         r2.resize(n + 1);
         r2[k2m2k] -= 1;
-    }
-    else {
+    } else {
         r2.resize(k2m2k + 1);
         r2.back() = -1;
     }
 
     auto divcs = LongDivisionChebyshev(r2, divqr->q);
-    auto cc    = x->GetCryptoContext();
+    auto cc = x->GetCryptoContext();
 
     Ciphertext<DCRTPoly> cu, qu, su;
 
+#pragma omp task shared(qu)
     {
         // Evaluate q and s2 at u.
         // If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
         if (Degree(divqr->q) > k) {
             qu = InnerEvalChebyshevPS(x, divqr->q, k, m - 1, T, T2);
-        }
-        else {
+        } else {
             // dq = k from construction
             // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
 
             // the highest order coefficient will always be a power of two up to 2^{m-1} because q is "monic" but the Chebyshev rule adds a factor of 2
             // we don't need to increase the depth by multiplying the highest order coefficient, but instead checking and summing, since we work with m <= 4.
-            qu                   = T[k - 1]->Clone();
+            qu = T[k - 1]->Clone();
             const uint32_t limit = std::log2(ToReal(divqr->q.back()));
             for (uint32_t i = 0; i < limit; ++i)
                 cc->EvalAddInPlaceNoCheck(qu, qu);
@@ -702,6 +661,7 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
         }
     }
 
+#pragma omp task shared(su)
     {
         // Add x^{k(2^{m-1} - 1)} to s
         auto& s2 = divcs->r;
@@ -710,8 +670,7 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
 
         if (Degree(s2) > k) {
             su = InnerEvalChebyshevPS(x, s2, k, m - 1, T, T2);
-        }
-        else {
+        } else {
             // the highest order coefficient will always be 1 because s2 is monic.
             su = T[k - 1]->Clone();
 
@@ -734,12 +693,10 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
             if (IsNotEqualOne(divcs->q[1])) {
                 cu = cc->EvalMult(T.front(), divcs->q[1]);
                 cc->ModReduceInPlace(cu);
-            }
-            else {
+            } else {
                 cu = T.front()->Clone();
             }
-        }
-        else {
+        } else {
             cu = EvalPartialLinearWSum(T, divcs->q, n);
         }
 
@@ -748,11 +705,13 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
 
         // Need to reduce levels up to the level of T2[m-1].
         uint32_t cd =
-            std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(x->GetCryptoParameters())->GetCompositeDegree();
         cc->LevelReduceInPlace(cu, nullptr, (T2[m - 1]->GetLevel() - cu->GetLevel()) / cd);
     }
 
     cu = cu ? cc->EvalAdd(T2[m - 1], cu) : cc->EvalAdd(T2[m - 1], divcs->q.front() / 2.0);
+
+#pragma omp taskwait
 
     auto result = cc->EvalMult(cu, qu);
     cc->ModReduceInPlace(result);
@@ -762,7 +721,7 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
 
 std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext<DCRTPoly>& x, uint32_t degree,
                                                                  double a, double b) {
-    auto degs  = ComputeDegreesPS(degree);
+    auto degs = ComputeDegreesPS(degree);
     uint32_t k = degs[0];
     uint32_t m = degs[1];
 
@@ -774,11 +733,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
         // no linear transformation is needed if a = -1, b = 1
         // T_1(y) = y
         T[0] = x->Clone();
-    }
-    else {
+    } else {
         // linear transformation is needed
         double alpha = 2 / (b - a);
-        double beta  = a * alpha;
+        double beta = a * alpha;
 
         T[0] = cc->EvalMult(x, alpha);
         cc->ModReduceInPlace(T[0]);
@@ -795,8 +753,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
             cc->EvalAddInPlaceNoCheck(T[i - 1], T[i - 1]);
             cc->ModReduceInPlace(T[i - 1]);
             cc->EvalSubInPlace(T[i - 1], T[0]);
-        }
-        else {
+        } else {
             // compute T_{2i}(y) = 2*T_i(y)^2 - 1
             T[i - 1] = cc->EvalSquare(T[i / 2 - 1]);
             cc->EvalAddInPlaceNoCheck(T[i - 1], T[i - 1]);
@@ -805,16 +762,10 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
         }
     }
 
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(T[k - 1]->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-        // brings all powers of x to the same level
-        for (uint32_t i = 1; i < k; ++i)
-            cc->LevelReduceInPlace(T[i - 1], nullptr, T[k - 1]->GetLevel() - T[i - 1]->GetLevel());
-    }
-    else {
-        for (uint32_t i = 1; i < k; ++i)
-            cc->GetScheme()->AdjustLevelsAndDepthInPlace(T[i - 1], T[k - 1]);
-    }
+    // Bring all polynomials to the level and the noise-scale degree of the top one (under FIXEDMANUAL every
+    // polynomial has degree 1, so only the number of towers is aligned).
+    for (uint32_t i = 1; i < k; ++i)
+        cc->GetScheme()->AdjustLevelsAndDepthInPlace(T[i - 1], T[k - 1]);
 
     std::vector<Ciphertext<DCRTPoly>> T2(m);
     // T2[0] is used as a placeholder
@@ -843,11 +794,11 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalChebyPolysPS(ConstCiphertext
 template <typename VectorDataType>
 Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPSWithPrecomp(const std::shared_ptr<seriesPowers<DCRTPoly>>& ctxtPolys,
                                                               const std::vector<VectorDataType>& coefficients) {
-    auto& T     = ctxtPolys->powersRe;
-    auto& T2    = ctxtPolys->powers2Re;
+    auto& T = ctxtPolys->powersRe;
+    auto& T2 = ctxtPolys->powers2Re;
     auto& T2km1 = ctxtPolys->power2km1Re;
-    auto k      = ctxtPolys->k;
-    auto m      = ctxtPolys->m;
+    auto k = ctxtPolys->k;
+    auto m = ctxtPolys->m;
 
     // Compute k*2^{m-1}-k because we use it a lot
     uint32_t k2m2k = k * (1 << (m - 1)) - k;
@@ -858,7 +809,17 @@ Ciphertext<DCRTPoly> internalEvalChebyshevSeriesPSWithPrecomp(const std::shared_
     f2.resize(2 * k2m2k + k + 1);
     f2.back() = 1;
 
-    return T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
+    // Serialize tree if k*2^{m-1} < 128
+    if (k * (1U << (m - 1)) < 128)
+        return T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
+
+    Ciphertext<DCRTPoly> result;
+#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(6 * m + 2))
+    {
+#pragma omp single
+        result = T[0]->GetCryptoContext()->EvalSub(InnerEvalChebyshevPS(T[0], f2, k, m, T, T2), T2km1);
+    }
+    return result;
 }
 
 std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalChebyPolys(ConstCiphertext<DCRTPoly>& x,
@@ -874,7 +835,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalChebyPolys(Const
     return (d < 5) ? internalEvalChebyPolysLinear(x, coefficients, a, b) : internalEvalChebyPolysPS(x, d, a, b);
 }
 std::shared_ptr<seriesPowers<DCRTPoly>> AdvancedSHECKKSRNS::EvalChebyPolys(
-    ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients, double a, double b) const {
+        ConstCiphertext<DCRTPoly>& x, const std::vector<std::complex<double>>& coefficients, double a, double b) const {
     uint32_t d = Degree(coefficients);
     return (d < 5) ? internalEvalChebyPolysLinear(x, coefficients, a, b) : internalEvalChebyPolysPS(x, d, a, b);
 }
@@ -896,17 +857,17 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeries(ConstCiphertext<DCR
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesWithPrecomp(
-    std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers, const std::vector<int64_t>& coeffs) const {
+        std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers, const std::vector<int64_t>& coeffs) const {
     return (Degree(coeffs) < 5) ? internalEvalChebyshevSeriesLinearWithPrecomp(ctxtPowers->powersRe, coeffs) :
                                   internalEvalChebyshevSeriesPSWithPrecomp(ctxtPowers, coeffs);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesWithPrecomp(
-    std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers, const std::vector<double>& coeffs) const {
+        std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers, const std::vector<double>& coeffs) const {
     return (Degree(coeffs) < 5) ? internalEvalChebyshevSeriesLinearWithPrecomp(ctxtPowers->powersRe, coeffs) :
                                   internalEvalChebyshevSeriesPSWithPrecomp(ctxtPowers, coeffs);
 }
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesWithPrecomp(
-    std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers, const std::vector<std::complex<double>>& coeffs) const {
+        std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers, const std::vector<std::complex<double>>& coeffs) const {
     return (Degree(coeffs) < 5) ? internalEvalChebyshevSeriesLinearWithPrecomp(ctxtPowers->powersRe, coeffs) :
                                   internalEvalChebyshevSeriesPSWithPrecomp(ctxtPowers, coeffs);
 }

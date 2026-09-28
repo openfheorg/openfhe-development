@@ -38,7 +38,18 @@ We explicitly note:
 
 -  Avoid defining non-trivial functions in header files
 
--  Header files should include an ‘include guard’
+-  Header files should include an ‘include guard’ named after the file's path
+   from the repository root, upper-cased, with every non-alphanumeric character
+   replaced by an underscore and a trailing underscore. For
+   ``src/pke/include/cryptocontext.h`` that is
+   ``SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_``. The closing line reads
+   ``#endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_``, and the guard wraps the
+   whole file, including any feature check such as ``#ifdef WITH_NTL``.
+
+-  Includes are grouped in this order, separated by blank lines: the header this
+   file implements, C system headers, C++ system headers, then everything else.
+   A file includes the headers it uses rather than relying on another header to
+   provide them.
 
 - Operator overloading is allowed, especially for binary operations
 

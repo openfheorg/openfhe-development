@@ -96,20 +96,22 @@
  *
  * */
 
-#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
-#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#ifndef SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#define SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
 
 #define MAX_LEVELS 4
 
-#include "math/distributiongenerator.h"
-
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
 
+#include "math/distributiongenerator.h"
+
 namespace lbcrypto {
 
+/// algorithm used by a BaseSampler: Knuth-Yao (DDG tree) or Peikert's inversion method
 enum BaseSamplerType { KNUTH_YAO = 0, PEIKERT = 1 };
 
 class DiscreteGaussianGeneratorGeneric;
@@ -117,85 +119,85 @@ class BaseSampler;
 class SamplerCombiner;
 class BitGenerator;
 
-/*
+/**
  * @brief Class implementation to generate random bit. This is created for
  * centralizing the random bit pools by the samplers.
  */
 class BitGenerator {
-public:
-    BitGenerator()  = default;
+  public:
+    BitGenerator() = default;
     ~BitGenerator() = default;
-    /*
-   * @brief Method for generating a random bit
-   * @return A random bit
-   */
+    /**
+     * @brief Method for generating a random bit
+     * @return A random bit
+     */
     short Generate() {  // NOLINT
         if (m_counter == 0) {
             m_sequence = (PseudoRandomNumberGenerator::GetPRNG())();
-            m_counter  = 32;
+            m_counter = 32;
         }
         return static_cast<short>((m_sequence >> (--m_counter)) & 0x1);  // NOLINT
     }
 
-private:
+  private:
     uint32_t m_sequence{0};
     uint32_t m_counter{0};
 };
-/*
+/**
  * @brief Class definiton for base samplers with precomputation that is used for
  * UCSD generic sampler
  */
 class BaseSampler {
-public:
-    /*
-   * @brief Constructor
-   * @param mean Mean of the distribution
-   * @param std Standard deviation of the distribution
-   * @param generator Pointer to the bit generator that the sampler will use the
-   * random bits from
-   * @param bType Type of the base sampler
-   */
-    BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType);
+  public:
+    /**
+     * @brief Constructor
+     * @param mean Mean of the distribution
+     * @param std Standard deviation of the distribution
+     * @param generator Pointer to the bit generator that the sampler will use the
+     * random bits from
+     * @param bType Type of the base sampler, PEIKERT by default
+     */
+    BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType = PEIKERT);
     BaseSampler() = default;
-    /*
-   * @brief Method for generating integer from the base sampler
-   * @return A random integer from the distribution
-   */
+    /**
+     * @brief Method for generating integer from the base sampler
+     * @return A random integer from the distribution
+     */
     virtual int64_t GenerateInteger();
-    /*
-   * @brief Destroyer for the base sampler
-   */
+    /**
+     * @brief Destroyer for the base sampler
+     */
     virtual ~BaseSampler() = default;
-    /*
-   * @brief Method for generating a random bit from the bit generator within
-   * @return A random bit
-   */
+    /**
+     * @brief Method for generating a random bit from the bit generator within
+     * @return A random bit
+     */
     short RandomBit() {  // NOLINT
         return bg->Generate();
     }
 
-private:
+  private:
     // all parameters are set as int because it is assumed that they are used for
     // generating "small" polynomials only
     double b_a;
 
     /**
-   *Mean of the distribution used
-   */
+     *Mean of the distribution used
+     */
     int64_t b_mean;
 
     /**
-   * The standard deviation of the distribution.
-   */
+     * The standard deviation of the distribution.
+     */
     float b_std;
 
     /**
-   * Generator used for creating random bits through sampling
-   */
+     * Generator used for creating random bits through sampling
+     */
     BitGenerator* bg;
     /**
-   * Type of the base sampler (Knuth Yao or Peikert's Inversion)
-   */
+     * Type of the base sampler (Knuth Yao or Peikert's Inversion)
+     */
     BaseSamplerType b_type;
 
     int fin;
@@ -205,88 +207,87 @@ private:
     // short *DDGColumn = nullptr;
 
     /**
-   *Array that stores the Hamming Weights of the probability matrix used in
-   *Knuth-Yao sampling
-   */
+     *Array that stores the Hamming Weights of the probability matrix used in
+     *Knuth-Yao sampling
+     */
     std::vector<uint32_t> hammingWeights;
     /**
-   *Size of probability matrix used in Knuth-Yao
-   */
+     *Size of probability matrix used in Knuth-Yao
+     */
     int32_t b_matrixSize;
 
     /**
-   *Index of first bit with non zero Hamming weight in the probability table
-   */
+     *Index of first bit with non zero Hamming weight in the probability table
+     */
     int32_t firstNonZero;
 
     int32_t endIndex;
 
     std::vector<double> m_vals;
     /**
-   * @brief Sub-procedure called by Peikert's inversion sampling
-   * @param S Vector containing the CDF values
-   * @param search Searched probability value
-   * @return Index that is the smallest bigger value than search
-   */
+     * @brief Sub-procedure called by Peikert's inversion sampling
+     * @param S Vector containing the CDF values
+     * @param search Searched probability value
+     * @return Index that is the smallest bigger value than search
+     */
     uint32_t FindInVector(const std::vector<double>& S, double search) const;
     /**
-   * @brief Generates DDG tree used through the sampling in Knuth-Yao
-   * @param probMatrix The probability matrix used for filling the DDG tree
-   */
+     * @brief Generates DDG tree used through the sampling in Knuth-Yao
+     * @param probMatrix The probability matrix used for filling the DDG tree
+     */
     void GenerateDDGTree(const std::vector<uint64_t>& probMatrix);
     /**
-   * @brief Initializes the generator used for Peikert's Inversion method.
-   * @param mean Mean of the distribution that the sampler will be using
-   *
-   */
+     * @brief Initializes the generator used for Peikert's Inversion method.
+     * @param mean Mean of the distribution that the sampler will be using
+     *
+     */
     void Initialize(double mean);
 
     /**
-   * @brief Generates the probability matrix of given distribution, which is
-   * used in Knuth-Yao method
-   * @param sttdev standard deviation of Discrete Gaussian Distribution
-   * @param mean Center of the distribution
-   * @param tableCount Number of probability tables to be generated
-   */
+     * @brief Generates the probability matrix of given distribution, which is
+     * used in Knuth-Yao method
+     * @param stddev standard deviation of Discrete Gaussian Distribution
+     * @param mean Center of the distribution
+     */
     void GenerateProbMatrix(double stddev, double mean);
     /**
-   * @ brief Returns a generated integer. Uses Naive Knuth-Yao method
-   * @ return A random value within the Discrete Gaussian Distribution
-   */
+     * @brief Returns a generated integer. Uses Naive Knuth-Yao method
+     * @return A random value within the Discrete Gaussian Distribution
+     */
     int64_t GenerateIntegerKnuthYao();
     /**
-   * @brief Returns a generated integer. Uses Peikert's inversion method.
-   */
+     * @brief Returns a generated integer. Uses Peikert's inversion method.
+     */
     int64_t GenerateIntegerPeikert() const;
 };
-/*
+/**
  * @brief Class for combining samples from two base samplers, which is used for
  * UCSD generic sampling
  */
 class SamplerCombiner final : public BaseSampler {
-public:
+  public:
     /**
-   * @brief Constructor
-   * @param s1 Pointer to the first sampler to be combined
-   * @param s2 Pointer to the second sampler to be combined
-   * @param z1 Coefficient for the first sampler
-   * @param z2 Coefficient for the second sampler
-   */
+     * @brief Constructor
+     * @param s1 Pointer to the first sampler to be combined
+     * @param s2 Pointer to the second sampler to be combined
+     * @param z1 Coefficient for the first sampler
+     * @param z2 Coefficient for the second sampler
+     */
     SamplerCombiner(BaseSampler* s1, BaseSampler* s2, int64_t z1, int64_t z2)
-        : sampler1(s1), sampler2(s1), x1(z1), x2(z2) {}
+        : sampler1(s1), sampler2(s2), x1(z1), x2(z2) {}
     /**
-   * @brief Return the combined value for two samplers with given coefficients
-   * @return Combined value of the samplers with given coefficents
-   */
+     * @brief Return the combined value for two samplers with given coefficients
+     * @return Combined value of the samplers with given coefficents
+     */
     int64_t GenerateInteger() override {
         return x1 * sampler1->GenerateInteger() + x2 * sampler2->GenerateInteger();
     }
     /**
-   * @brief Destructor
-   */
+     * @brief Destructor
+     */
     ~SamplerCombiner() = default;
 
-private:
+  private:
     // Samplers to be combined
     BaseSampler *sampler1, *sampler2;
     // Coefficients that are used for combining
@@ -297,58 +298,67 @@ private:
  * @brief The class for Generic Discrete Gaussion Distribution generator.
  */
 class DiscreteGaussianGeneratorGeneric {
-public:
+  public:
     /**
-   * @brief Basic constructor which does the precomputations.
-   * @param samplers Array containing the base samplers
-   * @param std Standard deviation of the base samplers
-   * @param base Log of number of centers that are used for calculating base
-   * samplers (Recall that base samplers are centered from 0 to (2^b-1)/2^b)
-   * @param N smoothing parameter
-   */
+     * @brief Basic constructor which does the precomputations.
+     * @param samplers Array containing the base samplers
+     * @param std Standard deviation of the base samplers
+     * @param b Log of number of centers that are used for calculating base
+     * samplers (Recall that base samplers are centered from 0 to (2^b-1)/2^b)
+     * @param N smoothing parameter
+     */
     DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std, const int b, double N);
 
+    DiscreteGaussianGeneratorGeneric(const DiscreteGaussianGeneratorGeneric&) = delete;
+    DiscreteGaussianGeneratorGeneric& operator=(const DiscreteGaussianGeneratorGeneric&) = delete;
+
     /**
-   * @ brief Returns a generated integer. Uses generic algorithm in UCSD paper,
-   * based on Sample Z
-   * @ param mean Mean of the distribution
-   * @ param variance Variance of the desired distribution
-   * @ return A random value within the Discrete Gaussian Distribution
-   */
+     * @brief Returns a generated integer. Uses generic algorithm in UCSD paper,
+     * based on Sample Z
+     * @param mean Mean of the distribution
+     * @param std Standard deviation of the desired distribution
+     * @return A random value within the Discrete Gaussian Distribution
+     */
     int64_t GenerateInteger(double mean, double std);
+
+    /**
+     * @brief Returns a sample from the first base sampler (center 0), bypassing the generic
+     * combination step.
+     * @return A random value within the Discrete Gaussian Distribution of the first base sampler
+     */
     int64_t GenerateInteger() {
         return base_samplers[0]->GenerateInteger();
     }
     /**
-   * @brief Destructor
-   */
+     * @brief Destructor
+     */
     ~DiscreteGaussianGeneratorGeneric();
 
-private:
+  private:
     /**
-   * @brief Subroutine used by Sample C
-   * @param center Center of the distribution
-   */
+     * @brief Subroutine used by Sample C
+     * @param center Center of the distribution
+     */
     int64_t flipAndRound(double center);
     /**
-   * @brief Sample C defined in the paper
-   * @param center Center of the distribution
-   */
+     * @brief Sample C defined in the paper
+     * @param center Center of the distribution
+     */
     int64_t SampleC(int64_t center);
 
     BaseSampler* wide_sampler;
     BaseSampler** base_samplers;
-    BaseSampler* combiners[MAX_LEVELS];
+    std::unique_ptr<SamplerCombiner> combiners[MAX_LEVELS - 1];
     long double wide_variance, sampler_variance;
     double x, c, ci;
     int k, log_base;
     uint64_t mask;
     /**
-   * @ brief Method to return the nth bit of a number
-   * @ param number The number that the bit of desired
-   * @ param n Desired bit number
-   * @ return The nth bit of the number starting from 0 being the LSB
-   */
+     * @ brief Method to return the nth bit of a number
+     * @ param number The number that the bit of desired
+     * @ param n Desired bit number
+     * @ return The nth bit of the number starting from 0 being the LSB
+     */
     short extractBit(int64_t number, int n) {  // NOLINT
         return (number >> n) & 0x1;
     }
@@ -356,4 +366,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#endif  // SRC_CORE_INCLUDE_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_

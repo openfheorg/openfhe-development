@@ -33,19 +33,34 @@
   Hash utilities
  */
 
-#ifndef _SRC_LIB_UTILS_HASHUTIL_H
-#define _SRC_LIB_UTILS_HASHUTIL_H
+#ifndef SRC_CORE_INCLUDE_UTILS_HASHUTIL_H_
+#define SRC_CORE_INCLUDE_UTILS_HASHUTIL_H_
 
 #include <utils/exception.h>
+
+#include <cstdint>
 #include <string>
 #include <vector>
 
 namespace lbcrypto {
 
+/**
+ * @brief Hash algorithm selector for HashUtil::Hash. SHA_512 is currently not implemented, and requesting it
+ * throws.
+ */
 enum HashAlgorithm { SHA_256 = 0, SHA_512 = 1 };
 
+/**
+ * @brief Static utility class providing a self-contained SHA-256 implementation.
+ */
 class HashUtil {
-public:
+  public:
+    /**
+     * @brief Hashes a message and appends the digest bytes to a vector.
+     * @param message input bytes to hash
+     * @param algo hash algorithm; only SHA_256 is implemented, any other value throws
+     * @param digest receives the 32 digest bytes, one per entry, appended to the existing contents
+     */
     static void Hash(std::string message, HashAlgorithm algo, std::vector<int64_t>& digest) {
         switch (algo) {
             case SHA_256:
@@ -53,18 +68,21 @@ public:
                 return;
 
             case SHA_512:
-                // TODO SHA512 disabled, returning SHA256 instead
-                SHA256(message, digest);
-                return;
+                OPENFHE_THROW("SHA_512 is not implemented");
 
             default:
                 OPENFHE_THROW("ERROR: Unknown Hash Algorithm");
         }
     }
 
+    /**
+     * @brief Computes the SHA-256 digest of a message as a hexadecimal string.
+     * @param message input bytes to hash
+     * @return the 64-character lowercase hexadecimal SHA-256 digest
+     */
     static std::string HashString(std::string message);
 
-private:
+  private:
     static void SHA256(std::string message, std::vector<int64_t>& digest);
     static void SHA512(std::string message, std::vector<int64_t>& digest);
     static const uint32_t k_256[64];
@@ -73,4 +91,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_UTILS_HASHUTIL_H_

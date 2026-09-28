@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
-#define __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H_
+#define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H_
 
 #include "scheme/gen-cryptocontext-params.h"
 
@@ -43,4 +43,4 @@ void validateParametersForCryptocontext(const Params& parameters);
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_VALIDATION_H_

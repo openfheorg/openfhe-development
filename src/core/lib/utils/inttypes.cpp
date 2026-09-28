@@ -34,6 +34,7 @@
  */
 
 #include "utils/inttypes.h"
+
 #include <ostream>
 
 std::ostream& operator<<(std::ostream& s, Format f) {

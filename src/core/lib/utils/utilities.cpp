@@ -35,6 +35,8 @@
 
 #include "utils/utilities.h"
 
+#include <string>
+
 namespace lbcrypto {
 
 // auxiliary function to replace a specific character "in" with another character "out"
@@ -42,7 +44,7 @@ std::string replaceChar(std::string str, char in, char out) {
     size_t found = str.find_first_of(in);
     while (found != std::string::npos) {
         str[found] = out;
-        found      = str.find_first_of(in, found + 1);
+        found = str.find_first_of(in, found + 1);
     }
     return str;
 }

@@ -28,22 +28,34 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __DECRYPT_RESULT_H__
-#define __DECRYPT_RESULT_H__
+#ifndef SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_
+#define SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_
 
-#include "utils/inttypes.h"
+#include <cstdint>
+
 #include "lattice/lat-hal.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
+/**
+ * @brief Encryption result. This represents whether the encryption of a plaintext was performed
+ * correctly and how many plaintext bytes were encrypted.
+ */
 struct EncryptResult {
+    /**
+     * Default constructor for an invalid result with no bytes encrypted.
+     */
     EncryptResult() = default;
 
+    /**
+     * Constructor for a successful encryption.
+     * @param len the number of plaintext bytes that were encrypted.
+     */
     explicit EncryptResult(uint32_t len) : isValid(true), numBytesEncrypted(len) {}
 
-    bool isValid;  // whether the encryption was successful
-    // count of the number of plaintext bytes that were encrypted
-    uint32_t numBytesEncrypted;
+    bool isValid{false};           /**< whether the encryption was successful */
+    uint32_t numBytesEncrypted{0}; /**< count of the number of plaintext bytes that were encrypted */
 };
 
 /**
@@ -62,28 +74,28 @@ struct EncryptResult {
  */
 struct DecryptResult {
     /**
-   * Constructor that initializes all message lengths to 0.
-   */
+     * Default constructor for an invalid result with a message length of 0.
+     */
     DecryptResult() = default;
 
     /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   */
+     * Constructor that initializes all message lengths.
+     * @param len the new length.
+     */
     explicit DecryptResult(uint32_t len) : isValid(true), messageLength(len) {}
 
     /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   * @param scf the new scaling factor.
-   */
+     * Constructor that initializes all message lengths.
+     * @param len the new length.
+     * @param scf the new scaling factor.
+     */
     DecryptResult(uint32_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
 
-    bool isValid;                      /**< whether the decryption was successful */
-    uint32_t messageLength;            /**< the length of the decrypted plaintext message */
+    bool isValid{false};               /**< whether the decryption was successful */
+    uint32_t messageLength{0};         /**< the length of the decrypted plaintext message */
     NativeInteger scalingFactorInt{1}; /**< Scaling factor for BGV FlexibleAuto mode. */
 };
 
 }  // namespace lbcrypto
 
-#endif  // __DECRYPT_RESULT_H__
+#endif  // SRC_PKE_INCLUDE_SCHEMEBASE_DECRYPT_RESULT_H_

@@ -34,6 +34,10 @@
  */
 
 #define PROFILE
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;
@@ -54,9 +58,9 @@ int main() {
 
     uint32_t Q = 1 << logQ;
 
-    int q      = 4096;                                               // q
-    int factor = 1 << int(logQ - std::log2(q));                      // Q/q
-    int p      = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
+    int q = 4096;                                               // q
+    int factor = 1 << int(logQ - std::log2(q));                 // Q/q
+    int p = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     // Sample Program: Step 2: Key Generation
     // Generate the secret key

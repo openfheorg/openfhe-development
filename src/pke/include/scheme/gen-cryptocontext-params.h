@@ -33,22 +33,29 @@
   Scheme parameter default class
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_PARAMS_H__
-#define __GEN_CRYPTOCONTEXT_PARAMS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_
+#define SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_
 
-#include "scheme/scheme-id.h"
-#include "utils/inttypes.h"
-#include "constants.h"
-#include "lattice/constants-lattice.h"
-#include "lattice/stdlatticeparms.h"
-
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 #include <vector>
 
+#include "constants.h"
+#include "lattice/constants-lattice.h"
+#include "lattice/stdlatticeparms.h"
+#include "scheme/scheme-id.h"
+#include "utils/inttypes.h"
+
 namespace lbcrypto {
 
 //====================================================================================================================
+/**
+ * @brief Scheme-independent set of parameters used to generate a crypto context. All data members are
+ * initialized to the defaults of the selected scheme; the scheme-specific CCParams specializations disable
+ * the setters that do not apply to their scheme. The setters do not validate their arguments; the whole
+ * parameter set is validated when the crypto context is generated.
+ */
 class Params {
     // NOTE: if any data member (below) is added/removed then update
     // cryptocontextparams-case.cpp and cryptocontextparams-defaults.h
@@ -94,7 +101,8 @@ class Params {
     MultipartyMode multipartyMode;
 
     // Execution mode in CKKS
-    // In EXEC_NOISE_ESTIMATION mode, we estimate the noise we need to add to the actual computation to guarantee good security.
+    // In EXEC_NOISE_ESTIMATION mode, we estimate the noise we need to add to the actual computation to guarantee
+    // good security.
     // In EXEC_EVALUATION mode, we input our noise estimate and perform the desired secure encrypted computation.
     ExecutionMode executionMode;
 
@@ -106,7 +114,8 @@ class Params {
     // This estimate is obtained from running the computation in EXEC_NOISE_ESTIMATION mode.
     double noiseEstimate;
 
-    // Desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor.
+    // Desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling
+    // factor.
     double desiredPrecision;
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
@@ -119,7 +128,8 @@ class Params {
 
     // This is the number of parties in a threshold application, which is used for bound on the joint secret key
     uint32_t thresholdNumOfParties;
-    // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
+    // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be
+    // seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
@@ -178,10 +188,12 @@ class Params {
 
     void SetToDefaults(SCHEME scheme);
 
-protected:
-    // How to disable a particular setter for a particular scheme and get an exception thrown if a user tries to call it:
+  protected:
+    // How to disable a particular setter for a particular scheme and get an exception thrown if a user tries to
+    // call it:
     // 1. The set function should be declared virtual in this file
-    // 2. The same function should be re-defined in the scheme-specific derived file using macros DISABLED_FOR_xxxxRNS defined below.
+    // 2. The same function should be re-defined in the scheme-specific derived file using macros
+    //    DISABLED_FOR_xxxxRNS defined below.
     //
     // Example:
     // the original setter defined in gen-cryptocontext-params.h:
@@ -200,7 +212,12 @@ protected:
 #define DISABLED_FOR_BGVRNS  OPENFHE_THROW("This function is not available for BGVRNS.");
 #define DISABLED_FOR_BFVRNS  OPENFHE_THROW("This function is not available for BFVRNS.");
 
-public:
+  public:
+    /**
+     * Constructor that sets all parameters to the defaults of the given scheme.
+     *
+     * @param scheme0 the scheme (CKKSRNS_SCHEME, BFVRNS_SCHEME or BGVRNS_SCHEME); any other value throws.
+     */
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
         SetToDefaults(scheme0);
     }
@@ -208,14 +225,15 @@ public:
     /**
      * This Params' constructor "explicit Params(const std::vector<std::string>& vals)" is to be used by unittests only.
      *
-     * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from getAllParamsDataMembers()
+     * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from
+     * getAllParamsDataMembers()
      */
     explicit Params(const std::vector<std::string>& vals);
 
-    Params(const Params& obj)            = default;
+    Params(const Params& obj) = default;
     Params& operator=(const Params& obj) = default;
 
-    Params(Params&& obj) noexcept            = default;
+    Params(Params&& obj) noexcept = default;
     Params& operator=(Params&& obj) noexcept = default;
 
     virtual ~Params() = default;
@@ -462,10 +480,17 @@ public:
         ckksDataType = ckksDataType0;
     }
 
+    /**
+     * Prints all parameters as "name: value" pairs separated by semicolons.
+     *
+     * @param os the output stream.
+     * @param obj the parameters to print.
+     * @return the output stream.
+     */
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);
 };
 // ====================================================================================================================
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_PARAMS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_GEN_CRYPTOCONTEXT_PARAMS_H_

@@ -29,14 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "schemeswitching-data-serializer.h"
+
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <vector>
+
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "schemeswitching-data-serializer.h"
-
-#include <filesystem>
-#include <vector>
 
 // includes for getProgramPath()
 #if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))
@@ -79,7 +83,7 @@ std::filesystem::path getProgramPath() {
 }
 
 std::string DataAndLocation::getDataDir() {
-    const std::filesystem::path exe    = getProgramPath();
+    const std::filesystem::path exe = getProgramPath();
     const std::filesystem::path exeDir = exe.empty() ? std::filesystem::current_path() : exe.parent_path();
 
     // One level up (e.g., .../build/unittest -> .../build)
@@ -140,8 +144,7 @@ void SchemeSwitchingDataSerializer::Serialize() {
             THROW_SERIALIZATION_ERROR;
         }
         multKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -152,8 +155,7 @@ void SchemeSwitchingDataSerializer::Serialize() {
             THROW_SERIALIZATION_ERROR;
         }
         rotationKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -172,29 +174,19 @@ void SchemeSwitchingDataSerializer::Serialize() {
         THROW_SERIALIZATION_ERROR;
     }
     //=============================================================================================================
-    outFile = dataDirectory + "/" + binFHEBootRefreshKeyFile;
-    if (!Serial::SerializeToFile(outFile, binFHECryptoContext->GetRefreshKey(), SERTYPE)) {
-        THROW_SERIALIZATION_ERROR;
-    }
-    //=============================================================================================================
-    outFile = dataDirectory + "/" + binFHEBootRotKeyFile;
-    if (!Serial::SerializeToFile(outFile, binFHECryptoContext->GetSwitchKey(), SERTYPE)) {
+    outFile = dataDirectory + "/" + binFHEBootKeyFile;
+    if (!Serial::SerializeToFile(outFile, binFHECryptoContext->GetBTKey(), SERTYPE)) {
         THROW_SERIALIZATION_ERROR;
     }
     //=============================================================================================================
     std::vector<uint32_t> indices;
     auto BTKeyMap = binFHECryptoContext->GetBTKeyMap();
     for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); ++it) {
-        uint32_t index      = it->first;
+        uint32_t index = it->first;
         RingGSWBTKey thekey = it->second;
 
-        outFile = createMapFileName(index, baseRefreshKeyFile);
-        if (!Serial::SerializeToFile(outFile, thekey.BSkey, SERTYPE)) {
-            THROW_SERIALIZATION_ERROR;
-        }
-
-        outFile = createMapFileName(index, baseSwitchingKeyFile);
-        if (!Serial::SerializeToFile(outFile, thekey.KSkey, SERTYPE)) {
+        outFile = createMapFileName(index, baseBTKeyFile);
+        if (!Serial::SerializeToFile(outFile, thekey, SERTYPE)) {
             THROW_SERIALIZATION_ERROR;
         }
 
@@ -227,8 +219,7 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
             THROW_DESERIALIZATION_ERROR;
         }
         multKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -239,8 +230,7 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
             THROW_DESERIALIZATION_ERROR;
         }
         rotationKeyFile.close();
-    }
-    else {
+    } else {
         THROW_CAN_NOT_OPEN_FILE;
     }
     //=============================================================================================================
@@ -261,13 +251,8 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
     }
     //=============================================================================================================
     RingGSWBTKey BTKey;
-    outFile = dataDirectory + "/" + binFHEBootRefreshKeyFile;
-    if (!Serial::DeserializeFromFile(outFile, BTKey.BSkey, SERTYPE)) {
-        THROW_DESERIALIZATION_ERROR;
-    }
-    //=============================================================================================================
-    outFile = dataDirectory + "/" + binFHEBootRotKeyFile;
-    if (!Serial::DeserializeFromFile(outFile, BTKey.KSkey, SERTYPE)) {
+    outFile = dataDirectory + "/" + binFHEBootKeyFile;
+    if (!Serial::DeserializeFromFile(outFile, BTKey, SERTYPE)) {
         THROW_DESERIALIZATION_ERROR;
     }
     binFHECryptoContext->BTKeyLoad(BTKey);
@@ -276,20 +261,14 @@ void SchemeSwitchingDataDeserializer::Deserialize() {
     outFile = dataDirectory + "/" + keyIndexFile;
     if (!Serial::DeserializeFromFile(outFile, indices, SERTYPE)) {
         THROW_SERIALIZATION_ERROR;
-    }
-    else if (!indices.size()) {
+    } else if (!indices.size()) {
         std::string errMsg(std::string("Error deserializing from ") + outFile + ". No indices found.");
         OPENFHE_THROW(errMsg);
     }
     for (uint32_t index : indices) {
         RingGSWBTKey thekey;
-        outFile = createMapFileName(index, baseRefreshKeyFile);
-        if (!Serial::DeserializeFromFile(outFile, thekey.BSkey, SERTYPE)) {
-            THROW_DESERIALIZATION_ERROR;
-        }
-
-        outFile = createMapFileName(index, baseSwitchingKeyFile);
-        if (!Serial::DeserializeFromFile(outFile, thekey.KSkey, SERTYPE)) {
+        outFile = createMapFileName(index, baseBTKeyFile);
+        if (!Serial::DeserializeFromFile(outFile, thekey, SERTYPE)) {
             THROW_DESERIALIZATION_ERROR;
         }
 

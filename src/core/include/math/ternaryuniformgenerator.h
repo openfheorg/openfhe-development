@@ -33,15 +33,16 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_
 
-#include "math/distributiongenerator.h"
-#include "math/math-hal.h"
-
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/distributiongenerator.h"
+#include "math/math-hal.h"
 
 namespace lbcrypto {
 
@@ -50,41 +51,44 @@ namespace lbcrypto {
  */
 template <typename VecType>
 class TernaryUniformGeneratorImpl {
-public:
+  public:
     /**
-   * @brief Basic constructor for Binary Uniform Generator.
-   */
-    TernaryUniformGeneratorImpl()  = default;
+     * @brief Basic constructor for Ternary Uniform Generator.
+     */
+    TernaryUniformGeneratorImpl() = default;
     ~TernaryUniformGeneratorImpl() = default;
 
-    typename VecType::Integer GenerateInteger(const typename VecType::Integer&) const {
-        return 0;
-    }
+    /**
+     * @brief Generates a single value uniformly from {-1, 0, 1}, as GenerateVector does for each entry when h = 0.
+     * @param modulus the modulus -1 is represented under
+     * @return 0, 1 or modulus - 1
+     */
+    typename VecType::Integer GenerateInteger(const typename VecType::Integer& modulus) const;
 
     /**
-   * @brief  Generates a vector of random values within the Ternary Uniform
-   * Distribution.
-   * @param size length of the vector.
-   * @param modulus the modulus applied to all values of the vector.
-   * @param h - Hamming weight for sparse ternary distribution (by default, when
-   * h = 0, the distribution is NOT sparse)
-   * @return A vector of random values within the Ternary Uniform Distribution.
-   */
+     * @brief  Generates a vector of random values within the Ternary Uniform
+     * Distribution.
+     * @param size length of the vector.
+     * @param modulus the modulus applied to all values of the vector.
+     * @param h - Hamming weight for sparse ternary distribution (by default, when
+     * h = 0, the distribution is NOT sparse)
+     * @return A vector of random values within the Ternary Uniform Distribution.
+     */
     VecType GenerateVector(uint32_t size, const typename VecType::Integer& modulus, uint32_t h = 0) const;
 
     /**
-   * @brief      Returns a generated vector of integers.
-   * @param size The number of values to return.
-   * @param h - Hamming weight for sparse ternary distribution (by default, when
-   * h = 0, the distribution is NOT sparse)
-   * @return     vector of integer values generated with the distribution
-   */
+     * @brief      Returns a generated vector of integers.
+     * @param size The number of values to return.
+     * @param h - Hamming weight for sparse ternary distribution (by default, when
+     * h = 0, the distribution is NOT sparse)
+     * @return     vector of integer values generated with the distribution
+     */
     std::vector<int32_t> GenerateIntVector(uint32_t size, uint32_t h = 0) const;
 
-private:
+  private:
     static std::uniform_int_distribution<int32_t> m_distribution;
 };
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_H_

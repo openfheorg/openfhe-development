@@ -35,16 +35,17 @@
 
 #define _USE_MATH_DEFINES
 
-#include "config_core.h"
-
-#include "math/nbtheory.h"
-#include "math/math-hal.h"
-#include "math/distributiongenerator.h"
-
-#include "utils/debug.h"
-
 #include <cmath>
+#include <cstdint>
+#include <set>
 #include <vector>
+
+#include "config_core.h"
+#include "math/distributiongenerator.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "utils/debug.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -60,7 +61,7 @@ NTL::myZZ GreatestCommonDivisor(const NTL::myZZ& a, const NTL::myZZ& b) {
 }
 
 // NTL native version
-bool MillerRabinPrimalityTest(const NTL::myZZ& p, const usint niter) {
+bool MillerRabinPrimalityTest(const NTL::myZZ& p, const uint32_t niter) {
     if (p < NTL::myZZ(2) || ((p != NTL::myZZ(2)) && (p.Mod(NTL::myZZ(2)) == NTL::myZZ(0))))
         return false;
     if (p == NTL::myZZ(2) || p == NTL::myZZ(3) || p == NTL::myZZ(5))
@@ -72,10 +73,10 @@ bool MillerRabinPrimalityTest(const NTL::myZZ& p, const usint niter) {
 /*
         Finds multiplicative inverse using the Extended Euclid Algorithms
 */
-usint ModInverse(usint a, usint b) {
-    // usint b0 = b;
-    usint t, q;
-    usint x0 = 0, x1 = 1;
+uint32_t ModInverse(uint32_t a, uint32_t b) {
+    // uint32_t b0 = b;
+    uint32_t t, q;
+    uint32_t x0 = 0, x1 = 1;
     if (b == 1)
         return 1;
     while (a > 1) {
@@ -105,21 +106,21 @@ uint64_t GetTotient(const uint64_t n) {
     return primeProd.ConvertToInt();
 }
 
-std::vector<int> GetCyclotomicPolynomialRecursive(usint m) {
-    auto IsPrime = [](usint val) {
+std::vector<int> GetCyclotomicPolynomialRecursive(uint32_t m) {
+    auto IsPrime = [](uint32_t val) {
         if (val % 2 == 0)
             return false;
-        for (usint i = 3; i < val; i += 2) {
+        for (uint32_t i = 3; i < val; i += 2) {
             if (val % i == 0)
                 return false;
         }
         return true;
     };
 
-    auto GetDivisibleNumbers = [](usint val) {
-        std::vector<usint> div;
+    auto GetDivisibleNumbers = [](uint32_t val) {
+        std::vector<uint32_t> div;
         div.reserve(val / 2);
-        for (usint i = 1; i < val; i++) {
+        for (uint32_t i = 1; i < val; i++) {
             if (val % i == 0)
                 div.push_back(i);
         }
@@ -127,30 +128,30 @@ std::vector<int> GetCyclotomicPolynomialRecursive(usint m) {
     };
 
     auto PolyMult = [](const std::vector<int>& a, const std::vector<int>& b) {
-        usint degreeA(a.size());
-        usint degreeB(b.size());
-        usint degreeResultant(degreeA + degreeB - 1);
+        uint32_t degreeA(a.size());
+        uint32_t degreeB(b.size());
+        uint32_t degreeResultant(degreeA + degreeB - 1);
         std::vector<int> product(degreeResultant, 0);
-        for (usint i = 0; i < degreeA; ++i) {
-            for (usint j = 0; j < degreeB; ++j)
+        for (uint32_t i = 0; i < degreeA; ++i) {
+            for (uint32_t j = 0; j < degreeB; ++j)
                 product[i + j] += a[i] * b[j];
         }
         return product;
     };
 
     auto PolyQuotient = [](const std::vector<int>& dividend, const std::vector<int>& divisor) {
-        usint divisorLength(divisor.size());
-        usint dividendLength(dividend.size());
-        usint runs(dividendLength - divisorLength + 1);
+        uint32_t divisorLength(divisor.size());
+        uint32_t dividendLength(dividend.size());
+        uint32_t runs(dividendLength - divisorLength + 1);
         std::vector<int> quotient(runs + 1);
         std::vector<int> runningDividend(dividend);
-        for (usint i = 0; i < runs; ++i) {
+        for (uint32_t i = 0; i < runs; ++i) {
             // get the highest degree coeff
-            int divConst     = runningDividend[dividendLength - 1];
-            usint divisorPtr = divisorLength - 1;
-            for (usint j = 0; j < dividendLength - i - 1; ++j) {
+            int divConst = runningDividend[dividendLength - 1];
+            uint32_t divisorPtr = divisorLength - 1;
+            for (uint32_t j = 0; j < dividendLength - i - 1; ++j) {
                 auto& rdtmp1 = runningDividend[dividendLength - 1 - j];
-                rdtmp1       = runningDividend[dividendLength - 2 - j];
+                rdtmp1 = runningDividend[dividendLength - 2 - j];
                 if (divisorPtr > j)
                     rdtmp1 -= (divisor[divisorPtr - 1 - j] * divConst);
             }
@@ -173,8 +174,8 @@ std::vector<int> GetCyclotomicPolynomialRecursive(usint m) {
 
     std::vector<int> product{1};
 
-    for (usint i = 0; i < divisibleNumbers.size(); i++) {
-        auto P  = GetCyclotomicPolynomialRecursive(divisibleNumbers[i]);
+    for (uint32_t i = 0; i < divisibleNumbers.size(); i++) {
+        auto P = GetCyclotomicPolynomialRecursive(divisibleNumbers[i]);
         product = PolyMult(product, P);
     }
 
@@ -195,8 +196,7 @@ uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {
     if (i < 0) {
         f1 = NativeInteger(5).ModInverse(m).ConvertToInt();
         f2 = NativeInteger(m - 1).ModInverse(m).ConvertToInt();
-    }
-    else {
+    } else {
         f1 = 5;
         f2 = m - 1;
     }
@@ -211,8 +211,7 @@ uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {
         for (size_t j = 1; j < i_unsigned; j++) {
             g = (g * g0) % m;
         }
-    }
-    else {
+    } else {
         g = f2;
         for (size_t j = n / 2; j < i_unsigned; j++) {
             g = (g * g0) % m;
@@ -226,14 +225,14 @@ uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g) {
         return 1;
     }
 
-    int32_t n        = GetTotient(m);
+    int32_t n = GetTotient(m);
     int32_t i_signed = i % n;
     if (i_signed <= 0) {
         i_signed += n;
     }
 
     uint32_t i_unsigned = (uint32_t)i_signed;
-    uint32_t k          = g;
+    uint32_t k = g;
     for (size_t ii = 2; ii < i_unsigned; ii++) {
         k = (k * g) % m;
     }
@@ -243,8 +242,7 @@ uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g) {
 uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
     if (i == 0) {
         return 1;
-    }
-    else if (i == (static_cast<int32_t>(m) - 1)) { // could be true if (i > 0)
+    } else if (i == (static_cast<int32_t>(m) - 1)) {  // could be true if (i > 0)
         return static_cast<uint32_t>(i);
     }
     if (!IsPowerOfTwo(m))
@@ -252,24 +250,24 @@ uint32_t FindAutomorphismIndex2nComplex(int32_t i, uint32_t m) {
 
     // conjugation automorphism
     // generator. the usage of uint64_t prevents occasional integer overflow if the result of (g*g0) is too high
-    const uint64_t g0   = (i < 0) ? NativeInteger(5).ModInverse(m).ConvertToInt() : 5;
-    uint64_t g          = g0;
+    const uint64_t g0 = (i < 0) ? NativeInteger(5).ModInverse(m).ConvertToInt() : 5;
+    uint64_t g = g0;
     uint32_t i_unsigned = static_cast<uint32_t>(std::abs(i));
     for (size_t j = 1; j < i_unsigned; j++) {
-        g = (g * g0) & (m - 1); // Modulus operation [ (g*g0)%m ] using bitwise AND
+        g = (g * g0) & (m - 1);  // Modulus operation [ (g*g0)%m ] using bitwise AND
     }
     return static_cast<uint32_t>(g);
 }
 
 void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {
-    uint32_t m    = n << 1;  // cyclOrder
+    uint32_t m = n << 1;  // cyclOrder
     uint32_t logm = std::round(std::log2(m));
     uint32_t logn = std::round(std::log2(n));
     for (uint32_t j = 0; j < n; j++) {
-        uint32_t jTmp    = ((j << 1) + 1);
-        usint idx        = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
-        usint jrev       = ReverseBits(j, logn);
-        usint idxrev     = ReverseBits(idx, logn);
+        uint32_t jTmp = ((j << 1) + 1);
+        uint32_t idx = ((jTmp * k) - (((jTmp * k) >> logm) << logm)) >> 1;
+        uint32_t jrev = ReverseBits(j, logn);
+        uint32_t idxrev = ReverseBits(idx, logn);
         (*precomp)[jrev] = idxrev;
     }
 }

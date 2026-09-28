@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_METADATA_H
-#define LBCRYPTO_CRYPTO_METADATA_H
+#ifndef SRC_PKE_INCLUDE_METADATA_H_
+#define SRC_PKE_INCLUDE_METADATA_H_
 
-#include "utils/exception.h"
-
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <string>
 #include <ostream>
+#include <string>
+
+#include "utils/exception.h"
 
 namespace lbcrypto {
 
@@ -48,67 +49,85 @@ using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metada
  * @brief Empty metadata container
  */
 class Metadata {
-public:
+  public:
     /**
-   * Default constructor
-   */
+     * Default constructor
+     */
     Metadata() {}
 
     /**
-   * Copy constructor
-   */
-    Metadata(const Metadata& mdata) {
-        Metadata();
-    }
+     * Copy constructor
+     *
+     * @param mdata metadata object to copy (the base class carries no state)
+     */
+    Metadata(const Metadata& mdata) = default;
 
     /**
-   * Destructor
-   */
+     * Destructor
+     */
     virtual ~Metadata() {}
 
     /**
-   * This method creates a copy of the Metadata object
-   * wrapped in a shared_ptr
-   */
+     * This method creates a copy of the Metadata object
+     * wrapped in a shared_ptr
+     *
+     * @return the copy
+     */
     virtual std::shared_ptr<Metadata> Clone() const {
         return std::make_shared<Metadata>();
     }
 
     /**
-   * Equality operator for Metadata.
-   * Unless overriden by subclasses, Metadata does not carry any
-   * metadata, so all Metadata objects are equal.
-   */
+     * Equality operator for Metadata.
+     * Unless overriden by subclasses, Metadata does not carry any
+     * metadata, so all Metadata objects are equal.
+     *
+     * @param mdata metadata object to compare with
+     * @return true if the objects are equal
+     */
     virtual bool operator==(const Metadata& mdata) const {
         return true;
     }
 
     /**
-   * Inequality operator, implemented by a call to the
-   * equality operator.
-   */
+     * Inequality operator, implemented by a call to the
+     * equality operator.
+     *
+     * @param mdata metadata object to compare with
+     * @return true if the objects differ
+     */
     virtual bool operator!=(const Metadata& mdata) const {
         return !(*this == mdata);
     }
 
     /**
-   * << operator implements by calling member method PrintMetadata.
-   * This is a friend method and cannot be overriden by subclasses.
-   */
+     * << operator implements by calling member method PrintMetadata.
+     * This is a friend method and cannot be overriden by subclasses.
+     *
+     * @param out output stream
+     * @param m metadata object to print
+     * @return the output stream
+     */
     friend std::ostream& operator<<(std::ostream& out, const Metadata& m) {
         m.PrintMetadata(out);
         return out;
     }
 
     /**
-   * save method for serialization
-   */
+     * save method for serialization
+     *
+     * @param ar archive to write to
+     * @param version serialization version of the object
+     */
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {}
 
     /**
-   * load method for serialization
-   */
+     * load method for serialization
+     *
+     * @param ar archive to read from
+     * @param version serialization version of the archived object
+     */
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
@@ -118,24 +137,31 @@ public:
     }
 
     /**
-   * SerializedObjectName method for serialization
-   */
+     * SerializedObjectName method for serialization
+     *
+     * @return the name of the class
+     */
     virtual std::string SerializedObjectName() const {
         return "Metadata";
     }
 
     /**
-   * SerializedVersion method for serialization
-   */
+     * SerializedVersion method for serialization
+     *
+     * @return the current serialization version
+     */
     static uint32_t SerializedVersion() {
         return 1;
     }
 
-protected:
+  protected:
     /**
-    * A method that prints the contents of metadata objects.
-    * Please override in subclasses to print all members.
-    */
+     * A method that prints the contents of metadata objects.
+     * Please override in subclasses to print all members.
+     *
+     * @param out output stream
+     * @return the output stream
+     */
     virtual std::ostream& PrintMetadata(std::ostream& out) const {
         OPENFHE_THROW("Not implemented");
     }
@@ -143,4 +169,4 @@ protected:
 
 }  // end namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_METADATA_H_

@@ -29,6 +29,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -39,13 +47,11 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-#include <iostream>
-
 using namespace lbcrypto;
 
 template <typename Element>
 static std::function<Element()> secureIL2nAlloc() {
-    usint m = 2048;
+    uint32_t m = 2048;
     typename Element::Integer secureModulus("8590983169");
     typename Element::Integer secureRootOfUnity("4810681236");
     return Element::Allocator(std::make_shared<typename Element::Params>(m, secureModulus, secureRootOfUnity),
@@ -54,7 +60,7 @@ static std::function<Element()> secureIL2nAlloc() {
 
 template <typename Element>
 static std::function<Element()> fastIL2nAlloc() {
-    usint m = 16;
+    uint32_t m = 16;
     typename Element::Integer modulus("67108913");
     typename Element::Integer rootOfUnity("61564");
     return Element::Allocator(std::make_shared<typename Element::Params>(m, modulus, rootOfUnity), Format::EVALUATION);
@@ -62,7 +68,7 @@ static std::function<Element()> fastIL2nAlloc() {
 
 template <typename Element>
 static std::function<Element()> fastUniformIL2nAlloc() {
-    usint m = 16;
+    uint32_t m = 16;
     typename Element::Integer modulus("67108913");
     typename Element::Integer rootOfUnity("61564");
     return Element::MakeDiscreteUniformAllocator(std::make_shared<typename Element::Params>(m, modulus, rootOfUnity),
@@ -71,6 +77,185 @@ static std::function<Element()> fastUniformIL2nAlloc() {
 
 TEST(UTMatrix, serializer) {
     Matrix<int32_t> m([]() { return 0; }, 3, 5);
+}
+
+TEST(UTMatrix, convert_to_int32_checks_centered_range) {
+    constexpr uint64_t int32MaxValue = static_cast<uint64_t>(std::numeric_limits<int32_t>::max());
+    constexpr uint64_t int32MinMagnitude = int32MaxValue + 1;
+    const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = BigInteger(int32MaxValue);
+    EXPECT_EQ(std::numeric_limits<int32_t>::max(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = BigInteger(int32MinMagnitude);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    input(0, 0) = modulus - BigInteger(int32MinMagnitude);
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(int32MinMagnitude + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+}
+
+TEST(UTMatrix, convert_to_int32_checks_all_matrix_overloads) {
+    constexpr uint64_t int32MinMagnitude = static_cast<uint64_t>(std::numeric_limits<int32_t>::max()) + 1;
+    const BigInteger modulus(2 * (int32MinMagnitude + 1) + 1);
+    const BigInteger unrepresentable(int32MinMagnitude);
+    auto vectorAllocator = [&modulus]() {
+        return BigVector(1, modulus);
+    };
+
+    Matrix<BigVector> vectorInput(vectorAllocator, 1, 1);
+    vectorInput(0, 0).at(0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(vectorInput, modulus), OpenFHEException);
+
+    MatrixStrassen<BigInteger> strassenInput([]() { return BigInteger(0); }, 1, 1);
+    strassenInput(0, 0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(strassenInput, modulus), OpenFHEException);
+
+    MatrixStrassen<BigVector> strassenVectorInput(vectorAllocator, 1, 1);
+    strassenVectorInput(0, 0).at(0) = unrepresentable;
+    EXPECT_THROW(ConvertToInt32(strassenVectorInput, modulus), OpenFHEException);
+}
+
+// additional coverage: values that must still convert, on every overload, plus the
+// modulus from the bug report (q = 2^32 + 15, value = 2^31)
+TEST(UTMatrix, convert_to_int32_representable_values) {
+    constexpr int32_t int32Max = std::numeric_limits<int32_t>::max();
+    constexpr int32_t int32Min = std::numeric_limits<int32_t>::min();
+    const BigInteger modulus(static_cast<uint64_t>(4294967311ULL));
+    const BigInteger minusOne(modulus - BigInteger(1));
+    const BigInteger lowest(modulus - BigInteger(static_cast<uint64_t>(int32Max) + 1));
+
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 2, 2);
+    input(0, 0) = BigInteger(0);
+    input(0, 1) = BigInteger(static_cast<uint64_t>(int32Max));
+    input(1, 0) = minusOne;
+    input(1, 1) = lowest;
+    Matrix<int32_t> out = ConvertToInt32(input, modulus);
+    EXPECT_EQ(0, out(0, 0));
+    EXPECT_EQ(int32Max, out(0, 1));
+    EXPECT_EQ(-1, out(1, 0));
+    EXPECT_EQ(int32Min, out(1, 1));
+
+    // the value from the bug report is not representable and must throw, not wrap to INT32_MIN
+    input(0, 0) = BigInteger(static_cast<uint64_t>(int32Max) + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    // the largest positive representative of this modulus, 2^31 + 7, used to wrap to -2147483641
+    input(0, 0) = modulus / BigInteger(2);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    auto vectorAllocator = [&modulus]() {
+        return BigVector(1, modulus);
+    };
+    Matrix<BigVector> vectorInput(vectorAllocator, 1, 2);
+    vectorInput(0, 0).at(0) = BigInteger(static_cast<uint64_t>(int32Max));
+    vectorInput(0, 1).at(0) = lowest;
+    Matrix<int32_t> vectorOut = ConvertToInt32(vectorInput, modulus);
+    EXPECT_EQ(int32Max, vectorOut(0, 0));
+    EXPECT_EQ(int32Min, vectorOut(0, 1));
+
+    MatrixStrassen<BigInteger> strassenInput([]() { return BigInteger(0); }, 1, 2);
+    strassenInput(0, 0) = BigInteger(static_cast<uint64_t>(int32Max));
+    strassenInput(0, 1) = lowest;
+    MatrixStrassen<int32_t> strassenOut = ConvertToInt32(strassenInput, modulus);
+    EXPECT_EQ(int32Max, strassenOut(0, 0));
+    EXPECT_EQ(int32Min, strassenOut(0, 1));
+
+    MatrixStrassen<BigVector> strassenVectorInput(vectorAllocator, 1, 2);
+    strassenVectorInput(0, 0).at(0) = BigInteger(static_cast<uint64_t>(int32Max));
+    strassenVectorInput(0, 1).at(0) = lowest;
+    MatrixStrassen<int32_t> strassenVectorOut = ConvertToInt32(strassenVectorInput, modulus);
+    EXPECT_EQ(int32Max, strassenVectorOut(0, 0));
+    EXPECT_EQ(int32Min, strassenVectorOut(0, 1));
+}
+
+// a small modulus leaves every residue representable: no throw is possible
+TEST(UTMatrix, convert_to_int32_small_modulus) {
+    const BigInteger modulus(static_cast<uint64_t>(1024));
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 3);
+    input(0, 0) = BigInteger(512);
+    input(0, 1) = BigInteger(513);
+    input(0, 2) = BigInteger(1023);
+    Matrix<int32_t> out = ConvertToInt32(input, modulus);
+    EXPECT_EQ(512, out(0, 0));
+    EXPECT_EQ(-511, out(0, 1));
+    EXPECT_EQ(-1, out(0, 2));
+}
+
+// q = 2^32 - 1 is the largest modulus for which every centered representative is
+// representable: both extremes must convert rather than throw
+TEST(UTMatrix, convert_to_int32_widest_representable_modulus) {
+    constexpr int32_t int32Max = std::numeric_limits<int32_t>::max();
+    const BigInteger modulus(static_cast<uint64_t>(4294967295ULL));
+    const BigInteger half(modulus / BigInteger(2));
+
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 3);
+    input(0, 0) = half;                     // largest positive representative, +INT32_MAX
+    input(0, 1) = half + BigInteger(1);     // largest negative magnitude, -INT32_MAX
+    input(0, 2) = modulus - BigInteger(1);  // -1
+
+    Matrix<int32_t> out([]() { return 0; }, 1, 1);
+    EXPECT_NO_THROW(out = ConvertToInt32(input, modulus));
+    EXPECT_EQ(int32Max, out(0, 0));
+    EXPECT_EQ(-int32Max, out(0, 1));
+    EXPECT_EQ(-1, out(0, 2));
+}
+
+// for an even modulus the class q/2 has the two representatives -q/2 and q/2, of equal
+// magnitude; q = 2^32 is the only modulus for which exactly one of them is an int32_t
+TEST(UTMatrix, convert_to_int32_even_modulus_endpoint) {
+    const BigInteger modulus(static_cast<uint64_t>(4294967296ULL));  // 2^32
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = modulus / BigInteger(2);  // 2^31, representable only as INT32_MIN
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus / BigInteger(2) - BigInteger(1);
+    EXPECT_EQ(std::numeric_limits<int32_t>::max(), ConvertToInt32(input, modulus)(0, 0));
+
+    //  q = 2^33: the class q/2 has magnitude 2^32 either way, so neither fits
+    const BigInteger wider(static_cast<uint64_t>(8589934592ULL));
+    input(0, 0) = wider / BigInteger(2);
+    EXPECT_THROW(ConvertToInt32(input, wider), OpenFHEException);
+}
+
+// large modulus: only values near 0 and near q are representable
+TEST(UTMatrix, convert_to_int32_large_modulus) {
+    constexpr int32_t int32Max = std::numeric_limits<int32_t>::max();
+    const BigInteger modulus("1237940039285380274899124357");
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    input(0, 0) = BigInteger(12345);
+    EXPECT_EQ(12345, ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(12345);
+    EXPECT_EQ(-12345, ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = modulus - BigInteger(static_cast<uint64_t>(int32Max) + 1);
+    EXPECT_EQ(std::numeric_limits<int32_t>::min(), ConvertToInt32(input, modulus)(0, 0));
+
+    input(0, 0) = BigInteger(static_cast<uint64_t>(int32Max) + 1);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+
+    input(0, 0) = modulus - BigInteger(static_cast<uint64_t>(int32Max) + 2);
+    EXPECT_THROW(ConvertToInt32(input, modulus), OpenFHEException);
+}
+
+// a value outside Z_q has no centered representative: it must throw rather than
+// convert to whatever the modular subtraction happens to produce
+TEST(UTMatrix, convert_to_int32_value_outside_ring) {
+    Matrix<BigInteger> input([]() { return BigInteger(0); }, 1, 1);
+
+    const BigInteger smallModulus(static_cast<uint64_t>(67108913));
+    input(0, 0) = smallModulus + BigInteger(5);
+    EXPECT_THROW(ConvertToInt32(input, smallModulus), OpenFHEException);
+
+    const BigInteger largeModulus("1237940039285380274899124357");
+    input(0, 0) = largeModulus + BigInteger(5);
+    EXPECT_THROW(ConvertToInt32(input, largeModulus), OpenFHEException);
 }
 
 template <typename Element>
@@ -140,9 +325,9 @@ TEST(UTMatrix, basic_intvec_math) {
 
 template <typename Element>
 void transpose(const std::string& msg) {
-    Matrix<Element> n  = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
+    Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
     Matrix<Element> nT = Matrix<Element>(n).Transpose();
-    Matrix<Element> I  = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Identity();
+    Matrix<Element> I = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Identity();
     EXPECT_EQ(nT, I * nT) << msg;
 }
 
@@ -153,8 +338,8 @@ TEST(UTMatrix, transpose) {
 template <typename Element>
 void scalar_mult(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
-    auto one          = secureIL2nAlloc<Element>()();
-    one               = 1;
+    auto one = secureIL2nAlloc<Element>()();
+    one = 1;
     EXPECT_EQ(n, one * n) << msg;
     EXPECT_EQ(n, n * one) << msg;
 }
@@ -168,18 +353,18 @@ void Poly_mult_square_matrix(const std::string& msg) {
     int32_t dimension = 8;
 
     Matrix<Element> A =
-        Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     Matrix<Element> B =
-        Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     Matrix<Element> C =
-        Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     Matrix<Element> I = Matrix<Element>(fastIL2nAlloc<Element>(), dimension, dimension).Identity();
 
     EXPECT_EQ(A, A * I) << msg << " Matrix multiplication of two Poly2Ns: A = AI - failed.\n";
     EXPECT_EQ(A, I * A) << msg << " Matrix multiplication of two Poly2Ns: A = IA - failed.\n";
 
     EXPECT_EQ((A * B).Transpose(), B.Transpose() * A.Transpose())
-        << "Matrix multiplication of two Poly2Ns: (A*B)^T = B^T*A^T - failed.\n";
+            << "Matrix multiplication of two Poly2Ns: (A*B)^T = B^T*A^T - failed.\n";
 
     EXPECT_EQ(A * B * C, A * (B * C)) << msg << " Matrix multiplication of two Poly2Ns: A*B*C = A*(B*C) - failed.\n";
     EXPECT_EQ(A * B * C, (A * B) * C) << msg << " Matrix multiplication of two Poly2Ns: A*B*C = (A*B)*C - failed.\n";
@@ -194,11 +379,11 @@ void Poly_mult_square_matrix_caps(const std::string& msg) {
     int32_t dimension = 16;
 
     MatrixStrassen<Element> A =
-        MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     MatrixStrassen<Element> B =
-        MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     MatrixStrassen<Element> C =
-        MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
+            MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension, fastUniformIL2nAlloc<Element>());
     MatrixStrassen<Element> I = MatrixStrassen<Element>(fastIL2nAlloc<Element>(), dimension, dimension).Identity();
 
     // EXPECT_EQ((A.Mult(B))(0, 0), (A.MultiplyCAPS(B, 2))(0, 0)) << "CAPS matrix
@@ -208,21 +393,21 @@ void Poly_mult_square_matrix_caps(const std::string& msg) {
     EXPECT_EQ(A, I.Mult(A, 2)) << msg << " Matrix multiplication of two Poly2Ns: A = IA - failed.\n";
 
     EXPECT_EQ((A.Mult(B, 2)).Transpose(), B.Transpose().Mult(A.Transpose(), 2))
-        << msg
-        << " Matrix multiplication of two Poly2Ns: "
-           "(A.MultiplyCAPS(B,2)).Transpose(), "
-           "B.Transpose().MultiplyCAPS(A.Transpose(),2) - failed.\n";
+            << msg
+            << " Matrix multiplication of two Poly2Ns: "
+               "(A.MultiplyCAPS(B,2)).Transpose(), "
+               "B.Transpose().MultiplyCAPS(A.Transpose(),2) - failed.\n";
 
     EXPECT_EQ(A.Mult(B, 2).Mult(C, 2), A.Mult((B.Mult(C, 2)), 2))
-        << msg
-        << " Matrix multiplication of two Poly2Ns: "
-           "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
-           "A.MultiplyCAPS((B.MultiplyCAPS(C,2)),2) - failed.\n";
+            << msg
+            << " Matrix multiplication of two Poly2Ns: "
+               "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
+               "A.MultiplyCAPS((B.MultiplyCAPS(C,2)),2) - failed.\n";
     EXPECT_EQ(A.Mult(B, 2).Mult(C, 2), (A.Mult(B, 2)).Mult(C, 2))
-        << msg
-        << " Matrix multiplication of two Poly2Ns: "
-           "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
-           "(A.MultiplyCAPS(B,2)).MultiplyCAPS(C,2) - failed.\n";
+            << msg
+            << " Matrix multiplication of two Poly2Ns: "
+               "A.MultiplyCAPS(B,2).MultiplyCAPS(C,2), "
+               "(A.MultiplyCAPS(B,2)).MultiplyCAPS(C,2) - failed.\n";
 }
 
 TEST(UTMatrix, Poly_mult_square_matrix_caps) {
@@ -255,11 +440,42 @@ TEST(UTMatrix, cholesky) {
     OPENFHE_DEBUGEXP(cc);
 }
 
+// Beyond 1x1 the pivots come from the updated trailing block, not the input, which a 3x3 case
+// exercises for every overload
+TEST(UTMatrix, cholesky3x3) {
+    const int32_t a[3][3] = {{4, 2, 2}, {2, 5, 3}, {2, 3, 6}};
+    const double lower[3][3] = {{2, 0, 0}, {1, 2, 0}, {1, 1, 2}};
+
+    Matrix<int32_t> m([]() { return 0; }, 3, 3);
+    MatrixStrassen<int32_t> ms([]() { return 0; }, 3, 3);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            m(i, j) = a[i][j];
+            ms(i, j) = a[i][j];
+        }
+    }
+
+    auto c = Cholesky(m);
+    Matrix<double> c2([]() { return 0; }, 3, 3);
+    Cholesky(m, c2);
+    auto cs = Cholesky(ms);
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            EXPECT_LE(std::fabs(lower[i][j] - c(i, j)), 1e-12) << "Cholesky(input) at " << i << "," << j;
+            EXPECT_LE(std::fabs(lower[i][j] - c2(i, j)), 1e-12) << "Cholesky(input, result) at " << i << "," << j;
+            EXPECT_LE(std::fabs(lower[i][j] - cs(i, j)), 1e-12) << "Cholesky(MatrixStrassen) at " << i << "," << j;
+        }
+    }
+
+    Matrix<double> wrongSize([]() { return 0; }, 2, 2);
+    EXPECT_THROW(Cholesky(m, wrongSize), OpenFHEException);
+}
+
 template <typename Element>
 void gadget_vector(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 1, 4).GadgetVector();
-    auto v            = secureIL2nAlloc<Element>()();
-    v                 = 1;
+    auto v = secureIL2nAlloc<Element>()();
+    v = 1;
     EXPECT_EQ(v, n(0, 0)) << msg;
     v = 2;
     EXPECT_EQ(v, n(0, 1)) << msg;
@@ -275,16 +491,16 @@ TEST(UTMatrix, gadget_vector) {
 
 template <typename Element>
 void rotate_vec_result(const std::string& msg) {
-    Matrix<Element> n                        = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
+    Matrix<Element> n = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
     const typename Element::Integer& modulus = n(0, 0).GetModulus();
     n.SetFormat(Format::COEFFICIENT);
-    n(0, 0).at(2)                      = 1;
+    n(0, 0).at(2) = 1;
     Matrix<typename Element::Vector> R = RotateVecResult(n);
     EXPECT_EQ(8U, R.GetRows()) << msg;
     EXPECT_EQ(16U, R.GetCols()) << msg;
     EXPECT_EQ(Element::Vector::Single(1, modulus), R(0, 0)) << msg;
 
-    typename Element::Integer negOne   = n(0, 0).GetModulus() - typename Element::Integer(1);
+    typename Element::Integer negOne = n(0, 0).GetModulus() - typename Element::Integer(1);
     typename Element::Vector negOneVec = Element::Vector::Single(negOne, modulus);
     EXPECT_EQ(negOneVec, R(0, 6)) << msg;
     EXPECT_EQ(negOneVec, R(1, 7)) << msg;
@@ -305,7 +521,7 @@ void rotate(const std::string& msg) {
     Matrix<Element> n = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
 
     n.SetFormat(Format::COEFFICIENT);
-    n(0, 0).at(2)                       = 1;
+    n(0, 0).at(2) = 1;
     Matrix<typename Element::Integer> R = Rotate(n);
     EXPECT_EQ(8U, R.GetRows()) << msg;
     EXPECT_EQ(16U, R.GetCols()) << msg;

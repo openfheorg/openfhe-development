@@ -229,7 +229,7 @@ defines the Main Workflow, which runs when changes are pushed to the main branch
        branches:
          - main
 
-The Main Workflow calls `Generic/Reuseable Workflow <#generic-reuseable-workflow>`__ and 
+The Main Workflow calls `Generic/Reuseable Workflow <#generic-reuseable-workflow>`__ and
 runs all jobs with all native backends and with both GCC and CLANG.
 And lastly this workflow has a job that pushes the doxygen generated documentation to a specific branch,
 `gh-pages <https://github.com/openfheorg/openfhe-development/tree/gh-pages>`__ in the repository.
@@ -314,7 +314,7 @@ Below is a part of the existing map using the  ``>-`` operator for multiple line
 Modifying or Adding New Workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When developing a new workflow it is required that the *Default Branch* be set to whatever 
+When developing a new workflow it is required that the *Default Branch* be set to whatever
 your development branch is to expose the workflows, and thus reverted on completion.
 This can be done by navigating to the repository’s ``Settings > Branches`` and selecting
 a new *Default Branch* as shown below.
@@ -384,4 +384,3 @@ to verify that a self-hosted runner is linked to the repository.
 .. raw:: html
 
    <!-- This one should change SOON to openfhe.github.io or similar -->
-

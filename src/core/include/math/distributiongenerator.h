@@ -34,14 +34,14 @@
   all other distribution generators
  */
 
-#ifndef __DISTRIBUTIONGENERATOR_H__
-#define __DISTRIBUTIONGENERATOR_H__
-
-#include "utils/prng/prng.h"
-#include "config_core.h"
+#ifndef SRC_CORE_INCLUDE_MATH_DISTRIBUTIONGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_DISTRIBUTIONGENERATOR_H_
 
 #include <memory>
 #include <string>
+
+#include "config_core.h"
+#include "utils/prng/prng.h"
 
 namespace lbcrypto {
 
@@ -52,22 +52,24 @@ namespace lbcrypto {
  */
 
 class PseudoRandomNumberGenerator {
-public:
+  public:
     /**
-    * @brief InitPRNGEngine() initializes the PRNG generator
-    * @param libPath a string with the absolute path to an external PRNG library ("/path/to/libprng.so").
-    *        If the string is empty, then the default (OpenFHE's built-in PRNG) library will be used.
-    * @note this function should be called at the beginning of main() if an external library to be used and
-    *       prints a trace in this case. There is no trace for the built-in PRNG
-    */
+     * @brief InitPRNGEngine() initializes the PRNG generator
+     * @param libPath a string with the absolute path to an external PRNG library ("/path/to/libprng.so").
+     *        If the string is empty, then the default (OpenFHE's built-in PRNG) library will be used.
+     * @note this function should be called at the beginning of main() if an external library to be used and
+     *       prints a trace in this case. There is no trace for the built-in PRNG
+     */
     static void InitPRNGEngine(const std::string& libPath = std::string());
 
     /**
      * @brief Returns a reference to the PRNG engine
+     *
+     * @return the PRNG engine used by the distribution generators (created on first use)
      */
     static PRNG& GetPRNG();
 
-private:
+  private:
     using GenPRNGEngineFuncPtr = PRNG* (*)();
 
 #if defined(WITH_OPENMP)
@@ -84,4 +86,4 @@ private:
 
 }  // namespace lbcrypto
 
-#endif  // __DISTRIBUTIONGENERATOR_H__
+#endif  // SRC_CORE_INCLUDE_MATH_DISTRIBUTIONGENERATOR_H_

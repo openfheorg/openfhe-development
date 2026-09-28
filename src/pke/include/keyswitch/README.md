@@ -13,9 +13,9 @@ a separate secret key. This is necessary for computing automorphisms and for rel
 ## Key Class Inheritance
 
 ```mermaid
-graph BT 
-    Key[Keyswitch: Base Class] --> |Inherited by|KeyRNS[Keyswitch: RNS]; 
-    KeyRNS[Keyswitch: RNS] --> |Inherited by|KeyBV[Keyswitch: BV]; 
+graph BT
+    Key[Keyswitch: Base Class] --> |Inherited by|KeyRNS[Keyswitch: RNS];
+    KeyRNS[Keyswitch: RNS] --> |Inherited by|KeyBV[Keyswitch: BV];
     KeyRNS[Keyswitch: RNS] --> |Inherited by|KeyHybrid[Keyswitch: Hybrid];
 ```
 

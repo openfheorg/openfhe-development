@@ -36,9 +36,12 @@
 #ifndef LBCRYPTO_LIB_MATH_MATRIX_CPP
 #define LBCRYPTO_LIB_MATH_MATRIX_CPP
 
+#include <cmath>
+#include <cstdint>
+
 #include "math/math-hal.h"
 #include "math/matrix-impl.h"
-
+#include "math/matrix-utils.h"
 #include "utils/exception.h"
 #include "utils/parallel.h"
 
@@ -122,8 +125,9 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
         OPENFHE_THROW("not square");
     }
     size_t rows = input.GetRows();
-    //  Matrix<LargeFloat> result([]() { return make_unique<LargeFloat>(); },
-    // rows, rows);
+    if (result.GetRows() != rows || result.GetCols() != rows) {
+        OPENFHE_THROW("result must have the dimensions of input");
+    }
 
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < rows; ++j) {
@@ -132,7 +136,7 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
     }
 
     for (size_t k = 0; k < rows; ++k) {
-        result(k, k) = std::sqrt(input(k, k));
+        result(k, k) = std::sqrt(result(k, k));
 
         for (size_t i = k + 1; i < rows; ++i) {
             // result(i, k) = input(i, k) / result(k, k);
@@ -151,20 +155,16 @@ void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
     }
 }
 
-//  Convert from Z_q to [-q/2, q/2]
+//  Convert from Z_q to (-q/2, q/2]
 Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    BigInteger negativeThreshold(modulus / BigInteger(2));
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32Converter converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            if (input(i, j) > negativeThreshold) {
-                result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
-            }
-            else {
-                result(i, j) = input(i, j).ConvertToInt();
-            }
+            result(i, j) = converter.Convert(inputRow[j]);
         }
     }
     return result;
@@ -173,17 +173,12 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger
 Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger& modulus) {
     size_t rows = input.GetRows();
     size_t cols = input.GetCols();
-    BigInteger negativeThreshold(modulus / BigInteger(2));
     Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    const CenteredToInt32Converter converter(modulus);
     for (size_t i = 0; i < rows; ++i) {
+        const auto& inputRow = input.GetData()[i];
         for (size_t j = 0; j < cols; ++j) {
-            const BigInteger& elem = input(i, j).at(0);
-            if (elem > negativeThreshold) {
-                result(i, j) = -1 * (modulus - elem).ConvertToInt();
-            }
-            else {
-                result(i, j) = elem.ConvertToInt();
-            }
+            result(i, j) = converter.Convert(inputRow[j][0]);
         }
     }
     return result;

@@ -29,14 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cstdint>
+#include <iostream>
+#include <string>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "testdefs.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
 
 using namespace lbcrypto;
 
@@ -58,7 +60,7 @@ using namespace lbcrypto;
 template <typename V>
 void AtAndSetModulusTest(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
-    usint len = 10;
+    uint32_t len = 10;
     V m(len);
 
     // note at() does not set modulus
@@ -81,7 +83,7 @@ void AtAndSetModulusTest(const std::string& msg) {
     V calculatedResult = m.Mod(q);
     OPENFHE_DEBUG("calculated result" << m);
     uint64_t expectedResult[] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
-    for (usint i = 0; i < len; i++) {
+    for (uint32_t i = 0; i < len; i++) {
         EXPECT_EQ(expectedResult[i], calculatedResult[i].ConvertToInt()) << msg << " Mod failed";
     }
 
@@ -99,11 +101,10 @@ void AtAndSetModulusTest(const std::string& msg) {
     n.at(9) = typename V::Integer("7698798");
 
     OPENFHE_DEBUG("n" << n);
-    for (usint i = 0; i < len; i++) {
+    for (uint32_t i = 0; i < len; i++) {
         if (i != 6) {  // value at 6 is < q
             EXPECT_NE(expectedResult[i], n[i].ConvertToInt()) << msg << " at no mod failed";
-        }
-        else {
+        } else {
             EXPECT_EQ(expectedResult[i], n[i].ConvertToInt()) << msg << " at no mod failed";
         }
     }
@@ -112,7 +113,7 @@ void AtAndSetModulusTest(const std::string& msg) {
     // note list assignment does take modulus
     l = {"987968", "587679", "456454", "234343", "769789", "465654", "79", "346346", "325328", "7698798"};
     OPENFHE_DEBUG("l" << l);
-    for (usint i = 0; i < len; i++) {
+    for (uint32_t i = 0; i < len; i++) {
         EXPECT_EQ(expectedResult[i], l[i].ConvertToInt()) << msg << " Mod on list assignment failed";
     }
 }
@@ -124,15 +125,15 @@ TEST(UTBinVect, AtAndSetModulusTest) {
 template <typename V>
 void CTOR_Test(const std::string& msg) {
     typename V::Integer q("233");
-    usint expectedResult[10] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
-    const usint len          = sizeof(expectedResult) / sizeof(expectedResult[0]);
+    uint32_t expectedResult[10] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
+    const uint32_t len = sizeof(expectedResult) / sizeof(expectedResult[0]);
 
     {
         V m(len, q, {"987968", "587679", "456454", "234343", "769789", "465654", "79", "346346", "325328", "7698798"});
 
         V calculatedResult = m.Mod(q);
 
-        for (usint i = 0; i < len; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
         }
     }
@@ -140,7 +141,7 @@ void CTOR_Test(const std::string& msg) {
     {
         V m(len, q, {48, 53, 7, 178, 190, 120, 79, 108, 60, 12});
 
-        for (usint i = 0; i < len; i++) {
+        for (uint32_t i = 0; i < len; i++) {
             EXPECT_EQ(expectedResult[i], m.at(i).ConvertToInt()) << msg;
         }
     }
@@ -177,7 +178,7 @@ void ModAddBigModulus(const std::string& msg) {
 
     uint64_t expectedResult[5] = {9871, 5882, 4557, 2346, 9792};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -216,7 +217,7 @@ void ModAddSmallerModulus(const std::string& msg) {
     OPENFHE_DEBUG("calculated result  " << calculatedResult);
     uint64_t expectedResult[5] = {1825, 1370, 45, 1368, 1746};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -257,7 +258,7 @@ void modsub_first_less_than_second(const std::string& msg) {
 
     uint64_t expectedResult[5] = {241, 3320, 1995, 3318, 162};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -289,7 +290,7 @@ void modsub_first_greater_than_second(const std::string& msg) {
 
     uint64_t expectedResult[5] = {3, 4, 9, 3, 29};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -321,7 +322,7 @@ void ModMulTest(const std::string& msg) {
 
     uint64_t expectedResult[5] = {1576, 1850, 978, 1758, 1476};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -344,24 +345,65 @@ void ModExpTest(const std::string& msg) {
     V m(5, q);
     typename V::Integer n("3");
 
-    m.at(0) = typename V::Integer("968");
-    m.at(1) = typename V::Integer("579");
-    m.at(2) = typename V::Integer("4");
-    m.at(3) = typename V::Integer("2343");
-    m.at(4) = typename V::Integer("97");
+    m[0] = typename V::Integer("968");
+    m[1] = typename V::Integer("579");
+    m[2] = typename V::Integer("4");
+    m[3] = typename V::Integer("2343");
+    m[4] = typename V::Integer("97");
     OPENFHE_DEBUG("m's modulus " << m.GetModulus());
 
     V calculatedResult = m.ModExp(n);
 
     uint64_t expectedResult[5] = {2792, 3123, 64, 159, 901};
 
-    for (usint i = 0; i < 5; i++) {
-        EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(expectedResult[i], calculatedResult[i].ConvertToInt()) << msg;
     }
 }
 
 TEST(UTBinVect, ModExpTest) {
-    RUN_BIG_BACKENDS(ModExpTest, "ModExpTest")
+    RUN_ALL_BACKENDS(ModExpTest, "ModExpTest")
+}
+
+template <typename V>
+void ModExpLargeExponentTest(const std::string& msg) {
+    typename V::Integer q("7919");  // prime modulus
+    typename V::Integer n = q + typename V::Integer(1);
+
+    V m(5, q);
+    m[0] = typename V::Integer("2");
+    m[1] = typename V::Integer("3");
+    m[2] = typename V::Integer("968");
+    m[3] = typename V::Integer("0");
+    m[4] = typename V::Integer("7918");
+
+    V calculatedResult = m.ModExp(n);
+
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(m[i].ModExp(n, q), calculatedResult[i]) << msg << " vector ModExp disagrees with scalar ModExp";
+    }
+    EXPECT_EQ(typename V::Integer(4), calculatedResult[0]) << msg << " 2^(q+1) mod q";
+    EXPECT_EQ(typename V::Integer(9), calculatedResult[1]) << msg << " 3^(q+1) mod q";
+    EXPECT_EQ(typename V::Integer(0), calculatedResult[3]) << msg << " 0^(q+1) mod q";
+    EXPECT_EQ(typename V::Integer(1), calculatedResult[4]) << msg << " (q-1)^(q+1) mod q";
+
+    V inPlaceResult(m);
+    inPlaceResult.ModExpEq(n);
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(calculatedResult[i], inPlaceResult[i]) << msg << " ModExpEq disagrees with ModExp";
+    }
+
+    // an exponent aliasing a vector element must be read at its pre-call value
+    V aliasedResult(m);
+    V expectedAliased = m.ModExp(m[2]);
+    aliasedResult.ModExpEq(aliasedResult[2]);
+    for (uint32_t i = 0; i < 5; i++) {
+        EXPECT_EQ(expectedAliased[i], aliasedResult[i]) << msg << " ModExpEq with aliased exponent";
+    }
+}
+
+TEST(UTBinVect, ModExpLargeExponentTest) {
+    RUN_ALL_BACKENDS(ModExpLargeExponentTest, "ModExpLargeExponentTest")
 }
 
 // --------------- TESTING METHOD MODINVERSE FOR ALL CONDITIONS ---------------
@@ -388,7 +430,7 @@ void test_modinv(const std::string& msg) {
 
     uint64_t expectedResult[5] = {32, 24, 9, 17, 13};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -429,7 +471,7 @@ void modadd_vector_result_smaller_modulus(const std::string& msg) {
 
     uint64_t expectedResult[5] = {14401, 10428, 11310, 3576, 17686};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -462,7 +504,7 @@ void modadd_vector_result_greater_modulus(const std::string& msg) {
     OPENFHE_DEBUG("result mod " << calculatedResult.GetModulus());
     uint64_t expectedResult[5] = {604, 573, 141, 291, 604};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -499,7 +541,7 @@ void method_add_equals_vector_operation(const std::string& msg) {
     OPENFHE_DEBUG("m" << m);
     uint64_t expectedResult[5] = {17, 632, 21, 405, 598};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (m.at(i)).ConvertToInt()) << msg;
     }
 }
@@ -537,7 +579,7 @@ void modmul_vector(const std::string& msg) {
 
     uint64_t expectedResult[5] = {52, 351, 315, 450, 195};
 
-    for (usint i = 0; i < 5; i++) {
+    for (uint32_t i = 0; i < 5; i++) {
         EXPECT_EQ(expectedResult[i], (calculatedResult.at(i)).ConvertToInt()) << msg;
     }
 }

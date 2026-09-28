@@ -34,15 +34,15 @@
   relies on the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
+#ifndef SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_
+#define SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_
+
+#include <cstdint>
+#include <random>
 
 #include "math/distributiongenerator.h"
 #include "math/math-hal.h"
-
 #include "utils/inttypes.h"
-
-#include <random>
 
 namespace lbcrypto {
 
@@ -51,30 +51,32 @@ namespace lbcrypto {
  */
 template <typename VecType>
 class BinaryUniformGeneratorImpl {
-public:
+  public:
     /**
-   * @brief Basic constructor for Binary Uniform Generator.
-   */
-    BinaryUniformGeneratorImpl()  = default;
+     * @brief Basic constructor for Binary Uniform Generator.
+     */
+    BinaryUniformGeneratorImpl() = default;
     ~BinaryUniformGeneratorImpl() = default;
 
     /**
-   * @brief  Generates a random value within the Binary Uniform Distribution.
-   * @return A random value within this Binary Uniform Distribution.
-   */
+     * @brief  Generates a random value within the Binary Uniform Distribution.
+     * @return A random value within this Binary Uniform Distribution.
+     */
     typename VecType::Integer GenerateInteger() const;
 
     /**
-   * @brief  Generates a vector of random values within the Binary Uniform
-   * Distribution.
-   * @return A vector of random values within this Binary Uniform Distribution.
-   */
-    VecType GenerateVector(const usint size, const typename VecType::Integer& modulus) const;
+     * @brief  Generates a vector of random values within the Binary Uniform
+     * Distribution.
+     * @param size The number of values to generate.
+     * @param modulus The modulus of the resulting vector.
+     * @return A vector of random values within this Binary Uniform Distribution.
+     */
+    VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus) const;
 
-private:
+  private:
     static std::bernoulli_distribution m_distribution;
 };
 
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
+#endif  // SRC_CORE_INCLUDE_MATH_BINARYUNIFORMGENERATOR_H_

@@ -33,20 +33,19 @@
   implementation of the power-of-2 fields
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
-#define LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_
+
+#include <complex>
+#include <cstdint>
+#include <vector>
 
 #include "lattice/field2n.h"
 #include "lattice/lat-hal.h"
-
 #include "math/dftransform.h"
 #include "math/math-hal.h"
-
 #include "utils/exception.h"
 #include "utils/inttypes.h"
-
-#include <complex>
-#include <vector>
 
 namespace lbcrypto {
 
@@ -56,16 +55,12 @@ Field2n::Field2n(const Poly& element) : format(Format::COEFFICIENT) {
         OPENFHE_THROW("Poly not in Format::COEFFICIENT representation");
     size_t size = element.GetLength();
     this->std::vector<std::complex<double>>::reserve(size);
-    // the value of element[i] is usually small - so a 64-bit integer is more
-    // than enough this approach is much faster than BigInteger::ConvertToDouble
     BigInteger negativeThreshold(element.GetModulus() / Poly::Integer(2));
     for (size_t i = 0; i < size; ++i) {
         if (element[i] > negativeThreshold)
-            this->std::vector<std::complex<double>>::push_back(
-                static_cast<double>(static_cast<int64_t>(-1 * (element.GetModulus() - element[i]).ConvertToInt())));
+            this->std::vector<std::complex<double>>::push_back(-(element.GetModulus() - element[i]).ConvertToDouble());
         else
-            this->std::vector<std::complex<double>>::push_back(
-                static_cast<double>(static_cast<int64_t>(element[i].ConvertToInt())));
+            this->std::vector<std::complex<double>>::push_back(element[i].ConvertToDouble());
     }
 }
 
@@ -75,16 +70,12 @@ Field2n::Field2n(const NativePoly& element) : format(Format::COEFFICIENT) {
         OPENFHE_THROW("Poly not in Format::COEFFICIENT representation");
     size_t size = element.GetLength();
     this->std::vector<std::complex<double>>::reserve(size);
-    // the value of element[i] is usually small - so a 64-bit integer is more
-    // than enough this approach is much faster than BigInteger::ConvertToDouble
     NativeInteger negativeThreshold(element.GetModulus() / 2);
     for (size_t i = 0; i < size; ++i) {
         if (element[i] > negativeThreshold)
-            this->std::vector<std::complex<double>>::push_back(
-                static_cast<double>(static_cast<int64_t>(-1 * (element.GetModulus() - element[i]).ConvertToInt())));
+            this->std::vector<std::complex<double>>::push_back(-(element.GetModulus() - element[i]).ConvertToDouble());
         else
-            this->std::vector<std::complex<double>>::push_back(
-                static_cast<double>(static_cast<int64_t>(element[i].ConvertToInt())));
+            this->std::vector<std::complex<double>>::push_back(element[i].ConvertToDouble());
     }
 }
 
@@ -92,21 +83,36 @@ Field2n::Field2n(const NativePoly& element) : format(Format::COEFFICIENT) {
 Field2n::Field2n(const DCRTPoly& DCRTelement) : format(Format::COEFFICIENT) {
     if (DCRTelement.GetFormat() != Format::COEFFICIENT)
         OPENFHE_THROW("DCRTPoly not in Format::COEFFICIENT representation");
-    // the value of element[i] is usually small - so a 64-bit integer is more
-    // than enough Also it is assumed that the prime moduli are large enough (60
-    // bits or more) - so the CRT interpolation is not needed this approach is
-    // much faster than BigInteger::ConvertToDouble
-    typename DCRTPoly::PolyType element = DCRTelement.GetElementAtIndex(0);
-    size_t size                         = element.GetLength();
+    // GetElementAtIndex() is unchecked, so reject an empty DCRTPoly before indexing into it.
+    if (DCRTelement.GetNumOfElements() == 0)
+        OPENFHE_THROW("DCRTPoly has no towers to convert");
+    // Reading only the first tower is exact while every centered coefficient fits inside it, which
+    // is what this constructor's callers produce (products of small trapdoor samples). Check that
+    // against the remaining towers rather than assuming it, and interpolate when it does not hold.
+    const typename DCRTPoly::PolyType& element = DCRTelement.GetElementAtIndex(0);
+    const NativeInteger& q0 = element.GetModulus();
+    const NativeInteger negativeThreshold(q0 / 2);
+    size_t size = element.GetLength();
+    for (uint32_t t = 1; t < DCRTelement.GetNumOfElements(); ++t) {
+        const typename DCRTPoly::PolyType& tower = DCRTelement.GetElementAtIndex(t);
+        const NativeInteger& qt = tower.GetModulus();
+        for (size_t i = 0; i < size; ++i) {
+            bool negative = element[i] > negativeThreshold;
+            NativeInteger residue((negative ? q0 - element[i] : element[i]).Mod(qt));
+            if (negative && residue > NativeInteger(0))
+                residue = qt - residue;
+            if (tower[i] != residue) {
+                *this = Field2n(DCRTelement.CRTInterpolate());
+                return;
+            }
+        }
+    }
     this->std::vector<std::complex<double>>::reserve(size);
-    NativeInteger negativeThreshold(element.GetModulus() / 2);
     for (size_t i = 0; i < size; ++i) {
         if (element[i] > negativeThreshold)
-            this->std::vector<std::complex<double>>::push_back(
-                static_cast<double>(static_cast<int64_t>(-1 * (element.GetModulus() - element[i]).ConvertToInt())));
+            this->std::vector<std::complex<double>>::push_back(-(q0 - element[i]).ConvertToDouble());
         else
-            this->std::vector<std::complex<double>>::push_back(
-                static_cast<double>(static_cast<int64_t>(element[i].ConvertToInt())));
+            this->std::vector<std::complex<double>>::push_back(element[i].ConvertToDouble());
     }
 }
 
@@ -245,7 +251,7 @@ Field2n Field2n::Permute() const {
     size_t evenPtr{0}, oddPtr{size / 2};
     for (size_t i = 0; i < size;) {
         permuted[evenPtr++] = this->std::vector<std::complex<double>>::operator[](i++);
-        permuted[oddPtr++]  = this->std::vector<std::complex<double>>::operator[](i++);
+        permuted[oddPtr++] = this->std::vector<std::complex<double>>::operator[](i++);
     }
     return permuted;
 }
@@ -285,4 +291,4 @@ void Field2n::SwitchFormat() {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_FIELD2N_IMPL_H_

@@ -33,17 +33,20 @@
   Private key type for lattice crypto operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
-#define LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
+#define SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_
 
-#include "key/key.h"
-#include "key/privatekey-fwd.h"
-
+#include <cstdint>
 #include <iomanip>
 #include <limits>
 #include <memory>
+#include <random>
+#include <sstream>
 #include <string>
 #include <utility>
+
+#include "key/key.h"
+#include "key/privatekey-fwd.h"
 
 /**
  * @namespace lbcrypto
@@ -52,7 +55,9 @@
 namespace lbcrypto {
 
 /**
- * Generates a random 128-bit hash
+ * Generates a random 128-bit identifier, used as the key tag of freshly generated private keys.
+ *
+ * @return the identifier as a 32-character lowercase hexadecimal string
  */
 inline std::string GenerateUniqueKeyID() {
     const size_t intsInID = 128 / (sizeof(uint32_t) * 8);
@@ -71,41 +76,52 @@ inline std::string GenerateUniqueKeyID() {
  */
 template <class Element>
 class PrivateKeyImpl : public Key<Element> {
-private:
+  private:
     Element m_sk;
 
-public:
+  public:
     /**
-   * Construct in context
-   */
+     * Default constructor
+     */
     PrivateKeyImpl() = default;
 
+    /**
+     * Constructs an empty private key in the given crypto context and assigns it a freshly generated
+     * random key tag (see GenerateUniqueKeyID()).
+     *
+     * @param cc the crypto context the key belongs to
+     */
     explicit PrivateKeyImpl(const CryptoContext<Element>& cc) : Key<Element>(cc, GenerateUniqueKeyID()) {}
 
     /**
-   * Copy constructor
-   *@param &rhs the PrivateKeyImpl to copy from
-   */
+     * Copy constructor
+     *@param rhs the PrivateKeyImpl to copy from
+     */
     PrivateKeyImpl(const PrivateKeyImpl<Element>& rhs)
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(rhs.m_sk) {}
 
     /**
-   * Move constructor
-   *@param &rhs the PrivateKeyImpl to move from
-   */
+     * Move constructor
+     *@param rhs the PrivateKeyImpl to move from
+     */
     PrivateKeyImpl(PrivateKeyImpl<Element>&& rhs) noexcept
         : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()), m_sk(std::move(rhs.m_sk)) {}
 
+    /**
+     * Checks whether the key is attached to a crypto context.
+     *
+     * @return true if the key has a crypto context
+     */
     operator bool() const {
         return this->context != nullptr;
     }
 
     /**
-   * Assignment Operator.
-   *
-   * @param &rhs PrivateKeyto assign from.
-   * @return the resulting PrivateKeyImpl
-   */
+     * Assignment Operator.
+     *
+     * @param rhs PrivateKeyImpl to assign from.
+     * @return the resulting PrivateKeyImpl
+     */
     PrivateKeyImpl<Element>& operator=(const PrivateKeyImpl<Element>& rhs) {
         CryptoObject<Element>::operator=(rhs);
         m_sk = rhs.m_sk;
@@ -113,11 +129,11 @@ public:
     }
 
     /**
-   * Move Assignment Operator.
-   *
-   * @param &rhs PrivateKeyImpl to assign from.
-   * @return the resulting PrivateKeyImpl
-   */
+     * Move Assignment Operator.
+     *
+     * @param rhs PrivateKeyImpl to assign from.
+     * @return the resulting PrivateKeyImpl
+     */
     PrivateKeyImpl<Element>& operator=(PrivateKeyImpl<Element>&& rhs) noexcept {
         CryptoObject<Element>::operator=(std::move(rhs));
         m_sk = std::move(rhs.m_sk);
@@ -125,33 +141,45 @@ public:
     }
 
     /**
-   * Implementation of the Get accessor for private element.
-   * @return the private element.
-   */
+     * Implementation of the Get accessor for private element.
+     * @return the private element.
+     */
     const Element& GetPrivateElement() const {
         return m_sk;
     }
 
     /**
-   * Set accessor for private element.
-   * @private &x private element to set to.
-   */
+     * Set accessor for private element.
+     * @param x private element to set to.
+     */
     void SetPrivateElement(const Element& x) {
         m_sk = x;
     }
 
     /**
-   * Set accessor for private element.
-   * @private &x private element to set to.
-   */
+     * Set accessor for private element.
+     * @param x private element to move from.
+     */
     void SetPrivateElement(Element&& x) noexcept {
         m_sk = std::move(x);
     }
 
+    /**
+     * Equality: same crypto context (by pointer), same key tag and equal private elements.
+     *
+     * @param other the private key to compare with
+     * @return true if the keys are equal
+     */
     bool operator==(const PrivateKeyImpl& other) const {
         return CryptoObject<Element>::operator==(other) && m_sk == other.m_sk;
     }
 
+    /**
+     * Inequality: negation of operator==.
+     *
+     * @param other the private key to compare with
+     * @return true if the keys differ
+     */
     bool operator!=(const PrivateKeyImpl& other) const {
         return !(*this == other);
     }
@@ -183,4 +211,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_PRIVATEKEY_H_

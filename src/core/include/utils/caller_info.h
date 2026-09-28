@@ -33,8 +33,8 @@
   This file contains macros to help access caller function information
  */
 
-#ifndef __CALLER_INFO_H__
-#define __CALLER_INFO_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_CALLER_INFO_H_
+#define SRC_CORE_INCLUDE_UTILS_CALLER_INFO_H_
 
 #include <string>
 
@@ -87,4 +87,4 @@
 
 #define CALLER_INFO_ARGS_CPP const char *callerFile, const char *callerFunc, size_t callerLine
 
-#endif  // __CALLER_INFO_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_CALLER_INFO_H_

@@ -30,6 +30,11 @@
 //==================================================================================
 #include "schemerns/rns-pke.h"
 
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ciphertext.h"
 #include "key/privatekey.h"
 #include "key/publickey.h"
@@ -41,13 +46,13 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPo
     Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(privateKey));
 
     const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
-    std::shared_ptr<std::vector<DCRTPoly>> ba  = EncryptZeroCore(privateKey, ptxtParams);
+    std::shared_ptr<std::vector<DCRTPoly>> ba = EncryptZeroCore(privateKey, ptxtParams);
 
     plaintext.SetFormat(EVALUATION);
 
     (*ba)[0] += plaintext;
 
-    ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
@@ -57,13 +62,13 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPol
     Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
     const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
-    std::shared_ptr<std::vector<DCRTPoly>> ba  = EncryptZeroCore(publicKey, ptxtParams);
+    std::shared_ptr<std::vector<DCRTPoly>> ba = EncryptZeroCore(publicKey, ptxtParams);
 
     plaintext.SetFormat(EVALUATION);
 
     (*ba)[0] += plaintext;
 
-    ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+    ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
@@ -72,7 +77,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPol
 DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                               Poly* plaintext) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    DCRTPoly b                      = DecryptCore(cv, privateKey);
+    DCRTPoly b = DecryptCore(cv, privateKey);
 
     b.SetFormat(Format::COEFFICIENT);
     size_t sizeQl = b.GetParams()->GetParams().size();
@@ -82,8 +87,7 @@ DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Privat
 
     if (sizeQl == 1) {
         *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
-    }
-    else {
+    } else {
         *plaintext = b.CRTInterpolate();
     }
 
@@ -93,14 +97,14 @@ DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Privat
 DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                               NativePoly* plaintext) const {
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
-    DCRTPoly b                      = DecryptCore(cv, privateKey);
+    DCRTPoly b = DecryptCore(cv, privateKey);
 
     b.SetFormat(Format::COEFFICIENT);
     const size_t sizeQl = b.GetParams()->GetParams().size();
     if (sizeQl != 1) {
         OPENFHE_THROW(
-            "sizeQl " + std::to_string(sizeQl) +
-            "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
+                "sizeQl " + std::to_string(sizeQl) +
+                "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
     }
 
     *plaintext = b.GetElementAtIndex(0);
@@ -112,8 +116,8 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
                                                                const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
-    const DCRTPoly& s  = privateKey->GetPrivateElement();
-    const auto ns      = cryptoParams->GetNoiseScale();
+    const DCRTPoly& s = privateKey->GetPrivateElement();
+    const auto ns = cryptoParams->GetNoiseScale();
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
     DugType dug;
 
@@ -122,27 +126,27 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
     DCRTPoly a(dug, elementParams, Format::EVALUATION);
     DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
-    uint32_t sizeQ  = s.GetParams()->GetParams().size();
+    uint32_t sizeQ = s.GetParams()->GetParams().size();
     uint32_t sizeQl = elementParams->GetParams().size();
 
     DCRTPoly c0, c1;
     if (sizeQl != sizeQ) {
-        // Clone secret key because we need to drop towers.
-        DCRTPoly scopy(s);
-
-        uint32_t diffQl = sizeQ - sizeQl;
-        scopy.DropLastElements(diffQl);
+        // Clone only the towers of the secret key that are still needed.
+        DCRTPoly scopy = s.CloneTowers(0, sizeQl - 1);
 
         c0 = a * scopy + ns * e;
         c1 = -a;
-    }
-    else {
+    } else {
         // Use secret key as is
         c0 = a * s + ns * e;
         c1 = -a;
     }
 
-    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
+    auto result = std::make_shared<std::vector<DCRTPoly>>();
+    result->reserve(2);
+    result->push_back(std::move(c0));
+    result->push_back(std::move(c1));
+    return result;
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
@@ -150,8 +154,8 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();
-    const auto ns                   = cryptoParams->GetNoiseScale();
-    const DggType& dgg              = cryptoParams->GetDiscreteGaussianGenerator();
+    const auto ns = cryptoParams->GetNoiseScale();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
     TugType tug;
 
@@ -168,23 +172,18 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
     DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
     DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
 
-    uint32_t sizeQ  = pk[0].GetParams()->GetParams().size();
+    uint32_t sizeQ = pk[0].GetParams()->GetParams().size();
     uint32_t sizeQl = elementParams->GetParams().size();
 
     DCRTPoly c0, c1;
     if (sizeQl != sizeQ) {
-        // Clone public keys because we need to drop towers.
-        DCRTPoly p0 = pk[0].Clone();
-        DCRTPoly p1 = pk[1].Clone();
-
-        uint32_t diffQl = sizeQ - sizeQl;
-        p0.DropLastElements(diffQl);
-        p1.DropLastElements(diffQl);
+        // Clone only the towers of the public keys that are still needed.
+        DCRTPoly p0 = pk[0].CloneTowers(0, sizeQl - 1);
+        DCRTPoly p1 = pk[1].CloneTowers(0, sizeQl - 1);
 
         c0 = p0 * v + ns * e0;
         c1 = p1 * v + ns * e1;
-    }
-    else {
+    } else {
         // Use public keys as they are
         const DCRTPoly& p0 = pk[0];
         const DCRTPoly& p1 = pk[1];
@@ -193,19 +192,18 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
         c1 = p1 * v + ns * e1;
     }
 
-    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
+    auto result = std::make_shared<std::vector<DCRTPoly>>();
+    result->reserve(2);
+    result->push_back(std::move(c0));
+    result->push_back(std::move(c1));
+    return result;
 }
 
 DCRTPoly PKERNS::DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const {
     const DCRTPoly& s = privateKey->GetPrivateElement();
 
-    size_t sizeQ  = s.GetParams()->GetParams().size();
     size_t sizeQl = cv[0].GetParams()->GetParams().size();
-
-    size_t diffQl = sizeQ - sizeQl;
-
-    auto scopy(s);
-    scopy.DropLastElements(diffQl);
+    auto scopy = s.CloneTowers(0, sizeQl - 1);
 
     DCRTPoly sPower(scopy);
 
@@ -217,7 +215,7 @@ DCRTPoly PKERNS::DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<D
         ci = cv[i];
         ci.SetFormat(Format::EVALUATION);
 
-        b += sPower * ci;
+        b.MultAccEqNoCheck(sPower, ci);
         sPower *= scopy;
     }
     return b;

@@ -29,6 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "lattice/lat-hal.h"
 #include "math/distrgen.h"
@@ -37,9 +44,6 @@
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
-
-#include <iostream>
-#include <thread>
 
 using namespace lbcrypto;
 
@@ -81,11 +85,11 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
         typename V::Integer modulus("10403");
         auto dug = DiscreteUniformGeneratorImpl<V>();
 
-        usint size      = 10;
+        uint32_t size = 10;
         V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size)
-            << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
+                << msg << " Failure testing vector_uniform_vector_small_modulus wrong length";
         // test content
         for (size_t i = 0; i < size; i++) {
             EXPECT_LT(uniRandVector.at(i), modulus) << msg
@@ -101,7 +105,7 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
         typename V::Integer modulus("10402635286389262637365363");
         auto dug = DiscreteUniformGeneratorImpl<V>();
 
-        usint size      = 100;
+        uint32_t size = 100;
         V uniRandVector = dug.GenerateVector(size, modulus);
         // test length
         EXPECT_EQ(uniRandVector.GetLength(), size) << "Failure testing vector_uniform_vector_large_modulus";
@@ -138,20 +142,19 @@ void DiscreteUniformGenerator_LONG(const std::string& msg) {
             typename V::Integer modulus("10402635286389262637365363");  // 10402635286389262637365363
             auto dug = DiscreteUniformGeneratorImpl<V>();
 
-            usint eachIterationSize = 1000, noOfIterations = 100;
+            uint32_t eachIterationSize = 1000, noOfIterations = 100;
             typename V::Integer sum, mean, N(eachIterationSize);
 
             V uniRandVector = dug.GenerateVector(eachIterationSize * noOfIterations, modulus);
 
-            for (usint i = 0; i < noOfIterations; i++) {
+            for (uint32_t i = 0; i < noOfIterations; i++) {
                 sum = mean = typename V::Integer(0);
                 for (size_t j = i * eachIterationSize; j < (i + 1) * eachIterationSize; j++) {
                     sum += uniRandVector.at(j);
                 }
                 mean = sum.DividedBy(N);
             }
-        }
-        catch (...) {
+        } catch (...) {
             caught_error = 1;
         }
         EXPECT_EQ(caught_error, 0) << msg << " Failure recreate_overflow_issue threw an error";
@@ -169,46 +172,46 @@ template <typename V>
 void testDiscreteUniformGenerator(typename V::Integer& modulus, std::string test_name) {
     // TEST CASE ON FIRST CENTRAL MOMENT
 
-    double modulusInDouble      = modulus.ConvertToDouble();
+    double modulusInDouble = modulus.ConvertToDouble();
     double expectedMeanInDouble = modulusInDouble / 2.0;
 
     auto distrUniGen = DiscreteUniformGeneratorImpl<V>();
     distrUniGen.SetModulus(modulus);
 
-    usint size      = 50000;
+    uint32_t size = 50000;
     V randBigVector = distrUniGen.GenerateVector(size);
 
     double sum = 0;
     typename V::Integer length(std::to_string(randBigVector.GetLength()));
 
-    for (usint index = 0; index < size; index++) {
+    for (uint32_t index = 0; index < size; index++) {
         sum += (randBigVector.at(index)).ConvertToDouble();
     }
 
     double computedMeanInDouble = sum / size;
-    double diffInMeans          = std::abs(computedMeanInDouble - expectedMeanInDouble);
+    double diffInMeans = std::abs(computedMeanInDouble - expectedMeanInDouble);
 
     // within 1% of expected mean
     EXPECT_LT(diffInMeans, 0.01 * modulusInDouble) << "Failure testing first_moment_test_convertToDouble " << test_name;
 
     // TEST CASE ON SECOND CENTRAL MOMENT
     double expectedVarianceInDouble = ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;
-    double expectedStdDevInDouble   = std::sqrt(expectedVarianceInDouble);
+    double expectedStdDevInDouble = std::sqrt(expectedVarianceInDouble);
 
     sum = 0;
     double temp;
-    for (usint index = 0; index < size; index++) {
+    for (uint32_t index = 0; index < size; index++) {
         temp = (randBigVector.at(index)).ConvertToDouble() - expectedMeanInDouble;
         temp *= temp;
         sum += temp;
     }
 
     double computedVariance = (sum / size);
-    double computedStdDev   = std::sqrt(computedVariance);
-    double diffInStdDev     = std::abs(computedStdDev - expectedStdDevInDouble);
+    double computedStdDev = std::sqrt(computedVariance);
+    double diffInStdDev = std::abs(computedStdDev - expectedStdDevInDouble);
 
     EXPECT_LT(diffInStdDev, 0.01 * expectedStdDevInDouble)
-        << "Failure testing second_moment_test_convertToDouble " << test_name;
+            << "Failure testing second_moment_test_convertToDouble " << test_name;
 }
 
 #ifdef PARALLEL
@@ -239,8 +242,8 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     double modulusInDouble = modulus.ConvertToDouble();
     // we expect the mean to be modulus/2 (the mid range of the min-max data);
     double expectedMeanInDouble = modulusInDouble / 2.0;
-    usint size                  = 50000;
-    // usint size = omp_get_max_threads() * 4;
+    uint32_t size = 50000;
+    // uint32_t size = omp_get_max_threads() * 4;
 
     OPENFHE_DEBUG_FLAG(false);
     std::vector<typename V::Integer> randBigVector;
@@ -253,7 +256,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
         distrUniGen.SetModulus(modulus);
         // build the vectors in parallel
     #pragma omp for nowait schedule(static)
-        for (usint i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             // build private copies in parallel
             randBigVectorPvt.push_back(distrUniGen.GenerateInteger());
         }
@@ -275,7 +278,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     double sum = 0;
     typename V::Integer length(std::to_string(randBigVector.size()));
 
-    for (usint index = 0; index < size; index++) {
+    for (uint32_t index = 0; index < size; index++) {
         sum += (randBigVector[index]).ConvertToDouble();
     }
     // divide by the size (i.e. take mean)
@@ -285,23 +288,23 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
 
     // within 1% of expected mean
     EXPECT_LT(diffInMeans, 0.01 * modulusInDouble)
-        << "Failure testing parallel_first_central_moment_test " << test_name;
+            << "Failure testing parallel_first_central_moment_test " << test_name;
 
     // TEST CASE ON SECOND CENTRAL MOMENT SMALL MODULUS
     double expectedVarianceInDouble =
-        ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
+            ((modulusInDouble - 1.0) * (modulusInDouble - 1.0)) / 12.0;  // var = ((b-a)^2) /12
     double expectedStdDevInDouble = std::sqrt(expectedVarianceInDouble);
 
     sum = 0;
     double temp;
-    for (usint index = 0; index < size; index++) {
+    for (uint32_t index = 0; index < size; index++) {
         temp = (randBigVector[index]).ConvertToDouble() - expectedMeanInDouble;
         temp *= temp;
         sum += temp;
     }
 
     double computedVariance = (sum / size);
-    double computedStdDev   = std::sqrt(computedVariance);
+    double computedStdDev = std::sqrt(computedVariance);
 
     double diffInStdDev = std::abs(computedStdDev - expectedStdDevInDouble);
 
@@ -313,14 +316,14 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
 // TEST(UTDistrGen, DiscreteUniformGeneratorSeed ) {
 //   typename V::Integer modulus("7919"); // test small modulus
 //   double sum1=0;
-//   usint size = 10;
+//   uint32_t size = 10;
 //   {
 //     DiscreteUniformGenerator distrUniGen =
 //     lbcrypto::DiscreteUniformGenerator(modulus, 12345);
 
 //     V randBigVector1 = distrUniGen.GenerateVector(size);
 
-//     for(usint index=0; index<size; index++) {
+//     for(uint32_t index=0; index<size; index++) {
 //       sum1 += (randBigVector1.at(index)).ConvertToDouble();
 //     }
 //   }
@@ -328,7 +331,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
 //   lbcrypto::DiscreteUniformGenerator(modulus, 12345); V randBigVector2 =
 //   distrUniGen.GenerateVector(size); double sum2=0;
 
-//   for(usint index=0; index<size; index++) {
+//   for(uint32_t index=0; index<size; index++) {
 //     sum2 += (randBigVector2.at(index)).ConvertToDouble();
 //   }
 
@@ -344,14 +347,14 @@ template <typename V>
 void BinaryUniformGeneratorTest(const std::string& msg) {
     // fail if less than 0
     {
-        auto binaryUniGen  = BinaryUniformGeneratorImpl<V>();
+        auto binaryUniGen = BinaryUniformGeneratorImpl<V>();
         auto binUniRandNum = binaryUniGen.GenerateInteger();
         EXPECT_GE(binUniRandNum.ConvertToInt(), 0ULL) << msg << " Failure less than 0";
     }
 
     // fail if gt 1
     {
-        auto binaryUniGen  = BinaryUniformGeneratorImpl<V>();
+        auto binaryUniGen = BinaryUniformGeneratorImpl<V>();
         auto binUniRandNum = binaryUniGen.GenerateInteger();
         EXPECT_LE(binUniRandNum.ConvertToInt(), 1ULL) << msg << " Failure greater than 1";
     }
@@ -360,19 +363,19 @@ void BinaryUniformGeneratorTest(const std::string& msg) {
     {
         auto binaryUniGen = BinaryUniformGeneratorImpl<V>();
 
-        usint length       = 100000;
-        auto modulus       = typename V::Integer("1041");
+        uint32_t length = 100000;
+        auto modulus = typename V::Integer("1041");
         auto randBigVector = binaryUniGen.GenerateVector(length, modulus);
 
-        usint sum = 0;
+        uint32_t sum = 0;
 
-        for (usint index = 0; index < randBigVector.GetLength(); index++) {
+        for (uint32_t index = 0; index < randBigVector.GetLength(); index++) {
             sum += randBigVector.at(index).ConvertToInt();
         }
 
         float computedMean = static_cast<float>(sum) / static_cast<float>(length);
         float expectedMean = 0.5;
-        float dif          = std::abs(computedMean - expectedMean);
+        float dif = std::abs(computedMean - expectedMean);
 
         EXPECT_LT(dif, 0.01) << msg << " Failure Mean is incorrect";
         // a large sample. Max of them should be less than q
@@ -388,13 +391,13 @@ template <typename V>
 void TernaryUniformGeneratorTest(const std::string& msg) {
     auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
 
-    usint length    = 100000;
-    auto modulus    = typename V::Integer("1041");
+    uint32_t length = 100000;
+    auto modulus = typename V::Integer("1041");
     V randBigVector = ternaryUniGen.GenerateVector(length, modulus);
 
     int32_t sum = 0;
 
-    for (usint index = 0; index < randBigVector.GetLength(); index++) {
+    for (uint32_t index = 0; index < randBigVector.GetLength(); index++) {
         if (randBigVector[index] == modulus - typename V::Integer(1))
             sum -= 1;
         else
@@ -404,7 +407,7 @@ void TernaryUniformGeneratorTest(const std::string& msg) {
     float computedMean = static_cast<double>(sum) / static_cast<double>(length);
 
     float expectedMean = 0;
-    float dif          = std::abs(computedMean - expectedMean);
+    float dif = std::abs(computedMean - expectedMean);
 
     EXPECT_LT(dif, 0.01) << msg << " Ternary Uniform Distribution Failure Mean is incorrect";
     // a large sample. Max of them should be less than q
@@ -412,6 +415,67 @@ void TernaryUniformGeneratorTest(const std::string& msg) {
 
 TEST(UTDistrGen, TernaryUniformGenerator) {
     RUN_ALL_BACKENDS(TernaryUniformGeneratorTest, "TernaryUniformGeneratorTest")
+}
+
+template <typename V>
+void TernaryUniformGeneratorIntegerTest(const std::string& msg) {
+    auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
+    auto modulus = typename V::Integer("1041");
+    const auto minusOne = modulus - typename V::Integer(1);
+
+    int32_t sum = 0;
+    uint32_t counts[3]{};
+    const uint32_t length = 100000;
+    for (uint32_t i = 0; i < length; ++i) {
+        auto x = ternaryUniGen.GenerateInteger(modulus);
+        if (x == minusOne) {
+            --sum;
+            ++counts[0];
+        } else {
+            ASSERT_LE(x, typename V::Integer(1)) << msg << " value outside {-1, 0, 1}";
+            sum += x.ConvertToInt();
+            ++counts[1 + x.ConvertToInt()];
+        }
+    }
+    EXPECT_LT(std::abs(static_cast<double>(sum) / length), 0.01) << msg << " mean is incorrect";
+    for (auto c : counts)
+        EXPECT_GT(c, length / 4) << msg << " a value of {-1, 0, 1} is under-represented";
+}
+
+TEST(UTDistrGen, TernaryUniformGeneratorInteger) {
+    RUN_ALL_BACKENDS(TernaryUniformGeneratorIntegerTest, "TernaryUniformGeneratorIntegerTest")
+}
+
+// the smallest Hamming weights sit at the boundary of the balance check on the +1 count
+template <typename V>
+void TernaryUniformGeneratorSparseTest(const std::string& msg) {
+    auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
+    auto modulus = typename V::Integer("1041");
+    const auto minusOne = modulus - typename V::Integer(1);
+    const uint32_t size = 16;
+    for (uint32_t h = 1; h <= 5; ++h) {
+        V v = ternaryUniGen.GenerateVector(size, modulus, h);
+        uint32_t weight = 0;
+        for (uint32_t i = 0; i < size; ++i) {
+            if (v[i] != typename V::Integer(0)) {
+                EXPECT_TRUE(v[i] == typename V::Integer(1) || v[i] == minusOne) << msg << " h = " << h;
+                ++weight;
+            }
+        }
+        EXPECT_EQ(h, weight) << msg << " GenerateVector Hamming weight";
+
+        auto iv = ternaryUniGen.GenerateIntVector(size, h);
+        weight = 0;
+        for (auto x : iv) {
+            EXPECT_LE(std::abs(x), 1) << msg << " h = " << h;
+            weight += (x != 0);
+        }
+        EXPECT_EQ(h, weight) << msg << " GenerateIntVector Hamming weight";
+    }
+}
+
+TEST(UTDistrGen, TernaryUniformGeneratorSparse) {
+    RUN_ALL_BACKENDS(TernaryUniformGeneratorSparseTest, "TernaryUniformGeneratorSparseTest")
 }
 
 ////////////////////////////////////////////////
@@ -423,14 +487,14 @@ void DiscreteGaussianGeneratorTest(const std::string& msg) {
     // mean test
 
     {
-        int stdev  = 5;
-        usint size = 100000;
+        int stdev = 5;
+        uint32_t size = 100000;
         typename V::Integer modulus("10403");
-        auto dgg           = DiscreteGaussianGeneratorImpl<V>(stdev);
+        auto dgg = DiscreteGaussianGeneratorImpl<V>(stdev);
         auto dggCharVector = dgg.GenerateIntVector(size);
 
         double mean = 0;
-        for (usint i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             mean += static_cast<double>(dggCharVector[i]);
         }
         mean /= size;
@@ -441,17 +505,17 @@ void DiscreteGaussianGeneratorTest(const std::string& msg) {
 
     // generate_vector_mean_test
     {
-        int stdev  = 5;
-        usint size = 100000;
+        int stdev = 5;
+        uint32_t size = 100000;
         typename V::Integer modulus("10403");
         typename V::Integer modulusByTwo(modulus.DividedBy(2));
         const auto dgg = DiscreteGaussianGeneratorImpl<V>(stdev);
         V dggBigVector = dgg.GenerateVector(size, modulus);
 
-        usint countOfZero = 0;
+        uint32_t countOfZero = 0;
         double mean = 0, current = 0;
 
-        for (usint i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             current = std::stod(dggBigVector.at(i).ToString());
             if (current == 0)
                 countOfZero++;
@@ -478,8 +542,8 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
 
     {
-        int stdev  = 5;
-        usint size = 10000;
+        int stdev = 5;
+        uint32_t size = 10000;
         typename V::Integer modulus("10403");
 
         std::vector<int32_t> dggCharVector;
@@ -492,7 +556,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
 
             // build the vectors in parallel
     #pragma omp for nowait schedule(static)
-            for (usint i = 0; i < size; i++) {
+            for (uint32_t i = 0; i < size; i++) {
                 // build private copies in parallel
                 dggCharVectorPvt.push_back(dgg.GenerateInt());
             }
@@ -510,7 +574,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
         }
 
         double mean = 0;
-        for (usint i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             mean += static_cast<double>(dggCharVector[i]);
         }
         mean /= size;
@@ -521,8 +585,8 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
 
     // generate_vector_mean_test
     {
-        int stdev  = 5;
-        usint size = 100000;
+        int stdev = 5;
+        uint32_t size = 100000;
         typename V::Integer modulus("10403");
         typename V::Integer modulusByTwo(modulus.DividedBy(2));
 
@@ -535,7 +599,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
 
             // build the vectors in parallel
     #pragma omp for nowait schedule(static)
-            for (usint i = 0; i < size; i++) {
+            for (uint32_t i = 0; i < size; i++) {
                 // build private copies in parallel
                 dggBigVectorPvt.push_back(dgg.GenerateInteger(modulus));
             }
@@ -552,10 +616,10 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
             }
         }
 
-        usint countOfZero = 0;
+        uint32_t countOfZero = 0;
         double mean = 0, current = 0;
 
-        for (usint i = 0; i < size; i++) {
+        for (uint32_t i = 0; i < size; i++) {
             current = std::stod(dggBigVector[i].ToString());
             if (current == 0)
                 countOfZero++;
@@ -579,11 +643,11 @@ TEST(UTDistrGen, ParallelDiscreteGaussianGenerator_VERY_LONG) {
 // Mean test for Karney sampling
 template <typename V>
 void Karney_Mean(const std::string& msg) {
-    int stdev     = 10;
-    usint size    = 10000;
-    double mean   = 0;
+    int stdev = 10;
+    uint32_t size = 10000;
+    double mean = 0;
     double center = 10;
-    auto dgg      = DiscreteGaussianGeneratorImpl<V>(stdev);
+    auto dgg = DiscreteGaussianGeneratorImpl<V>(stdev);
     for (unsigned int i = 0; i < size; i++) {
         mean += dgg.GenerateIntegerKarney(center, stdev);
     }
@@ -600,11 +664,11 @@ TEST(UTDistrGen, Karney_Mean) {
 // Variance test for Karney sampling
 template <typename V>
 void Karney_Variance(const std::string& msg) {
-    int stdev       = 10;
-    usint size      = 10000;
-    double mean     = 0;
+    int stdev = 10;
+    uint32_t size = 10000;
+    double mean = 0;
     double variance = 0;
-    auto dgg        = DiscreteGaussianGeneratorImpl<V>(stdev);
+    auto dgg = DiscreteGaussianGeneratorImpl<V>(stdev);
     int numbers[10000];
 
     for (unsigned int i = 0; i < size; i++) {

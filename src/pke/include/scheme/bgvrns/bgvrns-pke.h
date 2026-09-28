@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_PKE_H
-#define LBCRYPTO_CRYPTO_BGVRNS_PKE_H
-
-#include "schemerns/rns-pke.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PKE_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PKE_H_
 
 #include <string>
+
+#include "schemerns/rns-pke.h"
 
 /**
  * @namespace lbcrypto
@@ -42,41 +42,45 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief BGV implementation of encryption and decryption in the RNS representation. Decryption modulus
+ * switches the ciphertext down to a single tower before reducing modulo the plaintext modulus.
+ */
 class PKEBGVRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~PKEBGVRNS() {}
 
     /**
-   * Method for decrypting plaintext using LBC
-   *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext using LBC
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           NativePoly* plaintext) const override;
 
     /**
-   * Method for decrypting plaintext using LBC
-   *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext using LBC
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           Poly* plaintext) const override {
         std::string errMsg =
-            "PKEBGVRNS: Decryption to Poly from DCRTPoly is not supported as it "
-            "may "
-            "lead to incorrect results.";
+                "PKEBGVRNS: Decryption to Poly from DCRTPoly is not supported as it "
+                "may "
+                "lead to incorrect results.";
         OPENFHE_THROW(errMsg);
     }
 
@@ -100,4 +104,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_PKE_H_

@@ -31,19 +31,23 @@
 
 #define PROFILE
 
-#include "math/dftransform.h"
 #include "schemerns/rns-cryptoparameters.h"
 
-#include <vector>
+#include <cmath>
+#include <cstdint>
 #include <memory>
-#include <utility>
+#include <numeric>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 namespace {
-    // global used to validate the estimated sizeP value
-    uint32_t sizeP_estimate_global{};
-}
+// global used to validate the estimated sizeP value
+uint32_t sizeP_estimate_global{};
+}  // namespace
 
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
                                               EncryptionTechnique encTech, MultiplicationTechnique multTech,
@@ -64,14 +68,14 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
     m_extraBits = extraBits;
 
     size_t sizeQ = GetElementParams()->GetParams().size();
-    size_t n     = GetElementParams()->GetRingDimension();
+    size_t n = GetElementParams()->GetRingDimension();
 
     // Construct moduliQ and rootsQ from crypto parameters
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
     for (size_t i = 0; i < sizeQ; i++) {
         moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-        rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
+        rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
     }
 
     // Pre-compute CRT::FFT values for Q
@@ -95,8 +99,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Compute the composite digits PartQ = Q_j
         std::vector<BigInteger> moduliPartQ(m_numPartQ, 1);
-        for (usint j = 0; j < m_numPartQ; j++) {
-            for (usint i = a * j; i < (j + 1) * a; i++) {
+        for (uint32_t j = 0; j < m_numPartQ; j++) {
+            for (uint32_t i = a * j; i < (j + 1) * a; i++) {
                 if (i < moduliQ.size())
                     moduliPartQ[j] *= moduliQ[i];
             }
@@ -115,17 +119,17 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_paramsPartQ.resize(m_numPartQ);
         for (uint32_t j = 0; j < m_numPartQ; j++) {
             auto startTower = j * a;
-            auto endTower   = ((j + 1) * a - 1 < sizeQ) ? (j + 1) * a - 1 : sizeQ - 1;
+            auto endTower = ((j + 1) * a - 1 < sizeQ) ? (j + 1) * a - 1 : sizeQ - 1;
             std::vector<std::shared_ptr<ILNativeParams>> params =
-                GetElementParams()->GetParamPartition(startTower, endTower);
+                    GetElementParams()->GetParamPartition(startTower, endTower);
             std::vector<NativeInteger> moduli(params.size());
             std::vector<NativeInteger> roots(params.size());
             for (uint32_t i = 0; i < params.size(); i++) {
                 moduli[i] = params[i]->GetModulus();
-                roots[i]  = params[i]->GetRootOfUnity();
+                roots[i] = params[i]->GetRootOfUnity();
             }
             m_paramsPartQ[j] =
-                std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
+                    std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
         }
 
         // Find number and size of individual special primes.
@@ -137,11 +141,23 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
         // Select number of primes in auxiliary CRT basis
         uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+
+        // We want to make sure that P exceeds the maximum digit in Q by a safe margin.
+        // The safe margin is chosen to make hybrid key switching error closer to the modulus switching error.
+        // The margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
+        // in Section B.2.3 of https://eprint.iacr.org/2021/204 for more details.
+        // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
+        // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
+        uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                                  6 + GetMSB64(m_compositeDegree - 1) :
+                                  4;
+        if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
+            ++sizeP;
         // validate the estimated sizeP value
-        if(sizeP_estimate_global > 0) {
-            if(sizeP_estimate_global != sizeP) {
+        if (sizeP_estimate_global > 0) {
+            if (sizeP > sizeP_estimate_global) {
                 auto str = "EstimateLogP() failure: expected sizeP [" + std::to_string(sizeP_estimate_global) +
-                        "], but got sizeP [" + std::to_string(sizeP) + "]";
+                           "], but got sizeP [" + std::to_string(sizeP) + "]";
                 OPENFHE_THROW(str);
             }
             // reset sizeP_estimate_global before the next use
@@ -157,7 +173,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         std::vector<NativeInteger> rootsP(sizeP);
         // firstP contains a prime whose size is PModSize.
         NativeInteger firstP = FirstPrime<NativeInteger>(auxBits, primeStep);
-        NativeInteger pPrev  = firstP;
+        NativeInteger pPrev = firstP;
         BigInteger modulusP(1);
         for (uint32_t i = 0; i < sizeP; i++) {
             // The following loop makes sure that moduli in
@@ -165,8 +181,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             bool foundInQ = false;
             do {
                 moduliP[i] = PreviousPrime<NativeInteger>(pPrev, primeStep);
-                foundInQ   = false;
-                for (usint j = 0; j < sizeQ; j++)
+                foundInQ = false;
+                for (uint32_t j = 0; j < sizeQ; j++)
                     if (moduliP[i] == moduliQ[j])
                         foundInQ = true;
                 pPrev = moduliP[i];
@@ -184,21 +200,32 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         std::vector<NativeInteger> rootsQP(sizeQ + sizeP);
         for (size_t i = 0; i < sizeQ; i++) {
             moduliQP[i] = moduliQ[i];
-            rootsQP[i]  = rootsQ[i];
+            rootsQP[i] = rootsQ[i];
         }
         for (size_t i = 0; i < sizeP; i++) {
             moduliQP[sizeQ + i] = moduliP[i];
-            rootsQP[sizeQ + i]  = rootsP[i];
+            rootsQP[sizeQ + i] = rootsP[i];
         }
 
         m_paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQP, rootsQP);
+
+        // Precompute params for first 1..sizeQ towers of Q for KeySwitchDown (avoids per-call allocation).
+        m_paramsQlHybrid.resize(sizeQ);
+        std::vector<NativeInteger> moduliQl, rootsQl;
+        moduliQl.reserve(sizeQ);
+        rootsQl.reserve(sizeQ);
+        for (size_t i = 0; i < sizeQ; ++i) {
+            moduliQl.push_back(moduliQ[i]);
+            rootsQl.push_back(rootsQ[i]);
+            m_paramsQlHybrid[i] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQl, rootsQl);
+        }
 
         // Pre-compute CRT::FFT values for P
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n, moduliP);
 
         // Pre-compute values [P]_{q_i}
         m_PModq.resize(sizeQ);
-        for (usint i = 0; i < sizeQ; i++) {
+        for (uint32_t i = 0; i < sizeQ; i++) {
             m_PModq[i] = modulusP.Mod(moduliQ[i]).ConvertToInt();
         }
 
@@ -207,8 +234,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_PInvModqPrecon.resize(sizeQ);
         for (size_t i = 0; i < sizeQ; i++) {
             BigInteger PInvModqi = modulusP.ModInverse(moduliQ[i]);
-            m_PInvModq[i]        = PInvModqi.ConvertToInt();
-            m_PInvModqPrecon[i]  = m_PInvModq[i].PrepModMulConst(moduliQ[i]);
+            m_PInvModq[i] = PInvModqi.ConvertToInt();
+            m_PInvModqPrecon[i] = m_PInvModq[i].PrepModMulConst(moduliQ[i]);
         }
 
         // Pre-compute values [P/p_j]_{q_i}
@@ -217,14 +244,14 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_PHatInvModpPrecon.resize(sizeP);
         m_PHatModq.resize(sizeP);
         for (size_t j = 0; j < sizeP; j++) {
-            BigInteger PHatj        = modulusP / BigInteger(moduliP[j]);
+            BigInteger PHatj = modulusP / BigInteger(moduliP[j]);
             BigInteger PHatInvModpj = PHatj.ModInverse(moduliP[j]);
-            m_PHatInvModp[j]        = PHatInvModpj.ConvertToInt();
-            m_PHatInvModpPrecon[j]  = m_PHatInvModp[j].PrepModMulConst(moduliP[j]);
+            m_PHatInvModp[j] = PHatInvModpj.ConvertToInt();
+            m_PHatInvModpPrecon[j] = m_PHatInvModp[j].PrepModMulConst(moduliP[j]);
             m_PHatModq[j].resize(sizeQ);
             for (size_t i = 0; i < sizeQ; i++) {
                 BigInteger PHatModqji = PHatj.Mod(moduliQ[i]);
-                m_PHatModq[j][i]      = PHatModqji.ConvertToInt();
+                m_PHatModq[j][i] = PHatModqji.ConvertToInt();
             }
         }
 
@@ -242,9 +269,9 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             m_QlHatInvModq[sizeQ - l - 1].resize(sizeQ - l);
             m_QlHatInvModqPrecon[sizeQ - l - 1].resize(sizeQ - l);
             for (size_t i = 0; i < sizeQ - l; i++) {
-                BigInteger QHati                       = modulusQ / BigInteger(moduliQ[i]);
-                BigInteger QHatInvModqi                = QHati.ModInverse(moduliQ[i]);
-                m_QlHatInvModq[sizeQ - l - 1][i]       = QHatInvModqi.ConvertToInt();
+                BigInteger QHati = modulusQ / BigInteger(moduliQ[i]);
+                BigInteger QHatInvModqi = QHati.ModInverse(moduliQ[i]);
+                m_QlHatInvModq[sizeQ - l - 1][i] = QHatInvModqi.ConvertToInt();
                 m_QlHatInvModqPrecon[sizeQ - l - 1][i] = m_QlHatInvModq[sizeQ - l - 1][i].PrepModMulConst(moduliQ[i]);
             }
         }
@@ -259,7 +286,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             m_modComplPartqBarrettMu[l].resize(beta);
             for (uint32_t j = 0; j < beta; j++) {
                 const std::shared_ptr<ILDCRTParams<BigInteger>> digitPartition = GetParamsPartQ(j);
-                auto cyclOrder                                                 = digitPartition->GetCyclotomicOrder();
+                auto cyclOrder = digitPartition->GetCyclotomicOrder();
 
                 uint32_t sizePartQj = digitPartition->GetParams().size();
                 if (j == beta - 1)
@@ -275,11 +302,10 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                         if (currDigit >= j)
                             currDigit++;
                         moduli[k] = GetParamsPartQ(currDigit)->GetParams()[k % alpha]->GetModulus();
-                        roots[k]  = GetParamsPartQ(currDigit)->GetParams()[k % alpha]->GetRootOfUnity();
-                    }
-                    else {
+                        roots[k] = GetParamsPartQ(currDigit)->GetParams()[k % alpha]->GetRootOfUnity();
+                    } else {
                         moduli[k] = moduliP[k - ((l + 1) - sizePartQj)];
-                        roots[k]  = rootsP[k - ((l + 1) - sizePartQj)];
+                        roots[k] = rootsP[k - ((l + 1) - sizePartQj)];
                     }
                 }
                 m_paramsComplPartQ[l][j] = std::make_shared<ParmType>(cyclOrder, moduli, roots);
@@ -288,7 +314,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 m_modComplPartqBarrettMu[l][j].resize(moduli.size());
                 for (uint32_t i = 0; i < moduli.size(); i++) {
                     m_modComplPartqBarrettMu[l][j][i] =
-                        (BarrettBase128Bit / BigInteger(moduli[i])).ConvertToInt<DoubleNativeInt>();
+                            (BarrettBase128Bit / BigInteger(moduli[i])).ConvertToInt<DoubleNativeInt>();
                 }
             }
         }
@@ -297,7 +323,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_PartQlHatInvModq.resize(m_numPartQ);
         m_PartQlHatInvModqPrecon.resize(m_numPartQ);
         for (uint32_t k = 0; k < m_numPartQ; k++) {
-            auto params         = m_paramsPartQ[k]->GetParams();
+            auto params = m_paramsPartQ[k]->GetParams();
             uint32_t sizePartQk = params.size();
             m_PartQlHatInvModq[k].resize(sizePartQk);
             m_PartQlHatInvModqPrecon[k].resize(sizePartQk);
@@ -309,11 +335,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 m_PartQlHatInvModq[k][sizePartQk - l - 1].resize(sizePartQk - l);
                 m_PartQlHatInvModqPrecon[k][sizePartQk - l - 1].resize(sizePartQk - l);
                 for (size_t i = 0; i < sizePartQk - l; i++) {
-                    BigInteger QHat                              = modulusPartQ / BigInteger(params[i]->GetModulus());
-                    BigInteger QHatInvModqi                      = QHat.ModInverse(params[i]->GetModulus());
+                    BigInteger QHat = modulusPartQ / BigInteger(params[i]->GetModulus());
+                    BigInteger QHatInvModqi = QHat.ModInverse(params[i]->GetModulus());
                     m_PartQlHatInvModq[k][sizePartQk - l - 1][i] = QHatInvModqi.ConvertToInt();
                     m_PartQlHatInvModqPrecon[k][sizePartQk - l - 1][i] =
-                        m_PartQlHatInvModq[k][sizePartQk - l - 1][i].PrepModMulConst(params[i]->GetModulus());
+                            m_PartQlHatInvModq[k][sizePartQk - l - 1][i].PrepModMulConst(params[i]->GetModulus());
                 }
             }
         }
@@ -322,11 +348,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_PartQlHatModp.resize(sizeQ);
         for (uint32_t l = 0; l < sizeQ; l++) {
             uint32_t alpha = static_cast<uint32_t>(std::ceil(static_cast<double>(sizeQ) / m_numPartQ));
-            uint32_t beta  = static_cast<uint32_t>(std::ceil(static_cast<double>(l + 1) / alpha));
+            uint32_t beta = static_cast<uint32_t>(std::ceil(static_cast<double>(l + 1) / alpha));
             m_PartQlHatModp[l].resize(beta);
             for (uint32_t k = 0; k < beta; k++) {
-                auto paramsPartQ   = GetParamsPartQ(k)->GetParams();
-                auto partQ         = GetParamsPartQ(k)->GetModulus();
+                auto paramsPartQ = GetParamsPartQ(k)->GetParams();
+                auto partQ = GetParamsPartQ(k)->GetModulus();
                 uint32_t digitSize = paramsPartQ.size();
                 if (k == beta - 1) {
                     digitSize = l + 1 - k * alpha;
@@ -338,10 +364,10 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 m_PartQlHatModp[l][k].resize(digitSize);
                 for (uint32_t i = 0; i < digitSize; i++) {
                     BigInteger partQHat = partQ / BigInteger(paramsPartQ[i]->GetModulus());
-                    auto complBasis     = GetParamsComplPartQ(l, k);
+                    auto complBasis = GetParamsComplPartQ(l, k);
                     m_PartQlHatModp[l][k][i].resize(complBasis->GetParams().size());
                     for (size_t j = 0; j < complBasis->GetParams().size(); j++) {
-                        BigInteger QHatModpj        = partQHat.Mod(complBasis->GetParams()[j]->GetModulus());
+                        BigInteger QHatModpj = partQHat.Mod(complBasis->GetParams()[j]->GetModulus());
                         m_PartQlHatModp[l][k][i][j] = QHatModpj.ConvertToInt();
                     }
                 }
@@ -368,22 +394,22 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             m_multipartyQHatModq0[m].resize(1);
             m_multipartyQHatModq0[m][0].resize(m + 1);
             for (size_t i = 1; i < m + 2; i++) {
-                BigInteger QHati                        = modulusQ / BigInteger(moduliQ[i]);
-                BigInteger QHatInvModqi                 = QHati.ModInverse(moduliQ[i]);
-                m_multipartyQHatInvModq[m][i - 1]       = QHatInvModqi.ConvertToInt();
+                BigInteger QHati = modulusQ / BigInteger(moduliQ[i]);
+                BigInteger QHatInvModqi = QHati.ModInverse(moduliQ[i]);
+                m_multipartyQHatInvModq[m][i - 1] = QHatInvModqi.ConvertToInt();
                 m_multipartyQHatInvModqPrecon[m][i - 1] = m_multipartyQHatInvModq[m][i - 1].PrepModMulConst(moduliQ[i]);
-                m_multipartyQHatModq0[m][0][i - 1]      = QHati.Mod(moduliQ[0]);
+                m_multipartyQHatModq0[m][0][i - 1] = QHati.Mod(moduliQ[0]);
             }
         }
 
         modulusQ = BigInteger(GetElementParams()->GetModulus()) / BigInteger(moduliQ[0]);
         m_multipartyAlphaQModq0.resize(sizeQ - 1);
-        for (usint l = sizeQ - 1; l > 0; l--) {
+        for (uint32_t l = sizeQ - 1; l > 0; l--) {
             if (l < sizeQ - 1)
                 modulusQ = modulusQ / BigInteger(moduliQ[l + 1]);
             m_multipartyAlphaQModq0[l - 1].resize(l + 1);
             NativeInteger QlModq0 = modulusQ.Mod(moduliQ[0]).ConvertToInt();
-            for (usint j = 0; j < l + 1; ++j) {
+            for (uint32_t j = 0; j < l + 1; ++j) {
                 m_multipartyAlphaQModq0[l - 1][j] = {QlModq0.ModMul(NativeInteger(j), moduliQ[0])};
             }
         }
@@ -407,8 +433,9 @@ uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {
 std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ, double firstModulusSize,
                                                               double dcrtBits, double extraModulusSize,
                                                               uint32_t numPrimes, uint32_t auxBits,
-                                                              ScalingTechnique scalTech,
-                                                              bool addOne, bool isNoiseFloodingMultiparty) {
+                                                              ScalingTechnique scalTech, bool addOne,
+                                                              bool isNoiseFloodingMultiparty,
+                                                              uint32_t compositeDegree) {
     // numPartQ can not be zero as there is a division by numPartQ
     if (numPartQ == 0)
         OPENFHE_THROW("numPartQ is zero");
@@ -435,7 +462,7 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     if (extraModulusSize > 0)
         qi[sizeQ - 1] = extraModulusSize;
     if (isNoiseFloodingMultiparty) {
-        for (size_t i = 1; i < (NoiseFlooding::NUM_MODULI_MULTIPARTY+1); ++i) {
+        for (size_t i = 1; i < (NoiseFlooding::NUM_MODULI_MULTIPARTY + 1); ++i) {
             qi[i] = NoiseFlooding::MULTIPARTY_MOD_SIZE;
         }
     }
@@ -444,11 +471,11 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
     uint32_t maxBits = 0;
     for (size_t j = 0; j < numPartQ; ++j) {
         size_t startTower = j * numPerPartQ;
-        size_t endTower   = ((j + 1) * numPerPartQ - 1 < sizeQ) ? (j + 1) * numPerPartQ - 1 : sizeQ - 1;
+        size_t endTower = ((j + 1) * numPerPartQ - 1 < sizeQ) ? (j + 1) * numPerPartQ - 1 : sizeQ - 1;
 
         // sum qi elements qi[startTower] + ... + qi[endTower] inclusive. the end element should be qi.begin()+(endTower+1)
         uint32_t bits =
-            static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
+                static_cast<uint32_t>(std::accumulate(qi.begin() + startTower, qi.begin() + (endTower + 1), 0.0));
         if (bits > maxBits)
             maxBits = bits;
     }
@@ -460,6 +487,19 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
     // Select number of primes in auxiliary CRT basis
     uint32_t sizeP = static_cast<uint32_t>(std::ceil(static_cast<double>(maxBits) / auxBits));
+
+    // We want to make sure that P exceeds the maximum digit in Q by a safe margin.
+    // The safe margin is chosen to make hybrid key switching error closer to the modulus switching error.
+    // The margin of 4 bits accounts for dnum * 3.19 for typical values of dnum. See the noise expression
+    // in Section B.2.3 of https://eprint.iacr.org/2021/204 for more details.
+    // Composite scaling uses a base margin of 6 bits, and the fast basis extension overflow grows
+    // linearly with the number of limbs per digit, adding ceil(log2(compositeDegree)) bits.
+    uint32_t margin = (scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) ?
+                              6 + GetMSB64(compositeDegree - 1) :
+                              4;
+    if (static_cast<uint64_t>(sizeP) * auxBits - maxBits < margin)
+        ++sizeP;
+
     sizeP_estimate_global = sizeP;
 
     return std::make_pair(sizeP * auxBits, sizeP);

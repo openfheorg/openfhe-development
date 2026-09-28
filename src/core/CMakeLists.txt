@@ -24,28 +24,41 @@ if(BUILD_SHARED)
     add_library(OPENFHEcore SHARED $<TARGET_OBJECTS:coreobj>)
     set_property(TARGET OPENFHEcore PROPERTY VERSION ${CORE_VERSION})
     set_property(TARGET OPENFHEcore PROPERTY SOVERSION ${CORE_VERSION_MAJOR})
+    set_property(TARGET OPENFHEcore APPEND PROPERTY INSTALL_RPATH "${OpenFHE_INSTALL_RPATH}")
     set_property(TARGET OPENFHEcore PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEcore EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEcore
+        EXPORT OpenFHETargets
+        RUNTIME DESTINATION ${OpenFHE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${OpenFHE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
 if(BUILD_STATIC)
     add_library(OPENFHEcore_static STATIC $<TARGET_OBJECTS:coreobj>)
     set_property(TARGET OPENFHEcore_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    install(TARGETS OPENFHEcore_static EXPORT OpenFHETargets DESTINATION lib)
+    install(TARGETS OPENFHEcore_static
+        EXPORT OpenFHETargets
+        ARCHIVE DESTINATION ${OpenFHE_INSTALL_LIBDIR})
 endif()
 
-install(DIRECTORY include/ DESTINATION include/openfhe/core)
+install(DIRECTORY include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/core)
 
 add_custom_target(allcore)
 
+if(NOT WITH_DEFAULT_DIAGNOSTIC_SINK)
+    add_library(OPENFHEdiagnosticsink INTERFACE)
+    target_sources(OPENFHEdiagnosticsink INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/lib/utils/diagnostic_output.cpp)
+    target_compile_definitions(OPENFHEdiagnosticsink INTERFACE WITH_DEFAULT_DIAGNOSTIC_SINK)
+endif()
+
 if(BUILD_SHARED)
-    set(CORELIBS PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+    set(CORELIBS PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS} ${DIAGNOSTIC_SINK_LIB})
     target_link_libraries(OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS} ${ADDITIONAL_LIBS})
     add_dependencies(allcore OPENFHEcore)
 endif()
 
 if(BUILD_STATIC)
-    set(CORELIBS ${CORELIBS} PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+    set(CORELIBS ${CORELIBS} PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS} ${DIAGNOSTIC_SINK_LIB})
     target_link_libraries(OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS} ${ADDITIONAL_LIBS})
     add_dependencies(allcore OPENFHEcore_static)
 endif()

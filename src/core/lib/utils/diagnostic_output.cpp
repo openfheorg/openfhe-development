@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,14 +29,45 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _XQUEUE_H
-#define _XQUEUE_H
+// Built-in diagnostic sink; see diagnostic_output.h for the interface contract.
 
-#include <list>
-#include <queue>
-#include "stl_allocator.h"
+#include "utils/diagnostic_output.h"
 
-template <class _Tp, class _Sequence = std::list<_Tp, stl_allocator<_Tp> > >
-class xqueue : public std::queue<_Tp, _Sequence> {};
+#include "config_core.h"
 
-#endif
+#ifdef WITH_DEFAULT_DIAGNOSTIC_SINK
+
+    #include <iostream>
+
+namespace lbcrypto {
+
+namespace {
+std::ostream* g_errStream = &std::cerr;
+std::ostream* g_outStream = &std::cout;
+}  // namespace
+
+namespace internal_diagnostics {
+
+std::ostream& OpenFHEErrStream() {
+    return *g_errStream;
+}
+std::ostream& OpenFHEOutStream() {
+    return *g_outStream;
+}
+
+}  // namespace internal_diagnostics
+
+std::ostream& SetOpenFHEErrStream(std::ostream& os) {
+    std::ostream& previous = *g_errStream;
+    g_errStream = &os;
+    return previous;
+}
+std::ostream& SetOpenFHEOutStream(std::ostream& os) {
+    std::ostream& previous = *g_outStream;
+    g_outStream = &os;
+    return previous;
+}
+
+}  // namespace lbcrypto
+
+#endif  // WITH_DEFAULT_DIAGNOSTIC_SINK

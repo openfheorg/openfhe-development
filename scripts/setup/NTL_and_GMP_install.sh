@@ -1,7 +1,7 @@
 #!/bin/bash
-# 
+#
 # required tools curl, tar, lzip
-# 
+#
 # sudo apt-get install -y curl tar lzip
 
 ## GMP AND NTL INSTALL

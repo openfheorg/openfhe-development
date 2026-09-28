@@ -34,11 +34,26 @@
  */
 
 #include "cryptocontext.h"
+
+#include <cmath>
+#include <complex>
+#include <cstdint>
+#include <functional>
+#include <iterator>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "key/privatekey.h"
 #include "key/publickey.h"
 #include "math/chebyshev.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "schemerns/rns-scheme.h"
+#include "utils/memory.h"
 
 namespace lbcrypto {
 
@@ -46,7 +61,7 @@ template <typename Element>
 std::map<std::string, std::vector<EvalKey<Element>>> CryptoContextImpl<Element>::s_evalMultKeyMap{};
 template <typename Element>
 std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>
-    CryptoContextImpl<Element>::s_evalAutomorphismKeyMap{};
+        CryptoContextImpl<Element>::s_evalAutomorphismKeyMap{};
 
 template <typename Element>
 void CryptoContextImpl<Element>::ClearStaticMapsAndVectors() {
@@ -63,19 +78,20 @@ void CryptoContextImpl<Element>::ClearStaticMapsAndVectors() {
 #ifdef WITH_NTL
     NTL::ChineseRemainderTransformFTTNtl<M6Vector>().Reset();
 #endif
+    AllocTrim();
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = std::dynamic_pointer_cast<SchemeRNS>(m_scheme);
-    if (schemeRNSPtr == nullptr)
-        OPENFHE_THROW("The scheme is not RNS-based");
+    if (!schemeRNSPtr)
+        OPENFHE_THROW("Invalid scheme: expected SchemeRNS");
 
     // check if the parameter object is RNS-based
     auto elPtr = std::dynamic_pointer_cast<const CryptoParametersRNS>(m_params);
-    if (elPtr == nullptr)
-        OPENFHE_THROW("The parameter object is not RNS-based");
+    if (!elPtr)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
     schemeRNSPtr->SetKeySwitchingTechnique(elPtr->GetKeySwitchTechnique());
 }
@@ -89,7 +105,7 @@ void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key) 
     if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
         CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
         // the key is not found in the map, so the key has to be generated
-        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = {GetScheme()->EvalMultKeyGen(key)};
+        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = {m_scheme->EvalMultKeyGen(key)};
     }
 }
 
@@ -99,7 +115,7 @@ void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key)
     if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
         CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
         // the key is not found in the map, so the key has to be generated
-        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = GetScheme()->EvalMultKeysGen(key);
+        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = m_scheme->EvalMultKeysGen(key);
     }
 }
 
@@ -121,8 +137,7 @@ void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element>&
          it != CryptoContextImpl<Element>::s_evalMultKeyMap.end();) {
         if (it->second[0]->GetCryptoContext() == cc) {
             it = CryptoContextImpl<Element>::s_evalMultKeyMap.erase(it);
-        }
-        else {
+        } else {
             ++it;
         }
     }
@@ -146,16 +161,16 @@ void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Ele
 template <typename Element>
 void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey) {
     ValidateKey(privateKey);
-    auto&& evalKeys = GetScheme()->EvalSumKeyGen(privateKey);
+    auto&& evalKeys = m_scheme->EvalSumKeyGen(privateKey);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim) {
+        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim) {
     ValidateKey(privateKey);
     std::vector<uint32_t> indices;
-    auto&& evalKeys = GetScheme()->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
+    auto&& evalKeys = m_scheme->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
     return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
@@ -163,16 +178,17 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>
 // TODO: this is here for backwards compatibility; should remove in v2.0
 template <typename Element>
 inline std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize, uint32_t subringDim) {
+        const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, uint32_t rowSize,
+        uint32_t subringDim) {
     return CryptoContextImpl<Element>::EvalSumRowsKeyGen(privateKey, rowSize, subringDim);
 }
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
-    const PrivateKey<Element> privateKey) {
+        const PrivateKey<Element> privateKey) {
     ValidateKey(privateKey);
     std::vector<uint32_t> indices;
-    auto&& evalKeys = GetScheme()->EvalSumColsKeyGen(privateKey, indices);
+    auto&& evalKeys = m_scheme->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
     return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
@@ -205,7 +221,7 @@ CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(
-    const std::string& keyTag) {
+        const std::string& keyTag) {
     auto ekv = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
     if (ekv == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
         OPENFHE_THROW("EvalAutomorphismKeys are not generated for ID [" + keyTag + "].");
@@ -215,12 +231,12 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(
-    const std::string& keyTag, const std::vector<uint32_t>& indexList) {
+        const std::string& keyTag, const std::vector<uint32_t>& indexList) {
     if (!indexList.size())
         OPENFHE_THROW("indexList is empty");
 
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> keyMap =
-        CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyTag);
+            CryptoContextImpl<Element>::GetEvalAutomorphismKeyMapPtr(keyTag);
 
     // create a return map if specific indices are provided
     std::map<uint32_t, EvalKey<Element>> retMap;
@@ -246,8 +262,8 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys() {
 }
 
 /**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given id
- * @param keyTag
+ * ClearEvalSumKeys - flush EvalSumKey cache for a given id
+ * @param keyTag secret key tag
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& keyTag) {
@@ -255,8 +271,8 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& keyTag) {
 }
 
 /**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given context
- * @param cc
+ * ClearEvalSumKeys - flush EvalSumKey cache for a given context
+ * @param cc the context to clear all EvalSumKeys for
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalSumKeys(const CryptoContext<Element> cc) {
@@ -271,7 +287,7 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> privateKey,
                                                    const std::vector<int32_t>& indexList) {
     ValidateKey(privateKey);
-    auto&& evalKeys = GetScheme()->EvalAtIndexKeyGen(privateKey, indexList);
+    auto&& evalKeys = m_scheme->EvalAtIndexKeyGen(privateKey, indexList);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
@@ -282,7 +298,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
 
 /**
  * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given id
- * @param keyTag
+ * @param keyTag secret key tag
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& keyTag) {
@@ -294,7 +310,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& ke
 /**
  * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given
  * context
- * @param cc
+ * @param cc the context to clear all EvalAutomorphismKeys for
  */
 template <typename Element>
 void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<Element> cc) {
@@ -302,8 +318,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const CryptoContext<E
          it != CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end();) {
         if (it->second->begin()->second->GetCryptoContext() == cc) {
             it = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.erase(it);
-        }
-        else {
+        } else {
             ++it;
         }
     }
@@ -337,20 +352,19 @@ std::set<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(const std::set<ui
 
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
-    const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
+        const std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> mapToInsert, const std::string& keyTag) {
     // check if the map is empty
     if (mapToInsert->empty()) {
         return;
     }
 
-    auto mapToInsertIt    = mapToInsert->begin();
+    auto mapToInsertIt = mapToInsert->begin();
     const std::string& id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
     std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
     if (existingIndices.empty()) {
         // there is no keys for the given id, so we insert full mapToInsert
         CryptoContextImpl<Element>::s_evalAutomorphismKeyMap[id] = mapToInsert;
-    }
-    else {
+    } else {
         // get all indices from mapToInsert
         std::set<uint32_t> newIndices;
         for (const auto& [key, _] : *mapToInsert) {
@@ -361,7 +375,7 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
         // insert those new indices and their corresponding keys to the existing map
         std::set<uint32_t> indicesToInsert{CryptoContextImpl<Element>::GetUniqueValues(existingIndices, newIndices)};
         auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(id);
-        auto& keyMap  = *(keyMapIt->second);
+        auto& keyMap = *(keyMapIt->second);
         for (uint32_t indx : indicesToInsert) {
             keyMap[indx] = (*mapToInsert)[indx];
         }
@@ -373,7 +387,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(ConstCiphertext<Element>
                                                         uint32_t batchSize) const {
     ValidateCiphertext(ciphertext);
     auto&& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    return GetScheme()->EvalSum(ciphertext, batchSize, evalSumKeys);
+    return m_scheme->EvalSum(ciphertext, batchSize, evalSumKeys);
 }
 
 template <typename Element>
@@ -381,16 +395,16 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(ConstCiphertext<Elem
                                                             const std::map<uint32_t, EvalKey<Element>>& evalSumKeys,
                                                             uint32_t subringDim) const {
     ValidateCiphertext(ciphertext);
-    return GetScheme()->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
+    return m_scheme->EvalSumRows(ciphertext, numRows, evalSumKeys, subringDim);
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
-    ConstCiphertext<Element>& ciphertext, uint32_t numCols,
-    const std::map<uint32_t, EvalKey<Element>>& evalSumKeysRight) const {
+        ConstCiphertext<Element>& ciphertext, uint32_t numCols,
+        const std::map<uint32_t, EvalKey<Element>>& evalSumKeysRight) const {
     ValidateCiphertext(ciphertext);
     auto&& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    return GetScheme()->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
+    return m_scheme->EvalSumCols(ciphertext, numCols, evalSumKeys, evalSumKeysRight);
 }
 
 template <typename Element>
@@ -401,17 +415,17 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(ConstCiphertext<Elem
     if (0 == index)
         return ciphertext->Clone();
     auto&& evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    return GetScheme()->EvalAtIndex(ciphertext, index, evalAutomorphismKeys);
+    return m_scheme->EvalAtIndex(ciphertext, index, evalAutomorphismKeys);
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalMerge(
-    const std::vector<Ciphertext<Element>>& ciphertextVector) const {
+        const std::vector<Ciphertext<Element>>& ciphertextVector) const {
     if (0 == ciphertextVector.size())
         OPENFHE_THROW("Input ciphertext vector is empty");
     ValidateCiphertext(ciphertextVector[0]);
     auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ciphertextVector[0]->GetKeyTag());
-    return GetScheme()->EvalMerge(ciphertextVector, evalAutomorphismKeys);
+    return m_scheme->EvalMerge(ciphertextVector, evalAutomorphismKeys);
 }
 
 template <typename Element>
@@ -422,8 +436,8 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
     if (ct2 == nullptr || ct1->GetKeyTag() != ct2->GetKeyTag())
         OPENFHE_THROW("Information was not generated with this crypto context");
     auto& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
-    auto& ek          = CryptoContextImpl<Element>::GetEvalMultKeyVector(ct1->GetKeyTag());
-    return GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys, ek[0]);
+    auto& ek = CryptoContextImpl<Element>::GetEvalMultKeyVector(ct1->GetKeyTag());
+    return m_scheme->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys, ek[0]);
 }
 
 template <typename Element>
@@ -433,7 +447,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(ConstCiphertext
     if (ct2 == nullptr)
         OPENFHE_THROW("Information was not generated with this crypto context");
     auto& evalSumKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(ct1->GetKeyTag());
-    return GetScheme()->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys);
+    return m_scheme->EvalInnerProduct(ct1, ct2, batchSize, evalSumKeys);
 }
 
 template <typename Element>
@@ -459,16 +473,15 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element>& ciph
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
     Plaintext decrypted = CryptoContextImpl<Element>::GetPlaintextForDecrypt(
-        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
-        this->GetCKKSDataType());
+            ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
+            this->GetCKKSDataType());
 
     DecryptResult result;
 
     if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly))) {
-        result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
-    }
-    else {
-        result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
+        result = m_scheme->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
+    } else {
+        result = m_scheme->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
     }
 
     if (result.isValid == false)  // TODO (dsuponit): why don't we throw an exception here?
@@ -478,17 +491,20 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element>& ciph
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+        if (!decryptedCKKS)
+            OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
         decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
-        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
+        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(m_params);
+        if (!cryptoParamsCKKS)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersRNS");
 
         decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
-    }
-    else {
+    } else {
         decrypted->Decode();
     }
 
@@ -543,10 +559,9 @@ Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings
     if ((pte == CKKS_PACKED_ENCODING) && (evp->GetParams().size() > 1)) {
         auto vp = std::make_shared<typename Poly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
         return PlaintextFactory::MakePlaintext(pte, vp, ep, INVALID_SCHEME, cdt);
-    }
-    else {
+    } else {
         auto vp =
-            std::make_shared<typename NativePoly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
+                std::make_shared<typename NativePoly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
         return PlaintextFactory::MakePlaintext(pte, vp, ep, INVALID_SCHEME, cdt);
     }
 }
@@ -566,16 +581,16 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ci
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
     Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
-        ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
-        this->GetCKKSDataType());
+            ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
+            this->GetCKKSDataType());
 
     DecryptResult result;
 
     if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (ciphertext->GetElements()[0].GetParams()->GetParams().size() > 1))  // more than one tower in DCRTPoly
-        result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
+        result = m_scheme->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
     else
-        result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
+        result = m_scheme->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
 
     if (result.isValid == false)
         return result;
@@ -584,17 +599,20 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ci
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+        if (!decryptedCKKS)
+            OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
         decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
-        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_params);
+        if (!cryptoParamsCKKS)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
         decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
-    }
-    else {
+    } else {
         decrypted->Decode();
     }
 
@@ -604,7 +622,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ci
 
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec, Plaintext* plaintext) const {
+        const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec, Plaintext* plaintext) const {
     DecryptResult result;
 
     // Make sure we're processing ciphertexts.
@@ -620,14 +638,14 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
     // determine which type of plaintext that you need to decrypt into
     Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
-        partialCiphertextVec[0]->GetEncodingType(), partialCiphertextVec[0]->GetElements()[0].GetParams(),
-        this->GetEncodingParams(), this->GetCKKSDataType());
+            partialCiphertextVec[0]->GetEncodingType(), partialCiphertextVec[0]->GetElements()[0].GetParams(),
+            this->GetEncodingParams(), this->GetCKKSDataType());
 
     if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (partialCiphertextVec[0]->GetElements()[0].GetParams()->GetParams().size() > 1))
-        result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());
+        result = m_scheme->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());
     else
-        result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<NativePoly>());
+        result = m_scheme->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<NativePoly>());
 
     if (result.isValid == false)
         return result;
@@ -636,12 +654,15 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
     if (partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
+        if (!decryptedCKKS)
+            OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
-        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_params);
+        if (!cryptoParamsCKKS)
+            OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
         decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
-    }
-    else {
+    } else {
         decrypted->Decode();
     }
 
@@ -652,38 +673,38 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCiphertext<Element>& ciphertext) const {
-    return GetScheme()->IntMPBootAdjustScale(ciphertext);
+    return m_scheme->IntMPBootAdjustScale(ciphertext);
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const {
-    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
-    if (cryptoParamsCKKS == nullptr)
-        OPENFHE_THROW("The parameter object is not of the CryptoParametersCKKSRNS type");
+    const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_params);
+    if (!cryptoParamsCKKS)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
-    return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
+    return m_scheme->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(ConstCiphertext<Element>& ciphertext) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
-    if (cryptoParamsCKKS == nullptr)
-        OPENFHE_THROW("The parameter object is not of the CryptoParametersCKKSRNS type");
+    if (!cryptoParamsCKKS)
+        OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
-    return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, ciphertext);
+    return m_scheme->IntMPBootRandomElementGen(cryptoParamsCKKS, ciphertext);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
                                                                               ConstCiphertext<Element>& ciphertext,
                                                                               ConstCiphertext<Element>& a) const {
-    return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
+    return m_scheme->IntMPBootDecrypt(privateKey, ciphertext, a);
 }
 
 template <typename Element>
 std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootAdd(
-    std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
-    return GetScheme()->IntMPBootAdd(sharesPairVec);
+        std::vector<std::vector<Ciphertext<Element>>>& sharesPairVec) const {
+    return m_scheme->IntMPBootAdd(sharesPairVec);
 }
 
 template <typename Element>
@@ -691,7 +712,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootEncrypt(const PublicKey
                                                                  const std::vector<Ciphertext<Element>>& sharesPair,
                                                                  ConstCiphertext<Element>& a,
                                                                  ConstCiphertext<Element>& ciphertext) const {
-    return GetScheme()->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
+    return m_scheme->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
 }
 
 // Function for sharing and recovery of secret for Threshold FHE with aborts
@@ -708,9 +729,9 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
         OPENFHE_THROW("Threshold required to be majority (more than N/2)");
 
     const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
-    auto elementParams      = cryptoParams->GetElementParams();
-    auto vecSize            = elementParams->GetParams().size();
-    auto ring_dimension     = elementParams->GetRingDimension();
+    auto elementParams = cryptoParams->GetElementParams();
+    auto vecSize = elementParams->GetParams().size();
+    auto ring_dimension = elementParams->GetRingDimension();
 
     // condition for inverse in lagrange coeff to exist.
     for (size_t i = 0; i < vecSize; ++i) {
@@ -743,8 +764,7 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                 SecretShares[i] = SecretSharesVec[ctr++];
             }
         }
-    }
-    else if (shareType == "shamir") {
+    } else if (shareType == "shamir") {
         // vector to store columnwise randomly generated coefficients for polynomial f from Z_q for every secret key entry
         // set constant term of polynomial f_i to s_i
         std::vector<DCRTPoly> fs{sk->GetPrivateElement()};
@@ -806,10 +826,10 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
     if (threshold <= N / 2)
         OPENFHE_THROW("Threshold required to be majority (more than N/2)");
 
-    const auto& cryptoParams  = sk->GetCryptoContext()->GetCryptoParameters();
+    const auto& cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
     const auto& elementParams = cryptoParams->GetElementParams();
-    size_t ring_dimension     = elementParams->GetRingDimension();
-    size_t vecSize            = elementParams->GetParams().size();
+    size_t ring_dimension = elementParams->GetRingDimension();
+    size_t vecSize = elementParams->GetParams().size();
 
     // condition for inverse in lagrange coeff to exist.
     for (size_t k = 0; k < vecSize; k++) {
@@ -836,8 +856,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
             sum_of_elems += sk_shares[client_indexes[i]];
         }
         sk->SetPrivateElement(std::move(sum_of_elems));
-    }
-    else if (shareType == "shamir") {
+    } else if (shareType == "shamir") {
         // use lagrange interpolation to recover the secret
         // vector of lagrange coefficients L_j = Pdt_i ne j (i (i-j)^-1)
         std::vector<DCRTPoly> Lagrange_coeffs(client_indexes_size, DCRTPoly(elementParams, Format::EVALUATION));
@@ -870,7 +889,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
             for (uint32_t i = 0; i < client_indexes_size; ++i) {
                 const auto& coeff = Lagrange_coeffs[i].GetAllElements()[k];
                 const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
-                lagrange_sum_of_elems_poly += coeff.TimesNoCheck(share);
+                lagrange_sum_of_elems_poly.MultAccEqNoCheck(coeff, share);
             }
             lagrange_sum_of_elems.SetElementAtIndex(k, std::move(lagrange_sum_of_elems_poly));
         }

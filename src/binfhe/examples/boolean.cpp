@@ -33,6 +33,8 @@
   Example for the FHEW scheme using the default bootstrapping method (GINX)
  */
 
+#include <iostream>
+
 #include "binfhecontext.h"
 
 using namespace lbcrypto;

@@ -29,11 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include "UnitTestCryptoContext.h"
+
+#include <cmath>
+#include <cstdint>
+#include <type_traits>
+
 #include "gen-cryptocontext.h"
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
-#include "UnitTestCryptoContext.h"
 
 using namespace lbcrypto;
 
@@ -92,7 +97,7 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {
         if (!isDefaultValue(params.multiplicationTechnique)) {
             parameters.SetMultiplicationTechnique(
-                static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
+                    static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
         }
     }
     if constexpr (std::is_same_v<U, CCParams<CryptoContextBFVRNS>> == true) {
@@ -157,14 +162,12 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
         cc = GenCryptoContext(parameters);
-    }
-    else if (BFVRNS_SCHEME == params.schemeId) {
+    } else if (BFVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBFVRNS> parameters;
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
         cc = GenCryptoContext(parameters);
-    }
-    else if (BGVRNS_SCHEME == params.schemeId) {
+    } else if (BGVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBGVRNS> parameters;
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
@@ -188,17 +191,15 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const BaseTestCase& testCase) {
     CryptoContext<Element> cc(nullptr);
-    auto paramOverrides       = testCase.getCryptoContextParamOverrides();
+    auto paramOverrides = testCase.getCryptoContextParamOverrides();
     lbcrypto::SCHEME schemeId = lbcrypto::convertToSCHEME(*paramOverrides.begin());
     if (CKKSRNS_SCHEME == schemeId) {
         CCParams<CryptoContextCKKSRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
-    }
-    else if (BFVRNS_SCHEME == schemeId) {
+    } else if (BFVRNS_SCHEME == schemeId) {
         CCParams<CryptoContextBFVRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
-    }
-    else if (BGVRNS_SCHEME == schemeId) {
+    } else if (BGVRNS_SCHEME == schemeId) {
         CCParams<CryptoContextBGVRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
     }

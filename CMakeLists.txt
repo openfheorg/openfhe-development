@@ -28,8 +28,8 @@ endif()
 project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
-set(OPENFHE_VERSION_MINOR 5)
-set(OPENFHE_VERSION_PATCH 1)
+set(OPENFHE_VERSION_MINOR 6)
+set(OPENFHE_VERSION_PATCH 0)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -88,11 +88,14 @@ option(WITH_BE2 "Include MATHBACKEND 2 in build by setting WITH_BE2 to ON"      
 option(WITH_BE4 "Include MATHBACKEND 4 in build by setting WITH_BE4 to ON"             OFF )
 option(WITH_NTL "Include MATHBACKEND 6 and NTL in build by setting WITH_NTL to ON"     OFF )
 option(WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                          OFF )
+option(WITH_MALLOC_TUNING "Tune glibc malloc to retain freed memory for reuse"         ON  )
 option(WITH_NATIVEOPT "Use machine-specific optimizations"                             OFF )
 option(WITH_COVTEST "Turn on to enable coverage testing (can be used with g++ only)"   OFF )
 option(WITH_NOISE_DEBUG "Use only when running lattice estimator; not for production"  OFF )
 option(WITH_REDUCED_NOISE "Enable reduced noise within HKS and BFV HPSPOVERQ modes"    OFF )
+option(WITH_NUMA_INTERLEAVE "Interleave memory across NUMA nodes at library load"      ON  )
 option(USE_MACPORTS "Use MacPorts installed packages"                                  OFF )
+option(WITH_DEFAULT_DIAGNOSTIC_SINK "Build the built-in diagnostic output sink"        ON  )
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
 if(NOT NATIVE_SIZE)
@@ -103,26 +106,43 @@ if(NOT CKKS_M_FACTOR)
     set(CKKS_M_FACTOR 1)
 endif()
 
+# Radix of the rotation-fold accumulations (EvalPartialSumInPlace, EvalSum); power of two >= 2.
+# Higher radices reduce digit decompositions (log2(size)/log2(radix) per fold) at the cost of
+# more rotation keys ((radix-1)/log2(radix)*log2(size)).
+if(NOT PARTIAL_SUM_RADIX)
+    set(PARTIAL_SUM_RADIX 4)
+endif()
+
+# Name of the separate sink library built when the built-in sink is kept out of
+# the library (see src/core/CMakeLists.txt); empty otherwise. In-tree executables
+# put it on their link line so both configurations build and run.
+if(NOT WITH_DEFAULT_DIAGNOSTIC_SINK)
+    set(DIAGNOSTIC_SINK_LIB OPENFHEdiagnosticsink)
+endif()
+
 # Print options
-message(STATUS "BUILD_UNITTESTS:    ${BUILD_UNITTESTS}")
-message(STATUS "BUILD_EXAMPLES:     ${BUILD_EXAMPLES}")
-message(STATUS "BUILD_BENCHMARKS:   ${BUILD_BENCHMARKS}")
-message(STATUS "BUILD_EXTRAS:       ${BUILD_EXTRAS}")
-message(STATUS "BUILD_STATIC:       ${BUILD_STATIC}")
-message(STATUS "BUILD_SHARED:       ${BUILD_SHARED}")
-message(STATUS "GIT_SUBMOD_AUTO:    ${GIT_SUBMOD_AUTO}")
-message(STATUS "WITH_BE2:           ${WITH_BE2}")
-message(STATUS "WITH_BE4:           ${WITH_BE4}")
-message(STATUS "WITH_NTL:           ${WITH_NTL}")
-message(STATUS "WITH_TCM:           ${WITH_TCM}")
-message(STATUS "WITH_OPENMP:        ${WITH_OPENMP}")
-message(STATUS "NATIVE_SIZE:        ${NATIVE_SIZE}")
-message(STATUS "CKKS_M_FACTOR:      ${CKKS_M_FACTOR}")
-message(STATUS "WITH_NATIVEOPT:     ${WITH_NATIVEOPT}")
-message(STATUS "WITH_COVTEST:       ${WITH_COVTEST}")
-message(STATUS "WITH_NOISE_DEBUG:   ${WITH_NOISE_DEBUG}")
-message(STATUS "WITH_REDUCED_NOISE: ${WITH_REDUCED_NOISE}")
-message(STATUS "USE_MACPORTS:       ${USE_MACPORTS}")
+message(STATUS "BUILD_UNITTESTS:              ${BUILD_UNITTESTS}")
+message(STATUS "BUILD_EXAMPLES:               ${BUILD_EXAMPLES}")
+message(STATUS "BUILD_BENCHMARKS:             ${BUILD_BENCHMARKS}")
+message(STATUS "BUILD_EXTRAS:                 ${BUILD_EXTRAS}")
+message(STATUS "BUILD_STATIC:                 ${BUILD_STATIC}")
+message(STATUS "BUILD_SHARED:                 ${BUILD_SHARED}")
+message(STATUS "GIT_SUBMOD_AUTO:              ${GIT_SUBMOD_AUTO}")
+message(STATUS "WITH_BE2:                     ${WITH_BE2}")
+message(STATUS "WITH_BE4:                     ${WITH_BE4}")
+message(STATUS "WITH_NTL:                     ${WITH_NTL}")
+message(STATUS "WITH_TCM:                     ${WITH_TCM}")
+message(STATUS "WITH_MALLOC_TUNING:           ${WITH_MALLOC_TUNING}")
+message(STATUS "WITH_OPENMP:                  ${WITH_OPENMP}")
+message(STATUS "NATIVE_SIZE:                  ${NATIVE_SIZE}")
+message(STATUS "CKKS_M_FACTOR:                ${CKKS_M_FACTOR}")
+message(STATUS "PARTIAL_SUM_RADIX:            ${PARTIAL_SUM_RADIX}")
+message(STATUS "WITH_NATIVEOPT:               ${WITH_NATIVEOPT}")
+message(STATUS "WITH_COVTEST:                 ${WITH_COVTEST}")
+message(STATUS "WITH_NOISE_DEBUG:             ${WITH_NOISE_DEBUG}")
+message(STATUS "WITH_REDUCED_NOISE:           ${WITH_REDUCED_NOISE}")
+message(STATUS "WITH_DEFAULT_DIAGNOSTIC_SINK: ${WITH_DEFAULT_DIAGNOSTIC_SINK}")
+message(STATUS "USE_MACPORTS:                 ${USE_MACPORTS}")
 
 #--------------------------------------------------------------------
 # Compiler logic
@@ -146,24 +166,65 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # (but later on when installing)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-set(CMAKE_INSTALL_RPATH "${LIBINSTALL}")
-
 # Add the automatically determined parts of the RPATH,
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${LIBINSTALL}" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "${LIBINSTALL}")
-endif("${isSystemDir}" STREQUAL "-1")
 
 # Compiler flags
 set(C_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
 set(CXX_COMPILE_FLAGS "-Wall -Werror -DOPENFHE_VERSION=${OPENFHE_VERSION}")
 if(WITH_NATIVEOPT)
-    string(APPEND C_COMPILE_FLAGS " -march=native")
-    string(APPEND CXX_COMPILE_FLAGS " -march=native")
+    # probe rather than hardcode: -march=native is the x86 spelling, some aarch64
+    # toolchains reject it, and cmake does not validate compiler flags at configure time.
+    # The C and C++ frontends may accept different options, so probe each language.
+    include(CheckCCompilerFlag)
+    include(CheckCXXCompilerFlag)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64|armv8)")
+        set(NATIVEOPT_CANDIDATES "-mcpu=native" "-march=native")
+    else()
+        set(NATIVEOPT_CANDIDATES "-march=native" "-mcpu=native")
+    endif()
+
+    set(NATIVEOPT_C_FLAG "")
+    foreach(flag ${NATIVEOPT_CANDIDATES})
+        string(MAKE_C_IDENTIFIER "C_COMPILER_SUPPORTS${flag}" flagvar)
+        check_c_compiler_flag("${flag}" ${flagvar})
+        if(${flagvar})
+            set(NATIVEOPT_C_FLAG "${flag}")
+            break()
+        endif()
+    endforeach()
+
+    set(NATIVEOPT_CXX_FLAG "")
+    foreach(flag ${NATIVEOPT_CANDIDATES})
+        string(MAKE_C_IDENTIFIER "CXX_COMPILER_SUPPORTS${flag}" flagvar)
+        check_cxx_compiler_flag("${flag}" ${flagvar})
+        if(${flagvar})
+            set(NATIVEOPT_CXX_FLAG "${flag}")
+            break()
+        endif()
+    endforeach()
+
+    if(NATIVEOPT_CXX_FLAG)
+        message(STATUS "WITH_NATIVEOPT CXX flag: ${NATIVEOPT_CXX_FLAG}")
+        string(APPEND CXX_COMPILE_FLAGS " ${NATIVEOPT_CXX_FLAG}")
+        if(NATIVEOPT_C_FLAG)
+            message(STATUS "WITH_NATIVEOPT C flag:   ${NATIVEOPT_C_FLAG}")
+            string(APPEND C_COMPILE_FLAGS " ${NATIVEOPT_C_FLAG}")
+        else()
+            message(STATUS "WITH_NATIVEOPT: ${CMAKE_C_COMPILER_ID} accepts neither candidate "
+                           "flag; C sources build without machine-specific optimization.")
+        endif()
+    else()
+        message(WARNING "WITH_NATIVEOPT is ON, but ${CMAKE_CXX_COMPILER_ID} on "
+                        "${CMAKE_SYSTEM_PROCESSOR} supports neither -march=native nor "
+                        "-mcpu=native. Building without machine-specific optimization.")
+        set(WITH_NATIVEOPT OFF)
+    endif()
+    unset(NATIVEOPT_CANDIDATES)
+    unset(NATIVEOPT_C_FLAG)
+    unset(NATIVEOPT_CXX_FLAG)
+    unset(flagvar)
 endif()
 
 set(IGNORE_WARNINGS "") # initialize IGNORE_WARNINGS
@@ -237,27 +298,88 @@ set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 # Installation logic
 #--------------------------------------------------------------------
 # set up for install
-# include(GNUInstallDirs)
-
-set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
-set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH "Installation directory for headers")
-if(NOT IS_ABSOLUTE "${INSTALL_INCLUDE_DIR}")
-    set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_INCLUDE_DIR}")
+# Seed the historical 'lib' default before GNUInstallDirs runs: it only derives
+# lib64/<arch-triplet> when CMAKE_INSTALL_LIBDIR is unset, so an explicit
+# -DCMAKE_INSTALL_LIBDIR from a packager is still honored.
+if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+    set(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Object code libraries")
 endif()
+include(GNUInstallDirs)
 
+# INSTALL_LIB_DIR and INSTALL_INCLUDE_DIR are superseded by the CMAKE_INSTALL_*DIR variables
+# above. Neither was ever honored by any install rule (every destination was hardcoded), so a
+# non-default value only changed the paths advertised in OpenFHEConfig.cmake and pointed
+# consumers at directories that were never populated.
+#
+# Warn only when a value other than the historical default is present: the old code cached
+# those defaults unconditionally, so every build tree created before this change carries them,
+# and warning on their mere presence would report variables the user never set on every
+# reconfigure (cmake re-runs on make). Then drop the entries.
+if(DEFINED INSTALL_LIB_DIR AND NOT "${INSTALL_LIB_DIR}" STREQUAL "lib")
+    message(WARNING "INSTALL_LIB_DIR is deprecated and ignored; use -DCMAKE_INSTALL_LIBDIR instead.")
+endif()
+if(DEFINED INSTALL_INCLUDE_DIR AND NOT "${INSTALL_INCLUDE_DIR}" STREQUAL "include/openfhe")
+    message(WARNING "INSTALL_INCLUDE_DIR is deprecated and ignored; use -DCMAKE_INSTALL_INCLUDEDIR instead.")
+endif()
+unset(INSTALL_LIB_DIR CACHE)
+unset(INSTALL_INCLUDE_DIR CACHE)
+
+# INSTALL_CMAKE_DIR, unlike the two variables above, has always been honored by the install
+# rules for the package files, so -DINSTALL_CMAKE_DIR=share/cmake/OpenFHE keeps working. Only
+# its default changes: the package files now go next to the libraries they describe, so that a
+# libdir-based layout (lib64, lib/<arch-triplet>) does not create a second tree under
+# <prefix>/lib solely to hold them.
+#
+# Deliberately no longer declared as a cache entry of our own. Doing that pins an existing build
+# tree to whatever default was derived when it was first configured, so adding
+# -DCMAKE_INSTALL_LIBDIR later moves the libraries but leaves the package files behind. It also
+# avoids the PATH cache type, for which cmake rewrites a relative value into an absolute path
+# against the current working directory - that is what made the example above install into the
+# directory cmake was invoked from rather than under CMAKE_INSTALL_PREFIX. The cost is that the
+# variable no longer shows up in ccmake/cmake-gui.
 if(WIN32 AND NOT CYGWIN)
-    set(DEF_INSTALL_CMAKE_DIR CMake)
+    set(DEF_INSTALL_CMAKE_DIR "CMake")
 else()
-    set(DEF_INSTALL_CMAKE_DIR lib/OpenFHE)
+    set(DEF_INSTALL_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/OpenFHE")
 endif()
-set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
-foreach(p LIB INCLUDE CMAKE)
-    set(var INSTALL_${p}_DIR)
-    if(NOT IS_ABSOLUTE "${${var}}")
-        set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-    endif()
-endforeach()
+# Earlier versions of this file did cache the derived default, for every user, so a build tree
+# configured by one of them carries a value nobody chose. Discard that and re-derive, otherwise
+# such a tree stays pinned to lib/OpenFHE when CMAKE_INSTALL_LIBDIR is changed. Two things have
+# to hold for the value to be one of those rather than a deliberate choice: it still has the help
+# string those set(... CACHE) calls gave it, and it is one of the defaults they hardcoded. cmake
+# gives any entry that came from the command line its own help string instead, whether or not a
+# type was supplied, so -DINSTALL_CMAKE_DIR=lib/OpenFHE and -DINSTALL_CMAKE_DIR:PATH=lib/OpenFHE
+# are both left alone even alongside a different CMAKE_INSTALL_LIBDIR.
+get_property(_install_cmake_dir_help CACHE INSTALL_CMAKE_DIR PROPERTY HELPSTRING)
+if("${_install_cmake_dir_help}" STREQUAL "Installation directory for CMake files"
+        AND ("${INSTALL_CMAKE_DIR}" STREQUAL "lib/OpenFHE" OR "${INSTALL_CMAKE_DIR}" STREQUAL "CMake"))
+    unset(INSTALL_CMAKE_DIR CACHE)
+endif()
+unset(_install_cmake_dir_help)
+
+if(NOT DEFINED INSTALL_CMAKE_DIR)
+    set(INSTALL_CMAKE_DIR "${DEF_INSTALL_CMAKE_DIR}")
+endif()
+
+# Destinations for install(): the relative forms are passed to install(DESTINATION), which
+# resolves them against CMAKE_INSTALL_PREFIX. The CMAKE_INSTALL_FULL_* variables computed by
+# GNUInstallDirs are retained for the build-tree config. The installed config uses
+# package-relative paths instead; explicit absolute destinations are also supported.
+set(OpenFHE_INSTALL_LIBDIR          "${CMAKE_INSTALL_LIBDIR}")
+set(OpenFHE_INSTALL_BINDIR          "${CMAKE_INSTALL_BINDIR}")
+set(OpenFHE_INSTALL_INCLUDEDIR      "${CMAKE_INSTALL_INCLUDEDIR}/openfhe")
+set(OpenFHE_FULL_INSTALL_LIBDIR     "${CMAKE_INSTALL_FULL_LIBDIR}")
+set(OpenFHE_FULL_INSTALL_BINDIR     "${CMAKE_INSTALL_FULL_BINDIR}")
+set(OpenFHE_FULL_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}/openfhe")
+
+# Shared OpenFHE libraries are installed together. Resolve their dependencies relative
+# to the loading library so moving the installation does not retain the old prefix.
+if(APPLE)
+    set(OpenFHE_INSTALL_RPATH "@loader_path")
+elseif(UNIX)
+    set(OpenFHE_INSTALL_RPATH "$ORIGIN")
+endif()
 
 message("***** INSTALL IS AT ${CMAKE_INSTALL_PREFIX}; to change, run cmake with -DCMAKE_INSTALL_PREFIX=/your/path")
 set(CMAKE_INSTALL_MESSAGE LAZY)
@@ -400,7 +522,7 @@ endif()
 
 # Build configure_core.h to make options available
 configure_file(./configure/config_core.in src/core/config_core.h)
-install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/openfhe/core)
+install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/core)
 
 # TODO (dsuponit): do we need TAR?
 find_program(TAR "gtar")
@@ -621,7 +743,7 @@ set(THIRDPARTYDIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 include_directories(${THIRDPARTYDIR}/include)
 
 include_directories(${THIRDPARTYDIR}/cereal/include)
-install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
+install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest/include)
@@ -655,11 +777,14 @@ if(BUILD_SHARED)
 endif()
 
 if(WITH_TCM)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib DESTINATION .
+    # Trailing slash: install the contents of third-party/lib, so the destination follows
+    # CMAKE_INSTALL_LIBDIR instead of always being the literal <prefix>/lib. Consumers look
+    # for these next to the OpenFHE libraries, via OpenFHE_LIBDIR.
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/lib/ DESTINATION ${OpenFHE_INSTALL_LIBDIR}
         FILES_MATCHING PATTERN "libtcmalloc_minimal.*")
     list(APPEND THIRDPARTYLIBS "tcmalloc")
     list(APPEND THIRDPARTYSTATICLIBS "tcmalloc_static")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION include/openfhe/third-party/)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION ${OpenFHE_INSTALL_INCLUDEDIR}/third-party/)
 endif()
 
 if(WITH_NTL)
@@ -800,14 +925,21 @@ export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 export(PACKAGE OpenFHE)
 
 # Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
-# ... for the build tree
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+# Preserve the build-tree config's existing install-path variables.
+set(PACKAGE_INIT "")
+set(PACKAGE_OpenFHE_INSTALL_INCLUDEDIR "${OpenFHE_FULL_INSTALL_INCLUDEDIR}")
+set(PACKAGE_OpenFHE_INSTALL_LIBDIR "${OpenFHE_FULL_INSTALL_LIBDIR}")
+set(PACKAGE_OpenFHE_INSTALL_BINDIR "${OpenFHE_FULL_INSTALL_BINDIR}")
 configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
-# ... for the install tree
-set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-# set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/../../include/openfhe") # supposed to be relocatable?
-configure_file(OpenFHEConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
+
+# Resolve install-tree paths relative to the package file, including custom libdirs.
+include(CMakePackageConfigHelpers)
+configure_package_config_file(OpenFHEConfig.cmake.in
+    "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake"
+    INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}"
+    PATH_VARS OpenFHE_INSTALL_INCLUDEDIR OpenFHE_INSTALL_LIBDIR OpenFHE_INSTALL_BINDIR
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 # ... for both
 configure_file(OpenFHEConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
 

@@ -33,37 +33,47 @@
   matrix strassen operations
  */
 
-#ifndef LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
-#define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
+#ifndef SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
+#define SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_
 
-#include "lattice/lat-hal.h"
-
-#include "utils/exception.h"
-#include "utils/parallel.h"
-
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <ostream>
 #include <utility>
 #include <vector>
 
+#include "lattice/lat-hal.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
+
 namespace lbcrypto {
 
+/**
+ * @brief Dense matrix of Element values whose product uses Strassen's recursive algorithm
+ * with padding to the block size; otherwise mirrors the interface of Matrix (zero-allocator
+ * construction, element-wise arithmetic, gadget and stacking helpers).
+ * @tparam Element the element type
+ */
 template <class Element>
 class MatrixStrassen {  // TODO : public Serializable {
-public:
+  public:
+    /// storage: a vector of rows
     typedef std::vector<std::vector<Element>> data_t;
+    /// a matrix stored as one contiguous row-major vector
     typedef std::vector<Element> lineardata_t;
+    /// iterator into a lineardata_t
     typedef typename std::vector<Element>::iterator it_lineardata_t;
+    /// function returning a freshly allocated element (typically zero)
     typedef std::function<Element(void)> alloc_func;
 
     /**
-   * Constructor that initializes matrix values using a zero allocator
-   *
-   * @param &allocZero lambda function for zero initialization.
-   * @param &rows number of rows.
-   * @param &rows number of columns.
-   */
+     * Constructor that initializes matrix values using a zero allocator
+     *
+     * @param allocZero lambda function for zero initialization.
+     * @param rows number of rows.
+     * @param cols number of columns.
+     */
     MatrixStrassen(alloc_func allocZero, size_t rows, size_t cols)
         : data(), rows(rows), cols(cols), allocZero(allocZero) {
         data.resize(rows);
@@ -76,26 +86,33 @@ public:
     }
 
     /**
-   * Constructor that initializes matrix values using a distribution generation
-   * allocator
-   *
-   * @param &allocZero lambda function for zero initialization (used for
-   * initializing derived matrix objects)
-   * @param &rows number of rows.
-   * @param &rows number of columns.
-   * @param &allocGen lambda function for intialization using a distribution
-   * generator.
-   */
+     * Constructor that initializes matrix values using a distribution generation
+     * allocator
+     *
+     * @param allocZero lambda function for zero initialization (used for
+     * initializing derived matrix objects)
+     * @param rows number of rows.
+     * @param cols number of columns.
+     * @param allocGen lambda function for initialization using a distribution
+     * generator.
+     */
     MatrixStrassen(alloc_func allocZero, size_t rows, size_t cols, alloc_func allocGen);
 
     /**
-   * Constructor of an empty matrix; SetSize must be called on this matrix to
-   * use it Basically this exists to support deserializing
-   *
-   * @param &allocZero lambda function for zero initialization.
-   */
+     * Constructor of an empty matrix; SetSize must be called on this matrix to
+     * use it Basically this exists to support deserializing
+     *
+     * @param allocZero lambda function for zero initialization.
+     */
     explicit MatrixStrassen(alloc_func allocZero) : data(), rows(0), cols(0), allocZero(allocZero) {}
 
+    /**
+     * Set the size of an empty matrix and fill it with zero elements; throws if the matrix is
+     * not empty.
+     *
+     * @param rows number of rows
+     * @param cols number of columns
+     */
     void SetSize(size_t rows, size_t cols) {
         if (this->rows != 0 || this->cols != 0) {
             OPENFHE_THROW("You cannot SetSize on a non-empty matrix");
@@ -114,79 +131,80 @@ public:
     }
 
     /**
-   * Copy constructor
-   *
-   * @param &other the matrix object to be copied
-   */
+     * Copy constructor
+     *
+     * @param other the matrix object to be copied
+     */
     MatrixStrassen(const MatrixStrassen<Element>& other)
         : data(), rows(other.rows), cols(other.cols), allocZero(other.allocZero) {
         deepCopyData(other.data);
     }
 
     /**
-   * Assignment operator
-   *
-   * @param &other the matrix object whose values are to be copied
-   * @return the resulting matrix
-   */
+     * Assignment operator
+     *
+     * @param other the matrix object whose values are to be copied
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element>& operator=(const MatrixStrassen<Element>& other);
 
     /**
-   * In-place change of the current matrix to a matrix of all ones
-   *
-   * @return the resulting matrix
-   */
+     * In-place change of the current matrix to a matrix of all ones
+     *
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element>& Ones();
 
     /**
-   * Fill matrix using the same element
-   *
-   * @param &val the element the matrix is filled by
-   *
-   * @return the resulting matrix
-   */
+     * Fill matrix using the same element
+     *
+     * @param val the element the matrix is filled by
+     *
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element>& Fill(const Element& val);
 
     /**
-   * In-place change of the current matrix to Identity matrix
-   *
-   * @return the resulting matrix
-   */
+     * In-place change of the current matrix to Identity matrix
+     *
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element>& Identity();
 
     /**
-   * Sets the first row to be powers of two
-   *
-   * @return the resulting matrix
-   */
+     * Sets the first row to be powers of the base
+     *
+     * @param base is the base the digits of the matrix are represented in
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element> GadgetVector(int32_t base = 2) const;
 
     /**
-   * Computes the infinity norm
-   *
-   * @return the norm in double format
-   */
+     * Computes the infinity norm
+     *
+     * @return the norm in double format
+     */
     inline double Norm() const;
 
     /**
-   * Operator for matrix multiplication
-   *
-   * @param &other the multiplier matrix
-   * @return the result of multiplication
-   */
+     * Operator for matrix multiplication
+     *
+     * @param other the multiplier matrix
+     * @return the result of multiplication
+     */
     inline MatrixStrassen<Element> operator*(MatrixStrassen<Element> const& other) const {
         return Mult(other);
     }
 
     /**
-   * Multiplication of matrix by a scalar
-   *
-   * @param &other the multiplier element
-   * @return the result of multiplication
-   */
+     * Multiplication of matrix by a scalar
+     *
+     * @param other the multiplier element
+     * @return the result of multiplication
+     */
     inline MatrixStrassen<Element> ScalarMult(Element const& other) const {
         MatrixStrassen<Element> result(*this);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(result.cols))
         for (int32_t col = 0; col < result.cols; ++col) {
             for (int32_t row = 0; row < result.rows; ++row) {
                 *result.data[row][col] = *result.data[row][col] * other;
@@ -196,21 +214,21 @@ public:
     }
 
     /**
-   * Operator for scalar multiplication
-   *
-   * @param &other the multiplier element
-   * @return the result of multiplication
-   */
+     * Operator for scalar multiplication
+     *
+     * @param other the multiplier element
+     * @return the result of multiplication
+     */
     inline MatrixStrassen<Element> operator*(Element const& other) const {
         return ScalarMult(other);
     }
 
     /**
-   * Equality check
-   *
-   * @param &other the matrix object to compare to
-   * @return the boolean result
-   */
+     * Equality check
+     *
+     * @param other the matrix object to compare to
+     * @return the boolean result
+     */
     inline bool Equal(MatrixStrassen<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
             return false;
@@ -227,82 +245,82 @@ public:
     }
 
     /**
-   * Operator for equality check
-   *
-   * @param &other the matrix object to compare to
-   * @return the boolean result
-   */
+     * Operator for equality check
+     *
+     * @param other the matrix object to compare to
+     * @return the boolean result
+     */
     inline bool operator==(MatrixStrassen<Element> const& other) const {
         return Equal(other);
     }
 
     /**
-   * Operator for non-equality check
-   *
-   * @param &other the matrix object to compare to
-   * @return the boolean result
-   */
+     * Operator for non-equality check
+     *
+     * @param other the matrix object to compare to
+     * @return the boolean result
+     */
     inline bool operator!=(MatrixStrassen<Element> const& other) const {
         return !Equal(other);
     }
 
     /**
-   * Get property to access the data as a vector of vectors
-   *
-   * @return the data as vector of vectors
-   */
+     * Get property to access the data as a vector of vectors
+     *
+     * @return the data as vector of vectors
+     */
     const data_t& GetData() const {
         return data;
     }
 
     /**
-   * Get property to access the number of rows in the matrix
-   *
-   * @return the number of rows
-   */
+     * Get property to access the number of rows in the matrix
+     *
+     * @return the number of rows
+     */
     size_t GetRows() const {
         return rows;
     }
 
     /**
-   * Get property to access the number of columns in the matrix
-   *
-   * @return the number of columns
-   */
+     * Get property to access the number of columns in the matrix
+     *
+     * @return the number of columns
+     */
     size_t GetCols() const {
         return cols;
     }
 
     /**
-   * Get property to access the zero allocator for the matrix
-   *
-   * @return the lambda function corresponding to the element zero allocator
-   */
+     * Get property to access the zero allocator for the matrix
+     *
+     * @return the lambda function corresponding to the element zero allocator
+     */
     alloc_func GetAllocator() const {
         return allocZero;
     }
 
     /**
-   * Sets the evaluation or coefficient representation for all ring elements
-   * that support the SetFormat method
-   *
-   * @param &format the enum value corresponding to coefficient or evaluation
-   * representation
-   */
+     * Sets the evaluation or coefficient representation for all ring elements
+     * that support the SetFormat method
+     *
+     * @param format the enum value corresponding to coefficient or evaluation
+     * representation
+     */
     void SetFormat(Format format);
 
     /**
-   * MatrixStrassen addition
-   *
-   * @param &other the matrix to be added
-   * @return the resulting matrix
-   */
+     * MatrixStrassen addition
+     *
+     * @param other the matrix to be added
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element> Add(MatrixStrassen<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
             OPENFHE_THROW("Addition operands have incompatible dimensions");
         }
         MatrixStrassen<Element> result(*this);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
         for (int32_t j = 0; j < cols; ++j) {
             for (int32_t i = 0; i < rows; ++i) {
                 *result.data[i][j] += *other.data[i][j];
@@ -313,35 +331,35 @@ public:
     }
 
     /**
-   * Operator for matrix addition
-   *
-   * @param &other the matrix to be added
-   * @return the resulting matrix
-   */
+     * Operator for matrix addition
+     *
+     * @param other the matrix to be added
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element> operator+(MatrixStrassen<Element> const& other) const {
         return this->Add(other);
     }
 
     /**
-   * Operator for in-place addition
-   *
-   * @param &other the matrix to be added
-   * @return the resulting matrix (same object)
-   */
+     * Operator for in-place addition
+     *
+     * @param other the matrix to be added
+     * @return the resulting matrix (same object)
+     */
     inline MatrixStrassen<Element>& operator+=(MatrixStrassen<Element> const& other);
 
     /**
-   * MatrixStrassen substraction
-   *
-   * @param &other the matrix to be substracted
-   * @return the resulting matrix
-   */
+     * MatrixStrassen subtraction
+     *
+     * @param other the matrix to be subtracted
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element> Sub(MatrixStrassen<Element> const& other) const {
         if (rows != other.rows || cols != other.cols) {
             OPENFHE_THROW("Subtraction operands have incompatible dimensions");
         }
         MatrixStrassen<Element> result(allocZero, rows, other.cols);
-#pragma omp parallel for
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(cols))
         for (int32_t j = 0; j < cols; ++j) {
             for (int32_t i = 0; i < rows; ++i) {
                 *result.data[i][j] = *data[i][j] - *other.data[i][j];
@@ -352,91 +370,91 @@ public:
     }
 
     /**
-   * Operator for matrix substraction
-   *
-   * @param &other the matrix to be substracted
-   * @return the resulting matrix
-   */
+     * Operator for matrix subtraction
+     *
+     * @param other the matrix to be subtracted
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element> operator-(MatrixStrassen<Element> const& other) const {
         return this->Sub(other);
     }
 
     /**
-   * Operator for in-place matrix substraction
-   *
-   * @param &other the matrix to be substracted
-   * @return the resulting matrix (same object)
-   */
+     * Operator for in-place matrix subtraction
+     *
+     * @param other the matrix to be subtracted
+     * @return the resulting matrix (same object)
+     */
     inline MatrixStrassen<Element>& operator-=(MatrixStrassen<Element> const& other);
 
     /**
-   * MatrixStrassen transposition
-   *
-   * @return the resulting matrix
-   */
+     * MatrixStrassen transposition
+     *
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element> Transpose() const;
 
     // YSP The signature of this method needs to be changed in the future
     /**
-   * MatrixStrassen determinant - found using Laplace formula with complexity
-   * O(d!), where d is the dimension
-   *
-   * @param *result where the result is stored
-   */
+     * MatrixStrassen determinant - found using Laplace formula with complexity
+     * O(d!), where d is the dimension
+     *
+     * @param result where the result is stored
+     */
     inline void Determinant(Element* result) const;
 
     /**
-   * Cofactor matrix - the matrix of determinants of the minors A_{ij}
-   * multiplied by -1^{i+j}
-   *
-   * @return the cofactor matrix for the given matrix
-   */
+     * Cofactor matrix - the matrix of determinants of the minors A_{ij}
+     * multiplied by -1^{i+j}
+     *
+     * @return the cofactor matrix for the given matrix
+     */
     inline MatrixStrassen<Element> CofactorMatrixStrassen() const;
 
     /**
-   * Add rows to bottom of the matrix
-   *
-   * @param &other the matrix to be added to the bottom of current matrix
-   * @return the resulting matrix
-   */
+     * Add rows to bottom of the matrix
+     *
+     * @param other the matrix to be added to the bottom of current matrix
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element>& VStack(MatrixStrassen<Element> const& other);
 
     /**
-   * Add columns the right of the matrix
-   *
-   * @param &other the matrix to be added to the right of current matrix
-   * @return the resulting matrix
-   */
+     * Add columns the right of the matrix
+     *
+     * @param other the matrix to be added to the right of current matrix
+     * @return the resulting matrix
+     */
     inline MatrixStrassen<Element>& HStack(MatrixStrassen<Element> const& other);
 
     /**
-   * MatrixStrassen indexing operator - writeable instance of the element
-   *
-   * @param &row row index
-   * @param &col column index
-   * @return the element at the index
-   */
+     * MatrixStrassen indexing operator - writeable instance of the element
+     *
+     * @param row row index
+     * @param col column index
+     * @return the element at the index
+     */
     inline Element& operator()(size_t row, size_t col) {
         return data[row][col];
     }
 
     /**
-   * MatrixStrassen indexing operator - read-only instance of the element
-   *
-   * @param &row row index
-   * @param &col column index
-   * @return the element at the index
-   */
+     * MatrixStrassen indexing operator - read-only instance of the element
+     *
+     * @param row row index
+     * @param col column index
+     * @return the element at the index
+     */
     inline Element const& operator()(size_t row, size_t col) const {
         return data[row][col];
     }
 
     /**
-   * MatrixStrassen row extractor
-   *
-   * @param &row row index
-   * @return the row at the index
-   */
+     * MatrixStrassen row extractor
+     *
+     * @param row row index
+     * @return the row at the index
+     */
     inline MatrixStrassen<Element> ExtractRow(size_t row) const {
         MatrixStrassen<Element> result(this->allocZero, 1, this->cols);
         int i = 0;
@@ -449,34 +467,41 @@ public:
     }
 
     /**
-   * Call switch format for each (ring) element
-   *
-   */
+     * Call switch format for each (ring) element
+     *
+     */
     inline void SwitchFormat();
 
     /**
-   * MatrixStrassen multiplication
-   *
-   * @param &other the multiplier matrix
-   * @return the result of multiplication
-   */
+     * MatrixStrassen multiplication
+     *
+     * @param other the multiplier matrix
+     * @param nrec number of levels of Strassen recursion
+     * @param pad number of padding rows and columns; -1 computes the padding needed for nrec levels
+     * @return the result of multiplication
+     */
     MatrixStrassen<Element> Mult(const MatrixStrassen<Element>& other, int nrec = 0, int pad = -1) const;
 
-    /*
-   * Multiply the matrix by a vector whose elements are all 1's.  This causes
-   * the elements of each row of the matrix to be added and placed into the
-   * corresponding position in the output vector.
-   */
+    /**
+     * Multiply the matrix by a vector whose elements are all 1's.  This causes
+     * the elements of each row of the matrix to be added and placed into the
+     * corresponding position in the output vector.
+     *
+     * @return the rows x 1 matrix of row sums
+     */
     MatrixStrassen<Element> MultByUnityVector() const;
 
-    /*
-   * Multiply the matrix by a vector of random 1's and 0's, which is the same as
-   * adding select elements in each row together. Return a vector that is a rows
-   * x 1 matrix.
-   */
+    /**
+     * Multiply the matrix by a vector of random 1's and 0's, which is the same as
+     * adding select elements in each row together. Return a vector that is a rows
+     * x 1 matrix.
+     *
+     * @param ranvec the 0/1 vector of length cols selecting the columns to add
+     * @return the rows x 1 matrix of selected row sums
+     */
     MatrixStrassen<Element> MultByRandomVector(std::vector<int> ranvec) const;
 
-private:
+  private:
     struct MatDescriptor {
         int lda;
         int nrec;
@@ -496,12 +521,12 @@ private:
     mutable int colpad = 0;
     alloc_func allocZero;
     mutable char* pattern = nullptr;
-    mutable int numAdd    = 0;
-    mutable int numMult   = 0;
-    mutable int numSub    = 0;
+    mutable int numAdd = 0;
+    mutable int numMult = 0;
+    mutable int numSub = 0;
     mutable MatDescriptor desc;
     mutable Element zeroUniquePtr = allocZero();
-    mutable int NUM_THREADS       = 1;
+    mutable int NUM_THREADS = 1;
 
     void multiplyInternalCAPS(it_lineardata_t A, it_lineardata_t B, it_lineardata_t C, MatDescriptor desc,
                               it_lineardata_t work) const;
@@ -543,8 +568,8 @@ private:
 /**
  * Operator for scalar multiplication of matrix
  *
- * @param &e element
- * @param &M matrix
+ * @param e element
+ * @param M matrix
  * @return the resulting matrix
  */
 template <class Element>
@@ -556,7 +581,7 @@ inline MatrixStrassen<Element> operator*(Element const& e, MatrixStrassen<Elemen
  * Generates a matrix of rotations. See pages 7-8 of
  * https://eprint.iacr.org/2013/297
  *
- * @param &inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
+ * @param inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
  * @return the resulting matrix of big binary integers
  */
 inline MatrixStrassen<BigInteger> Rotate(MatrixStrassen<Poly> const& inMat);
@@ -566,29 +591,29 @@ inline MatrixStrassen<BigInteger> Rotate(MatrixStrassen<Poly> const& inMat);
  *  rotations in coefficient form. See pages 7-8 of
  * https://eprint.iacr.org/2013/297
  *
- * @param &inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
- * @return the resulting matrix of big binary integers
+ * @param inMat the matrix of power-of-2 cyclotomic ring elements to be rotated
+ * @return the resulting matrix of big binary vectors
  */
 inline MatrixStrassen<BigVector> RotateVecResult(MatrixStrassen<Poly> const& inMat);
 
 /**
  *  Stream output operator
  *
- * @param &os stream
- * @param &m matrix to be outputted
+ * @param os stream
+ * @param m matrix to be outputted
  * @return the chained stream
  */
 template <class Element>
 inline std::ostream& operator<<(std::ostream& os, const MatrixStrassen<Element>& m);
 
 /**
- * Gives the Choleshky decomposition of the input matrix.
+ * Gives the Cholesky decomposition of the input matrix.
  * The assumption is that covariance matrix does not have large coefficients
  * because it is formed by discrete gaussians e and s; this implies int32_t can
  * be used This algorithm can be further improved - see the Darmstadt paper
  * section 4.4 http://eprint.iacr.org/2013/297.pdf
  *
- * @param &input the matrix for which the Cholesky decomposition is to be
+ * @param input the matrix for which the Cholesky decomposition is to be
  * computed
  * @return the resulting matrix of floating-point numbers
  */
@@ -596,21 +621,23 @@ inline MatrixStrassen<double> Cholesky(const MatrixStrassen<int32_t>& input);
 
 /**
  * Convert a matrix of integers from BigInteger to int32_t
- * Convert from Z_q to [-q/2, q/2]
+ * Convert from Z_q to (-q/2, q/2]
  *
- * @param &input the input matrix
- * @param &modulus the ring modulus
+ * @param input the input matrix
+ * @param modulus the ring modulus
  * @return the resulting matrix of int32_t
+ * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigInteger>& input, const BigInteger& modulus);
 
 /**
  * Convert a matrix of BigVector to int32_t
- * Convert from Z_q to [-q/2, q/2]
+ * Convert from Z_q to (-q/2, q/2]
  *
- * @param &input the input matrix
- * @param &modulus the ring modulus
+ * @param input the input matrix
+ * @param modulus the ring modulus
  * @return the resulting matrix of int32_t
+ * @throws OpenFHEException if a centered value cannot be represented as int32_t
  */
 inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& input, const BigInteger& modulus);
 
@@ -618,9 +645,9 @@ inline MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& i
  * Split a vector of int32_t into a vector of ring elements with ring dimension
  * n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,
@@ -630,13 +657,13 @@ inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(MatrixStrassen<int32_t> c
  * Another method for splitting a vector of int32_t into a vector of ring
  * elements with ring dimension n
  *
- * @param &other the input matrix
- * @param &n the ring dimension
- * @param &params Poly element params
+ * @param other the input matrix
+ * @param n the ring dimension
+ * @param params Poly element params
  * @return the resulting matrix of Poly
  */
 inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,
                                                           const std::shared_ptr<ILParams> params);
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
+#endif  // SRC_CORE_INCLUDE_MATH_MATRIXSTRASSEN_H_

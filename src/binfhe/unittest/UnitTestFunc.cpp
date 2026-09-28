@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
+#include <cstdint>
+#include <string>
+
 #include "binfhecontext.h"
 #include "gtest/gtest.h"
 
@@ -44,7 +48,7 @@ TEST(UnitTestFHEWGINX, EvalArbFunc) {
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
     uint32_t p = cc.GetMaxPlaintextSpace().ConvertToInt();
-    auto fp    = [](NativeInteger m, NativeInteger p1) -> NativeInteger {
+    auto fp = [](NativeInteger m, NativeInteger p1) -> NativeInteger {
         if (m < p1)
             return (m * m * m) % p1;
         else
@@ -98,17 +102,17 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
     cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
 
     uint32_t Q = 1 << 29;
-    int q      = 4096;
+    int q = 4096;
     int factor = 1 << int(29 - std::log2(q));
-    int p      = cc.GetMaxPlaintextSpace().ConvertToInt();
-    auto sk    = cc.KeyGen();
+    int p = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
 
     std::string failed = "Large Precision Sign Evalution failed";
 
     for (int i = 0; i < 8; ++i) {
         auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, LARGE_DIM, p * factor, Q);
-        ct1      = cc.EvalSign(ct1);
+        ct1 = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
         // std::cerr << "i: " << i << ", f=" << (i >= 3) << ", r=" << result << std::endl;
@@ -122,17 +126,17 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
     cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
 
     uint32_t Q = 1 << 29;
-    int q      = 4096;
+    int q = 4096;
     int factor = 1 << int(29 - std::log2(q));
-    int p      = cc.GetMaxPlaintextSpace().ConvertToInt();
-    auto sk    = cc.KeyGen();
+    int p = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
 
     std::string failed = "Large Precision Sign Evalution failed";
 
     for (int i = 0; i < 8; ++i) {
         auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, LARGE_DIM, p * factor, Q);
-        ct1      = cc.EvalSign(ct1);
+        ct1 = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
         EXPECT_EQ(LWEPlaintext(i >= 3), result) << failed;
@@ -145,11 +149,11 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
     cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
     uint32_t Q = 1 << 29;
 
-    int basic        = 4096;                                      // q
-    int factor       = 1 << int(std::log2(Q) - std::log2(basic)); // Q/q
+    int basic = 4096;                                        // q
+    int factor = 1 << int(std::log2(Q) - std::log2(basic));  // Q/q
     uint64_t p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
-    uint64_t P       = p_basic * factor;
-    auto st          = P / 2 - 3;
+    uint64_t P = p_basic * factor;
+    auto st = P / 2 - 3;
     // Generate the secret key
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
@@ -169,7 +173,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
 
             if (j == decomp.size() - 1) {
                 // after every evalfloor, the least significant digit is dropped so the last modulus is computed as log p = (log P) mod (log GetMaxPlaintextSpace)
-                auto logp      = GetMSB(P - 1) % GetMSB(p_basic - 1);
+                auto logp = GetMSB(P - 1) % GetMSB(p_basic - 1);
                 p_basicdecrypt = 1 << logp;
             }
             cc.Decrypt(sk, ct1, &result, p_basicdecrypt);
@@ -177,22 +181,17 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
             if (i < st + 3) {
                 if (j == 0) {
                     EXPECT_EQ(LWEPlaintext(13 + i - st), result) << failed;
-                }
-                else if (j == decomp.size() - 1) {
+                } else if (j == decomp.size() - 1) {
                     EXPECT_EQ(LWEPlaintext(0), result) << failed;
-                }
-                else {
+                } else {
                     EXPECT_EQ(LWEPlaintext(15), result) << failed;
                 }
-            }
-            else {
+            } else {
                 if (j == 0) {
                     EXPECT_EQ(LWEPlaintext(0 + i - (st + 3)), result) << failed;
-                }
-                else if (j == decomp.size() - 1) {
+                } else if (j == decomp.size() - 1) {
                     EXPECT_EQ(LWEPlaintext(1), result) << failed;
-                }
-                else {
+                } else {
                     EXPECT_EQ(LWEPlaintext(0), result) << failed;
                 }
             }
@@ -206,11 +205,11 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
     cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
     uint32_t Q = 1 << 29;
 
-    int basic        = 4096;                                      // q
-    int factor       = 1 << int(std::log2(Q) - std::log2(basic)); // Q/q
+    int basic = 4096;                                        // q
+    int factor = 1 << int(std::log2(Q) - std::log2(basic));  // Q/q
     uint64_t p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
-    uint64_t P       = p_basic * factor;
-    auto st          = P / 2 - 3;
+    uint64_t P = p_basic * factor;
+    auto st = P / 2 - 3;
     // Generate the secret key
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
@@ -229,7 +228,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
 
             if (j == decomp.size() - 1) {
                 // after every evalfloor, the least significant digit is dropped so the last modulus is computed as log p = (log P) mod (log GetMaxPlaintextSpace)
-                auto logp      = GetMSB(P - 1) % GetMSB(p_basic - 1);
+                auto logp = GetMSB(P - 1) % GetMSB(p_basic - 1);
                 p_basicdecrypt = 1 << logp;
             }
             cc.Decrypt(sk, ct1, &result, p_basicdecrypt);
@@ -237,22 +236,17 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
             if (i < st + 3) {
                 if (j == 0) {
                     EXPECT_EQ(LWEPlaintext(13 + i - st), result) << failed;
-                }
-                else if (j == decomp.size() - 1) {
+                } else if (j == decomp.size() - 1) {
                     EXPECT_EQ(LWEPlaintext(0), result) << failed;
-                }
-                else {
+                } else {
                     EXPECT_EQ(LWEPlaintext(15), result) << failed;
                 }
-            }
-            else {
+            } else {
                 if (j == 0) {
                     EXPECT_EQ(LWEPlaintext(0 + i - (st + 3)), result) << failed;
-                }
-                else if (j == decomp.size() - 1) {
+                } else if (j == decomp.size() - 1) {
                     EXPECT_EQ(LWEPlaintext(1), result) << failed;
-                }
-                else {
+                } else {
                     EXPECT_EQ(LWEPlaintext(0), result) << failed;
                 }
             }

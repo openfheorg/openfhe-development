@@ -35,6 +35,11 @@
 
 #define PROFILE  // turns on the reporting of timing results
 
+#include <complex>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;

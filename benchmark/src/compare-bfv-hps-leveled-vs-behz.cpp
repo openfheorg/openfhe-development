@@ -36,37 +36,38 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
-#include "cryptocontext.h"
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <random>
+#include <vector>
 
 #include "benchmark/benchmark.h"
-
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <iterator>
-#include <random>
+#include "cryptocontext.h"
+#include "gen-cryptocontext.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 
 using namespace lbcrypto;
 
-usint mult_depth = 3;
-static std::vector<usint> ptm_args{2, 65537};
-static std::vector<usint> dcrtbit_args{30, 60};
-static std::vector<usint> logn_args{12, 14};
+uint32_t mult_depth = 3;
+static std::vector<uint32_t> ptm_args{2, 65537};
+static std::vector<uint32_t> dcrtbit_args{30, 60};
+static std::vector<uint32_t> logn_args{12, 14};
 
 static void MultBFVArguments(benchmark::internal::Benchmark* b) {
-    for (usint ptm : ptm_args) {
-        for (usint dcrtbit : dcrtbit_args) {
+    for (uint32_t ptm : ptm_args) {
+        for (uint32_t dcrtbit : dcrtbit_args) {
             b->ArgNames({"ptm", "dcrtbit"})->Args({ptm, dcrtbit})->MinTime(10.0);
         }
     }
 }
 
 static void DecBFVArguments(benchmark::internal::Benchmark* b) {
-    for (usint ptm : ptm_args) {
-        for (usint dcrtbit : dcrtbit_args) {
-            for (usint logn : logn_args) {
+    for (uint32_t ptm : ptm_args) {
+        for (uint32_t dcrtbit : dcrtbit_args) {
+            for (uint32_t logn : logn_args) {
                 b->ArgNames({"ptm", "dcrtbit", "logn"})->Args({ptm, dcrtbit, logn});
             }
         }
@@ -77,7 +78,7 @@ static void DecBFVArguments(benchmark::internal::Benchmark* b) {
  * Context setup utility methods
  */
 
-CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
+CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t ptm, uint32_t dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(mult_depth);
@@ -93,7 +94,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateBEHZContext(usint ptm, usint dcrtBits) {
+CryptoContext<DCRTPoly> GenerateBEHZContext(uint32_t ptm, uint32_t dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(mult_depth);
@@ -109,7 +110,7 @@ CryptoContext<DCRTPoly> GenerateBEHZContext(usint ptm, usint dcrtBits) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usint n) {
+CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(uint32_t ptm, uint32_t dcrtBits, uint32_t n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMaxRelinSkDeg(0);
@@ -124,7 +125,7 @@ CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usi
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateFlatBEHZContext(usint ptm, usint dcrtBits, usint n) {
+CryptoContext<DCRTPoly> GenerateFlatBEHZContext(uint32_t ptm, uint32_t dcrtBits, uint32_t n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMaxRelinSkDeg(0);
@@ -215,7 +216,7 @@ BENCHMARK(BEHZ_EvalMultMany)->Unit(benchmark::kMicrosecond)->Apply(MultBFVArgume
 
 void BFVrns_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBFVrnsContext(state.range(0), state.range(1), 1 << state.range(2));
+            GenerateFlatBFVrnsContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
@@ -238,7 +239,7 @@ BENCHMARK(BFVrns_Decrypt)->Unit(benchmark::kMicrosecond)->Apply(DecBFVArguments)
 
 void BEHZ_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
+            GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 

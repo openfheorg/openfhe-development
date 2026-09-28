@@ -29,11 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "lattice/constants-lattice.h"
-#include "utils/exception.h"
-
+#include <cstdint>
 #include <ostream>
 #include <string>
+
+#include "lattice/constants-lattice.h"
+#include "utils/exception.h"
 
 namespace lbcrypto {
 

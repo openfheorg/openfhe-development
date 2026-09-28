@@ -39,8 +39,8 @@
 std::string demangle(const char* const name) noexcept {
     // output_buffer must be malloc'ed
     size_t output_buffer_size = 512;
-    auto output_buffer        = reinterpret_cast<char*>(std::malloc(output_buffer_size));
-    int status                = -1;
+    auto output_buffer = reinterpret_cast<char*>(std::malloc(output_buffer_size));
+    int status = -1;
 
     char* ptr = abi::__cxa_demangle(name, output_buffer, &output_buffer_size, &status);
     std::string result;
@@ -51,8 +51,7 @@ std::string demangle(const char* const name) noexcept {
             std::free(ptr);
         else
             std::free(output_buffer);
-    }
-    else {
+    } else {
         result = "Cannot demangle symbol: " + std::string(name);
         std::free(output_buffer);
     }

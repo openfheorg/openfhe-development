@@ -29,23 +29,29 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_
 
-#include "schemerns/rns-multiparty.h"
-#include "ckksrns-cryptoparameters.h"
-
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
+#include "ckksrns-cryptoparameters.h"
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+/**
+ * @brief CKKS implementation of the multiparty (threshold FHE) capability: fusion of the partial decryptions and
+ * the interactive multi-party bootstrapping protocol (common random element, masked decryption shares and their
+ * re-encryption, with the scale adjustments CKKS needs).
+ */
 class MultipartyCKKSRNS : public MultipartyRNS {
-public:
+  public:
     virtual ~MultipartyCKKSRNS() = default;
 
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
@@ -61,6 +67,14 @@ public:
     Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                    const PublicKey<DCRTPoly> publicKey) const override;
 
+    /**
+     * Threshold FHE: generates a common random polynomial for multi-party interactive bootstrapping with the element
+     * parameters (modulus chain) of the given ciphertext, and wraps it in a ciphertext with the same metadata.
+     *
+     * @param params CKKS crypto parameters (unused; the parameters of the ciphertext are used instead)
+     * @param ciphertext the ciphertext to be bootstrapped, which sets the modulus chain of the random element
+     * @return a ciphertext holding the common random polynomial as its single element
+     */
     Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
                                                    ConstCiphertext<DCRTPoly>& ciphertext) const override;
 
@@ -69,7 +83,7 @@ public:
                                                        ConstCiphertext<DCRTPoly> a) const override;
 
     std::vector<Ciphertext<DCRTPoly>> IntMPBootAdd(
-        std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const override;
+            std::vector<std::vector<Ciphertext<DCRTPoly>>>& sharesPairVec) const override;
 
     Ciphertext<DCRTPoly> IntMPBootEncrypt(const PublicKey<DCRTPoly> publicKey,
                                           const std::vector<Ciphertext<DCRTPoly>>& sharesPair,
@@ -93,4 +107,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_MULTIPARTY_H_

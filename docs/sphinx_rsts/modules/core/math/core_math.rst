@@ -1,6 +1,14 @@
 Core Math Documentation
 ========================
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Sub-Contents:
+
+   math_backends.rst
+   ntl_backend.rst
+   sampling.rst
+
 .. contents:: Page Contents
    :local:
    :backlinks: entry

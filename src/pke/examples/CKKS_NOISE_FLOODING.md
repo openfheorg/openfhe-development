@@ -4,7 +4,7 @@ to noise flooding. We focus on CKKS, but the same applies to
 threshold decryption in [threshold FHE](https://link.springer.com/chapter/10.1007/978-3-642-29011-4_29).
 
 # Li and Micciancio's CKKS attack
-[Li and Micciancio](https://link.springer.com/chapter/10.1007/978-3-030-77870-5_23) showed that 
+[Li and Micciancio](https://link.springer.com/chapter/10.1007/978-3-030-77870-5_23) showed that
 approximate FHE schemes (e.g., CKKS) can leak information about the secret key.
 In short, CKKS decryptions give
 direct access to the secret key given a ciphertext and a decryption
@@ -18,7 +18,7 @@ in CKKS to add [additional error to the output](https://link.springer.com/chapte
 CKKS ciphertext $\mathsf{ct} = (c_0, c_1)$, decryption is a \emph{randomized}
 procedure given as $$\mathsf{Dec}(\mathsf{ct}): \text{ Sample } z \gets D_{R, \sigma}.\text{ Return } c_0 + c_1s + z \pmod q$$
 where $D_{R, \sigma}$ is a discrete gaussian over the polynomial ring,
-represented in its coefficient form, and 
+represented in its coefficient form, and
 $\sigma$ is a standard deviation set by a security level
 and the noise estimate. If we want $s>0$ bits of statistical
 security, then the standard deviation is
@@ -41,7 +41,7 @@ growth depends on the input message as soon as the computation
 involves a multiplication.
 
 # Noise Flooding and Static Estimation in OpenFHE
-OpenFHE enables the user to do the following for static estimation, i.e. 
+OpenFHE enables the user to do the following for static estimation, i.e.
 determining a good bound for $\mathsf{ct}.t$.
 1. It first runs the computation on a fresh secret key-public key
 pair, independent of the user's key pair, and a message determined
@@ -65,8 +65,8 @@ We call this mode $\mathsf{EXEC}\textunderscore\mathsf{EVALUATION}$.
 
 The code for this procedure is in
   src/examples/pke/ckks-noise-flooding.cpp
-in OpenFHE. 
-For leveled computations, the code allows for the user to run the 
+in OpenFHE.
+For leveled computations, the code allows for the user to run the
 static estimation using 64-bit CKKS and the actual computation in 128-bit CKKS.
 
 [^1]:The formula for $\sigma$ in Corollary 2 of [the state of the art in noise flooding security](https://link.springer.com/chapter/10.1007/978-3-031-15802-5_20) has an incorrect $\sqrt{2n}$ factor since the indistinguishablility game is played over the coefficient embedding.

@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-#ifndef __GET_CALL_STACK_H__
-#define __GET_CALL_STACK_H__
+#ifndef SRC_CORE_INCLUDE_UTILS_GET_CALL_STACK_H_
+#define SRC_CORE_INCLUDE_UTILS_GET_CALL_STACK_H_
 
 #include <string>
 #include <vector>
@@ -41,4 +41,4 @@
  */
 std::vector<std::string> get_call_stack() noexcept;
 
-#endif  // __GET_CALL_STACK_H__
+#endif  // SRC_CORE_INCLUDE_UTILS_GET_CALL_STACK_H_

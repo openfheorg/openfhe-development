@@ -147,10 +147,10 @@ void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk  = cc.KeyGen();
+    LWEPrivateKey sk = cc.KeyGen();
     LWEPrivateKey skN = cc.KeyGenN();
 
-    auto ctQN1         = cc.Encrypt(skN, 1, SMALL_DIM);
+    auto ctQN1 = cc.Encrypt(skN, 1, SMALL_DIM);
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
     for (auto _ : state) {

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,15 +33,23 @@
   This file contains template instantiations for all math classes & functions using math native
  */
 
-#include "math/math-hal.h"
-#include "math/hal/transform.h"
+#include <cstdint>
+#include <memory>
+#include <set>
+#include <vector>
 
 #include "math/binaryuniformgenerator-impl.h"
 #include "math/discretegaussiangenerator-impl.h"
 #include "math/discreteuniformgenerator-impl.h"
+#include "math/hal/transform.h"
+#include "math/math-hal.h"
 #include "math/matrix-impl.h"
 #include "math/nbtheory-impl.h"
 #include "math/ternaryuniformgenerator-impl.h"
+
+#ifdef TRANSFORM_IMPLEMENTATION
+    #include TRANSFORM_IMPLEMENTATION
+#endif
 
 namespace lbcrypto {
 
@@ -50,10 +58,16 @@ template class BinaryUniformGeneratorImpl<NativeVector>;
 template class TernaryUniformGeneratorImpl<NativeVector>;
 template class DiscreteUniformGeneratorImpl<NativeVector>;
 
-template NativeInteger RootOfUnity<NativeInteger>(usint m, const NativeInteger& modulo);
-template std::vector<NativeInteger> RootsOfUnity(usint m, const std::vector<NativeInteger>& moduli);
+#if NATIVEINT != 32
+// samplers at the 32-bit width, for the native 32-bit BinFHE key generation
+template class DiscreteGaussianGeneratorImpl<NativeVector32>;
+template class DiscreteUniformGeneratorImpl<NativeVector32>;
+#endif
+
+template NativeInteger RootOfUnity<NativeInteger>(uint32_t m, const NativeInteger& modulo);
+template std::vector<NativeInteger> RootsOfUnity(uint32_t m, const std::vector<NativeInteger>& moduli);
 template NativeInteger GreatestCommonDivisor(const NativeInteger& a, const NativeInteger& b);
-template bool MillerRabinPrimalityTest(const NativeInteger& p, const usint niter);
+template bool MillerRabinPrimalityTest(const NativeInteger& p, const uint32_t niter);
 template const NativeInteger PollardRhoFactorization(const NativeInteger& n);
 template void PrimeFactorize(NativeInteger n, std::set<NativeInteger>& primeFactors);
 template NativeInteger FirstPrime(uint32_t nBits, uint64_t m);
@@ -62,16 +76,16 @@ template NativeInteger NextPrime(const NativeInteger& q, uint64_t m);
 template NativeInteger PreviousPrime(const NativeInteger& q, uint64_t m);
 
 template std::vector<NativeInteger> GetTotientList(const NativeInteger& n);
-template std::vector<usint> GetTotientList(const usint& n);
+template std::vector<uint32_t> GetTotientList(const uint32_t& n);
 
 template NativeVector PolyMod(const NativeVector& dividend, const NativeVector& divisor, const NativeInteger& modulus);
 template NativeVector PolynomialMultiplication(const NativeVector& a, const NativeVector& b);
-template NativeVector GetCyclotomicPolynomial(usint m, const NativeInteger& modulus);
+template NativeVector GetCyclotomicPolynomial(uint32_t m, const NativeInteger& modulus);
 template NativeInteger SyntheticRemainder(const NativeVector& dividend, const NativeInteger& a,
                                           const NativeInteger& modulus);
 template NativeVector SyntheticPolyRemainder(const NativeVector& dividend, const NativeVector& aList,
                                              const NativeInteger& modulus);
-template NativeVector PolynomialPower<NativeVector>(const NativeVector& input, usint power);
+template NativeVector PolynomialPower<NativeVector>(const NativeVector& input, uint32_t power);
 template NativeVector SyntheticPolynomialDivision(const NativeVector& dividend, const NativeInteger& a,
                                                   const NativeInteger& modulus);
 template NativeInteger FindGeneratorCyclic(const NativeInteger& modulo);
@@ -85,3 +99,10 @@ template class Matrix<NativeVector>;
 
 CEREAL_CLASS_VERSION(NativeInteger, NativeInteger::SerializedVersion());
 CEREAL_CLASS_VERSION(NativeVector, NativeVector::SerializedVersion());
+
+#ifdef TRANSFORM_IMPLEMENTATION
+MAKE_TRANSFORM_TYPES
+    #if NATIVEINT != 32
+MAKE_TRANSFORM_TYPES32
+    #endif
+#endif

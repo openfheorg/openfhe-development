@@ -36,15 +36,15 @@
   Configurable maximum bit length and type of underlying integer
  */
 
+#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
+#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
+
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
-        #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
-
-        #include "math/hal/bigintfxd/ubintfxd.h"
-        #include "math/hal/bigintfxd/mubintvecfxd.h"
-        #include "math/hal/bigintfxd/transformfxd.h"
+    #include "math/hal/bigintfxd/mubintvecfxd.h"
+    #include "math/hal/bigintfxd/transformfxd.h"
+    #include "math/hal/bigintfxd/ubintfxd.h"
 
 static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value, "Data type provided is not supported in BigInteger");
 
@@ -53,8 +53,8 @@ using M2Integer = bigintfxd::BigInteger;
 
 // Global alias for MATHBACKEND 2 Vector
 using M2Vector = bigintfxd::BigVector;
-
-    #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_ */
 #else
 using M2Integer = void;
 #endif
+
+#endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_

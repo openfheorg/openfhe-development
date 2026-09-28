@@ -33,8 +33,8 @@
   OpenFHE version strings
  */
 
-#ifndef SRC_VERSION_H_
-#define SRC_VERSION_H_
+#ifndef SRC_CORE_INCLUDE_VERSION_H_
+#define SRC_CORE_INCLUDE_VERSION_H_
 
 #include <string>
 
@@ -54,4 +54,4 @@ inline std::string GetOPENFHEVersion() {
     return STR(OPENFHE_VERSION);
 }
 
-#endif /* SRC_VERSION_H_ */
+#endif  // SRC_CORE_INCLUDE_VERSION_H_

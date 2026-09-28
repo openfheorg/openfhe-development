@@ -29,14 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ADVANCEDSHE_H
-#define LBCRYPTO_CRYPTO_RNS_ADVANCEDSHE_H
-
-#include "lattice/lat-hal.h"
-
-#include "schemebase/base-advancedshe.h"
+#ifndef SRC_PKE_INCLUDE_SCHEMERNS_RNS_ADVANCEDSHE_H_
+#define SRC_PKE_INCLUDE_SCHEMERNS_RNS_ADVANCEDSHE_H_
 
 #include <string>
+
+#include "lattice/lat-hal.h"
+#include "schemebase/base-advancedshe.h"
 
 /**
  * @namespace lbcrypto
@@ -46,10 +45,9 @@ namespace lbcrypto {
 
 /**
  * @brief Abstract base class for derived HE algorithms
- * @tparam Element a ring element.
  */
 class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
-public:
+  public:
     virtual ~AdvancedSHERNS() = default;
 
     /////////////////////////////////////
@@ -73,4 +71,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEMERNS_RNS_ADVANCEDSHE_H_

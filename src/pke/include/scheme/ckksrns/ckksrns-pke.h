@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_PKE_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_PKE_H
-
-#include "schemerns/rns-pke.h"
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PKE_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PKE_H_
 
 #include <string>
+
+#include "schemerns/rns-pke.h"
 
 /**
  * @namespace lbcrypto
@@ -42,35 +42,39 @@
  */
 namespace lbcrypto {
 
+/**
+ * @brief CKKS implementation of the public key encryption capability; adds the noise flooding used by the
+ * NOISE_FLOODING_DECRYPT mode to the RNS decryption.
+ */
 class PKECKKSRNS : public PKERNS {
     using ParmType = typename DCRTPoly::Params;
-    using IntType  = typename DCRTPoly::Integer;
-    using DugType  = typename DCRTPoly::DugType;
-    using DggType  = typename DCRTPoly::DggType;
-    using TugType  = typename DCRTPoly::TugType;
+    using IntType = typename DCRTPoly::Integer;
+    using DugType = typename DCRTPoly::DugType;
+    using DggType = typename DCRTPoly::DggType;
+    using TugType = typename DCRTPoly::TugType;
 
-public:
+  public:
     virtual ~PKECKKSRNS() = default;
 
     /**
-   * Method for decrypting plaintext with noise flooding
-   *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext with noise flooding
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           NativePoly* plaintext) const override;
 
     /**
-   * Method for decrypting plaintext with noise flooding
-   *
-   * @param &privateKey private key used for decryption.
-   * @param &ciphertext ciphertext id decrypted.
-   * @param *plaintext the plaintext output.
-   * @return the decoding result.
-   */
+     * Method for decrypting plaintext with noise flooding
+     *
+     * @param ciphertext ciphertext to be decrypted.
+     * @param privateKey private key used for decryption.
+     * @param plaintext the plaintext output.
+     * @return the decoding result.
+     */
     DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                           Poly* plaintext) const override;
 
@@ -95,4 +99,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_CKKSRNS_PKE_H_

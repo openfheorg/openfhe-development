@@ -33,13 +33,14 @@
   Parameter class to generate CKKSRNS crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
-#define __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H_
 
-#include "scheme/gen-cryptocontext-params.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "scheme/gen-cryptocontext-params.h"
 
 namespace lbcrypto {
 
@@ -51,46 +52,97 @@ class CryptoContextCKKSRNS;
 template <typename T>
 class CCParams;
 //====================================================================================================================
+/**
+ * @brief Parameters for generating a CKKS cryptocontext. Disables the setters that do not apply to CKKS
+ * (plaintext modulus, operation counts, encryption and multiplication techniques, PRE hops, multiparty mode and
+ * threshold number of parties).
+ */
 template <>
 class CCParams<CryptoContextCKKSRNS> : public Params {
-public:
+  public:
     CCParams() : Params(CKKSRNS_SCHEME) {}
+    /**
+     * Constructs the parameters from their string representation (one string per parameter, in the order of the
+     * Params data members).
+     *
+     * @param vals the parameter values as strings
+     */
     explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
-    CCParams(const CCParams& obj)     = default;
+    CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj) noexcept = default;
-    ~CCParams()                       = default;
+    ~CCParams() = default;
 
     //================================================================================================================
     // DISABLE FUNCTIONS that are not applicable to CKKSRNS
     //================================================================================================================
+    /**
+     * Not applicable to CKKS (the plaintext modulus is the scaling modulus size); always throws.
+     *
+     * @param ptModulus0 unused
+     */
     void SetPlaintextModulus(PlaintextModulus ptModulus0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param evalAddCount0 unused
+     */
     void SetEvalAddCount(uint32_t evalAddCount0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param keySwitchCount0 unused
+     */
     void SetKeySwitchCount(uint32_t keySwitchCount0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param encryptionTechnique0 unused
+     */
     void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param multiplicationTechnique0 unused
+     */
     void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param PRENumHops0 unused
+     */
     void SetPRENumHops(uint32_t PRENumHops0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param multipartyMode0 unused
+     */
     void SetMultipartyMode(MultipartyMode multipartyMode0) override {
         DISABLED_FOR_CKKSRNS;
     }
 
+    /**
+     * Not applicable to CKKS; always throws.
+     *
+     * @param thresholdNumOfParties0 unused
+     */
     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) override {
         DISABLED_FOR_CKKSRNS;
     }
@@ -99,4 +151,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_PARAMS_H_

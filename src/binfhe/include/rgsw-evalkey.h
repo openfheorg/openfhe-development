@@ -29,8 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_EVAL_KEY_H_
-#define _RGSW_EVAL_KEY_H_
+#ifndef SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_
+#define SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_
+
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "lattice/lat-hal.h"
 #include "lwe-ciphertext.h"
@@ -42,16 +49,10 @@
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 namespace lbcrypto {
 
 class RingGSWEvalKeyImpl;
-using RingGSWEvalKey      = std::shared_ptr<RingGSWEvalKeyImpl>;
+using RingGSWEvalKey = std::shared_ptr<RingGSWEvalKeyImpl>;
 using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
 
 /**
@@ -59,13 +60,37 @@ using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
  * ring elements
  */
 class RingGSWEvalKeyImpl : public Serializable {
-public:
+  public:
     RingGSWEvalKeyImpl() = default;
 
+    /**
+     * Allocates a rowSize x colSize matrix of default-constructed ring elements
+     *
+     * Every row of a RingGSW ciphertext is an RLWE pair (a, b) stored as columns 0 and 1, so colSize is 2.
+     * An RGSW encryption of a monomial has 2 * (digitsG - 1) rows: row 2t adds the gadget power baseG^(t + 1)
+     * times the monomial to "a" and row 2t + 1 adds it to "b" (the first gadget digit is dropped by the
+     * approximate gadget decomposition). An LMKCDEY automorphism key has digitsG - 1 rows.
+     *
+     * @param rowSize the number of rows (RLWE pairs)
+     * @param colSize the number of ring elements per row
+     */
     RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) noexcept
         : m_elements(rowSize, std::vector<NativePoly>(colSize)) {}
 
+    /**
+     * Constructs a RingGSW ciphertext from its matrix of ring elements
+     *
+     * @param elements the ring elements indexed [row][column]; each row is an RLWE pair (a, b) in columns 0 and 1
+     */
     explicit RingGSWEvalKeyImpl(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
+
+    /**
+     * Constructs a RingGSW ciphertext from its matrix of ring elements, moving it
+     *
+     * @param elements the ring elements indexed [row][column]; each row is an RLWE pair (a, b) in columns 0 and 1
+     */
+    explicit RingGSWEvalKeyImpl(std::vector<std::vector<NativePoly>>&& elements) noexcept
+        : m_elements(std::move(elements)) {}
 
     RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl& rhs) : m_elements(rhs.m_elements) {}
 
@@ -94,9 +119,11 @@ public:
     }
 
     /**
-   * Switches between COEFFICIENT and Format::EVALUATION polynomial
-   * representations using NTT
-   */
+     * Switches between COEFFICIENT and Format::EVALUATION polynomial
+     * representations using NTT
+     *
+     * @param format the representation to switch all ring elements to
+     */
     void SetFormat(const Format format) {
         for (size_t i = 0; i < m_elements.size(); ++i) {
             auto& l1 = m_elements[i];
@@ -105,14 +132,28 @@ public:
         }
     }
 
+    /**
+     * @param i the row index
+     * @return the row i (an RLWE pair)
+     */
     std::vector<NativePoly>& operator[](uint32_t i) {
         return m_elements[i];
     }
 
+    /**
+     * @param i the row index
+     * @return the row i (an RLWE pair)
+     */
     const std::vector<NativePoly>& operator[](uint32_t i) const {
         return m_elements[i];
     }
 
+    /**
+     * Compares the two matrices element by element
+     *
+     * @param other the RingGSW ciphertext to compare with
+     * @return true if both have the same dimensions and equal ring elements
+     */
     bool operator==(const RingGSWEvalKeyImpl& other) const {
         if (m_elements.size() != other.m_elements.size())
             return false;
@@ -129,6 +170,10 @@ public:
         return true;
     }
 
+    /**
+     * @param other the RingGSW ciphertext to compare with
+     * @return true if the dimensions or any ring element differ
+     */
     bool operator!=(const RingGSWEvalKeyImpl& other) const {
         return !(*this == other);
     }
@@ -155,10 +200,10 @@ public:
         return 1;
     }
 
-private:
-    std::vector<std::vector<NativePoly>> m_elements;
+  private:
+    std::vector<std::vector<NativePoly>> m_elements;  ///< ring elements indexed [row][column]; columns are (a, b)
 };
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_EVAL_KEY_H_
+#endif  // SRC_BINFHE_INCLUDE_RGSW_EVALKEY_H_

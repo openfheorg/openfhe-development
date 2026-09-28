@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_KEY_KEY_H
-#define LBCRYPTO_CRYPTO_KEY_KEY_H
+#ifndef SRC_PKE_INCLUDE_KEY_KEY_H_
+#define SRC_PKE_INCLUDE_KEY_KEY_H_
 
-#include "cryptoobject.h"
-#include "utils/serial.h"
-
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "cryptoobject.h"
+#include "utils/serial.h"
 
 /**
  * @namespace lbcrypto
@@ -51,15 +52,35 @@ namespace lbcrypto {
  */
 template <class Element>
 class Key : public CryptoObject<Element>, public Serializable {
-public:
+  public:
     Key() = default;
 
+    /**
+     * Constructs a key that belongs to a crypto context.
+     *
+     * @param cc the crypto context the key belongs to
+     * @param id the key tag identifying the key (empty by default)
+     */
     explicit Key(const CryptoContext<Element>& cc, const std::string& id = "") : CryptoObject<Element>(cc, id) {}
 
+    /**
+     * Constructs a key from another crypto object and a key tag.
+     *
+     * @param co the crypto object whose context is used to initialize the key
+     * @param id the key tag identifying the key (empty by default)
+     */
     explicit Key(const std::shared_ptr<CryptoObject<Element>>& co, const std::string& id = "")
         : CryptoObject<Element>(co, id) {}
 
+    Key(const Key&) = default;
+
+    Key(Key&&) noexcept = default;
+
     virtual ~Key() = default;
+
+    Key& operator=(const Key&) = default;
+
+    Key& operator=(Key&&) noexcept = default;
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
@@ -74,4 +95,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_KEY_KEY_H_

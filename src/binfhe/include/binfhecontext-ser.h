@@ -33,8 +33,8 @@
   Header file adding serialization support to Boolean circuit FHE
  */
 
-#ifndef BINFHE_BINFHECONTEXT_SER_H
-#define BINFHE_BINFHECONTEXT_SER_H
+#ifndef SRC_BINFHE_INCLUDE_BINFHECONTEXT_SER_H_
+#define SRC_BINFHE_INCLUDE_BINFHECONTEXT_SER_H_
 
 #include "binfhecontext.h"
 #include "utils/serial.h"
@@ -52,4 +52,4 @@ CEREAL_REGISTER_TYPE(lbcrypto::RingGSWACCKeyImpl);
 CEREAL_REGISTER_TYPE(lbcrypto::BinFHECryptoParams);
 CEREAL_REGISTER_TYPE(lbcrypto::BinFHEContext);
 
-#endif
+#endif  // SRC_BINFHE_INCLUDE_BINFHECONTEXT_SER_H_

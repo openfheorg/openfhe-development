@@ -34,6 +34,11 @@
  */
 
 #define PROFILE  // for TIC TOC
+#include <cmath>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -41,8 +46,8 @@ using namespace lbcrypto;
 using CT = Ciphertext<DCRTPoly>;  // ciphertext
 using PT = Plaintext;             // plaintext
 
-using vecInt  = std::vector<int64_t>;  // vector of ints
-using vecChar = std::vector<char>;     // vector of characters
+using vecInt = std::vector<int64_t>;  // vector of ints
+using vecChar = std::vector<char>;    // vector of characters
 
 bool run_demo_pre(void);
 
@@ -116,7 +121,7 @@ bool run_demo_pre(void) {
 
     TIC(t);
     keyPair1 = cc->KeyGen();
-    t1       = TOC_US(t);
+    t1 = TOC_US(t);
     std::cout << "Key generation time: "
               << "\t" << t1 / 1000.0 << " ms" << std::endl;
 
@@ -144,7 +149,7 @@ bool run_demo_pre(void) {
 
     TIC(t);
     auto ct1 = cc->Encrypt(keyPair1.publicKey, pt);
-    t1       = TOC_US(t);
+    t1 = TOC_US(t);
     std::cout << "Encryption time: "
               << "\t" << t1 / 1000.0 << " ms" << std::endl;
 
@@ -175,7 +180,7 @@ bool run_demo_pre(void) {
     for (unsigned int i = 0; i < numHops; i++) {
         TIC(t);
         keyPairVector[i] = cc->KeyGen();
-        t1               = TOC_US(t);
+        t1 = TOC_US(t);
         if (i == 1)
             std::cout << "Key generation time: "
                       << "\t" << t1 / 1000.0 << " ms" << std::endl;
@@ -191,11 +196,10 @@ bool run_demo_pre(void) {
         ////////////////////////////////////////////////////////////
         if (i == 0) {
             reencryptionKeyVector[i] = cc->ReKeyGen(keyPair1.secretKey, keyPairVector[i].publicKey);
-        }
-        else {
+        } else {
             TIC(t);
             reencryptionKeyVector[i] = cc->ReKeyGen(keyPairVector[i - 1].secretKey, keyPairVector[i].publicKey);
-            t1                       = TOC_US(t);
+            t1 = TOC_US(t);
             if (i == 1)
                 std::cout << "Re-encryption key generation time: "
                           << "\t" << t1 / 1000.0 << " ms" << std::endl;
@@ -209,7 +213,7 @@ bool run_demo_pre(void) {
     for (unsigned int i = 0; i < numHops; i++) {
         TIC(t);
         ct1 = cc->ReEncrypt(ct1, reencryptionKeyVector[i]);
-        t1  = TOC_US(t);
+        t1 = TOC_US(t);
         std::cout << "Re-Encryption time at hop " << i + 1 << "\t" << t1 / 1000.0 << " ms" << std::endl;
 
         if (i < numHops - 1)
@@ -251,8 +255,7 @@ bool run_demo_pre(void) {
         }
         if (good) {
             std::cout << "PRE passes" << std::endl;
-        }
-        else {
+        } else {
             std::cout << "PRE fails" << std::endl;
         }
     }

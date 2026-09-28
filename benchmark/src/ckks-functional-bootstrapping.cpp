@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2025, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,6 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <algorithm>
+#include <complex>
+#include <cstdint>
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "config_core.h"
 #include "cryptocontext.h"
@@ -40,13 +47,11 @@
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
 #include "schemelet/rlwe-mp.h"
 
-#include <complex>
-#include <map>
-#include <vector>
-
 using namespace lbcrypto;
 
 struct fbt_config {
+    SecretKeyDist skd;
+    ScalingTechnique scalTech;
     BigInteger QBFVInit;
     BigInteger PInput;
     BigInteger POutput;
@@ -66,10 +71,13 @@ struct fbt_config {
 [[maybe_unused]] const BigInteger Q4(BigInteger(1) << 4);
 [[maybe_unused]] const BigInteger Q8(BigInteger(1) << 8);
 [[maybe_unused]] const BigInteger Q12(BigInteger(1) << 12);
+[[maybe_unused]] const BigInteger Q24(BigInteger(1) << 24);
+[[maybe_unused]] const BigInteger Q27(BigInteger(1) << 27);
 [[maybe_unused]] const BigInteger Q32(BigInteger(1) << 32);
 [[maybe_unused]] const BigInteger Q33(BigInteger(1) << 33);
 [[maybe_unused]] const BigInteger Q35(BigInteger(1) << 35);
 [[maybe_unused]] const BigInteger Q38(BigInteger(1) << 38);
+[[maybe_unused]] const BigInteger Q46(BigInteger(1) << 46);
 [[maybe_unused]] const BigInteger Q47(BigInteger(1) << 47);
 [[maybe_unused]] const BigInteger Q55(BigInteger(1) << 55);
 [[maybe_unused]] const BigInteger Q60(BigInteger(1) << 60);
@@ -77,24 +85,43 @@ struct fbt_config {
 [[maybe_unused]] const BigInteger Q80(BigInteger(1) << 80);
 
 // clang-format off
-[[maybe_unused]] std::map<uint32_t, fbt_config> arblut_configs = {
-    //      QBFVInit, PInput, POutput,   Q, Bigq, scaleTHI, scaleStepTHI, order, numSlots, ringDim, dnum, lvlBudget
-    {1, {        Q60,     Q1,      Q1, Q33,  Q33,      1.0,          1.0,     1,  1 << 15, 1 << 15,    3, {3, 3}}},
-    {2, {        Q60,     Q2,      Q2, Q35,  Q35,     16.0,          1.0,     1,  1 << 16, 1 << 16,    3, {4, 4}}},
-    {4, {        Q60,     Q4,      Q4, Q38,  Q38,     32.0,          1.0,     1,  1 << 16, 1 << 16,    3, {4, 4}}},
-    {8, {        Q60,     Q8,      Q8, Q47,  Q47,     32.0,          1.0,     1,  1 << 16, 1 << 16,    4, {3, 3}}},
-    {12, {       Q80,    Q12,     Q12, Q55,  Q55,   2000.0,          1.0,     1,  1 << 17, 1 << 17,    3, {4, 4}}},
-    {32, {       Q80,    Q32,      Q4, Q71,  Q47,    256.0,         16.0,     1,  1 << 16, 1 << 16,    4, {3, 3}}}
+[[maybe_unused]] constexpr SecretKeyDist    SE = SPARSE_ENCAPSULATED;
+[[maybe_unused]] constexpr ScalingTechnique FM = FIXEDMANUAL;
+[[maybe_unused]] constexpr ScalingTechnique FA = FLEXIBLEAUTO;
+
+// Keyed by (log p, scaling technique). The order-1 rows for 1, 2, 4 and 8 bits use the smallest scaling factor (Q)
+// whose FBT output error stays below Q/(2p) with probability 2^-40 per ciphertext, measured over all N coefficients
+// on inputs covering every residue of p. Ring dimensions and dnum keep log(Q'_L P') within the 128-bit limits of
+// AKP25 Table 1 for sparse secrets (767 / 1553 bits at N = 2^15 / 2^16).
+// UNIFORM_TERNARY rows are left out until subring secret encapsulation (eprint 2025/1594) is implemented.
+[[maybe_unused]] std::map<std::pair<uint32_t, ScalingTechnique>, fbt_config> arblut_configs = {
+    // {log p, scalTech}, {skd, scalTech, QBFVInit, PInput, POutput, Q, Bigq, scaleTHI, scaleStepTHI, order,
+    //                     numSlots, ringDim, dnum, lvlBudget}
+    {{1, FM},  {SE, FM, Q60,  Q1,  Q1, Q33, Q33,    1.0,  1.0, 1, 1 << 15, 1 << 15, 4, {3, 3}}},
+    {{1, FA},  {SE, FA, Q60,  Q1,  Q1, Q24, Q24,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {3, 3}}},
+    {{2, FM},  {SE, FM, Q60,  Q2,  Q2, Q32, Q32,   16.0,  1.0, 1, 1 << 15, 1 << 15, 4, {2, 2}}},
+    {{2, FA},  {SE, FA, Q60,  Q2,  Q2, Q24, Q24,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {3, 3}}},
+    {{4, FM},  {SE, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 4}}},
+    {{4, FA},  {SE, FA, Q60,  Q4,  Q4, Q27, Q27,   32.0,  1.0, 1, 1 << 15, 1 << 15, 4, {3, 3}}},
+    {{8, FM},  {SE, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
+    {{8, FA},  {SE, FA, Q60,  Q8,  Q8, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {3, 3}}},
+    {{12, FM}, {SE, FM, Q80, Q12, Q12, Q55, Q55, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 4}}},
+    {{32, FM}, {SE, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
 };
 // clang-format on
 
-[[maybe_unused]] static void ArbLUTBits(benchmark::internal::Benchmark* b) {
+[[maybe_unused]] static void ArbLUTBitsFM(benchmark::internal::Benchmark* b) {
     for (uint32_t bits : {12, 8, 4, 2, 1})
         b->ArgName("bits")->Arg(bits);
 }
 
+[[maybe_unused]] static void ArbLUTBitsFA(benchmark::internal::Benchmark* b) {
+    for (uint32_t bits : {8, 4, 2, 1})
+        b->ArgName("bits")->Arg(bits);
+}
+
 [[maybe_unused]] static void FBTSetup(benchmark::State& state) {
-    auto t = arblut_configs[12];
+    auto t = arblut_configs[{12, FM}];
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -107,8 +134,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-        (t.PInput.ConvertToInt<int64_t>() - 1)};
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -122,10 +149,10 @@ struct fbt_config {
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
+    parameters.SetSecretKeyDist(t.skd);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(t.scalTech);
     parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -133,9 +160,9 @@ struct fbt_config {
 
     uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
     else
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -160,7 +187,7 @@ struct fbt_config {
 }
 
 [[maybe_unused]] static void FBTKeyGen(benchmark::State& state) {
-    auto t = arblut_configs[12];
+    auto t = arblut_configs[{12, FM}];
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -173,8 +200,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-        (t.PInput.ConvertToInt<int64_t>() - 1)};
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -188,10 +215,10 @@ struct fbt_config {
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
+    parameters.SetSecretKeyDist(t.skd);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(t.scalTech);
     parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -199,9 +226,9 @@ struct fbt_config {
 
     uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
     else
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -220,7 +247,11 @@ struct fbt_config {
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
                          t.order);
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
+        state.PauseTiming();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        state.ResumeTiming();
         cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
@@ -228,8 +259,8 @@ struct fbt_config {
     cc->ClearStaticMapsAndVectors();
 }
 
-[[maybe_unused]] static void FBTArbLUT(benchmark::State& state) {
-    auto t = arblut_configs[state.range(0)];
+[[maybe_unused]] static void FBTArbLUT(benchmark::State& state, ScalingTechnique scalTech) {
+    auto t = arblut_configs[{static_cast<uint32_t>(state.range(0)), scalTech}];
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -242,8 +273,8 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
-        (t.PInput.ConvertToInt<int64_t>() - 1)};
+            (t.PInput.ConvertToInt<int64_t>() / 2), (t.PInput.ConvertToInt<int64_t>() / 2) + 1, 0, 3, 16, 33, 64,
+            (t.PInput.ConvertToInt<int64_t>() - 1)};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
@@ -257,10 +288,10 @@ struct fbt_config {
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
+    parameters.SetSecretKeyDist(t.skd);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(t.scalTech);
     parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -268,9 +299,9 @@ struct fbt_config {
 
     uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
     else
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -306,7 +337,7 @@ struct fbt_config {
             ctxtAfterFBT = cc->EvalFBT(ctxt, coeffint, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
         else
             ctxtAfterFBT =
-                cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
+                    cc->EvalFBT(ctxt, coeffcomp, t.PInput.GetMSB() - 1, ep->GetModulus(), t.scaleTHI, 0, t.order);
         ctxtAfterFBT.reset();
     }
 
@@ -314,7 +345,7 @@ struct fbt_config {
 }
 
 [[maybe_unused]] static void FBTSignDigit32(benchmark::State& state) {
-    auto t = arblut_configs[32];
+    auto t = arblut_configs[{32, FM}];
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -331,14 +362,14 @@ struct fbt_config {
     };
 
     std::vector<int64_t> x = {
-        t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
-        t.PInput.ConvertToInt<int64_t>() - 1};
+            t.PInput.ConvertToInt<int64_t>() / 2, t.PInput.ConvertToInt<int64_t>() / 2 + 1, 0, 3, 16, 33, 64,
+            t.PInput.ConvertToInt<int64_t>() - 1};
     if (x.size() < t.numSlots)
         x = Fill<int64_t>(x, t.numSlots);
 
     auto exact(x);
     std::transform(x.begin(), x.end(), exact.begin(),
-                   [&](const int64_t& elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
+                   [&](int64_t elem) { return (elem >= t.PInput.ConvertToDouble() / 2.); });
 
     std::vector<int64_t> coeffintMod;
     std::vector<std::complex<double>> coeffcompMod;
@@ -346,20 +377,19 @@ struct fbt_config {
     bool binaryLUT = (t.POutput.ConvertToInt() == 2) && (t.order == 1);
     if (binaryLUT) {
         coeffintMod = {funcMod(1), funcMod(0) - funcMod(1)};  // coeffs for [1, cos^2(pi x)], not [1, cos(2pi x)]
-    }
-    else {
+    } else {
         coeffcompMod =
-            GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
+                GetHermiteTrigCoefficients(funcMod, t.POutput.ConvertToInt(), t.order, t.scaleTHI);  // divided by 2
         coeffcompStep = GetHermiteTrigCoefficients(funcStep, t.POutput.ConvertToInt(), t.order,
                                                    t.scaleStepTHI);  // divided by 2
     }
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
+    parameters.SetSecretKeyDist(t.skd);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(t.scalTech);
     parameters.SetFirstModSize(dcrtBits);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
@@ -367,9 +397,9 @@ struct fbt_config {
 
     uint32_t depth = 0;
     if (binaryLUT)
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.PInput, t.order, t.skd);
     else
-        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.PInput, t.order, SPARSE_ENCAPSULATED);
+        depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.PInput, t.order, t.skd);
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -407,18 +437,18 @@ struct fbt_config {
 
         uint32_t QBFVBits = t.Q.GetMSB() - 1;
 
-        auto Q      = t.Q;
+        auto Q = t.Q;
         auto PInput = t.PInput;
 
         BigInteger QNew;
 
-        const bool checkgt2       = t.POutput.ConvertToInt() > 2;
+        const bool checkgt2 = t.POutput.ConvertToInt() > 2;
         const uint32_t pDigitBits = t.POutput.GetMSB() - 1;
 
-        uint64_t scaleTHI        = t.scaleTHI;
-        bool step                = false;
-        bool go                  = QBFVBits > dcrtBits;
-        size_t levelsToDrop      = 0;
+        uint64_t scaleTHI = t.scaleTHI;
+        bool step = false;
+        bool go = QBFVBits > dcrtBits;
+        size_t levelsToDrop = 0;
         uint32_t postScalingBits = 0;
 
         // For arbitrary digit size, pNew > 2, the last iteration needs to evaluate step pNew not mod pNew.
@@ -430,8 +460,8 @@ struct fbt_config {
             encryptedDigit[0].SwitchModulus(t.Bigq, 1, 0, 0);
             encryptedDigit[1].SwitchModulus(t.Bigq, 1, 0, 0);
 
-            auto ctxt =
-                SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS, depth);
+            auto ctxt = SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, encryptedDigit, keyPair.publicKey, t.Bigq, numSlotsCKKS,
+                                                           depth);
 
             // Bootstrap the digit.
             Ciphertext<DCRTPoly> ctxtAfterFBT;
@@ -456,8 +486,7 @@ struct fbt_config {
                 PInput >>= pDigitBits;
                 QBFVBits -= pDigitBits;
                 postScalingBits += pDigitBits;
-            }
-            else {
+            } else {
                 ctxtBFV[0] = std::move(polys[0]);
                 ctxtBFV[1] = std::move(polys[1]);
             }
@@ -467,9 +496,9 @@ struct fbt_config {
             if (checkgt2 && !go && !step) {
                 if (!binaryLUT)
                     coeffcomp = coeffcompStep;
-                scaleTHI           = t.scaleStepTHI;
-                step               = true;
-                go                 = true;
+                scaleTHI = t.scaleStepTHI;
+                step = true;
+                go = true;
                 int64_t lvlsToDrop = GetMultiplicativeDepthByCoeffVector(coeffcompMod, true) -
                                      GetMultiplicativeDepthByCoeffVector(coeffcompStep, true);
                 if (coeffcompMod.size() > 4 && lvlsToDrop > 0)
@@ -481,7 +510,8 @@ struct fbt_config {
     cc->ClearStaticMapsAndVectors();
 }
 
-BENCHMARK(FBTArbLUT)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBits);
+BENCHMARK_CAPTURE(FBTArbLUT, FM, FM)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBitsFM);
+BENCHMARK_CAPTURE(FBTArbLUT, FA, FA)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBitsFA);
 BENCHMARK(FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
 BENCHMARK(FBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
 BENCHMARK(FBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);

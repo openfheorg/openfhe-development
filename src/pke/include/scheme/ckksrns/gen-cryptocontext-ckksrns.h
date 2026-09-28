@@ -33,8 +33,8 @@
   API to generate CKKSRNS crypto context
  */
 
-#ifndef __GEN_CRYPTOCONTEXT_CKKSRNS_H__
-#define __GEN_CRYPTOCONTEXT_CKKSRNS_H__
+#ifndef SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_H_
+#define SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_H_
 
 #include "cryptocontextfactory.h"
 #include "lattice/lat-hal.h"
@@ -46,15 +46,24 @@
 
 namespace lbcrypto {
 
+/**
+ * @brief Generator of CKKS cryptocontexts; used as the template argument of CCParams and GenCryptoContext.
+ */
 class CryptoContextCKKSRNS {
     using Element = DCRTPoly;
 
-public:
-    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
-    using PublicKeyEncryptionScheme = SchemeCKKSRNS;
-    using CryptoParams              = CryptoParametersCKKSRNS;
+  public:
+    using ContextType = CryptoContext<Element>;       ///< the generated context type; required by GenCryptoContext()
+    using Factory = CryptoContextFactory<Element>;    ///< the factory that creates and caches the contexts
+    using PublicKeyEncryptionScheme = SchemeCKKSRNS;  ///< the scheme instantiated in the context
+    using CryptoParams = CryptoParametersCKKSRNS;     ///< the crypto parameters instantiated in the context
 
+    /**
+     * Validates the parameters and generates a CKKS cryptocontext from them.
+     *
+     * @param parameters the CKKS parameters
+     * @return the cryptocontext
+     */
     static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextCKKSRNS>& parameters) {
         validateParametersForCryptocontext(parameters);
         return genCryptoContextCKKSRNSInternal<CryptoContextCKKSRNS, Element>(parameters);
@@ -63,4 +72,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif  // __GEN_CRYPTOCONTEXT_CKKSRNS_H__
+#endif  // SRC_PKE_INCLUDE_SCHEME_CKKSRNS_GEN_CRYPTOCONTEXT_CKKSRNS_H_

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,24 +33,23 @@
   Wraps parameters for integer lattice operations using double-CRT representation. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
-#define LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_
 
-#include "lattice/hal/elemparams.h"
-#include "lattice/hal/default/ilparams.h"
-
-#include "math/hal/basicint.h"
-#include "math/math-hal.h"
-#include "math/nbtheory-impl.h"
-
-#include "utils/exception.h"
-#include "utils/inttypes.h"
-
+#include <cstdint>
 #include <iomanip>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "lattice/hal/default/ilparams.h"
+#include "lattice/hal/elemparams.h"
+#include "math/hal/basicint.h"
+#include "math/math-hal.h"
+#include "math/nbtheory-impl.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -68,10 +67,20 @@ namespace lbcrypto {
  */
 template <typename IntType>
 class ILDCRTParams final : public ElemParams<IntType> {
-public:
-    using Integer        = IntType;
+  public:
+    using Integer = IntType;
     using ILNativeParams = ILParamsImpl<NativeInteger>;
 
+    /**
+     * @brief Constructor building the tower chain for a target composite modulus: native primes of MAX_MODULUS_SIZE
+     * bits are selected for the order, starting from the last such prime and going downwards, until their product
+     * reaches modulus; the composite modulus is set to that product. A zero order creates an empty parameter set to
+     * be populated later.
+     *
+     * @param corder the cyclotomic order.
+     * @param modulus the lower bound on the composite modulus.
+     * @param rootOfUnity not used; the root of unity of each tower is computed from its modulus.
+     */
     ILDCRTParams(uint32_t corder, const IntType& modulus, const IntType& rootOfUnity = IntType(0))
         : ElemParams<IntType>(corder, modulus) {
         // NOTE params generation uses this constructor to make an empty params that
@@ -91,12 +100,12 @@ public:
     }
 
     /**
-   * @brief Constructor with basic parameter set.
-   * q is selected as LastPrime(bits, order)
-   * @param corder the order of the ciphertext.
-   * @param depth is the size of the tower.
-   * @param bits is the number of bits of each tower's moduli.
-   */
+     * @brief Constructor with basic parameter set.
+     * q is selected as LastPrime(bits, order)
+     * @param corder the order of the ciphertext.
+     * @param depth is the size of the tower.
+     * @param bits is the number of bits of each tower's moduli.
+     */
     explicit ILDCRTParams(uint32_t corder = 0, uint32_t depth = 1, uint32_t bits = MAX_MODULUS_SIZE)
         : ElemParams<IntType>(corder, 0) {
         if (corder == 0)
@@ -117,17 +126,12 @@ public:
     }
 
     /**
-   * @brief Constructor with some pre-computed parameters provided as input.
-   * @param corder the order of the ciphertext
-   * @param moduli the list of the smaller moduli of the component polynomials.
-   * @param rootsOfUnity the list of the smaller roots of unity of the component
-   * polynomials.
-   * @param moduliBig the list of the big moduli of the component polynomials
-   * (arbitrary cyclotomics).
-   * @param rootsOfUnityBig the list of the roots of unity of the component
-   * polynomials for big moduli (arbitrary cyclotomics).
-   * @return
-   */
+     * @brief Constructor with some pre-computed parameters provided as input.
+     * @param corder the order of the ciphertext
+     * @param moduli the list of the smaller moduli of the component polynomials.
+     * @param rootsOfUnity the list of the smaller roots of unity of the component
+     * polynomials.
+     */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
                  const std::vector<NativeInteger>& rootsOfUnity)
         : ElemParams<IntType>(corder, 0) {
@@ -144,6 +148,17 @@ public:
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
 
+    /**
+     * @brief Constructor with the moduli, roots of unity, big moduli and big roots of unity of the component
+     * parameters (the big values are used for arbitrary cyclotomics); the composite modulus is the product of the
+     * moduli. Throws if the four vectors differ in size.
+     *
+     * @param corder the cyclotomic order.
+     * @param moduli the moduli of the component polynomials.
+     * @param rootsOfUnity the roots of unity of the component polynomials.
+     * @param moduliBig the big moduli of the component polynomials.
+     * @param rootsOfUnityBig the big roots of unity of the component polynomials.
+     */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli,
                  const std::vector<NativeInteger>& rootsOfUnity, const std::vector<NativeInteger>& moduliBig,
                  const std::vector<NativeInteger>& rootsOfUnityBig)
@@ -155,21 +170,21 @@ public:
         m_params.reserve(limbs);
         IntType compositeModulus(1);
         for (size_t i = 0; i < limbs; ++i) {
-            m_params.push_back(
-                std::make_shared<ILNativeParams>(corder, moduli[i], rootsOfUnity[i], moduliBig[i], rootsOfUnityBig[i]));
+            m_params.push_back(std::make_shared<ILNativeParams>(corder, moduli[i], rootsOfUnity[i], moduliBig[i],
+                                                                rootsOfUnityBig[i]));
             compositeModulus *= IntType(moduli[i].template ConvertToInt<BasicInteger>());
         }
         ElemParams<IntType>::m_ciphertextModulus = compositeModulus;
     }
 
     /**
-   * @brief Constructor with only cylotomic order and chain of moduli.
-   * Multiplied values of the chain of moduli is automatically calculated. Root
-   * of unity of the modulus is also calculated.
-   *
-   * @param corder the order of the ciphertext
-   * @param &moduli is the tower of moduli
-   */
+     * @brief Constructor with only cylotomic order and chain of moduli.
+     * Multiplied values of the chain of moduli is automatically calculated. Root
+     * of unity of the modulus is also calculated.
+     *
+     * @param corder the order of the ciphertext
+     * @param moduli is the tower of moduli
+     */
     ILDCRTParams(uint32_t corder, const std::vector<NativeInteger>& moduli) : ElemParams<IntType>(corder, 0) {
         size_t limbs{moduli.size()};
         m_params.reserve(limbs);
@@ -182,13 +197,12 @@ public:
     }
 
     /**
-   * @brief Constructor that takes in the cyclotomic order and the component
-   * parameters of the component moduli.
-   * @param corder the primary cyclotomic order.  This is not checked
-   * against the component moduli.
-   * @param params the componet parameters.
-   * @return
-   */
+     * @brief Constructor that takes in the cyclotomic order and the component
+     * parameters of the component moduli.
+     * @param corder the primary cyclotomic order.  This is not checked
+     * against the component moduli.
+     * @param params the componet parameters.
+     */
     ILDCRTParams(uint32_t corder, const std::vector<std::shared_ptr<ILNativeParams>>& params)
         : ElemParams<IntType>(corder, 0), m_params(params) {
         RecalculateModulus();
@@ -200,11 +214,11 @@ public:
         : ElemParams<IntType>(std::move(rhs)), m_params(std::move(rhs.m_params)) {}
 
     /**
-   * Assignment Operator.
-   *
-   * @param &rhs the copied ILDCRTParams.
-   * @return the resulting ILDCRTParams.
-   */
+     * Assignment Operator.
+     *
+     * @param rhs the copied ILDCRTParams.
+     * @return the resulting ILDCRTParams.
+     */
     ILDCRTParams& operator=(const ILDCRTParams& rhs) {
         ElemParams<IntType>::operator=(rhs);
         m_params = rhs.m_params;
@@ -219,20 +233,20 @@ public:
 
     // ACCESSORS
     /**
-   * @brief Getter method for the component parameters.
-   * @return A vector of the component polynomial parameters.
-   */
+     * @brief Getter method for the component parameters.
+     * @return A vector of the component polynomial parameters.
+     */
     const std::vector<std::shared_ptr<ILNativeParams>>& GetParams() const {
         return m_params;
     }
 
     /**
-   * @brief Getter method that returns a subset of the component parameters.
-   *
-   * @param start The index of the first tower to include in the result.
-   * @param end The index of the last tower to include.
-   * @return A vector of the component polynomial parameters.
-   */
+     * @brief Getter method that returns a subset of the component parameters.
+     *
+     * @param start The index of the first tower to include in the result.
+     * @param end The index of the last tower to include.
+     * @return A vector of the component polynomial parameters.
+     */
     std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(uint32_t start, uint32_t end) const {
         if (end < start || end >= m_params.size())
             OPENFHE_THROW("Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +
@@ -241,50 +255,56 @@ public:
     }
 
     /**
-   * @brief Getter method for the component parameters of a specific index.
-   * @param i the index of the parameters to return.  Note this this call is
-   * unguarded if the index is out of bounds.
-   * @return the parameters at index i.
-   */
+     * @brief Getter method for the component parameters of a specific index.
+     * @param i the index of the parameters to return.  Note this this call is
+     * unguarded if the index is out of bounds.
+     * @return the parameters at index i.
+     */
     std::shared_ptr<ILNativeParams>& operator[](size_t i) {
         return m_params[i];
     }
+    /**
+     * @brief Const version of operator[](): the component parameters at index i, unguarded.
+     *
+     * @param i the index of the parameters to return.
+     * @return the parameters at index i.
+     */
     const std::shared_ptr<ILNativeParams>& operator[](size_t i) const {
         return m_params[i];
     }
 
     /**
-   * @brief Removes the last parameter set and adjust the multiplied moduli.
-   *
-   */
+     * @brief Removes the last parameter set and adjust the multiplied moduli.
+     *
+     */
 
     void PopLastParam() {
         ElemParams<IntType>::m_ciphertextModulus /=
-            IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
+                IntType(m_params.back()->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.pop_back();
     }
 
     /**
-   * @brief Removes the first parameter set and adjust the multiplied moduli.
-   *
-   */
+     * @brief Removes the first parameter set and adjust the multiplied moduli.
+     *
+     */
     void PopFirstParam() {
         ElemParams<IntType>::m_ciphertextModulus /=
-            IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
+                IntType(m_params[0]->GetModulus().template ConvertToInt<BasicInteger>());
         m_params.erase(m_params.begin());
     }
 
     /**
-   * Destructor.
-   */
+     * Destructor.
+     */
     ~ILDCRTParams() override = default;
 
     /**
-   * @brief Equality operator checks if the ElemParams are the same.
-   *
-   * @param &other ElemParams to compare against.
-   * @return the equality check results.
-   */
+     * @brief Equality operator checks if the ElemParams are the same.
+     *
+     * @param other ElemParams to compare against.
+     * @return the equality check results.
+     */
     bool operator==(const ElemParams<IntType>& other) const override {
         // ATTENTION: the following changes was made to fix failures in openfhe-python tests linked with clang++-18
         // ========================================================================================================
@@ -308,25 +328,25 @@ public:
     }
 
     /**
-   * @brief Method to recalculate the composite modulus from the component
-   * moduli.
-   */
+     * @brief Method to recalculate the composite modulus from the component
+     * moduli.
+     */
     void RecalculateModulus() {
         ElemParams<IntType>::m_ciphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
             ElemParams<IntType>::m_ciphertextModulus *=
-                IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
+                    IntType(m_params[i]->GetModulus().template ConvertToInt<BasicInteger>());
     }
 
     /**
-   * @brief Method to recalculate the big composite modulus from the component
-   * moduli.
-   */
+     * @brief Method to recalculate the big composite modulus from the component
+     * moduli.
+     */
     void RecalculateBigModulus() {
         ElemParams<IntType>::m_bigCiphertextModulus = 1;
         for (size_t i = 0; i < m_params.size(); ++i)
             ElemParams<IntType>::m_bigCiphertextModulus *=
-                IntType(m_params[i]->GetBigModulus().template ConvertToInt<BasicInteger>());
+                    IntType(m_params[i]->GetBigModulus().template ConvertToInt<BasicInteger>());
     }
 
     template <class Archive>
@@ -352,7 +372,7 @@ public:
         return 1;
     }
 
-protected:
+  protected:
     std::ostream& doprint(std::ostream& out) const override {
         out << "ILDCRTParams ";
         ElemParams<IntType>::doprint(out);
@@ -362,11 +382,11 @@ protected:
         return out << std::endl;
     }
 
-private:
+  private:
     // array of smaller ILParams
     std::vector<std::shared_ptr<ILNativeParams>> m_params;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_ILDCRTPARAMS_H_

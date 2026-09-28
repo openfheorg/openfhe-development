@@ -33,25 +33,36 @@
   implementation of the integer lattice
  */
 
-#ifndef LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-#define LBCRYPTO_INC_LATTICE_HAL_DEFAULT_POLY_IMPL_H
-
-#include "lattice/hal/default/poly.h"
-
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/inttypes.h"
+#ifndef SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
+#define SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_
 
 #include <cmath>
+#include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "lattice/hal/default/poly.h"
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/utilities.h"
+
 namespace lbcrypto {
 
+/**
+ * @brief Constructs an element whose coefficients are sampled from a discrete Gaussian distribution and converted
+ * to the requested format.
+ *
+ * @param dgg the discrete Gaussian generator.
+ * @param params the element parameters.
+ * @param format the format of the resulting element.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const DggType& dgg, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{Format::COEFFICIENT},
@@ -60,12 +71,28 @@ PolyImpl<VecType>::PolyImpl(const DggType& dgg, const std::shared_ptr<PolyImpl::
     PolyImpl<VecType>::SetFormat(format);
 }
 
+/**
+ * @brief Constructs an element with values sampled uniformly modulo the modulus, recorded as already being in the
+ * requested format (no transform is applied).
+ *
+ * @param dug the discrete uniform generator.
+ * @param params the element parameters.
+ * @param format the format recorded for the resulting element.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(DugType& dug, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{format},
       m_params{params},
       m_values{std::make_unique<VecType>(dug.GenerateVector(params->GetRingDimension(), params->GetModulus()))} {}
 
+/**
+ * @brief Constructs an element whose coefficients are sampled from the binary uniform distribution and converted
+ * to the requested format.
+ *
+ * @param bug the binary uniform generator.
+ * @param params the element parameters.
+ * @param format the format of the resulting element.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{Format::COEFFICIENT},
@@ -74,6 +101,16 @@ PolyImpl<VecType>::PolyImpl(const BugType& bug, const std::shared_ptr<PolyImpl::
     PolyImpl<VecType>::SetFormat(format);
 }
 
+/**
+ * @brief Constructs an element whose coefficients are sampled from the ternary uniform distribution and converted
+ * to the requested format.
+ *
+ * @param tug the ternary uniform generator.
+ * @param params the element parameters.
+ * @param format the format of the resulting element.
+ * @param h the Hamming weight (number of nonzero coefficients) for the sparse distribution; 0 samples every
+ * coefficient uniformly.
+ */
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const TugType& tug, const std::shared_ptr<PolyImpl::Params>& params, Format format,
                             uint32_t h)
@@ -130,8 +167,7 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(const std::vector<int64_t>& rhs)
     }
     for (size_t j = 0; j < vlen; ++j) {
         if (j < llen)
-            (*m_values)[j] =
-                (rhs[j] < 0) ? m - Integer(static_cast<uint64_t>(-rhs[j])) : Integer(static_cast<uint64_t>(rhs[j]));
+            (*m_values)[j] = SignedToResidue(rhs[j], m);
         else
             (*m_values)[j] = ZERO;
     }
@@ -152,8 +188,7 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator=(const std::vector<int32_t>& rhs)
     }
     for (size_t j = 0; j < vlen; ++j) {
         if (j < llen)
-            (*m_values)[j] =
-                (rhs[j] < 0) ? m - Integer(static_cast<uint64_t>(-rhs[j])) : Integer(static_cast<uint64_t>(rhs[j]));
+            (*m_values)[j] = SignedToResidue(rhs[j], m);
         else
             (*m_values)[j] = ZERO;
     }
@@ -240,8 +275,7 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(NativeInteger::SignedNativeInt elemen
         if (elementReduced > q)
             elementReduced.ModEq(q);
         tmp.SetValues((*m_values).ModMul(q - elementReduced), m_format);
-    }
-    else {
+    } else {
         Integer elementReduced{NativeInteger::Integer(element)};
         if (elementReduced > q)
             elementReduced.ModEq(q);
@@ -300,9 +334,9 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator-=(const PolyImpl& element) {
 template <typename VecType>
 void PolyImpl<VecType>::AddILElementOne() {
     static const Integer ONE(1);
-    usint vlen{m_params->GetRingDimension()};
+    uint32_t vlen{m_params->GetRingDimension()};
     const auto& m{m_params->GetModulus()};
-    for (usint i = 0; i < vlen; ++i)
+    for (uint32_t i = 0; i < vlen; ++i)
         (*m_values)[i].ModAddFastEq(ONE, m);
 }
 
@@ -451,14 +485,20 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
         m_format = Format::EVALUATION;
         auto&& v = ChineseRemainderTransformArb<VecType>().ForwardTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
-    }
-    else {
+    } else {
         m_format = Format::COEFFICIENT;
         auto&& v = ChineseRemainderTransformArb<VecType>().InverseTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
     }
 }
 
+/**
+ * @brief Writes the values and modulus of a polynomial, followed by its root of unity, to an output stream.
+ *
+ * @param os the output stream.
+ * @param p the polynomial to print.
+ * @return the output stream.
+ */
 template <typename VecType>
 std::ostream& operator<<(std::ostream& os, const PolyImpl<VecType>& p) {
     if (p.m_values != nullptr) {
@@ -488,8 +528,8 @@ void PolyImpl<VecType>::MakeSparse(uint32_t wFactor) {
 template <typename VecType>
 bool PolyImpl<VecType>::InverseExists() const {
     static const Integer ZERO(0);
-    usint vlen{m_params->GetRingDimension()};
-    for (usint i = 0; i < vlen; ++i) {
+    uint32_t vlen{m_params->GetRingDimension()};
+    for (uint32_t i = 0; i < vlen; ++i) {
         if ((*m_values)[i] == ZERO)
             return false;
     }
@@ -498,11 +538,11 @@ bool PolyImpl<VecType>::InverseExists() const {
 
 template <typename VecType>
 double PolyImpl<VecType>::Norm() const {
-    usint vlen{m_params->GetRingDimension()};
+    uint32_t vlen{m_params->GetRingDimension()};
     const auto& q{m_params->GetModulus()};
     const auto& half{q >> 1};
     Integer maxVal{}, minVal{q};
-    for (usint i = 0; i < vlen; i++) {
+    for (uint32_t i = 0; i < vlen; i++) {
         auto& val = (*m_values)[i];
         if (val > half)
             minVal = val < minVal ? val : minVal;
@@ -519,32 +559,44 @@ double PolyImpl<VecType>::Norm() const {
 // \log q / base } \rceil }; used as a subroutine in the relinearization
 // procedure baseBits is the number of bits in the base, i.e., base = 2^baseBits
 
-// TODO: optimize this
 template <typename VecType>
-std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(usint baseBits, bool evalModeAnswer) const {
-    usint nBits = m_params->GetModulus().GetLengthForBase(2);
+std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(uint32_t baseBits, bool evalModeAnswer) const {
+    uint32_t nBits = m_params->GetModulus().GetLengthForBase(2);
 
-    usint nWindows = nBits / baseBits;
+    uint32_t nWindows = nBits / baseBits;
     if (nBits % baseBits > 0)
         nWindows++;
-
-    PolyImpl<VecType> xDigit(m_params);
 
     std::vector<PolyImpl<VecType>> result;
     result.reserve(nWindows);
 
-    PolyImpl<VecType> x(*this);
-    x.SetFormat(Format::COEFFICIENT);
+    PolyImpl<VecType> xcopy;
+    if (m_format != Format::COEFFICIENT) {
+        xcopy = *this;
+        xcopy.SetFormat(Format::COEFFICIENT);
+    }
+    const PolyImpl<VecType>& x = (m_format != Format::COEFFICIENT) ? xcopy : *this;
 
-    // TP: x is same for BACKEND 2 and 6
-    for (usint i = 0; i < nWindows; ++i) {
-        xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, 1 << baseBits), x.GetFormat());
+    if constexpr (std::is_same_v<VecType, NativeVector>) {
+        for (auto&& dv : x.GetValues().BaseDecompose(baseBits)) {
+            PolyImpl<VecType> xDigit(m_params);
+            xDigit.SetValues(std::move(dv), Format::COEFFICIENT);
+            if (evalModeAnswer)
+                xDigit.SwitchFormat();
+            result.push_back(std::move(xDigit));
+        }
+    } else {
+        // TP: x is same for BACKEND 2 and 6
+        for (uint32_t i = 0; i < nWindows; ++i) {
+            PolyImpl<VecType> xDigit(m_params);
+            xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, uint32_t{1} << baseBits), Format::COEFFICIENT);
 
-        // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
-        // *********************************************************
-        if (evalModeAnswer)
-            xDigit.SwitchFormat();
-        result.push_back(xDigit);
+            // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
+            // *********************************************************
+            if (evalModeAnswer)
+                xDigit.SwitchFormat();
+            result.push_back(std::move(xDigit));
+        }
     }
     return result;
 }
@@ -556,16 +608,16 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(usint baseBits, 
 // base = 2^baseBits
 
 template <typename VecType>
-std::vector<PolyImpl<VecType>> PolyImpl<VecType>::PowersOfBase(usint baseBits) const {
+std::vector<PolyImpl<VecType>> PolyImpl<VecType>::PowersOfBase(uint32_t baseBits) const {
     static const Integer TWO(2);
     const auto& m{m_params->GetModulus()};
-    usint nBits{m.GetLengthForBase(2)};
-    usint nWindows{nBits / baseBits};
+    uint32_t nBits{m.GetLengthForBase(2)};
+    uint32_t nWindows{nBits / baseBits};
     if (nBits % baseBits > 0)
         ++nWindows;
     std::vector<PolyImpl<VecType>> result(nWindows);
     Integer shift{0}, bbits{baseBits};
-    for (usint i = 0; i < nWindows; ++i, shift += bbits)
+    for (uint32_t i = 0; i < nWindows; ++i, shift += bbits)
         result[i] = (*this) * TWO.ModExp(shift, m);
     return result;
 }
@@ -573,11 +625,11 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::PowersOfBase(usint baseBits) c
 template <typename VecType>
 typename PolyImpl<VecType>::PolyNative PolyImpl<VecType>::DecryptionCRTInterpolate(PlaintextModulus ptm) const {
     const PolyImpl<VecType> smaller(PolyImpl<VecType>::Mod(ptm));
-    usint vlen{m_params->GetRingDimension()};
+    uint32_t vlen{m_params->GetRingDimension()};
     auto c{m_params->GetCyclotomicOrder()};
     auto params{std::make_shared<ILNativeParams>(c, NativeInteger(ptm), 1)};
     typename PolyImpl<VecType>::PolyNative tmp(params, m_format, true);
-    for (usint i = 0; i < vlen; ++i)
+    for (uint32_t i = 0; i < vlen; ++i)
         tmp[i] = NativeInteger((*smaller.m_values)[i]);
     return tmp;
 }
@@ -589,4 +641,4 @@ inline PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_LATTICE_HAL_DEFAULT_POLY_IMPL_H_

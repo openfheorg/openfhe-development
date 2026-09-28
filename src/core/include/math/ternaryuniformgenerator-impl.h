@@ -33,23 +33,30 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
-#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
+#ifndef SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
+#define SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
 
-#include "math/binaryuniformgenerator.h"
-#include "math/ternaryuniformgenerator.h"
-
-#include "utils/inttypes.h"
-
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "math/binaryuniformgenerator.h"
+#include "math/ternaryuniformgenerator.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
 template <typename VecType>
 std::uniform_int_distribution<int32_t> TernaryUniformGeneratorImpl<VecType>::m_distribution =
-    std::uniform_int_distribution<int32_t>(-1, 1);
+        std::uniform_int_distribution<int32_t>(-1, 1);
+
+template <typename VecType>
+typename VecType::Integer TernaryUniformGeneratorImpl<VecType>::GenerateInteger(
+        const typename VecType::Integer& modulus) const {
+    auto rn = m_distribution(PseudoRandomNumberGenerator::GetPRNG());
+    return rn >= 0 ? typename VecType::Integer(rn) : modulus - typename VecType::Integer(1);
+}
 
 template <typename VecType>
 VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, const typename VecType::Integer& modulus,
@@ -57,8 +64,9 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, cons
     if (h == 0) {
         // regular ternary distribution
         VecType v(size, modulus, modulus - typename VecType::Integer(1));
+        auto& prng = PseudoRandomNumberGenerator::GetPRNG();
         for (uint32_t i = 0; i < size; ++i) {
-            if (auto rn = m_distribution(PseudoRandomNumberGenerator::GetPRNG()); rn >= 0)
+            if (auto rn = m_distribution(prng); rn >= 0)
                 v[i] = typename VecType::Integer(rn);
         }
         return v;
@@ -70,11 +78,12 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, cons
     VecType v(size, modulus);
 
     auto distrHWT = std::uniform_int_distribution<int32_t>(0, size - 1);
+    auto& prng = PseudoRandomNumberGenerator::GetPRNG();
     BinaryUniformGeneratorImpl<VecType> bug;
     uint32_t counterPlus = 0;
 
-    // makes sure the +1's and -1's are roughly evenly distributed
-    while ((counterPlus < h / 2 - 1) || (counterPlus > h / 2 + 1)) {
+    // makes sure the +1's and -1's are roughly evenly distributed: counterPlus within one of h / 2
+    do {
         // initializes all values
         counterPlus = 0;
         for (uint32_t k = 0; k < size; ++k)
@@ -83,19 +92,18 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, cons
         uint32_t i = 0;
         while (i < h) {
             // random index in the vector
-            auto randomIndex = distrHWT(PseudoRandomNumberGenerator::GetPRNG());
+            auto randomIndex = distrHWT(prng);
             if (v[randomIndex] == typename VecType::Integer(0)) {
                 if (bug.GenerateInteger() == typename VecType::Integer(0)) {
                     v[randomIndex] = modulus - typename VecType::Integer(1);
-                }
-                else {
+                } else {
                     v[randomIndex] = typename VecType::Integer(1);
                     ++counterPlus;
                 }
                 ++i;
             }
         }
-    }
+    } while ((counterPlus + 1 < h / 2) || (counterPlus > h / 2 + 1));
     return v;
 }
 
@@ -117,8 +125,8 @@ std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uin
     BinaryUniformGeneratorImpl<VecType> bug;
     uint32_t counterPlus = 0;
 
-    // makes sure the +1's and -1's are roughly evenly distributed
-    while ((counterPlus < h / 2 - 1) || (counterPlus > h / 2 + 1)) {
+    // makes sure the +1's and -1's are roughly evenly distributed: counterPlus within one of h / 2
+    do {
         // initializes all values
         counterPlus = 0;
         for (uint32_t k = 0; k < size; ++k)
@@ -131,18 +139,17 @@ std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uin
             if (v[randomIndex] == 0) {
                 if (bug.GenerateInteger() == typename VecType::Integer(0)) {
                     v[randomIndex] = -1;
-                }
-                else {
+                } else {
                     v[randomIndex] = 1;
                     ++counterPlus;
                 }
                 ++i;
             }
         }
-    }
+    } while ((counterPlus + 1 < h / 2) || (counterPlus > h / 2 + 1));
     return v;
 }
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_CORE_INCLUDE_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_

@@ -29,26 +29,47 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_BGVRNS_MULTIPARTY_H
-#define LBCRYPTO_CRYPTO_BGVRNS_MULTIPARTY_H
+#ifndef SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_
+#define SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_
 
-#include "schemerns/rns-multiparty.h"
-
+#include <cstdint>
 #include <string>
 #include <vector>
+
+#include "schemerns/rns-multiparty.h"
 
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+/**
+ * @brief BGV implementation of the threshold-FHE (multiparty) operations in the RNS representation.
+ */
 class MultipartyBGVRNS : public MultipartyRNS {
-public:
+  public:
     virtual ~MultipartyBGVRNS() {}
 
+    /**
+     * Threshold FHE: Combines the partial decryptions, modulus switches the sum down to a single tower and
+     * reduces it modulo the plaintext modulus. For FLEXIBLEAUTO and FLEXIBLEAUTOEXT the scaling factor modulo
+     * t is adjusted for the dropped towers and returned in the result.
+     *
+     * @param ciphertextVec vector of "partial" decryptions.
+     * @param plaintext the plaintext output as a NativePoly.
+     * @return the decoding result (including the scaling factor modulo t).
+     */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           NativePoly* plaintext) const override;
 
+    /**
+     * Threshold FHE: Combines the partial decryptions, CRT-interpolates the sum to a large-integer polynomial
+     * and reduces it modulo the plaintext modulus.
+     *
+     * @param ciphertextVec vector of "partial" decryptions.
+     * @param plaintext the plaintext output as a Poly.
+     * @return the decoding result.
+     */
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           Poly* plaintext) const override;
 
@@ -68,4 +89,4 @@ public:
 };
 }  // namespace lbcrypto
 
-#endif
+#endif  // SRC_PKE_INCLUDE_SCHEME_BGVRNS_BGVRNS_MULTIPARTY_H_

@@ -7,7 +7,7 @@ Homomorphic Encryption
 -  Liu, Z., Micciancio, D., and Polyakov, Y., “Large-Precision
    Homomorphic Sign Evaluation using FHEW/TFHE Bootstrapping”,
    ASIACRYPT 2022 [https://eprint.iacr.org/2021/1337].
-   
+
 -  Kim, A., Papadimitriou, A., and Polyakov, Y., “Approximate
    Homomorphic Encryption with Reduced Approximation Error”,
    CT-RSA 2022 [https://eprint.iacr.org/2020/1118].
