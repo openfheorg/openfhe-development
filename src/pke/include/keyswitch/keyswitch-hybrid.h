@@ -97,6 +97,7 @@ class KeySwitchHYBRID : public KeySwitchRNS {
      *
      * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
      * @param newPrivateKey private key the switched ciphertexts should decrypt under
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the key switching key
      */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
@@ -110,6 +111,7 @@ class KeySwitchHYBRID : public KeySwitchRNS {
      * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
      * @param newPrivateKey private key the switched ciphertexts should decrypt under
      * @param evalKey key switching key whose "a" components are reused; if null, fresh components are sampled
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the key switching key
      */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,

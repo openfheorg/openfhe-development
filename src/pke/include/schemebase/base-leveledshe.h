@@ -408,6 +408,7 @@ class LeveledSHEBase {
      * which is used after each multiplication.
      *
      * @param privateKey the private key the relinearization key is generated for.
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the relinearization (evaluation) key for s^2.
      */
     virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels = 0) const;
@@ -417,6 +418,7 @@ class LeveledSHEBase {
      * which is used after each multiplication for depth more than 2.
      *
      * @param privateKey the private key the relinearization keys are generated for.
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return the vector of relinearization (evaluation) keys for s^2, s^3, ...
      */
     virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey,
@@ -772,6 +774,7 @@ class LeveledSHEBase {
      *
      * @param privateKey private key.
      * @param indexList list of automorphism indices to be computed
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
@@ -861,6 +864,7 @@ class LeveledSHEBase {
      *
      * @param privateKey private key the rotation keys are generated for.
      * @param indexList list of indices to be computed
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
