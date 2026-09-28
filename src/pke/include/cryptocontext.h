@@ -347,6 +347,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
+     * @brief Throws if levels is nonzero for BFV, which does not support evaluation keys generated or compressed
+     * at a reduced level.
+     *
+     * @param levels number of RNS limbs to drop from the key
+     */
+    void ValidateEvalKeyGenLevels(uint32_t levels, CALLER_INFO_ARGS_HDR) const {
+        if (levels > 0 && getSchemeId() == SCHEME::BFVRNS_SCHEME) {
+            std::string errorMsg(
+                    std::string(
+                            "Generating or compressing evaluation keys at a nonzero level is not supported for BFV") +
+                    CALLER_INFO);
+            OPENFHE_THROW(errorMsg);
+        }
+    }
+
+    /**
      * @brief Throws if a ciphertext is null or was not generated with this crypto context.
      *
      * @param ciphertext the ciphertext to validate
@@ -1118,18 +1134,20 @@ class CryptoContextImpl : public Serializable {
     /**
      * @brief Getter for the level at which evaluation keys should be generated
      * @return level
-     * @attention For future use
+     * @deprecated Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead.
      */
-    size_t GetKeyGenLevel() const {
+    size_t GetKeyGenLevel() const
+            __attribute__((deprecated("Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead"))) {
         return m_keyGenLevel;
     }
 
     /**
      * @brief Setter for the level at which evaluation keys should be generated
      * @param level the level at which evaluation keys should be generated
-     * @attention For future use
+     * @deprecated Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead.
      */
-    void SetKeyGenLevel(size_t level) {
+    void SetKeyGenLevel(size_t level)
+            __attribute__((deprecated("Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead"))) {
         m_keyGenLevel = level;
     }
 
@@ -1479,13 +1497,34 @@ class CryptoContextImpl : public Serializable {
      *
      * @param oldPrivateKey  Original secret key.
      * @param newPrivateKey  Target secret key.
+     * @param levels         Number of RNS limbs to drop from the generated key relative to a
+     *                       full key (0 by default). The key can only be applied to ciphertexts
+     *                       with at most (full - levels) limbs. Not supported for BFV.
      * @return New evaluation key for key switching.
      */
-    EvalKey<Element> KeySwitchGen(const PrivateKey<Element>& oldPrivateKey,
-                                  const PrivateKey<Element>& newPrivateKey) const {
+    EvalKey<Element> KeySwitchGen(const PrivateKey<Element>& oldPrivateKey, const PrivateKey<Element>& newPrivateKey,
+                                  uint32_t levels = 0) const {
         ValidateKey(oldPrivateKey);
         ValidateKey(newPrivateKey);
-        return m_scheme->KeySwitchGen(oldPrivateKey, newPrivateKey);
+        ValidateEvalKeyGenLevels(levels);
+        return m_scheme->KeySwitchGen(oldPrivateKey, newPrivateKey, levels);
+    }
+
+    /**
+     * @brief Creates a copy of an evaluation key with a reduced number of RNS limbs.
+     *
+     * The compressed key can only be applied to ciphertexts with at most as many limbs as the
+     * compressed key, but takes less memory and makes the corresponding homomorphic operations
+     * faster. Not supported for BFV.
+     *
+     * @param evalKey  Evaluation key to compress.
+     * @param levels   Number of RNS limbs to drop from the Q basis of the key.
+     * @return Compressed evaluation key.
+     */
+    EvalKey<Element> CompressEvalKey(const EvalKey<Element>& evalKey, uint32_t levels) const {
+        ValidateKey(evalKey);
+        ValidateEvalKeyGenLevels(levels);
+        return m_scheme->CompressEvalKey(evalKey, levels);
     }
 
     /**
@@ -1986,9 +2025,12 @@ class CryptoContextImpl : public Serializable {
      * @brief Creates a relinearization key (for s^2) that can be used with the OpenFHE EvalMult operator
      *
      * @param key secret key
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
+     * (0 by default). The key can only be applied to ciphertexts with at most (full - levels)
+     * limbs. Not supported for BFV.
      * @note the new evaluation key is stored in cryptocontext
      */
-    void EvalMultKeyGen(const PrivateKey<Element>& key);
+    void EvalMultKeyGen(const PrivateKey<Element>& key, uint32_t levels = 0);
 
     /**
      * @brief Creates a vector evalmult keys that can be used with the OpenFHE EvalMult operator
@@ -1997,8 +2039,10 @@ class CryptoContextImpl : public Serializable {
      * @note 1st key (for s^2) is used for multiplication of ciphertexts of depth 1,
      * 2nd key (for s^3) is used for multiplication of ciphertexts of depth 2, etc.
      * A vector of new evaluation keys is stored in cryptocontext
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
+     * (0 by default). Not supported for BFV.
      */
-    void EvalMultKeysGen(const PrivateKey<Element>& key);
+    void EvalMultKeysGen(const PrivateKey<Element>& key, uint32_t levels = 0);
 
     /**
      * @brief Homomorphic multiplication of two ciphertexts using a relinearization key.
@@ -2381,14 +2425,19 @@ class CryptoContextImpl : public Serializable {
      *
      * @param privateKey   Private key to use for key generation.
      * @param indexList    List of automorphism indices to be computed.
+     * @param levels       Number of RNS limbs to drop from the generated keys relative to full
+     *                     keys (0 by default). The keys can only be applied to ciphertexts with
+     *                     at most (full - levels) limbs. Not supported for BFV.
      * @return Map of generated evaluation keys.
      */
-    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(const PrivateKey<Element> privateKey,
+                                                                                 const std::vector<uint32_t>& indexList,
+                                                                                 uint32_t levels = 0) const {
         ValidateKey(privateKey);
         if (indexList.empty())
             OPENFHE_THROW("Input index vector is empty");
-        auto evalKeys = m_scheme->EvalAutomorphismKeyGen(privateKey, indexList);
+        ValidateEvalKeyGenLevels(levels);
+        auto evalKeys = m_scheme->EvalAutomorphismKeyGen(privateKey, indexList, levels);
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
         return evalKeys;
     }
@@ -2606,17 +2655,24 @@ class CryptoContextImpl : public Serializable {
      *
      * @param privateKey  Private key used for key generation.
      * @param indexList   List of rotation indices.
+     * @param levels      Number of RNS limbs to drop from the generated keys relative to full
+     *                    keys (0 by default). The keys can only be applied to ciphertexts with
+     *                    at most (full - levels) limbs. Not supported for BFV.
      */
-    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList);
+    void EvalAtIndexKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                           uint32_t levels = 0);
 
     /**
      * @brief Generates rotation evaluation keys for a list of indices. Internally calls EvalAtIndexKeyGen.
      *
      * @param privateKey  Private key used for key generation.
      * @param indexList   List of rotation indices.
+     * @param levels      Number of RNS limbs to drop from the generated keys relative to full
+     *                    keys (0 by default). Not supported for BFV.
      */
-    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) {
-        EvalAtIndexKeyGen(privateKey, indexList);
+    void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                          uint32_t levels = 0) {
+        EvalAtIndexKeyGen(privateKey, indexList, levels);
     };
 
     /**
@@ -3101,8 +3157,11 @@ class CryptoContextImpl : public Serializable {
      * @brief Generates evaluation keys required for homomorphic summation (EvalSum).
      *
      * @param privateKey  Private key used for key generation.
+     * @param levels      Number of RNS limbs to drop from the generated keys relative to full
+     *                    keys (0 by default). The keys can only be applied to ciphertexts with
+     *                    at most (full - levels) limbs. Not supported for BFV.
      */
-    void EvalSumKeyGen(const PrivateKey<Element> privateKey);
+    void EvalSumKeyGen(const PrivateKey<Element> privateKey, uint32_t levels = 0);
 
     /**
      * @brief Generates automorphism keys for EvalSumRows (only for packed encoding).
@@ -3110,11 +3169,14 @@ class CryptoContextImpl : public Serializable {
      * @param privateKey    Private key used for key generation.
      * @param rowSize       Number of slots per row in the packed matrix.
      * @param subringDim    Subring dimension (use cyclotomic order if 0).
+     * @param levels        Number of RNS limbs to drop from the generated keys relative to full
+     *                      keys (0 by default).
      * @return Map of generated evaluation keys.
      */
     std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                             uint32_t rowSize = 0,
-                                                                            uint32_t subringDim = 0);
+                                                                            uint32_t subringDim = 0,
+                                                                            uint32_t levels = 0);
 
     /**
      * @brief Generates automorphism keys for EvalSumRows (only for packed encoding). Kept for backwards
@@ -3136,9 +3198,12 @@ class CryptoContextImpl : public Serializable {
      * @brief Generates automorphism keys for EvalSumCols (only for packed encoding).
      *
      * @param privateKey  Private key used for key generation.
+     * @param levels      Number of RNS limbs to drop from the generated keys relative to full
+     *                    keys (0 by default).
      * @return Map of generated evaluation keys.
      */
-    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey);
+    std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
+                                                                            uint32_t levels = 0);
 
     /**
      * @brief Computes the sum of all components in a packed ciphertext vector.
@@ -4364,15 +4429,12 @@ class CryptoContextImpl : public Serializable {
      *
      * @param keyTag secret key tag
      * @param indices set of specific indices to check the key map against
+     * @param minNumTowers keys with fewer towers than this are treated as missing
      * @return indices that do not have automorphism keys associated with
      */
     static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
-                                                              const std::set<uint32_t>& indices) {
-        std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(keyTag)};
-        // if no index found for the given keyTag, then the entire set "indices" is returned
-        return (existingIndices.empty()) ? indices :
-                                           CryptoContextImpl<Element>::GetUniqueValues(existingIndices, indices);
-    }
+                                                              const std::set<uint32_t>& indices,
+                                                              uint32_t minNumTowers = 0);
 
     /**
      * @brief Returns automorphism indices for all existing evaluation keys.
