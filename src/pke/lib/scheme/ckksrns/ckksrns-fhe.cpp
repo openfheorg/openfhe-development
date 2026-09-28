@@ -1638,16 +1638,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     if (st == FLEXIBLEAUTOEXT)
         elementParamsRaised.PopLastParam();
 
-    const auto& paramsQ = elementParamsRaised.GetParams();
-    uint32_t sizeQ = paramsQ.size();
-    std::vector<NativeInteger> moduli(sizeQ);
-    std::vector<NativeInteger> roots(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i] = paramsQ[i]->GetRootOfUnity();
-    }
-    auto elementParamsRaisedPtr =
-            std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elementParamsRaised);
 
     // The Fourier series argument is the message embedded into half of its [-1/2, 1/2) period (t = mu/2),
     // realized by the exact 2^-deg shrink with deg = 1. Unlike regular bootstrapping, the shrink cannot

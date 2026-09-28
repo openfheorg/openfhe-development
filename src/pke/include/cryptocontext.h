@@ -4429,26 +4429,12 @@ class CryptoContextImpl : public Serializable {
      *
      * @param keyTag secret key tag
      * @param indices set of specific indices to check the key map against
+     * @param minNumTowers keys with fewer towers than this are treated as missing
      * @return indices that do not have automorphism keys associated with
      */
     static std::set<uint32_t> GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
                                                               const std::set<uint32_t>& indices,
-                                                              uint32_t minNumTowers = 0) {
-        auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
-        // if no key found for the given keyTag, then the entire set "indices" is returned
-        if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
-            return indices;
-
-        // keys that exist but have fewer towers than minNumTowers must be regenerated
-        const auto& keyMap = *(keyMapIt->second);
-        std::set<uint32_t> indicesToGenerate;
-        for (uint32_t indx : indices) {
-            auto it = keyMap.find(indx);
-            if (it == keyMap.end() || it->second->GetAVector()[0].GetNumOfElements() < minNumTowers)
-                indicesToGenerate.insert(indx);
-        }
-        return indicesToGenerate;
-    }
+                                                              uint32_t minNumTowers = 0);
 
     /**
      * @brief Returns automorphism indices for all existing evaluation keys.

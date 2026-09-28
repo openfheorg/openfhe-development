@@ -600,7 +600,7 @@ class SchemeBase {
      * Generates the relinearization key (from s^2 to s) via m_LeveledSHE and tags it with the key tag of privateKey.
      *
      * @param privateKey the secret key
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the relinearization key
      */
     virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels = 0) const;
@@ -774,6 +774,7 @@ class SchemeBase {
      *
      * @param privateKey the secret key
      * @param indexList automorphism indices (elements of the Galois group) to generate keys for
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
@@ -864,6 +865,7 @@ class SchemeBase {
      *
      * @param privateKey the secret key
      * @param indexList rotation indices (positive for left, negative for right rotations)
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
@@ -1137,6 +1139,7 @@ class SchemeBase {
      * @param rowSize number of slots per row of the packed matrix
      * @param subringDim subring dimension (0 selects the cyclotomic order)
      * @param indices receives the automorphism indices the keys were generated for
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
@@ -1149,6 +1152,7 @@ class SchemeBase {
      *
      * @param privateKey the secret key
      * @param indices receives the automorphism indices the keys were generated for
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
