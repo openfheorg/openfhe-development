@@ -354,6 +354,26 @@ std::set<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyInd
 }
 
 template <typename Element>
+std::set<uint32_t> CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
+                                                                               const std::set<uint32_t>& indices,
+                                                                               uint32_t minNumTowers) {
+    auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
+    // if no key found for the given keyTag, then the entire set "indices" is returned
+    if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
+        return indices;
+
+    // keys that exist but have fewer towers than minNumTowers must be regenerated
+    const auto& keyMap = *(keyMapIt->second);
+    std::set<uint32_t> indicesToGenerate;
+    for (uint32_t indx : indices) {
+        auto it = keyMap.find(indx);
+        if (it == keyMap.end() || it->second->GetAVector()[0].GetNumOfElements() < minNumTowers)
+            indicesToGenerate.insert(indx);
+    }
+    return indicesToGenerate;
+}
+
+template <typename Element>
 std::set<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(const std::set<uint32_t>& oldValues,
                                                                const std::set<uint32_t>& newValues) {
     std::set<uint32_t> newUniqueValues;

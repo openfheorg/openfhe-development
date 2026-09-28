@@ -653,6 +653,7 @@ class AdvancedSHEBase {
      * @param subringDim subring dimension (set to cyclotomic order if set to 0)
      * @param indices automorphism indices to generate keys for; the indices needed for
      * EvalSumRows are appended to it
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
@@ -666,6 +667,7 @@ class AdvancedSHEBase {
      * @param privateKey private key.
      * @param indices automorphism indices to generate keys for; the indices needed for
      * EvalSumCols and EvalSum are appended to it
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
