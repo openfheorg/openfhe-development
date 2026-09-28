@@ -68,6 +68,7 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        4. [Advanced CKKS Bootstrapping Example](src/pke/examples/advanced-ckks-bootstrapping.cpp)
        5. [Double-Precision (Iterative) Bootstrapping Example](src/pke/examples/iterative-ckks-bootstrapping.cpp)
        6. [Basic CKKS Arithmetic in the CKKS Composite Scaling Mode](src/pke/examples/simple-real-numbers-composite-scaling.cpp)
+       7. [Fourier-Extension Functional Bootstrapping](src/pke/examples/FE-functional-bootstrapping-ckks.cpp)
    1. FHE for arithmetic over complex numbers (CKKS):
        1. [Leveled and Boostrapping Code Examples](src/pke/examples/simple-complex-numbers.cpp)
    1. FHE for Boolean circuits and larger plaintext spaces (FHEW/TFHE):
