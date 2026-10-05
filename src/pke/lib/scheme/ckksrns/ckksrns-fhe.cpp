@@ -252,7 +252,12 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         double k;
         switch (cryptoParams->GetSecretKeyDist()) {
             case UNIFORM_TERNARY:
-                k = 1.0;
+                // K is folded into the CoeffsToSlots matrix for every secret distribution: the matrix coefficients
+                // carry 1/K at full precision, whereas the runtime scalar 2^-deg/(K*N) would be truncated to
+                // log2(scalingFactor) - log2(K*N) - deg bits when encoded at the scaling factor (about 19 bits for
+                // a 50-bit scaling factor and a 60-bit first modulus), an error that the overflow I (up to K) and
+                // the correction factor then amplify.
+                k = K_UNIFORM;
                 break;
             case SPARSE_TERNARY:
                 k = K_SPARSE;
@@ -459,7 +464,8 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     double k;
     switch (cryptoParams->GetSecretKeyDist()) {
         case UNIFORM_TERNARY:
-            k = 1.0;
+            // K is folded into the CoeffsToSlots matrix (see EvalBootstrapSetup for the precision reason)
+            k = K_UNIFORM;
             break;
         case SPARSE_TERNARY:
             k = K_SPARSE;
@@ -898,7 +904,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         k = 1.0;  // do not divide by k as we already did it during precomputation
     } else {
         coefficients = g_coefficientsUniform;
-        k = K_UNIFORM;
+        k = 1.0;  // K_UNIFORM is folded into the CoeffsToSlots matrix during precomputation
     }
 
     cc->EvalMultInPlace(raised, pre * (1.0 / (k * N)));
@@ -1248,7 +1254,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         k = 1.0;  // do not divide by k as we already did it during precomputation
     } else {
         coefficients = g_coefficientsUniform;
-        k = K_UNIFORM;
+        k = 1.0;  // K_UNIFORM is folded into the CoeffsToSlots matrix during precomputation
     }
 
     // no linear transformations are needed for Chebyshev series as the range has been normalized to [-1,1]
@@ -1532,8 +1538,9 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     double k;
     switch (cryptoParams->GetSecretKeyDist()) {
         case UNIFORM_TERNARY:
-            // K_UNIFORM_FEFBT covers all composite degrees and ring dimensions, as in regular bootstrapping
-            k = 1.0;  // K_UNIFORM_FEFBT is applied at runtime in EvalFEFuncBootstrap
+            // K_UNIFORM_FEFBT covers all composite degrees and ring dimensions, as in regular bootstrapping; it is
+            // folded into the CoeffsToSlots matrix (see EvalBootstrapSetup for the precision reason)
+            k = K_UNIFORM_FEFBT;
             break;
         case SPARSE_TERNARY:
             k = K_SPARSE;
@@ -1682,9 +1689,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     // For composite scaling the shrink is folded into the CoeffsToSlots matrix (see EvalFEFuncBootstrapSetup)
     double pre = (compositeDegree > 1) ? 1.0 : std::pow(2, -deg);
 
-    // the runtime part of the overflow-bound normalization; for the sparse distributions K is folded
-    // into the CoeffsToSlots matrix instead (see EvalFEFuncBootstrapSetup)
-    double k = (skd == UNIFORM_TERNARY) ? K_UNIFORM_FEFBT : 1.0;
+    // K is folded into the CoeffsToSlots matrix for every secret distribution (see EvalFEFuncBootstrapSetup), so
+    // the runtime normalization is the exact power of two 2^-deg/N
+    double k = 1.0;
 
     // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup; the K = 28
     // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64)
