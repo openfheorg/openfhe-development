@@ -197,6 +197,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     auto& precom = m_bootPrecomMap[slots];
     precom->m_slots = slots;
     precom->BTSlotsEncoding = BTSlotsEncoding;
+    precom->m_variant = CKKSBootstrapPrecom::BOOTSTRAP;
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -432,7 +433,11 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
-    auto& p = GetBootPrecom(slots);
+    // Only a regular-bootstrapping precomputation may be recomputed here: rebuilding an FBT or FEFBT
+    // entry would fold the regular-bootstrapping K_UNIFORM into its matrices while keeping the rest of
+    // its state (BTSlotsEncoding, level budgets, no correction factor). A deserialized precomputation
+    // loads with the default BOOTSTRAP tag, so the documented deserialize-then-recompute flow passes.
+    auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
 
     p.m_paramsEnc = GetCollapsedFFTParams(slots, p.m_paramsEnc.lvlb, p.m_paramsEnc.g);
     p.m_paramsDec = GetCollapsedFFTParams(slots, p.m_paramsDec.lvlb, p.m_paramsDec.g);
@@ -737,7 +742,7 @@ void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const {
     uint32_t slots = ciphertext->GetSlots();
-    auto& p = GetBootPrecom(slots);
+    auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
 
     if (p.BTSlotsEncoding) {
         return EvalBootstrapStCFirst(ciphertext, numIterations, precision);
@@ -1236,7 +1241,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
     auto algo = cc->GetScheme();
     auto N = cc->GetRingDimension();
-    auto& p = GetBootPrecom(slots);
+    auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
 
     // Coefficients of the Chebyshev series interpolating 1/(2 Pi) Sin(2 Pi K x)
     std::vector<double> coefficients;
@@ -1480,6 +1485,7 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     auto& precom = m_bootPrecomMap[slots];
     precom->m_slots = slots;
     precom->BTSlotsEncoding = true;
+    precom->m_variant = CKKSBootstrapPrecom::FEFBT;
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -1654,7 +1660,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     auto st = cryptoParams->GetScalingTechnique();
     auto skd = cryptoParams->GetSecretKeyDist();
 
-    auto& p = GetBootPrecom(slots);
+    auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::FEFBT);
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
     auto elementParamsRaised = *(cryptoParams->GetElementParams());
@@ -3470,6 +3476,7 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     auto& precom = m_bootPrecomMap[slots];
 
     precom->m_slots = slots;
+    precom->m_variant = CKKSBootstrapPrecom::FBT;
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -3717,7 +3724,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciph
 
     // linear transform for decoding
     auto slots = ciphertext->GetSlots();
-    auto& p = GetBootPrecom(slots);
+    auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::FBT);
     auto isLTBS = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
     auto ctxtDec = (isLTBS) ? EvalLinearTransform(p.m_U0Pre, ctxtEnc) : EvalSlotsToCoeffs(p.m_U0PreFFT, ctxtEnc);
 
@@ -3868,7 +3875,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     double coeffUpperBound = 1.0;
 
     auto slots = ciphertext->GetSlots();
-    auto& p = GetBootPrecom(slots);
+    auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::FBT);
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
     std::vector<Ciphertext<DCRTPoly>> ctxtEnc;
