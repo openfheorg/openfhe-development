@@ -537,8 +537,7 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
                     U1hatT[j][i] = std::conj(U1[i][j]);
                 }
             }
-            p.m_U0Pre = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
-            if (cc.GetCKKSDataType() == REAL) {
+            if (cc.GetCKKSDataType() == REAL || !p.BTSlotsEncoding) {
                 p.m_U0Pre = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
                 p.m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
             } else {
