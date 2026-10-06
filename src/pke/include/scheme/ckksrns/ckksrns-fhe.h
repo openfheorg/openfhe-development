@@ -54,6 +54,8 @@
  */
 namespace lbcrypto {
 
+class CryptoParametersCKKSRNS;
+
 /**
  * @brief Precomputations of CKKS bootstrapping for one number of slots.
  *
@@ -1149,6 +1151,23 @@ class FHECKKSRNS : public FHERNS {
     static constexpr uint32_t K_UNIFORM = 648;
     static constexpr uint32_t K_UNIFORM_FBT = 672;
     static constexpr uint32_t K_UNIFORM_FEFBT = 696;
+
+    /**
+     * Returns the mod-raise overflow bound K for the secret key distribution of cryptoParams. Every setup
+     * folds K into the CoeffsToSlots matrix (the scaleEnc factor): the matrix coefficients carry 1/K at
+     * full precision, whereas the runtime scalar 2^-deg/(K*N) would be truncated to
+     * log2(scalingFactor) - log2(K*N) - deg bits when encoded at the scaling factor (about 19 bits for a
+     * 50-bit scaling factor and a 60-bit first modulus at N = 2^12, and 4 bits fewer at N = 2^16), an
+     * error that the overflow I (up to K) and the correction factor then amplify. Folding also keeps the
+     * CtS rotations acting on the full-magnitude message, so their key-switching noise is not amplified.
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @param uniformK the bound for UNIFORM_TERNARY, specific to the bootstrapping variant: K_UNIFORM for
+     *   regular, K_UNIFORM_FBT for functional and K_UNIFORM_FEFBT for FE functional bootstrapping
+     * @return the overflow bound K
+     */
+    static double GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
+                                           double uniformK);
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static constexpr uint32_t R_UNIFORM = 6;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
