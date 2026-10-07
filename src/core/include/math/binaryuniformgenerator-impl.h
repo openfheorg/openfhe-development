@@ -46,9 +46,6 @@
 namespace lbcrypto {
 
 template <typename VecType>
-std::bernoulli_distribution BinaryUniformGeneratorImpl<VecType>::m_distribution = std::bernoulli_distribution(0.5);
-
-template <typename VecType>
 typename VecType::Integer BinaryUniformGeneratorImpl<VecType>::GenerateInteger() const {
     return m_distribution(PseudoRandomNumberGenerator::GetPRNG()) ? 1 : 0;
 }

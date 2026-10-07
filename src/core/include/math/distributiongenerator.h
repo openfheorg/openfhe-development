@@ -73,7 +73,9 @@ class PseudoRandomNumberGenerator {
     using GenPRNGEngineFuncPtr = PRNG* (*)();
 
 #if defined(WITH_OPENMP)
-    // shared pointer to a thread-specific PRNG engine
+    // shared pointer to a thread-specific PRNG engine.
+    // NOTE: must stay a non-inline static member defined in the .cpp file: with an in-class (inline)
+    // definition, "#pragma omp threadprivate" would follow the first use of the variable, which GCC rejects
     static std::shared_ptr<PRNG> m_prng;
     #if !defined(FIXED_SEED)
         // avoid contention on m_prng: local copies of m_prng are created for each thread
@@ -81,7 +83,7 @@ class PseudoRandomNumberGenerator {
     #endif
 #endif
     // pointer to the function generating PRNG
-    static GenPRNGEngineFuncPtr genPRNGEngine;
+    inline static GenPRNGEngineFuncPtr genPRNGEngine = nullptr;
 };
 
 }  // namespace lbcrypto

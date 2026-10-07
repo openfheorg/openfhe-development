@@ -50,32 +50,6 @@
 
 namespace bigintfxd {
 
-// MOST REQUIRED STATIC CONSTANTS INITIALIZATION
-
-// constant static member variable initialization of m_uintBitLength which is
-// equal to number of bits in the unit data type permitted values: 8,16,32
-template <typename uint_type, uint32_t BITLENGTH>
-const uint8_t BigIntegerFixedT<uint_type, BITLENGTH>::m_uintBitLength = UIntBitWidth<uint_type>::value;
-
-template <typename uint_type, uint32_t BITLENGTH>
-const uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::m_numDigitInPrintval = BITLENGTH / bigintfxd::LOG2_10;
-
-// constant static member variable initialization of m_logUintBitLength which is
-// equal to log of number of bits in the unit data type permitted values: 3,4,5
-template <typename uint_type, uint32_t BITLENGTH>
-const uint8_t BigIntegerFixedT<uint_type, BITLENGTH>::m_logUintBitLength = LogDtype<uint_type>::value;
-
-// constant static member variable initialization of m_nSize which is size of
-// the array of unit data type
-template <typename uint_type, uint32_t BITLENGTH>
-const uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::m_nSize =
-        BITLENGTH % m_uintBitLength == 0 ? BITLENGTH / m_uintBitLength : BITLENGTH / m_uintBitLength + 1;
-
-// constant static member variable initialization of m_uintMax which is maximum
-// value of unit data type
-template <typename uint_type, uint32_t BITLENGTH>
-const uint_type BigIntegerFixedT<uint_type, BITLENGTH>::m_uintMax = std::numeric_limits<uint_type>::max();
-
 // CONSTRUCTORS
 
 template <typename uint_type, uint32_t BITLENGTH>

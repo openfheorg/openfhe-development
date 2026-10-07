@@ -130,11 +130,11 @@ class StdLatticeParm {
     // will suffer MAKE SURE that the number of entries in the DistributionType
     // enum is == the first index, and MAKE SURE that the number of entries in the
     // SecurityLevel enum is == the second index
-    static std::map<uint32_t, StdLatticeParm*> byRing[3][6];
-    static std::map<uint32_t, StdLatticeParm*> byLogQ[3][6];
+    inline static std::map<uint32_t, StdLatticeParm*> byRing[3][6];
+    inline static std::map<uint32_t, StdLatticeParm*> byLogQ[3][6];
 
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
-    static bool initialized;
+    inline static bool initialized = false;
 
   public:
     /**

@@ -1135,21 +1135,22 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     uint16_t m_MSB;
 
     // variable to store the bit width of the integral data type.
-    static const uint8_t m_uintBitLength;
+    static constexpr uint8_t m_uintBitLength = UIntBitWidth<uint_type>::value;
 
     // variable to store the maximum value of the integral data type.
-    static const uint_type m_uintMax;
+    static constexpr uint_type m_uintMax = std::numeric_limits<uint_type>::max();
 
     // variable to store the log(base 2) of the number of bits in the integral
     // data type.
-    static const uint8_t m_logUintBitLength;
+    static constexpr uint8_t m_logUintBitLength = LogDtype<uint_type>::value;
 
     // variable to store the size of the data array.
-    static const uint32_t m_nSize;
+    static constexpr uint32_t m_nSize =
+            BITLENGTH % m_uintBitLength == 0 ? BITLENGTH / m_uintBitLength : BITLENGTH / m_uintBitLength + 1;
 
     // The maximum number of digits in BigIntegerFixedT. It is used by the cout(ostream)
     // function for printing the bigbinarynumber.
-    static const uint32_t m_numDigitInPrintval;
+    static constexpr uint32_t m_numDigitInPrintval = BITLENGTH / LOG2_10;
 
     /**
      * function to return the ceiling of the number divided by the number of bits
@@ -1158,9 +1159,6 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
      * @return the ceiling of Number/(bits in the integral data type)
      */
     static uint_type ceilIntByUInt(const uint_type Number);
-
-    // currently unused array
-    static const BigIntegerFixedT* m_modChain;
 
     /**
      * function to return the MSB of number.
