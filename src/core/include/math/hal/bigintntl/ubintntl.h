@@ -92,7 +92,7 @@ using BigInteger = myZZ;
  */
 template <uint32_t N>
 struct Log2 {
-    static const uint32_t value = 1 + Log2<N / 2>::value;
+    static constexpr uint32_t value = 1 + Log2<N / 2>::value;
 };
 
 /**
@@ -102,7 +102,7 @@ struct Log2 {
  */
 template <>
 struct Log2<2> {
-    static const uint32_t value = 1;
+    static constexpr uint32_t value = 1;
 };
 
 class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
