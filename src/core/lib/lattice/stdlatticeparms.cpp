@@ -112,11 +112,6 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     return s;
 }
 
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byRing[3][6];
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byLogQ[3][6];
-
-bool StdLatticeParm::initialized = false;
-
 // this is a collection of all of the parameter sets
 // the constructor for each one saves and indexes it so that you can search for
 // it with static methods in the StdLatticeParm class

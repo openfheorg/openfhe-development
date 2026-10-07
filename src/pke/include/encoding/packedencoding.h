@@ -246,15 +246,15 @@ class PackedEncoding : public PlaintextImpl {
 
   private:
     // initial root of unity for plaintext space
-    static std::map<ModulusM, NativeInteger> m_initRoot;
+    inline static std::map<ModulusM, NativeInteger> m_initRoot;
     // modulus and root of unity to be used for Arbitrary CRT
-    static std::map<ModulusM, NativeInteger> m_bigModulus;
-    static std::map<ModulusM, NativeInteger> m_bigRoot;
+    inline static std::map<ModulusM, NativeInteger> m_bigModulus;
+    inline static std::map<ModulusM, NativeInteger> m_bigRoot;
 
     // stores the list of primitive roots used in packing.
-    static std::map<uint32_t, uint32_t> m_automorphismGenerator;
-    static std::map<uint32_t, std::vector<uint32_t>> m_toCRTPerm;
-    static std::map<uint32_t, std::vector<uint32_t>> m_fromCRTPerm;
+    inline static std::map<uint32_t, uint32_t> m_automorphismGenerator;
+    inline static std::map<uint32_t, std::vector<uint32_t>> m_toCRTPerm;
+    inline static std::map<uint32_t, std::vector<uint32_t>> m_fromCRTPerm;
 
     static void SetParams_2n(uint32_t m, NativeInteger modulusNI);
 
