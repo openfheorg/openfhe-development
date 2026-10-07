@@ -33,10 +33,13 @@
 
 namespace lbcrypto {
 
-struct GLOBALS {
-    static bool precomputeCRTTables;
+class GLOBALS {
+    friend void EnablePrecomputeCRTTablesAfterDeserializaton();
+    friend void DisablePrecomputeCRTTablesAfterDeserializaton();
+    friend bool PrecomputeCRTTablesAfterDeserializaton();
+
+    inline static bool precomputeCRTTables = true;
 };
-bool GLOBALS::precomputeCRTTables = true;
 //=============================================================================
 void EnablePrecomputeCRTTablesAfterDeserializaton() {
     GLOBALS::precomputeCRTTables = true;
