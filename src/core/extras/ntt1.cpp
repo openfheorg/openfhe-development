@@ -127,15 +127,22 @@ void test_NTT() {
 
     int nloop = 100;  // number of times to run each test for timing.
 
-    TimeVar t1, t_total;  // timers for TIC() TOC()
+    TimeVar t1;  // timers for TIC() TOC()
+    TimeVar t_total;
     // captures the time
-    double time1ar, time1af;
-    double time2ar, time2af;
-    double time3ar, time3af;
+    double time1ar;
+    double time1af;
+    double time2ar;
+    double time2af;
+    double time3ar;
+    double time3af;
 
-    double time1br, time1bf;
-    double time2br, time2bf;
-    double time3br, time3bf;
+    double time1br;
+    double time1bf;
+    double time2br;
+    double time2bf;
+    double time3br;
+    double time3bf;
 
     std::cout << "testing NTT backend " << MATHBACKEND << std::endl;
 

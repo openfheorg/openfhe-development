@@ -173,7 +173,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 
     double sigmaFactor = 1 / (-2. * stddev * stddev);
     uint32_t count = 0;
-    const uint32_t limit = 10000;
+    constexpr uint32_t limit = 10000;
 
     int32_t x;
     bool flagSuccess = false;
@@ -257,7 +257,8 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::AlgorithmG(PRNG& g) {
 template <typename VecType>
 bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmH(PRNG& g) {
     std::uniform_real_distribution<float> dist(0, 1);
-    float h_a, h_b;
+    float h_a;
+    float h_b;
     h_a = dist(g);
 
     // less than the half
@@ -285,7 +286,8 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmH(PRNG& g) {
 template <typename VecType>
 bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmHDouble(PRNG& g) {
     std::uniform_real_distribution<double> dist(0, 1);
-    double h_a, h_b;
+    double h_a;
+    double h_b;
     h_a = dist(g);
     // less than the half
     if (!(h_a < 0.5))
@@ -306,8 +308,10 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmB(PRNG& g, int32_t k, doub
     std::uniform_real_distribution<float> dist(0.0, 1.0);
 
     float y = x;
-    int32_t n = 0, m = 2 * k + 2;
-    float z, r;
+    int32_t n = 0;
+    int32_t m = 2 * k + 2;
+    float z;
+    float r;
     float rTemp;
 
     for (;; ++n) {
@@ -336,8 +340,10 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmBDouble(PRNG& g, int32_t k
     std::uniform_real_distribution<double> dist(0.0, 1.0);
 
     double y = x;
-    int32_t n = 0, m = 2 * k + 2;
-    double z, r;
+    int32_t n = 0;
+    int32_t m = 2 * k + 2;
+    double z;
+    double r;
 
     for (;; ++n) {
         z = dist(g);

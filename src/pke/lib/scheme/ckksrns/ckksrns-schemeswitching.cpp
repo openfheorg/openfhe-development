@@ -1103,15 +1103,15 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
     // auto BminusAdotS2 = BminusAdotS;  // Instead of zeroing out slots which are not of interest as done above
 
-    double a_cheby = -1.0;
-    double b_cheby = 1.0;  // The division by K was performed before
+    constexpr double a_cheby = -1.0;
+    constexpr double b_cheby = 1.0;  // The division by K was performed before
 
     // double a_cheby = -K; double b_cheby = K; // Alternatively, do this separately to not lose precision when scaling with everything at once
     auto BminusAdotS3 = ccCKKS->EvalChebyshevSeries(BminusAdotS, coefficientsFHEW, a_cheby, b_cheby);
     if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL)
         ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
 
-    const int32_t BT_ITER = 3;
+    constexpr int32_t BT_ITER = 3;
     for (int32_t j = 1; j <= BT_ITER; ++j) {
         BminusAdotS3 = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
         ccCKKS->EvalAddInPlace(BminusAdotS3, BminusAdotS3);

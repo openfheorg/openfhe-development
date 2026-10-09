@@ -60,7 +60,7 @@ class CryptoParametersBase;
  */
 template <typename Element>
 class CryptoContextFactory {
-    static std::vector<CryptoContext<Element>> AllContexts;
+    inline static std::vector<CryptoContext<Element>> AllContexts;
 
   protected:
     /**
@@ -137,9 +137,6 @@ class CryptoContextFactory {
         return AllContexts;
     }
 };
-
-template <>
-std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts;
 
 }  // namespace lbcrypto
 

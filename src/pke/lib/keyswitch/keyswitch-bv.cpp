@@ -67,7 +67,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     const auto& sOld = oldKey->GetPrivateElement();
     const uint32_t sizeSOld = sOld.GetNumOfElements();
 
-    std::vector<DCRTPoly> av, bv;
+    std::vector<DCRTPoly> av;
+    std::vector<DCRTPoly> bv;
     if (auto digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {
         // creates an array of digits up to a certain tower
         std::vector<uint32_t> arrWindows(sizeSOld);
@@ -123,7 +124,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     const auto& sOld = oldKey->GetPrivateElement();
     const uint32_t sizeSOld = sOld.GetNumOfElements();
 
-    std::vector<DCRTPoly> av, bv;
+    std::vector<DCRTPoly> av;
+    std::vector<DCRTPoly> bv;
     if (auto digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {
         // creates an array of digits up to a certain tower
         std::vector<uint32_t> arrWindows(sizeSOld);
@@ -179,7 +181,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     const auto& sOld = oldSk->GetPrivateElement();
     const uint32_t sizeSOld = sOld.GetNumOfElements();
 
-    std::vector<DCRTPoly> av, bv;
+    std::vector<DCRTPoly> av;
+    std::vector<DCRTPoly> bv;
     if (uint32_t digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {
         // creates an array of digits up to a certain tower
         std::vector<uint32_t> arrWindows(sizeSOld);

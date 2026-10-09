@@ -92,7 +92,7 @@ using BigInteger = myZZ;
  */
 template <uint32_t N>
 struct Log2 {
-    static const uint32_t value = 1 + Log2<N / 2>::value;
+    static constexpr uint32_t value = 1 + Log2<N / 2>::value;
 };
 
 /**
@@ -102,7 +102,7 @@ struct Log2 {
  */
 template <>
 struct Log2<2> {
-    static const uint32_t value = 1;
+    static constexpr uint32_t value = 1;
 };
 
 class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
@@ -931,10 +931,6 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
      */
     uint32_t GetDigitAtIndexForBase(uint32_t index, uint32_t base) const;
 
-    // variable to store the log(base 2) of the number of bits in the
-    // limb data type.
-    static const uint32_t m_log2LimbBitLength;
-
     /**
      * Gets a subset of bits of a given length with LSB at specified index.
      * optimized for speed in backend 6
@@ -1054,6 +1050,10 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
   private:
+    // variable to store the log(base 2) of the number of bits in the
+    // limb data type.
+    static constexpr uint32_t m_log2LimbBitLength = Log2<NTL_ZZ_NBITS>::value;
+
     // adapter kits
     void SetMSB();
 

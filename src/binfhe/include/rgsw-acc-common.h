@@ -156,7 +156,8 @@ void ExcessHDigitDecompose(typename P::Integer::Integer Q, const RingGSWCryptoPa
     uint32_t digitsG2{(digitsG - 1) << 1};
     uint32_t N{input[0].GetLength()};
 
-    std::vector<I> w0(N), w1(N);
+    std::vector<I> w0(N);
+    std::vector<I> w1(N);
     for (uint32_t k{0}; k < N; ++k) {
         auto t0{input[0][k].template ConvertToInt<I>()};
         w0[k] = t0 + H - (t0 < QHalf ? 0 : Q);

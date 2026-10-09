@@ -50,32 +50,6 @@
 
 namespace bigintfxd {
 
-// MOST REQUIRED STATIC CONSTANTS INITIALIZATION
-
-// constant static member variable initialization of m_uintBitLength which is
-// equal to number of bits in the unit data type permitted values: 8,16,32
-template <typename uint_type, uint32_t BITLENGTH>
-const uint8_t BigIntegerFixedT<uint_type, BITLENGTH>::m_uintBitLength = UIntBitWidth<uint_type>::value;
-
-template <typename uint_type, uint32_t BITLENGTH>
-const uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::m_numDigitInPrintval = BITLENGTH / bigintfxd::LOG2_10;
-
-// constant static member variable initialization of m_logUintBitLength which is
-// equal to log of number of bits in the unit data type permitted values: 3,4,5
-template <typename uint_type, uint32_t BITLENGTH>
-const uint8_t BigIntegerFixedT<uint_type, BITLENGTH>::m_logUintBitLength = LogDtype<uint_type>::value;
-
-// constant static member variable initialization of m_nSize which is size of
-// the array of unit data type
-template <typename uint_type, uint32_t BITLENGTH>
-const uint32_t BigIntegerFixedT<uint_type, BITLENGTH>::m_nSize =
-        BITLENGTH % m_uintBitLength == 0 ? BITLENGTH / m_uintBitLength : BITLENGTH / m_uintBitLength + 1;
-
-// constant static member variable initialization of m_uintMax which is maximum
-// value of unit data type
-template <typename uint_type, uint32_t BITLENGTH>
-const uint_type BigIntegerFixedT<uint_type, BITLENGTH>::m_uintMax = std::numeric_limits<uint_type>::max();
-
 // CONSTRUCTORS
 
 template <typename uint_type, uint32_t BITLENGTH>
@@ -273,7 +247,8 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
     }
 
     Duint_type ofl = 0;  // overflow variable
-    uint_type firstLoopCeil, secondLoopCeil;
+    uint_type firstLoopCeil;
+    uint_type secondLoopCeil;
     size_t i;  // counter
 
     const BigIntegerFixedT* larger = nullptr;
@@ -337,7 +312,8 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::S
     // (a) they are only inside the inner if block (cntr=0 is superfluous); (b)
     // current simply equals i (neither changes after the current=i assignment);
     // and (c) the while loop needs to check cntr >= 0 (when m_value[] == 0...)
-    int cntr = 0, current = 0;
+    int cntr = 0;
+    int current = 0;
     // DTS: (see Add(), above) this function uses [signed] int for endValA and
     // endValB, unlike all the similar loops in the previous functions
     BigIntegerFixedT result(*this);
@@ -390,7 +366,8 @@ BigIntegerFixedT<uint_type, BITLENGTH>& BigIntegerFixedT<uint_type, BITLENGTH>::
     // (a) they are only inside the inner if block (cntr=0 is superfluous); (b)
     // current simply equals i (neither changes after the current=i assignment);
     // and (c) the while loop needs to check cntr >= 0 (when m_value[] == 0...)
-    int cntr = 0, current = 0;
+    int cntr = 0;
+    int current = 0;
     // array position in A to end subtraction
     volatile int endValA = m_nSize - ceilIntByUInt(this->m_MSB);
     // array position in B to end subtraction

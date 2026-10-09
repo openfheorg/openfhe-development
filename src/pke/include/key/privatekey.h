@@ -60,7 +60,7 @@ namespace lbcrypto {
  * @return the identifier as a 32-character lowercase hexadecimal string
  */
 inline std::string GenerateUniqueKeyID() {
-    const size_t intsInID = 128 / (sizeof(uint32_t) * 8);
+    constexpr size_t intsInID = 128 / (sizeof(uint32_t) * 8);
     std::uniform_int_distribution<uint32_t> distribution(0, std::numeric_limits<uint32_t>::max());
     std::stringstream s;
     s.fill('0');

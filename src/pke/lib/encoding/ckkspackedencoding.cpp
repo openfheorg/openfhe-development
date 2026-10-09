@@ -217,8 +217,10 @@ bool CKKSPackedEncoding::Encode() {
             DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 2);
 
             double factor = 2 * M_PI * i;
-            double realMax = -1, imagMax = -1;
-            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
+            double realMax = -1;
+            double imagMax = -1;
+            uint32_t realMaxIdx = -1;
+            uint32_t imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < slots; ++idx) {
                 // exp( j*2*pi*n*k/N )

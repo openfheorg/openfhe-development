@@ -107,7 +107,8 @@ int main() {
     std::cout << "#1:      " << plaintext1Result << std::endl;
     std::cout << "#1 * #2: " << plaintextMultResult << std::endl;
 
-    double noise = 0, logQ = 0;
+    double noise = 0;
+    double logQ = 0;
     EvalNoiseBFV(keyPair.secretKey, ciphertextMul12, dRes, ptm, noise, logQ);
     EvalNoiseBFV(keyPair.secretKey, ciphertext1, dRes1, ptm, noise, logQ);
     return 0;

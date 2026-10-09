@@ -48,10 +48,6 @@
 namespace lbcrypto {
 
 template <typename VecType>
-std::uniform_int_distribution<int32_t> TernaryUniformGeneratorImpl<VecType>::m_distribution =
-        std::uniform_int_distribution<int32_t>(-1, 1);
-
-template <typename VecType>
 typename VecType::Integer TernaryUniformGeneratorImpl<VecType>::GenerateInteger(
         const typename VecType::Integer& modulus) const {
     auto rn = m_distribution(PseudoRandomNumberGenerator::GetPRNG());

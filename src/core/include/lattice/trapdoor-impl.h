@@ -134,7 +134,8 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
                                                          const DCRTPoly::DggType& dggLargeSigma,
                                                          std::shared_ptr<Matrix<DCRTPoly>> perturbationVector) {
     OPENFHE_DEBUG_FLAG(false);
-    TimeVar t1, t1_tot;
+    TimeVar t1;
+    TimeVar t1_tot;
 
     TIC(t1);
     TIC(t1_tot);
@@ -169,7 +170,9 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
     TIC(t1);
 
     // Create field elements from ring elements
-    Field2n a(va), b(vb), d(vd);
+    Field2n a(va);
+    Field2n b(vb);
+    Field2n d(vd);
 
     double scalarFactor = -s * s * sigma * sigma / (s * s - sigma * sigma);
 
