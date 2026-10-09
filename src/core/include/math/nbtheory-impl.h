@@ -381,7 +381,8 @@ IntType LastPrime(uint32_t nBits, uint64_t m) {
 
 template <typename IntType>
 IntType NextPrime(const IntType& q, uint64_t m) {
-    IntType M(m), qNew(q + M);
+    IntType M(m);
+    IntType qNew(q + M);
     while (!MillerRabinPrimalityTest(qNew)) {
         if ((qNew += M) < q)
             OPENFHE_THROW("Overflow growing candidate");

@@ -61,8 +61,17 @@ inline DoubleNativeInt Mul128(uint64_t a, uint64_t b) {
  */
 inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt& a, uint64_t modulus, const DoubleNativeInt& mu) {
     // (a * mu)/2^128 // we need the upper 128-bit of (256-bit product)
-    uint64_t result = 0, a_lo = 0, a_hi = 0, mu_lo = 0, mu_hi = 0, left_hi = 0, middle_lo = 0, middle_hi = 0, tmp1 = 0,
-             tmp2 = 0, carry = 0;
+    uint64_t result = 0;
+    uint64_t a_lo = 0;
+    uint64_t a_hi = 0;
+    uint64_t mu_lo = 0;
+    uint64_t mu_hi = 0;
+    uint64_t left_hi = 0;
+    uint64_t middle_lo = 0;
+    uint64_t middle_hi = 0;
+    uint64_t tmp1 = 0;
+    uint64_t tmp2 = 0;
+    uint64_t carry = 0;
     DoubleNativeInt middle = 0;
 
     a_lo = (uint64_t)a;

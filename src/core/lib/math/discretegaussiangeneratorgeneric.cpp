@@ -62,10 +62,10 @@ namespace lbcrypto {
 // const int32_t PRECISION = 128;
 // const double TAIL_CUT = std::sqrt(log(2)*2*(double)(PRECISION));
 // const int32_t DDG_DEPTH = 13;
-const int32_t MAX_TREE_DEPTH = 64;
+constexpr int32_t MAX_TREE_DEPTH = 64;
 
-const int32_t PRECISION = 53;
-const int32_t BERNOULLI_FLIPS = 23;
+constexpr int32_t PRECISION = 53;
+constexpr int32_t BERNOULLI_FLIPS = 23;
 
 BaseSampler::BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType type)
     : b_mean(mean), b_std(std), bg(generator), b_type(type) {
@@ -271,7 +271,8 @@ uint32_t BaseSampler::FindInVector(const std::vector<double>& S, double search) 
 DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std,
                                                                    const int b, double N) {
     // Precomputations for sigma bar
-    int x1, x2;
+    int x1;
+    int x2;
     base_samplers = samplers;
     log_base = b;
     double base_variance = std * std;

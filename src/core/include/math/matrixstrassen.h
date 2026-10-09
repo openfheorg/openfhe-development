@@ -511,8 +511,8 @@ class MatrixStrassen {  // TODO : public Serializable {
         int nproc_summa;
         int bs;
     };
-    const int DESC_SIZE = 7;  // number of ints that make up a MatDescriptor
-    const int rank = 0, base = 0;
+    static constexpr int rank = 0;
+    static constexpr int base = 0;
 
     mutable data_t data;
     size_t rows;

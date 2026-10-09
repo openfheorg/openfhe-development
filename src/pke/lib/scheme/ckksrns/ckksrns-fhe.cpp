@@ -3004,8 +3004,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
 
-            double realMax = -1, imagMax = -1;
-            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
+            double realMax = -1;
+            double imagMax = -1;
+            uint32_t realMaxIdx = -1;
+            uint32_t imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < inverse.size(); idx++) {
                 // exp( j*2*pi*n*k/N )
@@ -3151,8 +3153,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
 
-            double realMax = -1, imagMax = -1;
-            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
+            double realMax = -1;
+            double imagMax = -1;
+            uint32_t realMaxIdx = -1;
+            uint32_t imagMaxIdx = -1;
 
             for (uint32_t idx = 0; idx < inverse.size(); ++idx) {
                 // X[k] * exp( j*2*pi*n*k/N )
@@ -4041,7 +4045,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
             // Coefficients are divided by 2
             // The repackaging below shares the precomputed ciphertexts with the caller. EvalPolyWithPrecomp
             // leaves them unmodified, so the same precomputation serves every function evaluated against it.
-            std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowersRe, ctxtPowersIm;
+            std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowersRe;
+            std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowersIm;
             if (ciphertexts->powers2Re.size() == 0) {
                 ctxtPowersRe = std::make_shared<seriesPowers<DCRTPoly>>(ciphertexts->powersRe);
                 ctxtPowersIm = std::make_shared<seriesPowers<DCRTPoly>>(ciphertexts->powersIm);

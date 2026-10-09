@@ -75,8 +75,10 @@ bool MillerRabinPrimalityTest(const NTL::myZZ& p, const uint32_t niter) {
 */
 uint32_t ModInverse(uint32_t a, uint32_t b) {
     // uint32_t b0 = b;
-    uint32_t t, q;
-    uint32_t x0 = 0, x1 = 1;
+    uint32_t t;
+    uint32_t q;
+    uint32_t x0 = 0;
+    uint32_t x1 = 1;
     if (b == 1)
         return 1;
     while (a > 1) {
@@ -192,7 +194,8 @@ uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {
     }
 
     uint32_t n = GetTotient(m);
-    uint32_t f1, f2;
+    uint32_t f1;
+    uint32_t f2;
     if (i < 0) {
         f1 = NativeInteger(5).ModInverse(m).ConvertToInt();
         f2 = NativeInteger(m - 1).ModInverse(m).ConvertToInt();

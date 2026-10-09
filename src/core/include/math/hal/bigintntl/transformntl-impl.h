@@ -67,8 +67,15 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformIterative(const VecTy
         (*result)[i] = element[ReverseBits(i, msb)];
     }
 
-    IntType omega, omegaFactor, oddVal, evenVal;
-    uint32_t logm, i, j, indexEven, indexOdd;
+    IntType omega;
+    IntType omegaFactor;
+    IntType oddVal;
+    IntType evenVal;
+    uint32_t logm;
+    uint32_t i;
+    uint32_t j;
+    uint32_t indexEven;
+    uint32_t indexOdd;
 
     uint32_t logn = GetMSB64(n - 1);
     for (logm = 1; logm <= logn; logm++) {
@@ -130,8 +137,18 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverseInPlace(c
     IntType modulus = element->GetModulus();
     IntType mu = modulus.ComputeMu();
 
-    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    uint32_t i;
+    uint32_t m;
+    uint32_t j1;
+    uint32_t j2;
+    uint32_t indexOmega;
+    uint32_t indexLo;
+    uint32_t indexHi;
+    IntType omega;
+    IntType omegaFactor;
+    IntType loVal;
+    IntType hiVal;
+    IntType zero(0);
 
     uint32_t t = (n >> 1);
     uint32_t logt1 = GetMSB64(t);
@@ -180,8 +197,18 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverse(const Ve
     IntType mu = modulus.ComputeMu();
     result->SetModulus(modulus);
 
-    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    uint32_t i;
+    uint32_t m;
+    uint32_t j1;
+    uint32_t j2;
+    uint32_t indexOmega;
+    uint32_t indexLo;
+    uint32_t indexHi;
+    IntType omega;
+    IntType omegaFactor;
+    IntType loVal;
+    IntType hiVal;
+    IntType zero(0);
 
     for (i = 0; i < n; ++i) {
         (*result)[i] = element[i];
@@ -232,14 +259,20 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverseInPlace(c
     uint32_t n = element->GetLength();
     IntType modulus = element->GetModulus();
 
-    uint32_t indexOmega, indexHi;
+    uint32_t indexOmega;
+    uint32_t indexHi;
     IntType preconOmega;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    IntType omega;
+    IntType omegaFactor;
+    IntType loVal;
+    IntType hiVal;
+    IntType zero(0);
 
     uint32_t t = (n >> 1);
     uint32_t logt1 = GetMSB64(t);
     for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
-        uint32_t j1, j2;
+        uint32_t j1;
+        uint32_t j2;
         for (uint32_t i = 0; i < m; ++i) {
             j1 = i << logt1;
             j2 = j1 + t;
@@ -289,14 +322,20 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverse(const Ve
         (*result)[i] = element[i];
     }
 
-    uint32_t indexOmega, indexHi;
+    uint32_t indexOmega;
+    uint32_t indexHi;
     IntType preconOmega;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    IntType omega;
+    IntType omegaFactor;
+    IntType loVal;
+    IntType hiVal;
+    IntType zero(0);
 
     uint32_t t = (n >> 1);
     uint32_t logt1 = GetMSB64(t);
     for (uint32_t m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
-        uint32_t j1, j2;
+        uint32_t j1;
+        uint32_t j2;
         for (uint32_t i = 0; i < m; ++i) {
             j1 = i << logt1;
             j2 = j1 + t;
@@ -339,8 +378,17 @@ void NumberTheoreticTransformNtl<VecType>::InverseTransformFromBitReverseInPlace
     IntType modulus = element->GetModulus();
     IntType mu = modulus.ComputeMu();
 
-    IntType loVal, hiVal, omega, omegaFactor;
-    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
+    IntType loVal;
+    IntType hiVal;
+    IntType omega;
+    IntType omegaFactor;
+    uint32_t i;
+    uint32_t m;
+    uint32_t j1;
+    uint32_t j2;
+    uint32_t indexOmega;
+    uint32_t indexLo;
+    uint32_t indexHi;
 
     uint32_t t = 1;
     uint32_t logt1 = 1;
@@ -412,9 +460,18 @@ void NumberTheoreticTransformNtl<VecType>::InverseTransformFromBitReverseInPlace
 
     IntType modulus = element->GetModulus();
 
-    IntType loVal, hiVal, omega, omegaFactor;
+    IntType loVal;
+    IntType hiVal;
+    IntType omega;
+    IntType omegaFactor;
     IntType preconOmega;
-    uint32_t i, m, j1, j2, indexOmega, indexLo, indexHi;
+    uint32_t i;
+    uint32_t m;
+    uint32_t j1;
+    uint32_t j2;
+    uint32_t indexOmega;
+    uint32_t indexLo;
+    uint32_t indexHi;
 
     uint32_t t = 1;
     uint32_t logt1 = 1;
@@ -647,7 +704,8 @@ void ChineseRemainderTransformFTTNtl<VecType>::PreCompute(const IntType& rootOfU
     if (mapSearch == m_rootOfUnityReverseTableByModulus.end() || mapSearch->second.GetLength() != CycloOrderHf) {
 #pragma omp critical
         {
-            IntType x(1), xinv(1);
+            IntType x(1);
+            IntType xinv(1);
             uint32_t msb = GetMSB64(CycloOrderHf - 1);
             IntType mu = modulus.ComputeMu();
             VecType Table(CycloOrderHf, modulus);

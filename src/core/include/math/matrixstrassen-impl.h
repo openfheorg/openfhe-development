@@ -206,7 +206,8 @@ void MatrixStrassen<Element>::Determinant(Element* determinant) const {
     } else if (rows == 2) {
         *determinant = *data[0][0] * (*data[1][1]) - *data[1][0] * (*data[0][1]);
     } else {
-        size_t j1, j2;
+        size_t j1;
+        size_t j2;
         size_t n = rows;
 
         MatrixStrassen<Element> result(allocZero, rows - 1, cols - 1);
@@ -253,7 +254,10 @@ MatrixStrassen<Element> MatrixStrassen<Element>::CofactorMatrixStrassen() const 
     if (rows != cols)
         OPENFHE_THROW("Supported only for square matrix");
 
-    size_t ii, jj, iNew, jNew;
+    size_t ii;
+    size_t jj;
+    size_t iNew;
+    size_t jNew;
 
     size_t n = rows;
 

@@ -108,16 +108,24 @@ bool clonetest(Poly& a, Poly& b, std::string name) {
 void test_NTT(const uint32_t level, const uint32_t nloop) {
     // Code to test NTT at three different numbers of limbs.
 
-    TimeVar t1, t_setup, t_total;  // timers for TIC() TOC()
+    TimeVar t1;  // timers for TIC() TOC()
+    TimeVar t_setup;
+    TimeVar t_total;
 
     // captures the time
-    double time1ar, time1af;
-    double time2ar, time2af;
-    double time3ar, time3af;
+    double time1ar;
+    double time1af;
+    double time2ar;
+    double time2af;
+    double time3ar;
+    double time3af;
 
-    double time1br, time1bf;
-    double time2br, time2bf;
-    double time3br, time3bf;
+    double time1br;
+    double time1bf;
+    double time2br;
+    double time2bf;
+    double time3br;
+    double time3bf;
 
     std::cout << "testing NTT backend " << MATHBACKEND << std::endl;
 

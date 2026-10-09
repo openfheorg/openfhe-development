@@ -229,7 +229,10 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSamp(size_t n, size_t k, const Matr
                                                   typename Poly::DggType& dgg, typename Poly::DggType& dggLargeSigma,
                                                   int64_t base) {
     OPENFHE_DEBUG_FLAG(false);
-    TimeVar t1, t1_tot, t2, t2_tot;
+    TimeVar t1;
+    TimeVar t1_tot;
+    TimeVar t2;
+    TimeVar t2_tot;
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<typename Poly::Params> params = u.GetParams();
@@ -299,7 +302,10 @@ Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSamp(size_t n, size_t k
                                                               typename NativePoly::DggType& dggLargeSigma,
                                                               int64_t base) {
     OPENFHE_DEBUG_FLAG(false);
-    TimeVar t1, t1_tot, t2, t2_tot;
+    TimeVar t1;
+    TimeVar t1_tot;
+    TimeVar t2;
+    TimeVar t2_tot;
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<typename NativePoly::Params> params = u.GetParams();

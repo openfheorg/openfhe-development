@@ -146,7 +146,10 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
                                                           const RLWETrapdoorPair<DCRTPoly>& T, const DCRTPoly& u,
                                                           DggType& dgg, DggType& dggLargeSigma, int64_t base) {
     OPENFHE_DEBUG_FLAG(false);
-    TimeVar t1, t1_tot, t2, t2_tot;
+    TimeVar t1;
+    TimeVar t1_tot;
+    TimeVar t2;
+    TimeVar t2_tot;
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<ParmType> params = u.GetParams();

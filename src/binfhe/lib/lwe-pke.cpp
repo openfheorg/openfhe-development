@@ -481,7 +481,8 @@ LWESwitchingKey32 LWEEncryptionScheme::KeySwitchGen32(const std::shared_ptr<LWEC
     // the secret key is fixed across the whole generation: precompute its Shoup constants so
     // the inner products run at one high-word estimate per lane, with a lazy 64-bit accumulator
     // (bound (n + 1) * qKS < 2^64 -- qKS is a 32-bit word and n <= 2^16)
-    std::vector<uint32_t> s32(n), sp32(n);
+    std::vector<uint32_t> s32(n);
+    std::vector<uint32_t> sp32(n);
     for (uint32_t idx = 0; idx < n; ++idx) {
         s32[idx] = static_cast<uint32_t>(sv[idx].ConvertToInt());
         sp32[idx] = static_cast<uint32_t>((static_cast<uint64_t>(s32[idx]) << 32) / qKS64);
