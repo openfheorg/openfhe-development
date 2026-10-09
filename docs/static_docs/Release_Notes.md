@@ -1,3 +1,9 @@
+10/09/2026: OpenFHE 1.6.1 (stable) is released
+
+* Fixes decryption failures after CKKS bootstrapping with uniform ternary secrets for affected scenarios (#1364)
+
+The detailed list of changes is available at https://github.com/openfheorg/openfhe-development/issues?q=is%3Aissue+milestone%3A%22Release+1.6.1%22
+
 09/28/2026: OpenFHE 1.6.0 (development) is released
 
 * Adds the CKKS-based Fourier-extension functional bootstrapping method proposed in https://ia.cr/2026/367 and presented at EUROCRYPT '26 (#1207)
