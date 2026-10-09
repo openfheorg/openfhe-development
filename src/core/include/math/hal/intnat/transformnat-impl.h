@@ -100,7 +100,10 @@ static inline uint32_t shoupMulHi(uint32_t a, uint32_t b) {
  */
 static inline uint64_t shoupMulHi(uint64_t a, uint64_t b) {
 #if defined(__AVX2__) && defined(__GNUC__) && !defined(__clang__)
-    uint64_t al{a & 0xffffffffu}, ah{a >> 32}, bl{b & 0xffffffffu}, bh{b >> 32};
+    uint64_t al{a & 0xffffffffu};
+    uint64_t ah{a >> 32};
+    uint64_t bl{b & 0xffffffffu};
+    uint64_t bh{b >> 32};
     uint64_t t0{al * bl};
     uint64_t t1{al * bh + (t0 >> 32)};
     uint64_t t2{ah * bl + (t1 & 0xffffffffu)};
@@ -108,11 +111,15 @@ static inline uint64_t shoupMulHi(uint64_t a, uint64_t b) {
 #elif defined(HAVE_INT128)
     return static_cast<uint64_t>((static_cast<uint128_t>(a) * b) >> 64);
 #elif defined(__x86_64__)
-    uint64_t lo, hi;
+    uint64_t lo;
+    uint64_t hi;
     __asm__("mulq %[b]" : "=a"(lo), "=d"(hi) : "a"(a), [b] "rm"(b) : "cc");
     return hi;
 #else
-    uint64_t al{a & 0xffffffffu}, ah{a >> 32}, bl{b & 0xffffffffu}, bh{b >> 32};
+    uint64_t al{a & 0xffffffffu};
+    uint64_t ah{a >> 32};
+    uint64_t bl{b & 0xffffffffu};
+    uint64_t bh{b >> 32};
     uint64_t t0{al * bl};
     uint64_t t1{al * bh + (t0 >> 32)};
     uint64_t t2{ah * bl + (t1 & 0xffffffffu)};
@@ -131,7 +138,10 @@ static inline uint64_t shoupMulHi(uint64_t a, uint64_t b) {
  */
 static inline uint128_t shoupMulHi(uint128_t a, uint128_t b) {
     constexpr uint128_t mask{(static_cast<uint128_t>(1) << 64) - 1};
-    uint128_t al{a & mask}, ah{a >> 64}, bl{b & mask}, bh{b >> 64};
+    uint128_t al{a & mask};
+    uint128_t ah{a >> 64};
+    uint128_t bl{b & mask};
+    uint128_t bh{b >> 64};
     uint128_t t0{al * bl};
     uint128_t t1{al * bh + (t0 >> 64)};
     uint128_t t2{ah * bl + (t1 & mask)};
@@ -342,7 +352,10 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
     // values sit in [0, (2*stages + 1)*modulus) and fold down through a fixed four-step chain
     // of halving multiples of the modulus (steps at or below the value are no-ops, and every
     // step is a multiple of the modulus, so residues are untouched).
-    NInt c0{mv2}, c1{mv2}, c2{mv2}, c3{mv2};
+    NInt c0{mv2};
+    NInt c1{mv2};
+    NInt c2{mv2};
+    NInt c3{mv2};
     if (lazy) {
         // largest halving chain start below the value bound; comparing against bound/2 keeps
         // the doubling itself from overflowing (the bound fits the word by the lazy test)
@@ -665,7 +678,8 @@ ChineseRemainderTransformFTTNat<VecType>::GetTables(const IntType& rootOfUnity, 
         return it->second;
 
     auto t = std::make_shared<Tables>();
-    IntType x(1), xinv(1);
+    IntType x(1);
+    IntType xinv(1);
     uint32_t msb = GetMSB(ringDim - 1);
     IntType mu = modulus.ComputeMu();
     IntType rootOfUnityInverse = rootOfUnity.ModInverse(modulus);
@@ -756,7 +770,8 @@ void BluesteinFFTNat<VecType>::PreComputeRootTableForNTT(uint32_t cyclotoOrder,
     VecType preconTable(nttDimHf, nttModulus);
     VecType preconTableInverse(nttDimHf, nttModulus);
 
-    IntType x(1), y(1);
+    IntType x(1);
+    IntType y(1);
     for (size_t i = 0; i < nttDimHf; ++i) {
         rootTable[i] = x;
         preconTable[i] = x.PrepModMulConst(nttModulus);

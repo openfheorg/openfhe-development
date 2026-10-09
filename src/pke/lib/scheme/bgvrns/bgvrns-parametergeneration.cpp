@@ -581,7 +581,9 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
     // if no batch size was specified compute a default value
     if (encodingParams->GetBatchSize() == 0) {
         // Check whether ptm and cyclOrder are coprime
-        uint32_t a, b, gcd;
+        uint32_t a;
+        uint32_t b;
+        uint32_t gcd;
         if (cyclOrder > ptm) {
             a = cyclOrder;
             b = ptm;

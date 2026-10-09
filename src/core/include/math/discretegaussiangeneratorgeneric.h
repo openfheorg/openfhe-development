@@ -289,9 +289,11 @@ class SamplerCombiner final : public BaseSampler {
 
   private:
     // Samplers to be combined
-    BaseSampler *sampler1, *sampler2;
+    BaseSampler* sampler1;
+    BaseSampler* sampler2;
     // Coefficients that are used for combining
-    int64_t x1, x2;
+    int64_t x1;
+    int64_t x2;
 };
 
 /**
@@ -349,9 +351,13 @@ class DiscreteGaussianGeneratorGeneric {
     BaseSampler* wide_sampler;
     BaseSampler** base_samplers;
     std::unique_ptr<SamplerCombiner> combiners[MAX_LEVELS - 1];
-    long double wide_variance, sampler_variance;
-    double x, c, ci;
-    int k, log_base;
+    long double wide_variance;
+    long double sampler_variance;
+    double x;
+    double c;
+    double ci;
+    int k;
+    int log_base;
     uint64_t mask;
     /**
      * @ brief Method to return the nth bit of a number

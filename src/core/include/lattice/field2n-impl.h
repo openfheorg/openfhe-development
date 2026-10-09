@@ -248,7 +248,8 @@ Field2n Field2n::Permute() const {
         OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     size_t size{this->std::vector<std::complex<double>>::size()};
     Field2n permuted(size, Format::COEFFICIENT, true);
-    size_t evenPtr{0}, oddPtr{size / 2};
+    size_t evenPtr{0};
+    size_t oddPtr{size / 2};
     for (size_t i = 0; i < size;) {
         permuted[evenPtr++] = this->std::vector<std::complex<double>>::operator[](i++);
         permuted[oddPtr++] = this->std::vector<std::complex<double>>::operator[](i++);
@@ -263,7 +264,8 @@ Field2n Field2n::InversePermute() const {
         OPENFHE_THROW("Polynomial not in Format::COEFFICIENT representation");
     size_t size{this->std::vector<std::complex<double>>::size()};
     Field2n invpermuted(size, Format::COEFFICIENT, true);
-    size_t evenPtr{0}, oddPtr{size / 2};
+    size_t evenPtr{0};
+    size_t oddPtr{size / 2};
     for (size_t i = 0; i < size;) {
         invpermuted[i++] = this->std::vector<std::complex<double>>::operator[](evenPtr++);
         invpermuted[i++] = this->std::vector<std::complex<double>>::operator[](oddPtr++);

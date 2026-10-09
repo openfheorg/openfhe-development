@@ -245,7 +245,8 @@ ubint<limb_t> ubint<limb_t>::MultiplyAndRound(const ubint& p, const ubint& q) co
         return ubint();
     if ((t.m_MSB == halfQ.m_MSB) || ((t.m_MSB == q.m_MSB) && (t.m_value.back() < q.m_value.back())))
         return ubint(1);
-    ubint ans, rv;
+    ubint ans;
+    ubint rv;
     divqr_vect(ans, rv, t, q);
     if (rv > halfQ)
         return ans.Add(ubint(1));
@@ -261,7 +262,8 @@ ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint& q) const {
         return ubint();
     if ((m_MSB == halfQ.m_MSB) || ((m_MSB == q.m_MSB) && (m_value.back() < q.m_value.back())))
         return ubint(1);
-    ubint ans, rv;
+    ubint ans;
+    ubint rv;
     divqr_vect(ans, rv, *this, q);
     if (rv > halfQ)
         return ans.Add(ubint(1));
@@ -431,7 +433,8 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
     std::vector<ubint> quotient;
     quotient.reserve(8);  // TODO
 
-    ubint q, mod_back;
+    ubint q;
+    ubint mod_back;
     divqr_vect(q, mod_back, first, second);
     quotient.emplace_back(std::move(q));
 
@@ -752,7 +755,9 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
         un[i] = static_cast<limb_t>(ofl);
     }
     un[m] = static_cast<limb_t>(ofl);
-    Dlimb_t qhat, rhat, p;
+    Dlimb_t qhat;
+    Dlimb_t rhat;
+    Dlimb_t p;
     for (int j = m - n; j >= 0; --j) {
         ofl = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
         qhat = ofl / vn[n - 1];
@@ -763,7 +768,8 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
             if (rhat >> m_limbBitLength)
                 break;
         }
-        SDlimb_t k{0}, t;
+        SDlimb_t k{0};
+        SDlimb_t t;
         for (int i = 0; i < n; ++i) {
             p = qhat * vn[i];
             t = un[i + j] - k - (p & m_MaxLimb);
@@ -831,7 +837,9 @@ void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) co
         un[i] = static_cast<limb_t>(ofl);
     }
     un[m] = static_cast<limb_t>(ofl);
-    Dlimb_t qhat, rhat, p;
+    Dlimb_t qhat;
+    Dlimb_t rhat;
+    Dlimb_t p;
     for (int j = m - n; j >= 0; --j) {
         ofl = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
         qhat = ofl / vn[n - 1];
@@ -842,7 +850,8 @@ void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) co
             if (rhat >> m_limbBitLength)
                 break;
         }
-        SDlimb_t k{0}, t;
+        SDlimb_t k{0};
+        SDlimb_t t;
         for (int i = 0; i < n; ++i) {
             p = qhat * vn[i];
             t = un[i + j] - k - (p & m_MaxLimb);
@@ -901,7 +910,9 @@ void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) co
         un[i] = static_cast<limb_t>(ofl);
     }
     un[m] = static_cast<limb_t>(ofl);
-    Dlimb_t qhat, rhat, p;
+    Dlimb_t qhat;
+    Dlimb_t rhat;
+    Dlimb_t p;
     for (int j = m - n; j >= 0; --j) {
         ofl = (static_cast<Dlimb_t>(un[j + n]) << m_limbBitLength) | un[j + n - 1];
         qhat = ofl / vn[n - 1];
@@ -912,7 +923,8 @@ void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) co
             if (rhat >> m_limbBitLength)
                 break;
         }
-        SDlimb_t k{0}, t;
+        SDlimb_t k{0};
+        SDlimb_t t;
         for (int i = 0; i < n; ++i) {
             p = qhat * vn[i];
             t = un[i + j] - k - (p & m_MaxLimb);

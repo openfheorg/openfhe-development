@@ -117,7 +117,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
 
     auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
-    uint32_t i = 0, j = 0;
+    uint32_t i = 0;
+    uint32_t j = 0;
     // input x input
     for (; i < (size - 1); i += 2) {
         ciphertextMultVec[j] = algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextVec[i + 1], evalKeys);

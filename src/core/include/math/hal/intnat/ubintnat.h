@@ -356,7 +356,8 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
      * copied.
      */
     void SetValue(const std::string& str) {
-        NativeInt acc{0}, tst{0};
+        NativeInt acc{0};
+        NativeInt tst{0};
         for (auto c : str) {
             if ((c - '0') > 9)
                 OPENFHE_THROW("String contains a non-digit");
@@ -1710,9 +1711,12 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     static void MultDPortable(NativeInt a, NativeInt b, typeD& res) {
         constexpr uint32_t half{MaxBits() / 2};
         const NativeInt mask{static_cast<NativeInt>((static_cast<NativeInt>(1) << half) - 1)};
-        const NativeInt a1{static_cast<NativeInt>(a >> half)}, a2{static_cast<NativeInt>(a & mask)};
-        const NativeInt b1{static_cast<NativeInt>(b >> half)}, b2{static_cast<NativeInt>(b & mask)};
-        const NativeInt p1{static_cast<NativeInt>(a2 * b1)}, p2{static_cast<NativeInt>(a1 * b2)};
+        const NativeInt a1{static_cast<NativeInt>(a >> half)};
+        const NativeInt a2{static_cast<NativeInt>(a & mask)};
+        const NativeInt b1{static_cast<NativeInt>(b >> half)};
+        const NativeInt b2{static_cast<NativeInt>(b & mask)};
+        const NativeInt p1{static_cast<NativeInt>(a2 * b1)};
+        const NativeInt p2{static_cast<NativeInt>(a1 * b2)};
         const NativeInt mid{static_cast<NativeInt>(p1 + p2)};
 
         res.hi = static_cast<NativeInt>(a1 * b1);

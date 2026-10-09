@@ -821,7 +821,8 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
     const uint32_t t(m_vectors.size());
     const uint32_t r{m_params->GetRingDimension()};
     const Integer qt{m_params->GetModulus()};
-    Integer tmp1, tmp2;
+    Integer tmp1;
+    Integer tmp2;
 
     std::vector<Integer> multiplier;
     multiplier.reserve(t);
@@ -858,7 +859,8 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
 
     uint32_t r{m_params->GetRingDimension()};
     const Integer qt{m_params->GetModulus()};
-    Integer tmp1, tmp2;
+    Integer tmp1;
+    Integer tmp2;
     VecType V(r, qt, 0);
     for (const auto& npoly : m_vectors) {
         tmp1 = npoly.GetModulus().ConvertToInt();  // qi
@@ -1256,7 +1258,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.5;
-                    NativeInteger intSum = 0, tmp;
+                    NativeInteger intSum = 0;
+                    NativeInteger tmp;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
@@ -1283,7 +1286,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.5;
-                    NativeInteger intSum = 0, tmp;
+                    NativeInteger intSum = 0;
+                    NativeInteger tmp;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
@@ -1308,7 +1312,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.5;
                     NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
+                    NativeInteger tmpHi;
+                    NativeInteger tmpLo;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
@@ -1332,7 +1337,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.5;
                     NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
+                    NativeInteger tmpHi;
+                    NativeInteger tmpLo;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
@@ -1371,7 +1377,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.0;
-                    NativeInteger intSum = 0, tmp;
+                    NativeInteger intSum = 0;
+                    NativeInteger tmp;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
@@ -1427,7 +1434,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.0;
                     NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
+                    NativeInteger tmpHi;
+                    NativeInteger tmpLo;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
@@ -1454,7 +1462,8 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.0;
                     NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
+                    NativeInteger tmpHi;
+                    NativeInteger tmpLo;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
                         tmpHi = tmpLo.RShift(qMSBHf);
