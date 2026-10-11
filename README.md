@@ -3,7 +3,14 @@
 This branch implements the methods and reproduction workflow for **Sparse Hermite
 Interpolation Method for Discrete-CKKS Functional Bootstrapping**.
 
-This is repo is cleaned copy of an internal experimental repo and is produced using Codex.
+This repository is a cleaned copy of an internal experimental repo and was produced using Codex.
+
+**Artifact status: this artifact targets the Asiacrypt 2026 *Artifacts Functional*
+badge.** The [quick validation](#quick-validation-no-full-benchmark) below builds
+OpenFHE, the benchmark driver and the unit tests, and exercises every
+interpolation method with exact-correctness checks; it is the intended
+evaluation path. The full paper matrices remain available through the documented
+`run --execute` commands, but are not required to exercise the artifact.
 
 **Start with the quick checks. Full paper experiments require an explicit
 `run --execute` command and a machine with enough memory.** The local migration

@@ -1,7 +1,7 @@
 p,order,method,key_switches,lut_levels,lut_s,total_s
 16,1,AKP,9,5,0.724,12.4
 16,1,BKSS,14,5,1.04,12.6
-16,1,SPARSE_THI,11,5,0.878,12.5
+16,1,SPARSE_THI,11,5,0.874,12.5
 16,2,AKP,11,5,0.887,12.2
 16,2,SPARSE_THI,14,6,1.28,13.3
 16,3,AKP,12,6,1.08,12.7

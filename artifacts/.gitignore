@@ -3,3 +3,8 @@ __pycache__/
 
 # Keep the bundled historical raw logs despite the repository-wide *.log rule.
 !results/archived/**/*.log
+
+# Generated experiment outputs; bundled inputs stay tracked.
+results/*
+!results/reference/
+!results/archived/
