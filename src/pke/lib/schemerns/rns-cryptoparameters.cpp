@@ -211,8 +211,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Precompute params for first 1..sizeQ towers of Q for KeySwitchDown (avoids per-call allocation).
         m_paramsQlHybrid.resize(sizeQ);
-        std::vector<NativeInteger> moduliQl;
-        std::vector<NativeInteger> rootsQl;
+        std::vector<NativeInteger> moduliQl, rootsQl;
         moduliQl.reserve(sizeQ);
         rootsQl.reserve(sizeQ);
         for (size_t i = 0; i < sizeQ; ++i) {

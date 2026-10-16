@@ -378,9 +378,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
     auto divcs = LongDivisionPoly(r2, divqr->q);
     auto cc = x->GetCryptoContext();
 
-    Ciphertext<DCRTPoly> cu;
-    Ciphertext<DCRTPoly> qu;
-    Ciphertext<DCRTPoly> su;
+    Ciphertext<DCRTPoly> cu, qu, su;
 
 #pragma omp task shared(qu)
     {
@@ -633,9 +631,7 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
     auto divcs = LongDivisionChebyshev(r2, divqr->q);
     auto cc = x->GetCryptoContext();
 
-    Ciphertext<DCRTPoly> cu;
-    Ciphertext<DCRTPoly> qu;
-    Ciphertext<DCRTPoly> su;
+    Ciphertext<DCRTPoly> cu, qu, su;
 
 #pragma omp task shared(qu)
     {

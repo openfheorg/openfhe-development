@@ -118,9 +118,7 @@ void vec_diff(BigVector& a, BigVector& b) {
 void test_BigVector(uint32_t nloop) {
     std::cout << "testing BigVector" << std::endl;
 
-    TimeVar t1;  // timers for TIC() TOC()
-    TimeVar t2;
-    TimeVar t3;
+    TimeVar t1, t2, t3;  // timers for TIC() TOC()
     double time2;
 
     // there are three test cases, 1) small modulus 2)approx 48 bits. 3)
@@ -187,9 +185,7 @@ void test_BigVector(uint32_t nloop) {
     BigVector modmul1 = BBVfromStrvec(modmul1strvec);
     modmul1.SetModulus(q1);
 
-    BigVector c1;  // result vectors
-    BigVector c2;
-    BigVector c3;
+    BigVector c1, c2, c3;  // result vectors
 
     // compute results for each function and compare.
 

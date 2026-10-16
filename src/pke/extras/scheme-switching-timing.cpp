@@ -82,8 +82,7 @@ void SwitchCKKSToFHEW(uint32_t depth, uint32_t slots, uint32_t numValues) {
  */
     std::cout << "\n-----SwitchCKKSToFHEW-----\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEval(0.0);
 
     TIC(tTotal);
@@ -220,8 +219,7 @@ void SwitchFHEWtoCKKS(uint32_t depth, uint32_t slots, uint32_t numValues) {
     std::cout << "\n-----SwitchFHEWtoCKKS-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timeEval(0.0);
 
     TIC(tTotal);
@@ -335,8 +333,7 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
     std::cout << "\n-----ComparisonViaSchemeSwitching-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEval(0.0);
 
     TIC(tTotal);
@@ -480,8 +477,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
     std::cout << "\n-----ArgminViaSchemeSwitching-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0);  // timeEvalMax(0.0);
 
     TIC(tTotal);
@@ -630,8 +626,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     std::cout << "\n-----ArgminViaSchemeSwitchingAlt-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0);  // timeEvalMax(0.0);
 
     TIC(tTotal);
@@ -782,8 +777,7 @@ void Argmin(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ringDim
     std::cout << "\n-----ArgminViaSchemeSwitching-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0);  // timeEvalMax(0.0);
 
     TIC(tTotal);
@@ -934,8 +928,7 @@ void ArgminAlt(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t ring
     std::cout << "\n-----ArgminViaSchemeSwitchingAlt-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0);  // timeEvalMax(0.0);
 
     TIC(tTotal);
@@ -1092,8 +1085,7 @@ void Comparison(uint32_t depth, uint32_t slots, uint32_t numValues, uint32_t rin
     std::cout << "\n-----ComparisonViaSchemeSwitching-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back.\n" << std::endl;
 
-    TimeVar t;
-    TimeVar tTotal;
+    TimeVar t, tTotal;
     double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEval(0.0);
 
     TIC(tTotal);

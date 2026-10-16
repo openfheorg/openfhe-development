@@ -271,8 +271,7 @@ uint32_t BaseSampler::FindInVector(const std::vector<double>& S, double search) 
 DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std,
                                                                    const int b, double N) {
     // Precomputations for sigma bar
-    int x1;
-    int x2;
+    int x1, x2;
     base_samplers = samplers;
     log_base = b;
     double base_variance = std * std;

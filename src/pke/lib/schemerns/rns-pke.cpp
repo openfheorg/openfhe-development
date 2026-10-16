@@ -129,8 +129,7 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
     uint32_t sizeQ = s.GetParams()->GetParams().size();
     uint32_t sizeQl = elementParams->GetParams().size();
 
-    DCRTPoly c0;
-    DCRTPoly c1;
+    DCRTPoly c0, c1;
     if (sizeQl != sizeQ) {
         // Clone only the towers of the secret key that are still needed.
         DCRTPoly scopy = s.CloneTowers(0, sizeQl - 1);
@@ -176,8 +175,7 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
     uint32_t sizeQ = pk[0].GetParams()->GetParams().size();
     uint32_t sizeQl = elementParams->GetParams().size();
 
-    DCRTPoly c0;
-    DCRTPoly c1;
+    DCRTPoly c0, c1;
     if (sizeQl != sizeQ) {
         // Clone only the towers of the public keys that are still needed.
         DCRTPoly p0 = pk[0].CloneTowers(0, sizeQl - 1);

@@ -541,8 +541,7 @@ double PolyImpl<VecType>::Norm() const {
     uint32_t vlen{m_params->GetRingDimension()};
     const auto& q{m_params->GetModulus()};
     const auto& half{q >> 1};
-    Integer maxVal{};
-    Integer minVal{q};
+    Integer maxVal{}, minVal{q};
     for (uint32_t i = 0; i < vlen; i++) {
         auto& val = (*m_values)[i];
         if (val > half)
@@ -617,8 +616,7 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::PowersOfBase(uint32_t baseBits
     if (nBits % baseBits > 0)
         ++nWindows;
     std::vector<PolyImpl<VecType>> result(nWindows);
-    Integer shift{0};
-    Integer bbits{baseBits};
+    Integer shift{0}, bbits{baseBits};
     for (uint32_t i = 0; i < nWindows; ++i, shift += bbits)
         result[i] = (*this) * TWO.ModExp(shift, m);
     return result;

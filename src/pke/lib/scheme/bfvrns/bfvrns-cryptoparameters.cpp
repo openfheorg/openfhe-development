@@ -59,8 +59,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     m_tInvModq.resize(0);
     m_tInvModq.reserve(sizeQ);
 
-    std::vector<NativeInteger> moduliQ;
-    std::vector<NativeInteger> rootsQ;
+    std::vector<NativeInteger> moduliQ, rootsQ;
     moduliQ.reserve(sizeQ);
     rootsQ.reserve(sizeQ);
 
