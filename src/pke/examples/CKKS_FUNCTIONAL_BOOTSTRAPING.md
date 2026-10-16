@@ -223,9 +223,10 @@ A level budget of {1, 1} uses a single linear transform for each of the SlotsToC
 - `EvalBootstrapKeyGen` (together with `EvalMultKeyGen`) generates the keys, as for regular CKKS bootstrapping.
 - `EvalFEFuncBootstrap` refreshes a ciphertext and evaluates the function given by a coefficient vector.
 
-As the SlotsToCoeffs transform is performed first, the input ciphertext has to have enough levels left for it: in the example,
-the input is encoded at level `depth - (levelBudget[1] + 1)`. A ciphertext at a higher level is brought down to the required
-level automatically.
+As the SlotsToCoeffs transform is performed first, the input ciphertext has to have the `levelBudget[1]` levels it consumes
+left: in the example, the input is encoded at level `depth - levelBudget[1]`. A ciphertext at a higher level is brought down
+to the required level automatically. The output keeps those `levelBudget[1]` levels for the next bootstrapping, so the levels
+added on top of `GetFEFBTDepth` are exactly the ones available for computation between two FE functional bootstrappings.
 
 When several functions need to be evaluated on the same input, the function-independent part of the computation (up to and
 including the powers of the complex exponential), which dominates the cost, can be shared. `EvalFEFuncBootstrapPrecompute`
