@@ -1643,7 +1643,7 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
 // modulus raise, CoeffsToSlots, and the complex exponential. The result encrypts exp(2*Pi*i*t) with
 // t = mu/2 the message embedded into half of the Fourier series period, which is the variable that every
 // target function's series is then evaluated at.
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const {
+std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -1811,20 +1811,29 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     auto ctxtEnc =
             (isLTBootstrap) ? EvalLinearTransform(p.m_U0hatTPre, raised) : EvalCoeffsToSlots(p.m_U0hatTPreFFT, raised);
 
-    // Keep only the real channel: for CKKSDataType REAL the encoding matrices pack both coefficient halves
-    // into it (flagPack is false in EvalFEFuncBootstrapSetup), and for COMPLEX the imaginary half of the
-    // message is dropped, the Fourier series result being real-valued either way.
+    // Split the homomorphic encoding into its channels. For CKKSDataType REAL the encoding matrices pack both
+    // coefficient halves into the real channel (flagPack is false in EvalFEFuncBootstrapSetup), so only that
+    // channel is kept. For COMPLEX the real channel holds the real parts of the message and the imaginary
+    // channel its imaginary parts; the complex exponential and the series only work on real inputs, so the
+    // imaginary channel is moved to the real part of a second ciphertext and processed alongside (as in
+    // EvalBootstrapStCFirst), and the caller recombines the two results.
     auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
     auto conj = Conjugate(ctxtEnc, evalKeyMap);
-    cc->EvalAddInPlace(ctxtEnc, conj);
+    std::vector<Ciphertext<DCRTPoly>> ctxtChannels;
+    ctxtChannels.reserve(2);
+    ctxtChannels.emplace_back(ctxtEnc);
+    if (cc->GetCKKSDataType() == COMPLEX) {
+        ctxtChannels.emplace_back(cc->EvalSub(ctxtEnc, conj));
+        algo->MultByMonomialInPlace(ctxtChannels[1], 3 * N / 2);
+    }
+    cc->EvalAddInPlace(ctxtChannels[0], conj);
 
-    if (st == FIXEDMANUAL) {
-        while (ctxtEnc->GetNoiseScaleDeg() > 1) {
-            cc->ModReduceInPlace(ctxtEnc);
-        }
-    } else {
-        if (ctxtEnc->GetNoiseScaleDeg() == 2) {
-            algo->ModReduceInternalInPlace(ctxtEnc, compositeDegree);
+    for (auto& ctxt : ctxtChannels) {
+        if (st == FIXEDMANUAL) {
+            while (ctxt->GetNoiseScaleDeg() > 1)
+                cc->ModReduceInPlace(ctxt);
+        } else if (ctxt->GetNoiseScaleDeg() == 2) {
+            algo->ModReduceInternalInPlace(ctxt, compositeDegree);
         }
     }
 
@@ -1835,14 +1844,16 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
 #endif
 
     //------------------------------------------------------------------------------
-    // Running the Complex Exponential Evaluation
+    // Running the Complex Exponential Evaluation (on each channel)
     //------------------------------------------------------------------------------
 
-    auto ctxtExp = algo->EvalChebyshevSeries(ctxtEnc, coeffExp, -1, 1);
-    // double-angle iterations for the complex exponential: each squaring doubles the argument
-    for (uint32_t i = 0; i < rFunc; ++i) {
-        cc->EvalSquareInPlace(ctxtExp);
-        cc->ModReduceInPlace(ctxtExp);
+    for (auto& ctxt : ctxtChannels) {
+        ctxt = algo->EvalChebyshevSeries(ctxt, coeffExp, -1, 1);
+        // double-angle iterations for the complex exponential: each squaring doubles the argument
+        for (uint32_t i = 0; i < rFunc; ++i) {
+            cc->EvalSquareInPlace(ctxt);
+            cc->ModReduceInPlace(ctxt);
+        }
     }
 
 #ifdef BOOTSTRAPTIMING
@@ -1850,7 +1861,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     OPENFHE_DIAGNOSTIC_ERR << "EvalExp time: " << timeExp / 1000.0 << " s\n";
 #endif
 
-    return ctxtExp;
+    return ctxtChannels;
+}
+
+// Recombines the per-channel outputs of FE functional bootstrapping: for CKKSDataType COMPLEX the function
+// values of the imaginary channel are moved back to the imaginary part (multiplication by i = X^{N/2} in the
+// slots) and added to the function values of the real channel.
+static Ciphertext<DCRTPoly> RecombineFEChannels(std::vector<Ciphertext<DCRTPoly>>& channels) {
+    if (channels.size() > 1) {
+        auto cc = channels[0]->GetCryptoContext();
+        cc->GetScheme()->MultByMonomialInPlace(channels[1], cc->GetRingDimension() / 2);
+        cc->EvalAddInPlace(channels[0], channels[1]);
+    }
+    return channels[0];
 }
 
 // Twice the real part of an evaluated Fourier series, which is the FE functional bootstrapping output
@@ -1866,7 +1889,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::TwiceRealPart(const Ciphertext<DCRTPoly>& ctxtS
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& ciphertext,
                                                      const std::vector<std::complex<double>>& coefficients) const {
     auto ctxtExp = EvalFEFuncBootstrapExp(ciphertext);
-    auto algo = ctxtExp->GetCryptoContext()->GetScheme();
+    auto algo = ctxtExp[0]->GetCryptoContext()->GetScheme();
 
 #ifdef BOOTSTRAPTIMING
     TimeVar t;
@@ -1874,7 +1897,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
     TIC(t);
 #endif
 
-    auto result = TwiceRealPart(algo->EvalPoly(ctxtExp, coefficients));
+    for (auto& ctxt : ctxtExp)
+        ctxt = TwiceRealPart(algo->EvalPoly(ctxt, coefficients));
+    auto result = RecombineFEChannels(ctxtExp);
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
@@ -1895,7 +1920,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapPrecomput
                 "complex-exponential powers; use EvalFEFuncBootstrap for a shorter series.");
 
     auto ctxtExp = EvalFEFuncBootstrapExp(ciphertext);
-    auto algo = ctxtExp->GetCryptoContext()->GetScheme();
+    auto algo = ctxtExp[0]->GetCryptoContext()->GetScheme();
 
 #ifdef BOOTSTRAPTIMING
     TimeVar t;
@@ -1903,7 +1928,14 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapPrecomput
     TIC(t);
 #endif
 
-    auto powers = algo->EvalPowers(ctxtExp, coefficients);
+    auto powers = algo->EvalPowers(ctxtExp[0], coefficients);
+    if (ctxtExp.size() > 1) {
+        // CKKSDataType COMPLEX: the powers of the imaginary channel are stored alongside
+        auto powersIm = algo->EvalPowers(ctxtExp[1], coefficients);
+        powers = std::make_shared<seriesPowers<DCRTPoly>>(powers->powersRe, powers->powers2Re, powers->power2km1Re,
+                                                          powers->k, powers->m, powersIm->powersRe, powersIm->powers2Re,
+                                                          powersIm->power2km1Re);
+    }
 
 #ifdef BOOTSTRAPTIMING
     timePowers = TOC(t);
@@ -1949,8 +1981,25 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
     TIC(t);
 #endif
 
-    auto algo = powers->powersRe.front()->GetCryptoContext()->GetScheme();
-    auto result = TwiceRealPart(algo->EvalPolyWithPrecomp(powers, trimmed));
+    auto cc = powers->powersRe.front()->GetCryptoContext();
+    auto algo = cc->GetScheme();
+    Ciphertext<DCRTPoly> result;
+    if (cc->GetCKKSDataType() == COMPLEX) {
+        // the series is evaluated on the real and imaginary channels separately and the results recombined
+        if (powers->powersIm.empty())
+            OPENFHE_THROW(
+                    "CKKSDataType COMPLEX requires the powers of both the real and imaginary channels (the series "
+                    "powers were not produced by EvalFEFuncBootstrapPrecompute under this crypto context).");
+        auto powersRe = std::make_shared<seriesPowers<DCRTPoly>>(powers->powersRe, powers->powers2Re,
+                                                                 powers->power2km1Re, powers->k, powers->m);
+        auto powersIm = std::make_shared<seriesPowers<DCRTPoly>>(powers->powersIm, powers->powers2Im,
+                                                                 powers->power2km1Im, powers->k, powers->m);
+        std::vector<Ciphertext<DCRTPoly>> channels{TwiceRealPart(algo->EvalPolyWithPrecomp(powersRe, trimmed)),
+                                                   TwiceRealPart(algo->EvalPolyWithPrecomp(powersIm, trimmed))};
+        result = RecombineFEChannels(channels);
+    } else {
+        result = TwiceRealPart(algo->EvalPolyWithPrecomp(powers, trimmed));
+    }
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
@@ -3856,165 +3905,114 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::FBT);
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
+    // The homomorphic encoding yields one ciphertext whose real channel holds the lower half of the
+    // coefficients and whose imaginary channel holds the upper half. The approximate modular reduction
+    // only works on real inputs, so the channels have to be processed as separate ciphertexts. Whether the
+    // imaginary channel is kept (two ciphertexts) or dropped (one ciphertext) depends on the packing:
+    // - full packing (N/2 slots) with CKKSDataType COMPLEX: N values were imported from RLWE, both halves
+    //   carry data, and two ciphertexts go through the modular reduction and the LUT evaluation;
+    // - full packing with CKKSDataType REAL: N/2 values were imported from RLWE into the lower half (the
+    //   upper half holds no data), so only the real channel is kept and a single ciphertext is processed;
+    // - sparse packing (fewer than N/2 slots): the RLWE encryption duplicates the values into both halves,
+    //   which the partial sum folds onto the real channel, so a single ciphertext is processed.
+    const bool keepImagChannel = (slots == M / 4) && (cc->GetCKKSDataType() == COMPLEX);
+
+    if (slots != M / 4) {
+        //------------------------------------------------------------------------------
+        // SPARSELY PACKED CASE: Running PartialSum
+        //------------------------------------------------------------------------------
+        EvalPartialSumInPlace(raised, slots);
+    }
+
+    //------------------------------------------------------------------------------
+    // Running CoeffsToSlots
+    //------------------------------------------------------------------------------
+
+    // need to call internal modular reduction so it also works for FLEXIBLEAUTO
+    algo->ModReduceInternalInPlace(raised, compositeDegree);
+
+    // only one linear transform is needed as the other one can be derived
     std::vector<Ciphertext<DCRTPoly>> ctxtEnc;
     ctxtEnc.reserve(2);
-    std::shared_ptr<seriesPowers<DCRTPoly>> ctxtPowers;
+    ctxtEnc.emplace_back((isLTBootstrap) ? EvalLinearTransform(p.m_U0hatTPre, raised) :
+                                           EvalCoeffsToSlots(p.m_U0hatTPreFFT, raised));
 
-    if (slots == M / 4) {
-        //------------------------------------------------------------------------------
-        // FULLY PACKED CASE
-        //------------------------------------------------------------------------------
-
-        //------------------------------------------------------------------------------
-        // Running CoeffToSlot
-        //------------------------------------------------------------------------------
-
-        // need to call internal modular reduction so it also works for FLEXIBLEAUTO
-        algo->ModReduceInternalInPlace(raised, compositeDegree);
-
-        // only one linear transform is needed as the other one can be derived
-        ctxtEnc.emplace_back((isLTBootstrap) ? EvalLinearTransform(p.m_U0hatTPre, raised) :
-                                               EvalCoeffsToSlots(p.m_U0hatTPreFFT, raised));
-
-        auto conj = Conjugate(ctxtEnc[0], cc->GetEvalAutomorphismKeyMap(ctxtEnc[0]->GetKeyTag()));
-
+    auto conj = Conjugate(ctxtEnc[0], cc->GetEvalAutomorphismKeyMap(ctxtEnc[0]->GetKeyTag()));
+    if (keepImagChannel) {
+        // the imaginary channel (upper half of the coefficients), moved to the real part
         ctxtEnc.emplace_back(cc->EvalSub(ctxtEnc[0], conj));
-        cc->EvalAddInPlaceNoCheck(ctxtEnc[0], conj);
         algo->MultByMonomialInPlace(ctxtEnc[1], 3 * M / 4);
+    }
+    // the real channel (lower half of the coefficients)
+    cc->EvalAddInPlaceNoCheck(ctxtEnc[0], conj);
 
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            while (ctxtEnc[0]->GetNoiseScaleDeg() > 1) {
-                cc->ModReduceInPlace(ctxtEnc[0]);
-                cc->ModReduceInPlace(ctxtEnc[1]);
-            }
-        } else {
-            if (ctxtEnc[0]->GetNoiseScaleDeg() == 2) {
-                algo->ModReduceInternalInPlace(ctxtEnc[0], compositeDegree);
-                algo->ModReduceInternalInPlace(ctxtEnc[1], compositeDegree);
-            }
-        }
-
-        //------------------------------------------------------------------------------
-        // Computing the powers for Approximate Mod Reduction
-        //------------------------------------------------------------------------------
-
-        if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
-                              IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
-                                                          coeff_cos_28_double_68;
-
-            ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
-            ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_cos, coeffLowerBound, coeffUpperBound);
-
-            for (auto& ctxt : ctxtEnc) {
-                // Double angle-iterations to get cos(pi*x)
-                for (uint32_t i = 1; i < numIter; ++i) {
-                    cc->EvalSquareInPlace(ctxt);
-                    cc->EvalAddInPlaceNoCheck(ctxt, ctxt);
-                    cc->EvalSubInPlace(ctxt, 1.0);
-                    cc->ModReduceInPlace(ctxt);
-                }
-                // cos(pi x) after the loop above; square once more to get cos^2(pi x)
-                cc->EvalSquareInPlace(ctxt);
-                cc->ModReduceInPlace(ctxt);  // cos^2(pi x)
-            }
-        } else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
-                              IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
-                                                          coeff_exp_28_double_69;
-
-            // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
-            ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
-            ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_exp, coeffLowerBound, coeffUpperBound);
-
-            for (auto& ctxt : ctxtEnc) {
-                // Double angle-iterations to get exp(2*Pi*i*x)
-                for (uint32_t i = 0; i < numIter; ++i) {
-                    cc->EvalSquareInPlace(ctxt);
-                    cc->ModReduceInPlace(ctxt);
-                }
-            }
-        }
-
-        auto ctxtPowersRe = algo->EvalPowers(ctxtEnc[0], coefficients);
-        auto ctxtPowersIm = algo->EvalPowers(ctxtEnc[1], coefficients);
-
-        if (ctxtPowersRe->powers2Re.size() == 0) {
-            ctxtPowers = std::make_shared<seriesPowers<DCRTPoly>>(ctxtPowersRe->powersRe, ctxtPowersIm->powersRe);
-        } else {
-            ctxtPowers = std::make_shared<seriesPowers<DCRTPoly>>(
-                    ctxtPowersRe->powersRe, ctxtPowersRe->powers2Re, ctxtPowersRe->power2km1Re, ctxtPowersRe->k,
-                    ctxtPowersRe->m, ctxtPowersIm->powersRe, ctxtPowersIm->powers2Re, ctxtPowersIm->power2km1Re);
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+        while (ctxtEnc[0]->GetNoiseScaleDeg() > 1) {
+            for (auto& ctxt : ctxtEnc)
+                cc->ModReduceInPlace(ctxt);
         }
     } else {
-        //------------------------------------------------------------------------------
-        // SPARSELY PACKED CASE
-        //------------------------------------------------------------------------------
-
-        //------------------------------------------------------------------------------
-        // Running PartialSum
-        //------------------------------------------------------------------------------
-
-        EvalPartialSumInPlace(raised, slots);
-
-        //------------------------------------------------------------------------------
-        // Running CoeffsToSlots
-        //------------------------------------------------------------------------------
-
-        algo->ModReduceInternalInPlace(raised, compositeDegree);
-
-        ctxtEnc.emplace_back((isLTBootstrap) ? EvalLinearTransform(p.m_U0hatTPre, raised) :
-                                               EvalCoeffsToSlots(p.m_U0hatTPreFFT, raised));
-
-        auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc[0]->GetKeyTag());
-        cc->EvalAddInPlace(ctxtEnc[0], Conjugate(ctxtEnc[0], evalKeyMap));
-
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            while (ctxtEnc[0]->GetNoiseScaleDeg() > 1)
-                cc->ModReduceInPlace(ctxtEnc[0]);
-        } else {
-            if (ctxtEnc[0]->GetNoiseScaleDeg() == 2)
-                algo->ModReduceInternalInPlace(ctxtEnc[0], compositeDegree);
+        if (ctxtEnc[0]->GetNoiseScaleDeg() == 2) {
+            for (auto& ctxt : ctxtEnc)
+                algo->ModReduceInternalInPlace(ctxt, compositeDegree);
         }
+    }
 
-        //------------------------------------------------------------------------------
-        // Running Approximate Mod Reduction
-        //------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
+    // Running Approximate Mod Reduction (on each channel)
+    //------------------------------------------------------------------------------
 
-        if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
-                              IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
-                                                          coeff_cos_28_double_68;
+    if (digitBitSize == 1 && order == 1) {
+        auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                          IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                      coeff_cos_28_double_68;
 
-            ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
+        for (auto& ctxt : ctxtEnc) {
+            ctxt = algo->EvalChebyshevSeries(ctxt, coeff_cos, coeffLowerBound, coeffUpperBound);
 
             // Double angle-iterations to get cos(pi*x)
             for (uint32_t i = 1; i < numIter; ++i) {
-                cc->EvalSquareInPlace(ctxtEnc[0]);
-                cc->EvalAddInPlaceNoCheck(ctxtEnc[0], ctxtEnc[0]);
-                cc->EvalSubInPlace(ctxtEnc[0], 1.0);
-                cc->ModReduceInPlace(ctxtEnc[0]);
+                cc->EvalSquareInPlace(ctxt);
+                cc->EvalAddInPlaceNoCheck(ctxt, ctxt);
+                cc->EvalSubInPlace(ctxt, 1.0);
+                cc->ModReduceInPlace(ctxt);
             }
             // cos(pi x) after the loop above; square once more to get cos^2(pi x)
-            cc->EvalSquareInPlace(ctxtEnc[0]);
-            cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
-        } else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
-                              IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
-                                                          coeff_exp_28_double_69;
+            cc->EvalSquareInPlace(ctxt);
+            cc->ModReduceInPlace(ctxt);  // cos^2(pi x)
+        }
+    } else {
+        auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                          IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                      coeff_exp_28_double_69;
 
+        for (auto& ctxt : ctxtEnc) {
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
-            ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
+            ctxt = algo->EvalChebyshevSeries(ctxt, coeff_exp, coeffLowerBound, coeffUpperBound);
 
             // Double angle-iterations to get exp(2*Pi*i*x)
             for (uint32_t i = 0; i < numIter; ++i) {
-                cc->EvalSquareInPlace(ctxtEnc[0]);
-                cc->ModReduceInPlace(ctxtEnc[0]);
+                cc->EvalSquareInPlace(ctxt);
+                cc->ModReduceInPlace(ctxt);
             }
         }
+    }
 
-        // No need to scale the message back up after Chebyshev interpolation
-        ctxtPowers = algo->EvalPowers(ctxtEnc[0], coefficients);
+    //------------------------------------------------------------------------------
+    // Computing the powers for the LUT evaluation
+    //------------------------------------------------------------------------------
+
+    // No need to scale the message back up after Chebyshev interpolation
+    auto ctxtPowers = algo->EvalPowers(ctxtEnc[0], coefficients);
+    if (keepImagChannel) {
+        auto ctxtPowersIm = algo->EvalPowers(ctxtEnc[1], coefficients);
+        if (ctxtPowers->powers2Re.size() == 0) {
+            ctxtPowers = std::make_shared<seriesPowers<DCRTPoly>>(ctxtPowers->powersRe, ctxtPowersIm->powersRe);
+        } else {
+            ctxtPowers = std::make_shared<seriesPowers<DCRTPoly>>(
+                    ctxtPowers->powersRe, ctxtPowers->powers2Re, ctxtPowers->power2km1Re, ctxtPowers->k, ctxtPowers->m,
+                    ctxtPowersIm->powersRe, ctxtPowersIm->powers2Re, ctxtPowersIm->power2km1Re);
+        }
     }
 
     // 64-bit only: No need to scale back the message to its original scale.
@@ -4050,12 +4048,18 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
 
     Ciphertext<DCRTPoly> ctxtEnc;
 
-    if (slots == M4) {
+    // The powers of the imaginary channel (upper half of the coefficients) exist only for full packing with
+    // CKKSDataType COMPLEX (see EvalMVBPrecomputeInternal), where the look-up table is evaluated on both
+    // channels and the results are recombined; sparse packing and full packing with CKKSDataType REAL
+    // evaluate it on the real channel alone.
+    const bool evalImagChannel = (slots == M4) && (cc->GetCKKSDataType() == COMPLEX);
+
+    if (evalImagChannel) {
         //------------------------------------------------------------------------------
-        // FULLY PACKED CASE
+        // FULLY PACKED COMPLEX CASE
         //------------------------------------------------------------------------------
         if (ciphertexts->powersIm.size() == 0)
-            OPENFHE_THROW("Full packing requires powers for both the real and imaginary parts.");
+            OPENFHE_THROW("Full complex packing requires powers for both the real and imaginary parts.");
         Ciphertext<DCRTPoly> ctxtEncI;
 
         //------------------------------------------------------------------------------
@@ -4108,7 +4112,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
         // No need to scale the message back up after Chebyshev interpolation
     } else {
         //------------------------------------------------------------------------------
-        // SPARSELY PACKED CASE
+        // SINGLE CHANNEL CASE (sparse packing, or full packing with real data)
         //------------------------------------------------------------------------------
 
         //------------------------------------------------------------------------------

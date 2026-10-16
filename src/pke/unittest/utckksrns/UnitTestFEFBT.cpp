@@ -220,8 +220,8 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCSvsFACase(const std::string& description, ui
     return testCase;
 }
 
-// A CKKSDataType COMPLEX case: the input carries nonzero imaginary parts, which FE functional
-// bootstrapping discards (its output is twice the real part of a Fourier series, hence always real).
+// A CKKSDataType COMPLEX case: the input carries nonzero imaginary parts, and FE functional
+// bootstrapping applies the function to the real and imaginary parts separately.
 TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTComplexInputCase(const std::string& description, uint32_t slots,
                                                     FEFBT_FUNCTION functionType, std::vector<uint32_t> levelBudget) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase = MakeFEFBTCase(FEFBT_COMPLEX_INPUT, description, slots, SPARSE_TERNARY, slots,
@@ -762,39 +762,52 @@ class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFB
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
             cc->EvalMultKeyGen(keyPair.secretKey);
 
+            // With CKKSDataType COMPLEX the function is applied to the real and imaginary parts separately.
+            // The imaginary parts are distinct from the real parts, so applying the function to the wrong
+            // part, or leaking one part into the other, breaks the comparisons below.
             auto realPart = BuildNormalizedInput(testData.slots);
-            auto expected = BuildExpectedOutput(testData.functionType, realPart);
+            std::vector<double> imagPart(testData.slots);
+            for (uint32_t i = 0; i < testData.slots; ++i)
+                imagPart[i] = 0.25 * std::sin(6.0 * M_PI * i / testData.slots);
+            auto expectedReal = BuildExpectedOutput(testData.functionType, realPart);
+            auto expectedImag = BuildExpectedOutput(testData.functionType, imagPart);
 
-            // imaginary parts large enough that leaking any of them into the result would break the
-            // comparison below by orders of magnitude more than eps
             std::vector<std::complex<double>> input(testData.slots);
             for (uint32_t i = 0; i < testData.slots; ++i)
-                input[i] = {realPart[i], 0.25 * std::sin(6.0 * M_PI * i / testData.slots)};
+                input[i] = {realPart[i], imagPart[i]};
 
             Plaintext plaintext =
                     cc->MakeCKKSPackedPlaintext(input, 1, FEFBTEncodeLevel(cc, testData), nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-            auto resultCt = cc->EvalFEFuncBootstrap(ciphertext, GetCoefficients(testData.functionType));
+            const auto& coefficients = GetCoefficients(testData.functionType);
 
-            Plaintext result;
-            cc->Decrypt(keyPair.secretKey, resultCt, &result);
-            result->SetLength(expected.size());
+            auto checkBothParts = [&](const Ciphertext<Element>& resultCt, const std::string& path) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, resultCt, &result);
+                result->SetLength(expectedReal.size());
 
-            const auto packed = result->GetCKKSPackedValue();
-            std::vector<double> actualReal(packed.size());
-            std::vector<double> actualImag(packed.size());
-            for (size_t i = 0; i < packed.size(); ++i) {
-                actualReal[i] = packed[i].real();
-                actualImag[i] = packed[i].imag();
-            }
+                const auto packed = result->GetCKKSPackedValue();
+                std::vector<double> actualReal(packed.size());
+                std::vector<double> actualImag(packed.size());
+                for (size_t i = 0; i < packed.size(); ++i) {
+                    actualReal[i] = packed[i].real();
+                    actualImag[i] = packed[i].imag();
+                }
 
-            checkEquality(actualReal, expected, eps,
-                          failmsg + " FE functional bootstrapping of a complex input did not apply " +
-                                  GetFunctionName(testData.functionType) + " to the real part.");
-            checkEquality(actualImag, std::vector<double>(packed.size(), 0.0), eps,
-                          failmsg +
-                                  " FE functional bootstrapping of a complex input returned a nonzero "
-                                  "imaginary part.");
+                checkEquality(actualReal, expectedReal, eps,
+                              failmsg + " " + path + " of a complex input did not apply " +
+                                      GetFunctionName(testData.functionType) + " to the real part.");
+                checkEquality(actualImag, expectedImag, eps,
+                              failmsg + " " + path + " of a complex input did not apply " +
+                                      GetFunctionName(testData.functionType) + " to the imaginary part.");
+            };
+
+            checkBothParts(cc->EvalFEFuncBootstrap(ciphertext, coefficients), "FE functional bootstrapping");
+
+            // the precomputed-powers path has to carry both channels as well
+            auto powers = cc->EvalFEFuncBootstrapPrecompute(ciphertext, coefficients);
+            checkBothParts(cc->EvalFEFuncBootstrapWithPrecomp(powers, coefficients),
+                           "FE functional bootstrapping with precomputed powers");
         } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;

@@ -203,7 +203,8 @@ class FHEBase {
     /**
      * Refreshes a ciphertext and evaluates a function on it in one pass, by evaluating the Fourier
      * extension of the function over the bootstrapped message. The input slot values must lie in
-     * [-1/2, 1/2) and the result is real-valued. Supported only in CKKS.
+     * [-1/2, 1/2); for CKKSDataType COMPLEX the function is applied to the real and imaginary parts
+     * separately. Supported only in CKKS.
      *
      * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2).
      * @param coefficients Fourier coefficients c_j of the target function, c_0 first.
@@ -255,7 +256,9 @@ class FHEBase {
      * @param coeffs trigonometric Hermite interpolation coefficients of the function to evaluate
      * (from GetHermiteTrigCoefficients, or [f(1), f(0)-f(1)] for a first-order Boolean function);
      * they determine the depth of the bootstrapping.
-     * @param numSlots number of slots (0 = full packing).
+     * @param numSlots number of slots (0 = full packing). For full packing, the CKKS data type selects the
+     * layout of the RLWE input: COMPLEX for N values (both coefficient halves, two ciphertexts are processed)
+     * and REAL for N/2 values (lower half only, one ciphertext).
      * @param PIn plaintext modulus of the input RLWE ciphertext.
      * @param POut plaintext modulus of the output.
      * @param Bigq ciphertext modulus of the input RLWE ciphertext.
@@ -285,7 +288,9 @@ class FHEBase {
      * @param coeffs trigonometric Hermite interpolation coefficients of the function to evaluate
      * (from GetHermiteTrigCoefficients, or [f(1), f(0)-f(1)] for a first-order Boolean function);
      * they determine the depth of the bootstrapping.
-     * @param numSlots number of slots (0 = full packing).
+     * @param numSlots number of slots (0 = full packing). For full packing, the CKKS data type selects the
+     * layout of the RLWE input: COMPLEX for N values (both coefficient halves, two ciphertexts are processed)
+     * and REAL for N/2 values (lower half only, one ciphertext).
      * @param PIn plaintext modulus of the input RLWE ciphertext.
      * @param POut plaintext modulus of the output.
      * @param Bigq ciphertext modulus of the input RLWE ciphertext.

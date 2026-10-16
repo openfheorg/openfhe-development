@@ -157,6 +157,8 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
+    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
+    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -223,6 +225,8 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
+    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
+    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -296,6 +300,8 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
+    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
+    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -394,6 +400,8 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
+    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
+    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)

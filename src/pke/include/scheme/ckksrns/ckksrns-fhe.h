@@ -257,8 +257,9 @@ class FHECKKSRNS : public FHERNS {
      * Refreshes a ciphertext and evaluates a function on it in one pass by evaluating the Fourier extension of
      * the function over the bootstrapped message: SlotsToCoeffs, modulus raise, CoeffsToSlots, the complex
      * exponential exp(2*Pi*i*t) with t = m/2 (the message is embedded into half of the period), the series
-     * sum_j c_j exp(2*Pi*i*j*t) and twice its real part. The result is real-valued; with CKKSDataType COMPLEX the
-     * imaginary parts of the input slots are discarded.
+     * sum_j c_j exp(2*Pi*i*j*t) and twice its real part. The function is applied slot-wise: for CKKSDataType REAL
+     * to the (real) slot values, and for COMPLEX to the real and imaginary parts separately (a slot a + ib yields
+     * f(a) + i f(b)), the two channels being processed as two ciphertexts as in EvalBootstrapStCFirst.
      *
      * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2)
      * @param coefficients Fourier coefficients c_j of the target function over [-1/2, 1/2), c_0 first
@@ -304,7 +305,9 @@ class FHECKKSRNS : public FHERNS {
      * @param cc the crypto context the parameters are set up for
      * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table (only their number
      * is used here, to compute the depth of the series evaluation)
-     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots). For full packing, the CKKS
+     * data type selects the layout of the RLWE input: COMPLEX for N values (both coefficient halves, two ciphertexts
+     * are processed) and REAL for N/2 values (lower half only, one ciphertext).
      * @param PIn plaintext modulus of the RLWE input (the size of the look-up table domain)
      * @param POut plaintext modulus of the RLWE output
      * @param Bigq ciphertext modulus of the RLWE scheme the input is converted from
@@ -334,7 +337,9 @@ class FHECKKSRNS : public FHERNS {
      * @param coefficients integer trigonometric Hermite interpolation coefficients of the look-up table, e.g., [f(1),
      * f(0) - f(1)] for a Boolean function of order 1 (only their number is used here, to compute the depth of the
      * series evaluation)
-     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots)
+     * @param numSlots number of slots to be bootstrapped (0 = full packing, N/2 slots). For full packing, the CKKS
+     * data type selects the layout of the RLWE input: COMPLEX for N values (both coefficient halves, two ciphertexts
+     * are processed) and REAL for N/2 values (lower half only, one ciphertext).
      * @param PIn plaintext modulus of the RLWE input (the size of the look-up table domain)
      * @param POut plaintext modulus of the RLWE output
      * @param Bigq ciphertext modulus of the RLWE scheme the input is converted from
@@ -460,7 +465,8 @@ class FHECKKSRNS : public FHERNS {
      * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
      * under)
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
-     * @return the powers of the complex exponential (real and imaginary parts for full packing)
+     * @return the powers of the complex exponential (real and imaginary parts for full packing with CKKSDataType
+     * COMPLEX)
      */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<std::complex<double>>& coeffs,
@@ -480,7 +486,8 @@ class FHECKKSRNS : public FHERNS {
      * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
      * under)
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
-     * @return the powers of the complex exponential (real and imaginary parts for full packing)
+     * @return the powers of the complex exponential (real and imaginary parts for full packing with CKKSDataType
+     * COMPLEX)
      */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
@@ -1064,9 +1071,11 @@ class FHECKKSRNS : public FHERNS {
      * CoeffsToSlots and the complex exponential.
      *
      * @param ciphertext input ciphertext, with slot values in [-1/2, 1/2)
-     * @return a ciphertext of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message
+     * @return the ciphertexts of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message: one for
+     * CKKSDataType REAL, and two for COMPLEX (the real and imaginary parts of the message, each moved to the real
+     * part of its own ciphertext)
      */
-    Ciphertext<DCRTPoly> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
+    std::vector<Ciphertext<DCRTPoly>> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
 
     /**
      * Twice the real part of an evaluated Fourier series, obtained by adding its conjugate to it.

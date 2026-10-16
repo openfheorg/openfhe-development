@@ -3774,9 +3774,10 @@ class CryptoContextImpl : public Serializable {
      *
      * The message is embedded into half of the series period (t = m/2), so the input must lie in [-1/2, 1/2)
      * and @p coefficients must be the Fourier extension of the target function over that domain. The result
-     * is 2*Re(c_0 + sum_{j>=1} c_j exp(2*Pi*i*j*t)) and is therefore always real-valued: with CKKSDataType
-     * COMPLEX the imaginary part of each input slot is discarded and the output slots have zero imaginary
-     * part. Use CKKSDataType REAL unless complex intermediates are needed elsewhere in the computation.
+     * is 2*Re(c_0 + sum_{j>=1} c_j exp(2*Pi*i*j*t)), applied slot-wise. With CKKSDataType REAL it is applied
+     * to the (real) slot values. With CKKSDataType COMPLEX it is applied to the real and imaginary parts
+     * separately (a slot a + ib yields f(a) + i f(b)), which processes two ciphertexts instead of one, so use
+     * CKKSDataType REAL unless complex values are needed.
      *
      * @param ciphertext    Input ciphertext, with slot values in [-1/2, 1/2).
      * @param coefficients  Fourier coefficients c_j of the target function, c_0 first.
@@ -3834,7 +3835,10 @@ class CryptoContextImpl : public Serializable {
      * @param coeffs                   Trigonometric Hermite interpolation coefficients of the look-up table
      *                                 (complex, or integer for a Boolean function of order 1); only their number
      *                                 is used here.
-     * @param numSlots                 Number of slots to be bootstrapped (0 = full packing).
+     * @param numSlots                 Number of slots to be bootstrapped (0 = full packing). For full packing
+     *                                 (N/2 slots), the CKKS data type selects the layout of the RLWE input:
+     *                                 COMPLEX for N values (both coefficient halves; two ciphertexts are
+     *                                 processed) and REAL for N/2 values (lower half only; one ciphertext).
      * @param PIn                      Plaintext modulus of the RLWE input.
      * @param POut                     Plaintext modulus of the RLWE output.
      * @param Bigq                     Ciphertext modulus of the RLWE scheme the input is converted from.
