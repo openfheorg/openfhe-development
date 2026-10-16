@@ -815,7 +815,9 @@ class FHECKKSRNS : public FHERNS {
      * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
      * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
      * by the secret key distribution and, for SPARSE_ENCAPSULATED, by firstModSize as in GetFBTDepth), and the
-     * evaluation of the Fourier series.
+     * evaluation of the Fourier series. SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels
+     * and the output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
+     * available for computation between two FE functional bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param coefficients Fourier coefficients of the function to be evaluated
@@ -1168,6 +1170,31 @@ class FHECKKSRNS : public FHERNS {
      */
     static double GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
                                            double uniformK);
+
+    // Scaling factors around the last rescale of SlotsToCoeffs in FE functional bootstrapping, which lands on the
+    // towers the modulus raise starts from
+    struct FEFBTRaiseScaling {
+        double stcSF;          // scaling factor of the SlotsToCoeffs output before its last rescale (noise degree 2)
+        double droppedModuli;  // product of the moduli dropped by that rescale
+        double targetSF;       // scaling factor of the raised level
+    };
+
+    /**
+     * Returns the scaling factors around the last rescale of SlotsToCoeffs in FE functional bootstrapping for the
+     * FLEXIBLE* and COMPOSITE* scaling techniques. The ratio targetSF * droppedModuli / stcSF is folded into the
+     * SlotsToCoeffs matrix, so that the message reaches ModRaise at exactly the scaling factor of the raised level
+     * without a separate scaling adjustment.
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @return the scaling factors
+     */
+    static FEFBTRaiseScaling GetFEFBTRaiseScaling(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams);
+
+    // Relative tolerance for the scaling factor of the input to FE functional bootstrapping, which is fixed at setup.
+    // A relative deviation d scales the argument of the evaluated function by 1 + d. FLEXIBLEAUTO tracks the
+    // scaling factor of every level exactly; composite scaling deviates by about 2^-37 (degree 2) to 2^-33
+    // (degree 3) per bootstrapping, which this bound of about 2^-30 accepts without a measurable loss.
+    static constexpr double FEFBT_SCALING_FACTOR_TOLERANCE = 1e-9;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static constexpr uint32_t R_UNIFORM = 6;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.

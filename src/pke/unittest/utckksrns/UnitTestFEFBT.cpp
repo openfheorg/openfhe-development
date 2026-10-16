@@ -64,6 +64,7 @@ enum TEST_CASE_TYPE : int {
     FEFBT_COMPLEX_INPUT,
     FEFBT_MULTI_VALUE,
     FEFBT_VARIANT_MIX,
+    FEFBT_CHAINED,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -86,6 +87,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FEFBT_VARIANT_MIX:
             typeName = "FEFBT_VARIANT_MIX";
+            break;
+        case FEFBT_CHAINED:
+            typeName = "FEFBT_CHAINED";
             break;
         default:
             typeName = "UNKNOWN";
@@ -298,6 +302,22 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
     // fold different uniform-secret overflow bounds K into the CoeffsToSlots matrix (K_UNIFORM vs
     // K_UNIFORM_FEFBT), so sharing it would silently lose precision
     MakeFEFBTCase(FEFBT_VARIANT_MIX,   "31", SPARSE_SLOTS, UNIFORM_TERNARY,    SPARSE_SLOTS, FEFBT_SIGMOID, {1, 1}),
+    // bootstrapping, one multiplication and bootstrapping again with a depth of GetFEFBTDepth + 1, in every
+    // scaling technique: the output keeps the levelBudget[1] levels the next SlotsToCoeffs needs
+    MakeFEFBTCase(FEFBT_CHAINED,       "32", RDIM / 2,    SPARSE_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FIXEDMANUAL),
+    MakeFEFBTCase(FEFBT_CHAINED,       "33", RDIM / 2,    SPARSE_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FIXEDAUTO),
+    MakeFEFBTCase(FEFBT_CHAINED,       "34", RDIM / 2,    SPARSE_ENCAPSULATED, RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTO),
+    MakeFEFBTCase(FEFBT_CHAINED,       "35", RDIM / 2,    SPARSE_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTOEXT),
+    MakeFEFBTCase(FEFBT_CHAINED,       "36", RDIM / 2,    UNIFORM_TERNARY,     RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, COMPOSITESCALINGAUTO),
+    MakeFEFBTCase(FEFBT_CHAINED,       "37", SPARSE_SLOTS, UNIFORM_TERNARY,    SPARSE_SLOTS, FEFBT_SIGMOID,
+                  {1, 1}, COMPOSITESCALINGMANUAL, SMODSIZED3, FMODSIZED3),
+    MakeFEFBTCase(FEFBT_CHAINED,       "38", SPARSE_SLOTS, SPARSE_TERNARY,     SPARSE_SLOTS, FEFBT_SIGMOID,
+                  {1, 1}, FLEXIBLEAUTO),
 };
 // clang-format on
 #else
@@ -420,11 +440,12 @@ static const std::vector<std::complex<double>> coeff_gelu_8_double_44{
         std::complex<double>(1.478126284614e-10, -1.420742295235e-12),
         std::complex<double>(1.014093012815e-10, 4.286355138519e-13)};
 
-// each level consists of compositeDegree towers, so the encoding level scales accordingly
+// the input keeps exactly the levelBudget[1] levels that SlotsToCoeffs consumes; each level consists of
+// compositeDegree towers, so the encoding level scales accordingly
 static uint32_t FEFBTEncodeLevel(const CryptoContext<DCRTPoly>& cc, const TEST_CASE_UTCKKSRNS_FEFBT& testData) {
     uint32_t compositeDegree =
             std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
-    return compositeDegree * (MULT_DEPTH - (testData.levelBudget[1] + 1));
+    return compositeDegree * (MULT_DEPTH - testData.levelBudget[1]);
 }
 
 class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFBT> {
@@ -797,6 +818,62 @@ class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFB
         }
     }
 
+    // A depth of GetFEFBTDepth + 1 must allow one multiplication between two FE functional bootstrappings: the
+    // output keeps the levelBudget[1] levels the next SlotsToCoeffs consumes on top of the level added. The first
+    // input is a fresh encryption at the top level, which is brought down to the level SlotsToCoeffs expects; the
+    // second is at exactly that level. With the sigmoid in [0, 1], (sigmoid - 1/2)^2 is in [0, 1/4].
+    void UnitTest_FEFBT_Chained(const TEST_CASE_UTCKKSRNS_FEFBT& testData, const std::string& failmsg = std::string()) {
+        try {
+            const auto& coefficients = GetCoefficients(testData.functionType);
+            auto params = testData.params;
+            params.multiplicativeDepth = FHECKKSRNS::GetFEFBTDepth(testData.levelBudget, coefficients,
+                                                                   static_cast<SecretKeyDist>(params.secretKeyDist),
+                                                                   static_cast<uint32_t>(params.firstModSize)) +
+                                         1;
+            CryptoContext<Element> cc(UnitTestGenerateContext(params));
+
+            cc->EvalFEFuncBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto input = BuildNormalizedInput(testData.slots);
+            auto expected = BuildExpectedOutput(testData.functionType, input);
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, 0, nullptr, testData.slots);
+            auto first = cc->EvalFEFuncBootstrap(cc->Encrypt(keyPair.publicKey, plaintext), coefficients);
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, first, &result);
+            result->SetLength(expected.size());
+            checkEquality(result->GetRealPackedValue(), expected, eps,
+                          failmsg + " the first FE functional bootstrapping failed for " +
+                                  GetFunctionName(testData.functionType) + ".");
+
+            auto centered = cc->EvalSub(first, 0.5);
+            auto squared = cc->EvalMult(centered, centered);
+            if (static_cast<ScalingTechnique>(params.scalTech) == FIXEDMANUAL)
+                cc->RescaleInPlace(squared);
+
+            std::vector<double> squaredInput(expected.size());
+            for (size_t i = 0; i < expected.size(); ++i)
+                squaredInput[i] = (expected[i] - 0.5) * (expected[i] - 0.5);
+            auto expectedSecond = BuildExpectedOutput(testData.functionType, squaredInput);
+
+            auto second = cc->EvalFEFuncBootstrap(squared, coefficients);
+            cc->Decrypt(keyPair.secretKey, second, &result);
+            result->SetLength(expectedSecond.size());
+            checkEquality(result->GetRealPackedValue(), expectedSecond, eps,
+                          failmsg + " the second FE functional bootstrapping failed for " +
+                                  GetFunctionName(testData.functionType) + ".");
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     // Mixing bootstrapping variants is not supported: EvalBootstrap on a precomputation generated by
     // EvalFEFuncBootstrapSetup must throw instead of silently using the wrong overflow bound K.
     void UnitTest_FEFBT_VariantMix(const TEST_CASE_UTCKKSRNS_FEFBT& testData,
@@ -862,6 +939,9 @@ TEST_P(UTCKKSRNS_FEFBT, CKKSRNS) {
             break;
         case FEFBT_VARIANT_MIX:
             UnitTest_FEFBT_VariantMix(test, test.buildTestName());
+            break;
+        case FEFBT_CHAINED:
+            UnitTest_FEFBT_Chained(test, test.buildTestName());
             break;
         default:
             break;
