@@ -117,7 +117,7 @@ using BigInteger = BigIntegerFixedT<integral_dtype, BigIntegerBitLength>;
  */
 template <uint32_t N>
 struct Log2 {
-    static const uint32_t value = 1 + Log2<N / 2>::value;
+    static constexpr uint32_t value = 1 + Log2<N / 2>::value;
 };
 
 /**
@@ -127,7 +127,7 @@ struct Log2 {
  */
 template <>
 struct Log2<2> {
-    static const uint32_t value = 1;
+    static constexpr uint32_t value = 1;
 };
 
 /**
@@ -138,7 +138,7 @@ struct Log2<2> {
  */
 template <typename U>
 struct LogDtype {
-    static const uint32_t value = Log2<8 * sizeof(U)>::value;
+    static constexpr uint32_t value = Log2<8 * sizeof(U)>::value;
 };
 
 /**
@@ -149,7 +149,7 @@ struct LogDtype {
  */
 template <typename Dtype>
 struct DataTypeChecker {
-    static const bool value = false;
+    static constexpr bool value = false;
 };
 
 /**
@@ -158,7 +158,7 @@ struct DataTypeChecker {
  */
 template <>
 struct DataTypeChecker<uint8_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -167,7 +167,7 @@ struct DataTypeChecker<uint8_t> {
  */
 template <>
 struct DataTypeChecker<uint16_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -176,7 +176,7 @@ struct DataTypeChecker<uint16_t> {
  */
 template <>
 struct DataTypeChecker<uint32_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -185,7 +185,7 @@ struct DataTypeChecker<uint32_t> {
  */
 template <>
 struct DataTypeChecker<uint64_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -196,7 +196,7 @@ struct DataTypeChecker<uint64_t> {
  */
 template <typename uint_type>
 struct UIntBitWidth {
-    static const int value = 8 * sizeof(uint_type);
+    static constexpr int value = 8 * sizeof(uint_type);
 };
 
 /**
@@ -1135,21 +1135,22 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     uint16_t m_MSB;
 
     // variable to store the bit width of the integral data type.
-    static const uint8_t m_uintBitLength;
+    static constexpr uint8_t m_uintBitLength = UIntBitWidth<uint_type>::value;
 
     // variable to store the maximum value of the integral data type.
-    static const uint_type m_uintMax;
+    static constexpr uint_type m_uintMax = std::numeric_limits<uint_type>::max();
 
     // variable to store the log(base 2) of the number of bits in the integral
     // data type.
-    static const uint8_t m_logUintBitLength;
+    static constexpr uint8_t m_logUintBitLength = LogDtype<uint_type>::value;
 
     // variable to store the size of the data array.
-    static const uint32_t m_nSize;
+    static constexpr uint32_t m_nSize =
+            BITLENGTH % m_uintBitLength == 0 ? BITLENGTH / m_uintBitLength : BITLENGTH / m_uintBitLength + 1;
 
     // The maximum number of digits in BigIntegerFixedT. It is used by the cout(ostream)
     // function for printing the bigbinarynumber.
-    static const uint32_t m_numDigitInPrintval;
+    static constexpr uint32_t m_numDigitInPrintval = BITLENGTH / LOG2_10;
 
     /**
      * function to return the ceiling of the number divided by the number of bits
@@ -1158,9 +1159,6 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
      * @return the ceiling of Number/(bits in the integral data type)
      */
     static uint_type ceilIntByUInt(const uint_type Number);
-
-    // currently unused array
-    static const BigIntegerFixedT* m_modChain;
 
     /**
      * function to return the MSB of number.

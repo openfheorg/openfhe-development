@@ -1184,11 +1184,11 @@ class FHECKKSRNS : public FHERNS {
     // number of double-angle iterations in CKKS functional bootstrapping. Must be static because it is used in a static
     // function.
     // for SPARSE_TERNARY secret key distribution (K_SPARSE)
-    static const uint32_t R_func_28_double_48 = 3;
+    static constexpr uint32_t R_func_28_double_48 = 3;
     // for SPARSE_ENCAPSULATED secret key distribution
-    static const uint32_t R_func_16_double_23 = 4;
+    static constexpr uint32_t R_func_16_double_23 = 4;
     // for UNIFORM_TERNARY secret key distribution (K_UNIFORM_FEFBT)
-    static const uint32_t R_func_696_double_27 = 9;
+    static constexpr uint32_t R_func_696_double_27 = 9;
 
     // TODO: regenerate these as hexfloat
 

@@ -40,8 +40,8 @@
 
 namespace lbcrypto {
 
-static const size_t charPtm = (1 << 8);
-static const uint32_t CHARMARKER = (1 << 7);
+static constexpr size_t charPtm = (1 << 8);
+static constexpr uint32_t CHARMARKER = (1 << 7);
 
 bool StringEncoding::Encode() {
     if (this->isEncoded)

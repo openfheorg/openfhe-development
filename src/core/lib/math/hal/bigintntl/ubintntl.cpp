@@ -55,9 +55,6 @@
 
 namespace NTL {
 
-// constant log2 of limb bitlength
-const uint32_t myZZ::m_log2LimbBitLength = Log2<NTL_ZZ_NBITS>::value;
-
 // CONSTRUCTORS
 
 myZZ::myZZ() : ZZ() {
@@ -199,7 +196,7 @@ myZZ myZZ::FromBinaryString(const std::string& vin) {
     uint32_t len = v.length();
     /// new code here
 
-    const unsigned int bitsPerByte = 8;
+    constexpr unsigned int bitsPerByte = 8;
     // parse out string 8 bits at a time into array of bytes
     std::vector<unsigned char> bytes;
     std::reverse(v.begin(), v.end());
@@ -265,7 +262,7 @@ void myZZ::SetMSB() {
 
 // inline static uint32_t GetMSBLimb_t(ZZ_limb_t x){
 uint32_t myZZ::GetMSBLimb_t(ZZ_limb_t x) const {
-    const uint32_t bval[] = {0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
+    static constexpr uint32_t bval[] = {0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
 
     uint64_t r = 0;
     if (x & 0xFFFFFFFF00000000) {

@@ -173,7 +173,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 
     double sigmaFactor = 1 / (-2. * stddev * stddev);
     uint32_t count = 0;
-    const uint32_t limit = 10000;
+    constexpr uint32_t limit = 10000;
 
     int32_t x;
     bool flagSuccess = false;

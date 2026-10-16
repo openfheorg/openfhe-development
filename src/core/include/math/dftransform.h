@@ -129,7 +129,7 @@ class DiscreteFourierTransform {
     static void Initialize(uint32_t m, uint32_t nh);
 
   private:
-    static std::complex<double>* rootOfUnityTable;
+    inline static std::complex<double>* rootOfUnityTable = nullptr;
 
     // structure to keep values precomputed by Initialize() for every cyclotomic order value
     struct PrecomputedValues {
@@ -148,7 +148,7 @@ class DiscreteFourierTransform {
         PrecomputedValues(uint32_t m, uint32_t nh);
     };
     // precomputedValues: key - cyclotomic order, data - values precomputed for the given cyclotomic order
-    static std::unordered_map<uint32_t, PrecomputedValues> precomputedValues;
+    inline static std::unordered_map<uint32_t, PrecomputedValues> precomputedValues;
 
     // guards precomputedValues; map nodes are reference-stable, so readers may use the
     // returned reference after the shared lock is released
