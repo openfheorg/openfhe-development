@@ -3970,9 +3970,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     //------------------------------------------------------------------------------
 
     if (digitBitSize == 1 && order == 1) {
-        auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
-                          IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
-                                                      coeff_cos_28_double_68;
+        auto& coeff_cos = FBTCosCoefficients(skd);
 
         for (auto& ctxt : ctxtEnc) {
             ctxt = algo->EvalChebyshevSeries(ctxt, coeff_cos, coeffLowerBound, coeffUpperBound);
@@ -3989,9 +3987,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             cc->ModReduceInPlace(ctxt);  // cos^2(pi x)
         }
     } else {
-        auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
-                          IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
-                                                      coeff_exp_28_double_69;
+        auto& coeff_exp = FBTExpCoefficients(skd, digitBitSize);
 
         for (auto& ctxt : ctxtEnc) {
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
@@ -4261,6 +4257,22 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHermiteTrigSeries(ConstCiphertext<DCRTPoly>
     return EvalHermiteTrigSeriesInternal(ciphertext, coefficientsCheb, a, b, coefficientsHerm, precomp);
 }
 
+const std::vector<std::complex<double>>& FHECKKSRNS::FBTExpCoefficients(SecretKeyDist skd, uint32_t digitBitSize) {
+    if (skd == UNIFORM_TERNARY)
+        return coeff_exp_672_double_104;
+    if (IsSparseEncapsulated(skd))
+        return (digitBitSize > 12) ? coeff_exp_16_double_66 : coeff_exp_16_double_46;
+    return coeff_exp_28_double_69;
+}
+
+const std::vector<double>& FHECKKSRNS::FBTCosCoefficients(SecretKeyDist skd) {
+    if (skd == UNIFORM_TERNARY)
+        return coeff_cos_672_double_104;
+    if (IsSparseEncapsulated(skd))
+        return coeff_cos_16_double_50;
+    return coeff_cos_28_double_68;
+}
+
 template <typename VectorDataType>
 uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                             size_t order, SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
@@ -4268,12 +4280,8 @@ uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& c
     // K = 28 approximations of SPARSE_TERNARY
     if (UsesLargeSparseKey(skd, sparseKSHammingWeight))
         skd = SPARSE_TERNARY;
-    auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
-                      IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
-                                                  coeff_cos_28_double_68;
-    auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
-                      IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
-                                                  coeff_exp_28_double_69;
+    auto& coeff_cos = FBTCosCoefficients(skd);
+    auto& coeff_exp = FBTExpCoefficients(skd, PInput.GetMSB() - 1);
     uint32_t depth = 0;
     switch (PInput.ConvertToInt()) {
         case 2:
