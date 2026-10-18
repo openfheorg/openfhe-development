@@ -549,6 +549,7 @@ double MeanPrecisionBits(const std::vector<double>& expected, const std::vector<
     double logQP = LogModulus(cryptoParams->GetElementParams()) + LogModulus(cryptoParams->GetParamsP());
     if (logQP > LogQPLimit(t.ringDim)) {
         state.SkipWithError("log(QP) exceeds the 128-bit limit for the ring dimension");
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
         return;
     }
 
@@ -580,7 +581,7 @@ double MeanPrecisionBits(const std::vector<double>& expected, const std::vector<
     state.counters["logQP"] = logQP;
     state.counters["precision"] = MeanPrecisionBits(expected, result->GetRealPackedValue());
 
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
 // setup and key generation for the sigmoid with 59-bit scaling and one level after bootstrapping (FLEXIBLEAUTO)
@@ -590,7 +591,7 @@ const fefbt_config& setup_config = fefbt_configs[13];
     auto cc = GenFEFBTContext(setup_config);
     for (auto _ : state)
         cc->EvalFEFuncBootstrapSetup(setup_config.lvlb, {0, 0}, setup_config.ringDim / 2);
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
 [[maybe_unused]] void FEFBTKeyGen(benchmark::State& state) {
@@ -606,7 +607,7 @@ const fefbt_config& setup_config = fefbt_configs[13];
         cc->EvalBootstrapKeyGen(keyPair.secretKey, slots);
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
 }  // namespace
