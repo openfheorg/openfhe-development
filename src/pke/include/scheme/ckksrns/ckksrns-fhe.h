@@ -783,7 +783,10 @@ class FHECKKSRNS : public FHERNS {
      * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
      * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
      * and SlotsToCoeffs level budgets. Add the number of levels needed after bootstrapping to obtain the
-     * multiplicative depth of the cryptocontext.
+     * multiplicative depth of the cryptocontext. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
+     * performed first, so the input needs levelBudget[1] levels and the output keeps that many for the next
+     * bootstrapping: the levels added on top of this depth are the ones available for computation between two
+     * bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param secretKeyDist secret key distribution of the cryptocontext
@@ -1171,30 +1174,73 @@ class FHECKKSRNS : public FHERNS {
     static double GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
                                            double uniformK);
 
-    // Scaling factors around the last rescale of SlotsToCoeffs in FE functional bootstrapping, which lands on the
-    // towers the modulus raise starts from
-    struct FEFBTRaiseScaling {
+    // In the bootstrapping variants that run SlotsToCoeffs first (StC-first regular bootstrapping and FE functional
+    // bootstrapping), SlotsToCoeffs ends on the bottom compositeDegree towers, the only ones the modulus raise uses,
+    // so its last rescale also brings the message down to the raising level and no separate scaling adjustment
+    // (and no level for it) is needed before ModRaise. The adjustment is folded into the SlotsToCoeffs matrix:
+    // the correction 2^-c of regular bootstrapping and, for the FLEXIBLE* and COMPOSITE* techniques, the ratio
+    // between the scaling factor of the raised level and the one the last rescale yields, which is fixed by the
+    // moduli.
+
+    // Scaling factors around the last rescale of SlotsToCoeffs in the StC-first variants
+    struct StCFirstRaiseScaling {
         double stcSF;          // scaling factor of the SlotsToCoeffs output before its last rescale (noise degree 2)
         double droppedModuli;  // product of the moduli dropped by that rescale
         double targetSF;       // scaling factor of the raised level
     };
 
     /**
-     * Returns the scaling factors around the last rescale of SlotsToCoeffs in FE functional bootstrapping for the
-     * FLEXIBLE* and COMPOSITE* scaling techniques. The ratio targetSF * droppedModuli / stcSF is folded into the
-     * SlotsToCoeffs matrix, so that the message reaches ModRaise at exactly the scaling factor of the raised level
-     * without a separate scaling adjustment.
+     * Returns the scaling factors around the last rescale of SlotsToCoeffs in the StC-first variants for the
+     * FLEXIBLE* and COMPOSITE* scaling techniques.
      *
      * @param cryptoParams the CKKS crypto parameters
      * @return the scaling factors
      */
-    static FEFBTRaiseScaling GetFEFBTRaiseScaling(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams);
+    static StCFirstRaiseScaling GetStCFirstRaiseScaling(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams);
 
-    // Relative tolerance for the scaling factor of the input to FE functional bootstrapping, which is fixed at setup.
-    // A relative deviation d scales the argument of the evaluated function by 1 + d. FLEXIBLEAUTO tracks the
-    // scaling factor of every level exactly; composite scaling deviates by about 2^-37 (degree 2) to 2^-33
-    // (degree 3) per bootstrapping, which this bound of about 2^-30 accepts without a measurable loss.
-    static constexpr double FEFBT_SCALING_FACTOR_TOLERANCE = 1e-9;
+    /**
+     * Returns the factor folded into the SlotsToCoeffs matrix of the StC-first variants: 2^-correction times, for
+     * the FLEXIBLE* and COMPOSITE* techniques, targetSF * droppedModuli / stcSF (see GetStCFirstRaiseScaling).
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @param correction the exponent of the correction 2^-correction applied before ModRaise
+     * @return the factor
+     */
+    static double GetStCFirstDecodingScale(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
+                                           uint32_t correction);
+
+    /**
+     * Returns the exponent c of the correction 2^-c that regular bootstrapping applies before ModRaise: the
+     * correction factor minus log2(q0 / scaling factor), or 0 if the latter is larger.
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @return the exponent of the correction
+     */
+    uint32_t GetBootstrapCorrection(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) const;
+
+    /**
+     * Checks that the input of an StC-first variant, brought to the level SlotsToCoeffs expects, is at the scaling
+     * factor of that level (FLEXIBLE* and COMPOSITE* only), since the scaling factor that reaches ModRaise is fixed
+     * at setup.
+     *
+     * @param ciphertext the input at the level SlotsToCoeffs expects
+     */
+    static void CheckStCFirstInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext);
+
+    /**
+     * Performs the last rescale of SlotsToCoeffs in the StC-first variants, which lands on the raising towers, and
+     * sets the scaling factor of the raised level for the FLEXIBLE* and COMPOSITE* techniques.
+     *
+     * @param ciphertext the SlotsToCoeffs output
+     */
+    static void RescaleStCFirstOutputInPlace(Ciphertext<DCRTPoly>& ciphertext);
+
+    // Relative tolerance for the scaling factor of the input to the StC-first variants, which is fixed at setup.
+    // A relative deviation d scales the message by 1 + d (the argument of the evaluated function in FE functional
+    // bootstrapping). FLEXIBLEAUTO tracks the scaling factor of every level exactly; composite scaling deviates by
+    // about 2^-37 (degree 2) to 2^-33 (degree 3) per bootstrapping, which this bound of about 2^-30 accepts without
+    // a measurable loss.
+    static constexpr double STC_FIRST_SCALING_FACTOR_TOLERANCE = 1e-9;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static constexpr uint32_t R_UNIFORM = 6;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.

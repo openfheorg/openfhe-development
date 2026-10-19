@@ -49,6 +49,7 @@
 #include "UnitTestUtils.h"
 #include "cryptocontext-ser.h"
 #include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 
@@ -65,6 +66,7 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_NUM_TOWERS,
     BOOTSTRAP_SERIALIZE,
     BOOTSTRAP_SPARSE_ENCAPSULATED,
+    BOOTSTRAP_CHAINED,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -93,6 +95,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_SPARSE_ENCAPSULATED:
             typeName = "BOOTSTRAP_SPARSE_ENCAPSULATED";
+            break;
+        case BOOTSTRAP_CHAINED:
+            typeName = "BOOTSTRAP_CHAINED";
             break;
         default:
             typeName = "UNKNOWN";
@@ -391,6 +396,21 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     // TestType,                    Descr,          Scheme,    RDim, MultDepth, SModSize, DSize, BSize, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl, KSTech,    ScalTech,      LDigits, PtMod,StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, CompositeDegree, CKKSDataType, LvlBudget, Dim1,       Slots
     { BOOTSTRAP_SPARSE_ENCAPSULATED, "01", {CKKSRNS_SCHEME, 1 << 12,        18,       50,  DFLT,  DFLT, SPARSE_ENCAPSULATED, DFLT,       60, HEStd_NotSet, HYBRID,   FIXEDAUTO, NUM_LRG_DIGS,  DFLT,  DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 4, 4 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE_ENCAPSULATED, "02", {CKKSRNS_SCHEME, 1 << 12,        18,       50,  DFLT,  DFLT, SPARSE_ENCAPSULATED, DFLT,       60, HEStd_NotSet, HYBRID, FIXEDMANUAL, NUM_LRG_DIGS,  DFLT,  DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 4, 4 },  { 8, 8 }, 8 },
+    // ==========================================
+    // StC-first bootstrapping, one multiplication and StC-first bootstrapping again with a depth of
+    // GetBootstrapDepth + 1 (the multiplicative depth of the table is replaced in the test): the output keeps the
+    // levelBudget[1] levels the next SlotsToCoeffs needs
+    { BOOTSTRAP_CHAINED,  "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,       FIXEDAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+#if NATIVEINT != 128
+    { BOOTSTRAP_CHAINED,  "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT, SPARSE_ENCAPSULATED, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 1, 1 },  { 0, 0 }, RDIM/4 },
+    { BOOTSTRAP_CHAINED,  "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "09", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32,    2, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+#endif
 };
 // clang-format on
 
@@ -810,6 +830,64 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         }
     }
 
+    // A depth of GetBootstrapDepth + 1 must allow one multiplication between two StC-first bootstrappings: the
+    // output keeps the levelBudget[1] levels the next SlotsToCoeffs consumes on top of the level added. Both inputs
+    // have the levelBudget[1] levels SlotsToCoeffs consumes (an input with at least as many towers as bootstrapping
+    // produces would be returned unchanged).
+    void UnitTest_Bootstrap_Chained(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                    const std::string& failmsg = std::string()) {
+        try {
+            auto params = testData.params;
+            params.multiplicativeDepth =
+                    FHECKKSRNS::GetBootstrapDepth(testData.levelBudget,
+                                                  static_cast<SecretKeyDist>(params.secretKeyDist)) +
+                    1;
+            CryptoContext<Element> cc(UnitTestGenerateContext(params));
+
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, true);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            std::vector<std::complex<double>> input(testData.slots);
+            std::vector<std::complex<double>> squared(testData.slots);
+            for (uint32_t i = 0; i < testData.slots; ++i) {
+                input[i] = 0.9 * std::sin(0.7 * i + 0.3);
+                squared[i] = input[i] * input[i];
+            }
+
+            const uint32_t compositeDegree =
+                    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
+                    input, 1,
+                    compositeDegree * (static_cast<uint32_t>(params.multiplicativeDepth) - testData.levelBudget[1]),
+                    nullptr, testData.slots);
+            auto first = cc->EvalBootstrap(cc->Encrypt(keyPair.publicKey, plaintext));
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, first, &result);
+            result->SetLength(testData.slots);
+            checkEquality(result->GetCKKSPackedValue(), input, eps,
+                          failmsg + " the first StC-first bootstrapping failed.");
+
+            auto product = cc->EvalMult(first, first);
+            if (static_cast<ScalingTechnique>(params.scalTech) == FIXEDMANUAL)
+                cc->RescaleInPlace(product);
+
+            auto second = cc->EvalBootstrap(product);
+            cc->Decrypt(keyPair.secretKey, second, &result);
+            result->SetLength(testData.slots);
+            checkEquality(result->GetCKKSPackedValue(), squared, eps,
+                          failmsg + " the second StC-first bootstrapping failed.");
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -885,6 +963,9 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_SPARSE_ENCAPSULATED:
             UnitTest_BootstrapSE(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_CHAINED:
+            UnitTest_Bootstrap_Chained(test, test.buildTestName());
             break;
         default:
             break;

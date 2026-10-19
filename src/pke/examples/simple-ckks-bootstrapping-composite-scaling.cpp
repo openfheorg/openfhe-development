@@ -254,9 +254,9 @@ void SimpleBootstrapStCFirstExample() {
      */
     std::vector<uint32_t> levelBudget = {4, 4};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
-    // will be levelsAvailableAfterBootstrap - 1 because an additional level
-    // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
+    // Note that the number of levels available after bootstrapping, before the next bootstrapping, will be
+    // levelsAvailableAfterBootstrap - levelBudget[1] = 10 below, because the next bootstrapping performs
+    // SlotsToCoefficients first
     uint32_t levelsAvailableAfterBootstrap = 10 + levelBudget[1];
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth({levelBudget[0], 0}, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -292,7 +292,7 @@ void SimpleBootstrapStCFirstExample() {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoContext->GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     // We start with a depleted ciphertext that has used up all of its levels.
-    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, compositeDegree * (depth - 1 - levelBudget[1]));
+    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, compositeDegree * (depth - levelBudget[1]));
 
     std::cout << "Composite degree: " << compositeDegree
               << " Bit length: " << static_cast<float>(dcrtBits) / compositeDegree

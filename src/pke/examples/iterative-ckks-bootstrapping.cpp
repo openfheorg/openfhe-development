@@ -274,7 +274,7 @@ void IterativeBootstrapStcExample() {
     // parameters.SetBatchSize(numSlots);
     // Here, we assume all ciphertexts in the cryptoContext will have numSlots slots.
     // We start with a depleted ciphertext that has used up all of its levels.
-    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1 - levelBudget[1], nullptr, numSlots);
+    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - levelBudget[1], nullptr, numSlots);
     ptxt->SetLength(numSlots);
     std::cout << "Input: " << ptxt;
 
