@@ -537,9 +537,9 @@ void SimpleBootstrappingStCFirstComplex() {
      */
     std::vector<uint32_t> levelBudget = {2, 2};
 
-    // Note that the actual number of levels avalailable after bootstrapping before next bootstrapping
-    // will be levelsAvailableAfterBootstrap - 1 because an additional level
-    // is used for scaling the ciphertext before next bootstrapping (in 64-bit CKKS bootstrapping)
+    // Note that the number of levels available after bootstrapping, before the next bootstrapping, will be
+    // levelsAvailableAfterBootstrap - levelBudget[1] = 10 below, because the next bootstrapping performs
+    // SlotsToCoefficients first
     uint32_t levelsAvailableAfterBootstrap = 10 + levelBudget[1];
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth({levelBudget[0], 0}, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -568,7 +568,7 @@ void SimpleBootstrappingStCFirstComplex() {
     size_t encodedLength = x.size();
 
     // We start with a depleted ciphertext that has used up all of its levels.
-    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1 - levelBudget[1], nullptr, numSlots);
+    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - levelBudget[1], nullptr, numSlots);
 
     ptxt->SetLength(encodedLength);
     std::cout << "Input: " << ptxt << "\n";
