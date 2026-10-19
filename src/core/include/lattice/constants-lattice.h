@@ -47,8 +47,24 @@ enum SecretKeyDist {
     SPARSE_TERNARY = 2,
     SPARSE_ENCAPSULATED = 3,  // For more effient bootstrapping in SIMD schemes
                               // (has been used for CKKS and BFV bootstrapping in literature)
+    HYBRID_TERNARY = 4,       // Uniform ternary secret for the main computation; a sparse secret is used only
+                              // for the modulus raise in CKKS bootstrapping (sparse secret encapsulation).
+                              // Security is determined by the uniform ternary secret.
+                              // HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended for CKKS bootstrapping,
+                              // as they achieve a probability of failure below 2^-128
     // BINARY = X, // Future implementation
 };
+
+/**
+ * @brief Checks whether the modulus raise in CKKS bootstrapping is done under a sparse secret obtained by sparse
+ * secret encapsulation, i.e., whether the distribution is SPARSE_ENCAPSULATED (sparse main secret) or
+ * HYBRID_TERNARY (uniform ternary main secret).
+ * @param dist the secret key distribution.
+ * @return true for SPARSE_ENCAPSULATED and HYBRID_TERNARY.
+ */
+inline bool IsSparseEncapsulated(SecretKeyDist dist) {
+    return (dist == SPARSE_ENCAPSULATED) || (dist == HYBRID_TERNARY);
+}
 
 /**
  * @brief Converts the name of a secret key distribution (e.g. "UNIFORM_TERNARY") to the enum value.

@@ -93,11 +93,12 @@ double RatioToDouble(const lbcrypto::BigInteger& num, const lbcrypto::BigInteger
 namespace lbcrypto {
 
 namespace {
-// SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64: first modulus above 60 bits) uses the K = 28
-// approximations of SPARSE_TERNARY instead of the K = 16 ones
+// SPARSE_ENCAPSULATED/HYBRID_TERNARY with the denser sparse secret (Hamming weight 64: first modulus above 60 bits)
+// uses the K = 28 approximations of SPARSE_TERNARY instead of the K = 16 ones
 bool UsesLargeSparseKey(SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
-    return (skd == SPARSE_ENCAPSULATED) && (sparseKSHammingWeight > 32);
+    return IsSparseEncapsulated(skd) && (sparseKSHammingWeight > 32);
 }
+
 }  // namespace
 
 double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
@@ -108,7 +109,10 @@ double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParamete
         case SPARSE_TERNARY:
             return K_SPARSE;
         case SPARSE_ENCAPSULATED:
-            // K = 28 for the denser sparse secret (Hamming weight 64: first modulus above 60 bits)
+        case HYBRID_TERNARY:
+            // the modulus raise is done under the sparse secret of the encapsulation, so the bound depends only
+            // on its Hamming weight: K = 28 for the denser sparse secret (Hamming weight 64: first modulus above
+            // 60 bits), K = 16 otherwise
             return UsesLargeSparseKey(SPARSE_ENCAPSULATED, cryptoParams->GetSparseKSHammingWeight()) ?
                            K_SPARSE :
                            K_SPARSE_ENCAPSULATED;
@@ -378,7 +382,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
 
     (*evalKeys)[M - 1] = ConjugateKeyGen(privateKey);
 
-    if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         // sparse key used for the modraising step (Hamming weight 32, or 64 for bottom moduli above 60 bits)
         DCRTPoly::TugType tug;
         auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
@@ -410,7 +414,7 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
 
     indexList.insert(M - 1);
 
-    if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         indexList.insert(M - 2);
         indexList.insert(M - 4);
     }
@@ -882,7 +886,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
     if (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) {
         coefficients = g_coefficientsSparse;
-    } else if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    } else if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         // K = 28 (the SPARSE_TERNARY table) for the denser sparse secret (Hamming weight 64: first modulus above
         // 60 bits), K = 16 otherwise
         coefficients = (cryptoParams->GetSparseKSHammingWeight() > 32) ? g_coefficientsSparse :
@@ -1229,7 +1233,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
     if (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) {
         coefficients = g_coefficientsSparse;
-    } else if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    } else if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         // K = 28 (the SPARSE_TERNARY table) for the denser sparse secret (Hamming weight 64: first modulus above
         // 60 bits), K = 16 otherwise
         coefficients = (cryptoParams->GetSparseKSHammingWeight() > 32) ? g_coefficientsSparse :
@@ -1655,8 +1659,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     double pre = (compositeDegree > 1) ? 1.0 : std::pow(2, -deg);
 
     // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup; the K = 28
-    // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64)
-    const bool smallSparseKey = (skd == SPARSE_ENCAPSULATED) && (cryptoParams->GetSparseKSHammingWeight() == 32);
+    // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED/HYBRID_TERNARY with the denser sparse secret
+    // (Hamming weight 64)
+    const bool smallSparseKey = IsSparseEncapsulated(skd) && (cryptoParams->GetSparseKSHammingWeight() == 32);
     const auto& coeffExp = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
                            smallSparseKey           ? coeff_exp_16_double_23 :
                                                       coeff_exp_28_double_48;
@@ -3858,9 +3863,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
-                                                             coeff_cos_28_double_68;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                          coeff_cos_28_double_68;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_cos, coeffLowerBound, coeffUpperBound);
@@ -3878,9 +3883,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
                 cc->ModReduceInPlace(ctxt);  // cos^2(pi x)
             }
         } else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                                                             coeff_exp_28_double_69;
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                          coeff_exp_28_double_69;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -3941,9 +3946,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
-                                                             coeff_cos_28_double_68;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                          coeff_cos_28_double_68;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
 
@@ -3958,9 +3963,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
         } else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                                                             coeff_exp_28_double_69;
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                          coeff_exp_28_double_69;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -4218,12 +4223,12 @@ uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& c
     // K = 28 approximations of SPARSE_TERNARY
     if (UsesLargeSparseKey(skd, sparseKSHammingWeight))
         skd = SPARSE_TERNARY;
-    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
-                      (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
-                                                     coeff_cos_28_double_68;
-    auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
-                      (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                                                     coeff_exp_28_double_69;
+    auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                      IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                  coeff_cos_28_double_68;
+    auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                      IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                  coeff_exp_28_double_69;
     uint32_t depth = 0;
     switch (PInput.ConvertToInt()) {
         case 2:
@@ -4290,7 +4295,7 @@ void FHECKKSRNS::ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
     auto cc = raised->GetCryptoContext();
     const uint32_t N = cc->GetRingDimension();
     const uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
-    const bool isEncapsulated = (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED);
+    const bool isEncapsulated = IsSparseEncapsulated(cryptoParams->GetSecretKeyDist());
 
     auto* evalKeyMap = isEncapsulated ? &cc->GetEvalAutomorphismKeyMap(raised->GetKeyTag()) : nullptr;
     if (isEncapsulated) {
@@ -4409,7 +4414,8 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
     // modulus for sparse encapsulation (generated in CryptoParametersCKKSRNS::PrecomputeCRTTables)
     const auto& paramsqp = cryptoParams->GetSparseKSParamsQP();
     if (nullptr == paramsqp)
-        OPENFHE_THROW("The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED.");
+        OPENFHE_THROW(
+                "The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED and HYBRID_TERNARY.");
 
     const size_t sizeQl = cryptoParams->GetSparseKSParamsQ()->GetParams().size();
     const size_t sizeQP = paramsqp->GetParams().size();
@@ -4449,7 +4455,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
     const auto& paramsP = cryptoParams->GetSparseKSParamsP();
     const auto& paramsQl = cryptoParams->GetSparseKSParamsQ();
     if (nullptr == paramsP)
-        OPENFHE_THROW("The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED.");
+        OPENFHE_THROW(
+                "The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED and HYBRID_TERNARY.");
 
     const size_t sizeP = paramsP->GetParams().size();
     const size_t sizeQl = paramsQl->GetParams().size();

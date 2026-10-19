@@ -146,8 +146,8 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     /* 4. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-     * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
-     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+     * The secret key distribution for CKKS should be HYBRID_TERNARY or SPARSE_ENCAPSULATED (recommended,
+     * as they achieve a probability of failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
      * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
      * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
      * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
@@ -308,8 +308,8 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     /* 5. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-     * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
-     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+     * The secret key distribution for CKKS should be HYBRID_TERNARY or SPARSE_ENCAPSULATED (recommended,
+     * as they achieve a probability of failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
      * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
      * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
      * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).
@@ -560,8 +560,8 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     /* 5. Set up the cryptoparameters.
      * The scaling factor in CKKS should have the same bit length as the RLWE ciphertext modulus corresponding to the digit.
      * The number of levels to be reserved before and after the LUT evaluation should be specified.
-     * The secret key distribution for CKKS should be SPARSE_ENCAPSULATED (recommended; probability of
-     * failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
+     * The secret key distribution for CKKS should be HYBRID_TERNARY or SPARSE_ENCAPSULATED (recommended,
+     * as they achieve a probability of failure below 2^-128), UNIFORM_TERNARY (if uniform ternary secrets are required for compliance with
      * security guidelines; probability of failure 2^-73 for N = 2^16 and 2^-30 for N = 2^17 with full
      * packing, at the cost of 5 more levels of multiplicative depth and larger scaling factors), or
      * SPARSE_TERNARY (discouraged; about 2^-23 for N = 2^16, but less noise).

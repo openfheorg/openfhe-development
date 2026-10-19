@@ -235,7 +235,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     }
 
     /////////////////////////////////////
-    // Sparse secret encapsulation (SPARSE_ENCAPSULATED): auxiliary basis and tables for the
+    // Sparse secret encapsulation (SPARSE_ENCAPSULATED and HYBRID_TERNARY): auxiliary basis and tables for the
     // key switching to/from the sparse secret at the bootstrapping modulus raise
     // (FHECKKSRNS::KeySwitchGenSparse / KeySwitchSparse). The switching key is generated
     // over Ql*P', where Ql = {q_0, ..., q_{d-1}} (d = compositeDegree) is the basis of the
@@ -254,7 +254,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     // dropped during the basis switches.
     /////////////////////////////////////
 
-    if (GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    if (IsSparseEncapsulated(GetSecretKeyDist())) {
         const uint32_t sizeQl = compositeDegree;
         // for compositeDegree > 1 the Ql -> P' switch reuses the modulus-raise tables, which are only
         // precomputed when the chain is longer than the bottom level

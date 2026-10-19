@@ -76,9 +76,10 @@ void validateParametersForCryptocontext(const Params& parameters) {
                 OPENFHE_THROW("scalingModSize should be at least " + std::to_string(DCRT_MODULUS::MIN_SIZE) +
                               " and less than " + std::to_string(COMPOSITESCALING_MAX_MODULUS_SIZE));
             }
-            if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist() && parameters.GetFirstModSize() > 121) {
+            if (IsSparseEncapsulated(parameters.GetSecretKeyDist()) && parameters.GetFirstModSize() > 121) {
                 OPENFHE_THROW(
-                        "SPARSE_ENCAPSULATED with COMPOSITESCALING* supports a first modulus of at most 121 bits");
+                        "SPARSE_ENCAPSULATED and HYBRID_TERNARY with COMPOSITESCALING* support a first modulus of at "
+                        "most 121 bits");
             }
         } else {
             if (MAX_MODULUS_SIZE <= parameters.GetScalingModSize() ||
@@ -117,8 +118,8 @@ void validateParametersForCryptocontext(const Params& parameters) {
         if (NOISE_FLOODING_HRA == parameters.GetPREMode()) {
             OPENFHE_THROW("NOISE_FLOODING_HRA is not supported in BFVRNS");
         }
-        if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
-            OPENFHE_THROW("SPARSE_ENCAPSULATED not yet supported with BFVRNS");
+        if (IsSparseEncapsulated(parameters.GetSecretKeyDist())) {
+            OPENFHE_THROW("SPARSE_ENCAPSULATED and HYBRID_TERNARY are not yet supported with BFVRNS");
         }
     } else if (isBGVRNS(scheme)) {
         if (0 == parameters.GetPlaintextModulus()) {
@@ -172,8 +173,8 @@ void validateParametersForCryptocontext(const Params& parameters) {
                 OPENFHE_THROW("numAdversarialQueries is allowed for PREMode == NOISE_FLOODING_HRA only");
             }
         }
-        if (SPARSE_ENCAPSULATED == parameters.GetSecretKeyDist()) {
-            OPENFHE_THROW("SPARSE_ENCAPSULATED not yet supported with BGVRNS");
+        if (IsSparseEncapsulated(parameters.GetSecretKeyDist())) {
+            OPENFHE_THROW("SPARSE_ENCAPSULATED and HYBRID_TERNARY are not yet supported with BGVRNS");
         }
     } else {
         std::string errMsg(std::string("Unknown schemeId: ") + std::to_string(scheme));
