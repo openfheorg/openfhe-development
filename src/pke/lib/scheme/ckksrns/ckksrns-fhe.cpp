@@ -99,6 +99,47 @@ bool UsesLargeSparseKey(SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
     return IsSparseEncapsulated(skd) && (sparseKSHammingWeight > 32);
 }
 
+// Number of towers to drop when encoding the plaintexts of a linear transform for a ciphertext with
+// L + towersKept towers out of the sizeQ towers of the chain (L == 0 keeps all towers). The callers compute L
+// with unsigned arithmetic from the chain length, so a chain too short for bootstrapping makes L wrap around;
+// the check (in 64 bits, so that the sum cannot wrap as well) turns that into an exception instead of dropping
+// towers past the end of the chain.
+uint32_t LinearTransformTowersToDrop(uint32_t sizeQ, uint32_t L, uint32_t towersKept) {
+    if (L == 0)
+        return 0;
+    if (static_cast<uint64_t>(L) + towersKept > sizeQ)
+        OPENFHE_THROW(
+                "The modulus chain is too short for the bootstrapping linear transforms; increase the "
+                "multiplicative depth.");
+    return sizeQ - L - towersKept;
+}
+
+// Checks, before the unsigned level arithmetic of a bootstrapping setup, that the modulus chain of L0 towers
+// (compositeDegree towers per level) can hold the CoeffsToSlots and SlotsToCoeffs precomputations. CoeffsToSlots
+// is evaluated right after the modulus raise and has to leave at least one level for the approximate modular
+// reduction. SlotsToCoeffs is evaluated either at the end of the bootstrapping, which then needs depthBT levels
+// in total (ModRaise-first), or on the input before the modulus raise, which keeps two levels for it (StC-first).
+void CheckBootstrapChainLength(uint32_t L0, uint32_t compositeDegree, uint32_t lvlbEnc, uint32_t lvlbDec, bool stcFirst,
+                               uint32_t depthBT) {
+    const uint32_t availableDepth = L0 / compositeDegree - 1;
+    if (compositeDegree * (lvlbEnc + 1) >= L0)
+        OPENFHE_THROW("The CoeffsToSlots level budget (" + std::to_string(lvlbEnc) +
+                      ") is too large for the multiplicative depth supported by the modulus chain (" +
+                      std::to_string(availableDepth) +
+                      "). Increase the multiplicative depth or reduce the level budget.");
+    if (stcFirst) {
+        if (compositeDegree * (lvlbDec + 2) > L0)
+            OPENFHE_THROW("The SlotsToCoeffs level budget (" + std::to_string(lvlbDec) +
+                          ") is too large for the multiplicative depth supported by the modulus chain (" +
+                          std::to_string(availableDepth) +
+                          "). Increase the multiplicative depth or reduce the level budget.");
+    } else if (compositeDegree * (depthBT + 1) > L0) {
+        OPENFHE_THROW("Bootstrapping requires a multiplicative depth of at least " + std::to_string(depthBT) +
+                      ", but the modulus chain supports " + std::to_string(availableDepth) +
+                      ". Increase the multiplicative depth (see FHECKKSRNS::GetBootstrapDepth) or reduce the "
+                      "level budget.");
+    }
+}
 }  // namespace
 
 double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
@@ -306,15 +347,14 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         auto st = cryptoParams->GetScalingTechnique();
         uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
 
+        uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + precom->m_paramsEnc.lvlb +
+                           precom->m_paramsDec.lvlb;
+        CheckBootstrapChainLength(L0, compositeDegree, precom->m_paramsEnc.lvlb, precom->m_paramsDec.lvlb,
+                                  precom->BTSlotsEncoding, depthBT);
+
         uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
-        uint32_t lDec;
-        if (precom->BTSlotsEncoding) {
-            lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
-        } else {
-            uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + precom->m_paramsEnc.lvlb +
-                               precom->m_paramsDec.lvlb;
-            lDec = L0 - compositeDegree * depthBT;
-        }
+        uint32_t lDec = (precom->BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree :
+                                                    L0 - compositeDegree * depthBT;
 
         bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -498,15 +538,12 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     auto st = cryptoParams->GetScalingTechnique();
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
 
+    uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + p.m_paramsEnc.lvlb + p.m_paramsDec.lvlb;
+    CheckBootstrapChainLength(L0, compositeDegree, p.m_paramsEnc.lvlb, p.m_paramsDec.lvlb, p.BTSlotsEncoding, depthBT);
+
     uint32_t lEnc = L0 - compositeDegree * (p.m_paramsEnc.lvlb + 1);
-    uint32_t lDec;
-    if (p.BTSlotsEncoding) {
-        lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
-    } else {
-        uint32_t depthBT =
-                GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + p.m_paramsEnc.lvlb + p.m_paramsDec.lvlb;
-        lDec = L0 - compositeDegree * depthBT;
-    }
+    uint32_t lDec =
+            (p.BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree : L0 - compositeDegree * depthBT;
 
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
@@ -1549,6 +1586,9 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     auto st = cryptoParams->GetScalingTechnique();
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
 
+    // SlotsToCoeffs is evaluated on the input before the modulus raise, as in StC-first bootstrapping
+    CheckBootstrapChainLength(L0, compositeDegree, precom->m_paramsEnc.lvlb, precom->m_paramsDec.lvlb, true, 0);
+
     uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
     uint32_t lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
 
@@ -2070,7 +2110,7 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     auto compositeDegree = cryptoParams->GetCompositeDegree();
     auto elementParams = *(cryptoParams->GetElementParams());
-    uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -2116,7 +2156,7 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     auto elementParams = *(cryptoParams->GetElementParams());
 
-    uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -2212,7 +2252,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
 
     auto elementParams = *(cryptoParams->GetElementParams());
 
-    uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree * p.lvlb;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -2382,7 +2422,8 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     auto elementParams = *(cryptoParams->GetElementParams());
 
-    const uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree * p.lvlb;
+    const uint32_t towersToDrop =
+            LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -3554,7 +3595,9 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
         OPENFHE_THROW("The encoding level budget (" + std::to_string(levelBudget[0]) +
                       ") is too large for the available number of levels (" + std::to_string(L0 / compositeDegree) +
                       ").");
-    if (compositeDegree * depthBT > L0)
+    // the SlotsToCoeffs matrices keep at least one level after depthBT (lDec >= compositeDegree below; a zero lDec
+    // would encode them for the whole chain)
+    if (compositeDegree * (depthBT + 1) > L0)
         OPENFHE_THROW("The functional bootstrapping depth (" + std::to_string(depthBT) +
                       ") exceeds the available number of levels (" + std::to_string(L0 / compositeDegree) +
                       "). Increase the multiplicative depth, or reduce the level budget or "
