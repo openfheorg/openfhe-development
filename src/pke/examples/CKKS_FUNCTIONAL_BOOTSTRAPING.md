@@ -125,6 +125,10 @@ by the extra key switching is larger. For a first modulus larger than 60 bits (w
 build), the Hamming weight of the sparse key is 64 and the K = 28 approximation of SPARSE_TERNARY is used, which keeps the
 probability of failure negligible (below 2^-142 for 2^16 slots) at the cost of the extra level mentioned above.
 
+The HYBRID_TERNARY distribution uses the same sparse secret encapsulation as SPARSE_ENCAPSULATED for the modulus raise in
+(functional) bootstrapping and a uniform ternary secret for all other operations. It therefore has the same bound K, probability of
+failure and depth as SPARSE_ENCAPSULATED, while the security is that of uniform ternary secrets.
+
 The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption security guidelines and can be
 used when uniform ternary secrets are required for compliance with them. It is handled in the same manner as in regular CKKS
 bootstrapping: the number of overflows is bounded by K = 672 (probability of failure below 2^-73
@@ -218,12 +222,8 @@ if a longer series is passed.
 `EvalFEFuncBootstrapSetup`, `EvalBootstrapSetup` and `EvalFBTSetup` store their precomputations in the same entry for a given
 number of slots, so a crypto context holds the precomputations of only one of them for each number of slots.
 
-The HYBRID_TERNARY distribution uses the same sparse secret encapsulation as SPARSE_ENCAPSULATED for the modulus raise in
-(functional) bootstrapping and a uniform ternary secret for all other operations. It therefore has the same bound K, probability of
-failure and depth as SPARSE_ENCAPSULATED, while the security is that of uniform ternary secrets.
-
 **Secret key distributions**
-All three distributions are supported, and the probabilities of failure are those of the bound K on the mod-raise overflows
+All four distributions are supported, and the probabilities of failure are those of the bound K on the mod-raise overflows
 used for each of them (for full packing):
 - SPARSE_ENCAPSULATED (recommended): K = 16, probability of failure below 2^-128. For a first modulus larger than 60 bits
 (which requires composite scaling in the 64-bit build), the Hamming weight of the sparse key is 64 and K = 28 is used, which
