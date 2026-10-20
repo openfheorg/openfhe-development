@@ -3518,7 +3518,8 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
                                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut,
                                       const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
                                       const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                                      uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order) {
+                                      uint32_t lvlsAfterBoot, uint32_t depthLeveledComputation, size_t order,
+                                      uint32_t numValues) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS Functional Bootstrapping is only supported for the Hybrid key switching method.");
@@ -3526,6 +3527,11 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
+
+    const bool fullPacking = (slots == M / 4);
+    if (numValues > (fullPacking ? 2 * slots : slots))
+        OPENFHE_THROW("The number of RLWE values (" + std::to_string(numValues) + ") exceeds the capacity of " +
+                      std::to_string(slots) + " slots.");
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -3641,6 +3647,7 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     auto& precom = m_bootPrecomMap[slots];
     precom->m_slots = slots;
     precom->m_variant = CKKSBootstrapPrecom::FBT;
+    precom->m_FBTComplexPacking = fullPacking && (numValues == 0 || numValues > slots);
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
     precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
 
@@ -3683,18 +3690,18 @@ void FHECKKSRNS::EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc,
                               const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
-                              uint32_t depthLeveledComputation, size_t order) {
+                              uint32_t depthLeveledComputation, size_t order, uint32_t numValues) {
     EvalFBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                         depthLeveledComputation, order);
+                         depthLeveledComputation, order, numValues);
 }
 
 void FHECKKSRNS::EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot,
-                              uint32_t depthLeveledComputation, size_t order) {
+                              uint32_t depthLeveledComputation, size_t order, uint32_t numValues) {
     EvalFBTSetupInternal(cc, coefficients, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                         depthLeveledComputation, order);
+                         depthLeveledComputation, order, numValues);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalHomDecoding(ConstCiphertext<DCRTPoly>& ciphertext, uint64_t postScaling,
@@ -3907,14 +3914,15 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     // The homomorphic encoding yields one ciphertext whose real channel holds the lower half of the
     // coefficients and whose imaginary channel holds the upper half. The approximate modular reduction
     // only works on real inputs, so the channels have to be processed as separate ciphertexts. Whether the
-    // imaginary channel is kept (two ciphertexts) or dropped (one ciphertext) depends on the packing:
-    // - full packing (N/2 slots) with CKKSDataType COMPLEX: N values were imported from RLWE, both halves
-    //   carry data, and two ciphertexts go through the modular reduction and the LUT evaluation;
-    // - full packing with CKKSDataType REAL: N/2 values were imported from RLWE into the lower half (the
-    //   upper half holds no data), so only the real channel is kept and a single ciphertext is processed;
+    // imaginary channel is kept (two ciphertexts) or dropped (one ciphertext) depends on the packing recorded
+    // by EvalFBTSetup:
+    // - full packing (N/2 slots) of more than N/2 RLWE values: both halves carry data, and two ciphertexts go
+    //   through the modular reduction and the LUT evaluation;
+    // - full packing of N/2 RLWE values: they occupy the lower half (the upper half holds no data), so only
+    //   the real channel is kept and a single ciphertext is processed;
     // - sparse packing (fewer than N/2 slots): the RLWE encryption duplicates the values into both halves,
     //   which the partial sum folds onto the real channel, so a single ciphertext is processed.
-    const bool keepImagChannel = (slots == M / 4) && (cc->GetCKKSDataType() == COMPLEX);
+    const bool keepImagChannel = p.m_FBTComplexPacking;
 
     if (slots != M / 4) {
         //------------------------------------------------------------------------------
@@ -4047,11 +4055,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
 
     Ciphertext<DCRTPoly> ctxtEnc;
 
-    // The powers of the imaginary channel (upper half of the coefficients) exist only for full packing with
-    // CKKSDataType COMPLEX (see EvalMVBPrecomputeInternal), where the look-up table is evaluated on both
-    // channels and the results are recombined; sparse packing and full packing with CKKSDataType REAL
-    // evaluate it on the real channel alone.
-    const bool evalImagChannel = (slots == M4) && (cc->GetCKKSDataType() == COMPLEX);
+    // The powers of the imaginary channel (upper half of the coefficients) exist only for full packing of more
+    // than N/2 RLWE values (see EvalMVBPrecomputeInternal), where the look-up table is evaluated on both
+    // channels and the results are recombined; sparse packing and full packing of N/2 values evaluate it on
+    // the real channel alone.
+    const bool evalImagChannel = GetBootPrecom(slots, CKKSBootstrapPrecom::FBT).m_FBTComplexPacking;
 
     if (evalImagChannel) {
         //------------------------------------------------------------------------------

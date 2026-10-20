@@ -256,9 +256,7 @@ class FHEBase {
      * @param coeffs trigonometric Hermite interpolation coefficients of the function to evaluate
      * (from GetHermiteTrigCoefficients, or [f(1), f(0)-f(1)] for a first-order Boolean function);
      * they determine the depth of the bootstrapping.
-     * @param numSlots number of slots (0 = full packing). For full packing, the CKKS data type selects the
-     * layout of the RLWE input: COMPLEX for N values (both coefficient halves, two ciphertexts are processed)
-     * and REAL for N/2 values (lower half only, one ciphertext).
+     * @param numSlots number of slots (0 = full packing).
      * @param PIn plaintext modulus of the input RLWE ciphertext.
      * @param POut plaintext modulus of the output.
      * @param Bigq ciphertext modulus of the input RLWE ciphertext.
@@ -269,12 +267,16 @@ class FHEBase {
      * @param depthLeveledComputation depth of the leveled computation applied between
      * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding.
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @param numValues number of values encrypted in the RLWE input (0 = as many as the slots hold: N for
+     * full packing, numSlots for sparse packing). With full packing, more than N/2 values occupy both
+     * coefficient halves (two ciphertexts are processed) and N/2 values the lower half (one ciphertext),
+     * independently of the CKKS data type (see CryptoContextImpl::EvalFBTSetup for when COMPLEX is needed).
      */
     virtual void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<std::complex<double>>& coeffs,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                              uint32_t depthLeveledComputation = 0, size_t order = 1) {
+                              uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0) {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
     /**
@@ -288,9 +290,7 @@ class FHEBase {
      * @param coeffs trigonometric Hermite interpolation coefficients of the function to evaluate
      * (from GetHermiteTrigCoefficients, or [f(1), f(0)-f(1)] for a first-order Boolean function);
      * they determine the depth of the bootstrapping.
-     * @param numSlots number of slots (0 = full packing). For full packing, the CKKS data type selects the
-     * layout of the RLWE input: COMPLEX for N values (both coefficient halves, two ciphertexts are processed)
-     * and REAL for N/2 values (lower half only, one ciphertext).
+     * @param numSlots number of slots (0 = full packing).
      * @param PIn plaintext modulus of the input RLWE ciphertext.
      * @param POut plaintext modulus of the output.
      * @param Bigq ciphertext modulus of the input RLWE ciphertext.
@@ -301,12 +301,16 @@ class FHEBase {
      * @param depthLeveledComputation depth of the leveled computation applied between
      * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding.
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @param numValues number of values encrypted in the RLWE input (0 = as many as the slots hold: N for
+     * full packing, numSlots for sparse packing). With full packing, more than N/2 values occupy both
+     * coefficient halves (two ciphertexts are processed) and N/2 values the lower half (one ciphertext),
+     * independently of the CKKS data type (see CryptoContextImpl::EvalFBTSetup for when COMPLEX is needed).
      */
     virtual void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<int64_t>& coeffs,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                              uint32_t depthLeveledComputation = 0, size_t order = 1) {
+                              uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0) {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 

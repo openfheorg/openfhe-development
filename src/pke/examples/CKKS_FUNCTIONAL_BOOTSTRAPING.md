@@ -47,11 +47,18 @@ makes the conversion between RLWE and CKKS to essentially be modulus switching.
 
 A vector encoded in RLWE can have as many elements as the ring dimension. If this is the case (the number of elements is between half
 the ring dimension and the ring dimension), this corresponds to a full complex packing in CKKS, where the imaginary parts of the slots are also
-populated: the CKKS data type has to be set to COMPLEX (`SetCKKSDataType(COMPLEX)`), and functional bootstrapping processes two
-ciphertexts (the real and imaginary channels of the homomorphic encoding). Otherwise, real CKKS packing (full or sparse) is used with the
-default CKKS data type REAL, and functional bootstrapping processes a single ciphertext. In particular, for a number of elements equal to
-half the ring dimension, the values occupy the real parts of the N/2 slots, and the cost of the approximate modular reduction and of the
-look-up table evaluation is half that of the full complex packing.
+populated, and functional bootstrapping processes two ciphertexts (the real and imaginary channels of the homomorphic encoding).
+Otherwise, real CKKS packing (full or sparse) is used, and functional bootstrapping processes a single ciphertext. The number of
+elements is passed to `EvalFBTSetup` as `numValues`, which selects the layout independently of the CKKS data type; it defaults to
+as many elements as the slots can hold (the ring dimension for full packing). In particular, for a number of elements equal to half
+the ring dimension, the values occupy the real parts of the N/2 slots, and passing `numValues` = N/2 halves the cost of the
+approximate modular reduction and of the look-up table evaluation compared to the full complex packing.
+
+Functional bootstrapping itself does not need a particular CKKS data type. With full complex packing, however, the imaginary
+parts of the slots carry half of the values, so the CKKS data type should be set to COMPLEX (`SetCKKSDataType(COMPLEX)`) if
+complex plaintexts are encoded or the CKKS ciphertext is decrypted before `EvalHomDecoding`, e.g., in a leveled computation
+between `EvalFBTNoDecoding` and `EvalHomDecoding`: with the default REAL data type, encoding zeroes the imaginary parts of a
+plaintext and decryption treats the imaginary parts of the slots as noise.
 
 Note that the message is encoded in the coefficients in the RLWE scheme, but when converted to CKKS, the coefficients are held in
 the slots of the CKKS ciphertexts. To be able to apply CKKS leveled computations, we need to homomorphically transform from

@@ -157,8 +157,6 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -179,10 +177,10 @@ struct fbt_config {
     while (state.KeepRunning()) {
         if (binaryLUT)
             cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                             0, t.order);
+                             0, t.order, t.numSlots);
         else
             cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                             0, t.order);
+                             0, t.order, t.numSlots);
     }
 
     cc->ClearStaticMapsAndVectors();
@@ -225,8 +223,6 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -246,10 +242,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
     else
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
 
     for (auto _ : state) {
         state.PauseTiming();
@@ -300,8 +296,6 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -321,10 +315,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
     else
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -400,8 +394,6 @@ struct fbt_config {
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(t.ringDim);
-    // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = 0;
     if (binaryLUT)
@@ -421,10 +413,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                         0, t.order);
+                         0, t.order, t.numSlots);
     else
         cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                         0, t.order);
+                         0, t.order, t.numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);

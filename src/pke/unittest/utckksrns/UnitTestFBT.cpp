@@ -708,8 +708,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
-            // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-            parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
@@ -737,12 +735,14 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             start = std::chrono::high_resolution_clock::now();
 #endif
 
+            // N values exercise the default numValues (0), which stands for N under full packing
+            const uint32_t numValues = (t.numSlots == t.ringDim) ? 0 : t.numSlots;
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, numValues);
             else
                 cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, numValues);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -880,8 +880,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
-            // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-            parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
             parameters.SetRingDim(t.ringDim);
 
             uint32_t depth = t.levelsAvailableAfterBootstrap;
@@ -912,10 +910,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
             else
                 cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1108,8 +1106,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
-            // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-            parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
@@ -1139,10 +1135,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
             else
                 cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1338,8 +1334,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
             parameters.SetBatchSize(numSlotsCKKS);
-            // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-            parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap + t.levelsComputation;
 
@@ -1369,10 +1363,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
             else
                 cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1531,8 +1525,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
-                // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-                parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
                 parameters.SetRingDim(t.ringDim);
                 uint32_t depth = t.levelsAvailableAfterBootstrap;
 
@@ -1556,10 +1548,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
                 if (binaryLUT)
                     cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 else
                     cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
 
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
@@ -1684,8 +1676,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
-                // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-                parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
                 parameters.SetRingDim(t.ringDim);
                 uint32_t depth = t.levelsAvailableAfterBootstrap +
                                  FHECKKSRNS::GetFBTDepth(t.lvlb, coefficients1, t.PInput, t.order, t.skd,
@@ -1702,7 +1692,7 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 auto keyPair = cc->KeyGen();
 
                 cc->EvalFBTSetup(coefficients1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
 
@@ -1780,8 +1770,6 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 parameters.SetFirstModSize(FirstModSize(dcrtBits, st));
                 parameters.SetNumLargeDigits(t.dnum);
                 parameters.SetBatchSize(numSlotsCKKS);
-                // full complex packing (N values, two FBT ciphertexts) or real packing (one FBT ciphertext)
-                parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
                 parameters.SetRingDim(t.ringDim);
                 parameters.SetMultiplicativeDepth(depth);
                 return parameters;
@@ -1805,12 +1793,16 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 // than reading past the modulus vector and wrapping the level arithmetic
                 const std::vector<uint32_t> dim1{0, 0};
                 EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
-                                              dim1, t.lvlb, depth + 1, 0, t.order),
+                                              dim1, t.lvlb, depth + 1, 0, t.order, t.numSlots),
                              OpenFHEException)
                         << failmsg << " oversized lvlsAfterBoot not rejected";
+                EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
+                                              dim1, t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.ringDim + 1),
+                             OpenFHEException)
+                        << failmsg << " more RLWE values than the slots hold not rejected";
 
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 std::vector<double> y(numSlotsCKKS, 0.5);
                 auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
                 EXPECT_THROW(cc->EvalHomDecoding(ctxt, 1, depth), OpenFHEException)
@@ -1825,7 +1817,7 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 enableAll(cc);
                 auto keyPair = cc->KeyGen();
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
                 std::vector<double> y(numSlotsCKKS, 0.5);

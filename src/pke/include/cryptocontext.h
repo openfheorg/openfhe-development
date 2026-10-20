@@ -3835,10 +3835,7 @@ class CryptoContextImpl : public Serializable {
      * @param coeffs                   Trigonometric Hermite interpolation coefficients of the look-up table
      *                                 (complex, or integer for a Boolean function of order 1); only their number
      *                                 is used here.
-     * @param numSlots                 Number of slots to be bootstrapped (0 = full packing). For full packing
-     *                                 (N/2 slots), the CKKS data type selects the layout of the RLWE input:
-     *                                 COMPLEX for N values (both coefficient halves; two ciphertexts are
-     *                                 processed) and REAL for N/2 values (lower half only; one ciphertext).
+     * @param numSlots                 Number of slots to be bootstrapped (0 = full packing).
      * @param PIn                      Plaintext modulus of the RLWE input.
      * @param POut                     Plaintext modulus of the RLWE output.
      * @param Bigq                     Ciphertext modulus of the RLWE scheme the input is converted from.
@@ -3849,14 +3846,25 @@ class CryptoContextImpl : public Serializable {
      * @param depthLeveledComputation  Depth reserved for a leveled computation between EvalFBTNoDecoding and
      *                                 EvalHomDecoding.
      * @param order                    Order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @param numValues                Number of values encrypted in the RLWE input (0 = as many as the slots
+     *                                 hold: N for full packing, numSlots for sparse packing). With full packing,
+     *                                 more than N/2 values occupy both coefficient halves and two ciphertexts
+     *                                 are processed; N/2 values occupy the lower half and one ciphertext is
+     *                                 processed, at half the cost of the modular reduction and the look-up table.
+     *                                 The layout does not depend on the CKKS data type. With more than N/2 values,
+     *                                 the imaginary parts of the slots carry data, so set CKKSDataType COMPLEX if
+     *                                 complex plaintexts are encoded or the CKKS ciphertext is decrypted before
+     *                                 EvalHomDecoding (REAL encoding zeroes the imaginary parts and REAL
+     *                                 decryption treats them as noise).
      */
     template <typename VectorDataType>
     void EvalFBTSetup(const std::vector<VectorDataType>& coeffs, uint32_t numSlots, const BigInteger& PIn,
                       const BigInteger& POut, const BigInteger& Bigq, const PublicKey<DCRTPoly>& pubKey,
                       const std::vector<uint32_t>& dim1, const std::vector<uint32_t>& levelBudget,
-                      uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1) {
+                      uint32_t lvlsAfterBoot = 0, uint32_t depthLeveledComputation = 0, size_t order = 1,
+                      uint32_t numValues = 0) {
         m_scheme->EvalFBTSetup(*this, coeffs, numSlots, PIn, POut, Bigq, pubKey, dim1, levelBudget, lvlsAfterBoot,
-                               depthLeveledComputation, order);
+                               depthLeveledComputation, order, numValues);
     }
 
     /**

@@ -68,11 +68,11 @@ int main() {
     std::cerr << "=====Boolean LUT order 2 sparsely packed=====" << std::endl << std::endl;
     ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), (BigInteger(1) << 33), (BigInteger(1) << 33), 1, 2, 8, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
-    // N values: complex full packing (CKKS data type COMPLEX), two ciphertexts go through the modular reduction
+    // N values: complex full packing, two ciphertexts go through the modular reduction
     std::cerr << "=====Boolean LUT order 1 fully packed (N values)=====" << std::endl << std::endl;
     ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), (BigInteger(1) << 33), (BigInteger(1) << 33), 1, 1, 4096, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
-    // N/2 values: real full packing (CKKS data type REAL), a single ciphertext goes through the modular reduction
+    // N/2 values: real full packing, a single ciphertext goes through the modular reduction
     std::cerr << "=====Boolean LUT order 1 fully packed (N/2 values)=====" << std::endl << std::endl;
     ArbitraryLUT(QBFVINIT, BigInteger(2), BigInteger(2), (BigInteger(1) << 33), (BigInteger(1) << 33), 1, 1, 2048, 4096,
                  [](int64_t x) { return (x % 2 - 2 / 2) % 2; });
@@ -118,8 +118,9 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
                   std::function<int64_t(int64_t)> func) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
-     * If this number is the same as the ring dimension, then the CKKS slots is half and the CKKS data type
-     * has to be COMPLEX (the imaginary parts of the slots carry the second half of the values).
+     * If this number is the same as the ring dimension, then the CKKS slots is half (the imaginary parts of
+     * the slots carry the second half of the values). EvalFBTSetup takes the number of values to select the
+     * layout: for N/2 values, a single ciphertext goes through the modular reduction.
      */
     bool flagSP = (numSlots <= ringDim / 2);  // sparse packing
     auto numSlotsCKKS = flagSP ? numSlots : numSlots / 2;
@@ -184,7 +185,6 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(ringDim);
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = levelsAvailableAfterBootstrap;
     if (binaryLUT)
@@ -211,10 +211,10 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, numSlots);
     else
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -268,8 +268,9 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
                              uint32_t levelsComputation) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
-     * If this number is the same as the ring dimension, then the CKKS slots is half and the CKKS data type
-     * has to be COMPLEX (the imaginary parts of the slots carry the second half of the values).
+     * If this number is the same as the ring dimension, then the CKKS slots is half (the imaginary parts of
+     * the slots carry the second half of the values). EvalFBTSetup takes the number of values to select the
+     * layout: for N/2 values, a single ciphertext goes through the modular reduction.
      */
     bool flagSP = (numSlots <= ringDim / 2);  // sparse packing
     auto numSlotsCKKS = flagSP ? numSlots : numSlots / 2;
@@ -348,7 +349,6 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(ringDim);
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = levelsAvailableAfterBootstrap + levelsComputation;
     if (binaryLUT)
@@ -375,10 +375,10 @@ void MultiValueBootstrapping(BigInteger QBFVInit, BigInteger PInput, BigInteger 
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, levelsComputation, order);
+                         levelsAvailableAfterBootstrap, levelsComputation, order, numSlots);
     else
         cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, PInput, POutput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, levelsComputation, order);
+                         levelsAvailableAfterBootstrap, levelsComputation, order, numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -514,8 +514,9 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
                         uint64_t scaleTHI, uint64_t scaleStepTHI, size_t order, uint32_t numSlots, uint32_t ringDim) {
     /* 1. Figure out whether sparse packing or full packing should be used.
      * numSlots represents the number of values to be encrypted in BFV.
-     * If this number is the same as the ring dimension, then the CKKS slots is half and the CKKS data type
-     * has to be COMPLEX (the imaginary parts of the slots carry the second half of the values).
+     * If this number is the same as the ring dimension, then the CKKS slots is half (the imaginary parts of
+     * the slots carry the second half of the values). EvalFBTSetup takes the number of values to select the
+     * layout: for N/2 values, a single ciphertext goes through the modular reduction.
      */
     bool flagSP = (numSlots <= ringDim / 2);  // sparse packing
     auto numSlotsCKKS = flagSP ? numSlots : numSlots / 2;
@@ -602,7 +603,6 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     parameters.SetNumLargeDigits(dnum);
     parameters.SetBatchSize(numSlotsCKKS);
     parameters.SetRingDim(ringDim);
-    parameters.SetCKKSDataType(flagSP ? REAL : COMPLEX);
 
     uint32_t depth = levelsAvailableAfterBootstrap;
     if (binaryLUT)
@@ -631,10 +631,10 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, numSlots);
     else
         cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, PDigit, PInput, Bigq, keyPair.publicKey, {0, 0}, lvlb,
-                         levelsAvailableAfterBootstrap, 0, order);
+                         levelsAvailableAfterBootstrap, 0, order, numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
 
