@@ -1864,16 +1864,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
     return ctxtChannels;
 }
 
-// Recombines the per-channel outputs of FE functional bootstrapping: for CKKSDataType COMPLEX the function
-// values of the imaginary channel are moved back to the imaginary part (multiplication by i = X^{N/2} in the
-// slots) and added to the function values of the real channel.
-static Ciphertext<DCRTPoly> RecombineFEChannels(std::vector<Ciphertext<DCRTPoly>>& channels) {
-    if (channels.size() > 1) {
-        auto cc = channels[0]->GetCryptoContext();
-        cc->GetScheme()->MultByMonomialInPlace(channels[1], cc->GetRingDimension() / 2);
-        cc->EvalAddInPlace(channels[0], channels[1]);
-    }
-    return channels[0];
+// Twice the real parts of the series of the real and imaginary channels, recombined into one ciphertext:
+// 2*Re(s0) + i*2*Re(s1) = (s0 + i*s1) + conj(s0 - i*s1), so one conjugation serves both channels
+// (multiplication by i = X^{N/2} in the slots is free).
+static Ciphertext<DCRTPoly> TwiceRealPartPair(Ciphertext<DCRTPoly> s0, Ciphertext<DCRTPoly> s1) {
+    auto cc = s0->GetCryptoContext();
+    cc->GetScheme()->MultByMonomialInPlace(s1, cc->GetRingDimension() / 2);
+    auto diff = cc->EvalSub(s0, s1);
+    cc->EvalAddInPlace(s0, s1);
+    cc->EvalAddInPlace(s0, FHECKKSRNS::Conjugate(diff, cc->GetEvalAutomorphismKeyMap(diff->GetKeyTag())));
+    return s0;
 }
 
 // Twice the real part of an evaluated Fourier series, which is the FE functional bootstrapping output
@@ -1897,9 +1897,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrap(ConstCiphertext<DCRTPoly>& 
     TIC(t);
 #endif
 
-    for (auto& ctxt : ctxtExp)
-        ctxt = TwiceRealPart(algo->EvalPoly(ctxt, coefficients));
-    auto result = RecombineFEChannels(ctxtExp);
+    auto result = (ctxtExp.size() > 1) ? TwiceRealPartPair(algo->EvalPoly(ctxtExp[0], coefficients),
+                                                           algo->EvalPoly(ctxtExp[1], coefficients)) :
+                                         TwiceRealPart(algo->EvalPoly(ctxtExp[0], coefficients));
 
 #ifdef BOOTSTRAPTIMING
     timeSeries = TOC(t);
@@ -1994,9 +1994,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
                                                                  powers->power2km1Re, powers->k, powers->m);
         auto powersIm = std::make_shared<seriesPowers<DCRTPoly>>(powers->powersIm, powers->powers2Im,
                                                                  powers->power2km1Im, powers->k, powers->m);
-        std::vector<Ciphertext<DCRTPoly>> channels{TwiceRealPart(algo->EvalPolyWithPrecomp(powersRe, trimmed)),
-                                                   TwiceRealPart(algo->EvalPolyWithPrecomp(powersIm, trimmed))};
-        result = RecombineFEChannels(channels);
+        result = TwiceRealPartPair(algo->EvalPolyWithPrecomp(powersRe, trimmed),
+                                   algo->EvalPolyWithPrecomp(powersIm, trimmed));
     } else {
         result = TwiceRealPart(algo->EvalPolyWithPrecomp(powers, trimmed));
     }
@@ -4081,6 +4080,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
                 algo->MultByIntegerInPlace(ctxtEncI, -ToReal(coefficients[1]));
                 ctxtEncI = cc->EvalSub(ToReal(coefficients[0]), ctxtEncI);
             }
+            algo->MultByMonomialInPlace(ctxtEncI, M4);
+            cc->EvalAddInPlace(ctxtEnc, ctxtEncI);
         } else {
             // Obtain the complex Hermite Trigonometric Interpolation via Power Basis Polynomial Interpolation
             // Coefficients are divided by 2
@@ -4099,16 +4100,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMVBNoDecodingInternal(const std::shared_ptr
                                                                         ciphertexts->m);
             }
 
-            // Take the real part
+            // Take the real parts of both channels with a single conjugation
             // Division by 2 was already performed
-            ctxtEnc = cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients);
-            cc->EvalAddInPlace(ctxtEnc, Conjugate(ctxtEnc, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
-            ctxtEncI = cc->EvalPolyWithPrecomp(ctxtPowersIm, coefficients);
-            cc->EvalAddInPlace(ctxtEncI, Conjugate(ctxtEncI, cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag())));
+            ctxtEnc = TwiceRealPartPair(cc->EvalPolyWithPrecomp(ctxtPowersRe, coefficients),
+                                        cc->EvalPolyWithPrecomp(ctxtPowersIm, coefficients));
         }
 
-        algo->MultByMonomialInPlace(ctxtEncI, M4);
-        cc->EvalAddInPlace(ctxtEnc, ctxtEncI);
         // No need to scale the message back up after Chebyshev interpolation
     } else {
         //------------------------------------------------------------------------------
