@@ -122,7 +122,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
             s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 192);
             break;
         default:
-            break;
+            OPENFHE_THROW("Unknown SecretKeyDist.");
     }
 
     const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();

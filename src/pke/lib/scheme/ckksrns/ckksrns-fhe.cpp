@@ -93,10 +93,54 @@ double RatioToDouble(const lbcrypto::BigInteger& num, const lbcrypto::BigInteger
 namespace lbcrypto {
 
 namespace {
-// SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64: first modulus above 60 bits) uses the K = 28
-// approximations of SPARSE_TERNARY instead of the K = 16 ones
+// SPARSE_ENCAPSULATED/HYBRID_TERNARY with the denser sparse secret (Hamming weight 64: first modulus above 60 bits)
+// uses the K = 28 approximations of SPARSE_TERNARY instead of the K = 16 ones
 bool UsesLargeSparseKey(SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
-    return (skd == SPARSE_ENCAPSULATED) && (sparseKSHammingWeight > 32);
+    return IsSparseEncapsulated(skd) && (sparseKSHammingWeight > 32);
+}
+
+// Number of towers to drop when encoding the plaintexts of a linear transform for a ciphertext with
+// L + towersKept towers out of the sizeQ towers of the chain (L == 0 keeps all towers). The callers compute L
+// with unsigned arithmetic from the chain length, so a chain too short for bootstrapping makes L wrap around;
+// the check (in 64 bits, so that the sum cannot wrap as well) turns that into an exception instead of dropping
+// towers past the end of the chain.
+uint32_t LinearTransformTowersToDrop(uint32_t sizeQ, uint32_t L, uint32_t towersKept) {
+    if (L == 0)
+        return 0;
+    if (static_cast<uint64_t>(L) + towersKept > sizeQ)
+        OPENFHE_THROW(
+                "The modulus chain is too short for the bootstrapping linear transforms; increase the "
+                "multiplicative depth.");
+    return sizeQ - L - towersKept;
+}
+
+// Checks, before the unsigned level arithmetic of a bootstrapping setup, that the modulus chain of L0 towers
+// (compositeDegree towers per level) can hold the CoeffsToSlots and SlotsToCoeffs precomputations. CoeffsToSlots
+// is evaluated right after the modulus raise and has to leave at least one level for the approximate modular
+// reduction. SlotsToCoeffs is evaluated either at the end of the bootstrapping, which then needs depthBT levels
+// in total (ModRaise-first), or on the input before the modulus raise, which keeps two levels for it (StC-first).
+void CheckBootstrapChainLength(uint32_t L0, uint32_t compositeDegree, uint32_t lvlbEnc, uint32_t lvlbDec, bool stcFirst,
+                               uint32_t depthBT,
+                               const std::string& depthRemedy =
+                                       "Increase the multiplicative depth (see "
+                                       "FHECKKSRNS::GetBootstrapDepth) or reduce the level "
+                                       "budget.") {
+    const uint32_t availableDepth = L0 / compositeDegree - 1;
+    if (compositeDegree * (lvlbEnc + 1) >= L0)
+        OPENFHE_THROW("The CoeffsToSlots level budget (" + std::to_string(lvlbEnc) +
+                      ") is too large for the multiplicative depth supported by the modulus chain (" +
+                      std::to_string(availableDepth) +
+                      "). Increase the multiplicative depth or reduce the level budget.");
+    if (stcFirst) {
+        if (compositeDegree * (lvlbDec + 2) > L0)
+            OPENFHE_THROW("The SlotsToCoeffs level budget (" + std::to_string(lvlbDec) +
+                          ") is too large for the multiplicative depth supported by the modulus chain (" +
+                          std::to_string(availableDepth) +
+                          "). Increase the multiplicative depth or reduce the level budget.");
+    } else if (compositeDegree * (depthBT + 1) > L0) {
+        OPENFHE_THROW("Bootstrapping requires a multiplicative depth of at least " + std::to_string(depthBT) +
+                      ", but the modulus chain supports " + std::to_string(availableDepth) + ". " + depthRemedy);
+    }
 }
 }  // namespace
 
@@ -108,8 +152,11 @@ double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParamete
         case SPARSE_TERNARY:
             return K_SPARSE;
         case SPARSE_ENCAPSULATED:
-            // K = 28 for the denser sparse secret (Hamming weight 64: first modulus above 60 bits)
-            return UsesLargeSparseKey(SPARSE_ENCAPSULATED, cryptoParams->GetSparseKSHammingWeight()) ?
+        case HYBRID_TERNARY:
+            // the modulus raise is done under the sparse secret of the encapsulation, so the bound depends only
+            // on its Hamming weight: K = 28 for the denser sparse secret (Hamming weight 64: first modulus above
+            // 60 bits), K = 16 otherwise
+            return UsesLargeSparseKey(cryptoParams->GetSecretKeyDist(), cryptoParams->GetSparseKSHammingWeight()) ?
                            K_SPARSE :
                            K_SPARSE_ENCAPSULATED;
         default:
@@ -210,12 +257,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         m_correctionFactor = correctionFactor;
     }
 
-    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom = m_bootPrecomMap[slots];
-    precom->m_slots = slots;
-    precom->BTSlotsEncoding = BTSlotsEncoding;
-    precom->m_variant = CKKSBootstrapPrecom::BOOTSTRAP;
-
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
@@ -239,8 +280,26 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         newBudget1 = 1;
     }
 
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+    auto paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
+    auto paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+
+    // compute # of levels to remain when encoding the coefficients
+    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
+    auto st = cryptoParams->GetScalingTechnique();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + paramsEnc.lvlb + paramsDec.lvlb;
+
+    if (precompute)
+        CheckBootstrapChainLength(L0, compositeDegree, paramsEnc.lvlb, paramsDec.lvlb, BTSlotsEncoding, depthBT);
+
+    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom = m_bootPrecomMap[slots];
+    precom->m_slots = slots;
+    precom->BTSlotsEncoding = BTSlotsEncoding;
+    precom->m_variant = CKKSBootstrapPrecom::BOOTSTRAP;
+    precom->m_paramsEnc = paramsEnc;
+    precom->m_paramsDec = paramsDec;
 
     if (precompute) {
         uint32_t m = 4 * slots;
@@ -269,8 +328,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
         double k = GetModRaiseOverflowBound(cryptoParams, K_UNIFORM);
 
-        uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-
         double qDouble = GetBigModulus(cryptoParams);
         double factor = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
         // For composite scaling, capture the (inexact) overflow normalization SF0/qDouble as a coefficient
@@ -297,20 +354,9 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
         double scaleDec = 1.0 / pre;
 
-        // compute # of levels to remain when encoding the coefficients
-        // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-        auto st = cryptoParams->GetScalingTechnique();
-        uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
-
         uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
-        uint32_t lDec;
-        if (precom->BTSlotsEncoding) {
-            lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
-        } else {
-            uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + precom->m_paramsEnc.lvlb +
-                               precom->m_paramsDec.lvlb;
-            lDec = L0 - compositeDegree * depthBT;
-        }
+        uint32_t lDec = (precom->BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree :
+                                                    L0 - compositeDegree * depthBT;
 
         bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -378,7 +424,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
 
     (*evalKeys)[M - 1] = ConjugateKeyGen(privateKey);
 
-    if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         // sparse key used for the modraising step (Hamming weight 32, or 64 for bottom moduli above 60 bits)
         DCRTPoly::TugType tug;
         auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
@@ -410,7 +456,7 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
 
     indexList.insert(M - 1);
 
-    if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         indexList.insert(M - 2);
         indexList.insert(M - 4);
     }
@@ -494,15 +540,12 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     auto st = cryptoParams->GetScalingTechnique();
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
 
+    uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + p.m_paramsEnc.lvlb + p.m_paramsDec.lvlb;
+    CheckBootstrapChainLength(L0, compositeDegree, p.m_paramsEnc.lvlb, p.m_paramsDec.lvlb, p.BTSlotsEncoding, depthBT);
+
     uint32_t lEnc = L0 - compositeDegree * (p.m_paramsEnc.lvlb + 1);
-    uint32_t lDec;
-    if (p.BTSlotsEncoding) {
-        lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
-    } else {
-        uint32_t depthBT =
-                GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + p.m_paramsEnc.lvlb + p.m_paramsDec.lvlb;
-        lDec = L0 - compositeDegree * depthBT;
-    }
+    uint32_t lDec =
+            (p.BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree : L0 - compositeDegree * depthBT;
 
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
@@ -882,7 +925,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
     if (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) {
         coefficients = g_coefficientsSparse;
-    } else if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    } else if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         // K = 28 (the SPARSE_TERNARY table) for the denser sparse secret (Hamming weight 64: first modulus above
         // 60 bits), K = 16 otherwise
         coefficients = (cryptoParams->GetSparseKSHammingWeight() > 32) ? g_coefficientsSparse :
@@ -1229,7 +1272,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
 
     if (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) {
         coefficients = g_coefficientsSparse;
-    } else if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+    } else if (IsSparseEncapsulated(cryptoParams->GetSecretKeyDist())) {
         // K = 28 (the SPARSE_TERNARY table) for the denser sparse secret (Hamming weight 64: first modulus above
         // 60 bits), K = 16 otherwise
         coefficients = (cryptoParams->GetSparseKSHammingWeight() > 32) ? g_coefficientsSparse :
@@ -1457,12 +1500,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
-    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom = m_bootPrecomMap[slots];
-    precom->m_slots = slots;
-    precom->BTSlotsEncoding = true;
-    precom->m_variant = CKKSBootstrapPrecom::FEFBT;
-
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
@@ -1486,8 +1523,27 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
         newBudget1 = 1;
     }
 
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+    auto paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
+    auto paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    // compute # of levels to remain when encoding the coefficients
+    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
+    auto st = cryptoParams->GetScalingTechnique();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
+
+    // SlotsToCoeffs is evaluated on the input before the modulus raise, as in StC-first bootstrapping.
+    // The chain length is validated before the precomputation is registered in m_bootPrecomMap.
+    CheckBootstrapChainLength(L0, compositeDegree, paramsEnc.lvlb, paramsDec.lvlb, true, 0);
+
+    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom = m_bootPrecomMap[slots];
+    precom->m_slots = slots;
+    precom->BTSlotsEncoding = true;
+    precom->m_variant = CKKSBootstrapPrecom::FEFBT;
+    precom->m_paramsEnc = paramsEnc;
+    precom->m_paramsDec = paramsDec;
 
     uint32_t m = 4 * slots;
     uint32_t mmask = m - 1;  // assumes m is power of 2
@@ -1513,8 +1569,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     }
     ksiPows[m] = ksiPows[0];
 
-    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-
     // K must match the range of the complex-exponential Chebyshev table selected in EvalFEFuncBootstrap;
     // K_UNIFORM_FEFBT covers all composite degrees and ring dimensions, as in regular bootstrapping
     double k = GetModRaiseOverflowBound(cryptoParams, K_UNIFORM_FEFBT);
@@ -1539,11 +1593,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     }
     double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
     double scaleDec = 1.0 / pre;
-
-    // compute # of levels to remain when encoding the coefficients
-    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-    auto st = cryptoParams->GetScalingTechnique();
-    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
 
     uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
     uint32_t lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
@@ -1655,8 +1704,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     double pre = (compositeDegree > 1) ? 1.0 : std::pow(2, -deg);
 
     // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup; the K = 28
-    // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED with the denser sparse secret (Hamming weight 64)
-    const bool smallSparseKey = (skd == SPARSE_ENCAPSULATED) && (cryptoParams->GetSparseKSHammingWeight() == 32);
+    // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED/HYBRID_TERNARY with the denser sparse secret
+    // (Hamming weight 64)
+    const bool smallSparseKey = IsSparseEncapsulated(skd) && (cryptoParams->GetSparseKSHammingWeight() == 32);
     const auto& coeffExp = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
                            smallSparseKey           ? coeff_exp_16_double_23 :
                                                       coeff_exp_28_double_48;
@@ -2065,7 +2115,7 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     auto compositeDegree = cryptoParams->GetCompositeDegree();
     auto elementParams = *(cryptoParams->GetElementParams());
-    uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -2111,7 +2161,7 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     auto elementParams = *(cryptoParams->GetElementParams());
 
-    uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -2207,7 +2257,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
 
     auto elementParams = *(cryptoParams->GetElementParams());
 
-    uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree * p.lvlb;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -2377,7 +2427,8 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
     auto elementParams = *(cryptoParams->GetElementParams());
 
-    const uint32_t towersToDrop = (L == 0) ? 0 : elementParams.GetParams().size() - L - compositeDegree * p.lvlb;
+    const uint32_t towersToDrop =
+            LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
@@ -3428,12 +3479,6 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
-    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom = m_bootPrecomMap[slots];
-
-    precom->m_slots = slots;
-    precom->m_variant = CKKSBootstrapPrecom::FBT;
-
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
@@ -3444,9 +3489,6 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
         OPENFHE_THROW("The level budget is too large. Please set it to be at least one and at most log(slots).");
     if (levelBudget[0] < 1 || levelBudget[1] < 1)
         OPENFHE_THROW("The level budget cannot be zero. Please set it to be at least one and at most log(slots).");
-
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
 
     uint32_t m = 4 * slots;
     uint32_t mmask = m - 1;  // assumes m is power of 2
@@ -3542,18 +3584,17 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
 
     L0 -= (st == FLEXIBLEAUTOEXT);
 
-    // The encoding and decoding matrices are precomputed at the levels below, which have to exist on the
-    // chain. Checking here reports the parameter that is actually wrong, instead of letting the unsigned
-    // subtractions wrap and failing later inside the plaintext encoding with an unrelated message.
-    if (compositeDegree * (levelBudget[0] + 1) > L0)
-        OPENFHE_THROW("The encoding level budget (" + std::to_string(levelBudget[0]) +
-                      ") is too large for the available number of levels (" + std::to_string(L0 / compositeDegree) +
-                      ").");
-    if (compositeDegree * depthBT > L0)
-        OPENFHE_THROW("The functional bootstrapping depth (" + std::to_string(depthBT) +
-                      ") exceeds the available number of levels (" + std::to_string(L0 / compositeDegree) +
-                      "). Increase the multiplicative depth, or reduce the level budget or "
-                      "depthLeveledComputation.");
+    // the SlotsToCoeffs matrices keep at least one level after depthBT, as in ModRaise-first bootstrapping
+    CheckBootstrapChainLength(L0, compositeDegree, levelBudget[0], levelBudget[1], false, depthBT,
+                              "Increase the multiplicative depth (see FHECKKSRNS::GetFBTDepth), or reduce the level "
+                              "budget or depthLeveledComputation.");
+
+    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom = m_bootPrecomMap[slots];
+    precom->m_slots = slots;
+    precom->m_variant = CKKSBootstrapPrecom::FBT;
+    precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
+    precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
 
     // each level consists of compositeDegree towers
     uint32_t lEnc = L0 - compositeDegree * (levelBudget[0] + 1);
@@ -3858,9 +3899,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
-                                                             coeff_cos_28_double_68;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                          coeff_cos_28_double_68;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
             ctxtEnc[1] = algo->EvalChebyshevSeries(ctxtEnc[1], coeff_cos, coeffLowerBound, coeffUpperBound);
@@ -3878,9 +3919,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
                 cc->ModReduceInPlace(ctxt);  // cos^2(pi x)
             }
         } else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                                                             coeff_exp_28_double_69;
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                          coeff_exp_28_double_69;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -3941,9 +3982,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
 
         if (digitBitSize == 1 && order == 1) {
-            auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
-                                                             coeff_cos_28_double_68;
+            auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                          coeff_cos_28_double_68;
 
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_cos, coeffLowerBound, coeffUpperBound);
 
@@ -3958,9 +3999,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
             cc->EvalSquareInPlace(ctxtEnc[0]);
             cc->ModReduceInPlace(ctxtEnc[0]);  // cos^2(pi x)
         } else {
-            auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
-                              (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                                                             coeff_exp_28_double_69;
+            auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                              IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                          coeff_exp_28_double_69;
 
             // Obtain the exp(2*Pi*i*x/2^numIter) approximation via Chebyshev Basis Polynomial Interpolation
             ctxtEnc[0] = algo->EvalChebyshevSeries(ctxtEnc[0], coeff_exp, coeffLowerBound, coeffUpperBound);
@@ -4218,12 +4259,12 @@ uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& c
     // K = 28 approximations of SPARSE_TERNARY
     if (UsesLargeSparseKey(skd, sparseKSHammingWeight))
         skd = SPARSE_TERNARY;
-    auto& coeff_cos = (skd == UNIFORM_TERNARY)     ? coeff_cos_672_double_104 :
-                      (skd == SPARSE_ENCAPSULATED) ? coeff_cos_16_double_50 :
-                                                     coeff_cos_28_double_68;
-    auto& coeff_exp = (skd == UNIFORM_TERNARY)     ? coeff_exp_672_double_104 :
-                      (skd == SPARSE_ENCAPSULATED) ? coeff_exp_16_double_46 :
-                                                     coeff_exp_28_double_69;
+    auto& coeff_cos = (skd == UNIFORM_TERNARY)  ? coeff_cos_672_double_104 :
+                      IsSparseEncapsulated(skd) ? coeff_cos_16_double_50 :
+                                                  coeff_cos_28_double_68;
+    auto& coeff_exp = (skd == UNIFORM_TERNARY)  ? coeff_exp_672_double_104 :
+                      IsSparseEncapsulated(skd) ? coeff_exp_16_double_46 :
+                                                  coeff_exp_28_double_69;
     uint32_t depth = 0;
     switch (PInput.ConvertToInt()) {
         case 2:
@@ -4290,7 +4331,7 @@ void FHECKKSRNS::ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
     auto cc = raised->GetCryptoContext();
     const uint32_t N = cc->GetRingDimension();
     const uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
-    const bool isEncapsulated = (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED);
+    const bool isEncapsulated = IsSparseEncapsulated(cryptoParams->GetSecretKeyDist());
 
     auto* evalKeyMap = isEncapsulated ? &cc->GetEvalAutomorphismKeyMap(raised->GetKeyTag()) : nullptr;
     if (isEncapsulated) {
@@ -4409,7 +4450,8 @@ EvalKey<DCRTPoly> FHECKKSRNS::KeySwitchGenSparse(const PrivateKey<DCRTPoly>& old
     // modulus for sparse encapsulation (generated in CryptoParametersCKKSRNS::PrecomputeCRTTables)
     const auto& paramsqp = cryptoParams->GetSparseKSParamsQP();
     if (nullptr == paramsqp)
-        OPENFHE_THROW("The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED.");
+        OPENFHE_THROW(
+                "The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED and HYBRID_TERNARY.");
 
     const size_t sizeQl = cryptoParams->GetSparseKSParamsQ()->GetParams().size();
     const size_t sizeQP = paramsqp->GetParams().size();
@@ -4449,7 +4491,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchSparse(Ciphertext<DCRTPoly>& ciphertex
     const auto& paramsP = cryptoParams->GetSparseKSParamsP();
     const auto& paramsQl = cryptoParams->GetSparseKSParamsQ();
     if (nullptr == paramsP)
-        OPENFHE_THROW("The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED.");
+        OPENFHE_THROW(
+                "The sparse key switching tables are only precomputed for SPARSE_ENCAPSULATED and HYBRID_TERNARY.");
 
     const size_t sizeP = paramsP->GetParams().size();
     const size_t sizeQl = paramsQl->GetParams().size();

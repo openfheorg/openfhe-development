@@ -64,6 +64,7 @@ KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, boo
             s = Element(dgg, paramsPK, Format::EVALUATION);
             break;
         case UNIFORM_TERNARY:
+        case HYBRID_TERNARY:
             s = Element(tug, paramsPK, Format::EVALUATION);
             break;
         case SPARSE_TERNARY:

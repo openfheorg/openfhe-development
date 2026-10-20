@@ -338,7 +338,8 @@ void SimpleBootstrappingComplex() {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-     * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+     * HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended for CKKS bootstrapping, as they achieve a
+     * probability of failure below 2^-128.
      * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
      * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
      * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.
@@ -466,7 +467,8 @@ void SimpleBootstrappingStCFirstComplex() {
     CCParams<CryptoContextCKKSRNS> parameters;
     // A. Specify main parameters
     /*  A1) Secret key distribution
-     * SPARSE_ENCAPSULATED is recommended for CKKS bootstrapping (probability of failure below 2^-128).
+     * HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended for CKKS bootstrapping, as they achieve a
+     * probability of failure below 2^-128.
      * UNIFORM_TERNARY, used here, is the distribution of the homomorphic encryption security guidelines;
      * its probability of failure is 2^-67 for N = 2^16 and 2^-27 for N = 2^17 with full packing.
      * SPARSE_TERNARY (original CKKS paper) is discouraged: about 2^-23 for N = 2^16.

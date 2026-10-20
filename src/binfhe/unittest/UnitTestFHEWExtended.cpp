@@ -356,7 +356,7 @@ TEST(UNITTestFHEWExtended, LargeModulusCiphertextPhaseIsClean) {
 // binfhe generates a Gaussian secret or a uniform ternary one and nothing else, so any other
 // distribution would be silently substituted rather than honoured.
 TEST(UNITTestFHEWExtended, RejectsUnsupportedKeyDist) {
-    for (auto dist : {SPARSE_TERNARY, SPARSE_ENCAPSULATED}) {
+    for (auto dist : {SPARSE_TERNARY, SPARSE_ENCAPSULATED, HYBRID_TERNARY}) {
         for (auto method : {GINX, AP, LMKCDEY}) {
             auto cc = BinFHEContext();
             EXPECT_THROW(cc.GenerateBinFHEContext(ToyParams(dist), method), OpenFHEException)

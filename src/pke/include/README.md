@@ -28,7 +28,8 @@
     - Ring Learning with Error (GAUSSIAN)
     - Optimized (UNIFORM_TERNARY)
     - Sparse (SPARSE_TERNARY; Hamming weight is 192; discouraged for CKKS bootstrapping because of a high probability of failure)
-    - Sparse encapsulated (SPARSE_ENCAPSULATED; Hamming weight of 32 for the key used in bootstrapping and 192 for other operations; recommended for CKKS bootstrapping, probability of failure below 2^-128)
+    - Sparse encapsulated (SPARSE_ENCAPSULATED; Hamming weight of 32 for the key used in bootstrapping and 192 for other operations; recommended for CKKS bootstrapping, as it achieves a probability of failure below 2^-128)
+    - Hybrid ternary (HYBRID_TERNARY; uniform ternary secret for all operations except the modulus raise in CKKS bootstrapping, which uses a sparse secret of Hamming weight 32 as in SPARSE_ENCAPSULATED; security of uniform ternary secrets; recommended for CKKS bootstrapping, as it achieves a probability of failure below 2^-128)
 
   - Scaling Technique
     - Fixed Manual (FIXEDMANUAL)

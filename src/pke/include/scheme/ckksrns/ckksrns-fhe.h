@@ -793,7 +793,7 @@ class FHECKKSRNS : public FHERNS {
 
     /**
      * Multiplicative depth consumed by functional bootstrapping (EvalFBT): the CoeffsToSlots and SlotsToCoeffs
-     * level budgets plus AdjustDepthFBT. For SPARSE_ENCAPSULATED, firstModSize (the size of the first modulus in
+     * level budgets plus AdjustDepthFBT. For SPARSE_ENCAPSULATED and HYBRID_TERNARY, firstModSize (the size of the first modulus in
      * bits) selects the approximation tables: a first modulus above 60 bits gives the sparse secret Hamming weight
      * 64 and uses the K = 28 tables of SPARSE_TERNARY, which need one more level than the K = 16 tables of the
      * default Hamming weight 32 (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
@@ -803,7 +803,7 @@ class FHECKKSRNS : public FHERNS {
      * @param PInput plaintext modulus of the RLWE input
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
      * @param skd secret key distribution of the cryptocontext
-     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED)
+     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY)
      * @return the multiplicative depth consumed by EvalFBT
      */
     template <typename VectorDataType>
@@ -814,13 +814,13 @@ class FHECKKSRNS : public FHERNS {
     /**
      * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
      * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
-     * by the secret key distribution and, for SPARSE_ENCAPSULATED, by firstModSize as in GetFBTDepth), and the
+     * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize as in GetFBTDepth), and the
      * evaluation of the Fourier series.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param coefficients Fourier coefficients of the function to be evaluated
      * @param skd secret key distribution of the cryptocontext
-     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED)
+     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY)
      * @return the multiplicative depth consumed by EvalFEFuncBootstrap
      */
     template <typename VectorDataType>
@@ -837,7 +837,7 @@ class FHECKKSRNS : public FHERNS {
      * @param PInput plaintext modulus of the RLWE input
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
      * @param skd secret key distribution of the cryptocontext
-     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED, see GetFBTDepth)
+     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY, see GetFBTDepth)
      * @return the multiplicative depth of the look-up table evaluation
      */
     template <typename VectorDataType>
@@ -845,14 +845,14 @@ class FHECKKSRNS : public FHERNS {
                                    size_t order, SecretKeyDist skd = SPARSE_TERNARY, uint32_t firstModSize = 60);
 
     /**
-     * Same as AdjustDepthFBT, with the approximation tables of SPARSE_ENCAPSULATED selected directly by the Hamming
+     * Same as AdjustDepthFBT, with the approximation tables of SPARSE_ENCAPSULATED/HYBRID_TERNARY selected directly by the Hamming
      * weight of its sparse secret (32 or 64; see CryptoParametersCKKSRNS::GetSparseKSHammingWeight).
      *
      * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
      * @param PInput plaintext modulus of the RLWE input
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
      * @param skd secret key distribution of the cryptocontext
-     * @param sparseKSHammingWeight Hamming weight of the sparse secret of SPARSE_ENCAPSULATED (32 or 64)
+     * @param sparseKSHammingWeight Hamming weight of the sparse secret of SPARSE_ENCAPSULATED/HYBRID_TERNARY (32 or 64)
      * @return the multiplicative depth of the look-up table evaluation
      */
     template <typename VectorDataType>
@@ -862,7 +862,7 @@ class FHECKKSRNS : public FHERNS {
     /**
      * Generates the switching key of sparse secret encapsulation, going from a denser secret to a sparser one.
      * The GHS-style key is generated over Ql*P', where Ql is the bottom basis of the modulus chain and P' the
-     * auxiliary modulus precomputed in CryptoParametersCKKSRNS for SPARSE_ENCAPSULATED.
+     * auxiliary modulus precomputed in CryptoParametersCKKSRNS for SPARSE_ENCAPSULATED and HYBRID_TERNARY.
      *
      * @param oldPrivateKey the (dense) secret the ciphertexts are currently encrypted under
      * @param newPrivateKey the (sparse) secret to switch to
@@ -1051,8 +1051,8 @@ class FHECKKSRNS : public FHERNS {
     /**
      * Raises the modulus of a depleted ciphertext (bottom level, noise degree 1) to the raised basis, i.e.,
      * extends its bottom RNS limbs (a single prime, or compositeDegree primes for composite scaling) to
-     * elementParamsRaisedPtr. For SPARSE_ENCAPSULATED, the ciphertext is switched to the sparse secret before
-     * and back to the dense secret after the modulus raise.
+     * elementParamsRaisedPtr. For SPARSE_ENCAPSULATED and HYBRID_TERNARY, the ciphertext is switched to the sparse
+     * secret before and back to the main (denser) secret after the modulus raise.
      */
     void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
                          const std::shared_ptr<DCRTPoly::Params>& elementParamsRaisedPtr) const;
@@ -1130,10 +1130,12 @@ class FHECKKSRNS : public FHERNS {
     // K and on the Hamming weight h of the sparse secret (equation (1) of https://eprint.iacr.org/2022/024)
 
     // SPARSE_TERNARY (h = 192): failure probability of about 2^{-39} per coefficient, i.e., 2^{-22} for 2^16 slots.
-    // Also used for SPARSE_ENCAPSULATED with the denser sparse secret (h = 64: first modulus above 60 bits), where
-    // the failure probability is below 2^{-142} for 2^16 slots.
+    // Also used for SPARSE_ENCAPSULATED and HYBRID_TERNARY with the denser sparse secret (h = 64: first modulus
+    // above 60 bits), where the failure probability is below 2^{-142} for 2^16 slots.
     static constexpr uint32_t K_SPARSE = 28;
-    // SPARSE_ENCAPSULATED (h = 32): failure probability below 2^{-137} for 2^16 slots
+    // SPARSE_ENCAPSULATED and HYBRID_TERNARY (h = 32): failure probability below 2^{-137} for 2^16 slots. For both,
+    // the modulus raise is done under the sparse secret of the encapsulation, so the bound does not depend on the
+    // main secret
     static constexpr uint32_t K_SPARSE_ENCAPSULATED = 16;
 
     // upper bounds for the number of overflows in the uniform ternary secret case; used for all scaling techniques,
@@ -1185,7 +1187,7 @@ class FHECKKSRNS : public FHERNS {
     // function.
     // for SPARSE_TERNARY secret key distribution (K_SPARSE)
     static const uint32_t R_func_28_double_48 = 3;
-    // for SPARSE_ENCAPSULATED secret key distribution
+    // for SPARSE_ENCAPSULATED and HYBRID_TERNARY secret key distributions
     static const uint32_t R_func_16_double_23 = 4;
     // for UNIFORM_TERNARY secret key distribution (K_UNIFORM_FEFBT)
     static const uint32_t R_func_696_double_27 = 9;

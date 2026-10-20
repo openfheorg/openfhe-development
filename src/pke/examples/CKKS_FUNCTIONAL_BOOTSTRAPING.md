@@ -106,8 +106,8 @@ smaller digits, and process these smaller digits separately.
 **Secret key distributions**
 
 Functional bootstrapping is supported for sparse secret keys (SPARSE_TERNARY and SPARSE_ENCAPSULATED) and for
-uniform ternary secret keys (UNIFORM_TERNARY). SPARSE_ENCAPSULATED is recommended, as it achieves a probability of
-failure below 2^-128; SPARSE_TERNARY is discouraged.
+uniform ternary secret keys (UNIFORM_TERNARY and HYBRID_TERNARY). HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended,
+as they achieve a probability of failure below 2^-128; SPARSE_TERNARY is discouraged.
 
 The SPARSE_TERNARY distribution is the distribution used in the original CKKS paper [[CKKS17](https://eprint.iacr.org/2016/421.pdf)],
 where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 28, this
@@ -124,6 +124,10 @@ scaling factor is very close to the first modulus size in CKKS (which happens fo
 by the extra key switching is larger. For a first modulus larger than 60 bits (which requires composite scaling in the 64-bit
 build), the Hamming weight of the sparse key is 64 and the K = 28 approximation of SPARSE_TERNARY is used, which keeps the
 probability of failure negligible (below 2^-142 for 2^16 slots) at the cost of the extra level mentioned above.
+
+The HYBRID_TERNARY distribution uses the same sparse secret encapsulation as SPARSE_ENCAPSULATED for the modulus raise in
+(functional) bootstrapping and a uniform ternary secret for all other operations. It therefore has the same bound K, probability of
+failure and depth as SPARSE_ENCAPSULATED, while the security is that of uniform ternary secrets.
 
 The UNIFORM_TERNARY distribution is the distribution recommended by the homomorphic encryption security guidelines and can be
 used when uniform ternary secrets are required for compliance with them. It is handled in the same manner as in regular CKKS
@@ -219,11 +223,13 @@ if a longer series is passed.
 number of slots, so a crypto context holds the precomputations of only one of them for each number of slots.
 
 **Secret key distributions**
-All three distributions are supported, and the probabilities of failure are those of the bound K on the mod-raise overflows
+All four distributions are supported, and the probabilities of failure are those of the bound K on the mod-raise overflows
 used for each of them (for full packing):
 - SPARSE_ENCAPSULATED (recommended): K = 16, probability of failure below 2^-128. For a first modulus larger than 60 bits
 (which requires composite scaling in the 64-bit build), the Hamming weight of the sparse key is 64 and K = 28 is used, which
 keeps the probability of failure negligible.
+- HYBRID_TERNARY (recommended): the same K, probability of failure and depth as SPARSE_ENCAPSULATED, with a uniform ternary secret for
+all operations other than the modulus raise (security of uniform ternary secrets).
 - UNIFORM_TERNARY: K = 696, probability of failure below 2^-79 for N = 2^16 and 2^-33 for N = 2^17. It can be used when uniform
 ternary secrets are required for compliance with the homomorphic encryption security guidelines, at the cost of a larger
 multiplicative depth (9 double-angle iterations instead of 3-4).

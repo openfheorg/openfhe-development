@@ -47,6 +47,8 @@ SecretKeyDist convertToSecretKeyDist(const std::string& str) {
         return SPARSE_TERNARY;
     if (str == "SPARSE_ENCAPSULATED")
         return SPARSE_ENCAPSULATED;
+    if (str == "HYBRID_TERNARY")
+        return HYBRID_TERNARY;
     // if (str == "BINARY")
     //     return BINARY;
     OPENFHE_THROW("Unknown SecretKeyDist: " + str);
@@ -59,6 +61,7 @@ SecretKeyDist convertToSecretKeyDist(uint32_t num) {
         case UNIFORM_TERNARY:
         case SPARSE_TERNARY:
         case SPARSE_ENCAPSULATED:
+        case HYBRID_TERNARY:
             // case BINARY:
             return keyDist;
         default:
@@ -80,6 +83,9 @@ std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
             break;
         case SPARSE_ENCAPSULATED:
             s << "SPARSE_ENCAPSULATED";
+            break;
+        case HYBRID_TERNARY:
+            s << "HYBRID_TERNARY";
             break;
             // case BINARY:
             //     s << "BINARY";

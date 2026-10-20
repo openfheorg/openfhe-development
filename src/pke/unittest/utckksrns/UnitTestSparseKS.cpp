@@ -35,6 +35,7 @@
   KeySwitchSparse must stay at the modulus switching (rounding) noise level.
 */
 
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -69,74 +70,142 @@ TEST(UTCKKSRNS_SPARSE_KS, KeySwitchSparseAddedNoise) {
 
     const std::string failmsg("KeySwitchSparseAddedNoise");
 
-    try {
-        // scaling factor close to the first modulus: the regime where the sparse
-        // encapsulation key switching noise is exposed
-        CCParams<CryptoContextCKKSRNS> parameters;
-        parameters.SetMultiplicativeDepth(2);
-        parameters.SetScalingModSize(59);
-        parameters.SetFirstModSize(60);
-        parameters.SetScalingTechnique(FIXEDMANUAL);
-        parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
-        parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(1 << 12);
-        parameters.SetKeySwitchTechnique(HYBRID);
+    // the added noise does not depend on the main secret: SPARSE_ENCAPSULATED (sparse main secret) and
+    // HYBRID_TERNARY (uniform ternary main secret) are both covered
+    for (auto secretKeyDist : {SPARSE_ENCAPSULATED, HYBRID_TERNARY}) {
+        SCOPED_TRACE(::testing::Message() << "secretKeyDist = " << secretKeyDist);
+        try {
+            // scaling factor close to the first modulus: the regime where the sparse
+            // encapsulation key switching noise is exposed
+            CCParams<CryptoContextCKKSRNS> parameters;
+            parameters.SetMultiplicativeDepth(2);
+            parameters.SetScalingModSize(59);
+            parameters.SetFirstModSize(60);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetSecretKeyDist(secretKeyDist);
+            parameters.SetSecurityLevel(HEStd_NotSet);
+            parameters.SetRingDim(1 << 12);
+            parameters.SetKeySwitchTechnique(HYBRID);
 
-        auto cc = GenCryptoContext(parameters);
-        cc->Enable(PKE);
-        cc->Enable(KEYSWITCH);
-        cc->Enable(LEVELEDSHE);
-        cc->Enable(ADVANCEDSHE);
-        cc->Enable(FHE);
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+            cc->Enable(ADVANCEDSHE);
+            cc->Enable(FHE);
 
-        auto keyPair = cc->KeyGen();
-        auto cryptoParams =
-                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
+            auto keyPair = cc->KeyGen();
+            auto cryptoParams =
+                    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(keyPair.secretKey->GetCryptoParameters());
 
-        // encode at the last level so the ciphertext has a single tower (q0), as at the
-        // modulus raise step of bootstrapping
-        std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 0.375, 0.675, 0.125, 0.925};
-        auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, cryptoParams->GetMultiplicativeDepth());
-        auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
+            // encode at the last level so the ciphertext has a single tower (q0), as at the
+            // modulus raise step of bootstrapping
+            std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 0.375, 0.675, 0.125, 0.925};
+            auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, cryptoParams->GetMultiplicativeDepth());
+            auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
 
-        // sparse key used for the modraising step
-        DCRTPoly::TugType tug;
-        auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
-        skNew->SetPrivateElement(DCRTPoly(tug, cryptoParams->GetElementParams(), Format::EVALUATION, 32));
+            // sparse key used for the modraising step
+            DCRTPoly::TugType tug;
+            auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
+            skNew->SetPrivateElement(DCRTPoly(tug, cryptoParams->GetElementParams(), Format::EVALUATION, 32));
 
-        auto evalKey = FHECKKSRNS::KeySwitchGenSparse(keyPair.secretKey, skNew);
-        auto ctresult = FHECKKSRNS::KeySwitchSparse(ctxt, evalKey);
+            auto evalKey = FHECKKSRNS::KeySwitchGenSparse(keyPair.secretKey, skNew);
+            auto ctresult = FHECKKSRNS::KeySwitchSparse(ctxt, evalKey);
 
-        // the noise added by the key switch: difference of the raw decryptions b + a*s
-        // over q0 under the respective secret keys (the shared encryption noise cancels)
-        const auto sOld0 = keyPair.secretKey->GetPrivateElement().GetElementAtIndex(0);
-        const auto sNew0 = skNew->GetPrivateElement().GetElementAtIndex(0);
-        const auto& cvo = ctxt->GetElements();
-        const auto& cvn = ctresult->GetElements();
-        auto diff = (cvo[0].GetElementAtIndex(0) + cvo[1].GetElementAtIndex(0) * sOld0) -
-                    (cvn[0].GetElementAtIndex(0) + cvn[1].GetElementAtIndex(0) * sNew0);
-        diff.SetFormat(Format::COEFFICIENT);
+            // the noise added by the key switch: difference of the raw decryptions b + a*s
+            // over q0 under the respective secret keys (the shared encryption noise cancels)
+            const auto sOld0 = keyPair.secretKey->GetPrivateElement().GetElementAtIndex(0);
+            const auto sNew0 = skNew->GetPrivateElement().GetElementAtIndex(0);
+            const auto& cvo = ctxt->GetElements();
+            const auto& cvn = ctresult->GetElements();
+            auto diff = (cvo[0].GetElementAtIndex(0) + cvo[1].GetElementAtIndex(0) * sOld0) -
+                        (cvn[0].GetElementAtIndex(0) + cvn[1].GetElementAtIndex(0) * sNew0);
+            diff.SetFormat(Format::COEFFICIENT);
 
-        const NativeInteger q = diff.GetModulus();
-        const NativeInteger half = q >> 1;
-        NativeInteger maxNoise(0);
-        for (uint32_t i = 0; i < diff.GetLength(); ++i) {
-            NativeInteger v = diff[i];
-            if (v > half)
-                v = q - v;
-            if (v > maxNoise)
-                maxNoise = v;
+            const NativeInteger q = diff.GetModulus();
+            const NativeInteger half = q >> 1;
+            NativeInteger maxNoise(0);
+            for (uint32_t i = 0; i < diff.GetLength(); ++i) {
+                NativeInteger v = diff[i];
+                if (v > half)
+                    v = q - v;
+                if (v > maxNoise)
+                    maxNoise = v;
+            }
+
+            EXPECT_LE(maxNoise.ConvertToInt<uint64_t>(), 32u)
+                    << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from KeySwitchSparseAddedNoise: " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
 
-        EXPECT_LE(maxNoise.ConvertToInt<uint64_t>(), 32u)
-                << "the noise added by the sparse encapsulation key switching exceeds the modulus switching noise level";
-    } catch (std::exception& e) {
-        std::cerr << "Exception thrown from KeySwitchSparseAddedNoise: " << e.what() << std::endl;
-        EXPECT_TRUE(0 == 1) << failmsg;
-    } catch (...) {
-        UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
+    OpenFHEParallelControls.UnitTestStop();
+}
 
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+// HYBRID_TERNARY generates a uniform ternary main secret (the sparse secret is only used for the modulus
+// raise in bootstrapping), while SPARSE_ENCAPSULATED generates a sparse main secret of Hamming weight 192.
+// Both add the two switching keys between the main and the sparse secret to the bootstrapping keys.
+TEST(UTCKKSRNS_SPARSE_KS, MainSecretAndSwitchingKeys) {
+    setupSignals();
+    OpenFHEParallelControls.UnitTestStart();
+
+    const std::string failmsg("MainSecretAndSwitchingKeys");
+
+    for (auto secretKeyDist : {SPARSE_ENCAPSULATED, HYBRID_TERNARY}) {
+        SCOPED_TRACE(::testing::Message() << "secretKeyDist = " << secretKeyDist);
+        try {
+            CCParams<CryptoContextCKKSRNS> parameters;
+            // a multiplicative depth matching a real bootstrapping configuration
+            parameters.SetMultiplicativeDepth(FHECKKSRNS::GetBootstrapDepth({1, 1}, secretKeyDist) + 2);
+            parameters.SetScalingModSize(59);
+            parameters.SetFirstModSize(60);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetSecretKeyDist(secretKeyDist);
+            parameters.SetSecurityLevel(HEStd_NotSet);
+            parameters.SetRingDim(1 << 12);
+            parameters.SetKeySwitchTechnique(HYBRID);
+
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+            cc->Enable(ADVANCEDSHE);
+            cc->Enable(FHE);
+
+            auto keyPair = cc->KeyGen();
+            auto s0 = keyPair.secretKey->GetPrivateElement().GetElementAtIndex(0);
+            s0.SetFormat(Format::COEFFICIENT);
+            uint32_t hammingWeight = 0;
+            for (uint32_t i = 0; i < s0.GetLength(); ++i)
+                hammingWeight += (s0[i] != NativeInteger(0));
+
+            const uint32_t N = cc->GetRingDimension();
+            if (secretKeyDist == SPARSE_ENCAPSULATED) {
+                EXPECT_EQ(hammingWeight, 192u);
+            } else {
+                // a uniform ternary secret has about 2N/3 nonzero coefficients
+                EXPECT_GT(hammingWeight, N / 2);
+            }
+
+            const uint32_t M = cc->GetCyclotomicOrder();
+            // the key map indices only need the FFT parameters, so the encoding matrices are not precomputed
+            cc->EvalBootstrapSetup({1, 1}, {0, 0}, 0, 0, false);
+            auto indices = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, 0);
+            EXPECT_NE(std::find(indices.begin(), indices.end(), M - 2), indices.end());
+            EXPECT_NE(std::find(indices.begin(), indices.end(), M - 4), indices.end());
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from MainSecretAndSwitchingKeys: " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
     OpenFHEParallelControls.UnitTestStop();
 }
