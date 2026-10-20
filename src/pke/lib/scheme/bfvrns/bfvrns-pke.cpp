@@ -80,7 +80,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool mak
             s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 192);
             break;
         default:
-            break;
+            OPENFHE_THROW("Unknown SecretKeyDist.");
     }
 
     // Public Key Generation
