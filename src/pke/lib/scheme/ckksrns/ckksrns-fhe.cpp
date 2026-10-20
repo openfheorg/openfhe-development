@@ -156,7 +156,7 @@ double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParamete
             // the modulus raise is done under the sparse secret of the encapsulation, so the bound depends only
             // on its Hamming weight: K = 28 for the denser sparse secret (Hamming weight 64: first modulus above
             // 60 bits), K = 16 otherwise
-            return UsesLargeSparseKey(SPARSE_ENCAPSULATED, cryptoParams->GetSparseKSHammingWeight()) ?
+            return UsesLargeSparseKey(cryptoParams->GetSecretKeyDist(), cryptoParams->GetSparseKSHammingWeight()) ?
                            K_SPARSE :
                            K_SPARSE_ENCAPSULATED;
         default:
