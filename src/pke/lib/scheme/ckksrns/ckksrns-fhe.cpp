@@ -255,12 +255,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         m_correctionFactor = correctionFactor;
     }
 
-    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom = m_bootPrecomMap[slots];
-    precom->m_slots = slots;
-    precom->BTSlotsEncoding = BTSlotsEncoding;
-    precom->m_variant = CKKSBootstrapPrecom::BOOTSTRAP;
-
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
@@ -284,8 +278,26 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         newBudget1 = 1;
     }
 
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+    auto paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
+    auto paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+
+    // compute # of levels to remain when encoding the coefficients
+    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
+    auto st = cryptoParams->GetScalingTechnique();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + paramsEnc.lvlb + paramsDec.lvlb;
+
+    if (precompute)
+        CheckBootstrapChainLength(L0, compositeDegree, paramsEnc.lvlb, paramsDec.lvlb, BTSlotsEncoding, depthBT);
+
+    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom = m_bootPrecomMap[slots];
+    precom->m_slots = slots;
+    precom->BTSlotsEncoding = BTSlotsEncoding;
+    precom->m_variant = CKKSBootstrapPrecom::BOOTSTRAP;
+    precom->m_paramsEnc = paramsEnc;
+    precom->m_paramsDec = paramsDec;
 
     if (precompute) {
         uint32_t m = 4 * slots;
@@ -314,8 +326,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
         double k = GetModRaiseOverflowBound(cryptoParams, K_UNIFORM);
 
-        uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-
         double qDouble = GetBigModulus(cryptoParams);
         double factor = std::ldexp(1.0, static_cast<int>(std::round(std::log2(qDouble))));
         // For composite scaling, capture the (inexact) overflow normalization SF0/qDouble as a coefficient
@@ -341,16 +351,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         // residual c1 only; the exact 2^deg telescopes against the integer restore.
         double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
         double scaleDec = 1.0 / pre;
-
-        // compute # of levels to remain when encoding the coefficients
-        // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-        auto st = cryptoParams->GetScalingTechnique();
-        uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
-
-        uint32_t depthBT = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) + precom->m_paramsEnc.lvlb +
-                           precom->m_paramsDec.lvlb;
-        CheckBootstrapChainLength(L0, compositeDegree, precom->m_paramsEnc.lvlb, precom->m_paramsDec.lvlb,
-                                  precom->BTSlotsEncoding, depthBT);
 
         uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
         uint32_t lDec = (precom->BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree :
@@ -1498,12 +1498,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
-    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom = m_bootPrecomMap[slots];
-    precom->m_slots = slots;
-    precom->BTSlotsEncoding = true;
-    precom->m_variant = CKKSBootstrapPrecom::FEFBT;
-
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
@@ -1527,8 +1521,27 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
         newBudget1 = 1;
     }
 
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+    auto paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
+    auto paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
+
+    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+
+    // compute # of levels to remain when encoding the coefficients
+    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
+    auto st = cryptoParams->GetScalingTechnique();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
+
+    // SlotsToCoeffs is evaluated on the input before the modulus raise, as in StC-first bootstrapping.
+    // The chain length is validated before the precomputation is registered in m_bootPrecomMap.
+    CheckBootstrapChainLength(L0, compositeDegree, paramsEnc.lvlb, paramsDec.lvlb, true, 0);
+
+    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom = m_bootPrecomMap[slots];
+    precom->m_slots = slots;
+    precom->BTSlotsEncoding = true;
+    precom->m_variant = CKKSBootstrapPrecom::FEFBT;
+    precom->m_paramsEnc = paramsEnc;
+    precom->m_paramsDec = paramsDec;
 
     uint32_t m = 4 * slots;
     uint32_t mmask = m - 1;  // assumes m is power of 2
@@ -1554,8 +1567,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     }
     ksiPows[m] = ksiPows[0];
 
-    uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-
     // K must match the range of the complex-exponential Chebyshev table selected in EvalFEFuncBootstrap;
     // K_UNIFORM_FEFBT covers all composite degrees and ring dimensions, as in regular bootstrapping
     double k = GetModRaiseOverflowBound(cryptoParams, K_UNIFORM_FEFBT);
@@ -1580,14 +1591,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     }
     double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k;
     double scaleDec = 1.0 / pre;
-
-    // compute # of levels to remain when encoding the coefficients
-    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-    auto st = cryptoParams->GetScalingTechnique();
-    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
-
-    // SlotsToCoeffs is evaluated on the input before the modulus raise, as in StC-first bootstrapping
-    CheckBootstrapChainLength(L0, compositeDegree, precom->m_paramsEnc.lvlb, precom->m_paramsDec.lvlb, true, 0);
 
     uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
     uint32_t lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
@@ -3474,12 +3477,6 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
-    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
-    auto& precom = m_bootPrecomMap[slots];
-
-    precom->m_slots = slots;
-    precom->m_variant = CKKSBootstrapPrecom::FBT;
-
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
 
@@ -3490,9 +3487,6 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
         OPENFHE_THROW("The level budget is too large. Please set it to be at least one and at most log(slots).");
     if (levelBudget[0] < 1 || levelBudget[1] < 1)
         OPENFHE_THROW("The level budget cannot be zero. Please set it to be at least one and at most log(slots).");
-
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
 
     uint32_t m = 4 * slots;
     uint32_t mmask = m - 1;  // assumes m is power of 2
@@ -3602,6 +3596,13 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
                       ") exceeds the available number of levels (" + std::to_string(L0 / compositeDegree) +
                       "). Increase the multiplicative depth, or reduce the level budget or "
                       "depthLeveledComputation.");
+
+    m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
+    auto& precom = m_bootPrecomMap[slots];
+    precom->m_slots = slots;
+    precom->m_variant = CKKSBootstrapPrecom::FBT;
+    precom->m_paramsEnc = GetCollapsedFFTParams(slots, levelBudget[0], dim1[0]);
+    precom->m_paramsDec = GetCollapsedFFTParams(slots, levelBudget[1], dim1[1]);
 
     // each level consists of compositeDegree towers
     uint32_t lEnc = L0 - compositeDegree * (levelBudget[0] + 1);

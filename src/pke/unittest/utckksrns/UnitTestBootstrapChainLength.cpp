@@ -131,6 +131,24 @@ TEST(UTCKKSRNS_BOOT_CHAIN_LENGTH, ModRaiseFirstSetupRejectsShortChain) {
     }
 }
 
+// A setup that throws must not leave a half-initialized precomputation registered in the bootstrapping
+// precomputation map: the subsequent bootstrapping calls have to fail with the clean "precomputations not
+// found" exception instead of reading the empty encoding matrices of the failed setup (segmentation fault).
+TEST(UTCKKSRNS_BOOT_CHAIN_LENGTH, FailedSetupLeavesNoPrecomputation) {
+    const uint32_t required = FHECKKSRNS::GetBootstrapDepth(LEVEL_BUDGET, SPARSE_ENCAPSULATED);
+    auto cc = MakeContext(SPARSE_ENCAPSULATED, EVAL_SCALING_TECHNIQUE, required - 1);
+    EXPECT_THROW(cc->EvalBootstrapSetup(LEVEL_BUDGET, {0, 0}, SLOTS), OpenFHEException);
+
+    auto keyPair = cc->KeyGen();
+    cc->EvalMultKeyGen(keyPair.secretKey);
+    EXPECT_THROW(cc->EvalBootstrapKeyGen(keyPair.secretKey, SLOTS), OpenFHEException);
+
+    std::vector<double> x(SLOTS, 0.5);
+    auto ct = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, SLOTS));
+    EXPECT_THROW(cc->EvalBootstrap(ct), OpenFHEException);
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+}
+
 // StC-first and FE functional bootstrapping evaluate SlotsToCoeffs on the input, so their setups only need the
 // chain to hold the encoding of the matrices; the depth of the bootstrapping itself is checked by the
 // evaluation. The setups throw on the shortest chains (which crashed before) and, wherever the setup succeeds,
