@@ -120,7 +120,11 @@ uint32_t LinearTransformTowersToDrop(uint32_t sizeQ, uint32_t L, uint32_t towers
 // reduction. SlotsToCoeffs is evaluated either at the end of the bootstrapping, which then needs depthBT levels
 // in total (ModRaise-first), or on the input before the modulus raise, which keeps two levels for it (StC-first).
 void CheckBootstrapChainLength(uint32_t L0, uint32_t compositeDegree, uint32_t lvlbEnc, uint32_t lvlbDec, bool stcFirst,
-                               uint32_t depthBT) {
+                               uint32_t depthBT,
+                               const std::string& depthRemedy =
+                                       "Increase the multiplicative depth (see "
+                                       "FHECKKSRNS::GetBootstrapDepth) or reduce the level "
+                                       "budget.") {
     const uint32_t availableDepth = L0 / compositeDegree - 1;
     if (compositeDegree * (lvlbEnc + 1) >= L0)
         OPENFHE_THROW("The CoeffsToSlots level budget (" + std::to_string(lvlbEnc) +
@@ -135,9 +139,7 @@ void CheckBootstrapChainLength(uint32_t L0, uint32_t compositeDegree, uint32_t l
                           "). Increase the multiplicative depth or reduce the level budget.");
     } else if (compositeDegree * (depthBT + 1) > L0) {
         OPENFHE_THROW("Bootstrapping requires a multiplicative depth of at least " + std::to_string(depthBT) +
-                      ", but the modulus chain supports " + std::to_string(availableDepth) +
-                      ". Increase the multiplicative depth (see FHECKKSRNS::GetBootstrapDepth) or reduce the "
-                      "level budget.");
+                      ", but the modulus chain supports " + std::to_string(availableDepth) + ". " + depthRemedy);
     }
 }
 }  // namespace
@@ -3582,20 +3584,10 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
 
     L0 -= (st == FLEXIBLEAUTOEXT);
 
-    // The encoding and decoding matrices are precomputed at the levels below, which have to exist on the
-    // chain. Checking here reports the parameter that is actually wrong, instead of letting the unsigned
-    // subtractions wrap and failing later inside the plaintext encoding with an unrelated message.
-    if (compositeDegree * (levelBudget[0] + 1) > L0)
-        OPENFHE_THROW("The encoding level budget (" + std::to_string(levelBudget[0]) +
-                      ") is too large for the available number of levels (" + std::to_string(L0 / compositeDegree) +
-                      ").");
-    // the SlotsToCoeffs matrices keep at least one level after depthBT (lDec >= compositeDegree below; a zero lDec
-    // would encode them for the whole chain)
-    if (compositeDegree * (depthBT + 1) > L0)
-        OPENFHE_THROW("The functional bootstrapping depth (" + std::to_string(depthBT) +
-                      ") exceeds the available number of levels (" + std::to_string(L0 / compositeDegree) +
-                      "). Increase the multiplicative depth, or reduce the level budget or "
-                      "depthLeveledComputation.");
+    // the SlotsToCoeffs matrices keep at least one level after depthBT, as in ModRaise-first bootstrapping
+    CheckBootstrapChainLength(L0, compositeDegree, levelBudget[0], levelBudget[1], false, depthBT,
+                              "Increase the multiplicative depth (see FHECKKSRNS::GetFBTDepth), or reduce the level "
+                              "budget or depthLeveledComputation.");
 
     m_bootPrecomMap[slots] = std::make_shared<CKKSBootstrapPrecom>();
     auto& precom = m_bootPrecomMap[slots];
