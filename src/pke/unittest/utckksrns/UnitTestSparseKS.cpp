@@ -160,7 +160,7 @@ TEST(UTCKKSRNS_SPARSE_KS, MainSecretAndSwitchingKeys) {
         SCOPED_TRACE(::testing::Message() << "secretKeyDist = " << secretKeyDist);
         try {
             CCParams<CryptoContextCKKSRNS> parameters;
-            // the chain has to be long enough for the bootstrapping setup
+            // a multiplicative depth matching a real bootstrapping configuration
             parameters.SetMultiplicativeDepth(FHECKKSRNS::GetBootstrapDepth({1, 1}, secretKeyDist) + 2);
             parameters.SetScalingModSize(59);
             parameters.SetFirstModSize(60);
@@ -193,7 +193,8 @@ TEST(UTCKKSRNS_SPARSE_KS, MainSecretAndSwitchingKeys) {
             }
 
             const uint32_t M = cc->GetCyclotomicOrder();
-            cc->EvalBootstrapSetup({1, 1});
+            // the key map indices only need the FFT parameters, so the encoding matrices are not precomputed
+            cc->EvalBootstrapSetup({1, 1}, {0, 0}, 0, 0, false);
             auto indices = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, 0);
             EXPECT_NE(std::find(indices.begin(), indices.end(), M - 2), indices.end());
             EXPECT_NE(std::find(indices.begin(), indices.end(), M - 4), indices.end());
