@@ -38,6 +38,10 @@
   below the required one, the SlotsToCoeffs level came out as zero, which encodes the matrices for the whole chain;
   the evaluation then threw a modulus mismatch inside an OpenMP region, which terminates the program. The setups
   now throw an OpenFHEException for both cases, and the required depth itself still works.
+
+  The 128-bit build (NATIVE_SIZE = 128) supports bootstrapping with FIXEDMANUAL and FIXEDAUTO only and does not
+  support functional or FE functional bootstrapping, so it runs the ModRaise-first and StC-first cases with the
+  FIXED* techniques and its larger moduli.
  */
 
 #include <cstdint>
@@ -62,10 +66,16 @@ CryptoContext<DCRTPoly> MakeContext(SecretKeyDist skd, ScalingTechnique st, uint
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(RING_DIM);
     const bool composite = (st == COMPOSITESCALINGAUTO);
+#if NATIVEINT == 128
+    const uint32_t scalingModSize = 78;
+    const uint32_t firstModSize = 89;
+#else
     const uint32_t scalingModSize = composite ? 50 : 59;
+    const uint32_t firstModSize = 60;
+#endif
     parameters.SetScalingModSize(scalingModSize);
     // FE functional bootstrapping requires the first modulus to be twice the scaling factor
-    parameters.SetFirstModSize(feFBT ? scalingModSize + 1 : 60);
+    parameters.SetFirstModSize(feFBT ? scalingModSize + 1 : firstModSize);
     if (composite)
         parameters.SetRegisterWordSize(32);
     parameters.SetScalingTechnique(st);
@@ -84,8 +94,15 @@ CryptoContext<DCRTPoly> MakeContext(SecretKeyDist skd, ScalingTechnique st, uint
     return cc;
 }
 
+#if NATIVEINT == 128
+// the scaling techniques supported for bootstrapping in the 128-bit build
+const std::vector<ScalingTechnique> SCALING_TECHNIQUES = {FIXEDMANUAL, FIXEDAUTO};
+constexpr ScalingTechnique EVAL_SCALING_TECHNIQUE = FIXEDAUTO;
+#else
 const std::vector<ScalingTechnique> SCALING_TECHNIQUES = {FIXEDMANUAL, FLEXIBLEAUTO, FLEXIBLEAUTOEXT,
                                                           COMPOSITESCALINGAUTO};
+constexpr ScalingTechnique EVAL_SCALING_TECHNIQUE = FLEXIBLEAUTO;
+#endif
 const std::vector<SecretKeyDist> SECRET_KEY_DISTS = {SPARSE_ENCAPSULATED, HYBRID_TERNARY, UNIFORM_TERNARY};
 const std::vector<uint32_t> LEVEL_BUDGET = {3, 3};
 
@@ -125,15 +142,17 @@ TEST(UTCKKSRNS_BOOT_CHAIN_LENGTH, StCFirstAndFEFBTSetupRejectShortChain) {
         EXPECT_THROW(cc->EvalBootstrapSetup(LEVEL_BUDGET, {0, 0}, SLOTS, 0, true, true), OpenFHEException);
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 
+#if NATIVEINT != 128
         cc = MakeContext(SPARSE_ENCAPSULATED, st, 2, true);
         EXPECT_THROW(cc->EvalFEFuncBootstrapSetup(LEVEL_BUDGET, {0, 0}, SLOTS), OpenFHEException);
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+#endif
     }
 
     const uint32_t required = FHECKKSRNS::GetBootstrapDepth(LEVEL_BUDGET, SPARSE_ENCAPSULATED);
     for (uint32_t depth = 2; depth <= required; ++depth) {
         SCOPED_TRACE(::testing::Message() << "StC-first evaluation, depth " << depth);
-        auto cc = MakeContext(SPARSE_ENCAPSULATED, FLEXIBLEAUTO, depth);
+        auto cc = MakeContext(SPARSE_ENCAPSULATED, EVAL_SCALING_TECHNIQUE, depth);
         try {
             cc->EvalBootstrapSetup(LEVEL_BUDGET, {0, 0}, SLOTS, 0, true, true);
         } catch (const OpenFHEException&) {
@@ -153,6 +172,7 @@ TEST(UTCKKSRNS_BOOT_CHAIN_LENGTH, StCFirstAndFEFBTSetupRejectShortChain) {
     }
 }
 
+#if NATIVEINT != 128
 // Functional bootstrapping: the setup throws one level below GetFBTDepth, where the SlotsToCoeffs matrices were
 // previously encoded for the whole chain, and succeeds at GetFBTDepth.
 TEST(UTCKKSRNS_BOOT_CHAIN_LENGTH, FBTSetupRejectsBoundaryDepth) {
@@ -192,3 +212,4 @@ TEST(UTCKKSRNS_BOOT_CHAIN_LENGTH, FBTSetupRejectsBoundaryDepth) {
         }
     }
 }
+#endif
