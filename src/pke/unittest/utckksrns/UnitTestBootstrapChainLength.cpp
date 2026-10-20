@@ -49,9 +49,7 @@
 
 #include "UnitTestUtils.h"
 #include "gtest/gtest.h"
-#include "math/hermite.h"
 #include "openfhe.h"
-#include "schemelet/rlwe-mp.h"
 
 using namespace lbcrypto;
 
