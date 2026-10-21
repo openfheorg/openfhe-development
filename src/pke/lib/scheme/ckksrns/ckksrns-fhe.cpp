@@ -361,7 +361,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             // SlotsToCoeffs ends on the towers the modulus raise starts from, with the correction folded in (see
             // GetStCFirstDecodingScale)
             lDec = compositeDegree;
-            scaleDec *= GetStCFirstDecodingScale(cryptoParams, GetBootstrapCorrection(cryptoParams));
+            precom->m_foldedCorrection = GetBootstrapCorrection(cryptoParams);
+            scaleDec *= GetStCFirstDecodingScale(cryptoParams, precom->m_foldedCorrection);
         } else {
             lDec = L0 - compositeDegree * depthBT;
         }
@@ -557,7 +558,8 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
         // SlotsToCoeffs ends on the towers the modulus raise starts from, with the correction folded in (see
         // GetStCFirstDecodingScale)
         lDec = compositeDegree;
-        scaleDec *= GetStCFirstDecodingScale(cryptoParams, GetBootstrapCorrection(cryptoParams));
+        p.m_foldedCorrection = GetBootstrapCorrection(cryptoParams);
+        scaleDec *= GetStCFirstDecodingScale(cryptoParams, p.m_foldedCorrection);
     } else {
         lDec = L0 - compositeDegree * depthBT;
     }
@@ -1386,6 +1388,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     // the last rescale of SlotsToCoeffs lands on the raising towers, with the correction 2^-c and, for the
     // FLEXIBLE* and COMPOSITE* techniques, the exact scaling factor of the raised level folded in
     RescaleStCFirstOutputInPlace(raised);
+
+    // The correction factor may have been lowered after setup (SetCKKSBootCorrectionFactor), which calls for less
+    // shrinking than the folded 2^-c: the difference is a power of two, so it is applied as an integer
+    // multiplication, which consumes no level and needs no re-encoding of the matrices. A raised correction factor
+    // would need an additional shrink, which costs a level, so the matrices have to be encoded with it instead.
+    if (correction > p.m_foldedCorrection)
+        OPENFHE_THROW(
+                "The correction factor of StC-first bootstrapping was raised after EvalBootstrapSetup; pass it to "
+                "EvalBootstrapSetup instead.");
+    if (correction < p.m_foldedCorrection)
+        algo->MultByIntegerInPlace(raised, uint64_t(1) << (p.m_foldedCorrection - correction));
 
     ModRaiseInPlace(raised, elementParamsRaisedPtr);
 

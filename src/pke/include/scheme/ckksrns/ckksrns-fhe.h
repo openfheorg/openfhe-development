@@ -125,6 +125,11 @@ class CKKSBootstrapPrecom {
     // its numValues argument; not serialized, for the same reason as m_variant.
     bool m_FBTComplexPacking = false;
 
+    // exponent c of the correction 2^-c folded into the SlotsToCoeffs matrix of StC-first bootstrapping (see
+    // GetStCFirstDecodingScale). A correction factor lowered after setup is applied on top of it at runtime. Not
+    // serialized, for the same reason as m_variant: the matrices are rebuilt after deserialization, which sets it.
+    uint32_t m_foldedCorrection = 0;
+
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::make_nvp("dim1_Enc", m_paramsEnc.g));

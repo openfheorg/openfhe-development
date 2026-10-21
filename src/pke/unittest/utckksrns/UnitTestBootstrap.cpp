@@ -67,6 +67,7 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_SERIALIZE,
     BOOTSTRAP_SPARSE_ENCAPSULATED,
     BOOTSTRAP_CHAINED,
+    BOOTSTRAP_LOWERED_CORRECTION,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -98,6 +99,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_CHAINED:
             typeName = "BOOTSTRAP_CHAINED";
+            break;
+        case BOOTSTRAP_LOWERED_CORRECTION:
+            typeName = "BOOTSTRAP_LOWERED_CORRECTION";
             break;
         default:
             typeName = "UNKNOWN";
@@ -436,6 +440,15 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_CHAINED,  "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 1, 1 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_CHAINED,  "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
     { BOOTSTRAP_CHAINED,  "09", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32,    2, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+#endif
+    // ==========================================
+    // StC-first bootstrapping with the correction factor lowered after setup (applied at runtime on top of the
+    // correction folded into the SlotsToCoeffs matrix) and raised after setup (rejected)
+    { BOOTSTRAP_LOWERED_CORRECTION, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_LOWERED_CORRECTION, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,       FIXEDAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+#if NATIVEINT != 128
+    { BOOTSTRAP_LOWERED_CORRECTION, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_LOWERED_CORRECTION, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
 #endif
 };
 // clang-format on
@@ -914,6 +927,68 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         }
     }
 
+    // StC-first bootstrapping folds the correction 2^-c into the SlotsToCoeffs matrix at setup. A correction factor
+    // lowered afterwards (SetCKKSBootCorrectionFactor) is applied at runtime on top of the folded one and must match
+    // a setup with the lowered correction factor, for one and two iterations; a correction factor raised afterwards
+    // is rejected.
+    void UnitTest_Bootstrap_LoweredCorrection(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                              const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // the correction factors are small, as for the iterative bootstrapping tests at these ring dimensions
+            constexpr uint32_t setupCorrectionFactor = 10;
+            constexpr uint32_t loweredCorrectionFactor = 8;
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, setupCorrectionFactor, true,
+                                   true);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto input(Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
+                            testData.slots));
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1],
+                                                              nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+
+            auto precisionOf = [&](const Ciphertext<Element>& ct) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ct, &result);
+                result->SetLength(input.size());
+                return CalculateApproximationError(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue());
+            };
+
+            // lowered after setup: one and two iterations
+            cc->SetCKKSBootCorrectionFactor(loweredCorrectionFactor);
+            const double precisionLowered = precisionOf(cc->EvalBootstrap(ciphertext));
+
+            const double precisionBuffer = 5;
+            uint32_t precision = std::floor(precisionLowered) - precisionBuffer;
+            constexpr uint32_t numIterations = 2;
+            const double precisionTwoIterations = precisionOf(cc->EvalBootstrap(ciphertext, numIterations, precision));
+            EXPECT_GE(precisionTwoIterations + precisionBuffer, numIterations * precision)
+                    << failmsg << " two iterations with a correction factor lowered after setup.";
+
+            // the same correction factor passed to the setup
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, loweredCorrectionFactor, true,
+                                   true);
+            const double precisionSetup = precisionOf(cc->EvalBootstrap(ciphertext));
+            EXPECT_NEAR(precisionLowered, precisionSetup, 1.5)
+                    << failmsg << " a correction factor lowered after setup does not match setting it up.";
+
+            // raised after setup
+            cc->SetCKKSBootCorrectionFactor(setupCorrectionFactor);
+            EXPECT_THROW(cc->EvalBootstrap(ciphertext), OpenFHEException)
+                    << failmsg << " a correction factor raised after setup was not rejected.";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -992,6 +1067,9 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_CHAINED:
             UnitTest_Bootstrap_Chained(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_LOWERED_CORRECTION:
+            UnitTest_Bootstrap_LoweredCorrection(test, test.buildTestName());
             break;
         default:
             break;
