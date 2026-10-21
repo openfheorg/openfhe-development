@@ -88,7 +88,7 @@ struct fbt_config {
 [[maybe_unused]] const BigInteger Q44(BigInteger(1) << 44);
 [[maybe_unused]] const BigInteger Q46(BigInteger(1) << 46);
 [[maybe_unused]] const BigInteger Q47(BigInteger(1) << 47);
-[[maybe_unused]] const BigInteger Q48(BigInteger(1) << 48);
+[[maybe_unused]] const BigInteger Q49(BigInteger(1) << 49);
 [[maybe_unused]] const BigInteger Q51(BigInteger(1) << 51);
 [[maybe_unused]] const BigInteger Q55(BigInteger(1) << 55);
 [[maybe_unused]] const BigInteger Q60(BigInteger(1) << 60);
@@ -126,7 +126,7 @@ struct fbt_config {
     {{10, FA}, {SE, FA, Q60, Q10, Q10, Q40, Q40,  256.0,  1.0, 1, 1 << 16, 1 << 16, 4, {4, 3}}},
     {{12, FM}, {SE, FM, Q80, Q12, Q12, Q55, Q55, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
     {{12, FA}, {SE, FA, Q60, Q12, Q12, Q44, Q44, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 6, {3, 3}}},
-    {{14, FA}, {SE, FA, Q60, Q14, Q14, Q48, Q48, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{14, FA}, {SE, FA, Q60, Q14, Q14, Q49, Q49, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
     {{16, FA}, {SE, FA, Q80, Q16, Q16, Q51, Q51, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
     {{32, FM}, {SE, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
 };
