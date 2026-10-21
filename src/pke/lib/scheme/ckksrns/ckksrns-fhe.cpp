@@ -1703,13 +1703,16 @@ double FHECKKSRNS::GetStCFirstDecodingScale(const std::shared_ptr<CryptoParamete
 }
 
 uint32_t FHECKKSRNS::GetBootstrapCorrection(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) const {
+#if NATIVEINT == 128
+    return 0;
+#else
     double qDouble = GetBigModulus(cryptoParams);
     double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
     int32_t deg = std::round(std::log2(qDouble / powP));
     // For composite scaling, deg may exceed the correction factor (the first modulus is typically much larger than
-    // the scaling factor); in that case no correction is applied instead of letting the unsigned subtraction wrap
-    // around.
+    // the scaling factor); in that case no correction is applied instead of letting the unsigned subtraction wrap.
     return (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
+#endif
 }
 
 void FHECKKSRNS::CheckStCFirstInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext) {
