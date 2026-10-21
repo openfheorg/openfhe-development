@@ -69,16 +69,27 @@ struct fbt_config {
 [[maybe_unused]] const BigInteger Q1(BigInteger(1) << 1);
 [[maybe_unused]] const BigInteger Q2(BigInteger(1) << 2);
 [[maybe_unused]] const BigInteger Q4(BigInteger(1) << 4);
+[[maybe_unused]] const BigInteger Q6(BigInteger(1) << 6);
 [[maybe_unused]] const BigInteger Q8(BigInteger(1) << 8);
+[[maybe_unused]] const BigInteger Q10(BigInteger(1) << 10);
 [[maybe_unused]] const BigInteger Q12(BigInteger(1) << 12);
+[[maybe_unused]] const BigInteger Q14(BigInteger(1) << 14);
+[[maybe_unused]] const BigInteger Q16(BigInteger(1) << 16);
 [[maybe_unused]] const BigInteger Q24(BigInteger(1) << 24);
 [[maybe_unused]] const BigInteger Q27(BigInteger(1) << 27);
+[[maybe_unused]] const BigInteger Q31(BigInteger(1) << 31);
 [[maybe_unused]] const BigInteger Q32(BigInteger(1) << 32);
 [[maybe_unused]] const BigInteger Q33(BigInteger(1) << 33);
+[[maybe_unused]] const BigInteger Q34(BigInteger(1) << 34);
 [[maybe_unused]] const BigInteger Q35(BigInteger(1) << 35);
 [[maybe_unused]] const BigInteger Q38(BigInteger(1) << 38);
+[[maybe_unused]] const BigInteger Q40(BigInteger(1) << 40);
+[[maybe_unused]] const BigInteger Q42(BigInteger(1) << 42);
+[[maybe_unused]] const BigInteger Q44(BigInteger(1) << 44);
 [[maybe_unused]] const BigInteger Q46(BigInteger(1) << 46);
 [[maybe_unused]] const BigInteger Q47(BigInteger(1) << 47);
+[[maybe_unused]] const BigInteger Q49(BigInteger(1) << 49);
+[[maybe_unused]] const BigInteger Q51(BigInteger(1) << 51);
 [[maybe_unused]] const BigInteger Q55(BigInteger(1) << 55);
 [[maybe_unused]] const BigInteger Q60(BigInteger(1) << 60);
 [[maybe_unused]] const BigInteger Q71(BigInteger(1) << 71);
@@ -89,34 +100,45 @@ struct fbt_config {
 [[maybe_unused]] constexpr ScalingTechnique FM = FIXEDMANUAL;
 [[maybe_unused]] constexpr ScalingTechnique FA = FLEXIBLEAUTO;
 
-// Keyed by (log p, scaling technique). The order-1 rows for 1, 2, 4 and 8 bits use the smallest scaling factor (Q)
-// whose FBT output error stays below Q/(2p) with probability 2^-40 per ciphertext, measured over all N coefficients
-// on inputs covering every residue of p. Ring dimensions and dnum keep log(Q'_L P') within the 128-bit limits of
-// AKP25 Table 1 for sparse secrets (767 / 1553 bits at N = 2^15 / 2^16).
+// Keyed by (log p, scaling technique). The order-1 rows (1 to 12 bits for both techniques, 14 and 16 bits for
+// FLEXIBLEAUTO) use, among the ring dimensions, level budgets and dnum values that keep the FBT output error below
+// Q/(2p) with probability 2^-40 per ciphertext (measured over all N coefficients on inputs covering every residue of
+// p), the configuration with the fastest FBT, at the smallest scaling factor (Q) that passes there. Ring dimensions
+// and dnum keep log(Q'_L P') within the 128-bit limits of AKP25 Table 1 for sparse secrets (767 / 1553 / 3104 bits
+// at N = 2^15 / 2^16 / 2^17).
+// The 14- and 16-bit rows rely on the degree-66 exp approximation that SPARSE_ENCAPSULATED uses above 12 bits.
+// No FIXEDMANUAL configuration meets the criterion at 14 or 16 bits within the 59-bit limit on scaling primes.
 // UNIFORM_TERNARY rows are left out until subring secret encapsulation (eprint 2025/1594) is implemented.
 [[maybe_unused]] std::map<std::pair<uint32_t, ScalingTechnique>, fbt_config> arblut_configs = {
     // {log p, scalTech}, {skd, scalTech, QBFVInit, PInput, POutput, Q, Bigq, scaleTHI, scaleStepTHI, order,
     //                     numSlots, ringDim, dnum, lvlBudget}
-    {{1, FM},  {SE, FM, Q60,  Q1,  Q1, Q33, Q33,    1.0,  1.0, 1, 1 << 15, 1 << 15, 4, {3, 3}}},
-    {{1, FA},  {SE, FA, Q60,  Q1,  Q1, Q24, Q24,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {3, 3}}},
-    {{2, FM},  {SE, FM, Q60,  Q2,  Q2, Q32, Q32,   16.0,  1.0, 1, 1 << 15, 1 << 15, 4, {2, 2}}},
-    {{2, FA},  {SE, FA, Q60,  Q2,  Q2, Q24, Q24,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {3, 3}}},
-    {{4, FM},  {SE, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 4}}},
+    {{1, FM},  {SE, FM, Q60,  Q1,  Q1, Q34, Q34,    1.0,  1.0, 1, 1 << 15, 1 << 15, 4, {4, 3}}},
+    {{1, FA},  {SE, FA, Q60,  Q1,  Q1, Q24, Q24,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{2, FM},  {SE, FM, Q60,  Q2,  Q2, Q33, Q33,   16.0,  1.0, 1, 1 << 15, 1 << 15, 6, {3, 2}}},
+    {{2, FA},  {SE, FA, Q60,  Q2,  Q2, Q24, Q24,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {4, 3}}},
+    {{4, FM},  {SE, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 3, {5, 4}}},
     {{4, FA},  {SE, FA, Q60,  Q4,  Q4, Q27, Q27,   32.0,  1.0, 1, 1 << 15, 1 << 15, 4, {3, 3}}},
+    {{6, FM},  {SE, FM, Q60,  Q6,  Q6, Q42, Q42,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {5, 4}}},
+    {{6, FA},  {SE, FA, Q60,  Q6,  Q6, Q31, Q31,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 4}}},
     {{8, FM},  {SE, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
-    {{8, FA},  {SE, FA, Q60,  Q8,  Q8, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {3, 3}}},
-    {{12, FM}, {SE, FM, Q80, Q12, Q12, Q55, Q55, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 4}}},
+    {{8, FA},  {SE, FA, Q60,  Q8,  Q8, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 3}}},
+    {{10, FM}, {SE, FM, Q60, Q10, Q10, Q51, Q51,  256.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{10, FA}, {SE, FA, Q60, Q10, Q10, Q40, Q40,  256.0,  1.0, 1, 1 << 16, 1 << 16, 4, {4, 3}}},
+    {{12, FM}, {SE, FM, Q80, Q12, Q12, Q55, Q55, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{12, FA}, {SE, FA, Q60, Q12, Q12, Q44, Q44, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 6, {3, 3}}},
+    {{14, FA}, {SE, FA, Q60, Q14, Q14, Q49, Q49, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{16, FA}, {SE, FA, Q80, Q16, Q16, Q51, Q51, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
     {{32, FM}, {SE, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
 };
 // clang-format on
 
 [[maybe_unused]] static void ArbLUTBitsFM(benchmark::internal::Benchmark* b) {
-    for (uint32_t bits : {12, 8, 4, 2, 1})
+    for (uint32_t bits : {12, 10, 8, 6, 4, 2, 1})
         b->ArgName("bits")->Arg(bits);
 }
 
 [[maybe_unused]] static void ArbLUTBitsFA(benchmark::internal::Benchmark* b) {
-    for (uint32_t bits : {8, 4, 2, 1})
+    for (uint32_t bits : {16, 14, 12, 10, 8, 6, 4, 2, 1})
         b->ArgName("bits")->Arg(bits);
 }
 

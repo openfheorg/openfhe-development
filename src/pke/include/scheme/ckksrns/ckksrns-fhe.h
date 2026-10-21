@@ -1193,12 +1193,37 @@ class FHECKKSRNS : public FHERNS {
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     // same value is used for both SPARSE and ENCAPSULATED_SPARSE
     static constexpr uint32_t R_SPARSE = 3;
+    /**
+     * Returns the Chebyshev coefficients of the exp approximation evaluated by the FBT before its double-angle
+     * iterations. SPARSE_ENCAPSULATED and HYBRID_TERNARY use the degree-66 table for look-up tables of more than 12
+     * bits, where the approximation error of the degree-46 table, amplified by the slope of the look-up table
+     * interpolant, exceeds the decision margin; the degree-66 table costs one more level.
+     *
+     * @param skd secret key distribution, after the denser SPARSE_ENCAPSULATED / HYBRID_TERNARY secret is mapped to
+     * SPARSE_TERNARY
+     * @param digitBitSize number of bits of the look-up table input
+     * @return the coefficients of exp(i * 2Pi * x / 2^R) on [-K, K], for the R double-angle iterations and the
+     * overflow bound K of the secret key distribution
+     */
+    static const std::vector<std::complex<double>>& FBTExpCoefficients(SecretKeyDist skd, uint32_t digitBitSize);
+
+    /**
+     * Returns the Chebyshev coefficients of the cos approximation evaluated by the FBT of 1-bit look-up tables
+     * (order 1) before its double-angle iterations.
+     *
+     * @param skd secret key distribution, after the denser SPARSE_ENCAPSULATED / HYBRID_TERNARY secret is mapped to
+     * SPARSE_TERNARY
+     * @return the coefficients of cos(Pi * x / 2^(R - 1)) on [-K, K], for the R double-angle iterations and the
+     * overflow bound K of the secret key distribution
+     */
+    static const std::vector<double>& FBTCosCoefficients(SecretKeyDist skd);
+
     // number of double-angle iterations in CKKS functional bootstrapping for UNIFORM_TERNARY; matches the
     // interval [-K_UNIFORM_FBT, K_UNIFORM_FBT] of coeff_exp_672_double_104 and coeff_cos_672_double_104.
     // Must be static because it is used in a static function.
     static constexpr uint32_t R_UNIFORM_FBT = 6;
     // number of double-angle iterations in CKKS functional bootstrapping for the sparse distributions;
-    // matches the intervals of coeff_exp_28_double_* / coeff_exp_16_double_46 and the corresponding cos tables.
+    // matches the intervals of coeff_exp_28_double_* / coeff_exp_16_double_* and the corresponding cos tables.
     // Must be static because it is used in a static function.
     static constexpr uint32_t R_SPARSE_FBT = 2;
     // number of double-angle iterations in CKKS functional bootstrapping. Must be static because it is used in a static
@@ -1318,6 +1343,45 @@ class FHECKKSRNS : public FHERNS {
             -4.4681665467734785701e-7,   std::complex<double>(0, -1.4370869519524496369e-7),
             4.4978579841297345023e-8,    std::complex<double>(0, 1.35960020237312162173e-8),
             -4.3910914593632557649e-9};
+
+    // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-16, 16] of degree 66, used for look-up tables
+    // of more than 12 bits (see FBTExpCoefficients)
+    // Need two double-angle iterations to get std::exp(1i * 2Pi * x)
+    static const inline std::vector<std::complex<double>> coeff_exp_16_double_66{
+            0.22393566906777406473,     std::complex<double>(0, -0.22176384914036407179),
+            0.24158307546266121784,     std::complex<double>(0, -0.1833147085131391692),
+            0.28534623846463528672,     std::complex<double>(0, -0.092486179824488319267),
+            0.32214532018151837923,     std::complex<double>(0, 0.061326880477941559726),
+            0.28798365357787248334,     std::complex<double>(0, 0.24466296846427114248),
+            0.11275670987605882749,     std::complex<double>(0, 0.33439190718203861982),
+            -0.17995397739265354314,    std::complex<double>(0, 0.16254851699551065311),
+            -0.34811157721125466184,    std::complex<double>(0, -0.22527723082929950144),
+            -0.079206690817227674462,   std::complex<double>(0, -0.3261263217854052566),
+            0.3619825467512375429,      std::complex<double>(0, 0.19237548287066772936),
+            0.071116210979945962808,    std::complex<double>(0, 0.30556044798491294876),
+            -0.43951407397686912164,    std::complex<double>(0, -0.46389876376571955078),
+            0.40955141151976834921,     std::complex<double>(0, 0.31828681535789012283),
+            -0.22366008829505166164,    std::complex<double>(0, -0.14446909676096391009),
+            0.086745018497586218891,    std::complex<double>(0, 0.048813481993878490596),
+            -0.025904132260782119253,   std::complex<double>(0, -0.01302807844326713326),
+            0.0062348555293592797941,   std::complex<double>(0, 0.0028488507881147090515),
+            -0.0012463877741257321946,  std::complex<double>(0, -0.00052341839132934603802),
+            0.00021144315086655356063,  std::complex<double>(0, 8.2321616250726656054e-5),
+            -3.0941853901365512928e-5,  std::complex<double>(0, -1.1244814689035133776e-5),
+            3.9566690159242485933e-6,   std::complex<double>(0, 1.3496539522226523225e-6),
+            -4.4681499225058247125e-7,  std::complex<double>(0, -1.4371515572653695954e-7),
+            4.4954022518064645045e-8,   std::complex<double>(0, 1.3687251976978961466e-8),
+            -4.0598381952470221174e-9,  std::complex<double>(0, -1.1740443123384245465e-9),
+            3.3125326411623364759e-10,  std::complex<double>(0, 9.1249953247745249176e-11),
+            -2.4557323232699977452e-11, std::complex<double>(0, -6.4605312919958536144e-12),
+            1.6624267653857553768e-12,  std::complex<double>(0, 4.1863807622889831639e-13),
+            -1.0322369336948222985e-13, std::complex<double>(0, -2.4933071957892034452e-14),
+            5.9024019660398218465e-15,  std::complex<double>(0, 1.3700286144036037177e-15),
+            -3.1193257951096282094e-16, std::complex<double>(0, -6.9694131872592506613e-17),
+            1.5286305456556004623e-17,  std::complex<double>(0, 3.2926003613886049432e-18),
+            -6.9672014484751944539e-19, std::complex<double>(0, -1.448792051200591995e-19),
+            2.9617457477082852249e-20,  std::complex<double>(0, 5.9449096243334438439e-21),
+            -1.2209275099591893578e-21};
 
     // Coefficients for the function std::exp(1i * Pi/2.0 * x) in [-28, 28] of degree 69
     // Need two double-angle iterations to get std::exp(1i * 2Pi * x)
