@@ -300,8 +300,9 @@ int main() {
 
         std::cout << "\n===== " << title << " =====\n";
         std::cout << "CKKS total modulus: " << totalModulusBits << " bits\n";
-        std::cout << "Level before bootstrapping: " << levelBeforeBoot << "\n\n";
-        std::cout << "Level after bootstrapping: " << output->GetLevel() << "\n";
+        std::cout << "Levels remaining before bootstrapping: " << depth - levelBeforeBoot << "\n\n";
+        std::cout << "Levels remaining after bootstrapping: "
+                  << depth - output->GetLevel() - (output->GetNoiseScaleDeg() - 1) << "\n";
         std::cout << "Series evaluation time: " << static_cast<int64_t>(std::llround(elapsed)) << " ms\n";
         std::cout << "Slots amortize time: " << std::fixed << std::setprecision(6) << elapsed / numSlots << " ms\n\n";
         std::cout << "--- Sample Points Inspection (Total 10 points) ---\n";
