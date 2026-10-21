@@ -120,6 +120,11 @@ class CKKSBootstrapPrecom {
     enum BootstrapVariant : uint32_t { BOOTSTRAP = 0, FBT = 1, FEFBT = 2 };
     BootstrapVariant m_variant = BOOTSTRAP;
 
+    // FBT only: true when a full packing imports more than N/2 RLWE values (both coefficient halves), so the real
+    // and imaginary channels of the homomorphic encoding are processed as two ciphertexts. Set by EvalFBTSetup from
+    // its numValues argument; not serialized, for the same reason as m_variant.
+    bool m_FBTComplexPacking = false;
+
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::make_nvp("dim1_Enc", m_paramsEnc.g));
@@ -257,8 +262,9 @@ class FHECKKSRNS : public FHERNS {
      * Refreshes a ciphertext and evaluates a function on it in one pass by evaluating the Fourier extension of
      * the function over the bootstrapped message: SlotsToCoeffs, modulus raise, CoeffsToSlots, the complex
      * exponential exp(2*Pi*i*t) with t = m/2 (the message is embedded into half of the period), the series
-     * sum_j c_j exp(2*Pi*i*j*t) and twice its real part. The result is real-valued; with CKKSDataType COMPLEX the
-     * imaginary parts of the input slots are discarded.
+     * sum_j c_j exp(2*Pi*i*j*t) and twice its real part. The function is applied slot-wise: for CKKSDataType REAL
+     * to the (real) slot values, and for COMPLEX to the real and imaginary parts separately (a slot a + ib yields
+     * f(a) + i f(b)), the two channels being processed as two ciphertexts as in EvalBootstrapStCFirst.
      *
      * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2)
      * @param coefficients Fourier coefficients c_j of the target function over [-1/2, 1/2), c_0 first
@@ -316,12 +322,16 @@ class FHECKKSRNS : public FHERNS {
      * @param depthLeveledComputation multiplicative depth reserved for a leveled computation applied between
      * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @param numValues number of values encrypted in the RLWE input (0 = as many as the slots hold: N for full
+     * packing, numSlots for sparse packing). With full packing, more than N/2 values occupy both coefficient halves
+     * (two ciphertexts are processed) and N/2 values the lower half (one ciphertext), independently of the CKKS data
+     * type (see CryptoContextImpl::EvalFBTSetup for when COMPLEX is needed).
      */
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<std::complex<double>>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                      uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+                      uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0) override;
 
     /**
      * Sets up CKKS functional bootstrapping of a look-up table for a given number of slots: computes the depth of
@@ -346,12 +356,16 @@ class FHECKKSRNS : public FHERNS {
      * @param depthLeveledComputation multiplicative depth reserved for a leveled computation applied between
      * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
+     * @param numValues number of values encrypted in the RLWE input (0 = as many as the slots hold: N for full
+     * packing, numSlots for sparse packing). With full packing, more than N/2 values occupy both coefficient halves
+     * (two ciphertexts are processed) and N/2 values the lower half (one ciphertext), independently of the CKKS data
+     * type (see CryptoContextImpl::EvalFBTSetup for when COMPLEX is needed).
      */
     void EvalFBTSetup(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<int64_t>& coefficients,
                       uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                       const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                       const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                      uint32_t depthLeveledComputation = 0, size_t order = 1) override;
+                      uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0) override;
 
     /**
      * Functional bootstrapping of a look-up table: modulus raise, CoeffsToSlots, approximation of the complex
@@ -460,7 +474,8 @@ class FHECKKSRNS : public FHERNS {
      * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
      * under)
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
-     * @return the powers of the complex exponential (real and imaginary parts for full packing)
+     * @return the powers of the complex exponential (real and imaginary parts for full packing with more than N/2
+     * values, see EvalFBTSetup)
      */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<std::complex<double>>& coeffs,
@@ -480,7 +495,8 @@ class FHECKKSRNS : public FHERNS {
      * @param initialScaling scale of the imported message (the RLWE ciphertext modulus the input was encrypted
      * under)
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3)
-     * @return the powers of the complex exponential (real and imaginary parts for full packing)
+     * @return the powers of the complex exponential (real and imaginary parts for full packing with more than N/2
+     * values, see EvalFBTSetup)
      */
     std::shared_ptr<seriesPowers<DCRTPoly>> EvalMVBPrecompute(ConstCiphertext<DCRTPoly>& ciphertext,
                                                               const std::vector<int64_t>& coeffs, uint32_t digitBitSize,
@@ -1064,9 +1080,11 @@ class FHECKKSRNS : public FHERNS {
      * CoeffsToSlots and the complex exponential.
      *
      * @param ciphertext input ciphertext, with slot values in [-1/2, 1/2)
-     * @return a ciphertext of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message
+     * @return the ciphertexts of exp(2*Pi*i*t), t = mu/2 being the half-period embedding of the message: one for
+     * CKKSDataType REAL, and two for COMPLEX (the real and imaginary parts of the message, each moved to the real
+     * part of its own ciphertext)
      */
-    Ciphertext<DCRTPoly> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
+    std::vector<Ciphertext<DCRTPoly>> EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly>& ciphertext) const;
 
     /**
      * Twice the real part of an evaluated Fourier series, obtained by adding its conjugate to it.
@@ -1105,7 +1123,7 @@ class FHECKKSRNS : public FHERNS {
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                              uint32_t depthLeveledComputation = 0, size_t order = 1);
+                              uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0);
 
     template <typename VectorDataType>
     Ciphertext<DCRTPoly> EvalHermiteTrigSeriesInternal(ConstCiphertext<DCRTPoly>& ciphertext,

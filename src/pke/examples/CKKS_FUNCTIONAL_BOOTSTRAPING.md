@@ -46,8 +46,19 @@ The RLWE and CKKS schemes are compatible in the sense that they can share the sa
 makes the conversion between RLWE and CKKS to essentially be modulus switching.
 
 A vector encoded in RLWE can have as many elements as the ring dimension. If this is the case (the number of elements is between half
-the ring dimension and the ring dimension), this corresponds to a full complex packing in CKKS, where the complex slots are also
-populated. Otherwise, real CKKS packing (full or sparse) is used.
+the ring dimension and the ring dimension), this corresponds to a full complex packing in CKKS, where the imaginary parts of the slots are also
+populated, and functional bootstrapping processes two ciphertexts (the real and imaginary channels of the homomorphic encoding).
+Otherwise, real CKKS packing (full or sparse) is used, and functional bootstrapping processes a single ciphertext. The number of
+elements is passed to `EvalFBTSetup` as `numValues`, which selects the layout independently of the CKKS data type; it defaults to
+as many elements as the slots can hold (the ring dimension for full packing). In particular, for a number of elements equal to half
+the ring dimension, the values occupy the real parts of the N/2 slots, and passing `numValues` = N/2 halves the cost of the
+approximate modular reduction and of the look-up table evaluation compared to the full complex packing.
+
+Functional bootstrapping itself does not need a particular CKKS data type. With full complex packing, however, the imaginary
+parts of the slots carry half of the values, so the CKKS data type should be set to COMPLEX (`SetCKKSDataType(COMPLEX)`) if
+complex plaintexts are encoded or the CKKS ciphertext is decrypted before `EvalHomDecoding`, e.g., in a leveled computation
+between `EvalFBTNoDecoding` and `EvalHomDecoding`: with the default REAL data type, encoding zeroes the imaginary parts of a
+plaintext and decryption treats the imaginary parts of the slots as noise.
 
 Note that the message is encoded in the coefficients in the RLWE scheme, but when converted to CKKS, the coefficients are held in
 the slots of the CKKS ciphertexts. To be able to apply CKKS leveled computations, we need to homomorphically transform from
@@ -113,6 +124,7 @@ The SPARSE_TERNARY distribution is the distribution used in the original CKKS pa
 where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 28, this
 distribution leads to a larger probability of failure (about 2^-22 for 2^16 slots), so it should not be used in deployments.
 Compared to SPARSE_ENCAPSULATED, choosing this distribution requires an extra level in the complex exponential approximation
+(a degree-69 Chebyshev interpolation over [-28, 28] instead of degree 46 over [-16, 16], used for all supported LUT sizes)
 to achieve correctness. This is the distribution used for the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
 
 The SPARSE_ENCAPSULATED distribution (described in [[BTH22]](https://eprint.iacr.org/2022/024.pdf)) uses a Hamming weight of 32
@@ -134,10 +146,10 @@ used when uniform ternary secrets are required for compliance with them. It is h
 bootstrapping: the number of overflows is bounded by K = 672 (probability of failure below 2^-73
 for N = 2^16 and 2^-30 for N = 2^17 with full packing), and the complex exponential (or cosine, for the binary case) is
 approximated by a degree-104 Chebyshev interpolation over [-672, 672] followed by six double-angle iterations (instead of degree
-64/46 and two double-angle iterations for the sparse distributions). This increases the
-multiplicative depth of functional bootstrapping by 5 levels. In addition, since the mod-raised message is scaled down by K
-before the homomorphic encoding, larger scaling factors (roughly 5-9 more bits, depending on the parameters) are needed to
-achieve the same output noise as for the sparse distributions.
+69/46 and two double-angle iterations for the sparse distributions). This increases the multiplicative depth of functional
+bootstrapping by 5 levels compared to SPARSE_ENCAPSULATED (4 compared to SPARSE_TERNARY). In addition, since the mod-raised
+message is scaled down by K before the homomorphic encoding, larger scaling factors (roughly 5-9 more bits, depending on the
+parameters) are needed to achieve the same output noise as for the sparse distributions.
 
 **Scaling techniques**
 All scaling techniques (FIXEDMANUAL, FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT, COMPOSITESCALINGAUTO, and
@@ -190,8 +202,11 @@ coefficient vector c = (c_0, c_1, ..., c_d) has to satisfy
 $$g(m) \approx 2 \cdot \mathrm{Re}\left(\sum_{j=0}^{d} c_j e^{\pi i j m}\right), \quad m \in [-1/2, 1/2).$$
 
 In other words, c_0 is half of the constant term of the series and c_j, for j > 0, are the one-sided coefficients of the
-series (the conjugate terms are added internally). The output is always real-valued; with CKKSDataType COMPLEX, the imaginary
-parts of the input slots are discarded, so CKKSDataType REAL should be used unless complex values are needed elsewhere in the
+series (the conjugate terms are added internally). The function is applied slot-wise. With CKKSDataType REAL, it is applied to
+the (real) slot values and a single ciphertext goes through the complex exponential and the series. With CKKSDataType COMPLEX, it
+is applied to the real and imaginary parts separately (a slot a + ib yields f(a) + i f(b)): the two parts are processed as two
+ciphertexts, as in the slots-encoding CKKS bootstrapping and in the complex full packing of the discrete functional bootstrapping,
+so CKKSDataType REAL should be used unless complex values are needed elsewhere in the
 computation.
 
 The coefficients are computed offline with the Python scripts in [fefbt-python](https://github.com/openfheorg/fefbt-python),

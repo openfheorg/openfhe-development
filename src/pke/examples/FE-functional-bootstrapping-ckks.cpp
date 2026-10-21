@@ -234,7 +234,8 @@ int main() {
                            levelsAfterBootstrapping;
 
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetCKKSDataType(COMPLEX);
+    // the input is real-valued; with COMPLEX the function would also be applied to the (zero) imaginary parts
+    parameters.SetCKKSDataType(REAL);
     parameters.SetSecretKeyDist(skd);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(ringDim);

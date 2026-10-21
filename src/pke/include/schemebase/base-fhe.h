@@ -203,7 +203,8 @@ class FHEBase {
     /**
      * Refreshes a ciphertext and evaluates a function on it in one pass, by evaluating the Fourier
      * extension of the function over the bootstrapped message. The input slot values must lie in
-     * [-1/2, 1/2) and the result is real-valued. Supported only in CKKS.
+     * [-1/2, 1/2); for CKKSDataType COMPLEX the function is applied to the real and imaginary parts
+     * separately. Supported only in CKKS.
      *
      * @param ciphertext the input ciphertext, with slot values in [-1/2, 1/2).
      * @param coefficients Fourier coefficients c_j of the target function, c_0 first.
@@ -266,12 +267,16 @@ class FHEBase {
      * @param depthLeveledComputation depth of the leveled computation applied between
      * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding.
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @param numValues number of values encrypted in the RLWE input (0 = as many as the slots hold: N for
+     * full packing, numSlots for sparse packing). With full packing, more than N/2 values occupy both
+     * coefficient halves (two ciphertexts are processed) and N/2 values the lower half (one ciphertext),
+     * independently of the CKKS data type (see CryptoContextImpl::EvalFBTSetup for when COMPLEX is needed).
      */
     virtual void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<std::complex<double>>& coeffs,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                              uint32_t depthLeveledComputation = 0, size_t order = 1) {
+                              uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0) {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
     /**
@@ -296,12 +301,16 @@ class FHEBase {
      * @param depthLeveledComputation depth of the leveled computation applied between
      * EvalFBTNoDecoding (or EvalMVBNoDecoding) and EvalHomDecoding.
      * @param order order of the trigonometric Hermite interpolation (1, 2 or 3).
+     * @param numValues number of values encrypted in the RLWE input (0 = as many as the slots hold: N for
+     * full packing, numSlots for sparse packing). With full packing, more than N/2 values occupy both
+     * coefficient halves (two ciphertexts are processed) and N/2 values the lower half (one ciphertext),
+     * independently of the CKKS data type (see CryptoContextImpl::EvalFBTSetup for when COMPLEX is needed).
      */
     virtual void EvalFBTSetup(const CryptoContextImpl<Element>& cc, const std::vector<int64_t>& coeffs,
                               uint32_t numSlots, const BigInteger& PIn, const BigInteger& POut, const BigInteger& Bigq,
                               const PublicKey<DCRTPoly>& pubKey, const std::vector<uint32_t>& dim1,
                               const std::vector<uint32_t>& levelBudget, uint32_t lvlsAfterBoot = 0,
-                              uint32_t depthLeveledComputation = 0, size_t order = 1) {
+                              uint32_t depthLeveledComputation = 0, size_t order = 1, uint32_t numValues = 0) {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 

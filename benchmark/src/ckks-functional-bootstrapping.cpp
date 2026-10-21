@@ -177,10 +177,10 @@ struct fbt_config {
     while (state.KeepRunning()) {
         if (binaryLUT)
             cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                             0, t.order);
+                             0, t.order, t.numSlots);
         else
             cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                             0, t.order);
+                             0, t.order, t.numSlots);
     }
 
     cc->ClearStaticMapsAndVectors();
@@ -242,10 +242,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
     else
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
 
     for (auto _ : state) {
         state.PauseTiming();
@@ -315,10 +315,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
     else
         cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0, 0,
-                         t.order);
+                         t.order, t.numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);
@@ -413,10 +413,10 @@ struct fbt_config {
 
     if (binaryLUT)
         cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                         0, t.order);
+                         0, t.order, t.numSlots);
     else
         cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb, 0,
-                         0, t.order);
+                         0, t.order, t.numSlots);
 
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
     cc->EvalMultKeyGen(keyPair.secretKey);

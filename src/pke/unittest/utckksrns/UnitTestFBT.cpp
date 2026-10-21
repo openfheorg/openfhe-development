@@ -239,6 +239,7 @@ static auto testName = [](const testing::TestParamInfo<TEST_CASE_FBT>& test) {
 [[maybe_unused]] constexpr uint32_t BEFOREBOOT(0);
 [[maybe_unused]] constexpr uint32_t LVLSCOMP(0);
 [[maybe_unused]] constexpr uint32_t SLOTSPARSE(8);
+[[maybe_unused]] constexpr uint32_t SLOTHALF(16);  // half the ring dimension: full CKKS packing with real data
 [[maybe_unused]] constexpr uint32_t SLOTFULL(32);
 [[maybe_unused]] constexpr uint32_t RINGDM(32);
 [[maybe_unused]] const std::vector<uint32_t> LVLBDFLT = {3, 3};
@@ -277,6 +278,17 @@ static std::vector<TEST_CASE_FBT> testCases = {
     {       FBT_MVB, "22",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
     {       FBT_MVB, "23",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
     {       FBT_MVB, "24",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    // Half the ring dimension: full CKKS packing with CKKSDataType REAL, where only the lower half of the RLWE
+    // coefficients carries data and functional bootstrapping processes a single ciphertext
+    {    FBT_ARBLUT, "41",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "42",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     2,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "43",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    {    FBT_ARBLUT, "44",      Q60, PINPUT, POUTPUT, Q47, Q47, SCALETHI, SCALESTEPTHI,     2,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_SIGNDIGIT, "45",      Q71,    Q21,       2, Q56, Q36,        1,            1,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_CONSECLEV, "46",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    {       FBT_MVB, "47",      Q60,      2,       2, Q35, Q35,        1, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    {       FBT_MVB, "48",      Q60, PINPUT,  PINPUT, Q48, Q48, SCALETHI, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, SPARSE_TERNARY},
+    { FBT_MVB_REUSE, "49",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
     // TestCaseType,  Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist
     {    FBT_ARBLUT, "101",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED},
     {    FBT_ARBLUT, "H101",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, HYBRID_TERNARY},
@@ -407,6 +419,7 @@ static std::vector<TEST_CASE_FBT> testCases = {
     { FBT_SIGNDIGIT, "935",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
     {    FBT_ARBLUT, "936",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTOEXT},
     {    FBT_ARBLUT, "937",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTOEXT},
+    {    FBT_ARBLUT, "939",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
     {       FBT_MVB, "938",      Q60, PINPUT,  PINPUT, Q55, Q55, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3,        1,  LVLBDFLT, UNIFORM_TERNARY, FLEXIBLEAUTO},
     // UNIFORM_TERNARY, sparse packing (numSlots < ringDim/2), with the other supported scaling techniques
     {    FBT_ARBLUT, "941",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, UNIFORM_TERNARY, FIXEDAUTO},
@@ -474,6 +487,7 @@ static std::vector<TEST_CASE_FBT> testCases = {
     {    FBT_ARBLUT, "H1051",      Q60,      2,       2, Q40, Q40,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, HYBRID_TERNARY,      COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "1052",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "H1052",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, HYBRID_TERNARY,      COMPOSITESCALINGAUTO},
+    {    FBT_ARBLUT, "1058",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     1,   SLOTHALF,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "1053",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
     {    FBT_ARBLUT, "H1053",      Q60, PINPUT, POUTPUT, Q54, Q54, SCALETHI, SCALESTEPTHI,     2, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, HYBRID_TERNARY,      COMPOSITESCALINGAUTO},
     { FBT_SIGNDIGIT, "1054",      Q80,    Q21,       2, Q64, Q44,        1,            1,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_ENCAPSULATED, COMPOSITESCALINGAUTO},
@@ -721,12 +735,14 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             start = std::chrono::high_resolution_clock::now();
 #endif
 
+            // N values exercise the default numValues (0), which stands for N under full packing
+            const uint32_t numValues = (t.numSlots == t.ringDim) ? 0 : t.numSlots;
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, numValues);
             else
                 cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, numValues);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -894,10 +910,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffintMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
             else
                 cc->EvalFBTSetup(coeffcompMod, numSlotsCKKS, t.POutput, t.PInput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1119,10 +1135,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
             else
                 cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1347,10 +1363,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
             if (binaryLUT)
                 cc->EvalFBTSetup(coeffint1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
             else
                 cc->EvalFBTSetup(coeffcomp1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, t.levelsComputation, t.order, t.numSlots);
 
 #ifdef BENCH
             stop = std::chrono::high_resolution_clock::now();
@@ -1532,10 +1548,10 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
 
                 if (binaryLUT)
                     cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 else
                     cc->EvalFBTSetup(coeffcomp, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                     t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
 
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
@@ -1676,7 +1692,7 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 auto keyPair = cc->KeyGen();
 
                 cc->EvalFBTSetup(coefficients1, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0},
-                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
 
@@ -1777,12 +1793,16 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 // than reading past the modulus vector and wrapping the level arithmetic
                 const std::vector<uint32_t> dim1{0, 0};
                 EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
-                                              dim1, t.lvlb, depth + 1, 0, t.order),
+                                              dim1, t.lvlb, depth + 1, 0, t.order, t.numSlots),
                              OpenFHEException)
                         << failmsg << " oversized lvlsAfterBoot not rejected";
+                EXPECT_THROW(cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey,
+                                              dim1, t.lvlb, t.levelsAvailableAfterBootstrap, 0, t.order, t.ringDim + 1),
+                             OpenFHEException)
+                        << failmsg << " more RLWE values than the slots hold not rejected";
 
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 std::vector<double> y(numSlotsCKKS, 0.5);
                 auto ctxt = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(y));
                 EXPECT_THROW(cc->EvalHomDecoding(ctxt, 1, depth), OpenFHEException)
@@ -1797,7 +1817,7 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
                 enableAll(cc);
                 auto keyPair = cc->KeyGen();
                 cc->EvalFBTSetup(coeffint, numSlotsCKKS, t.PInput, t.POutput, t.Bigq, keyPair.publicKey, {0, 0}, t.lvlb,
-                                 t.levelsAvailableAfterBootstrap, 0, t.order);
+                                 t.levelsAvailableAfterBootstrap, 0, t.order, t.numSlots);
                 cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlotsCKKS);
                 cc->EvalMultKeyGen(keyPair.secretKey);
                 std::vector<double> y(numSlotsCKKS, 0.5);
