@@ -564,7 +564,7 @@ double MeanPrecisionBits(const std::vector<double>& expected, const std::vector<
     cc->EvalBootstrapKeyGen(keyPair.secretKey, slots);
 
     auto x = BuildInput(slots);
-    auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, depth - (t.lvlb[1] + 1), nullptr, slots);
+    auto ptxt = cc->MakeCKKSPackedPlaintext(x, 1, depth - t.lvlb[1], nullptr, slots);
     auto ctxt = cc->Encrypt(keyPair.publicKey, ptxt);
 
     Ciphertext<DCRTPoly> ctxtAfter;
