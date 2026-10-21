@@ -257,6 +257,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     } else {
         m_correctionFactor = correctionFactor;
     }
+    m_correctionFactorExplicit = (correctionFactor != 0);
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -1260,10 +1261,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
                       std::to_string(m_correctionFactor) + "].");
     }
 #endif
-    // For composite scaling, deg may exceed the correction factor (the check above is skipped, since with
-    // larger composite degrees the first modulus is typically much larger than the scaling factor); the
-    // correction 2^-correction folded into the SlotsToCoeffs matrix is then 1.
-    const uint32_t correction = GetBootstrapCorrection(cryptoParams);
     double post = std::pow(2, static_cast<double>(deg));
 
     // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
@@ -1281,6 +1278,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     auto algo = cc->GetScheme();
     auto N = cc->GetRingDimension();
     auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
+
+    // A defaulted correction factor depends on the slot count and m_correctionFactor holds the last setup's,
+    // so only an explicit user override is read back; otherwise this precomputation's folded default applies.
+    const uint32_t correction =
+            m_correctionFactorExplicit ? GetBootstrapCorrection(cryptoParams) : p.m_foldedCorrection;
 
     // Coefficients of the Chebyshev series interpolating 1/(2 Pi) Sin(2 Pi K x). The overflow bound K
     // itself is folded into the CoeffsToSlots matrix (see GetModRaiseOverflowBound), so only the exact 1/N

@@ -68,6 +68,7 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_SPARSE_ENCAPSULATED,
     BOOTSTRAP_CHAINED,
     BOOTSTRAP_LOWERED_CORRECTION,
+    BOOTSTRAP_MULTI_SLOT,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -102,6 +103,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_LOWERED_CORRECTION:
             typeName = "BOOTSTRAP_LOWERED_CORRECTION";
+            break;
+        case BOOTSTRAP_MULTI_SLOT:
+            typeName = "BOOTSTRAP_MULTI_SLOT";
             break;
         default:
             typeName = "UNKNOWN";
@@ -440,6 +444,16 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_CHAINED,  "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 1, 1 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_CHAINED,  "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
     { BOOTSTRAP_CHAINED,  "09", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32,    2, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+#endif
+    // ==========================================
+    // StC-first setups for two slot counts whose default correction factors differ (the default grows as the
+    // slot count shrinks, and the ring must be large enough for the difference to survive the clamp): each
+    // precomputation keeps the default folded into its own matrices, and only an explicit
+    // SetCKKSBootCorrectionFactor applies across slot counts
+    { BOOTSTRAP_MULTI_SLOT, "01", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,       FIXEDAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
+    { BOOTSTRAP_MULTI_SLOT, "02", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
+#if NATIVEINT != 128
+    { BOOTSTRAP_MULTI_SLOT, "03", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
 #endif
 #if NATIVEINT != 128
     // ==========================================
@@ -989,6 +1003,65 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         }
     }
 
+    // StC-first setups for two slot counts fold different default correction factors into their matrices (the
+    // default depends on the slot count). The shared factor then holds the last setup's default, so bootstrapping
+    // with the first precomputation used to read it back as a raised factor and throw; a defaulted factor must
+    // stay with its own precomputation, and only an explicit SetCKKSBootCorrectionFactor applies across slot
+    // counts.
+    void UnitTest_Bootstrap_MultiSlot(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                      const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            const uint32_t slotsSmall = 8;  // fewer slots give a larger (or equal, once clamped) default
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, true);
+            const uint32_t defaultLarge = cc->GetCKKSBootCorrectionFactor();
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, slotsSmall, 0, true, true);
+            const uint32_t defaultSmall = cc->GetCKKSBootCorrectionFactor();
+            const auto st = static_cast<ScalingTechnique>(testData.params.scalTech);
+            if (st == FIXEDAUTO || st == FIXEDMANUAL)
+                EXPECT_GT(defaultSmall, defaultLarge)
+                        << failmsg << " the default correction factors of the two slot counts do not differ.";
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, slotsSmall);
+
+            for (uint32_t slots : {testData.slots, slotsSmall}) {
+                auto input(
+                        Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, slots));
+                Plaintext plaintext =
+                        cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1], nullptr, slots);
+                auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, cc->EvalBootstrap(ciphertext), &result);
+                result->SetLength(input.size());
+                plaintext->SetLength(input.size());
+                checkEquality(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue(), eps,
+                              failmsg + " StC-first bootstrapping with " + std::to_string(slots) +
+                                      " slots fails after a setup for another slot count.");
+            }
+
+#if NATIVEINT != 128
+            // an explicit factor applies to every slot count: raised above the folded defaults, it is rejected
+            // (the 128-bit build never applies the correction, see GetBootstrapCorrection)
+            cc->SetCKKSBootCorrectionFactor(defaultSmall + 1);
+            auto input(Fill({0.5}, testData.slots));
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1],
+                                                              nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+            EXPECT_THROW(cc->EvalBootstrap(ciphertext), OpenFHEException)
+                    << failmsg << " an explicitly raised correction factor was not rejected.";
+#endif
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -1070,6 +1143,9 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_LOWERED_CORRECTION:
             UnitTest_Bootstrap_LoweredCorrection(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_MULTI_SLOT:
+            UnitTest_Bootstrap_MultiSlot(test, test.buildTestName());
             break;
         default:
             break;

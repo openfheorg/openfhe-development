@@ -167,6 +167,9 @@ class FHECKKSRNS : public FHERNS {
     // correction factor, which we scale the message by to improve precision
     uint32_t m_correctionFactor;
 
+    // true when the correction factor was set by the user
+    bool m_correctionFactorExplicit = false;
+
     // key tuple is dim1, levelBudgetEnc, levelBudgetDec
     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
 
@@ -929,6 +932,7 @@ class FHECKKSRNS : public FHERNS {
      */
     void SetCKKSBootCorrectionFactor(uint32_t cf) override {
         m_correctionFactor = cf;
+        m_correctionFactorExplicit = true;
     }
 
     /**
