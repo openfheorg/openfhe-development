@@ -1054,6 +1054,89 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     return ans;
 }
 
+// Fused ApproxModDown + modulus switching (ModReduce) by the last `levels` towers. Every step of the unfused
+// sequence (ApproxModDown, then DropLastElementAndScale per dropped tower) is a Z_{q_i}-linear combination of
+// the input tower x_i, the basis-extended P part X'_i and the centered lifts of the (already switched) dropped
+// towers. NTT is a ring isomorphism, so the same combination is assembled in COEFFICIENT format and transformed
+// once per kept tower; the result is bit-identical to the unfused sequence. Writing the unfused result as
+// (x_i - (X'_i + sum_k c_{k,i} [d_k]_{q_i})) * s_i, with c_{k,i} = P q_l ... q_{l-k+1} mod q_i and
+// s_i = (P q_l ... q_{l-levels+1})^{-1} mod q_i, the lifts are multiply-accumulated into X'_i and the single
+// scalar s_i is applied after the NTT, so each tower costs the same modular multiplications and additions as the
+// unfused sequence.
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDownAndScale(
+        const std::shared_ptr<Params>& paramsQl, const std::shared_ptr<Params>& paramsQlReduced,
+        const std::shared_ptr<Params>& paramsP, const std::vector<NativeInteger>& PInvModq,
+        const std::vector<NativeInteger>& PModq, const std::vector<NativeInteger>& PHatInvModp,
+        const std::vector<NativeInteger>& PHatInvModpPrecon, const std::vector<std::vector<NativeInteger>>& PHatModq,
+        const std::vector<DoubleNativeInt>& modqBarrettMu, const std::vector<std::vector<NativeInteger>>& qlInvModq,
+        uint32_t firstDropIdx, uint32_t levels) const {
+    if (m_format != Format::EVALUATION)
+        OPENFHE_THROW("ApproxModDownAndScale requires the input in EVALUATION format.");
+    const uint32_t sizeP = paramsP->GetParams().size();
+    const uint32_t sizeQl = m_vectors.size() - sizeP;
+    if (levels == 0 || levels >= sizeQl)
+        OPENFHE_THROW("ApproxModDownAndScale: the number of towers to drop must be between 1 and sizeQl - 1.");
+    const uint32_t sizeQr = sizeQl - levels;
+    if (paramsQl->GetParams().size() != sizeQl || paramsQlReduced->GetParams().size() != sizeQr)
+        OPENFHE_THROW("ApproxModDownAndScale: inconsistent basis parameters.");
+    if (qlInvModq.size() < firstDropIdx + levels)
+        OPENFHE_THROW("ApproxModDownAndScale: too few modulus switching rows.");
+
+    // 1. the P part in COEFFICIENT format, extended to Q_l (as in ApproxModDown)
+    DCRTPolyImpl<VecType> num(paramsP, Format::COEFFICIENT);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeP))
+    for (uint32_t j = 0; j < sizeP; ++j) {
+        num.m_vectors[j] = m_vectors[sizeQl + j];
+        num.m_vectors[j].SetFormat(Format::COEFFICIENT);
+    }
+    // num.m_vectors[i] now holds the numerator n_i = X'_i (COEFFICIENT) for every tower of Q_l
+    num = num.ApproxSwitchCRTBasis(paramsP, paramsQl, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
+
+    // 2. the towers to be dropped in COEFFICIENT format (the INTT of the input tower replaces the NTT of X'_i
+    //    that ApproxModDown would do)
+    std::vector<PolyType> xDropped(levels);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(levels))
+    for (uint32_t j = 0; j < levels; ++j) {
+        xDropped[j] = m_vectors[sizeQr + j];
+        xDropped[j].SetFormat(Format::COEFFICIENT);
+    }
+
+    // 3. sequential modulus switching: the value of the k-th dropped tower is d = (x - n) * s mod q; its centered
+    //    lift is multiply-accumulated into the numerators of the lower towers with c_{k,i} (liftMul), and their
+    //    scalars s_i (scal) absorb the inverse of the dropped modulus
+    std::vector<NativeInteger> scal(PInvModq.begin(), PInvModq.begin() + sizeQl);
+    std::vector<NativeInteger> liftMul(PModq.begin(), PModq.begin() + sizeQl);
+    for (uint32_t k = 0; k < levels; ++k) {
+        const uint32_t l = sizeQl - 1 - k;
+        const auto& qlInv = qlInvModq[firstDropIdx + k];
+        PolyType dropped(std::move(xDropped[l - sizeQr]));
+        dropped -= num.m_vectors[l];
+        dropped *= scal[l];
+        // the modulus dropped at the previous step, which enters c_{k,i} for k > 0
+        const NativeInteger qPrev = (k > 0) ? m_vectors[l + 1].GetModulus() : NativeInteger(0);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(l))
+        for (uint32_t i = 0; i < l; ++i) {
+            const auto& qi = m_vectors[i].GetModulus();
+            if (k > 0)
+                liftMul[i].ModMulEq(qPrev.Mod(qi), qi);
+            PolyType lift(m_vectors[i].GetParams(), Format::COEFFICIENT);
+            lift.SetValues(NativeVector(dropped.GetValues(), qi), Format::COEFFICIENT);
+            num.m_vectors[i].MultAccEqNoCheck(lift, liftMul[i]);
+            scal[i].ModMulEq(qlInv[i], qi);
+        }
+    }
+
+    // 4. one NTT per kept tower
+    DCRTPolyImpl<VecType> ans(paramsQlReduced, Format::EVALUATION);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQr))
+    for (uint32_t i = 0; i < sizeQr; ++i) {
+        num.m_vectors[i].SetFormat(Format::EVALUATION);
+        ans.m_vectors[i] = (m_vectors[i] - num.m_vectors[i]) * scal[i];
+    }
+    return ans;
+}
+
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_ptr<Params>& paramsP,
                                                             const std::vector<NativeInteger>& QHatInvModq,
