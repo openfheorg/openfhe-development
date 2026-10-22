@@ -1102,14 +1102,17 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
             };
 
             const double precisionOne = precisionOf(cc->EvalBootstrap(ciphertext));
-            // what the automatic factor carries per round; the automatic path caps a larger value to it, so the
-            // explicit comparison below sees the same scaling
-            const uint32_t precision = 2 * FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR - 6;
+            // sparse-family target is one higher; this precision is what that factor carries, so the explicit
+            // comparison below sees the same scaling
+            const uint32_t targetFactor =
+                    FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR +
+                    ((static_cast<SecretKeyDist>(testData.params.secretKeyDist) == UNIFORM_TERNARY) ? 0 : 1);
+            const uint32_t precision = 2 * targetFactor - 6;
             const double precisionAuto = precisionOf(cc->EvalBootstrap(ciphertext, 2, precision));
             EXPECT_GE(precisionAuto + 1.0, precisionOne)
                     << failmsg << " the second iteration lost precision with the automatic factor.";
 
-            cc->SetCKKSBootCorrectionFactor(FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR);
+            cc->SetCKKSBootCorrectionFactor(targetFactor);
             const double precisionExplicit = precisionOf(cc->EvalBootstrap(ciphertext, 2, precision));
             EXPECT_NEAR(precisionAuto, precisionExplicit, 1.5)
                     << failmsg << " the automatic factor does not match the explicit one.";

@@ -77,6 +77,27 @@ double GetBigModulus(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& c
     return qDouble;
 }
 
+// Noise floor B of the one-iteration precision tent p1(cf) = min(2*cf + A, B - cf), fitted at
+// N = 2^13..2^17 (refit with ckks-bootstrapping-precision.cpp); inputs outside the fitted range are
+// held at its boundary instead of extrapolating.
+double EstimateBootstrapNoiseFloor(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& cryptoParams,
+                                   uint32_t ringDim, uint32_t slots, bool stcFirst) {
+    const auto st = cryptoParams->GetScalingTechnique();
+    const auto skd = cryptoParams->GetSecretKeyDist();
+    const double logN = std::clamp(std::log2(static_cast<double>(ringDim)), 12.0, 17.0);
+    double B = 64.8 - 2.27 * logN - 0.32 * std::log2(static_cast<double>(std::max<uint32_t>(slots, 1)));
+    if (stcFirst)
+        B += 4.8;
+    if (st == lbcrypto::FIXEDMANUAL || st == lbcrypto::FIXEDAUTO)
+        B -= 5.3;
+    if (skd == lbcrypto::SPARSE_TERNARY)
+        B += 3.5;
+    else if (skd == lbcrypto::SPARSE_ENCAPSULATED || skd == lbcrypto::HYBRID_TERNARY)
+        B += 4.9;
+    B += 1.10 * (std::clamp(static_cast<double>(cryptoParams->GetPlaintextModulus()), 50.0, 59.0) - 59.0);
+    return B;
+}
+
 // num/den as a double, without forming an intermediate that overflows the exponent range: both operands
 // are shifted down to 53 bits (so each converts exactly) and the shift is restored with ldexp.
 double RatioToDouble(const lbcrypto::BigInteger& num, const lbcrypto::BigInteger& den) {
@@ -240,20 +261,14 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
     // Set correction factor by default, if it is not already set.
     if (correctionFactor == 0) {
-        auto st = cryptoParams->GetScalingTechnique();
-        if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT || st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) {
-            // The default correction factors chosen yielded the best precision in our experiments.
-            // We chose the best fit line from our experiments by running ckks-bootstrapping-precision.cpp.
-            // The spreadsheet with our experiments is here:
-            // https://docs.google.com/spreadsheets/d/1p6-ZG9rBEE9SrkKIt0JjU1aJiYHevzblKOTuhLFW27U
-            uint32_t tmp = BTSlotsEncoding ? std::round(-0.1887 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.763) :
-                                             std::round(-0.2419 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.081);
-            m_correctionFactor = std::clamp<uint32_t>(tmp, 7, 14);
-        } else {
-            uint32_t tmp = BTSlotsEncoding ? std::round(-0.0645 * (2 * std::log2(M / 2) + std::log2(slots)) + 13.855) :
-                                             std::round(-0.1516 * (2 * std::log2(M / 2) + std::log2(slots)) + 14.284);
-            m_correctionFactor = std::clamp<uint32_t>(tmp, 6, 13);
-        }
+        // the crossing of the precision tent (see EstimateBootstrapNoiseFloor), biased up half a unit since
+        // a factor below the optimum costs double; factors under deg are rejected at evaluation
+        const double B = EstimateBootstrapNoiseFloor(cryptoParams, M / 2, slots, BTSlotsEncoding);
+        const double A = BTSlotsEncoding ? -0.7 : 0.3;
+        const int32_t deg = std::round(std::log2(GetBigModulus(cryptoParams)) - cryptoParams->GetPlaintextModulus());
+        const uint32_t crossing = static_cast<uint32_t>(std::round((B - A) / 3 + 0.5));
+        m_correctionFactor =
+                std::max(std::clamp<uint32_t>(crossing, 6, 15), static_cast<uint32_t>(std::max<int32_t>(deg, 0)));
     } else {
         m_correctionFactor = correctionFactor;
     }
@@ -1196,19 +1211,28 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirstInternal(ConstCiphertext<D
             double qDouble = GetBigModulus(cryptoParams);
             double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
             int32_t deg = std::round(std::log2(qDouble / powP));
-            // the raise mechanism already shrinks the message by 2^-deg, counted toward the target factor
-            const uint32_t target = (deg < static_cast<int32_t>(AUTO_ITERATION_CORRECTION_FACTOR)) ?
-                                            AUTO_ITERATION_CORRECTION_FACTOR - deg :
-                                            0;
-            autoCorrection = std::min(
-                    GetBootPrecom(ciphertext->GetSlots(), CKKSBootstrapPrecom::BOOTSTRAP).m_foldedCorrection, target);
-            // A caller's precision is calibrated against the default factor, but the single-round precision at
-            // factor f is about 2f - 1 (approximation-limited, independent of the configuration), so the error
-            // scaling is capped at what the factor actually used carries (a defaulted factor below the target
-            // stays, so the cap follows autoCorrection + deg rather than the target); a larger scaling
-            // overflows the second pass.
+            // deg counts toward the target factor; the sparse-family two-iteration optimum measures one higher
+            const uint32_t targetFactor =
+                    AUTO_ITERATION_CORRECTION_FACTOR + ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ? 0 : 1);
+            const uint32_t target = (deg < static_cast<int32_t>(targetFactor)) ? targetFactor - deg : 0;
+            const uint32_t folded =
+                    GetBootPrecom(ciphertext->GetSlots(), CKKSBootstrapPrecom::BOOTSTRAP).m_foldedCorrection;
+            autoCorrection = std::min(folded, target);
+            // a single round at factor cf carries about 2*cf - 1 bits; a larger error scaling overflows the
+            // second pass, so cap at what the factor actually used carries
             const uint32_t effectiveFactor = autoCorrection + static_cast<uint32_t>(deg);
+            const uint32_t precisionIn = precision;
             precision = std::min(precision, std::max(2 * effectiveFactor, 7u) - 6);
+            // the caller's precision carries the message magnitude, which cancels in the drop from the default
+            // factor, so the floor tightens the cap for any magnitude (only within the fitted ring range)
+            if (cc->GetRingDimension() >= (1u << 12)) {
+                const double floorB =
+                        EstimateBootstrapNoiseFloor(cryptoParams, cc->GetRingDimension(), ciphertext->GetSlots(), true);
+                const int32_t adaptive = static_cast<int32_t>(precisionIn) +
+                                         (2 * static_cast<int32_t>(effectiveFactor) - 1) -
+                                         static_cast<int32_t>(std::round(floorB)) + static_cast<int32_t>(folded);
+                precision = std::min(precision, static_cast<uint32_t>(std::max<int32_t>(adaptive, 1)));
+            }
         }
 
         // Step 1: Get the input.

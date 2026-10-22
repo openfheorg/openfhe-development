@@ -1040,13 +1040,10 @@ class FHECKKSRNS : public FHERNS {
     static Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys);
 
-    // Correction factor that two-iteration StC-first bootstrapping is most precise with: about 8, independently
-    // of the ring dimension (measured at 2^12 to 2^16), the slot count and the scaling technique, 2-6 bits above
-    // the single-iteration defaults. A defaulted factor is lowered to it at runtime for both passes (an integer
-    // multiplication after the last SlotsToCoeffs rescale: no level and no re-encoding); an explicit factor
-    // (SetCKKSBootCorrectionFactor or EvalBootstrapSetup) is used unchanged. The lowering and its error-scaling
-    // cap are calibrated for messages within the unit range; for larger messages, set the factor explicitly and
-    // derive the precision from a measurement at that factor.
+    // Two-iteration StC-first bootstrapping is most precise at factor 8 for uniform secrets and 9
+    // (constant + 1) for the sparse family, at every measured configuration. A defaulted factor is lowered to
+    // it for both passes at runtime (no level, no re-encoding); an explicit factor is used unchanged.
+    // Calibrated for messages within the unit range; larger messages calibrate explicitly.
     static constexpr uint32_t AUTO_ITERATION_CORRECTION_FACTOR = 8;
 
   private:

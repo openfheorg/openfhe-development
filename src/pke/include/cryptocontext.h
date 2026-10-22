@@ -3728,12 +3728,11 @@ class CryptoContextImpl : public Serializable {
      *
      * In the StC-first variant (BTSlotsEncoding in EvalBootstrapSetup) with numIterations = 2 and a defaulted
      * correction factor, the factor is lowered automatically to the two-iteration optimum
-     * (FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR, about 8) for both passes and the error scaling given by
-     * @p precision is capped at what that factor carries, calibrated for
-     * messages within the unit range. A correction factor set explicitly (EvalBootstrapSetup or
-     * SetCKKSBootCorrectionFactor) disables both: the factor and @p precision are then used as given, which is
-     * the way to calibrate for larger messages (measure the single-iteration precision at the explicit factor
-     * and leave about a 6-bit buffer).
+     * (FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR: 8 for uniform secrets, 9 for the sparse family) for both
+     * passes, and the error scaling given by @p precision is capped at what that factor carries (calibrated
+     * for messages within the unit range). A factor set explicitly (EvalBootstrapSetup or
+     * SetCKKSBootCorrectionFactor) disables both; larger messages calibrate that way, measuring the
+     * single-iteration precision at the explicit factor.
      *
      * @param ciphertext     Input ciphertext.
      * @param numIterations  Number of Meta-BTS iterations to improve precision.
