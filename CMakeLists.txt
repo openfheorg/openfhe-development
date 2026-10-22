@@ -113,6 +113,16 @@ if(NOT PARTIAL_SUM_RADIX)
     set(PARTIAL_SUM_RADIX 4)
 endif()
 
+# Size in bits of the auxiliary (special) primes of HYBRID key switching. 0 keeps the built-in
+# size: the largest modulus of the native word (60 bits for NATIVE_SIZE=64, 28 for 32), and
+# 119 bits for CKKS with NATIVE_SIZE=128. A smaller size, e.g. -DHKS_AUX_MOD_SIZE=30 with
+# NATIVE_SIZE=64, makes the auxiliary modulus P a product of more and smaller primes. The primes
+# are congruent to 1 modulo 2N (times the odd part of the plaintext modulus for BGV), so the size
+# has to exceed the bit length of that product.
+if(NOT HKS_AUX_MOD_SIZE)
+    set(HKS_AUX_MOD_SIZE 0)
+endif()
+
 # Name of the separate sink library built when the built-in sink is kept out of
 # the library (see src/core/CMakeLists.txt); empty otherwise. In-tree executables
 # put it on their link line so both configurations build and run.
@@ -137,6 +147,7 @@ message(STATUS "WITH_OPENMP:                  ${WITH_OPENMP}")
 message(STATUS "NATIVE_SIZE:                  ${NATIVE_SIZE}")
 message(STATUS "CKKS_M_FACTOR:                ${CKKS_M_FACTOR}")
 message(STATUS "PARTIAL_SUM_RADIX:            ${PARTIAL_SUM_RADIX}")
+message(STATUS "HKS_AUX_MOD_SIZE:             ${HKS_AUX_MOD_SIZE}")
 message(STATUS "WITH_NATIVEOPT:               ${WITH_NATIVEOPT}")
 message(STATUS "WITH_COVTEST:                 ${WITH_COVTEST}")
 message(STATUS "WITH_NOISE_DEBUG:             ${WITH_NOISE_DEBUG}")
@@ -467,6 +478,20 @@ elseif("${NATIVE_SIZE}" EQUAL 32)
 else()
     message(SEND_ERROR "NATIVE_SIZE is " ${NATIVE_SIZE})
     message(SEND_ERROR "***ERROR*** need a Native implementation")
+endif()
+
+# The auxiliary primes of HYBRID key switching have to fit in a native word
+if(NOT HKS_AUX_MOD_SIZE EQUAL 0)
+    if("${NATIVEINT}" EQUAL 128)
+        set(HKS_AUX_MOD_SIZE_MAX 121)
+    elseif("${NATIVEINT}" EQUAL 64)
+        set(HKS_AUX_MOD_SIZE_MAX 60)
+    else()
+        set(HKS_AUX_MOD_SIZE_MAX 28)
+    endif()
+    if(NOT "${HKS_AUX_MOD_SIZE}" MATCHES "^[0-9]+$" OR HKS_AUX_MOD_SIZE LESS 14 OR HKS_AUX_MOD_SIZE GREATER HKS_AUX_MOD_SIZE_MAX)
+        message(SEND_ERROR "HKS_AUX_MOD_SIZE is ${HKS_AUX_MOD_SIZE}; it must be 0 (built-in size) or an integer between 14 and ${HKS_AUX_MOD_SIZE_MAX} for NATIVE_SIZE=${NATIVE_SIZE}")
+    endif()
 endif()
 
 

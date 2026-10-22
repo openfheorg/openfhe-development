@@ -291,7 +291,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
     double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
     uint32_t r = cryptoParamsBGVRNS->GetDigitSize();
     double B_e = std::sqrt(alpha) * sigma;
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+    uint32_t auxBits = DCRT_MODULUS::AUX_SIZE;
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
     // bound on the secret key is sigma*sqrt(alpha)*sqrt(thresholdParties) if the secret is sampled from discrete gaussian distribution
     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
@@ -436,7 +436,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
     }
 
     // Size of modulus P
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+    uint32_t auxBits = DCRT_MODULUS::AUX_SIZE;
 
     // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
     uint32_t extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;

@@ -52,13 +52,9 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-#if NATIVEINT == 128
-constexpr size_t AUXMODSIZE = 119;
-#elif NATIVEINT == 32
-constexpr size_t AUXMODSIZE = 28;
-#else
-constexpr size_t AUXMODSIZE = 60;
-#endif
+// size of the auxiliary primes of HYBRID key switching: 119 instead of 121 bits on 128-bit words
+// unless the build sets the size (HKS_AUX_MOD_SIZE)
+constexpr uint32_t AUXMODSIZE = (!DCRT_MODULUS::USER_AUX_SIZE && NATIVEINT == 128) ? 119 : DCRT_MODULUS::AUX_SIZE;
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                           uint32_t cyclOrder, uint32_t numPrimes,
