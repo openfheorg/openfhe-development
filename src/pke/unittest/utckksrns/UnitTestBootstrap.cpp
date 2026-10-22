@@ -69,6 +69,7 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_CHAINED,
     BOOTSTRAP_LOWERED_CORRECTION,
     BOOTSTRAP_MULTI_SLOT,
+    BOOTSTRAP_AUTO_ITERATION,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -106,6 +107,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_MULTI_SLOT:
             typeName = "BOOTSTRAP_MULTI_SLOT";
+            break;
+        case BOOTSTRAP_AUTO_ITERATION:
+            typeName = "BOOTSTRAP_AUTO_ITERATION";
             break;
         default:
             typeName = "UNKNOWN";
@@ -454,6 +458,14 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_MULTI_SLOT, "02", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
 #if NATIVEINT != 128
     { BOOTSTRAP_MULTI_SLOT, "03", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
+#endif
+    // ==========================================
+    // two-iteration StC-first bootstrapping lowers a defaulted correction factor to
+    // AUTO_ITERATION_CORRECTION_FACTOR for both passes: the result must match setting that factor explicitly,
+    // and an explicit factor must be used unchanged
+    { BOOTSTRAP_AUTO_ITERATION, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+#if NATIVEINT != 128
+    { BOOTSTRAP_AUTO_ITERATION, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
 #endif
 #if NATIVEINT != 128
     // ==========================================
@@ -1062,6 +1074,53 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         }
     }
 
+    // Two-iteration StC-first bootstrapping lowers a defaulted correction factor to
+    // AUTO_ITERATION_CORRECTION_FACTOR (8) for both passes at runtime. The result must match an explicit factor
+    // of the same value (the same integer-multiplication path), and the second iteration must still add
+    // precision over the first.
+    void UnitTest_Bootstrap_AutoIteration(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                          const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, true);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto input(Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
+                            testData.slots));
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1],
+                                                              nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+
+            auto precisionOf = [&](const Ciphertext<Element>& ct) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ct, &result);
+                result->SetLength(input.size());
+                return CalculateApproximationError(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue());
+            };
+
+            const double precisionOne = precisionOf(cc->EvalBootstrap(ciphertext));
+            // what the automatic factor carries per round; the automatic path caps a larger value to it, so the
+            // explicit comparison below sees the same scaling
+            const uint32_t precision = 2 * FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR - 6;
+            const double precisionAuto = precisionOf(cc->EvalBootstrap(ciphertext, 2, precision));
+            EXPECT_GE(precisionAuto + 1.0, precisionOne)
+                    << failmsg << " the second iteration lost precision with the automatic factor.";
+
+            cc->SetCKKSBootCorrectionFactor(FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR);
+            const double precisionExplicit = precisionOf(cc->EvalBootstrap(ciphertext, 2, precision));
+            EXPECT_NEAR(precisionAuto, precisionExplicit, 1.5)
+                    << failmsg << " the automatic factor does not match the explicit one.";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -1146,6 +1205,9 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_MULTI_SLOT:
             UnitTest_Bootstrap_MultiSlot(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_AUTO_ITERATION:
+            UnitTest_Bootstrap_AutoIteration(test, test.buildTestName());
             break;
         default:
             break;

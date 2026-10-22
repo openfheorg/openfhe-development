@@ -1155,6 +1155,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                        uint32_t precision) const {
+    return EvalBootstrapStCFirstInternal(ciphertext, numIterations, precision, static_cast<uint32_t>(-1));
+}
+
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirstInternal(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                               uint32_t numIterations, uint32_t precision,
+                                                               uint32_t autoCorrection) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -1182,11 +1188,34 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     if (numIterations > 1) {
+        // Two-iteration StC-first bootstrapping is most precise with a correction factor of about
+        // AUTO_ITERATION_CORRECTION_FACTOR, so a defaulted factor is lowered to it for both passes; the lowering
+        // is an integer multiplication at runtime (see RescaleStCFirstOutputInPlace), consuming no level and
+        // re-encoding nothing. An explicit factor is used unchanged.
+        if (autoCorrection == static_cast<uint32_t>(-1) && !m_correctionFactorExplicit) {
+            double qDouble = GetBigModulus(cryptoParams);
+            double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
+            int32_t deg = std::round(std::log2(qDouble / powP));
+            // the raise mechanism already shrinks the message by 2^-deg, counted toward the target factor
+            const uint32_t target = (deg < static_cast<int32_t>(AUTO_ITERATION_CORRECTION_FACTOR)) ?
+                                            AUTO_ITERATION_CORRECTION_FACTOR - deg :
+                                            0;
+            autoCorrection = std::min(
+                    GetBootPrecom(ciphertext->GetSlots(), CKKSBootstrapPrecom::BOOTSTRAP).m_foldedCorrection, target);
+            // A caller's precision is calibrated against the default factor, but the single-round precision at
+            // factor f is about 2f - 1 (approximation-limited, independent of the configuration), so the error
+            // scaling is capped at what the factor actually used carries (a defaulted factor below the target
+            // stays, so the cap follows autoCorrection + deg rather than the target); a larger scaling
+            // overflows the second pass.
+            const uint32_t effectiveFactor = autoCorrection + static_cast<uint32_t>(deg);
+            precision = std::min(precision, std::max(2 * effectiveFactor, 7u) - 6);
+        }
+
         // Step 1: Get the input.
         uint32_t powerOfTwoModulus = 1 << precision;
 
         // Step 3: Bootstrap the initial ciphertext.
-        auto ctInitialBootstrap = EvalBootstrapStCFirst(ciphertext, numIterations - 1, 0);
+        auto ctInitialBootstrap = EvalBootstrapStCFirstInternal(ciphertext, numIterations - 1, 0, autoCorrection);
         cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap,
                                                   compositeDegree * (ctInitialBootstrap->GetNoiseScaleDeg() - 1));
 
@@ -1221,7 +1250,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
 
         // Step 8: Bootstrap the error.
-        auto ctBootstrappedError = EvalBootstrapStCFirst(ctBootstrappingError, 1, 0);
+        auto ctBootstrappedError = EvalBootstrapStCFirstInternal(ctBootstrappingError, 1, 0, autoCorrection);
         cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError,
                                                   compositeDegree * (ctBootstrappedError->GetNoiseScaleDeg() - 1));
 
@@ -1280,9 +1309,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
 
     // A defaulted correction factor depends on the slot count and m_correctionFactor holds the last setup's,
-    // so only an explicit user override is read back; otherwise this precomputation's folded default applies.
-    const uint32_t correction =
-            m_correctionFactorExplicit ? GetBootstrapCorrection(cryptoParams) : p.m_foldedCorrection;
+    // so only an explicit user override is read back; otherwise this precomputation's folded default applies,
+    // lowered by the two-iteration caller (autoCorrection, see AUTO_ITERATION_CORRECTION_FACTOR).
+    const uint32_t correction = (autoCorrection != static_cast<uint32_t>(-1)) ? autoCorrection :
+                                m_correctionFactorExplicit                    ? GetBootstrapCorrection(cryptoParams) :
+                                                                                p.m_foldedCorrection;
 
     // Coefficients of the Chebyshev series interpolating 1/(2 Pi) Sin(2 Pi K x). The overflow bound K
     // itself is folded into the CoeffsToSlots matrix (see GetModRaiseOverflowBound), so only the exact 1/N

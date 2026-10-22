@@ -252,6 +252,17 @@ class FHECKKSRNS : public FHERNS {
     Ciphertext<DCRTPoly> EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const override;
 
+  private:
+    /**
+     * Implementation of EvalBootstrapStCFirst. In the two-iteration case a defaulted correction factor is
+     * lowered to about 8 for both passes (see AUTO_ITERATION_CORRECTION_FACTOR), passed down here as the
+     * correction to apply; the all-ones sentinel keeps the single-iteration behavior (the folded default, or
+     * an explicit override).
+     */
+    Ciphertext<DCRTPoly> EvalBootstrapStCFirstInternal(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
+                                                       uint32_t precision, uint32_t autoCorrection) const;
+
+  public:
     /**
      * Sets up FE (Fourier extension) functional bootstrapping for a given number of slots and precomputes the
      * plaintexts of its SlotsToCoeffs and CoeffsToSlots transforms. Requires HYBRID key switching and the 64-bit
@@ -1028,6 +1039,15 @@ class FHECKKSRNS : public FHERNS {
      */
     static Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys);
+
+    // Correction factor that two-iteration StC-first bootstrapping is most precise with: about 8, independently
+    // of the ring dimension (measured at 2^12 to 2^16), the slot count and the scaling technique, 2-6 bits above
+    // the single-iteration defaults. A defaulted factor is lowered to it at runtime for both passes (an integer
+    // multiplication after the last SlotsToCoeffs rescale: no level and no re-encoding); an explicit factor
+    // (SetCKKSBootCorrectionFactor or EvalBootstrapSetup) is used unchanged. The lowering and its error-scaling
+    // cap are calibrated for messages within the unit range; for larger messages, set the factor explicitly and
+    // derive the precision from a measurement at that factor.
+    static constexpr uint32_t AUTO_ITERATION_CORRECTION_FACTOR = 8;
 
   private:
     CKKSBootstrapPrecom& GetBootPrecom(uint32_t slots) const {

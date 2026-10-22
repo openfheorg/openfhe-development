@@ -286,7 +286,9 @@ void IterativeBootstrapStcExample() {
     ptxt->SetLength(numSlots);
     std::cout << "Input: " << ptxt;
 
-    std::cout << "Correction factor used: " << cryptoContext->GetCKKSBootCorrectionFactor() << "\n";
+    std::cout << "Default correction factor (two-iteration calls lower it to "
+              << FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR
+              << " automatically): " << cryptoContext->GetCKKSBootCorrectionFactor() << "\n";
 
     // Encrypt the encoded vectors
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
@@ -323,13 +325,15 @@ void IterativeBootstrapStcExample() {
               << "\n\n";
 
     //---------------------------------------------------------------------------------------------------------------------
-    // When using EvalBootstrap for 2 iterations with STC first, it may be beneficial to scale down the default correction
-    // factor to achieve a higher final precision. This behavior is specifically pronounced for sparse packing. As the
-    // number of slots increases, the difference between the default correction factor and the best empirical correction
-    // factor decreases. For full packing at full security for CKKS bootstrapping, this variant of CKKS bootstrapping
-    // has better precision than the ModRaise-first variant without any change to the default correction factor.
+    // Two-iteration StC-first bootstrapping with a defaulted correction factor lowers it automatically to the
+    // two-iteration optimum (a factor of about 8) for both passes and caps the error scaling at what that factor
+    // carries for messages within the unit range. The inputs here reach 2, which costs the single round at the
+    // lowered factor a few bits, so the capped scaling of the automatic path (demonstrated above) overshoots. A
+    // factor set explicitly, as below, is used unchanged with the caller's own scaling: re-measuring the
+    // single-round precision at the explicit factor and leaving a 6-bit buffer self-calibrates to the message
+    // magnitude and recovers the optimum here.
 
-    cryptoContext->SetCKKSBootCorrectionFactor(cryptoContext->GetCKKSBootCorrectionFactor() - 5);
+    cryptoContext->SetCKKSBootCorrectionFactor(8);
     std::cout << "Correction factor used: " << cryptoContext->GetCKKSBootCorrectionFactor() << "\n";
 
     ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
@@ -338,8 +342,9 @@ void IterativeBootstrapStcExample() {
     precision = std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << "\n\n";
 
-    // Set precision equal to empirically measured value after many test runs. One could add a buffer to reduce this value as below.
-    precision -= 5;
+    // The buffer trades carried precision against headroom for the scaled error; measuring the single-round
+    // precision at the factor actually used makes the scaling safe for any message magnitude.
+    precision -= 6;
     std::cout << "Precision input to 2nd iteration: " << precision << "\n";
 
     ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precision);
