@@ -97,10 +97,12 @@ class KeySwitchHYBRID : public KeySwitchRNS {
      *
      * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
      * @param newPrivateKey private key the switched ciphertexts should decrypt under
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the key switching key
      */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey) const override;
+                                           const PrivateKey<DCRTPoly> newPrivateKey,
+                                           uint32_t levels = 0) const override;
 
     /**
      * Generates a hybrid key switching key from oldPrivateKey to newPrivateKey reusing the "a" components of
@@ -109,11 +111,12 @@ class KeySwitchHYBRID : public KeySwitchRNS {
      * @param oldPrivateKey private key the ciphertexts to be switched are encrypted under
      * @param newPrivateKey private key the switched ciphertexts should decrypt under
      * @param evalKey key switching key whose "a" components are reused; if null, fresh components are sampled
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the key switching key
      */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                           const PrivateKey<DCRTPoly> newPrivateKey,
-                                           const EvalKey<DCRTPoly> evalKey) const override;
+                                           const PrivateKey<DCRTPoly> newPrivateKey, const EvalKey<DCRTPoly> evalKey,
+                                           uint32_t levels = 0) const override;
 
     /**
      * Generates a hybrid key switching key from oldPrivateKey to the secret key of newPublicKey by encrypting
@@ -125,6 +128,26 @@ class KeySwitchHYBRID : public KeySwitchRNS {
      */
     EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
                                            const PublicKey<DCRTPoly> newPublicKey) const override;
+
+    /**
+     * Compresses an evaluation key; see KeySwitchBase::CompressEvalKey.
+     *
+     * @param evalKey the evaluation key to compress
+     * @param levels number of RNS limbs to drop
+     * @return the compressed evaluation key
+     */
+    EvalKey<DCRTPoly> CompressEvalKey(const EvalKey<DCRTPoly> evalKey, uint32_t levels) const override;
+
+    /**
+     * Number of towers of each element of a key generated with levels RNS limbs dropped; see
+     * KeySwitchBase::GetNumEvalKeyTowers.
+     *
+     * @param cryptoParams the crypto parameters of the context
+     * @param levels number of RNS limbs to drop
+     * @return the number of towers of each element of such a key
+     */
+    uint32_t GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                 uint32_t levels) const override;
 
     /**
      * Key switches a ciphertext in place; see KeySwitchBase::KeySwitchInPlace.
