@@ -135,6 +135,17 @@ class KeySwitchHYBRID : public KeySwitchRNS {
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 
     /**
+     * Key switches a ciphertext in place and reduces the modulus of the result by `levels` towers in one fused
+     * operation; see KeySwitchBase::KeySwitchAndModReduceInPlace.
+     *
+     * @param ciphertext ciphertext to be key switched; holds the result
+     * @param evalKey key switching key
+     * @param levels number of towers to drop
+     */
+    void KeySwitchAndModReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey,
+                                      uint32_t levels) const override;
+
+    /**
      * Raises a ciphertext from basis Ql to the extended basis QlP by multiplying its elements by P; see
      * KeySwitchBase::KeySwitchExt.
      *
@@ -152,6 +163,18 @@ class KeySwitchHYBRID : public KeySwitchRNS {
      * @return the ciphertext in basis Ql
      */
     Ciphertext<DCRTPoly> KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+    /**
+     * Divides a two-element ciphertext in basis QlP by P and reduces its modulus by `levels` towers in one fused
+     * operation, updating the ciphertext metadata as ModReduceInternalInPlace does; see
+     * KeySwitchBase::KeySwitchDownAndModReduce.
+     *
+     * @param ciphertext ciphertext in basis QlP
+     * @param levels number of towers to drop
+     * @return the ciphertext in basis Q_{l-levels}
+     */
+    Ciphertext<DCRTPoly> KeySwitchDownAndModReduce(ConstCiphertext<DCRTPoly> ciphertext,
+                                                   uint32_t levels) const override;
 
     /**
      * Divides the first element of a ciphertext in basis QlP by P with rounding, returning it in basis Ql.

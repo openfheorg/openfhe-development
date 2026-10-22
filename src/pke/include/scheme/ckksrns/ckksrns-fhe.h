@@ -726,30 +726,38 @@ class FHECKKSRNS : public FHERNS {
      * level budget is 1. Evaluated with a BSGS decomposition (Horner giant steps).
      * @param A precomputed diagonal plaintexts of the linear transform
      * @param ct input ciphertext
+     * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
+     * with the rescaling fused into the final key switching of the transform (bit-identical, fewer NTTs)
      * @return the transformed ciphertext
      */
-    Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A,
-                                             ConstCiphertext<DCRTPoly>& ct) const;
+    Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly>& ct,
+                                             uint32_t modReduceLevels = 0) const;
 
     /**
      * Homomorphic encoding (CoeffsToSlots) over multiple BSGS levels, evaluated
      * with Horner giant steps to minimize the number of rotation keys.
+     * The rescalings between the levels are fused into the key switchings of the levels.
      * @param A precomputed encoding plaintexts, one inner vector per BSGS level
      * @param ctxt input ciphertext
+     * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
+     * with the rescaling fused into the key switching of the last level (bit-identical, fewer NTTs)
      * @return the ciphertext with the coefficients of the input moved to its slots
      */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
-                                           ConstCiphertext<DCRTPoly>& ctxt) const;
+                                           ConstCiphertext<DCRTPoly>& ctxt, uint32_t modReduceLevels = 0) const;
 
     /**
      * Homomorphic decoding (SlotsToCoeffs); the inverse of EvalCoeffsToSlots,
      * evaluated with the same Horner giant-step BSGS structure.
+     * The rescalings between the levels are fused into the key switchings of the levels.
      * @param A precomputed decoding plaintexts, one inner vector per BSGS level
      * @param ctxt input ciphertext
+     * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
+     * with the rescaling fused into the key switching of the last level (bit-identical, fewer NTTs)
      * @return the ciphertext with the slot values of the input moved to its coefficients
      */
     Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
-                                           ConstCiphertext<DCRTPoly>& ctxt) const;
+                                           ConstCiphertext<DCRTPoly>& ctxt, uint32_t modReduceLevels = 0) const;
 
     /**
      * Bootstrapping PartialSum: raised += Rotate(raised, j * slots) for j = 1, 2, 4, ...
@@ -782,6 +790,17 @@ class FHECKKSRNS : public FHERNS {
      * @param radix accumulation branching factor (power of two; 2 = plain doubling)
      */
     static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix);
+
+    /**
+     * Same as EvalPartialSumInPlace(raised, slots) followed by a rescaling by modReduceLevels towers
+     * (ModReduceInternalInPlace), but with the rescaling fused into the deferred ApproxModDown of the fold
+     * (bit-identical, fewer NTTs). HYBRID key switching only benefits; otherwise the rescaling follows the fold.
+     * @param raised input/output ciphertext at the raised level
+     * @param slots number of plaintext slots (sparse packing; slots < N / 2)
+     * @param modReduceLevels number of towers to drop (the composite degree for composite scaling); 0 = no rescaling
+     */
+    static void EvalPartialSumAndModReduceInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots,
+                                                  uint32_t modReduceLevels);
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -1091,6 +1110,12 @@ class FHECKKSRNS : public FHERNS {
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction, uint32_t lvl,
                           bool modReduce = true) const;
     void AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
+
+    // implementations of the rotation folds (EvalPartialSumInPlace); modReduceLevels = 0 means no rescaling
+    static void EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix,
+                                          uint32_t modReduceLevels);
+    static void EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size,
+                                                uint32_t modReduceLevels);
 
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
                           const std::shared_ptr<DCRTPoly::Params> params) const;

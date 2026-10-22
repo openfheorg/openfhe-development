@@ -49,6 +49,15 @@ Ciphertext<Element> KeySwitchBase<Element>::KeySwitch(ConstCiphertext<Element> c
     return result;
 }
 
+template <typename Element>
+Ciphertext<Element> KeySwitchBase<Element>::KeySwitchAndModReduce(ConstCiphertext<Element> ciphertext,
+                                                                  const EvalKey<Element> evalKey,
+                                                                  uint32_t levels) const {
+    Ciphertext<Element> result = ciphertext->Clone();
+    KeySwitchAndModReduceInPlace(result, evalKey, levels);
+    return result;
+}
+
 template class KeySwitchBase<DCRTPoly>;
 
 }  // namespace lbcrypto
