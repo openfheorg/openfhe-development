@@ -88,7 +88,8 @@ namespace {
 
 // precision as the negative base-2 logarithm of the mean L1 error, as recommended in footnote 23 of
 // Security Guidelines for Implementing Homomorphic Encryption (https://cic.iacr.org/p/1/4/26/pdf)
-double Precision(const std::vector<std::complex<double>>& result, const std::vector<std::complex<double>>& expected) {
+[[maybe_unused]] double Precision(const std::vector<std::complex<double>>& result,
+                                  const std::vector<std::complex<double>>& expected) {
     double accError = 0;
     for (size_t i = 0; i < result.size(); ++i)
         accError += std::abs(result[i] - expected[i]);
