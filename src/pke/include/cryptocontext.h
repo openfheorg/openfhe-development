@@ -3726,9 +3726,18 @@ class CryptoContextImpl : public Serializable {
     /**
      * @brief Evaluates bootstrapping on a ciphertext using FFT-like or linear method. Supported only in CKKS.
      *
+     * In the StC-first variant (BTSlotsEncoding in EvalBootstrapSetup) with numIterations = 2 and a defaulted
+     * correction factor, the factor is lowered automatically to the two-iteration optimum
+     * (FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR: 8 for uniform secrets, 9 for the sparse family) for both
+     * passes, and the error scaling given by @p precision is capped at what that factor carries (calibrated
+     * for messages within the unit range). A factor set explicitly (EvalBootstrapSetup or
+     * SetCKKSBootCorrectionFactor) disables both; larger messages calibrate that way, measuring the
+     * single-iteration precision at the explicit factor.
+     *
      * @param ciphertext     Input ciphertext.
      * @param numIterations  Number of Meta-BTS iterations to improve precision.
-     * @param precision      Initial bootstrapping precision (set to 0 for default; tune experimentally).
+     * @param precision      Precision of a single bootstrapping round, used by the second iteration to scale the
+     * error (measure it experimentally, minus a buffer of about 5 bits).
      * @return Refreshed ciphertext.
      */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
@@ -4023,6 +4032,10 @@ class CryptoContextImpl : public Serializable {
 
     /**
      * @brief Sets the correction factor of CKKS bootstrapping. Supported only in CKKS.
+     *
+     * Marks the factor as a user override: StC-first bootstrapping applies it at runtime (lowered relative to the
+     * factor folded at setup; raising it requires a new EvalBootstrapSetup), and the automatic two-iteration
+     * lowering is disabled in its favor (see EvalBootstrap).
      *
      * @param cf  The correction factor.
      */

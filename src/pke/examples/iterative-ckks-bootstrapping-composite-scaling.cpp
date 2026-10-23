@@ -108,8 +108,11 @@ void IterativeBootstrapExample() {
     std::vector<uint32_t> levelBudget = {3, 3};
     std::vector<uint32_t> bsgsDim = {0, 0};
 
-    uint32_t levelsAvailableAfterBootstrap = 10;
+    // Note that the number of levels available after bootstrapping, before the next bootstrapping, will be
+    // levelsAvailableAfterBootstrap - 1 = 9 below, because an additional level is used for scaling the ciphertext
+    // before the modulus raise in the next bootstrapping (in 64-bit CKKS bootstrapping).
     // Each extra iteration on top of 1 requires an extra level to be consumed.
+    uint32_t levelsAvailableAfterBootstrap = 10;
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) +
                      (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);

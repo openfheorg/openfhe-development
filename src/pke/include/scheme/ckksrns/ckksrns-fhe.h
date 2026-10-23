@@ -125,6 +125,11 @@ class CKKSBootstrapPrecom {
     // its numValues argument; not serialized, for the same reason as m_variant.
     bool m_FBTComplexPacking = false;
 
+    // exponent c of the correction 2^-c folded into the SlotsToCoeffs matrix of StC-first bootstrapping (see
+    // GetStCFirstDecodingScale). A correction factor lowered after setup is applied on top of it at runtime. Not
+    // serialized, for the same reason as m_variant: the matrices are rebuilt after deserialization, which sets it.
+    uint32_t m_foldedCorrection = 0;
+
     template <class Archive>
     void save(Archive& ar) const {
         ar(cereal::make_nvp("dim1_Enc", m_paramsEnc.g));
@@ -161,6 +166,9 @@ class FHECKKSRNS : public FHERNS {
   private:
     // correction factor, which we scale the message by to improve precision
     uint32_t m_correctionFactor;
+
+    // true when the correction factor was set by the user
+    bool m_correctionFactorExplicit = false;
 
     // key tuple is dim1, levelBudgetEnc, levelBudgetDec
     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
@@ -244,6 +252,17 @@ class FHECKKSRNS : public FHERNS {
     Ciphertext<DCRTPoly> EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                uint32_t precision) const override;
 
+  private:
+    /**
+     * Implementation of EvalBootstrapStCFirst. In the two-iteration case a defaulted correction factor is
+     * lowered to about 8 for both passes (see AUTO_ITERATION_CORRECTION_FACTOR), passed down here as the
+     * correction to apply; the all-ones sentinel keeps the single-iteration behavior (the folded default, or
+     * an explicit override).
+     */
+    Ciphertext<DCRTPoly> EvalBootstrapStCFirstInternal(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
+                                                       uint32_t precision, uint32_t autoCorrection) const;
+
+  public:
     /**
      * Sets up FE (Fourier extension) functional bootstrapping for a given number of slots and precomputes the
      * plaintexts of its SlotsToCoeffs and CoeffsToSlots transforms. Requires HYBRID key switching and the 64-bit
@@ -799,7 +818,10 @@ class FHECKKSRNS : public FHERNS {
      * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
      * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
      * and SlotsToCoeffs level budgets. Add the number of levels needed after bootstrapping to obtain the
-     * multiplicative depth of the cryptocontext.
+     * multiplicative depth of the cryptocontext. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
+     * performed first, so the input needs levelBudget[1] levels and the output keeps that many for the next
+     * bootstrapping: the levels added on top of this depth are the ones available for computation between two
+     * bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param secretKeyDist secret key distribution of the cryptocontext
@@ -831,7 +853,9 @@ class FHECKKSRNS : public FHERNS {
      * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
      * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
      * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize as in GetFBTDepth), and the
-     * evaluation of the Fourier series.
+     * evaluation of the Fourier series. SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels
+     * and the output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
+     * available for computation between two FE functional bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param coefficients Fourier coefficients of the function to be evaluated
@@ -919,6 +943,7 @@ class FHECKKSRNS : public FHERNS {
      */
     void SetCKKSBootCorrectionFactor(uint32_t cf) override {
         m_correctionFactor = cf;
+        m_correctionFactorExplicit = true;
     }
 
     /**
@@ -1014,6 +1039,12 @@ class FHECKKSRNS : public FHERNS {
      */
     static Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                           const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys);
+
+    // Two-iteration StC-first bootstrapping is most precise at factor 8 for uniform secrets and 9
+    // (constant + 1) for the sparse family, at every measured configuration. A defaulted factor is lowered to
+    // it for both passes at runtime (no level, no re-encoding); an explicit factor is used unchanged.
+    // Calibrated for messages within the unit range; larger messages calibrate explicitly.
+    static constexpr uint32_t AUTO_ITERATION_CORRECTION_FACTOR = 8;
 
   private:
     CKKSBootstrapPrecom& GetBootPrecom(uint32_t slots) const {
@@ -1188,6 +1219,74 @@ class FHECKKSRNS : public FHERNS {
      */
     static double GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
                                            double uniformK);
+
+    // In the bootstrapping variants that run SlotsToCoeffs first (StC-first regular bootstrapping and FE functional
+    // bootstrapping), SlotsToCoeffs ends on the bottom compositeDegree towers, the only ones the modulus raise uses,
+    // so its last rescale also brings the message down to the raising level and no separate scaling adjustment
+    // (and no level for it) is needed before ModRaise. The adjustment is folded into the SlotsToCoeffs matrix:
+    // the correction 2^-c of regular bootstrapping and, for the FLEXIBLE* and COMPOSITE* techniques, the ratio
+    // between the scaling factor of the raised level and the one the last rescale yields, which is fixed by the
+    // moduli.
+
+    // Scaling factors around the last rescale of SlotsToCoeffs in the StC-first variants
+    struct StCFirstRaiseScaling {
+        double stcSF;          // scaling factor of the SlotsToCoeffs output before its last rescale (noise degree 2)
+        double droppedModuli;  // product of the moduli dropped by that rescale
+        double targetSF;       // scaling factor of the raised level
+    };
+
+    /**
+     * Returns the scaling factors around the last rescale of SlotsToCoeffs in the StC-first variants for the
+     * FLEXIBLE* and COMPOSITE* scaling techniques.
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @return the scaling factors
+     */
+    static StCFirstRaiseScaling GetStCFirstRaiseScaling(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams);
+
+    /**
+     * Returns the factor folded into the SlotsToCoeffs matrix of the StC-first variants: 2^-correction times, for
+     * the FLEXIBLE* and COMPOSITE* techniques, targetSF * droppedModuli / stcSF (see GetStCFirstRaiseScaling).
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @param correction the exponent of the correction 2^-correction applied before ModRaise
+     * @return the factor
+     */
+    static double GetStCFirstDecodingScale(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
+                                           uint32_t correction);
+
+    /**
+     * Returns the exponent c of the correction 2^-c that regular bootstrapping applies before ModRaise: the
+     * correction factor minus log2(q0 / scaling factor), or 0 if the latter is larger.
+     *
+     * @param cryptoParams the CKKS crypto parameters
+     * @return the exponent of the correction
+     */
+    uint32_t GetBootstrapCorrection(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) const;
+
+    /**
+     * Checks that the input of an StC-first variant, brought to the level SlotsToCoeffs expects, is at the scaling
+     * factor of that level (FLEXIBLE* and COMPOSITE* only), since the scaling factor that reaches ModRaise is fixed
+     * at setup.
+     *
+     * @param ciphertext the input at the level SlotsToCoeffs expects
+     */
+    static void CheckStCFirstInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext);
+
+    /**
+     * Performs the last rescale of SlotsToCoeffs in the StC-first variants, which lands on the raising towers, and
+     * sets the scaling factor of the raised level for the FLEXIBLE* and COMPOSITE* techniques.
+     *
+     * @param ciphertext the SlotsToCoeffs output
+     */
+    static void RescaleStCFirstOutputInPlace(Ciphertext<DCRTPoly>& ciphertext);
+
+    // Relative tolerance for the scaling factor of the input to the StC-first variants, which is fixed at setup.
+    // A relative deviation d scales the message by 1 + d (the argument of the evaluated function in FE functional
+    // bootstrapping). FLEXIBLEAUTO tracks the scaling factor of every level exactly; composite scaling deviates by
+    // about 2^-37 (degree 2) to 2^-33 (degree 3) per bootstrapping, which this bound of about 2^-30 accepts without
+    // a measurable loss.
+    static constexpr double STC_FIRST_SCALING_FACTOR_TOLERANCE = 1e-9;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     static constexpr uint32_t R_UNIFORM = 6;
     // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.

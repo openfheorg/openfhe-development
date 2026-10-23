@@ -223,7 +223,8 @@ int main() {
     const SecretKeyDist skd = SPARSE_ENCAPSULATED;
 
     // GetFEFBTDepth covers the functional bootstrapping itself, for the longest of the three series; the
-    // levels added on top of it are what is left to compute with on the refreshed ciphertext.
+    // levels added on top of it are what is left to compute with on the refreshed ciphertext before it is
+    // bootstrapped again.
     constexpr uint32_t levelsAfterBootstrapping = 6;
 
     const uint32_t depth = std::max({
@@ -260,8 +261,7 @@ int main() {
     cc->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     const auto normalizedInput = BuildNormalizedInput(numSlots);
-    Plaintext plaintext =
-            cc->MakeCKKSPackedPlaintext(normalizedInput, 1, depth - (levelBudget[1] + 1), nullptr, numSlots);
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(normalizedInput, 1, depth - levelBudget[1], nullptr, numSlots);
     auto input = cc->Encrypt(keyPair.publicKey, plaintext);
     uint32_t totalModulusBits = 0;
     for (const auto& modParams : cc->GetCryptoParameters()->GetElementParams()->GetParams()) {
@@ -300,8 +300,9 @@ int main() {
 
         std::cout << "\n===== " << title << " =====\n";
         std::cout << "CKKS total modulus: " << totalModulusBits << " bits\n";
-        std::cout << "Level before bootstrapping: " << levelBeforeBoot << "\n\n";
-        std::cout << "Level after bootstrapping: " << output->GetLevel() << "\n";
+        std::cout << "Levels remaining before bootstrapping: " << depth - levelBeforeBoot << "\n\n";
+        std::cout << "Levels remaining after bootstrapping: "
+                  << depth - output->GetLevel() - (output->GetNoiseScaleDeg() - 1) << "\n";
         std::cout << "Series evaluation time: " << static_cast<int64_t>(std::llround(elapsed)) << " ms\n";
         std::cout << "Slots amortize time: " << std::fixed << std::setprecision(6) << elapsed / numSlots << " ms\n\n";
         std::cout << "--- Sample Points Inspection (Total 10 points) ---\n";

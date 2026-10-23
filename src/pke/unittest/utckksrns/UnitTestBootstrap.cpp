@@ -49,6 +49,7 @@
 #include "UnitTestUtils.h"
 #include "cryptocontext-ser.h"
 #include "gtest/gtest.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 
@@ -65,6 +66,10 @@ enum TEST_CASE_TYPE : int {
     BOOTSTRAP_NUM_TOWERS,
     BOOTSTRAP_SERIALIZE,
     BOOTSTRAP_SPARSE_ENCAPSULATED,
+    BOOTSTRAP_CHAINED,
+    BOOTSTRAP_LOWERED_CORRECTION,
+    BOOTSTRAP_MULTI_SLOT,
+    BOOTSTRAP_AUTO_ITERATION,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -93,6 +98,18 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_SPARSE_ENCAPSULATED:
             typeName = "BOOTSTRAP_SPARSE_ENCAPSULATED";
+            break;
+        case BOOTSTRAP_CHAINED:
+            typeName = "BOOTSTRAP_CHAINED";
+            break;
+        case BOOTSTRAP_LOWERED_CORRECTION:
+            typeName = "BOOTSTRAP_LOWERED_CORRECTION";
+            break;
+        case BOOTSTRAP_MULTI_SLOT:
+            typeName = "BOOTSTRAP_MULTI_SLOT";
+            break;
+        case BOOTSTRAP_AUTO_ITERATION:
+            typeName = "BOOTSTRAP_AUTO_ITERATION";
             break;
         default:
             typeName = "UNKNOWN";
@@ -417,6 +434,48 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_SPARSE_ENCAPSULATED, "H01", {CKKSRNS_SCHEME, 1 << 12,        18,       50,  DFLT,  DFLT, HYBRID_TERNARY,      DFLT,       60, HEStd_NotSet, HYBRID,   FIXEDAUTO, NUM_LRG_DIGS,  DFLT,  DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 4, 4 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE_ENCAPSULATED, "02", {CKKSRNS_SCHEME, 1 << 12,        18,       50,  DFLT,  DFLT, SPARSE_ENCAPSULATED, DFLT,       60, HEStd_NotSet, HYBRID, FIXEDMANUAL, NUM_LRG_DIGS,  DFLT,  DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 4, 4 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE_ENCAPSULATED, "H02", {CKKSRNS_SCHEME, 1 << 12,        18,       50,  DFLT,  DFLT, HYBRID_TERNARY,      DFLT,       60, HEStd_NotSet, HYBRID, FIXEDMANUAL, NUM_LRG_DIGS,  DFLT,  DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 4, 4 },  { 8, 8 }, 8 },
+    // ==========================================
+    // StC-first bootstrapping, one multiplication and StC-first bootstrapping again with a depth of
+    // GetBootstrapDepth + 1 (the multiplicative depth of the table is replaced in the test): the output keeps the
+    // levelBudget[1] levels the next SlotsToCoeffs needs
+    { BOOTSTRAP_CHAINED,  "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,       FIXEDAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, COMPLEX},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+#if NATIVEINT != 128
+    { BOOTSTRAP_CHAINED,  "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT, SPARSE_ENCAPSULATED, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 1, 1 },  { 0, 0 }, RDIM/4 },
+    { BOOTSTRAP_CHAINED,  "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32, DFLT, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_CHAINED,  "09", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT,   32,    2, REAL},   { 2, 2 },  { 0, 0 }, RDIM/2 },
+#endif
+    // ==========================================
+    // StC-first setups for two slot counts whose default correction factors differ (the default grows as the
+    // slot count shrinks, and the ring must be large enough for the difference to survive the clamp): each
+    // precomputation keeps the default folded into its own matrices, and only an explicit
+    // SetCKKSBootCorrectionFactor applies across slot counts
+    { BOOTSTRAP_MULTI_SLOT, "01", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,       FIXEDAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
+    { BOOTSTRAP_MULTI_SLOT, "02", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
+#if NATIVEINT != 128
+    { BOOTSTRAP_MULTI_SLOT, "03", {CKKSRNS_SCHEME, 512, MULT_DEPTH, SMODSIZE,  DFLT,  DFLT,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 256},
+#endif
+    // ==========================================
+    // two-iteration StC-first bootstrapping lowers a defaulted correction factor to
+    // AUTO_ITERATION_CORRECTION_FACTOR for both passes: the result must match setting that factor explicitly,
+    // and an explicit factor must be used unchanged
+    { BOOTSTRAP_AUTO_ITERATION, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+#if NATIVEINT != 128
+    { BOOTSTRAP_AUTO_ITERATION, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+#endif
+#if NATIVEINT != 128
+    // ==========================================
+    // StC-first bootstrapping with the correction factor lowered after setup (applied at runtime on top of the
+    // correction folded into the SlotsToCoeffs matrix) and raised after setup (rejected).
+    { BOOTSTRAP_LOWERED_CORRECTION, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,     FIXEDMANUAL, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_LOWERED_CORRECTION, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,       FIXEDAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_LOWERED_CORRECTION, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,      SPARSE_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID,    FLEXIBLEAUTO, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_LOWERED_CORRECTION, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,  DFLT,     8,     UNIFORM_TERNARY, DFLT, FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,   DFLT,  DFLT,   DFLT,      DFLT, DFLT, DFLT, REAL},   { 3, 2 },  { 0, 0 }, 8},
+#endif
 };
 // clang-format on
 
@@ -836,6 +895,235 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         }
     }
 
+    // A depth of GetBootstrapDepth + 1 must allow one multiplication between two StC-first bootstrappings: the
+    // output keeps the levelBudget[1] levels the next SlotsToCoeffs consumes on top of the level added. Both inputs
+    // have the levelBudget[1] levels SlotsToCoeffs consumes (an input with at least as many towers as bootstrapping
+    // produces would be returned unchanged).
+    void UnitTest_Bootstrap_Chained(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                    const std::string& failmsg = std::string()) {
+        try {
+            auto params = testData.params;
+            params.multiplicativeDepth =
+                    FHECKKSRNS::GetBootstrapDepth(testData.levelBudget,
+                                                  static_cast<SecretKeyDist>(params.secretKeyDist)) +
+                    1;
+            CryptoContext<Element> cc(UnitTestGenerateContext(params));
+
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, true);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            std::vector<std::complex<double>> input(testData.slots);
+            std::vector<std::complex<double>> squared(testData.slots);
+            for (uint32_t i = 0; i < testData.slots; ++i) {
+                input[i] = 0.9 * std::sin(0.7 * i + 0.3);
+                squared[i] = input[i] * input[i];
+            }
+
+            const uint32_t compositeDegree =
+                    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters())->GetCompositeDegree();
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(
+                    input, 1,
+                    compositeDegree * (static_cast<uint32_t>(params.multiplicativeDepth) - testData.levelBudget[1]),
+                    nullptr, testData.slots);
+            auto first = cc->EvalBootstrap(cc->Encrypt(keyPair.publicKey, plaintext));
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, first, &result);
+            result->SetLength(testData.slots);
+            checkEquality(result->GetCKKSPackedValue(), input, eps,
+                          failmsg + " the first StC-first bootstrapping failed.");
+
+            auto product = cc->EvalMult(first, first);
+            if (static_cast<ScalingTechnique>(params.scalTech) == FIXEDMANUAL)
+                cc->RescaleInPlace(product);
+
+            auto second = cc->EvalBootstrap(product);
+            cc->Decrypt(keyPair.secretKey, second, &result);
+            result->SetLength(testData.slots);
+            checkEquality(result->GetCKKSPackedValue(), squared, eps,
+                          failmsg + " the second StC-first bootstrapping failed.");
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // StC-first bootstrapping folds the correction 2^-c into the SlotsToCoeffs matrix at setup. A correction factor
+    // lowered afterwards (SetCKKSBootCorrectionFactor) is applied at runtime on top of the folded one and must match
+    // a setup with the lowered correction factor, for one and two iterations; a correction factor raised afterwards
+    // is rejected.
+    void UnitTest_Bootstrap_LoweredCorrection(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                              const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // the correction factors are small, as for the iterative bootstrapping tests at these ring dimensions
+            constexpr uint32_t setupCorrectionFactor = 10;
+            constexpr uint32_t loweredCorrectionFactor = 8;
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, setupCorrectionFactor, true,
+                                   true);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto input(Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
+                            testData.slots));
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1],
+                                                              nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+
+            auto precisionOf = [&](const Ciphertext<Element>& ct) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ct, &result);
+                result->SetLength(input.size());
+                return CalculateApproximationError(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue());
+            };
+
+            // lowered after setup: one and two iterations
+            cc->SetCKKSBootCorrectionFactor(loweredCorrectionFactor);
+            const double precisionLowered = precisionOf(cc->EvalBootstrap(ciphertext));
+
+            const double precisionBuffer = 5;
+            uint32_t precision = std::floor(precisionLowered) - precisionBuffer;
+            constexpr uint32_t numIterations = 2;
+            const double precisionTwoIterations = precisionOf(cc->EvalBootstrap(ciphertext, numIterations, precision));
+            EXPECT_GE(precisionTwoIterations + precisionBuffer, numIterations * precision)
+                    << failmsg << " two iterations with a correction factor lowered after setup.";
+
+            // the same correction factor passed to the setup
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, loweredCorrectionFactor, true,
+                                   true);
+            const double precisionSetup = precisionOf(cc->EvalBootstrap(ciphertext));
+            EXPECT_NEAR(precisionLowered, precisionSetup, 1.5)
+                    << failmsg << " a correction factor lowered after setup does not match setting it up.";
+
+            // raised after setup
+            cc->SetCKKSBootCorrectionFactor(setupCorrectionFactor);
+            EXPECT_THROW(cc->EvalBootstrap(ciphertext), OpenFHEException)
+                    << failmsg << " a correction factor raised after setup was not rejected.";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // StC-first setups for two slot counts fold different default correction factors into their matrices (the
+    // default depends on the slot count). The shared factor then holds the last setup's default, so bootstrapping
+    // with the first precomputation used to read it back as a raised factor and throw; a defaulted factor must
+    // stay with its own precomputation, and only an explicit SetCKKSBootCorrectionFactor applies across slot
+    // counts.
+    void UnitTest_Bootstrap_MultiSlot(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                      const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            const uint32_t slotsSmall = 8;  // fewer slots give a larger (or equal, once clamped) default
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, true);
+            const uint32_t defaultLarge = cc->GetCKKSBootCorrectionFactor();
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, slotsSmall, 0, true, true);
+            const uint32_t defaultSmall = cc->GetCKKSBootCorrectionFactor();
+            const auto st = static_cast<ScalingTechnique>(testData.params.scalTech);
+            if (st == FIXEDAUTO || st == FIXEDMANUAL)
+                EXPECT_GT(defaultSmall, defaultLarge)
+                        << failmsg << " the default correction factors of the two slot counts do not differ.";
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, slotsSmall);
+
+            for (uint32_t slots : {testData.slots, slotsSmall}) {
+                auto input(
+                        Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, slots));
+                Plaintext plaintext =
+                        cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1], nullptr, slots);
+                auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, cc->EvalBootstrap(ciphertext), &result);
+                result->SetLength(input.size());
+                plaintext->SetLength(input.size());
+                checkEquality(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue(), eps,
+                              failmsg + " StC-first bootstrapping with " + std::to_string(slots) +
+                                      " slots fails after a setup for another slot count.");
+            }
+
+#if NATIVEINT != 128
+            // an explicit factor applies to every slot count: raised above the folded defaults, it is rejected
+            // (the 128-bit build never applies the correction, see GetBootstrapCorrection)
+            cc->SetCKKSBootCorrectionFactor(defaultSmall + 1);
+            auto input(Fill({0.5}, testData.slots));
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1],
+                                                              nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+            EXPECT_THROW(cc->EvalBootstrap(ciphertext), OpenFHEException)
+                    << failmsg << " an explicitly raised correction factor was not rejected.";
+#endif
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    // Two-iteration StC-first bootstrapping lowers a defaulted correction factor to
+    // AUTO_ITERATION_CORRECTION_FACTOR (8) for both passes at runtime. The result must match an explicit factor
+    // of the same value (the same integer-multiplication path), and the second iteration must still add
+    // precision over the first.
+    void UnitTest_Bootstrap_AutoIteration(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                          const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots, 0, true, true);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto input(Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888},
+                            testData.slots));
+            Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1 - testData.levelBudget[1],
+                                                              nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+
+            auto precisionOf = [&](const Ciphertext<Element>& ct) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ct, &result);
+                result->SetLength(input.size());
+                return CalculateApproximationError(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue());
+            };
+
+            const double precisionOne = precisionOf(cc->EvalBootstrap(ciphertext));
+            // sparse-family target is one higher; this precision is what that factor carries, so the explicit
+            // comparison below sees the same scaling
+            const uint32_t targetFactor =
+                    FHECKKSRNS::AUTO_ITERATION_CORRECTION_FACTOR +
+                    ((static_cast<SecretKeyDist>(testData.params.secretKeyDist) == UNIFORM_TERNARY) ? 0 : 1);
+            const uint32_t precision = 2 * targetFactor - 6;
+            const double precisionAuto = precisionOf(cc->EvalBootstrap(ciphertext, 2, precision));
+            EXPECT_GE(precisionAuto + 1.0, precisionOne)
+                    << failmsg << " the second iteration lost precision with the automatic factor.";
+
+            cc->SetCKKSBootCorrectionFactor(targetFactor);
+            const double precisionExplicit = precisionOf(cc->EvalBootstrap(ciphertext, 2, precision));
+            EXPECT_NEAR(precisionAuto, precisionExplicit, 1.5)
+                    << failmsg << " the automatic factor does not match the explicit one.";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_BootstrapSE(const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -911,6 +1199,18 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_SPARSE_ENCAPSULATED:
             UnitTest_BootstrapSE(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_CHAINED:
+            UnitTest_Bootstrap_Chained(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_LOWERED_CORRECTION:
+            UnitTest_Bootstrap_LoweredCorrection(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_MULTI_SLOT:
+            UnitTest_Bootstrap_MultiSlot(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_AUTO_ITERATION:
+            UnitTest_Bootstrap_AutoIteration(test, test.buildTestName());
             break;
         default:
             break;

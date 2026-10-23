@@ -77,6 +77,27 @@ double GetBigModulus(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& c
     return qDouble;
 }
 
+// Noise floor B of the one-iteration precision tent p1(cf) = min(2*cf + A, B - cf), fitted at
+// N = 2^13..2^17 (refit with ckks-bootstrapping-precision.cpp); inputs outside the fitted range are
+// held at its boundary instead of extrapolating.
+double EstimateBootstrapNoiseFloor(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& cryptoParams,
+                                   uint32_t ringDim, uint32_t slots, bool stcFirst) {
+    const auto st = cryptoParams->GetScalingTechnique();
+    const auto skd = cryptoParams->GetSecretKeyDist();
+    const double logN = std::clamp(std::log2(static_cast<double>(ringDim)), 12.0, 17.0);
+    double B = 64.8 - 2.27 * logN - 0.32 * std::log2(static_cast<double>(std::max<uint32_t>(slots, 1)));
+    if (stcFirst)
+        B += 4.8;
+    if (st == lbcrypto::FIXEDMANUAL || st == lbcrypto::FIXEDAUTO)
+        B -= 5.3;
+    if (skd == lbcrypto::SPARSE_TERNARY)
+        B += 3.5;
+    else if (skd == lbcrypto::SPARSE_ENCAPSULATED || skd == lbcrypto::HYBRID_TERNARY)
+        B += 4.9;
+    B += 1.10 * (std::clamp(static_cast<double>(cryptoParams->GetPlaintextModulus()), 50.0, 59.0) - 59.0);
+    return B;
+}
+
 // num/den as a double, without forming an intermediate that overflows the exponent range: both operands
 // are shifted down to 53 bits (so each converts exactly) and the shift is restored with ldexp.
 double RatioToDouble(const lbcrypto::BigInteger& num, const lbcrypto::BigInteger& den) {
@@ -118,7 +139,8 @@ uint32_t LinearTransformTowersToDrop(uint32_t sizeQ, uint32_t L, uint32_t towers
 // (compositeDegree towers per level) can hold the CoeffsToSlots and SlotsToCoeffs precomputations. CoeffsToSlots
 // is evaluated right after the modulus raise and has to leave at least one level for the approximate modular
 // reduction. SlotsToCoeffs is evaluated either at the end of the bootstrapping, which then needs depthBT levels
-// in total (ModRaise-first), or on the input before the modulus raise, which keeps two levels for it (StC-first).
+// in total (ModRaise-first), or on the input before the modulus raise, ending on the towers the raise starts
+// from, which keeps one level for it (StC-first).
 void CheckBootstrapChainLength(uint32_t L0, uint32_t compositeDegree, uint32_t lvlbEnc, uint32_t lvlbDec, bool stcFirst,
                                uint32_t depthBT,
                                const std::string& depthRemedy =
@@ -132,7 +154,7 @@ void CheckBootstrapChainLength(uint32_t L0, uint32_t compositeDegree, uint32_t l
                       std::to_string(availableDepth) +
                       "). Increase the multiplicative depth or reduce the level budget.");
     if (stcFirst) {
-        if (compositeDegree * (lvlbDec + 2) > L0)
+        if (compositeDegree * (lvlbDec + 1) > L0)
             OPENFHE_THROW("The SlotsToCoeffs level budget (" + std::to_string(lvlbDec) +
                           ") is too large for the multiplicative depth supported by the modulus chain (" +
                           std::to_string(availableDepth) +
@@ -239,23 +261,18 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
     // Set correction factor by default, if it is not already set.
     if (correctionFactor == 0) {
-        auto st = cryptoParams->GetScalingTechnique();
-        if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT || st == COMPOSITESCALINGAUTO || st == COMPOSITESCALINGMANUAL) {
-            // The default correction factors chosen yielded the best precision in our experiments.
-            // We chose the best fit line from our experiments by running ckks-bootstrapping-precision.cpp.
-            // The spreadsheet with our experiments is here:
-            // https://docs.google.com/spreadsheets/d/1p6-ZG9rBEE9SrkKIt0JjU1aJiYHevzblKOTuhLFW27U
-            uint32_t tmp = BTSlotsEncoding ? std::round(-0.1887 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.763) :
-                                             std::round(-0.2419 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.081);
-            m_correctionFactor = std::clamp<uint32_t>(tmp, 7, 14);
-        } else {
-            uint32_t tmp = BTSlotsEncoding ? std::round(-0.0645 * (2 * std::log2(M / 2) + std::log2(slots)) + 13.855) :
-                                             std::round(-0.1516 * (2 * std::log2(M / 2) + std::log2(slots)) + 14.284);
-            m_correctionFactor = std::clamp<uint32_t>(tmp, 6, 13);
-        }
+        // the crossing of the precision tent (see EstimateBootstrapNoiseFloor), biased up half a unit since
+        // a factor below the optimum costs double; factors under deg are rejected at evaluation
+        const double B = EstimateBootstrapNoiseFloor(cryptoParams, M / 2, slots, BTSlotsEncoding);
+        const double A = BTSlotsEncoding ? -0.7 : 0.3;
+        const int32_t deg = std::round(std::log2(GetBigModulus(cryptoParams)) - cryptoParams->GetPlaintextModulus());
+        const uint32_t crossing = static_cast<uint32_t>(std::round((B - A) / 3 + 0.5));
+        m_correctionFactor =
+                std::max(std::clamp<uint32_t>(crossing, 6, 15), static_cast<uint32_t>(std::max<int32_t>(deg, 0)));
     } else {
         m_correctionFactor = correctionFactor;
     }
+    m_correctionFactorExplicit = (correctionFactor != 0);
 
     // even for the case of a single slot we need one level for rescaling
     uint32_t logSlots = (slots < 3) ? 1 : std::log2(slots);
@@ -355,8 +372,16 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         double scaleDec = 1.0 / pre;
 
         uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
-        uint32_t lDec = (precom->BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree :
-                                                    L0 - compositeDegree * depthBT;
+        uint32_t lDec;
+        if (precom->BTSlotsEncoding) {
+            // SlotsToCoeffs ends on the towers the modulus raise starts from, with the correction folded in (see
+            // GetStCFirstDecodingScale)
+            lDec = compositeDegree;
+            precom->m_foldedCorrection = GetBootstrapCorrection(cryptoParams);
+            scaleDec *= GetStCFirstDecodingScale(cryptoParams, precom->m_foldedCorrection);
+        } else {
+            lDec = L0 - compositeDegree * depthBT;
+        }
 
         bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -544,8 +569,16 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     CheckBootstrapChainLength(L0, compositeDegree, p.m_paramsEnc.lvlb, p.m_paramsDec.lvlb, p.BTSlotsEncoding, depthBT);
 
     uint32_t lEnc = L0 - compositeDegree * (p.m_paramsEnc.lvlb + 1);
-    uint32_t lDec =
-            (p.BTSlotsEncoding) ? (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree : L0 - compositeDegree * depthBT;
+    uint32_t lDec;
+    if (p.BTSlotsEncoding) {
+        // SlotsToCoeffs ends on the towers the modulus raise starts from, with the correction folded in (see
+        // GetStCFirstDecodingScale)
+        lDec = compositeDegree;
+        p.m_foldedCorrection = GetBootstrapCorrection(cryptoParams);
+        scaleDec *= GetStCFirstDecodingScale(cryptoParams, p.m_foldedCorrection);
+    } else {
+        lDec = L0 - compositeDegree * depthBT;
+    }
 
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
@@ -1137,6 +1170,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
                                                        uint32_t precision) const {
+    return EvalBootstrapStCFirstInternal(ciphertext, numIterations, precision, static_cast<uint32_t>(-1));
+}
+
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirstInternal(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                               uint32_t numIterations, uint32_t precision,
+                                                               uint32_t autoCorrection) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -1164,11 +1203,43 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
     if (numIterations > 1) {
+        // Two-iteration StC-first bootstrapping is most precise with a correction factor of about
+        // AUTO_ITERATION_CORRECTION_FACTOR, so a defaulted factor is lowered to it for both passes; the lowering
+        // is an integer multiplication at runtime (see RescaleStCFirstOutputInPlace), consuming no level and
+        // re-encoding nothing. An explicit factor is used unchanged.
+        if (autoCorrection == static_cast<uint32_t>(-1) && !m_correctionFactorExplicit) {
+            double qDouble = GetBigModulus(cryptoParams);
+            double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
+            int32_t deg = std::round(std::log2(qDouble / powP));
+            // deg counts toward the target factor; the sparse-family two-iteration optimum measures one higher
+            const uint32_t targetFactor =
+                    AUTO_ITERATION_CORRECTION_FACTOR + ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ? 0 : 1);
+            const uint32_t target = (deg < static_cast<int32_t>(targetFactor)) ? targetFactor - deg : 0;
+            const uint32_t folded =
+                    GetBootPrecom(ciphertext->GetSlots(), CKKSBootstrapPrecom::BOOTSTRAP).m_foldedCorrection;
+            autoCorrection = std::min(folded, target);
+            // a single round at factor cf carries about 2*cf - 1 bits; a larger error scaling overflows the
+            // second pass, so cap at what the factor actually used carries
+            const uint32_t effectiveFactor = autoCorrection + static_cast<uint32_t>(deg);
+            const uint32_t precisionIn = precision;
+            precision = std::min(precision, std::max(2 * effectiveFactor, 7u) - 6);
+            // the caller's precision carries the message magnitude, which cancels in the drop from the default
+            // factor, so the floor tightens the cap for any magnitude (only within the fitted ring range)
+            if (cc->GetRingDimension() >= (1u << 12)) {
+                const double floorB =
+                        EstimateBootstrapNoiseFloor(cryptoParams, cc->GetRingDimension(), ciphertext->GetSlots(), true);
+                const int32_t adaptive = static_cast<int32_t>(precisionIn) +
+                                         (2 * static_cast<int32_t>(effectiveFactor) - 1) -
+                                         static_cast<int32_t>(std::round(floorB)) + static_cast<int32_t>(folded);
+                precision = std::min(precision, static_cast<uint32_t>(std::max<int32_t>(adaptive, 1)));
+            }
+        }
+
         // Step 1: Get the input.
         uint32_t powerOfTwoModulus = 1 << precision;
 
         // Step 3: Bootstrap the initial ciphertext.
-        auto ctInitialBootstrap = EvalBootstrapStCFirst(ciphertext, numIterations - 1, 0);
+        auto ctInitialBootstrap = EvalBootstrapStCFirstInternal(ciphertext, numIterations - 1, 0, autoCorrection);
         cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap,
                                                   compositeDegree * (ctInitialBootstrap->GetNoiseScaleDeg() - 1));
 
@@ -1203,7 +1274,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
         auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
 
         // Step 8: Bootstrap the error.
-        auto ctBootstrappedError = EvalBootstrapStCFirst(ctBootstrappingError, 1, 0);
+        auto ctBootstrappedError = EvalBootstrapStCFirstInternal(ctBootstrappingError, 1, 0, autoCorrection);
         cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError,
                                                   compositeDegree * (ctBootstrappedError->GetNoiseScaleDeg() - 1));
 
@@ -1243,10 +1314,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
                       std::to_string(m_correctionFactor) + "].");
     }
 #endif
-    // For composite scaling, deg may exceed the correction factor (the check above is skipped, since with
-    // larger composite degrees the first modulus is typically much larger than the scaling factor); in that
-    // case no correction is applied instead of letting the unsigned subtraction wrap around.
-    uint32_t correction = (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
     double post = std::pow(2, static_cast<double>(deg));
 
     // For FLEXIBLE* the exact power-of-two 1/post is applied here as the shrink before CoeffsToSlots and
@@ -1264,6 +1331,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     auto algo = cc->GetScheme();
     auto N = cc->GetRingDimension();
     auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
+
+    // A defaulted correction factor depends on the slot count and m_correctionFactor holds the last setup's,
+    // so only an explicit user override is read back; otherwise this precomputation's folded default applies,
+    // lowered by the two-iteration caller (autoCorrection, see AUTO_ITERATION_CORRECTION_FACTOR).
+    const uint32_t correction = (autoCorrection != static_cast<uint32_t>(-1)) ? autoCorrection :
+                                m_correctionFactorExplicit                    ? GetBootstrapCorrection(cryptoParams) :
+                                                                                p.m_foldedCorrection;
 
     // Coefficients of the Chebyshev series interpolating 1/(2 Pi) Sin(2 Pi K x). The overflow bound K
     // itself is folded into the CoeffsToSlots matrix (see GetModRaiseOverflowBound), so only the exact 1/N
@@ -1293,10 +1367,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     // Only work with the minimum number of required levels.
     auto ctxtDepleted = ciphertext->Clone();
 
-    // The SlotsToCoeffs matrix is encoded for an input with compositeDegree * (lvlb + 2) towers
+    // The SlotsToCoeffs matrix is encoded for an input with compositeDegree * (lvlb + 1) towers
     // remaining (lDec in EvalBootstrapSetup), so each level below costs compositeDegree towers.
-    // FLEXIBLEAUTOEXT (one extra tower) and composite scaling are mutually exclusive.
-    auto expectedLevel = L0 - compositeDegree * (p.m_paramsDec.lvlb + 2) - (st == FLEXIBLEAUTOEXT);
+    auto expectedLevel = L0 - compositeDegree * (p.m_paramsDec.lvlb + 1);
 
     if (ctxtDepleted->GetLevel() + compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1) > expectedLevel) {
         OPENFHE_THROW("Not enough levels to perform Bootstrapping.");
@@ -1330,6 +1403,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
             ctxtDepleted->SetScalingFactor(targetScf);
         }
     }
+    // an input with more levels than needed is brought to the scaling factor of the expected level above
+    CheckStCFirstInputScalingFactor(ctxtDepleted);
 
     Ciphertext<DCRTPoly> ctxtEnc;
 #ifdef BOOTSTRAPTIMING
@@ -1367,9 +1442,20 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     // Increasing the modulus
 
     auto raised = ctxtDepleted->Clone();
-    algo->ModReduceInternalInPlace(raised, compositeDegree * (raised->GetNoiseScaleDeg() - 1));
-    uint32_t lvl = cryptoParams->GetScalingTechnique() != FLEXIBLEAUTOEXT ? 0 : 1;
-    AdjustCiphertext(raised, std::pow(2, -static_cast<int32_t>(correction)), lvl);
+    // the last rescale of SlotsToCoeffs lands on the raising towers, with the correction 2^-c and, for the
+    // FLEXIBLE* and COMPOSITE* techniques, the exact scaling factor of the raised level folded in
+    RescaleStCFirstOutputInPlace(raised);
+
+    // The correction factor may have been lowered after setup (SetCKKSBootCorrectionFactor), which calls for less
+    // shrinking than the folded 2^-c: the difference is a power of two, so it is applied as an integer
+    // multiplication, which consumes no level and needs no re-encoding of the matrices. A raised correction factor
+    // would need an additional shrink, which costs a level, so the matrices have to be encoded with it instead.
+    if (correction > p.m_foldedCorrection)
+        OPENFHE_THROW(
+                "The correction factor of StC-first bootstrapping was raised after EvalBootstrapSetup; pass it to "
+                "EvalBootstrapSetup instead.");
+    if (correction < p.m_foldedCorrection)
+        algo->MultByIntegerInPlace(raised, uint64_t(1) << (p.m_foldedCorrection - correction));
 
     ModRaiseInPlace(raised, elementParamsRaisedPtr);
 
@@ -1595,7 +1681,10 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     double scaleDec = 1.0 / pre;
 
     uint32_t lEnc = L0 - compositeDegree * (precom->m_paramsEnc.lvlb + 1);
-    uint32_t lDec = (2 + (st == FLEXIBLEAUTOEXT)) * compositeDegree;
+    // SlotsToCoeffs ends on the towers the modulus raise starts from (see GetStCFirstDecodingScale); there is no
+    // correction, as the message must reach ModRaise at exactly the scale of the argument of the complex exponential
+    uint32_t lDec = compositeDegree;
+    scaleDec *= GetStCFirstDecodingScale(cryptoParams, 0);
 
     bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -1637,6 +1726,81 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
         precom->m_U0PreFFT = EvalSlotsToCoeffsPrecompute(cc, ksiPows, rotGroup, false, scaleDec, lDec, flagPack);
         precom->m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc, flagPack);
     }
+}
+
+FHECKKSRNS::StCFirstRaiseScaling FHECKKSRNS::GetStCFirstRaiseScaling(
+        const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+    const auto st = cryptoParams->GetScalingTechnique();
+    const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    const auto& moduli = cryptoParams->GetElementParams()->GetParams();
+
+    // SlotsToCoeffs ends with a pending rescale (noise degree 2) of the compositeDegree towers above the bottom ones
+    const uint32_t towers = 2 * compositeDegree;
+    const double sf = cryptoParams->GetScalingFactorReal(moduli.size() - towers);
+
+    StCFirstRaiseScaling raise;
+    raise.stcSF = sf * sf;
+    raise.droppedModuli = 1.0;
+    for (uint32_t i = towers - compositeDegree; i < towers; ++i)
+        raise.droppedModuli *= moduli[i]->GetModulus().ConvertToDouble();
+    // the raised ciphertext does not include the extra modulus of FLEXIBLEAUTOEXT
+    raise.targetSF = cryptoParams->GetScalingFactorReal(st == FLEXIBLEAUTOEXT);
+    return raise;
+}
+
+double FHECKKSRNS::GetStCFirstDecodingScale(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
+                                            uint32_t correction) {
+    double scale = std::ldexp(1.0, -static_cast<int32_t>(correction));
+    const auto st = cryptoParams->GetScalingTechnique();
+    if (st != FIXEDMANUAL && st != FIXEDAUTO) {
+        const auto raise = GetStCFirstRaiseScaling(cryptoParams);
+        scale *= raise.targetSF * raise.droppedModuli / raise.stcSF;
+    }
+    return scale;
+}
+
+uint32_t FHECKKSRNS::GetBootstrapCorrection(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) const {
+#if NATIVEINT == 128
+    return 0;
+#else
+    double qDouble = GetBigModulus(cryptoParams);
+    double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
+    int32_t deg = std::round(std::log2(qDouble / powP));
+    // For composite scaling, deg may exceed the correction factor (the first modulus is typically much larger than
+    // the scaling factor); in that case no correction is applied instead of letting the unsigned subtraction wrap.
+    return (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
+#endif
+}
+
+void FHECKKSRNS::CheckStCFirstInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto st = cryptoParams->GetScalingTechnique();
+    if (st == FIXEDMANUAL || st == FIXEDAUTO)
+        return;
+    if (std::abs(ciphertext->GetScalingFactor() / cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()) - 1.0) >
+        STC_FIRST_SCALING_FACTOR_TOLERANCE)
+        OPENFHE_THROW(
+                "The scaling factor of the input to bootstrapping differs from the scaling factor of its level; "
+                "provide an input with at least one more level.");
+}
+
+void FHECKKSRNS::RescaleStCFirstOutputInPlace(Ciphertext<DCRTPoly>& ciphertext) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto st = cryptoParams->GetScalingTechnique();
+    const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    auto algo = ciphertext->GetCryptoContext()->GetScheme();
+    if (st == FIXEDMANUAL || st == FIXEDAUTO) {
+        algo->ModReduceInternalInPlace(ciphertext, compositeDegree * (ciphertext->GetNoiseScaleDeg() - 1));
+        return;
+    }
+    // the ratio between the scaling factor of the raised level and the one this rescale yields is folded into the
+    // SlotsToCoeffs matrix (see GetStCFirstDecodingScale)
+    const auto raise = GetStCFirstRaiseScaling(cryptoParams);
+    if (ciphertext->GetNoiseScaleDeg() != 2 ||
+        std::abs(ciphertext->GetScalingFactor() / raise.stcSF - 1.0) > STC_FIRST_SCALING_FACTOR_TOLERANCE)
+        OPENFHE_THROW("Unexpected scaling factor of the SlotsToCoeffs output in bootstrapping.");
+    algo->ModReduceInternalInPlace(ciphertext, compositeDegree);
+    ciphertext->SetScalingFactor(raise.targetSF);
 }
 
 // Everything in FE functional bootstrapping that does not depend on the target function: SlotsToCoeffs,
@@ -1720,10 +1884,9 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
     // Only work with the minimum number of required levels.
     auto ctxtDepleted = ciphertext->Clone();
 
-    // The SlotsToCoeffs matrix is encoded for an input with compositeDegree * (lvlb + 2) towers
+    // The SlotsToCoeffs matrix is encoded for an input with compositeDegree * (lvlb + 1) towers
     // remaining (lDec in EvalFEFuncBootstrapSetup), so each level below costs compositeDegree towers.
-    // FLEXIBLEAUTOEXT (one extra tower) and composite scaling are mutually exclusive.
-    auto expectedLevel = L0 - compositeDegree * (p.m_paramsDec.lvlb + 2) - (st == FLEXIBLEAUTOEXT);
+    auto expectedLevel = L0 - compositeDegree * (p.m_paramsDec.lvlb + 1);
 
     if (ctxtDepleted->GetLevel() + compositeDegree * (ctxtDepleted->GetNoiseScaleDeg() - 1) > expectedLevel) {
         OPENFHE_THROW("Not enough levels to perform FE functional bootstrapping.");
@@ -1752,6 +1915,8 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
             ctxtDepleted->SetScalingFactor(targetScf);
         }
     }
+    // an input with more levels than needed is brought to the scaling factor of the expected level above
+    CheckStCFirstInputScalingFactor(ctxtDepleted);
 
 #ifdef BOOTSTRAPTIMING
     TIC(t);
@@ -1783,10 +1948,9 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
     //------------------------------------------------------------------------------
 
     auto raised = ctxtDepleted;
-    algo->ModReduceInternalInPlace(raised, compositeDegree * (raised->GetNoiseScaleDeg() - 1));
-    uint32_t lvl = (st != FLEXIBLEAUTOEXT) ? 0 : 1;
-    // correction factor 1: the argument of the complex exponential must stay at the exact message scale
-    AdjustCiphertext(raised, 1.0, lvl);
+    // the last rescale of SlotsToCoeffs lands on the raising towers at the exact scale of the argument of the
+    // complex exponential
+    RescaleStCFirstOutputInPlace(raised);
 
     ModRaiseInPlace(raised, elementParamsRaisedPtr);
 
@@ -2936,8 +3100,9 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(uint32_t approxModDepth, const std::vecto
 
 uint32_t FHECKKSRNS::GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist) {
     uint32_t approxModDepth = GetModDepthInternal(secretKeyDist);
-    // AA: note that the scalings by double constants are not captured here.
-    // One extra level is consumed before ModRaise (correction factor), and another is consumed after ModRaise (normalization).
+    // AA: note that the scalings by double constants are not captured here. In the ModRaise-first variant, one extra
+    // level is consumed before ModRaise (correction factor), and another is consumed after ModRaise (normalization).
+    // In the StC-first variant the correction is folded into SlotsToCoeffs (see GetStCFirstDecodingScale).
     return approxModDepth + levelBudget[0] + levelBudget[1];
 }
 
