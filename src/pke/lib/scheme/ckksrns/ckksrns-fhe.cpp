@@ -1008,11 +1008,15 @@ void FHECKKSRNS::EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t st
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
-                                               uint32_t precision) const {
+                                               uint32_t precision, bool correctionApplied) const {
     uint32_t slots = ciphertext->GetSlots();
     auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
 
     if (p.BTSlotsEncoding) {
+        if (correctionApplied)
+            OPENFHE_THROW(
+                    "StC-first bootstrapping folds the correction into SlotsToCoeffs; a correction applied by "
+                    "the caller is only supported in ModRaise-first bootstrapping.");
         return EvalBootstrapStCFirst(ciphertext, numIterations, precision);
         // AA: Note that in the FIXEDMANUAL case, EvalBootstrap and EvalBootstrapStCFirst return ciphertexts with different NoiseDeg.
     }
@@ -1026,10 +1030,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 #if NATIVEINT == 128
     if (st == FLEXIBLEAUTO || st == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS Bootstrapping only supported for FIXEDMANUAL and FIXEDAUTO.");
+    if (correctionApplied)
+        OPENFHE_THROW("The 128-bit build applies no correction before the modulus raise.");
 #endif
 
     if (numIterations != 1 && numIterations != 2)
         OPENFHE_THROW("CKKS Bootstrapping only supported for 1 or 2 iterations.");
+    if (correctionApplied && numIterations != 1)
+        OPENFHE_THROW("A correction applied by the caller is only supported for a single bootstrapping iteration.");
 
 #ifdef BOOTSTRAPTIMING
     TimeVar t;
@@ -1048,7 +1056,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         uint32_t powerOfTwoModulus = 1 << precision;
 
         // Step 3: Bootstrap the initial ciphertext.
-        auto ctInitialBootstrap = EvalBootstrap(ciphertext, numIterations - 1, 0);
+        auto ctInitialBootstrap = EvalBootstrap(ciphertext, numIterations - 1, 0, false);
         cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap, compositeDegree);
 
         // Step 4: Scale up by powerOfTwoModulus.
@@ -1081,7 +1089,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
 
         // Step 8: Bootstrap the error.
-        auto ctBootstrappedError = EvalBootstrap(ctBootstrappingError, 1, 0);
+        auto ctBootstrappedError = EvalBootstrap(ctBootstrappingError, 1, 0, false);
         cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, compositeDegree);
 
         // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
@@ -1139,7 +1147,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     // the techniques tracking level-specific scaling factors an input at the bottom level (with the scaling factor
     // of that level) is raised at that scaling factor, whose ratio to the one of the raised level is folded into
     // the SlotsToCoeffs matrix (see ModRaiseRealignment). An input above the bottom level still goes through the
-    // step, which realigns it with the same ratio so that both paths match the matrix.
+    // step, which realigns it with the same ratio so that both paths match the matrix. The same holds when the
+    // caller has already scaled the input by 2^-correction (correctionApplied): only the realignment is left, and
+    // the result is scaled back up by 2^correction as usual.
     const double realignment = ModRaiseRealignment(cryptoParams);
     const bool fixedScaling = (st == FIXEDMANUAL || st == FIXEDAUTO);
     const bool atBottomLevel = (raised->GetElements()[0].GetNumOfElements() == compositeDegree);
@@ -1149,14 +1159,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 #else
     const uint32_t appliedCorrection = correction;
 #endif
-    if (appliedCorrection == 0 && (fixedScaling || atBottomLevel)) {
+    if ((appliedCorrection == 0 || correctionApplied) && (fixedScaling || atBottomLevel)) {
         if (!fixedScaling)
             CheckStCFirstInputScalingFactor(raised);
     } else {
         if (atBottomLevel)
             OPENFHE_THROW("The input to bootstrapping needs one more level for the correction factor (" +
-                          std::to_string(m_correctionFactor) + ") applied before the modulus raise.");
-        AdjustCiphertext(raised, std::pow(2, -static_cast<int32_t>(appliedCorrection)) * realignment, lvl);
+                          std::to_string(m_correctionFactor) +
+                          ") applied before the modulus raise, unless the caller applies the correction itself "
+                          "(see CryptoContextImpl::GetCKKSBootCorrection and EvalBootstrap).");
+        const double shrink = correctionApplied ? 1.0 : std::pow(2, -static_cast<int32_t>(appliedCorrection));
+        AdjustCiphertext(raised, shrink * realignment, lvl);
     }
 
     uint32_t N = cc->GetRingDimension();

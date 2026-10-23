@@ -253,10 +253,13 @@ class FHECKKSRNS : public FHERNS {
      * first one
      * @param precision precision (in bits) of a single bootstrapping round, used by the second iteration; unused
      * when numIterations = 1
+     * @param correctionApplied whether the caller already scaled the input by 2^-c, c being the correction of
+     * GetBootstrapCorrection (see CryptoContextImpl::EvalBootstrap); the step before the modulus raise is then
+     * skipped and the result is still scaled back up by 2^c
      * @return the refreshed ciphertext
      */
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t numIterations,
-                                       uint32_t precision) const override;
+                                       uint32_t precision, bool correctionApplied) const override;
 
     /**
      * Slots-encoding variant of CKKS bootstrapping, selected by BTSlotsEncoding = true in EvalBootstrapSetup:
@@ -867,8 +870,9 @@ class FHECKKSRNS : public FHERNS {
      * levels needed after bootstrapping to obtain the multiplicative depth of the cryptocontext. In the ModRaise-first
      * variant the input needs one level above the bottom one for the correction before the modulus raise, except
      * when no correction is needed (the first modulus is at least 2^correctionFactor times the scaling modulus, as
-     * with composite scaling), in which case the input may be at the bottom level and all the levels added on top of
-     * this depth are available for computation. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
+     * with composite scaling), or when the caller applies the correction 2^-c itself as part of its last computation
+     * and passes correctionApplied to EvalBootstrap, in which cases the input may be at the bottom level and all the
+     * levels added on top of this depth are available for computation. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
      * performed first, so the input needs levelBudget[1] levels and the output keeps that many for the next
      * bootstrapping: the levels added on top of this depth are the ones available for computation between two
      * bootstrappings.
@@ -986,6 +990,10 @@ class FHECKKSRNS : public FHERNS {
      */
     uint32_t GetCKKSBootCorrectionFactor() const override {
         return m_correctionFactor;
+    }
+
+    uint32_t GetCKKSBootCorrection(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams) const override {
+        return GetBootstrapCorrection(std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams));
     }
 
     /**
