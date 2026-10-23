@@ -160,10 +160,12 @@ class FHEBase {
      * @param precision precision of initial bootstrapping algorithm. This value is
      * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and
      * precision = 0 (unused).
+     * @param correctionApplied whether the caller already scaled the input by the correction of ModRaise-first
+     * bootstrapping (see CryptoContextImpl::EvalBootstrap)
      * @return the refreshed ciphertext.
      */
     virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations,
-                                              uint32_t precision) const {
+                                              uint32_t precision, bool correctionApplied) const {
         OPENFHE_THROW(NOT_IMPLEMENTED_ERROR);
     }
 
@@ -595,6 +597,17 @@ class FHEBase {
      * @return the correction factor.
      */
     virtual uint32_t GetCKKSBootCorrectionFactor() const {
+        OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
+    }
+
+    /**
+     * Returns the correction of ModRaise-first CKKS bootstrapping: the exponent of the scaling 2^-c applied to
+     * the message before the modulus raise (see CryptoContextImpl::GetCKKSBootCorrection).
+     *
+     * @param cryptoParams the crypto parameters of the cryptocontext
+     * @return the correction.
+     */
+    virtual uint32_t GetCKKSBootCorrection(const std::shared_ptr<CryptoParametersBase<Element>>& cryptoParams) const {
         OPENFHE_THROW(NOT_SUPPORTED_SIMPLE_ERROR);
     }
 
