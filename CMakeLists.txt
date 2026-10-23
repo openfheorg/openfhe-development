@@ -121,6 +121,8 @@ endif()
 # of the plaintext modulus for BGV), so the size has to exceed the bit length of that product.
 if(NOT KS_AUX_MOD_SIZE)
     set(KS_AUX_MOD_SIZE 0)
+elseif(NOT "${KS_AUX_MOD_SIZE}" MATCHES "^[0-9]+$")
+    message(SEND_ERROR "KS_AUX_MOD_SIZE is ${KS_AUX_MOD_SIZE}; it must be 0 (built-in size) or a positive integer")
 endif()
 
 # Name of the separate sink library built when the built-in sink is kept out of
@@ -478,20 +480,6 @@ elseif("${NATIVE_SIZE}" EQUAL 32)
 else()
     message(SEND_ERROR "NATIVE_SIZE is " ${NATIVE_SIZE})
     message(SEND_ERROR "***ERROR*** need a Native implementation")
-endif()
-
-# The auxiliary primes of key switching have to fit in a native word
-if(NOT KS_AUX_MOD_SIZE EQUAL 0)
-    if("${NATIVEINT}" EQUAL 128)
-        set(KS_AUX_MOD_SIZE_MAX 121)
-    elseif("${NATIVEINT}" EQUAL 64)
-        set(KS_AUX_MOD_SIZE_MAX 60)
-    else()
-        set(KS_AUX_MOD_SIZE_MAX 28)
-    endif()
-    if(NOT "${KS_AUX_MOD_SIZE}" MATCHES "^[0-9]+$" OR KS_AUX_MOD_SIZE LESS 14 OR KS_AUX_MOD_SIZE GREATER KS_AUX_MOD_SIZE_MAX)
-        message(SEND_ERROR "KS_AUX_MOD_SIZE is ${KS_AUX_MOD_SIZE}; it must be 0 (built-in size) or an integer between 14 and ${KS_AUX_MOD_SIZE_MAX} for NATIVE_SIZE=${NATIVE_SIZE}")
-    endif()
 endif()
 
 
