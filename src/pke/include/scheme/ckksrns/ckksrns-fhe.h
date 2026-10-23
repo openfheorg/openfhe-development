@@ -154,6 +154,28 @@ class CKKSBootstrapPrecom {
 using namespace std::literals::complex_literals;
 
 /**
+ * @brief How the first layer of the homomorphic encoding (CoeffsToSlots) consumes the ciphertext produced by
+ * FHECKKSRNS::ModRaiseInPlace.
+ *
+ * The normalization of the modulus raise shrinks the message by 2^-deg/N (and by the correction factor), so a key
+ * switching whose rounding is not attenuated by a subsequent plaintext multiplication would add its noise at full
+ * strength relative to the message. The hoisted key switching of the first layer, whose rounding happens only after
+ * the multiplication by the encoding matrix, is therefore used both for the switch back from the sparse secret of
+ * the encapsulation and for the partial sum of sparse packing, which were evaluated before the normalization when it
+ * consumed a level of the chain.
+ */
+struct RaisedFirstLayer {
+    /// the ciphertext is encrypted under the sparse secret of SPARSE_ENCAPSULATED/HYBRID_TERNARY: the baby steps
+    /// use the fused rotation keys of FHECKKSRNS::EvalBootstrapKeyGen, whose source is that secret, so that the
+    /// output of the layer is encrypted under the main secret
+    bool sparseSecret = false;
+    /// sparse packing: the partial sum ct + Rotate(ct, slots) + ... + Rotate(ct, (N/(2*slots) - 1) * slots) is
+    /// folded into the layer (a second accumulation with the plaintexts rotated by -slots, rotated by slots and
+    /// added to the first one, then doublings by 2*slots, 4*slots, ... of the output in the extended basis)
+    bool partialSum = false;
+};
+
+/**
  * @brief CKKS implementation of the FHE (bootstrapping) capability.
  *
  * Provides regular CKKS bootstrapping (EvalBootstrap, in the coefficients-encoding and slots-encoding
@@ -728,10 +750,12 @@ class FHECKKSRNS : public FHERNS {
      * @param ct input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
      * with the rescaling fused into the final key switching of the transform
+     * @param first how the layer consumes the ciphertext of ModRaiseInPlace (CoeffsToSlots only)
      * @return the transformed ciphertext
      */
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly>& ct,
-                                             uint32_t modReduceLevels = 0) const;
+                                             uint32_t modReduceLevels = 0,
+                                             RaisedFirstLayer first = RaisedFirstLayer()) const;
 
     /**
      * Homomorphic encoding (CoeffsToSlots) over multiple BSGS levels, evaluated
@@ -741,10 +765,12 @@ class FHECKKSRNS : public FHERNS {
      * @param ctxt input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
      * with the rescaling fused into the key switching of the last level
+     * @param first how the first layer consumes the ciphertext of ModRaiseInPlace
      * @return the ciphertext with the coefficients of the input moved to its slots
      */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
-                                           ConstCiphertext<DCRTPoly>& ctxt, uint32_t modReduceLevels = 0) const;
+                                           ConstCiphertext<DCRTPoly>& ctxt, uint32_t modReduceLevels = 0,
+                                           RaisedFirstLayer first = RaisedFirstLayer()) const;
 
     /**
      * Homomorphic decoding (SlotsToCoeffs); the inverse of EvalCoeffsToSlots,
@@ -836,11 +862,12 @@ class FHECKKSRNS : public FHERNS {
     /**
      * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
      * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
-     * and SlotsToCoeffs level budgets. Add the number of levels needed after bootstrapping to obtain the
-     * multiplicative depth of the cryptocontext. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
-     * performed first, so the input needs levelBudget[1] levels and the output keeps that many for the next
-     * bootstrapping: the levels added on top of this depth are the ones available for computation between two
-     * bootstrappings.
+     * and SlotsToCoeffs level budgets, minus the one level the normalization after the modulus raise no longer
+     * consumes (it is rescaled by the extra level of the modulus raise; see ModRaiseInPlace). Add the number of
+     * levels needed after bootstrapping to obtain the multiplicative depth of the cryptocontext. In the StC-first
+     * variant (BTSlotsEncoding), SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels and the
+     * output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
+     * available for computation between two bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param secretKeyDist secret key distribution of the cryptocontext
@@ -850,7 +877,8 @@ class FHECKKSRNS : public FHERNS {
 
     /**
      * Multiplicative depth consumed by functional bootstrapping (EvalFBT): the CoeffsToSlots and SlotsToCoeffs
-     * level budgets plus AdjustDepthFBT. For SPARSE_ENCAPSULATED and HYBRID_TERNARY, firstModSize (the size of the first modulus in
+     * level budgets plus AdjustDepthFBT, minus the one level the normalization after the modulus raise no longer
+     * consumes (see ModRaiseInPlace). For SPARSE_ENCAPSULATED and HYBRID_TERNARY, firstModSize (the size of the first modulus in
      * bits) selects the approximation tables: a first modulus above 60 bits gives the sparse secret Hamming weight
      * 64 and uses the K = 28 tables of SPARSE_TERNARY, which need one more level than the K = 16 tables of the
      * default Hamming weight 32 (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
@@ -872,7 +900,8 @@ class FHECKKSRNS : public FHERNS {
      * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
      * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
      * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize as in GetFBTDepth), and the
-     * evaluation of the Fourier series. SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels
+     * evaluation of the Fourier series, minus the one level the normalization after the modulus raise no longer
+     * consumes (see ModRaiseInPlace). SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels
      * and the output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
      * available for computation between two FE functional bootstrappings.
      *
@@ -1117,17 +1146,94 @@ class FHECKKSRNS : public FHERNS {
     static void EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size,
                                                 uint32_t modReduceLevels);
 
-    void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc,
-                          const std::shared_ptr<DCRTPoly::Params> params) const;
+    void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc) const;
 
     /**
-     * Raises the modulus of a depleted ciphertext (bottom level, noise degree 1) to the raised basis, i.e.,
-     * extends its bottom RNS limbs (a single prime, or compositeDegree primes for composite scaling) to
-     * elementParamsRaisedPtr. For SPARSE_ENCAPSULATED and HYBRID_TERNARY, the ciphertext is switched to the sparse
-     * secret before and back to the main (denser) secret after the modulus raise.
+     * The modulus raise of all bootstrapping flavors, from a depleted ciphertext (noise degree 1, with the scaling
+     * factor of the raised level) to the raised basis Q' (the modulus chain without the extra modulus of
+     * FLEXIBLEAUTOEXT) at noise degree 1, including the normalization multiplication. The steps are:
+     * - for SPARSE_ENCAPSULATED and HYBRID_TERNARY, the ciphertext is switched to the sparse secret;
+     * - the bottom RNS limbs (a single prime, or compositeDegree primes for composite scaling) are extended to the
+     *   raised basis Q' * E, E being the extra level of CryptoParametersCKKSRNS::GetParamsModRaise;
+     * - the ciphertext is multiplied by normalization (as EvalMult by a constant, encoded at the scaling factor of
+     *   the raised level) and rescaled by E, which brings it back to Q' without consuming a level of the chain and
+     *   before any key switching, so the security of the keys is unaffected (OverModRaise,
+     *   https://cic.iacr.org/p/2/3/32). The ciphertext keeps the scaling factor of the raised level; the ratio
+     *   E / scaling factor between this convention and the actual scale is folded into the CoeffsToSlots matrix
+     *   (see ModRaiseRescaleFold in the setups).
+     * For SPARSE_ENCAPSULATED and HYBRID_TERNARY the output stays encrypted under the sparse secret, and for sparse
+     * packing the partial sum of the coefficients is not evaluated: both are done by the first layer of the
+     * homomorphic encoding (see RaisedFirstLayer), whose hoisted key switching attenuates their rounding noise.
+     *
+     * @param raised input/output ciphertext
+     * @param normalization the constant the raised ciphertext is multiplied by
      */
-    void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised,
-                         const std::shared_ptr<DCRTPoly::Params>& elementParamsRaisedPtr) const;
+    void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised, double normalization) const;
+
+    /**
+     * The options of the first layer of the homomorphic encoding for the ciphertext produced by ModRaiseInPlace.
+     *
+     * @param cryptoParams the crypto parameters (secret key distribution)
+     * @param slots number of plaintext slots
+     * @param N ring dimension
+     * @return the options
+     */
+    static RaisedFirstLayer GetRaisedFirstLayer(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
+                                                uint32_t slots, uint32_t N);
+
+    /**
+     * Rotation indices of the baby steps of the first layer of the homomorphic encoding (the layer applied to the
+     * ciphertext of ModRaiseInPlace), without the identity.
+     *
+     * @param slots number of plaintext slots
+     * @param M cyclotomic order
+     * @return the rotation indices
+     */
+    std::vector<uint32_t> FirstLayerBabyStepIndices(uint32_t slots, uint32_t M) const;
+
+    /**
+     * Index in the automorphism key map of the fused rotation key of the automorphism autoIndex: the key switching
+     * from the sparse secret of the encapsulation, rotated as for a regular rotation key, to the main secret (see
+     * EvalBootstrapKeyGen). The indices M + autoIndex do not collide with the automorphism indices (below M) of the
+     * regular keys and of the reserved keys M - 1, M - 2 and M - 4.
+     *
+     * @param autoIndex automorphism index of the rotation
+     * @param M cyclotomic order
+     * @return the index in the key map
+     */
+    static uint32_t FusedRotationKeyIndex(uint32_t autoIndex, uint32_t M) {
+        return M + autoIndex;
+    }
+
+    /**
+     * Hoisted rotation of the ciphertext of ModRaiseInPlace in the extended basis, with the first element added
+     * (as EvalFastRotationExt with addFirst), for the baby steps of the first layer of the homomorphic encoding:
+     * with the fused rotation key whose source is the sparse secret of the encapsulation when sparseSecret (the
+     * identity rotation is then the key switching M - 2 of EvalBootstrapKeyGen), with the regular keys otherwise.
+     *
+     * @param ct the ciphertext
+     * @param index rotation index (0 for the identity)
+     * @param digits the digit decomposition of the ciphertext (EvalFastRotationPrecompute)
+     * @param sparseSecret whether the ciphertext is encrypted under the sparse secret of the encapsulation
+     * @return the rotated ciphertext in the extended basis
+     */
+    Ciphertext<DCRTPoly> EvalFirstLayerRotationExt(ConstCiphertext<DCRTPoly>& ct, uint32_t index,
+                                                   const std::shared_ptr<std::vector<DCRTPoly>>& digits,
+                                                   bool sparseSecret) const;
+
+    /**
+     * Partial sum of sparse packing folded into the first layer of the homomorphic encoding, on its output in
+     * the extended basis: outer += Rotate(outerShifted, slots), where outerShifted is the accumulation with the
+     * plaintexts rotated by -slots, followed by the doublings outer += Rotate(outer, r) for r = 2*slots, 4*slots,
+     * ..., N/4 (the plaintexts of sparse packing are periodic with period 2*slots, so the rotations by multiples of
+     * 2*slots commute with the layer).
+     *
+     * @param outer input/output accumulation of the layer in the extended basis
+     * @param outerShifted the accumulation with the plaintexts rotated by -slots
+     * @param slots number of plaintext slots
+     */
+    static void EvalFirstLayerPartialSumExt(Ciphertext<DCRTPoly>& outer, const Ciphertext<DCRTPoly>& outerShifted,
+                                            uint32_t slots);
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
