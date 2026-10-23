@@ -170,19 +170,93 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     }
 
     /////////////////////////////////////
+    // CKKS bootstrapping modulus raise: the raised basis Q' * E (see the header). Q' is the modulus chain
+    // without the extra modulus of FLEXIBLEAUTOEXT (which is excluded from the modulus raise, as its scaling
+    // factor is not the one of the raised level); E is an extra level of compositeDegree primes of the size of
+    // the scaling modulus, chosen like the primes of the levels of the chain (a prime just above 2^p, or
+    // the composite primes of ParameterGenerationCKKSRNS::CompositePrimeModuliGen) and distinct from the
+    // moduli of Q and of the hybrid key switching basis P (a repeated modulus would be registered with a
+    // different root of unity in the NTT tables). The normalization multiplication after the modulus raise
+    // is rescaled by E (FHECKKSRNS::ModRaiseInPlace), which needs [e_j^{-1}]_q for the remaining moduli q.
+    /////////////////////////////////////
+    {
+        const uint32_t cyclOrder = GetElementParams()->GetCyclotomicOrder();
+        const uint32_t sizeQRaised = sizeQ - ((extraBits > 0) ? 1 : 0);
+        std::vector<NativeInteger> moduliRaised(moduliQ.begin(), moduliQ.begin() + sizeQRaised);
+        std::vector<NativeInteger> rootsRaised(rootsQ.begin(), rootsQ.begin() + sizeQRaised);
+
+        std::vector<NativeInteger> moduliToAvoid = moduliQ;
+        if (GetParamsP() != nullptr) {
+            for (const auto& p : GetParamsP()->GetParams())
+                moduliToAvoid.push_back(p->GetModulus());
+        }
+        auto isUsed = [&moduliToAvoid](const NativeInteger& q) {
+            return std::find(moduliToAvoid.begin(), moduliToAvoid.end(), q) != moduliToAvoid.end();
+        };
+
+        const uint32_t scalingBits = GetPlaintextModulus();
+        std::vector<NativeInteger> moduliE(compositeDegree);
+        if (compositeDegree == 1) {
+            NativeInteger e = FirstPrime<NativeInteger>(scalingBits, cyclOrder);
+            while (isUsed(e))
+                e = NextPrime<NativeInteger>(e, cyclOrder);
+            moduliE[0] = e;
+        } else {
+            const uint32_t registerWordSize = GetRegisterWordSize();
+            for (uint32_t j = 0, remBits = scalingBits; j < compositeDegree; ++j) {
+                const uint32_t bits = std::ceil(static_cast<double>(remBits) / (compositeDegree - j));
+                NativeInteger e = FirstPrime<NativeInteger>(std::min(bits, registerWordSize), cyclOrder);
+                do {
+                    e = PreviousPrime<NativeInteger>(e, cyclOrder);
+                } while (e.GetMSB() > registerWordSize || e.GetMSB() > bits || isUsed(e));
+                moduliE[j] = e;
+                moduliToAvoid.push_back(e);
+                remBits -= e.GetMSB();
+            }
+        }
+
+        m_modRaiseExtraModulus = 1.0;
+        std::vector<NativeInteger> rootsE(compositeDegree);
+        for (uint32_t j = 0; j < compositeDegree; ++j) {
+            rootsE[j] = RootOfUnity<NativeInteger>(cyclOrder, moduliE[j]);
+            m_modRaiseExtraModulus *= moduliE[j].ConvertToDouble();
+        }
+        ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsE, cyclOrder, moduliE);
+
+        moduliRaised.insert(moduliRaised.end(), moduliE.begin(), moduliE.end());
+        rootsRaised.insert(rootsRaised.end(), rootsE.begin(), rootsE.end());
+        m_paramsModRaise = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliRaised, rootsRaised);
+
+        // tables of the rescales dropping e_{d-1}, ..., e_0 in turn: [e_j^{-1}]_q for the moduli q that remain
+        m_modRaiseExtraInvModq.resize(compositeDegree);
+        for (uint32_t k = 0; k < compositeDegree; ++k) {
+            const uint32_t remaining = sizeQRaised + compositeDegree - 1 - k;
+            const NativeInteger& e = moduliRaised[remaining];
+            m_modRaiseExtraInvModq[k].resize(remaining);
+            for (uint32_t i = 0; i < remaining; ++i)
+                m_modRaiseExtraInvModq[k][i] = e.ModInverse(moduliRaised[i]);
+        }
+    }
+
+    /////////////////////////////////////
     // Composite scaling : bootstrapping modulus raise (ExtendCiphertext)
     // Tables for the exact CRT basis extension (DCRTPoly::ExpandCRTBasis) from the small
     // bottom basis Ql = {q_0, ..., q_{d-1}}, d = compositeDegree (the towers remaining in
-    // the depleted ciphertext), to the full basis Q. ComplQl = {q_d, ..., q_{L-1}} is the
-    // complement of Ql in Q. Precomputing these here keeps ExtendCiphertext in full RNS
+    // the depleted ciphertext), to the raised basis Q' * E. ComplQl = {q_d, ..., q_{L-1}, e_0, ..., e_{d-1}}
+    // is the complement of Ql in the raised basis. Precomputing these here keeps ExtendCiphertext in full RNS
     // (no multiprecision arithmetic at runtime).
     /////////////////////////////////////
     if (compositeDegree > 1 && sizeQ > compositeDegree) {
         uint32_t sizeQl = compositeDegree;
-        uint32_t sizeComplQl = sizeQ - sizeQl;
+        const auto& paramsRaised = m_paramsModRaise->GetParams();
+        uint32_t sizeComplQl = paramsRaised.size() - sizeQl;
 
-        std::vector<NativeInteger> moduliComplQl(moduliQ.begin() + sizeQl, moduliQ.end());
-        std::vector<NativeInteger> rootsComplQl(rootsQ.begin() + sizeQl, rootsQ.end());
+        std::vector<NativeInteger> moduliComplQl(sizeComplQl);
+        std::vector<NativeInteger> rootsComplQl(sizeComplQl);
+        for (uint32_t j = 0; j < sizeComplQl; ++j) {
+            moduliComplQl[j] = paramsRaised[sizeQl + j]->GetModulus();
+            rootsComplQl[j] = paramsRaised[sizeQl + j]->GetRootOfUnity();
+        }
         m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(GetElementParams()->GetCyclotomicOrder(),
                                                                              moduliComplQl, rootsComplQl);
 
@@ -217,16 +291,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                         m_modRaiseAlphaQlModComplq[a - 1][j].ModAddFast(QlModqj, moduliComplQl[j]);
         }
 
-        if (m_modqBarrettMu.size() == sizeQ) {
-            // reuse the Barrett constants computed for HYBRID above
-            m_modRaiseModComplqBarrettMu.assign(m_modqBarrettMu.begin() + sizeQl, m_modqBarrettMu.end());
-        } else {
-            m_modRaiseModComplqBarrettMu.resize(sizeComplQl);
-            const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
-            for (uint32_t j = 0; j < sizeComplQl; ++j)
-                m_modRaiseModComplqBarrettMu[j] =
-                        (BarrettBase128Bit / BigInteger(moduliComplQl[j])).ConvertToInt<DoubleNativeInt>();
-        }
+        m_modRaiseModComplqBarrettMu.resize(sizeComplQl);
+        const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+        for (uint32_t j = 0; j < sizeComplQl; ++j)
+            m_modRaiseModComplqBarrettMu[j] =
+                    (BarrettBase128Bit / BigInteger(moduliComplQl[j])).ConvertToInt<DoubleNativeInt>();
 
         // 1./q_i for q_i in Ql (used for the fractional part of the overflow correction)
         m_modRaiseqInv.resize(sizeQl);
@@ -298,14 +367,16 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         uint32_t n = GetElementParams()->GetRingDimension();
         uint64_t primeStep = FindAuxPrimeStep();
 
-        // the auxiliary primes must differ from all moduli in Q and in the hybrid key
-        // switching basis P (a repeated modulus would be registered with a different root
-        // of unity in the NTT tables)
+        // the auxiliary primes must differ from all moduli in Q, in the hybrid key switching basis P and in
+        // the extra level of the bootstrapping modulus raise (a repeated modulus would be registered with a
+        // different root of unity in the NTT tables)
         std::vector<NativeInteger> moduliToAvoid = moduliQ;
         if (GetParamsP() != nullptr) {
             for (const auto& p : GetParamsP()->GetParams())
                 moduliToAvoid.push_back(p->GetModulus());
         }
+        for (uint32_t j = sizeQ - ((extraBits > 0) ? 1 : 0); j < m_paramsModRaise->GetParams().size(); ++j)
+            moduliToAvoid.push_back(m_paramsModRaise->GetParams()[j]->GetModulus());
 
         std::vector<NativeInteger> moduliPSparse(sizePSparse);
         std::vector<NativeInteger> rootsPSparse(sizePSparse);
