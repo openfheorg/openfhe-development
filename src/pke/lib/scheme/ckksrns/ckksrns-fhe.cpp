@@ -145,6 +145,27 @@ double ModRaiseRescaleFold(const std::shared_ptr<lbcrypto::CryptoParametersCKKSR
     return cryptoParams->GetModRaiseExtraModulus() / cryptoParams->GetScalingFactorReal(lvl);
 }
 
+// ModRaise-first bootstrapping declares the raised ciphertext at the scaling factor of the raised level, while an
+// input taken from the bottom level carries the scaling factor of that level: for the techniques tracking
+// level-specific scaling factors the two differ by this fixed ratio SF(bottom) / SF(raised), by which the message
+// (and only the message: the integer overflow of the raise is set by q0) is then too small. The ratio is folded
+// into the SlotsToCoeffs matrix, which acts after the approximate modular reduction has removed the overflow (a
+// CoeffsToSlots fold would scale the overflow as well and break the integrality the modular reduction relies on),
+// so that the step before the modulus raise (AdjustCiphertext, a multiplication and a rescale) can be skipped when
+// no correction 2^-c is needed; the AdjustCiphertext path, which lands exactly on SF(raised), multiplies by the
+// same ratio to stay consistent with the fold. 1 for the FIXED* techniques.
+double ModRaiseRealignment(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& cryptoParams) {
+    const auto st = cryptoParams->GetScalingTechnique();
+    if (st == lbcrypto::FIXEDMANUAL || st == lbcrypto::FIXEDAUTO)
+        return 1.0;
+    const uint32_t lvl = (st == lbcrypto::FLEXIBLEAUTOEXT) ? 1 : 0;
+    // the bottom level is the one with compositeDegree towers (the scaling factors are tabulated by the number
+    // of towers dropped, in multiples of compositeDegree)
+    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+    const uint32_t bottom = sizeQ - cryptoParams->GetCompositeDegree();
+    return cryptoParams->GetScalingFactorReal(bottom) / cryptoParams->GetScalingFactorReal(lvl);
+}
+
 // Checks, before the unsigned level arithmetic of a bootstrapping setup, that the modulus chain of L0 towers
 // (compositeDegree towers per level) can hold the CoeffsToSlots and SlotsToCoeffs precomputations. CoeffsToSlots
 // is evaluated right after the modulus raise (its normalization no longer consumes a level of the chain) and has
@@ -380,6 +401,10 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         // residual c1 only; the exact 2^deg telescopes against the integer restore.
         double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k * ModRaiseRescaleFold(cryptoParams);
         double scaleDec = 1.0 / pre;
+        // ModRaise-first: the message reaches the raise at the scaling factor of the bottom level (see
+        // ModRaiseRealignment); StC-first lands on the raised scaling factor through its own SlotsToCoeffs fold
+        if (!precom->BTSlotsEncoding)
+            scaleDec /= ModRaiseRealignment(cryptoParams);
 
         // CoeffsToSlots starts right after the modulus raise, at the raised level
         uint32_t lEnc = L0 - compositeDegree * precom->m_paramsEnc.lvlb;
@@ -681,6 +706,9 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     // the signal rather than being amplified by 2^deg. scaleDec inverts the residual c1 only.
     double scaleEnc = ((compositeDegree > 1) ? pre / post : pre) / k * ModRaiseRescaleFold(cryptoParams);
     double scaleDec = 1.0 / pre;
+    // ModRaise-first: the message reaches the raise at the scaling factor of the bottom level (see ModRaiseRealignment)
+    if (!p.BTSlotsEncoding)
+        scaleDec /= ModRaiseRealignment(cryptoParams);
 
     // compute # of levels to remain when encoding the coefficients
     // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
@@ -1018,7 +1046,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     // For composite scaling, deg may exceed the correction factor (the check above is skipped, since with
     // larger composite degrees the first modulus is typically much larger than the scaling factor); in that
     // case no correction is applied instead of letting the unsigned subtraction wrap around.
-    uint32_t correction = (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
+    [[maybe_unused]] uint32_t correction =
+            (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
     double post = std::pow(2, static_cast<double>(deg));
 
     // For FLEXIBLE* the exact power-of-two 1/post is applied as the shrink before CoeffsToSlots (in the
@@ -1043,7 +1072,33 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     auto algo = cc->GetScheme();
     algo->ModReduceInternalInPlace(raised, compositeDegree * (raised->GetNoiseScaleDeg() - 1));
     uint32_t lvl = cryptoParams->GetScalingTechnique() != FLEXIBLEAUTOEXT ? 0 : 1;
-    AdjustCiphertext(raised, std::pow(2, -static_cast<int32_t>(correction)), lvl);
+
+    // The step before the modulus raise scales the message down by 2^-correction and brings it to the scaling factor
+    // of the raised level, a multiplication followed by a rescale that costs a level. When no correction is needed
+    // (deg >= correction factor: composite scaling, or a first modulus large enough relative to the scaling
+    // modulus), the step is skipped: for FIXED* the modulus raise reads the bottom tower of the input as is, and for
+    // the techniques tracking level-specific scaling factors an input at the bottom level (with the scaling factor
+    // of that level) is raised at that scaling factor, whose ratio to the one of the raised level is folded into
+    // the SlotsToCoeffs matrix (see ModRaiseRealignment). An input above the bottom level still goes through the
+    // step, which realigns it with the same ratio so that both paths match the matrix.
+    const double realignment = ModRaiseRealignment(cryptoParams);
+    const bool fixedScaling = (st == FIXEDMANUAL || st == FIXEDAUTO);
+    const bool atBottomLevel = (raised->GetElements()[0].GetNumOfElements() == compositeDegree);
+#if NATIVEINT == 128
+    // the 128-bit build applies no correction (its moduli are large enough)
+    const uint32_t appliedCorrection = 0;
+#else
+    const uint32_t appliedCorrection = correction;
+#endif
+    if (appliedCorrection == 0 && (fixedScaling || atBottomLevel)) {
+        if (!fixedScaling)
+            CheckStCFirstInputScalingFactor(raised);
+    } else {
+        if (atBottomLevel)
+            OPENFHE_THROW("The input to bootstrapping needs one more level for the correction factor (" +
+                          std::to_string(m_correctionFactor) + ") applied before the modulus raise.");
+        AdjustCiphertext(raised, std::pow(2, -static_cast<int32_t>(appliedCorrection)) * realignment, lvl);
+    }
 
     uint32_t N = cc->GetRingDimension();
 
