@@ -105,6 +105,7 @@ The table below shows the current list of options, definition for the option, an
   NATIVE_SIZE                   Set default word size for native integer arithmetic to 64 or 128 bits                                                                                                 64
   CKKS_M_FACTOR                 Parameter used to strengthen the CKKS adversarial model in scenarios where decryption results are shared among multiple parties (See Security.md for more details)    1
   PARTIAL_SUM_RADIX             Radix of the rotation-fold accumulations (bootstrap partial sums, EvalSum); higher powers of two reduce runtime but need more evaluation keys                         4
+  HKS_AUX_MOD_SIZE              Size in bits of the auxiliary (special) primes of HYBRID key switching; 0 keeps the built-in size, the largest modulus of the native word                             0
  ============================== ===================================================================================================================================================================== =======
 
 .. note:: More Options will be added as development progresses

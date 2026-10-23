@@ -113,12 +113,12 @@ if(NOT PARTIAL_SUM_RADIX)
     set(PARTIAL_SUM_RADIX 4)
 endif()
 
-# Size in bits of the auxiliary (special) primes of HYBRID key switching. 0 keeps the built-in
-# size: the largest modulus of the native word (60 bits for NATIVE_SIZE=64, 28 for 32), and
-# 119 bits for CKKS with NATIVE_SIZE=128. A smaller size, e.g. -DHKS_AUX_MOD_SIZE=30 with
-# NATIVE_SIZE=64, makes the auxiliary modulus P a product of more and smaller primes. The primes
-# are congruent to 1 modulo 2N (times the odd part of the plaintext modulus for BGV), so the size
-# has to exceed the bit length of that product.
+# Size in bits of the auxiliary (special) primes of HYBRID key switching; 0 keeps the built-in size,
+# the largest modulus of the native word. The use for it is a narrower size in a NATIVE_SIZE=64
+# build, e.g. -DHKS_AUX_MOD_SIZE=30, which makes the auxiliary modulus P a product of more and
+# smaller primes that a backend can evaluate in 32-bit arithmetic. The primes are 1 modulo 2N
+# (times the odd part of the plaintext modulus for BGV), so the size has to exceed the bit length
+# of that product.
 if(NOT HKS_AUX_MOD_SIZE)
     set(HKS_AUX_MOD_SIZE 0)
 endif()

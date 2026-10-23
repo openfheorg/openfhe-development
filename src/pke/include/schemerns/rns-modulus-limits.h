@@ -34,6 +34,7 @@
 #include <cstdint>
 #include <string_view>
 
+#include "config_core.h"
 #include "math/hal/basicint.h"
 
 namespace lbcrypto {
@@ -44,12 +45,13 @@ inline constexpr std::uint32_t MIN_SIZE = 14;
 inline constexpr std::uint32_t MAX_SIZE = MAX_MODULUS_SIZE;
 
 // Size in bits of the auxiliary (special) primes of HYBRID key switching: the HKS_AUX_MOD_SIZE
-// CMake variable when it is set, otherwise the largest modulus of the native word (CKKS uses
-// 119 instead of 121 bits on 128-bit words in that case).
+// CMake variable when it is set, otherwise the largest modulus of the native word, of which CKKS
+// leaves two bits unused on 128-bit words.
 static_assert(HKS_AUX_MOD_SIZE == 0 || (HKS_AUX_MOD_SIZE >= MIN_SIZE && HKS_AUX_MOD_SIZE <= MAX_SIZE),
               "HKS_AUX_MOD_SIZE must be 0 or between the smallest and the largest supported modulus size");
-inline constexpr bool USER_AUX_SIZE = (HKS_AUX_MOD_SIZE != 0);
-inline constexpr std::uint32_t AUX_SIZE = USER_AUX_SIZE ? HKS_AUX_MOD_SIZE : MAX_SIZE;
+inline constexpr std::uint32_t AUX_SIZE = HKS_AUX_MOD_SIZE ? HKS_AUX_MOD_SIZE : MAX_SIZE;
+inline constexpr std::uint32_t AUX_SIZE_CKKS =
+        HKS_AUX_MOD_SIZE ? HKS_AUX_MOD_SIZE : (NATIVEINT == 128 ? 119 : MAX_SIZE);
 
 }  // namespace DCRT_MODULUS
 }  // namespace lbcrypto
