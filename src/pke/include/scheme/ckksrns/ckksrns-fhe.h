@@ -864,10 +864,14 @@ class FHECKKSRNS : public FHERNS {
      * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
      * and SlotsToCoeffs level budgets, minus the one level the normalization after the modulus raise no longer
      * consumes (it is rescaled by the extra level of the modulus raise; see ModRaiseInPlace). Add the number of
-     * levels needed after bootstrapping to obtain the multiplicative depth of the cryptocontext. In the StC-first
-     * variant (BTSlotsEncoding), SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels and the
-     * output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
-     * available for computation between two bootstrappings.
+     * levels needed after bootstrapping to obtain the multiplicative depth of the cryptocontext. In the ModRaise-first
+     * variant the input needs one level above the bottom one for the correction before the modulus raise, except
+     * when no correction is needed (the first modulus is at least 2^correctionFactor times the scaling modulus, as
+     * with composite scaling), in which case the input may be at the bottom level and all the levels added on top of
+     * this depth are available for computation. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
+     * performed first, so the input needs levelBudget[1] levels and the output keeps that many for the next
+     * bootstrapping: the levels added on top of this depth are the ones available for computation between two
+     * bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param secretKeyDist secret key distribution of the cryptocontext
