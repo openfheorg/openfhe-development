@@ -44,14 +44,14 @@ inline constexpr std::uint32_t DEFAULT_EXTRA_MOD_SIZE = 20;
 inline constexpr std::uint32_t MIN_SIZE = 14;
 inline constexpr std::uint32_t MAX_SIZE = MAX_MODULUS_SIZE;
 
-// Size in bits of the auxiliary (special) primes of HYBRID key switching: the HKS_AUX_MOD_SIZE
+// Size in bits of the auxiliary (special) primes that key switching works over, the modulus P of
+// HYBRID key switching and the basis of the CKKS sparse secret encapsulation: the KS_AUX_MOD_SIZE
 // CMake variable when it is set, otherwise the largest modulus of the native word, of which CKKS
 // leaves two bits unused on 128-bit words.
-static_assert(HKS_AUX_MOD_SIZE == 0 || (HKS_AUX_MOD_SIZE >= MIN_SIZE && HKS_AUX_MOD_SIZE <= MAX_SIZE),
-              "HKS_AUX_MOD_SIZE must be 0 or between the smallest and the largest supported modulus size");
-inline constexpr std::uint32_t AUX_SIZE = HKS_AUX_MOD_SIZE ? HKS_AUX_MOD_SIZE : MAX_SIZE;
-inline constexpr std::uint32_t AUX_SIZE_CKKS =
-        HKS_AUX_MOD_SIZE ? HKS_AUX_MOD_SIZE : (NATIVEINT == 128 ? 119 : MAX_SIZE);
+static_assert(KS_AUX_MOD_SIZE == 0 || (KS_AUX_MOD_SIZE >= MIN_SIZE && KS_AUX_MOD_SIZE <= MAX_SIZE),
+              "KS_AUX_MOD_SIZE must be 0 or between the smallest and the largest supported modulus size");
+inline constexpr std::uint32_t AUX_SIZE = KS_AUX_MOD_SIZE ? KS_AUX_MOD_SIZE : MAX_SIZE;
+inline constexpr std::uint32_t AUX_SIZE_CKKS = KS_AUX_MOD_SIZE ? KS_AUX_MOD_SIZE : (NATIVEINT == 128 ? 119 : MAX_SIZE);
 
 }  // namespace DCRT_MODULUS
 }  // namespace lbcrypto

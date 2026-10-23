@@ -171,7 +171,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                    std::to_string(auxBits) + " bits congruent to 1 modulo " + std::to_string(primeStep) +
                    " (a multiple of the ring dimension, and of the odd part of the plaintext modulus for BGV), but only " +
                    std::to_string(found) +
-                   " exist; increase HKS_AUX_MOD_SIZE, or decrease the ring dimension or the plaintext modulus.";
+                   " exist; increase KS_AUX_MOD_SIZE, or decrease the ring dimension or the plaintext modulus.";
         };
         if (GetMSB64(primeStep) >= auxBits)
             OPENFHE_THROW(auxPrimesMessage(0));

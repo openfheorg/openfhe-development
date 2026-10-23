@@ -113,14 +113,14 @@ if(NOT PARTIAL_SUM_RADIX)
     set(PARTIAL_SUM_RADIX 4)
 endif()
 
-# Size in bits of the auxiliary (special) primes of HYBRID key switching; 0 keeps the built-in size,
+# Size in bits of the auxiliary (special) primes that key switching works over: the modulus P of
+# HYBRID key switching and the basis of the sparse secret encapsulation. 0 keeps the built-in size,
 # the largest modulus of the native word. The use for it is a narrower size in a NATIVE_SIZE=64
-# build, e.g. -DHKS_AUX_MOD_SIZE=30, which makes the auxiliary modulus P a product of more and
-# smaller primes that a backend can evaluate in 32-bit arithmetic. The primes are 1 modulo 2N
-# (times the odd part of the plaintext modulus for BGV), so the size has to exceed the bit length
-# of that product.
-if(NOT HKS_AUX_MOD_SIZE)
-    set(HKS_AUX_MOD_SIZE 0)
+# build, e.g. -DKS_AUX_MOD_SIZE=30, which makes those moduli a product of more and smaller primes
+# that a backend can evaluate in 32-bit arithmetic. The primes are 1 modulo 2N (times the odd part
+# of the plaintext modulus for BGV), so the size has to exceed the bit length of that product.
+if(NOT KS_AUX_MOD_SIZE)
+    set(KS_AUX_MOD_SIZE 0)
 endif()
 
 # Name of the separate sink library built when the built-in sink is kept out of
@@ -147,7 +147,7 @@ message(STATUS "WITH_OPENMP:                  ${WITH_OPENMP}")
 message(STATUS "NATIVE_SIZE:                  ${NATIVE_SIZE}")
 message(STATUS "CKKS_M_FACTOR:                ${CKKS_M_FACTOR}")
 message(STATUS "PARTIAL_SUM_RADIX:            ${PARTIAL_SUM_RADIX}")
-message(STATUS "HKS_AUX_MOD_SIZE:             ${HKS_AUX_MOD_SIZE}")
+message(STATUS "KS_AUX_MOD_SIZE:              ${KS_AUX_MOD_SIZE}")
 message(STATUS "WITH_NATIVEOPT:               ${WITH_NATIVEOPT}")
 message(STATUS "WITH_COVTEST:                 ${WITH_COVTEST}")
 message(STATUS "WITH_NOISE_DEBUG:             ${WITH_NOISE_DEBUG}")
@@ -480,17 +480,17 @@ else()
     message(SEND_ERROR "***ERROR*** need a Native implementation")
 endif()
 
-# The auxiliary primes of HYBRID key switching have to fit in a native word
-if(NOT HKS_AUX_MOD_SIZE EQUAL 0)
+# The auxiliary primes of key switching have to fit in a native word
+if(NOT KS_AUX_MOD_SIZE EQUAL 0)
     if("${NATIVEINT}" EQUAL 128)
-        set(HKS_AUX_MOD_SIZE_MAX 121)
+        set(KS_AUX_MOD_SIZE_MAX 121)
     elseif("${NATIVEINT}" EQUAL 64)
-        set(HKS_AUX_MOD_SIZE_MAX 60)
+        set(KS_AUX_MOD_SIZE_MAX 60)
     else()
-        set(HKS_AUX_MOD_SIZE_MAX 28)
+        set(KS_AUX_MOD_SIZE_MAX 28)
     endif()
-    if(NOT "${HKS_AUX_MOD_SIZE}" MATCHES "^[0-9]+$" OR HKS_AUX_MOD_SIZE LESS 14 OR HKS_AUX_MOD_SIZE GREATER HKS_AUX_MOD_SIZE_MAX)
-        message(SEND_ERROR "HKS_AUX_MOD_SIZE is ${HKS_AUX_MOD_SIZE}; it must be 0 (built-in size) or an integer between 14 and ${HKS_AUX_MOD_SIZE_MAX} for NATIVE_SIZE=${NATIVE_SIZE}")
+    if(NOT "${KS_AUX_MOD_SIZE}" MATCHES "^[0-9]+$" OR KS_AUX_MOD_SIZE LESS 14 OR KS_AUX_MOD_SIZE GREATER KS_AUX_MOD_SIZE_MAX)
+        message(SEND_ERROR "KS_AUX_MOD_SIZE is ${KS_AUX_MOD_SIZE}; it must be 0 (built-in size) or an integer between 14 and ${KS_AUX_MOD_SIZE_MAX} for NATIVE_SIZE=${NATIVE_SIZE}")
     endif()
 endif()
 

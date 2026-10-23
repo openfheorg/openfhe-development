@@ -45,6 +45,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <vector>
 
 #include "math/dftransform.h"
+#include "schemerns/rns-modulus-limits.h"
 
 namespace lbcrypto {
 
@@ -245,6 +246,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     // - without composite scaling, two primes of MAX_MODULUS_SIZE/2 + 3 = 33 bits (the 64-bit build);
     // - with composite scaling, ~66 bits for a bottom modulus of at most 60 bits and ~127 bits for a
     //   larger one (at most 121 bits), split into primes that fit the register word size.
+    // A build that sets KS_AUX_MOD_SIZE caps the primes here as well, which splits the same total
+    // over more of them.
     // The primes of the composite scaling cases are searched upwards from the target size, so
     // that enough primes congruent to 1 modulo 2N exist for ring dimensions up to 2^17 (the
     // resulting P' is then slightly larger than the target, which only reduces the noise).
@@ -284,11 +287,15 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         const bool largeBottom = (m_sparseKSHammingWeight > 32);
         const uint32_t auxBitsSparse = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
         const uint32_t registerBits = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
-        const uint32_t maxPrimeBits = std::min<uint32_t>(registerBits, MAX_MODULUS_SIZE);
+        // an auxiliary prime size set by the build caps these primes too; the cap is strict because
+        // the search below walks upwards from the target size. MAX_MODULUS_SIZE + 1 means no cap.
+        const uint32_t auxBitsCap =
+                (DCRT_MODULUS::AUX_SIZE < MAX_MODULUS_SIZE) ? DCRT_MODULUS::AUX_SIZE : (MAX_MODULUS_SIZE + 1);
+        const uint32_t maxPrimeBits = std::min({registerBits, static_cast<uint32_t>(MAX_MODULUS_SIZE), auxBitsCap});
         uint32_t sizePSparse = 2;
         uint32_t bitsPSparse = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
         // the primes have to fit (strictly) in the register word size and in a native integer
-        while (bitsPSparse >= registerBits || bitsPSparse > MAX_MODULUS_SIZE) {
+        while (bitsPSparse >= registerBits || bitsPSparse > MAX_MODULUS_SIZE || bitsPSparse >= auxBitsCap) {
             ++sizePSparse;
             bitsPSparse = (auxBitsSparse + sizePSparse - 1) / sizePSparse;
         }
@@ -324,8 +331,10 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                 found = (std::find(moduliToAvoid.begin(), moduliToAvoid.end(), pCur) != moduliToAvoid.end());
             } while (found);
             if (pCur.GetMSB() > maxPrimeBits)
-                OPENFHE_THROW("Could not find enough auxiliary primes of at most " + std::to_string(maxPrimeBits) +
-                              " bits for SPARSE_ENCAPSULATED at this ring dimension.");
+                OPENFHE_THROW("Could not find " + std::to_string(sizePSparse) + " auxiliary primes of at most " +
+                              std::to_string(maxPrimeBits) +
+                              " bits for the sparse secret key switching at this ring dimension; increase "
+                              "KS_AUX_MOD_SIZE or the register word size, or decrease the ring dimension.");
             moduliPSparse[j] = pCur;
             rootsPSparse[j] = RootOfUnity<NativeInteger>(2 * n, moduliPSparse[j]);
             modulusPSparse *= BigInteger(moduliPSparse[j]);
