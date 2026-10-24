@@ -36,9 +36,11 @@
 
 #include "keyswitch/keyswitch-hybrid.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -214,6 +216,67 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
     cv.resize(2);
 }
 
+namespace {
+
+// Fused ModDown + modulus reduction of one element in basis QlP; see DCRTPoly::ApproxModDownAndScale.
+DCRTPoly ApproxModDownAndScale(const DCRTPoly& c, uint32_t sizeQl, uint32_t levels,
+                               const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+    return c.ApproxModDownAndScale(
+            cryptoParams->GetParamsQlHybrid(sizeQl), cryptoParams->GetParamsQlHybrid(sizeQl - levels),
+            cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(), cryptoParams->GetPModq(),
+            cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
+            cryptoParams->GetModqBarrettMu(), cryptoParams->GetqlInvModq(), sizeQ - sizeQl, levels);
+}
+
+// The metadata update of LeveledSHECKKSRNS::ModReduceInternalInPlace for a ciphertext whose elements had sizeQl
+// towers before `levels` of them were dropped.
+void ModReduceMetadataInPlace(Ciphertext<DCRTPoly>& ciphertext, uint32_t sizeQl, uint32_t levels,
+                              const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
+    ciphertext->SetLevel(ciphertext->GetLevel() + levels);
+    for (uint32_t i = 0; i < levels; ++i)
+        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / cryptoParams->GetModReduceFactor(sizeQl - 1 - i));
+}
+
+std::shared_ptr<CryptoParametersCKKSRNS> GetCKKSParams(ConstCiphertext<DCRTPoly> ciphertext, const char* func) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    if (!cryptoParams)
+        OPENFHE_THROW(std::string(func) + " requires parameters whose modulus reduction is DropLastElementAndScale.");
+    return cryptoParams;
+}
+
+}  // namespace
+
+void KeySwitchHYBRID::KeySwitchAndModReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek,
+                                                   uint32_t levels) const {
+    const auto cryptoParams = GetCKKSParams(ciphertext, __func__);
+
+    auto& cv = ciphertext->GetElements();
+    const auto paramsQl = cv[0].GetParams();
+    const uint32_t sizeQl = paramsQl->GetParams().size();
+    const auto& PModq = cryptoParams->GetPModq();
+
+    auto ba = EvalFastKeySwitchCoreExt(EvalKeySwitchPrecomputeCore(cv.back(), ek->GetCryptoParameters()), ek, paramsQl);
+
+    // the elements not being switched (c0, and c1 for a three-element ciphertext) are raised by P and added to
+    // the key switched terms in the extended basis; P * c has zero residues modulo P, so the fused ModDown of
+    // the sum equals c + ModDown(ba) exactly
+    const uint32_t numRaised = std::min<uint32_t>(cv.size() - 1, 2);
+    for (uint32_t k = 0; k < numRaised; ++k) {
+        cv[k].SetFormat(Format::EVALUATION);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQl))
+        for (uint32_t i = 0; i < sizeQl; ++i)
+            ba[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], PModq[i]);
+    }
+
+    cv[0] = ApproxModDownAndScale(ba[0], sizeQl, levels, cryptoParams);
+    cv[1] = ApproxModDownAndScale(ba[1], sizeQl, levels, cryptoParams);
+    cv.resize(2);
+
+    ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
+}
+
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -270,6 +333,24 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
 
     auto result = ciphertext->CloneEmpty();
     result->SetElements(std::move(elements));
+    return result;
+}
+
+Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDownAndModReduce(ConstCiphertext<DCRTPoly> ciphertext,
+                                                                uint32_t levels) const {
+    const auto cryptoParams = GetCKKSParams(ciphertext, __func__);
+
+    const auto& cv = ciphertext->GetElements();
+    const uint32_t sizeQl = cv[0].GetNumOfElements() - cryptoParams->GetParamsP()->GetParams().size();
+
+    std::vector<DCRTPoly> elements;
+    elements.reserve(2);
+    elements.emplace_back(ApproxModDownAndScale(cv[0], sizeQl, levels, cryptoParams));
+    elements.emplace_back(ApproxModDownAndScale(cv[1], sizeQl, levels, cryptoParams));
+
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements(std::move(elements));
+    ModReduceMetadataInPlace(result, sizeQl, levels, cryptoParams);
     return result;
 }
 

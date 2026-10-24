@@ -49,6 +49,52 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
+namespace {
+
+// The relinearization of a product can be fused with its rescaling when the public ModReduce rescales
+// (FIXEDMANUAL only; for the other scaling techniques it is a no-op and the rescaling is deferred to the next
+// multiplication) and HYBRID key switching provides the fused operation.
+bool FuseRelinAndModReduce(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+    return cryptoParams->GetScalingTechnique() == FIXEDMANUAL && cryptoParams->GetKeySwitchTechnique() == HYBRID;
+}
+
+const EvalKey<DCRTPoly>& GetRelinKey(const CryptoContext<DCRTPoly>& cc, ConstCiphertext<DCRTPoly>& ciphertext) {
+    const auto& evalKeyVec = cc->GetEvalMultKeyVector(ciphertext->GetKeyTag());
+    if (evalKeyVec.empty())
+        OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
+    return evalKeyVec[0];
+}
+
+// EvalMult with relinearization followed by the public ModReduce; bit-identical to that sequence, with the
+// relinearization and the rescaling fused when FuseRelinAndModReduce allows it (fewer NTTs).
+Ciphertext<DCRTPoly> EvalMultAndModReduce(const CryptoContext<DCRTPoly>& cc, ConstCiphertext<DCRTPoly>& a,
+                                          ConstCiphertext<DCRTPoly>& b) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(a->GetCryptoParameters());
+    if (FuseRelinAndModReduce(cryptoParams)) {
+        auto result = cc->EvalMultNoRelin(a, b);
+        cc->KeySwitchAndModReduceInPlace(result, GetRelinKey(cc, a), cryptoParams->GetCompositeDegree());
+        return result;
+    }
+    auto result = cc->EvalMult(a, b);
+    cc->ModReduceInPlace(result);
+    return result;
+}
+
+// EvalSquare with relinearization followed by the public ModReduce; see EvalMultAndModReduce.
+Ciphertext<DCRTPoly> EvalSquareAndModReduce(const CryptoContext<DCRTPoly>& cc, ConstCiphertext<DCRTPoly>& a) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(a->GetCryptoParameters());
+    if (FuseRelinAndModReduce(cryptoParams)) {
+        auto result = cc->GetScheme()->EvalSquare(a);
+        cc->KeySwitchAndModReduceInPlace(result, GetRelinKey(cc, a), cryptoParams->GetCompositeDegree());
+        return result;
+    }
+    auto result = cc->EvalSquare(a);
+    cc->ModReduceInPlace(result);
+    return result;
+}
+
+}  // namespace
+
 //------------------------------------------------------------------------------
 // LINEAR WEIGHTED SUM
 //------------------------------------------------------------------------------
@@ -224,8 +270,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
     // computes all powers up to k for x
     for (uint32_t i = 2; i <= k; ++i) {
         if (0 == (i & (i - 1))) {
-            powers[i - 1] = cc->EvalSquare(powers[i / 2 - 1]);
-            cc->ModReduceInPlace(powers[i - 1]);
+            powers[i - 1] = EvalSquareAndModReduce(cc, powers[i / 2 - 1]);
         } else {
             if (indices[i - 1]) {
                 uint64_t p = (uint64_t(1) << (GetMSB(i) - 1)) - 1;
@@ -233,8 +278,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersLinear(ConstCiphertext
                 uint32_t diff = powers[p]->GetLevel() - powers[r]->GetLevel();
                 cc->LevelReduceInPlace(powers[r], nullptr, diff / compositeDegree);
 
-                powers[i - 1] = cc->EvalMult(powers[p], powers[r]);
-                cc->ModReduceInPlace(powers[i - 1]);
+                powers[i - 1] = EvalMultAndModReduce(cc, powers[p], powers[r]);
             }
         }
     }
@@ -268,18 +312,17 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersPS(ConstCiphertext<DCR
     uint32_t rem = 0;
     for (uint32_t i = 2; i <= k; ++i) {
         if (rem == 0) {
-            powers[i - 1] = cc->EvalSquare(powers[(powerOf2 >> 1) - 1]);
+            powers[i - 1] = EvalSquareAndModReduce(cc, powers[(powerOf2 >> 1) - 1]);
         } else {
             uint32_t diff = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
             cc->LevelReduceInPlace(powers[rem - 1], nullptr, diff / compositeDegree);
-            powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
+            powers[i - 1] = EvalMultAndModReduce(cc, powers[powerOf2 - 1], powers[rem - 1]);
         }
 
         if (++rem == powerOf2) {
             powerOf2 <<= 1;
             rem = 0;
         }
-        cc->ModReduceInPlace(powers[i - 1]);
     }
 
     // Bring all powers to the level and the noise-scale degree of the top power (under FIXEDMANUAL every power
@@ -294,10 +337,8 @@ std::shared_ptr<seriesPowers<DCRTPoly>> internalEvalPowersPS(ConstCiphertext<DCR
     auto power2km1 = powers.back();
 
     for (uint32_t i = 1; i < m; ++i) {
-        powers2[i] = cc->EvalSquare(powers2[i - 1]);
-        cc->ModReduceInPlace(powers2[i]);
-        power2km1 = cc->EvalMult(powers2[i], power2km1);
-        cc->ModReduceInPlace(power2km1);
+        powers2[i] = EvalSquareAndModReduce(cc, powers2[i - 1]);
+        power2km1 = EvalMultAndModReduce(cc, powers2[i], power2km1);
     }
 
     return std::make_shared<seriesPowers<DCRTPoly>>(std::move(powers), std::move(powers2), std::move(power2km1), k, m);
@@ -430,8 +471,7 @@ Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly>& x, const std::ve
 
 #pragma omp taskwait
 
-    auto result = cc->EvalMult(cu, qu);
-    cc->ModReduceInPlace(result);
+    auto result = EvalMultAndModReduce(cc, cu, qu);
     cc->EvalAddInPlace(result, su);
     return result;
 }
@@ -713,8 +753,7 @@ Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly>& x, const st
 
 #pragma omp taskwait
 
-    auto result = cc->EvalMult(cu, qu);
-    cc->ModReduceInPlace(result);
+    auto result = EvalMultAndModReduce(cc, cu, qu);
     cc->EvalAddInPlace(result, su);
     return result;
 }

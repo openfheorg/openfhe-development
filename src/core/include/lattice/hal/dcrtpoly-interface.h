@@ -1112,6 +1112,52 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
             const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const = 0;
 
     /**
+     * @brief Fused approximate modulus reduction and modulus switching (ModReduce) by the last `levels` towers:
+     * {X}_{Q_l,P} -> {approximately X/(P * q_l * ... * q_{l-levels+1})}_{Q_{l-levels}}.
+     * {Q_l} = {q_1,...,q_l}, {P} = {p_1,...,p_k}
+     *
+     * The result is identical (bit for bit) to ApproxModDown followed by `levels` calls of
+     * DropLastElementAndScale, but the NTTs of the dropped towers and of the modulus switching are avoided: the
+     * division by P and the modulus switchings are Z_{q_i}-linear in the input tower, the basis-extended P part
+     * and the centered lifts of the dropped towers, so they are assembled in COEFFICIENT format and transformed
+     * once per kept tower. Per polynomial this costs sizeP + sizeQ_l NTTs instead of
+     * sizeP + sizeQ_l + sum_{k<levels} (sizeQ_l - k), and the same number of modular multiplications and
+     * additions per tower as the unfused sequence.
+     *
+     * Brief algorithm, with the towers dropped in the order q_l, q_{l-1}, ... (k = 0, 1, ...):
+     * 1) {X}_{P} -> {X'}_{Q_l} with ApproxSwitchCRTBasis (COEFFICIENT format); every tower keeps a numerator
+     *    n_i, initially X'_i, and a scalar s_i, initially [P^{-1}]_{q_i}
+     * 2) for the `levels` last towers: compute INTT(x_i)
+     * 3) for the k-th dropped tower: its value after the previous switches is d = (INTT(x) - n) * s mod q;
+     *    its centered lift is multiply-accumulated into every lower tower, n_i += [d]_{q_i} * c_{k,i} with
+     *    c_{0,i} = [P]_{q_i} and c_{k,i} = c_{k-1,i} * q_{l-k+1} mod q_i, and s_i *= [q_{l-k}^{-1}]_{q_i}
+     * 4) for every kept tower: result_i = (x_i - NTT(n_i)) * s_i
+     *
+     * @param paramsQl parameters for the CRT basis {q_1,...,q_l} of the input
+     * @param paramsQlReduced parameters for the CRT basis {q_1,...,q_{l-levels}} of the output
+     * @param paramsP parameters for the CRT basis {p_1,...,p_k}
+     * @param PInvModq precomputed values for [P^{-1}]_{q_i}
+     * @param PModq precomputed values for [P]_{q_i}
+     * @param PHatInvModp precomputed values for [(P/p_j)^{-1}]_{p_j}
+     * @param PHatInvModpPrecon NTL-specific precomputations
+     * @param PHatModq precomputed values for [P/p_j]_{q_i}
+     * @param modqBarrettMu 128-bit Barrett reduction precomputed values for q_i
+     * @param qlInvModq table of the modulus switching constants; qlInvModq[firstDropIdx + k] holds [q^{-1}]_{q_i}
+     * for the k-th dropped tower q (the same rows DropLastElementAndScale takes)
+     * @param firstDropIdx index in qlInvModq of the row for the last tower q_l
+     * @param levels number of towers to drop (the composite degree for composite scaling)
+     * @return the representation of approximately X/(P q_l ... q_{l-levels+1}) in basis {Q_{l-levels}},
+     * in EVALUATION format
+     */
+    virtual DerivedType ApproxModDownAndScale(
+            const std::shared_ptr<Params>& paramsQl, const std::shared_ptr<Params>& paramsQlReduced,
+            const std::shared_ptr<Params>& paramsP, const std::vector<NativeInteger>& PInvModq,
+            const std::vector<NativeInteger>& PModq, const std::vector<NativeInteger>& PHatInvModp,
+            const std::vector<NativeInteger>& PHatInvModpPrecon,
+            const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
+            const std::vector<std::vector<NativeInteger>>& qlInvModq, uint32_t firstDropIdx, uint32_t levels) const = 0;
+
+    /**
      * @brief Performs CRT basis switching:
      * {X}_{Q} -> {X}_{P}
      * {Q} = {q_1,...,q_l}

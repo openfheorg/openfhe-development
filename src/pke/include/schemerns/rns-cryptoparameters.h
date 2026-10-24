@@ -395,6 +395,17 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
+     * Gets the whole precomputed table of [q_i^{-1}]_{q_j}, indexed by the number of towers already dropped
+     * (row i is the table for dropping tower q_{sizeQ-1-i}); used by the fused ModDown + modulus reduction of
+     * hybrid key switching, which drops several towers in one call.
+     *
+     * @return the precomputed table
+     */
+    const std::vector<std::vector<NativeInteger>>& GetqlInvModq() const {
+        return m_qlInvModq;
+    }
+
+    /**
      * Gets the NTL precomputions for [q_i^{-1}]_{q_j}
      *
      * @param i index of the tower q_i being dropped.

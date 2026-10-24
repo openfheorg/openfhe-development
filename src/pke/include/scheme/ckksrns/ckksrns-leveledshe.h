@@ -225,6 +225,26 @@ class LeveledSHECKKSRNS : public LeveledSHERNS {
     void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const override;
 
     /////////////////////////////////////
+    // SHE LEVELED ComposedEvalMult
+    /////////////////////////////////////
+
+    using LeveledSHERNS::ComposedEvalMult;
+
+    /**
+     * Multiplication, relinearization and modulus reduction (see LeveledSHERNS::ComposedEvalMult); under
+     * FIXEDMANUAL with HYBRID key switching the relinearization and the rescaling are fused (bit-identical result,
+     * fewer NTTs).
+     *
+     * @param ciphertext1 first input ciphertext.
+     * @param ciphertext2 second input ciphertext.
+     * @param evalKey the relinearization key for the quadratic secret key after multiplication.
+     * @return the resulting ciphertext.
+     */
+    Ciphertext<DCRTPoly> ComposedEvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                          ConstCiphertext<DCRTPoly>& ciphertext2,
+                                          const EvalKey<DCRTPoly> evalKey) const override;
+
+    /////////////////////////////////////
     // AUTOMORPHISM
     /////////////////////////////////////
 

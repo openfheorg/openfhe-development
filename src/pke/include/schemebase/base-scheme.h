@@ -369,6 +369,23 @@ class SchemeBase {
         return m_KeySwitch->KeySwitchDown(ciphertext);
     }
 
+    virtual Ciphertext<Element> KeySwitchDownAndModReduce(ConstCiphertext<Element>& ciphertext, uint32_t levels) const {
+        VerifyKeySwitchEnabled(__func__);
+        return m_KeySwitch->KeySwitchDownAndModReduce(ciphertext, levels);
+    }
+
+    virtual Ciphertext<Element> KeySwitchAndModReduce(ConstCiphertext<Element>& ciphertext,
+                                                      const EvalKey<Element> evalKey, uint32_t levels) const {
+        VerifyKeySwitchEnabled(__func__);
+        return m_KeySwitch->KeySwitchAndModReduce(ciphertext, evalKey, levels);
+    }
+
+    virtual void KeySwitchAndModReduceInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
+                                              uint32_t levels) const {
+        VerifyKeySwitchEnabled(__func__);
+        m_KeySwitch->KeySwitchAndModReduceInPlace(ciphertext, evalKey, levels);
+    }
+
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
             const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         VerifyKeySwitchEnabled(__func__);

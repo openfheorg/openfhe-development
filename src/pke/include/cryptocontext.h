@@ -1513,6 +1513,37 @@ class CryptoContextImpl : public Serializable {
         m_scheme->KeySwitchInPlace(ciphertext, evalKey);
     }
 
+    /**
+     * @brief Key switches a ciphertext and reduces its modulus by `levels` towers (ModReduce) in one fused
+     * operation; bit-identical to KeySwitch followed by the internal modulus reduction. Only supported with hybrid
+     * key switching.
+     *
+     * @param ciphertext  Input ciphertext.
+     * @param evalKey     Key switching key.
+     * @param levels      Number of towers to drop (the composite degree for composite scaling).
+     * @return Key switched and modulus-reduced ciphertext.
+     */
+    Ciphertext<Element> KeySwitchAndModReduce(ConstCiphertext<Element>& ciphertext, const EvalKey<Element>& evalKey,
+                                              uint32_t levels) const {
+        ValidateCiphertext(ciphertext);
+        ValidateKey(evalKey);
+        return m_scheme->KeySwitchAndModReduce(ciphertext, evalKey, levels);
+    }
+
+    /**
+     * @brief In-place version of KeySwitchAndModReduce.
+     *
+     * @param ciphertext  Input/output ciphertext.
+     * @param evalKey     Key switching key.
+     * @param levels      Number of towers to drop.
+     */
+    void KeySwitchAndModReduceInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element>& evalKey,
+                                      uint32_t levels) const {
+        ValidateCiphertext(ciphertext);
+        ValidateKey(evalKey);
+        m_scheme->KeySwitchAndModReduceInPlace(ciphertext, evalKey, levels);
+    }
+
     //------------------------------------------------------------------------------
     // SHE NEGATION Wrapper
     //------------------------------------------------------------------------------
@@ -2576,6 +2607,20 @@ class CryptoContextImpl : public Serializable {
     Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element>& ciphertext) const {
         ValidateCiphertext(ciphertext);
         return m_scheme->KeySwitchDown(ciphertext);
+    }
+
+    /**
+     * @brief Scales a ciphertext down from the extended CRT basis P*Q to Q and reduces its modulus by `levels`
+     * towers (ModReduce) in one fused operation; bit-identical to KeySwitchDown followed by the internal modulus
+     * reduction. Only supported with hybrid key switching.
+     *
+     * @param ciphertext  Input ciphertext in extended basis.
+     * @param levels      Number of towers to drop (the composite degree for composite scaling).
+     * @return Scaled down and modulus-reduced ciphertext.
+     */
+    Ciphertext<Element> KeySwitchDownAndModReduce(ConstCiphertext<Element>& ciphertext, uint32_t levels) const {
+        ValidateCiphertext(ciphertext);
+        return m_scheme->KeySwitchDownAndModReduce(ciphertext, levels);
     }
 
     /**
