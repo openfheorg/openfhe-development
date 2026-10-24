@@ -291,7 +291,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
     double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
     uint32_t r = cryptoParamsBGVRNS->GetDigitSize();
     double B_e = std::sqrt(alpha) * sigma;
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+    uint32_t modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
     // bound on the secret key is sigma*sqrt(alpha)*sqrt(thresholdParties) if the secret is sampled from discrete gaussian distribution
     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
@@ -324,7 +324,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(
                 // Note: std::pow(2, stat_sec_half - 1) == std::pow(2, stat_sec_half) / 2.0
                 noise_param = std::sqrt(12 * num_queries) * std::pow(2, stat_sec_half - 1) *
                               (2 * freshEncryptionNoise +
-                               numPrimes * (auxBits / r + 1) * expansionFactor * (std::pow(2, r) - 1) * B_e);
+                               numPrimes * (modSizeEstimate / r + 1) * expansionFactor * (std::pow(2, r) - 1) * B_e);
             } else {
                 OPENFHE_THROW("Digit size value cannot be 0 for BV keyswitching");
             }
@@ -436,7 +436,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
     }
 
     // Size of modulus P
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+    uint32_t auxBits = DCRT_MODULUS::AUX_SIZE;
 
     // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
     uint32_t extraModSize = (scalTech == FLEXIBLEAUTOEXT) ? DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;

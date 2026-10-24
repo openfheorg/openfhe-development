@@ -165,6 +165,16 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
 
         uint64_t primeStep = FindAuxPrimeStep();
+        // the special primes are 1 modulo primeStep, so only about 2^auxBits/primeStep candidates exist
+        auto auxPrimesMessage = [&](uint32_t found) {
+            return "HYBRID key switching needs " + std::to_string(sizeP) + " auxiliary primes of " +
+                   std::to_string(auxBits) + " bits congruent to 1 modulo " + std::to_string(primeStep) +
+                   " (a multiple of the ring dimension, and of the odd part of the plaintext modulus for BGV), but only " +
+                   std::to_string(found) +
+                   " exist; increase KS_AUX_MOD_SIZE, or decrease the ring dimension or the plaintext modulus.";
+        };
+        if (GetMSB64(primeStep) >= auxBits)
+            OPENFHE_THROW(auxPrimesMessage(0));
 
         // Choose special primes in auxiliary basis and compute their roots
         // moduliP holds special primes p1, p2, ..., pk
@@ -180,7 +190,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             // P and Q are different
             bool foundInQ = false;
             do {
-                moduliP[i] = PreviousPrime<NativeInteger>(pPrev, primeStep);
+                try {
+                    moduliP[i] = PreviousPrime<NativeInteger>(pPrev, primeStep);
+                } catch (const OpenFHEException&) {
+                    OPENFHE_THROW(auxPrimesMessage(i));
+                }
                 foundInQ = false;
                 for (uint32_t j = 0; j < sizeQ; j++)
                     if (moduliP[i] == moduliQ[j])

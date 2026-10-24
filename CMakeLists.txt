@@ -113,6 +113,18 @@ if(NOT PARTIAL_SUM_RADIX)
     set(PARTIAL_SUM_RADIX 4)
 endif()
 
+# Size in bits of the auxiliary (special) primes that key switching works over: the modulus P of
+# HYBRID key switching and the basis of the sparse secret encapsulation. 0 keeps the built-in size,
+# the largest modulus of the native word. The use for it is a narrower size in a NATIVE_SIZE=64
+# build, e.g. -DKS_AUX_MOD_SIZE=30, which makes those moduli a product of more and smaller primes
+# that a backend can evaluate in 32-bit arithmetic. The primes are 1 modulo 2N (times the odd part
+# of the plaintext modulus for BGV), so the size has to exceed the bit length of that product.
+if(NOT KS_AUX_MOD_SIZE)
+    set(KS_AUX_MOD_SIZE 0)
+elseif(NOT "${KS_AUX_MOD_SIZE}" MATCHES "^[0-9]+$")
+    message(SEND_ERROR "KS_AUX_MOD_SIZE is ${KS_AUX_MOD_SIZE}; it must be 0 (built-in size) or a positive integer")
+endif()
+
 # Name of the separate sink library built when the built-in sink is kept out of
 # the library (see src/core/CMakeLists.txt); empty otherwise. In-tree executables
 # put it on their link line so both configurations build and run.
@@ -137,6 +149,7 @@ message(STATUS "WITH_OPENMP:                  ${WITH_OPENMP}")
 message(STATUS "NATIVE_SIZE:                  ${NATIVE_SIZE}")
 message(STATUS "CKKS_M_FACTOR:                ${CKKS_M_FACTOR}")
 message(STATUS "PARTIAL_SUM_RADIX:            ${PARTIAL_SUM_RADIX}")
+message(STATUS "KS_AUX_MOD_SIZE:              ${KS_AUX_MOD_SIZE}")
 message(STATUS "WITH_NATIVEOPT:               ${WITH_NATIVEOPT}")
 message(STATUS "WITH_COVTEST:                 ${WITH_COVTEST}")
 message(STATUS "WITH_NOISE_DEBUG:             ${WITH_NOISE_DEBUG}")

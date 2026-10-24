@@ -52,14 +52,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-#if NATIVEINT == 128
-constexpr size_t AUXMODSIZE = 119;
-#elif NATIVEINT == 32
-constexpr size_t AUXMODSIZE = 28;
-#else
-constexpr size_t AUXMODSIZE = 60;
-#endif
-
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                           uint32_t cyclOrder, uint32_t numPrimes,
                                                           uint32_t scalingModSize, uint32_t firstModSize,
@@ -119,9 +111,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
     SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
     // TODO Duhyeong: Let's check if auxBits = registerWordSize makes an error in the P prime generation.
     uint32_t auxBits = ((scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) &&
-                        registerWordSize <= AUXMODSIZE) ?
+                        registerWordSize <= DCRT_MODULUS::AUX_SIZE_CKKS) ?
                                (registerWordSize - 1) :
-                               AUXMODSIZE;
+                               DCRT_MODULUS::AUX_SIZE_CKKS;
     uint32_t n = cyclOrder / 2;
 
     // GAUSSIAN security constraint

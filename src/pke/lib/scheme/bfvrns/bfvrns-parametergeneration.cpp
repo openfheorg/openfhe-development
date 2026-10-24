@@ -81,7 +81,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
     uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
     SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+    uint32_t auxBits = DCRT_MODULUS::AUX_SIZE;
 
     // Bound of the Gaussian error polynomial
     double Berr = sigma * std::sqrt(alpha);
