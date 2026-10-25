@@ -1054,15 +1054,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     return ans;
 }
 
-// Fused ApproxModDown + modulus switching (ModReduce) by the last `levels` towers. Every step of the unfused
-// sequence (ApproxModDown, then DropLastElementAndScale per dropped tower) is a Z_{q_i}-linear combination of
-// the input tower x_i, the basis-extended P part X'_i and the centered lifts of the (already switched) dropped
-// towers. NTT is a ring isomorphism, so the same combination is assembled in COEFFICIENT format and transformed
-// once per kept tower; the result is bit-identical to the unfused sequence. Writing the unfused result as
-// (x_i - (X'_i + sum_k c_{k,i} [d_k]_{q_i})) * s_i, with c_{k,i} = P q_l ... q_{l-k+1} mod q_i and
-// s_i = (P q_l ... q_{l-levels+1})^{-1} mod q_i, the lifts are multiply-accumulated into X'_i and the single
-// scalar s_i is applied after the NTT, so each tower costs the same modular multiplications and additions as the
-// unfused sequence.
+// The unfused result is (x_i - (X'_i + sum_k c_{k,i} [d_k]_{q_i})) * s_i, with c_{k,i} = P q_l ... q_{l-k+1}
+// mod q_i and s_i = (P q_l ... q_{l-levels+1})^{-1} mod q_i; the numbered steps below assemble it in COEFFICIENT
+// format. See DCRTPolyInterface::ApproxModDownAndScale for why this is bit-identical and what it costs.
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDownAndScale(
         const std::shared_ptr<Params>& paramsQl, const std::shared_ptr<Params>& paramsQlReduced,

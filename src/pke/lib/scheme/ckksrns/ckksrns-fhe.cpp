@@ -834,7 +834,7 @@ void FHECKKSRNS::EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t st
         for (uint32_t i = 0; i < sizeQlP; ++i)
             acc.GetAllElements()[i] += lvl0.GetAllElements()[i];
 
-        // Last level with a requested rescaling: both elements are settled by one fused ModDown + rescaling.
+        // Last level with a requested rescaling, as in EvalPartialSumRadix2InPlaceCore.
         if (modReduceLevels != 0 && (s << logRadix) >= size) {
             SettleFoldAndModReduce(ct, std::move(acc), std::move(lvl1), modReduceLevels, cryptoParams);
             return;
@@ -1136,7 +1136,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Running PartialSum
         //------------------------------------------------------------------------------
 
-        // the rescaling before CoeffsToSlots is fused into the final key switching of the partial sum
         EvalPartialSumAndModReduceInPlace(raised, slots, compositeDegree);
 
 #ifdef BOOTSTRAPTIMING
@@ -1533,7 +1532,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirstInternal(ConstCiphertext<D
         // Running PartialSum
         //------------------------------------------------------------------------------
 
-        // the rescaling before CoeffsToSlots is fused into the final key switching of the partial sum
         EvalPartialSumAndModReduceInPlace(raised, slots, compositeDegree);
     } else {
         algo->ModReduceInternalInPlace(raised, compositeDegree);
@@ -2022,7 +2020,6 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
         //------------------------------------------------------------------------------
         // SPARSELY PACKED CASE: Running PartialSum
         //------------------------------------------------------------------------------
-        // the rescaling before CoeffsToSlots is fused into the final key switching of the partial sum
         EvalPartialSumAndModReduceInPlace(raised, slots, compositeDegree);
     } else {
         algo->ModReduceInternalInPlace(raised, compositeDegree);
@@ -3097,8 +3094,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
             auto deltaKey = GetGiantStepRotation(result, StCDelta, deltaAutoIndex, deltaMap);
             outer = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
         }
-        // The rescaling before the next level (or the remainder level) is fused into this level's final key
-        // switching; the output rescaling requested by the caller is fused into the last one.
+        // The rescalings are fused into the levels' key switchings, as in EvalCoeffsToSlots.
         const uint32_t levels = (s < smax - 1 || flagRem == 1) ? compositeDegree : modReduceLevels;
         result = (levels != 0) ? cc->KeySwitchDownAndModReduce(outer, levels) : cc->KeySwitchDown(outer);
     }
@@ -4165,7 +4161,6 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
         //------------------------------------------------------------------------------
         // SPARSELY PACKED CASE: Running PartialSum
         //------------------------------------------------------------------------------
-        // the rescaling before CoeffsToSlots is fused into the final key switching of the partial sum
         EvalPartialSumAndModReduceInPlace(raised, slots, compositeDegree);
     } else {
         // need to call internal modular reduction so it also works for FLEXIBLEAUTO

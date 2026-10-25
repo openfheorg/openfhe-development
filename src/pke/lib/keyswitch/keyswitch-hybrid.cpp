@@ -49,6 +49,7 @@
 #include "key/privatekey.h"
 #include "key/publickey.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-leveledshe.h"
 
 namespace lbcrypto {
 
@@ -229,16 +230,6 @@ DCRTPoly ApproxModDownAndScale(const DCRTPoly& c, uint32_t sizeQl, uint32_t leve
             cryptoParams->GetModqBarrettMu(), cryptoParams->GetqlInvModq(), sizeQ - sizeQl, levels);
 }
 
-// The metadata update of LeveledSHECKKSRNS::ModReduceInternalInPlace for a ciphertext whose elements had sizeQl
-// towers before `levels` of them were dropped.
-void ModReduceMetadataInPlace(Ciphertext<DCRTPoly>& ciphertext, uint32_t sizeQl, uint32_t levels,
-                              const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
-    ciphertext->SetLevel(ciphertext->GetLevel() + levels);
-    for (uint32_t i = 0; i < levels; ++i)
-        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / cryptoParams->GetModReduceFactor(sizeQl - 1 - i));
-}
-
 std::shared_ptr<CryptoParametersCKKSRNS> GetCKKSParams(ConstCiphertext<DCRTPoly> ciphertext, const char* func) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     if (!cryptoParams)
@@ -274,7 +265,7 @@ void KeySwitchHYBRID::KeySwitchAndModReduceInPlace(Ciphertext<DCRTPoly>& ciphert
     cv[1] = ApproxModDownAndScale(ba[1], sizeQl, levels, cryptoParams);
     cv.resize(2);
 
-    ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
+    LeveledSHECKKSRNS::ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
 }
 
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
@@ -350,7 +341,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDownAndModReduce(ConstCiphertext<
 
     auto result = ciphertext->CloneEmpty();
     result->SetElements(std::move(elements));
-    ModReduceMetadataInPlace(result, sizeQl, levels, cryptoParams);
+    LeveledSHECKKSRNS::ModReduceMetadataInPlace(result, sizeQl, levels, cryptoParams);
     return result;
 }
 

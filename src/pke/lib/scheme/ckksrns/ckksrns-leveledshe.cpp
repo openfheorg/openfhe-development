@@ -194,15 +194,19 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     size_t sizeQl = cv[0].GetNumOfElements();
     size_t diffQl = sizeQ - sizeQl;
 
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
-    ciphertext->SetLevel(ciphertext->GetLevel() + levels);
-
-    for (size_t i = 0; i < levels; ++i) {
+    for (size_t i = 0; i < levels; ++i)
         for (auto& dcrtpoly : cv)
             dcrtpoly.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + i));
-        double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
-        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / modReduceFactor);
-    }
+
+    ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
+}
+
+void LeveledSHECKKSRNS::ModReduceMetadataInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t sizeQl, size_t levels,
+                                                 const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
+    ciphertext->SetLevel(ciphertext->GetLevel() + levels);
+    for (size_t i = 0; i < levels; ++i)
+        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / cryptoParams->GetModReduceFactor(sizeQl - 1 - i));
 }
 
 /////////////////////////////////////

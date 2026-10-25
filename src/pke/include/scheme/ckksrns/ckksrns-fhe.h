@@ -727,7 +727,7 @@ class FHECKKSRNS : public FHERNS {
      * @param A precomputed diagonal plaintexts of the linear transform
      * @param ct input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
-     * with the rescaling fused into the final key switching of the transform (bit-identical, fewer NTTs)
+     * with the rescaling fused into the final key switching of the transform
      * @return the transformed ciphertext
      */
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly>& ct,
@@ -740,7 +740,7 @@ class FHECKKSRNS : public FHERNS {
      * @param A precomputed encoding plaintexts, one inner vector per BSGS level
      * @param ctxt input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
-     * with the rescaling fused into the key switching of the last level (bit-identical, fewer NTTs)
+     * with the rescaling fused into the key switching of the last level
      * @return the ciphertext with the coefficients of the input moved to its slots
      */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
@@ -753,7 +753,7 @@ class FHECKKSRNS : public FHERNS {
      * @param A precomputed decoding plaintexts, one inner vector per BSGS level
      * @param ctxt input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
-     * with the rescaling fused into the key switching of the last level (bit-identical, fewer NTTs)
+     * with the rescaling fused into the key switching of the last level
      * @return the ciphertext with the slot values of the input moved to its coefficients
      */
     Ciphertext<DCRTPoly> EvalSlotsToCoeffs(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
@@ -793,8 +793,8 @@ class FHECKKSRNS : public FHERNS {
 
     /**
      * Same as EvalPartialSumInPlace(raised, slots) followed by a rescaling by modReduceLevels towers
-     * (ModReduceInternalInPlace), but with the rescaling fused into the deferred ApproxModDown of the fold
-     * (bit-identical, fewer NTTs). HYBRID key switching only benefits; otherwise the rescaling follows the fold.
+     * (ModReduceInternalInPlace), but with the rescaling fused into the deferred ApproxModDown of the fold.
+     * HYBRID key switching only benefits; otherwise the rescaling follows the fold.
      * @param raised input/output ciphertext at the raised level
      * @param slots number of plaintext slots (sparse packing; slots < N / 2)
      * @param modReduceLevels number of towers to drop (the composite degree for composite scaling); 0 = no rescaling
