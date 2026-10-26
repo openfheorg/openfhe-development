@@ -2971,9 +2971,14 @@ namespace {
 // coefficients), in the extended basis, as FHECKKSRNS::EvalMultExt
 Ciphertext<DCRTPoly> EvalMultExtRotated(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext,
                                         uint32_t autoIndex, const std::vector<uint32_t>& map) {
-    auto pt = plaintext->GetElement<DCRTPoly>();
-    pt.SetFormat(Format::EVALUATION);
-    pt = pt.AutomorphismTransform(autoIndex, map);
+    const auto& stored = plaintext->GetElement<DCRTPoly>();
+    auto pt = [&] {
+        if (stored.GetFormat() == Format::EVALUATION)
+            return stored.AutomorphismTransform(autoIndex, map);
+        auto evaluation = stored;
+        evaluation.SetFormat(Format::EVALUATION);
+        return evaluation.AutomorphismTransform(autoIndex, map);
+    }();
     auto result = ciphertext->Clone();
     for (auto& c : result->GetElements())
         c *= pt;
