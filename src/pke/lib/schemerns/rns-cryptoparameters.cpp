@@ -33,6 +33,7 @@
 
 #include "schemerns/rns-cryptoparameters.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <memory>
@@ -387,6 +388,10 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 }
             }
         }
+
+        PrecomputeDoubleDecompTables(moduliQ, moduliP, rootsP, pPrev, primeStep, moduliPartQ);
+    } else if (m_ddDigitSize > 0) {
+        OPENFHE_THROW("The double decomposition of key switching requires the HYBRID key switching technique.");
     }
     /////////////////////////////////////
     // BFVrns and BGVrns : Multiparty Decryption : ExpandCRTBasis
@@ -437,6 +442,185 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         for (size_t i = 1; i < sizeQ; i++) {
             m_multipartyQInv[i - 1] = 1. / static_cast<double>(moduliQ[i].ConvertToInt());
         }
+    }
+}
+
+// Tables of the double decomposition of HYBRID key switching (Kim, Lee, Seo, Song, "Accelerating HE operations
+// from key decomposition technique", CRYPTO 2023). The key digits over QP = q_0 ... q_{L-1} p_0 ... p_{k-1} are
+// decomposed into m_ddNumDigits digits of m_ddDigitSize consecutive limbs; the small centered residues of the key
+// (|v| <= D_j / 2 for the key digit D_j) and the ciphertext digits (in [0, r Q_j) for a digit Q_j of r limbs, as
+// produced by the fast basis extension of a digit) are multiplied over the small basis B', whose size exceeds the
+// largest possible inner product (d N r Q_j D_j, plus 2 margin bits for the rounding of the exact basis switch),
+// and the result is switched back exactly to the limbs of QP.
+void CryptoParametersRNS::PrecomputeDoubleDecompTables(const std::vector<NativeInteger>& moduliQ,
+                                                       const std::vector<NativeInteger>& moduliP,
+                                                       const std::vector<NativeInteger>& rootsP,
+                                                       NativeInteger lastAuxPrime, uint64_t primeStep,
+                                                       const std::vector<BigInteger>& moduliPartQ) {
+    m_ddNumDigits = 0;
+    m_paramsDD = nullptr;
+    m_paramsDDDigit.clear();
+    m_modDDBarrettMu.clear();
+    m_PartQlHatModDD.clear();
+    m_ddDigitHatInvModq.clear();
+    m_ddDigitHatInvModqPrecon.clear();
+    m_ddDigitHatModDD.clear();
+    m_ddAlphaDigitModDD.clear();
+    m_ddDigitInv.clear();
+    m_ddHatInvModDD.clear();
+    m_ddHatInvModDDPrecon.clear();
+    m_ddInv.clear();
+    m_ddHatModQP.clear();
+    m_ddAlphaModQP.clear();
+    m_modQPBarrettMu.clear();
+    if (m_ddDigitSize == 0)
+        return;
+
+    const uint32_t sizeQ = moduliQ.size();
+    const uint32_t sizeP = moduliP.size();
+    const uint32_t sizeQP = sizeQ + sizeP;
+    const uint32_t n = GetElementParams()->GetRingDimension();
+    const uint32_t cyclOrder = GetElementParams()->GetCyclotomicOrder();
+    const auto& paramsQP = m_paramsQP->GetParams();
+
+    if (m_ddDigitSize > sizeQP)
+        m_ddDigitSize = sizeQP;
+    m_ddNumDigits = (sizeQP + m_ddDigitSize - 1) / m_ddDigitSize;
+
+    // the key digits D_j (consecutive limbs of QP)
+    std::vector<BigInteger> keyDigits(m_ddNumDigits, BigInteger(1));
+    m_paramsDDDigit.resize(m_ddNumDigits);
+    BigInteger maxKeyDigit(1);
+    for (uint32_t j = 0; j < m_ddNumDigits; ++j) {
+        const uint32_t start = j * m_ddDigitSize;
+        const uint32_t end = std::min(start + m_ddDigitSize, sizeQP);
+        std::vector<NativeInteger> moduli, roots;
+        for (uint32_t m = start; m < end; ++m) {
+            moduli.push_back(paramsQP[m]->GetModulus());
+            roots.push_back(paramsQP[m]->GetRootOfUnity());
+            keyDigits[j] *= BigInteger(moduli.back());
+        }
+        m_paramsDDDigit[j] = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduli, roots);
+        if (keyDigits[j] > maxKeyDigit)
+            maxKeyDigit = keyDigits[j];
+    }
+
+    // the bound on the inner products: d * N * r * max Q_j * max D_j, with 2 margin bits
+    BigInteger maxCtDigit(1);
+    for (const auto& q : moduliPartQ)
+        if (q > maxCtDigit)
+            maxCtDigit = q;
+    const uint32_t boundBits = GetMSB64(m_numPartQ) + GetMSB64(n) + GetMSB64(m_numPerPartQ) + maxCtDigit.GetMSB() +
+                               maxKeyDigit.GetMSB() + 2;
+
+    // the primes of B': continue the descending search of the auxiliary primes, so that they differ from the
+    // moduli of Q and P
+    std::vector<NativeInteger> moduliDD, rootsDD;
+    BigInteger modulusDD(1);
+    NativeInteger pPrev = lastAuxPrime;
+    while (modulusDD.GetMSB() <= boundBits) {
+        bool foundInQ = false;
+        do {
+            try {
+                pPrev = PreviousPrime<NativeInteger>(pPrev, primeStep);
+            } catch (const OpenFHEException&) {
+                OPENFHE_THROW("The double decomposition of key switching needs " + std::to_string(moduliDD.size() + 1) +
+                              " or more primes of " + std::to_string(m_auxBits) + " bits congruent to 1 modulo " +
+                              std::to_string(primeStep) +
+                              ", but not enough exist; increase KS_AUX_MOD_SIZE or decrease the ring dimension.");
+            }
+            foundInQ = (std::find(moduliQ.begin(), moduliQ.end(), pPrev) != moduliQ.end());
+        } while (foundInQ);
+        moduliDD.push_back(pPrev);
+        rootsDD.push_back(RootOfUnity<NativeInteger>(2 * n, pPrev));
+        modulusDD *= BigInteger(pPrev);
+    }
+    const uint32_t sizeDD = moduliDD.size();
+    m_paramsDD = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliDD, rootsDD);
+    ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsDD, 2 * n, moduliDD);
+
+    const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
+    m_modDDBarrettMu.resize(sizeDD);
+    for (uint32_t k = 0; k < sizeDD; ++k)
+        m_modDDBarrettMu[k] = (BarrettBase128Bit / BigInteger(moduliDD[k])).ConvertToInt<DoubleNativeInt>();
+
+    // ciphertext digit -> B' (fast basis extension): [(Q^(l)_part / q_i)]_{p'_k}
+    m_PartQlHatModDD.resize(sizeQ);
+    for (uint32_t l = 0; l < sizeQ; ++l) {
+        const uint32_t beta = static_cast<uint32_t>(std::ceil(static_cast<double>(l + 1) / m_numPerPartQ));
+        m_PartQlHatModDD[l].resize(beta);
+        for (uint32_t part = 0; part < beta; ++part) {
+            const auto& paramsPartQ = GetParamsPartQ(part)->GetParams();
+            BigInteger partQ = GetParamsPartQ(part)->GetModulus();
+            uint32_t digitSize = paramsPartQ.size();
+            if (part == beta - 1) {
+                digitSize = l + 1 - part * m_numPerPartQ;
+                for (uint32_t idx = digitSize; idx < paramsPartQ.size(); ++idx)
+                    partQ = partQ / BigInteger(paramsPartQ[idx]->GetModulus());
+            }
+            m_PartQlHatModDD[l][part].assign(digitSize, std::vector<NativeInteger>(sizeDD));
+            for (uint32_t i = 0; i < digitSize; ++i) {
+                const BigInteger partQHat = partQ / BigInteger(paramsPartQ[i]->GetModulus());
+                for (uint32_t k = 0; k < sizeDD; ++k)
+                    m_PartQlHatModDD[l][part][i][k] = partQHat.Mod(moduliDD[k]).ConvertToInt();
+            }
+        }
+    }
+
+    // key digit -> B' (exact basis switch, DCRTPoly::SwitchCRTBasis layout)
+    m_ddDigitHatInvModq.resize(m_ddNumDigits);
+    m_ddDigitHatInvModqPrecon.resize(m_ddNumDigits);
+    m_ddDigitHatModDD.resize(m_ddNumDigits);
+    m_ddAlphaDigitModDD.resize(m_ddNumDigits);
+    m_ddDigitInv.resize(m_ddNumDigits);
+    for (uint32_t j = 0; j < m_ddNumDigits; ++j) {
+        const auto& digitParams = m_paramsDDDigit[j]->GetParams();
+        const uint32_t sizeDigit = digitParams.size();
+        m_ddDigitHatInvModq[j].resize(sizeDigit);
+        m_ddDigitHatInvModqPrecon[j].resize(sizeDigit);
+        m_ddDigitInv[j].resize(sizeDigit);
+        m_ddDigitHatModDD[j].assign(sizeDD, std::vector<NativeInteger>(sizeDigit));
+        for (uint32_t i = 0; i < sizeDigit; ++i) {
+            const NativeInteger qi = digitParams[i]->GetModulus();
+            const BigInteger hat = keyDigits[j] / BigInteger(qi);
+            m_ddDigitHatInvModq[j][i] = hat.ModInverse(BigInteger(qi)).ConvertToInt();
+            m_ddDigitHatInvModqPrecon[j][i] = m_ddDigitHatInvModq[j][i].PrepModMulConst(qi);
+            m_ddDigitInv[j][i] = 1.0 / qi.ConvertToDouble();
+            for (uint32_t k = 0; k < sizeDD; ++k)
+                m_ddDigitHatModDD[j][k][i] = hat.Mod(moduliDD[k]).ConvertToInt();
+        }
+        m_ddAlphaDigitModDD[j].assign(sizeDigit + 1, std::vector<NativeInteger>(sizeDD));
+        for (uint32_t k = 0; k < sizeDD; ++k) {
+            const NativeInteger digitModp = keyDigits[j].Mod(moduliDD[k]).ConvertToInt();
+            m_ddAlphaDigitModDD[j][0][k] = 0;
+            for (uint32_t a = 1; a <= sizeDigit; ++a)
+                m_ddAlphaDigitModDD[j][a][k] = m_ddAlphaDigitModDD[j][a - 1][k].ModAddFast(digitModp, moduliDD[k]);
+        }
+    }
+
+    // B' -> QP (exact basis switch of the centered inner products)
+    m_ddHatInvModDD.resize(sizeDD);
+    m_ddHatInvModDDPrecon.resize(sizeDD);
+    m_ddInv.resize(sizeDD);
+    std::vector<BigInteger> ddHat(sizeDD);
+    for (uint32_t k = 0; k < sizeDD; ++k) {
+        ddHat[k] = modulusDD / BigInteger(moduliDD[k]);
+        m_ddHatInvModDD[k] = ddHat[k].ModInverse(BigInteger(moduliDD[k])).ConvertToInt();
+        m_ddHatInvModDDPrecon[k] = m_ddHatInvModDD[k].PrepModMulConst(moduliDD[k]);
+        m_ddInv[k] = 1.0 / moduliDD[k].ConvertToDouble();
+    }
+    m_ddHatModQP.assign(sizeQP, std::vector<NativeInteger>(sizeDD));
+    m_ddAlphaModQP.assign(sizeQP, std::vector<NativeInteger>(sizeDD + 1));
+    m_modQPBarrettMu.resize(sizeQP);
+    for (uint32_t m = 0; m < sizeQP; ++m) {
+        const NativeInteger qm = paramsQP[m]->GetModulus();
+        for (uint32_t k = 0; k < sizeDD; ++k)
+            m_ddHatModQP[m][k] = ddHat[k].Mod(qm).ConvertToInt();
+        const NativeInteger ddModq = modulusDD.Mod(qm).ConvertToInt();
+        m_ddAlphaModQP[m][0] = 0;
+        for (uint32_t a = 1; a <= sizeDD; ++a)
+            m_ddAlphaModQP[m][a] = m_ddAlphaModQP[m][a - 1].ModAddFast(ddModq, qm);
+        m_modQPBarrettMu[m] = (BarrettBase128Bit / BigInteger(qm)).ConvertToInt<DoubleNativeInt>();
     }
 }
 

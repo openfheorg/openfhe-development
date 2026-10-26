@@ -96,6 +96,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
     params->SetMultiplicativeDepth(parameters.GetMultiplicativeDepth());
+    params->SetDoubleDecompDigitSize(parameters.GetDoubleDecompDigitSize());
     params->SetEvalAddCount(parameters.GetEvalAddCount());
     params->SetKeySwitchCount(parameters.GetKeySwitchCount());
 

@@ -199,7 +199,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         return CryptoParametersRLWE<DCRTPoly>::CompareTo(rhs) && m_scalTechnique == el->m_scalTechnique &&
                m_ksTechnique == el->m_ksTechnique && m_multTechnique == el->m_multTechnique &&
                m_encTechnique == el->m_encTechnique && m_numPartQ == el->m_numPartQ && m_auxBits == el->m_auxBits &&
-               m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
+               m_ddDigitSize == el->m_ddDigitSize && m_extraBits == el->m_extraBits && m_PREMode == el->m_PREMode &&
                m_multipartyMode == el->m_multipartyMode && m_executionMode == el->m_executionMode &&
                m_compositeDegree == el->m_compositeDegree && m_registerWordSize == el->m_registerWordSize &&
                m_ckksDataType == el->m_ckksDataType;
@@ -231,6 +231,22 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
                                      MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
                                      uint32_t extraBits) = 0;
+
+    /**
+     * Computes the tables of the double decomposition of HYBRID key switching (no-op when its digit size is 0);
+     * called by PrecomputeCRTTables after the HYBRID tables.
+     *
+     * @param moduliQ the moduli of Q.
+     * @param moduliP the auxiliary moduli P.
+     * @param rootsP their roots of unity.
+     * @param lastAuxPrime the smallest auxiliary prime (the search for the primes of B' continues below it).
+     * @param primeStep the step of the prime search.
+     * @param moduliPartQ the products of the full-level digits of Q.
+     */
+    void PrecomputeDoubleDecompTables(const std::vector<NativeInteger>& moduliQ,
+                                      const std::vector<NativeInteger>& moduliP,
+                                      const std::vector<NativeInteger>& rootsP, NativeInteger lastAuxPrime,
+                                      uint64_t primeStep, const std::vector<BigInteger>& moduliPartQ);
 
     /**
      * Returns the step used when searching for the auxiliary (special) primes of HYBRID key switching: every
@@ -437,6 +453,115 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
      */
     uint32_t GetNumPartQ() const {
         return m_numPartQ;
+    }
+
+    /**
+     * Sets the digit size of the double decomposition of HYBRID key switching: the number of RNS limbs of QP
+     * per digit of the key decomposition (0 disables the double decomposition). Must be called before
+     * PrecomputeCRTTables.
+     *
+     * @param digitSize the number of limbs of QP per key digit.
+     */
+    void SetDoubleDecompDigitSize(uint32_t digitSize) {
+        m_ddDigitSize = digitSize;
+    }
+
+    /**
+     * Gets the digit size of the double decomposition of HYBRID key switching (0: plain HYBRID).
+     *
+     * @return the number of limbs of QP per key digit.
+     */
+    uint32_t GetDoubleDecompDigitSize() const {
+        return m_ddDigitSize;
+    }
+
+    /**
+     * Gets the number of digits of the key decomposition over QP (double decomposition of HYBRID key switching).
+     *
+     * @return the number of key digits.
+     */
+    uint32_t GetDoubleDecompNumDigits() const {
+        return m_ddNumDigits;
+    }
+
+    /**
+     * Gets the parameters of the small basis B' over which the inner products of the double decomposition are
+     * computed (see KeySwitchHYBRID).
+     *
+     * @return the CRT parameters of B'.
+     */
+    const std::shared_ptr<ILDCRTParams<BigInteger>>& GetParamsDD() const {
+        return m_paramsDD;
+    }
+
+    /**
+     * Gets the parameters of the limbs of QP that form the given digit of the key decomposition.
+     *
+     * @param digit the key digit.
+     * @return the CRT parameters of the digit.
+     */
+    const std::shared_ptr<ILDCRTParams<BigInteger>>& GetParamsDDDigit(uint32_t digit) const {
+        return m_paramsDDDigit[digit];
+    }
+
+    /**
+     * Gets the Barrett reduction precomputations for the primes of B'.
+     */
+    const std::vector<DoubleNativeInt>& GetModDDBarrettMu() const {
+        return m_modDDBarrettMu;
+    }
+
+    /**
+     * Gets [(Q^(l)_j / q_i)]_{p'_k} for the digit j of a ciphertext with lvl + 1 limbs (basis extension of a
+     * ciphertext digit to B').
+     */
+    const std::vector<std::vector<NativeInteger>>& GetPartQlHatModDD(uint32_t lvl, uint32_t part) const {
+        return m_PartQlHatModDD[lvl][part];
+    }
+
+    /**
+     * Tables of the exact basis switch of a key digit (limbs of digit j of QP) to B': [(D_j / q_i)^{-1}]_{q_i},
+     * its NTL precomputation, [D_j / q_i]_{p'_k} (indexed [k][i]), [alpha D_j]_{p'_k} (indexed [alpha][k])
+     * and 1 / q_i.
+     */
+    const std::vector<NativeInteger>& GetDDDigitHatInvModq(uint32_t digit) const {
+        return m_ddDigitHatInvModq[digit];
+    }
+    const std::vector<NativeInteger>& GetDDDigitHatInvModqPrecon(uint32_t digit) const {
+        return m_ddDigitHatInvModqPrecon[digit];
+    }
+    const std::vector<std::vector<NativeInteger>>& GetDDDigitHatModDD(uint32_t digit) const {
+        return m_ddDigitHatModDD[digit];
+    }
+    const std::vector<std::vector<NativeInteger>>& GetDDAlphaDigitModDD(uint32_t digit) const {
+        return m_ddAlphaDigitModDD[digit];
+    }
+    const std::vector<double>& GetDDDigitInv(uint32_t digit) const {
+        return m_ddDigitInv[digit];
+    }
+
+    /**
+     * Tables of the exact basis switch from B' to the limbs of QP: [(B' / p'_k)^{-1}]_{p'_k}, its NTL
+     * precomputation, 1 / p'_k, and for every limb m of QP (Q limbs first, then P): [B' / p'_k]_{q_m}
+     * (indexed [m][k]), [alpha B']_{q_m} (indexed [m][alpha]) and the Barrett precomputation of q_m.
+     */
+    const std::vector<NativeInteger>& GetDDHatInvModDD() const {
+        return m_ddHatInvModDD;
+    }
+    const std::vector<NativeInteger>& GetDDHatInvModDDPrecon() const {
+        return m_ddHatInvModDDPrecon;
+    }
+    const std::vector<double>& GetDDInv() const {
+        return m_ddInv;
+    }
+    const std::vector<std::vector<NativeInteger>>& GetDDHatModQP() const {
+        return m_ddHatModQP;
+    }
+    const std::vector<std::vector<NativeInteger>>& GetDDAlphaModQP() const {
+        return m_ddAlphaModQP;
+    }
+    const std::vector<DoubleNativeInt>& GetModQPBarrettMu() const {
+        return m_modQPBarrettMu;
     }
 
     /**
@@ -1736,6 +1861,33 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     // Stores the BarrettUint128ModUint64 precomputations for q_j
     std::vector<DoubleNativeInt> m_modqBarrettMu;
 
+    /////////////////////////////////////
+    // Double decomposition of HYBRID key switching (see KeySwitchHYBRID): the key digits over QP are
+    // decomposed into m_ddNumDigits digits of m_ddDigitSize limbs each, and the inner products with the
+    // ciphertext digits are computed over the small basis B'. Not serialized except m_ddDigitSize; regenerated
+    // by PrecomputeCRTTables.
+    /////////////////////////////////////
+    uint32_t m_ddDigitSize = 0;
+    uint32_t m_ddNumDigits = 0;
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsDD;
+    std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsDDDigit;
+    std::vector<DoubleNativeInt> m_modDDBarrettMu;
+    // [lvl][part][i][k]: [(Q^(l)_part / q_i)]_{p'_k}
+    std::vector<std::vector<std::vector<std::vector<NativeInteger>>>> m_PartQlHatModDD;
+    // key digit -> B' (exact)
+    std::vector<std::vector<NativeInteger>> m_ddDigitHatInvModq;
+    std::vector<std::vector<NativeInteger>> m_ddDigitHatInvModqPrecon;
+    std::vector<std::vector<std::vector<NativeInteger>>> m_ddDigitHatModDD;
+    std::vector<std::vector<std::vector<NativeInteger>>> m_ddAlphaDigitModDD;
+    std::vector<std::vector<double>> m_ddDigitInv;
+    // B' -> QP (exact)
+    std::vector<NativeInteger> m_ddHatInvModDD;
+    std::vector<NativeInteger> m_ddHatInvModDDPrecon;
+    std::vector<double> m_ddInv;
+    std::vector<std::vector<NativeInteger>> m_ddHatModQP;
+    std::vector<std::vector<NativeInteger>> m_ddAlphaModQP;
+    std::vector<DoubleNativeInt> m_modQPBarrettMu;
+
     // Stores [t^{-1}]_{p_j}
     std::vector<NativeInteger> m_tInvModp;
 
@@ -2082,6 +2234,7 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         ar(cereal::make_nvp("cd", m_compositeDegree));
         ar(cereal::make_nvp("rws", m_registerWordSize));
         ar(cereal::make_nvp("cdt", m_ckksDataType));
+        ar(cereal::make_nvp("dd", m_ddDigitSize));
     }
 
     template <class Archive>
@@ -2109,6 +2262,12 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
         ar(cereal::make_nvp("cd", m_compositeDegree));
         ar(cereal::make_nvp("rws", m_registerWordSize));
         ar(cereal::make_nvp("cdt", m_ckksDataType));
+        // the double decomposition digit size was added later; older archives do not have it
+        try {
+            ar(cereal::make_nvp("dd", m_ddDigitSize));
+        } catch (cereal::Exception&) {
+            m_ddDigitSize = 0;
+        }
     }
 
     std::string SerializedObjectName() const override {

@@ -186,6 +186,10 @@ class Params {
     // CKKS data type: real or complex. Noise flooding is only enabled for real values.
     CKKSDataType ckksDataType;
 
+    // HYBRID key switching with the double decomposition of the key (Kim, Lee, Seo, Song, CRYPTO 2023): the number
+    // of RNS limbs of QP per digit of the key decomposition; 0 (the default) keeps the plain HYBRID technique.
+    uint32_t doubleDecompDigitSize;
+
     void SetToDefaults(SCHEME scheme);
 
   protected:
@@ -277,7 +281,8 @@ class Params {
                 "interactiveBootCompressionLevel",
                 "compositeDegree",
                 "registerWordSize",
-                "ckksDataType"};
+                "ckksDataType",
+                "doubleDecompDigitSize"};
     }
 
     // getters
@@ -380,6 +385,9 @@ class Params {
     CKKSDataType GetCKKSDataType() const {
         return ckksDataType;
     }
+    uint32_t GetDoubleDecompDigitSize() const {
+        return doubleDecompDigitSize;
+    }
 
     // setters
     // They all must be virtual, so any of them can be disabled in the derived class
@@ -478,6 +486,9 @@ class Params {
     }
     virtual void SetCKKSDataType(CKKSDataType ckksDataType0) {
         ckksDataType = ckksDataType0;
+    }
+    virtual void SetDoubleDecompDigitSize(uint32_t doubleDecompDigitSize0) {
+        doubleDecompDigitSize = doubleDecompDigitSize0;
     }
 
     /**

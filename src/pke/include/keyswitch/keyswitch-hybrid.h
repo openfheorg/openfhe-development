@@ -42,6 +42,7 @@
 
 #include "keyswitch/keyswitch-rns.h"
 #include "schemebase/rlwe-cryptoparameters.h"
+#include "schemerns/rns-cryptoparameters.h"
 
 /**
  * @namespace lbcrypto
@@ -236,6 +237,44 @@ class KeySwitchHYBRID : public KeySwitchRNS {
     std::vector<DCRTPoly> EvalFastKeySwitchCoreExt(const std::shared_ptr<std::vector<DCRTPoly>> digits,
                                                    const EvalKey<DCRTPoly> evalKey,
                                                    const std::shared_ptr<ParmType> paramsQl) const override;
+
+    /////////////////////////////////////////
+    // DOUBLE DECOMPOSITION
+    // (Kim, Lee, Seo, Song, "Accelerating HE operations from key decomposition technique", CRYPTO 2023;
+    // enabled by the double decomposition digit size of the crypto parameters.) The digits of the key over QP are
+    // themselves decomposed into small centered residues modulo consecutive groups of limbs of QP, and the inner
+    // products of the ciphertext digits with the key are computed over a small basis B' (whose size bounds the
+    // integer inner products) before being switched exactly to the limbs of Q_l P. This replaces the basis
+    // extension of every ciphertext digit to Q_l P, and its NTTs, by one over B'.
+    /////////////////////////////////////////
+
+    /**
+     * Decomposes a key (vector of digits over QP, EVALUATION format) into the double decomposition layout:
+     * entry part * numDigits + j holds the centered residue of digit `part` modulo the key digit j, over B'.
+     *
+     * @param keyQP the key digits over QP.
+     * @param cryptoParams the crypto parameters.
+     * @return the decomposed key.
+     */
+    static std::vector<DCRTPoly> DecomposeKeyDD(const std::vector<DCRTPoly>& keyQP,
+                                                const std::shared_ptr<CryptoParametersRNS>& cryptoParams);
+
+  private:
+    std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCoreDD(
+            const DCRTPoly& c, const std::shared_ptr<CryptoParametersRNS>& cryptoParams) const;
+
+    /**
+     * Inner products of the ciphertext digits (over B') with the decomposed key, switched exactly to Q_l P.
+     *
+     * @param digits the ciphertext digits over B'.
+     * @param evalKey the decomposed key.
+     * @param paramsQl the parameters of Q_l.
+     * @param modDown whether to divide by P (the result is then over Q_l) or to keep the extended basis Q_l P.
+     * @return the two key switched polynomials in EVALUATION format.
+     */
+    std::vector<DCRTPoly> EvalFastKeySwitchCoreDD(const std::shared_ptr<std::vector<DCRTPoly>> digits,
+                                                  const EvalKey<DCRTPoly> evalKey,
+                                                  const std::shared_ptr<ParmType> paramsQl, bool modDown) const;
 
     /////////////////////////////////////////
     // SERIALIZATION

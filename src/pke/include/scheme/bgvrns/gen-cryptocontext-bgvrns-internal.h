@@ -96,6 +96,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
     // for BGV scheme noise scale is always set to plaintext modulus
     params->SetNoiseScale(parameters.GetPlaintextModulus());
     params->SetMultiplicativeDepth(parameters.GetMultiplicativeDepth());
+    params->SetDoubleDecompDigitSize(parameters.GetDoubleDecompDigitSize());
     params->SetEvalAddCount(parameters.GetEvalAddCount());
     params->SetKeySwitchCount(parameters.GetKeySwitchCount());
     params->SetPRENumHops(parameters.GetPRENumHops());

@@ -81,6 +81,7 @@ namespace lbcrypto {
         SET_TO_SCHEME_DEFAULT(SCHEME, compositeDegree);                 \
         SET_TO_SCHEME_DEFAULT(SCHEME, registerWordSize);                \
         SET_TO_SCHEME_DEFAULT(SCHEME, ckksDataType);                    \
+        SET_TO_SCHEME_DEFAULT(SCHEME, doubleDecompDigitSize);           \
     }
 void Params::SetToDefaults(SCHEME scheme) {
     switch (scheme) {
@@ -174,6 +175,8 @@ Params::Params(const std::vector<std::string>& vals) {
         registerWordSize = static_cast<uint32_t>(std::stoul(*it));
     if (!(++it)->empty())
         ckksDataType = convertToCKKSDataType(*it);
+    if (!(++it)->empty())
+        doubleDecompDigitSize = static_cast<uint32_t>(std::stoul(*it));
 }
 //====================================================================================================================
 // clang-format off
@@ -210,7 +213,8 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; interactiveBootCompressionLevel: " << obj.interactiveBootCompressionLevel
         << "; compositeDegree: " << obj.compositeDegree
         << "; registerWordSize: " << obj.registerWordSize
-        << "; ckksDataType: " << obj.ckksDataType;
+        << "; ckksDataType: " << obj.ckksDataType
+        << "; doubleDecompDigitSize: " << obj.doubleDecompDigitSize;
 
     return os;
 }

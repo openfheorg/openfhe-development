@@ -125,6 +125,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     params->SetFloodingDistributionParameter(floodingNoiseStd);
     params->SetMultiplicativeDepth(parameters.GetMultiplicativeDepth());
     params->SetNoiseEstimate(parameters.GetNoiseEstimate());
+    params->SetDoubleDecompDigitSize(parameters.GetDoubleDecompDigitSize());
 
     uint32_t numLargeDigits =
         ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
