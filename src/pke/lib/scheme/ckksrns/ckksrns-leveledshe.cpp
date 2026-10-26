@@ -194,20 +194,42 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     size_t sizeQl = cv[0].GetNumOfElements();
     size_t diffQl = sizeQ - sizeQl;
 
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
-    ciphertext->SetLevel(ciphertext->GetLevel() + levels);
-
-    for (size_t i = 0; i < levels; ++i) {
+    for (size_t i = 0; i < levels; ++i)
         for (auto& dcrtpoly : cv)
             dcrtpoly.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + i));
-        double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
-        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / modReduceFactor);
-    }
+
+    ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
+}
+
+void LeveledSHECKKSRNS::ModReduceMetadataInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t sizeQl, size_t levels,
+                                                 const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels / cryptoParams->GetCompositeDegree());
+    ciphertext->SetLevel(ciphertext->GetLevel() + levels);
+    for (size_t i = 0; i < levels; ++i)
+        ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / cryptoParams->GetModReduceFactor(sizeQl - 1 - i));
 }
 
 /////////////////////////////////////
 // Level Reduce
 /////////////////////////////////////
+
+/////////////////////////////////////
+// ComposedEvalMult
+/////////////////////////////////////
+
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::ComposedEvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                                         ConstCiphertext<DCRTPoly>& ciphertext2,
+                                                         const EvalKey<DCRTPoly> evalKey) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
+    // the public ModReduce rescales only under FIXEDMANUAL; the fused operation needs HYBRID key switching
+    if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL || cryptoParams->GetKeySwitchTechnique() != HYBRID)
+        return LeveledSHERNS::ComposedEvalMult(ciphertext1, ciphertext2, evalKey);
+
+    auto ciphertext = EvalMult(ciphertext1, ciphertext2);
+    ciphertext->GetCryptoContext()->GetScheme()->KeySwitchAndModReduceInPlace(ciphertext, evalKey,
+                                                                              cryptoParams->GetCompositeDegree());
+    return ciphertext;
+}
 
 void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
     for (auto& element : ciphertext->GetElements())

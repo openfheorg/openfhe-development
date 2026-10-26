@@ -627,6 +627,20 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
             const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
 
     /**
+     * @brief Fused approximate modulus reduction {X}_{Q_l,P} -> {X/P}_{Q_l} and modulus switching by the last
+     * `levels` towers; bit-identical to ApproxModDown followed by `levels` calls of DropLastElementAndScale. See
+     * DCRTPolyInterface::ApproxModDownAndScale for the algorithm and the parameters.
+     */
+    DCRTPolyType ApproxModDownAndScale(
+            const std::shared_ptr<Params>& paramsQl, const std::shared_ptr<Params>& paramsQlReduced,
+            const std::shared_ptr<Params>& paramsP, const std::vector<NativeInteger>& PInvModq,
+            const std::vector<NativeInteger>& PModq, const std::vector<NativeInteger>& PHatInvModp,
+            const std::vector<NativeInteger>& PHatInvModpPrecon,
+            const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
+            const std::vector<std::vector<NativeInteger>>& qlInvModq, uint32_t firstDropIdx,
+            uint32_t levels) const override;
+
+    /**
      * @brief Exact CRT basis switching {X}_Q -> {X}_P; see DCRTPolyInterface::SwitchCRTBasis for the algorithm.
      *
      * @param paramsP parameters for the CRT basis {p_1,...,p_k}.

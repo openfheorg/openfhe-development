@@ -117,25 +117,30 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(const std::vector<Cip
 
     auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
+    // One node of the multiplication tree: the product, relinearized and modulus reduced. For two-element inputs
+    // this is ComposedEvalMult, whose scheme-specific implementation can fuse the relinearization with the modulus
+    // reduction; inputs with more elements take the generic path.
+    auto multNode = [&](ConstCiphertext<Element>& a, ConstCiphertext<Element>& b) {
+        if (a->GetElements().size() == 2 && b->GetElements().size() == 2)
+            return algo->ComposedEvalMult(a, b, evalKeys[0]);
+        auto result = algo->EvalMultAndRelinearize(a, b, evalKeys);
+        algo->ModReduceInPlace(result, levelsToDrop);
+        return result;
+    };
+
     uint32_t i = 0, j = 0;
     // input x input
-    for (; i < (size - 1); i += 2) {
-        ciphertextMultVec[j] = algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextVec[i + 1], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
-    }
+    for (; i < (size - 1); i += 2)
+        ciphertextMultVec[j++] = multNode(ciphertextVec[i], ciphertextVec[i + 1]);
     // odd size: the last input pairs with the first partial
     if (i < size) {
-        ciphertextMultVec[j] =
-                algo->EvalMultAndRelinearize(ciphertextVec[i], ciphertextMultVec[i + 1 - size], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
+        ciphertextMultVec[j++] = multNode(ciphertextVec[i], ciphertextMultVec[i + 1 - size]);
         ciphertextMultVec[i + 1 - size].reset();
         i += 2;
     }
     // partial x partial
     for (; i < lim; i += 2) {
-        ciphertextMultVec[j] =
-                algo->EvalMultAndRelinearize(ciphertextMultVec[i - size], ciphertextMultVec[i + 1 - size], evalKeys);
-        algo->ModReduceInPlace(ciphertextMultVec[j++], levelsToDrop);
+        ciphertextMultVec[j++] = multNode(ciphertextMultVec[i - size], ciphertextMultVec[i + 1 - size]);
         ciphertextMultVec[i - size].reset();
         ciphertextMultVec[i + 1 - size].reset();
     }

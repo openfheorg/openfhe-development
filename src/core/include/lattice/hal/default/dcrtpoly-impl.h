@@ -1043,13 +1043,98 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     if (uint32_t diffQ = paramsQ->GetParams().size() - sizeQ; diffQ != 0)
         ans.DropLastElements(diffQ);
 
+    // (x_i - X'_i) * P^{-1} is computed as (X'_i - x_i) * (q_i - [P^{-1}]_{q_i}), which is the same residue and
+    // runs in place on the extended P part, so no temporary is allocated per tower. [P^{-1}]_{q_i} is a modular
+    // inverse and so is never zero, which keeps q_i - [P^{-1}]_{q_i} a reduced residue.
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQ))
     for (uint32_t i = 0; i < sizeQ; ++i) {
+        PolyType& x = partP.m_vectors[i];
         // Multiply everything by t mod Q (BGVrns only)
         if (t > 0)
-            partP.m_vectors[i] *= t;
-        partP.m_vectors[i].SetFormat(Format::EVALUATION);
-        ans.m_vectors[i] = (m_vectors[i] - partP.m_vectors[i]) * PInvModq[i];
+            x *= t;
+        x.SetFormat(Format::EVALUATION);
+        x -= m_vectors[i];
+        x *= (m_vectors[i].GetModulus() - PInvModq[i]);
+        ans.m_vectors[i] = std::move(x);
+    }
+    return ans;
+}
+
+// The unfused result is (x_i - (X'_i + sum_k c_{k,i} [d_k]_{q_i})) * s_i, with c_{k,i} = P q_l ... q_{l-k+1}
+// mod q_i and s_i = (P q_l ... q_{l-levels+1})^{-1} mod q_i; the numbered steps below assemble it in COEFFICIENT
+// format. See DCRTPolyInterface::ApproxModDownAndScale for why this is bit-identical and what it costs.
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDownAndScale(
+        const std::shared_ptr<Params>& paramsQl, const std::shared_ptr<Params>& paramsQlReduced,
+        const std::shared_ptr<Params>& paramsP, const std::vector<NativeInteger>& PInvModq,
+        const std::vector<NativeInteger>& PModq, const std::vector<NativeInteger>& PHatInvModp,
+        const std::vector<NativeInteger>& PHatInvModpPrecon, const std::vector<std::vector<NativeInteger>>& PHatModq,
+        const std::vector<DoubleNativeInt>& modqBarrettMu, const std::vector<std::vector<NativeInteger>>& qlInvModq,
+        uint32_t firstDropIdx, uint32_t levels) const {
+    if (m_format != Format::EVALUATION)
+        OPENFHE_THROW("the input must be in EVALUATION format.");
+    const uint32_t sizeP = paramsP->GetParams().size();
+    const uint32_t sizeQl = m_vectors.size() - sizeP;
+    if (levels == 0 || levels >= sizeQl)
+        OPENFHE_THROW("the number of towers to drop must be between 1 and sizeQl - 1.");
+    const uint32_t sizeQr = sizeQl - levels;
+    if (paramsQl->GetParams().size() != sizeQl || paramsQlReduced->GetParams().size() != sizeQr)
+        OPENFHE_THROW("inconsistent basis parameters.");
+    if (qlInvModq.size() < firstDropIdx + levels)
+        OPENFHE_THROW("too few modulus switching rows.");
+
+    // 1. the P part and the towers to be dropped in COEFFICIENT format. Both are inverse transforms of input
+    //    towers and neither feeds the other, so they share one parallel region; the INTT of a dropped tower
+    //    replaces the NTT of X'_i that ApproxModDown would do.
+    DCRTPolyImpl<VecType> num(paramsP, Format::COEFFICIENT);
+    std::vector<PolyType> xDropped(levels);
+    const uint32_t sizeIntt = sizeP + levels;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeIntt))
+    for (uint32_t j = 0; j < sizeIntt; ++j) {
+        PolyType& dst = (j < sizeP) ? num.m_vectors[j] : xDropped[j - sizeP];
+        dst = m_vectors[(j < sizeP) ? (sizeQl + j) : (sizeQr + j - sizeP)];
+        dst.SetFormat(Format::COEFFICIENT);
+    }
+
+    // 2. num.m_vectors[i] now holds the numerator n_i = X'_i (COEFFICIENT) for every tower of Q_l
+    num = num.ApproxSwitchCRTBasis(paramsP, paramsQl, PHatInvModp, PHatInvModpPrecon, PHatModq, modqBarrettMu);
+
+    // 3. sequential modulus switching: the value of the k-th dropped tower is d = (x - n) * s mod q; its centered
+    //    lift is multiply-accumulated into the numerators of the lower towers with c_{k,i} (liftMul), and their
+    //    scalars s_i (scal) absorb the inverse of the dropped modulus
+    std::vector<NativeInteger> scal(PInvModq.begin(), PInvModq.begin() + sizeQl);
+    std::vector<NativeInteger> liftMul(PModq.begin(), PModq.begin() + sizeQl);
+    for (uint32_t k = 0; k < levels; ++k) {
+        const uint32_t l = sizeQl - 1 - k;
+        const auto& qlInv = qlInvModq[firstDropIdx + k];
+        PolyType dropped(std::move(xDropped[l - sizeQr]));
+        dropped -= num.m_vectors[l];
+        dropped *= scal[l];
+        // the modulus dropped at the previous step, which enters c_{k,i} for k > 0
+        const NativeInteger qPrev = (k > 0) ? m_vectors[l + 1].GetModulus() : NativeInteger(0);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(l))
+        for (uint32_t i = 0; i < l; ++i) {
+            const auto& qi = m_vectors[i].GetModulus();
+            if (k > 0)
+                liftMul[i].ModMulEq(qPrev.Mod(qi), qi);
+            PolyType lift(m_vectors[i].GetParams(), Format::COEFFICIENT);
+            lift.SetValues(NativeVector(dropped.GetValues(), qi), Format::COEFFICIENT);
+            num.m_vectors[i].MultAccEqNoCheck(lift, liftMul[i]);
+            scal[i].ModMulEq(qlInv[i], qi);
+        }
+    }
+
+    // 4. one NTT per kept tower. (x_i - n_i) * s_i is computed as (n_i - x_i) * (q_i - s_i), which is the same
+    //    residue and runs in place on the numerator, so no temporary is allocated per tower. s_i is a product of
+    //    modular inverses and so is never zero, which keeps q_i - s_i a reduced residue.
+    DCRTPolyImpl<VecType> ans(paramsQlReduced, Format::EVALUATION);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQr))
+    for (uint32_t i = 0; i < sizeQr; ++i) {
+        PolyType& n = num.m_vectors[i];
+        n.SetFormat(Format::EVALUATION);
+        n -= m_vectors[i];
+        n *= (m_vectors[i].GetModulus() - scal[i]);
+        ans.m_vectors[i] = std::move(n);
     }
     return ans;
 }

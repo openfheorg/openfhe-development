@@ -47,6 +47,8 @@
  */
 namespace lbcrypto {
 
+class CryptoParametersCKKSRNS;
+
 /**
  * @brief CKKS implementation of the leveled SHE capability: operations with real and complex constants (encoded
  * at the scaling factor of the ciphertext's level), automatic rescaling and level alignment for the FLEXIBLE*
@@ -225,6 +227,26 @@ class LeveledSHECKKSRNS : public LeveledSHERNS {
     void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const override;
 
     /////////////////////////////////////
+    // SHE LEVELED ComposedEvalMult
+    /////////////////////////////////////
+
+    using LeveledSHERNS::ComposedEvalMult;
+
+    /**
+     * Multiplication, relinearization and modulus reduction (see LeveledSHERNS::ComposedEvalMult); under
+     * FIXEDMANUAL with HYBRID key switching the relinearization and the rescaling are fused (bit-identical result,
+     * fewer NTTs).
+     *
+     * @param ciphertext1 first input ciphertext.
+     * @param ciphertext2 second input ciphertext.
+     * @param evalKey the relinearization key for the quadratic secret key after multiplication.
+     * @return the resulting ciphertext.
+     */
+    Ciphertext<DCRTPoly> ComposedEvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                          ConstCiphertext<DCRTPoly>& ciphertext2,
+                                          const EvalKey<DCRTPoly> evalKey) const override;
+
+    /////////////////////////////////////
     // AUTOMORPHISM
     /////////////////////////////////////
 
@@ -267,6 +289,19 @@ class LeveledSHECKKSRNS : public LeveledSHERNS {
      * @details \p ciphertext will have modulus reduction performed in-place.
      */
     void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
+
+    /**
+     * Applies the effect of a modulus reduction to the ciphertext metadata alone: the noise scale degree, the
+     * level and the scaling factor. Used by ModReduceInternalInPlace and by the fused key switching of
+     * KeySwitchHYBRID, which reduces the modulus of the elements itself.
+     *
+     * @param ciphertext the ciphertext whose metadata is updated.
+     * @param sizeQl the number of towers of the elements before the reduction.
+     * @param levels the number of towers dropped.
+     * @param cryptoParams the CKKS parameters of the ciphertext.
+     */
+    static void ModReduceMetadataInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t sizeQl, size_t levels,
+                                         const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams);
 
     /////////////////////////////////////
     // Level Reduce

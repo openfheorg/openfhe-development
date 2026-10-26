@@ -160,6 +160,34 @@ class KeySwitchBase {
     }
 
     /**
+     * Key switches a ciphertext and reduces the modulus of the result by its last `levels` towers (ModReduce) in
+     * one fused operation; the input is copied and KeySwitchAndModReduceInPlace is applied to the copy.
+     *
+     * @param ciphertext ciphertext to be key switched
+     * @param evalKey key switching key
+     * @param levels number of towers to drop (the composite degree for composite scaling)
+     * @return the key switched and modulus-reduced ciphertext (two elements, `levels` towers fewer)
+     */
+    virtual Ciphertext<Element> KeySwitchAndModReduce(ConstCiphertext<Element> ciphertext,
+                                                      const EvalKey<Element> evalKey, uint32_t levels) const;
+
+    /**
+     * Same as KeySwitchInPlace followed by a modulus reduction by `levels` towers (ModReduceInternalInPlace), but
+     * fused: the elements not being switched are raised to the extended basis QlP and added to the key switched
+     * terms, and the division by P and the modulus reduction are done together, avoiding the NTTs of the modulus
+     * reduction. The result (elements and ciphertext metadata) is bit-identical to the unfused sequence.
+     * Supported by hybrid key switching only, for the modulus reduction by scaling (DropLastElementAndScale).
+     *
+     * @param ciphertext ciphertext to be key switched; holds the result
+     * @param evalKey key switching key
+     * @param levels number of towers to drop (the composite degree for composite scaling)
+     */
+    virtual void KeySwitchAndModReduceInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
+                                              uint32_t levels) const {
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
+    }
+
+    /**
      * Raises a ciphertext from its current basis Ql to the extended basis QlP of hybrid key switching by multiplying
      * every element by P (the residues for the P moduli are zero). The result can be added to the output of
      * EvalFastKeySwitchCoreExt, so that the original ciphertext and several key switched terms are accumulated in the
@@ -183,6 +211,20 @@ class KeySwitchBase {
      * @return the ciphertext in basis Ql
      */
     virtual Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW(NOT_SUPPORTED_ERROR);
+    }
+
+    /**
+     * Same as KeySwitchDown followed by a modulus reduction by `levels` towers (ModReduceInternalInPlace), but
+     * fused so that the NTTs of the modulus reduction are avoided; the result (elements and ciphertext metadata:
+     * level, noise scale degree, scaling factor) is bit-identical to the unfused sequence. Supported by hybrid
+     * key switching only, for the modulus reduction by scaling (DropLastElementAndScale).
+     *
+     * @param ciphertext ciphertext in basis QlP
+     * @param levels number of towers to drop (the composite degree for composite scaling)
+     * @return the ciphertext in basis Q_{l-levels}
+     */
+    virtual Ciphertext<Element> KeySwitchDownAndModReduce(ConstCiphertext<Element> ciphertext, uint32_t levels) const {
         OPENFHE_THROW(NOT_SUPPORTED_ERROR);
     }
 
