@@ -865,17 +865,16 @@ class FHECKKSRNS : public FHERNS {
     /**
      * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
      * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
-     * and SlotsToCoeffs level budgets, minus the one level the normalization after the modulus raise no longer
-     * consumes (it is rescaled by the extra level of the modulus raise; see ModRaiseInPlace). Add the number of
-     * levels needed after bootstrapping to obtain the multiplicative depth of the cryptocontext. In the ModRaise-first
-     * variant the input needs one level above the bottom one for the correction before the modulus raise, except
-     * when no correction is needed (the first modulus is at least 2^correctionFactor times the scaling modulus, as
-     * with composite scaling), or when the caller applies the correction 2^-c itself as part of its last computation
-     * and passes correctionApplied to EvalBootstrap, in which cases the input may be at the bottom level and all the
-     * levels added on top of this depth are available for computation. In the StC-first variant (BTSlotsEncoding), SlotsToCoeffs is
-     * performed first, so the input needs levelBudget[1] levels and the output keeps that many for the next
-     * bootstrapping: the levels added on top of this depth are the ones available for computation between two
-     * bootstrappings.
+     * and SlotsToCoeffs level budgets, less the level the normalization after the modulus raise no longer
+     * consumes (it is rescaled by the extra level of the raise; see ModRaiseInPlace). Add the number of levels
+     * needed after bootstrapping to obtain the multiplicative depth of the cryptocontext.
+     *
+     * The ModRaise-first variant needs the input one level above the bottom one for the correction applied
+     * before the modulus raise; it may start at the bottom level when that correction is zero or when the caller
+     * applies it (see CryptoContextImpl::GetCKKSBootCorrection and EvalBootstrap), and then every level added on
+     * top of this depth is available for computation. The StC-first variant (BTSlotsEncoding) performs
+     * SlotsToCoeffs first, so the input needs levelBudget[1] levels and the output keeps that many for the next
+     * bootstrapping: the levels added on top of this depth are the ones available between two bootstrappings.
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param secretKeyDist secret key distribution of the cryptocontext
@@ -885,11 +884,11 @@ class FHECKKSRNS : public FHERNS {
 
     /**
      * Multiplicative depth consumed by functional bootstrapping (EvalFBT): the CoeffsToSlots and SlotsToCoeffs
-     * level budgets plus AdjustDepthFBT, minus the one level the normalization after the modulus raise no longer
-     * consumes (see ModRaiseInPlace). For SPARSE_ENCAPSULATED and HYBRID_TERNARY, firstModSize (the size of the first modulus in
-     * bits) selects the approximation tables: a first modulus above 60 bits gives the sparse secret Hamming weight
-     * 64 and uses the K = 28 tables of SPARSE_TERNARY, which need one more level than the K = 16 tables of the
-     * default Hamming weight 32 (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
+     * level budgets plus AdjustDepthFBT, less the level the normalization after the modulus raise no longer
+     * consumes (see ModRaiseInPlace). For SPARSE_ENCAPSULATED and HYBRID_TERNARY, firstModSize (the size of the
+     * first modulus in bits) selects the approximation tables: a first modulus above 60 bits gives the sparse
+     * secret Hamming weight 64 and uses the K = 28 tables of SPARSE_TERNARY, which need one more level than the
+     * K = 16 tables of the default Hamming weight 32 (see CryptoParametersCKKSRNS::SparseKSHammingWeight).
      *
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param coefficients trigonometric Hermite interpolation coefficients of the look-up table
@@ -1408,13 +1407,13 @@ class FHECKKSRNS : public FHERNS {
     uint32_t GetBootstrapCorrection(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) const;
 
     /**
-     * Checks that the input of an StC-first variant, brought to the level SlotsToCoeffs expects, is at the scaling
-     * factor of that level (FLEXIBLE* and COMPOSITE* only), since the scaling factor that reaches ModRaise is fixed
-     * at setup.
+     * Checks that a ciphertext is at the scaling factor of its level (FLEXIBLE* and COMPOSITE* only), since the
+     * scaling factor that reaches ModRaise is fixed at setup. Applied to the input of an StC-first variant brought
+     * to the level SlotsToCoeffs expects, and to a ModRaise-first input that skips the pre-raise step.
      *
-     * @param ciphertext the input at the level SlotsToCoeffs expects
+     * @param ciphertext the input to check
      */
-    static void CheckStCFirstInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext);
+    static void CheckInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext);
 
     /**
      * Performs the last rescale of SlotsToCoeffs in the StC-first variants, which lands on the raising towers, and

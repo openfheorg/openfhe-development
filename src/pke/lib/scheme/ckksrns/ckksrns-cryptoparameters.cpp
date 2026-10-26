@@ -292,6 +292,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                         m_modRaiseAlphaQlModComplq[a - 1][j].ModAddFast(QlModqj, moduliComplQl[j]);
         }
 
+        // computed here rather than reused from the HYBRID constants of Q: the extension basis now ends with the
+        // extra level, whose moduli are not part of the chain
         m_modRaiseModComplqBarrettMu.resize(sizeComplQl);
         const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
         for (uint32_t j = 0; j < sizeComplQl; ++j)
@@ -382,8 +384,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             for (const auto& p : GetParamsP()->GetParams())
                 moduliToAvoid.push_back(p->GetModulus());
         }
-        for (uint32_t j = sizeQ - ((extraBits > 0) ? 1 : 0); j < m_paramsModRaise->GetParams().size(); ++j)
-            moduliToAvoid.push_back(m_paramsModRaise->GetParams()[j]->GetModulus());
+        const auto& paramsRaised = m_paramsModRaise->GetParams();
+        for (uint32_t j = paramsRaised.size() - compositeDegree; j < paramsRaised.size(); ++j)
+            moduliToAvoid.push_back(paramsRaised[j]->GetModulus());
 
         std::vector<NativeInteger> moduliPSparse(sizePSparse);
         std::vector<NativeInteger> rootsPSparse(sizePSparse);

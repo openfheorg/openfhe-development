@@ -136,10 +136,11 @@ uint32_t LinearTransformTowersToDrop(uint32_t sizeQ, uint32_t L, uint32_t towers
 }
 
 // The normalization multiplication after the modulus raise is rescaled by the extra level E of the raised basis
-// (see FHECKKSRNS::ModRaiseInPlace) while the ciphertext keeps the scaling factor of the raised level, so the
-// values it carries are too large by E / SF(raised level) with respect to that convention; the CoeffsToSlots
-// matrices are scaled by this ratio to compensate. (For the modes tracking level-specific scaling factors the
-// constant is encoded at SF(raised level), for the FIXED* modes at the fixed 2^p = SF, so the same ratio holds.)
+// (see FHECKKSRNS::ModRaiseInPlace) while the ciphertext keeps the scaling factor SF of the raised level: the
+// product m * SF^2 is divided by E rather than by SF, so against that convention the values it carries are too
+// small by E / SF, and the CoeffsToSlots matrices are scaled by that ratio to compensate. (For the modes tracking
+// level-specific scaling factors the constant is encoded at SF(raised level), for the FIXED* modes at the fixed
+// 2^p = SF, so the same ratio holds.)
 double ModRaiseRescaleFold(const std::shared_ptr<lbcrypto::CryptoParametersCKKSRNS>& cryptoParams) {
     const uint32_t lvl = (cryptoParams->GetScalingTechnique() == lbcrypto::FLEXIBLEAUTOEXT) ? 1 : 0;
     return cryptoParams->GetModRaiseExtraModulus() / cryptoParams->GetScalingFactorReal(lvl);
@@ -1110,11 +1111,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                       std::to_string(m_correctionFactor) + "].");
     }
 #endif
-    // For composite scaling, deg may exceed the correction factor (the check above is skipped, since with
-    // larger composite degrees the first modulus is typically much larger than the scaling factor); in that
-    // case no correction is applied instead of letting the unsigned subtraction wrap around.
-    [[maybe_unused]] uint32_t correction =
-            (deg < static_cast<int32_t>(m_correctionFactor)) ? m_correctionFactor - deg : 0;
+    // the exponent of the shrink 2^-correction applied before the modulus raise: the correction factor minus
+    // deg, 0 when deg is the larger (composite scaling) and 0 in the 128-bit build
+    const uint32_t correction = GetBootstrapCorrection(cryptoParams);
     double post = std::pow(2, static_cast<double>(deg));
 
     // For FLEXIBLE* the exact power-of-two 1/post is applied as the shrink before CoeffsToSlots (in the
@@ -1153,22 +1152,16 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     const double realignment = ModRaiseRealignment(cryptoParams);
     const bool fixedScaling = (st == FIXEDMANUAL || st == FIXEDAUTO);
     const bool atBottomLevel = (raised->GetElements()[0].GetNumOfElements() == compositeDegree);
-#if NATIVEINT == 128
-    // the 128-bit build applies no correction (its moduli are large enough)
-    const uint32_t appliedCorrection = 0;
-#else
-    const uint32_t appliedCorrection = correction;
-#endif
-    if ((appliedCorrection == 0 || correctionApplied) && (fixedScaling || atBottomLevel)) {
+    if ((correction == 0 || correctionApplied) && (fixedScaling || atBottomLevel)) {
         if (!fixedScaling)
-            CheckStCFirstInputScalingFactor(raised);
+            CheckInputScalingFactor(raised);
     } else {
         if (atBottomLevel)
             OPENFHE_THROW("The input to bootstrapping needs one more level for the correction factor (" +
                           std::to_string(m_correctionFactor) +
                           ") applied before the modulus raise, unless the caller applies the correction itself "
                           "(see CryptoContextImpl::GetCKKSBootCorrection and EvalBootstrap).");
-        const double shrink = correctionApplied ? 1.0 : std::pow(2, -static_cast<int32_t>(appliedCorrection));
+        const double shrink = correctionApplied ? 1.0 : std::pow(2, -static_cast<int32_t>(correction));
         AdjustCiphertext(raised, shrink * realignment, lvl);
     }
 
@@ -1612,7 +1605,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirstInternal(ConstCiphertext<D
         }
     }
     // an input with more levels than needed is brought to the scaling factor of the expected level above
-    CheckStCFirstInputScalingFactor(ctxtDepleted);
+    CheckInputScalingFactor(ctxtDepleted);
 
     Ciphertext<DCRTPoly> ctxtEnc;
 #ifdef BOOTSTRAPTIMING
@@ -1966,7 +1959,7 @@ uint32_t FHECKKSRNS::GetBootstrapCorrection(const std::shared_ptr<CryptoParamete
 #endif
 }
 
-void FHECKKSRNS::CheckStCFirstInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext) {
+void FHECKKSRNS::CheckInputScalingFactor(ConstCiphertext<DCRTPoly>& ciphertext) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
     const auto st = cryptoParams->GetScalingTechnique();
     if (st == FIXEDMANUAL || st == FIXEDAUTO)
@@ -2093,7 +2086,7 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
         }
     }
     // an input with more levels than needed is brought to the scaling factor of the expected level above
-    CheckStCFirstInputScalingFactor(ctxtDepleted);
+    CheckInputScalingFactor(ctxtDepleted);
 
 #ifdef BOOTSTRAPTIMING
     TIC(t);

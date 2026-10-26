@@ -216,7 +216,9 @@ declaration together with the precision it achieves. The example contains the co
 **OpenFHE functions**
 The features that need to be enabled are PKE, KEYSWITCH, LEVELEDSHE, ADVANCEDSHE and FHE. Then:
 - `FHECKKSRNS::GetFEFBTDepth` returns the multiplicative depth consumed by the FE functional bootstrapping for a given level
-budget, coefficient vector and secret key distribution. The levels to be used after the bootstrapping should be added to it
+budget, coefficient vector and secret key distribution. As in regular CKKS bootstrapping, it accounts for the
+level the normalization after the modulus raise no longer consumes, which the OverModRaise extra limb absorbs (see
+[CKKS_BOOTSTRAPPING.md](CKKS_BOOTSTRAPPING.md)); `GetFBTDepth` does the same for `EvalFBT`. The levels to be used after the bootstrapping should be added to it
 when setting the multiplicative depth of the crypto context.
 - `EvalFEFuncBootstrapSetup` performs the precomputations of the linear transforms for a given level budget and number of slots.
 A level budget of {1, 1} uses a single linear transform for each of the SlotsToCoeffs and CoeffsToSlots steps.
