@@ -159,19 +159,22 @@ using namespace std::literals::complex_literals;
  *
  * The normalization of the modulus raise shrinks the message by 2^-deg/N (and by the correction factor), so a key
  * switching whose rounding is not attenuated by a subsequent plaintext multiplication would add its noise at full
- * strength relative to the message. The hoisted key switching of the first layer, whose rounding happens only after
- * the multiplication by the encoding matrix, is therefore used both for the switch back from the sparse secret of
- * the encapsulation and for the partial sum of sparse packing, which were evaluated before the normalization when it
- * consumed a level of the chain.
+ * strength relative to the message. The switch back from the sparse secret of the encapsulation is such a key
+ * switching, so it is carried by the hoisted key switching of the first layer, whose rounding happens only after
+ * the multiplication by the encoding matrix. The partial sum of sparse packing is carried there too, but only when
+ * the layer already runs under the sparse secret: folding it costs a second accumulation of the layer, and over
+ * correction factors 5 to 13 at two sparse packings it was worth no precision, so without the encapsulation it is
+ * evaluated after the raise instead (see FHECKKSRNS::ModRaiseForEncoding).
  */
 struct RaisedFirstLayer {
     /// the ciphertext is encrypted under the sparse secret of SPARSE_ENCAPSULATED/HYBRID_TERNARY: the baby steps
     /// use the fused rotation keys of FHECKKSRNS::EvalBootstrapKeyGen, whose source is that secret, so that the
     /// output of the layer is encrypted under the main secret
     bool sparseSecret = false;
-    /// sparse packing: the partial sum ct + Rotate(ct, slots) + ... + Rotate(ct, (N/(2*slots) - 1) * slots) is
-    /// folded into the layer (a second accumulation with the plaintexts rotated by -slots, rotated by slots and
-    /// added to the first one, then doublings by 2*slots, 4*slots, ... of the output in the extended basis)
+    /// sparse packing under that sparse secret: the partial sum ct + Rotate(ct, slots) + ... +
+    /// Rotate(ct, (N/(2*slots) - 1) * slots) is folded into the layer (a second accumulation with the plaintexts
+    /// rotated by -slots, rotated by slots and added to the first one, then doublings by 2*slots, 4*slots, ... of
+    /// the output in the extended basis)
     bool partialSum = false;
 };
 
@@ -1172,9 +1175,10 @@ class FHECKKSRNS : public FHERNS {
      *   https://cic.iacr.org/p/2/3/32). The ciphertext keeps the scaling factor of the raised level; the ratio
      *   E / scaling factor between this convention and the actual scale is folded into the CoeffsToSlots matrix
      *   (see ModRaiseRescaleFold in the setups).
-     * For SPARSE_ENCAPSULATED and HYBRID_TERNARY the output stays encrypted under the sparse secret, and for sparse
-     * packing the partial sum of the coefficients is not evaluated: both are done by the first layer of the
-     * homomorphic encoding (see RaisedFirstLayer), whose hoisted key switching attenuates their rounding noise.
+     * For SPARSE_ENCAPSULATED and HYBRID_TERNARY the output stays encrypted under the sparse secret: the switch
+     * back is done by the first layer of the homomorphic encoding (see RaisedFirstLayer), whose hoisted key
+     * switching attenuates its rounding noise. The partial sum of sparse packing is not evaluated here either;
+     * ModRaiseForEncoding places it, in the layer or straight after the raise.
      *
      * @param raised input/output ciphertext
      * @param normalization the constant the raised ciphertext is multiplied by
@@ -1182,15 +1186,16 @@ class FHECKKSRNS : public FHERNS {
     void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised, double normalization) const;
 
     /**
-     * The options of the first layer of the homomorphic encoding for the ciphertext produced by ModRaiseInPlace.
+     * The modulus raise followed by the partial sum of sparse packing: ModRaiseInPlace, then the partial sum,
+     * which the first layer of the homomorphic encoding absorbs when the raised ciphertext is still under the
+     * sparse secret of the encapsulation and which is evaluated here otherwise (see RaisedFirstLayer).
      *
-     * @param cryptoParams the crypto parameters (secret key distribution)
+     * @param raised input/output ciphertext
+     * @param normalization the constant the raised ciphertext is multiplied by (see ModRaiseInPlace)
      * @param slots number of plaintext slots
-     * @param N ring dimension
-     * @return the options
+     * @return how the first layer of the homomorphic encoding consumes the result
      */
-    static RaisedFirstLayer GetRaisedFirstLayer(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
-                                                uint32_t slots, uint32_t N);
+    RaisedFirstLayer ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
 
     /**
      * Rotation indices of the baby steps of the first layer of the homomorphic encoding (the layer applied to the

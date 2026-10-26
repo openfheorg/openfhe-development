@@ -548,9 +548,22 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
     return std::vector<uint32_t>(indexList.begin(), indexList.end());
 }
 
-RaisedFirstLayer FHECKKSRNS::GetRaisedFirstLayer(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
-                                                 uint32_t slots, uint32_t N) {
-    return {IsSparseEncapsulated(cryptoParams->GetSecretKeyDist()), slots < N / 2};
+RaisedFirstLayer FHECKKSRNS::ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization,
+                                                 uint32_t slots) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(raised->GetCryptoParameters());
+    const uint32_t N = raised->GetCryptoContext()->GetRingDimension();
+    ModRaiseInPlace(raised, normalization);
+
+    // The switch back from the sparse secret of the encapsulation has to ride on the hoisted key switching of the
+    // first layer, and the partial sum then rides along, since the layer runs under the sparse secret either way.
+    // Without the encapsulation there is nothing to switch back and the partial sum is evaluated here, which is
+    // cheaper: folding it costs a second accumulation of the layer and, measured over correction factors 5 to 13
+    // at two sparse packings, bought no precision.
+    const bool sparseSecret = IsSparseEncapsulated(cryptoParams->GetSecretKeyDist());
+    const bool sparsePacking = (slots < N / 2);
+    if (sparsePacking && !sparseSecret)
+        EvalPartialSumInPlace(raised, slots);
+    return {sparseSecret, sparsePacking && sparseSecret};
 }
 
 std::vector<uint32_t> FHECKKSRNS::FirstLayerBabyStepIndices(uint32_t slots, uint32_t M) const {
@@ -1169,10 +1182,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
     // The modulus raise with the normalization by the exact power of two pre/N: the overflow bound K itself is
     // folded into the CoeffsToSlots matrix (see GetModRaiseOverflowBound). The normalization is rescaled by the
-    // extra level of the raised basis, so CoeffsToSlots starts at the raised level; its first layer also switches
-    // back from the sparse secret of the encapsulation and evaluates the partial sum of sparse packing.
-    ModRaiseInPlace(raised, pre / N);
-    const auto first = GetRaisedFirstLayer(cryptoParams, slots, N);
+    // extra level of the raised basis, so CoeffsToSlots starts at the raised level.
+    const auto first = ModRaiseForEncoding(raised, pre / N, slots);
 
 #ifdef BOOTSTRAPTIMING
     auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
@@ -1659,10 +1670,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirstInternal(ConstCiphertext<D
         algo->MultByIntegerInPlace(raised, uint64_t(1) << (p.m_foldedCorrection - correction));
 
     // the modulus raise with the scaling adjustment pre/N before CoeffsToSlots (rescaled by the extra level of
-    // the raised basis, so CoeffsToSlots starts at the raised level; its first layer also switches back from the
-    // sparse secret of the encapsulation and evaluates the partial sum of sparse packing)
-    ModRaiseInPlace(raised, pre / N);
-    const auto first = GetRaisedFirstLayer(cryptoParams, slots, N);
+    // the raised basis, so CoeffsToSlots starts at the raised level)
+    const auto first = ModRaiseForEncoding(raised, pre / N, slots);
 
 #ifdef BOOTSTRAPTIMING
     auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
@@ -2125,10 +2134,8 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
     // The modulus raise with the scaling adjustment before CoeffsToSlots: K is folded into the CoeffsToSlots matrix
     // for every secret distribution (see EvalFEFuncBootstrapSetup), so the runtime normalization is the exact
     // power of two 2^-deg/N. It is rescaled by the extra level of the raised basis, so CoeffsToSlots starts at the
-    // raised level; its first layer also switches back from the sparse secret of the encapsulation and evaluates
-    // the partial sum of sparse packing.
-    ModRaiseInPlace(raised, pre / N);
-    const auto first = GetRaisedFirstLayer(cryptoParams, slots, N);
+    // raised level.
+    const auto first = ModRaiseForEncoding(raised, pre / N, slots);
 
     //------------------------------------------------------------------------------
     // Running CoeffsToSlots
@@ -4271,11 +4278,9 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     // overflow bound K is part of the CoeffsToSlots matrix (see EvalFBTSetup), so only the 1/N normalization of
     // the homomorphic encoding is applied here; for the modes tracking level-specific scaling factors the
     // initial-scaling correction is folded in as well. The normalization is rescaled by the extra level of the
-    // raised basis, so CoeffsToSlots starts at the raised level; its first layer also switches back from the
-    // sparse secret of the encapsulation and evaluates the partial sum of sparse packing.
+    // raised basis, so CoeffsToSlots starts at the raised level.
     const auto slots = ciphertext->GetSlots();
-    ModRaiseInPlace(raised, ((isFlexible) ? correction : 1.0) / N);
-    const auto first = GetRaisedFirstLayer(cryptoParams, slots, N);
+    const auto first = ModRaiseForEncoding(raised, ((isFlexible) ? correction : 1.0) / N, slots);
 
 #ifdef BOOTSTRAPTIMING
     auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
