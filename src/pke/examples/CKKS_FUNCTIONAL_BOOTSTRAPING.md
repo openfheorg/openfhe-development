@@ -118,7 +118,9 @@ smaller digits, and process these smaller digits separately.
 
 Functional bootstrapping is supported for sparse secret keys (SPARSE_TERNARY and SPARSE_ENCAPSULATED) and for
 uniform ternary secret keys (UNIFORM_TERNARY and HYBRID_TERNARY). HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended,
-as they achieve a probability of failure below 2^-128; SPARSE_TERNARY is discouraged.
+as they achieve a probability of failure below 2^-128; SPARSE_TERNARY is discouraged. The security level should match the
+distribution: HEORG24_128 (or HEORG24_192/HEORG24_256) for the uniform ternary distributions and HE_SPARSE_H192_128 for the
+sparse distributions (Hamming weight 192), see [CKKS_BOOTSTRAPPING.md](CKKS_BOOTSTRAPPING.md).
 
 The SPARSE_TERNARY distribution is the distribution used in the original CKKS paper [[CKKS17](https://eprint.iacr.org/2016/421.pdf)],
 where the Hamming weight of the secret key is set to 192. For the set number of overflows in bootstrapping, K = 28, this

@@ -62,8 +62,8 @@ void EvalLogisticExample() {
 
     // We set a smaller ring dimension to improve performance for this example.
     // In production environments, the security level should be set to
-    // HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    // or 256-bit security, respectively.
+    // HEORG24_128, HEORG24_192, or HEORG24_256 for 128-bit, 192-bit,
+    // or 256-bit classical/quantum security, respectively.
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 10);
 #if NATIVEINT == 128
@@ -123,8 +123,8 @@ void EvalFunctionExample() {
 
     // We set a smaller ring dimension to improve performance for this example.
     // In production environments, the security level should be set to
-    // HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    // or 256-bit security, respectively.
+    // HEORG24_128, HEORG24_192, or HEORG24_256 for 128-bit, 192-bit,
+    // or 256-bit classical/quantum security, respectively.
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 10);
 #if NATIVEINT == 128

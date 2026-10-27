@@ -165,9 +165,11 @@ Misc.
 
 `Standard Values for Lattice Params (stdlatticeparms.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/stdlatticeparms.h>`_
 
--  Header for the standard values for Lattice Parms, as determined by `Homomorphic Encryption Org <homomorphicencryption.org>`__
+-  Header for the standard values for Lattice Parms, as determined by `Homomorphic Encryption Org <homomorphicencryption.org>`__: the tables of the Homomorphic Encryption Standard v1.1 (2018, ``HEStd_*`` security levels) and of the `Security Guidelines for Implementing Homomorphic Encryption <https://cic.iacr.org/p/1/4/26>`__ (IACR Communications in Cryptology 1(4), 2025; also `ePrint 2024/463 <https://eprint.iacr.org/2024/463>`__; ``HEORG24_128``, ``HEORG24_192``, ``HEORG24_256`` for 128-, 192-, and 256-bit classical/quantum security with uniform ternary and Gaussian secrets) and of the `Sparse LWE Kit <https://github.com/HomomorphicEncryption/SparseLWEkit>`__ (``HE_SPARSE_H192_128`` for sparse secrets of Hamming weight 192, with work factors of 134.1, 134.0, and 135.7 bits for ring dimensions 2^15, 2^16, and 2^17 estimated with the Lattice Estimator)
 
 -  Given (distribution type, security level), we can get a ``maxQ`` for a given ring dimension, or get a ring dimension given some ``maxQ``
+
+-  The ``HEORG24_*`` levels are recommended over the ``HEStd_*`` levels for new applications, and ``HE_SPARSE_H192_128`` is recommended for sparse secrets (``SPARSE_TERNARY`` and ``SPARSE_ENCAPSULATED``, e.g., for CKKS bootstrapping)
 
 `Hal Lattice Backend Switcher (lat-hal.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/lat-hal.h>`_
 

@@ -30,7 +30,9 @@
 //==================================================================================
 
 /*
-  Implementation for the standard values for Lattice Parms, as determined by homomorphicencryption.org
+  Implementation for the standard values for Lattice Parms, as determined by homomorphicencryption.org and by the
+  Security Guidelines for Implementing Homomorphic Encryption (IACR Communications in Cryptology 1(4), 2025,
+  https://cic.iacr.org/p/1/4/26; also ePrint 2024/463, https://eprint.iacr.org/2024/463)
  */
 
 #include "lattice/stdlatticeparms.h"
@@ -38,6 +40,7 @@
 #include <cstdint>
 #include <map>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -61,6 +64,14 @@ SecurityLevel convertToSecurityLevel(const std::string& str) {
         return HEStd_256_quantum;
     else if (str == "HEStd_NotSet")
         return HEStd_NotSet;
+    else if (str == "HEORG24_128")
+        return HEORG24_128;
+    else if (str == "HEORG24_192")
+        return HEORG24_192;
+    else if (str == "HEORG24_256")
+        return HEORG24_256;
+    else if (str == "HE_SPARSE_H192_128")
+        return HE_SPARSE_H192_128;
 
     OPENFHE_THROW(std::string("Unknown SecurityLevel ") + str);
 }
@@ -74,6 +85,10 @@ SecurityLevel convertToSecurityLevel(uint32_t num) {
         case HEStd_128_quantum:
         case HEStd_192_quantum:
         case HEStd_256_quantum:
+        case HEORG24_128:
+        case HEORG24_192:
+        case HEORG24_256:
+        case HE_SPARSE_H192_128:
             return secLevel;
         default:
             break;
@@ -105,6 +120,18 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
         case HEStd_NotSet:
             s << "HEStd_NotSet";
             break;
+        case HEORG24_128:
+            s << "HEORG24_128";
+            break;
+        case HEORG24_192:
+            s << "HEORG24_192";
+            break;
+        case HEORG24_256:
+            s << "HEORG24_256";
+            break;
+        case HE_SPARSE_H192_128:
+            s << "HE_SPARSE_H192_128";
+            break;
         default:
             s << "UNKNOWN";
             break;
@@ -112,10 +139,53 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     return s;
 }
 
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byRing[3][6];
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byLogQ[3][6];
+std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byRing[StdLatticeParm::NUM_DIST_TYPES]
+                                                          [StdLatticeParm::NUM_SEC_LEVELS];
+std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byLogQ[StdLatticeParm::NUM_DIST_TYPES]
+                                                          [StdLatticeParm::NUM_SEC_LEVELS];
 
 bool StdLatticeParm::initialized = false;
+
+uint32_t StdLatticeParm::FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
+    if (!initialized)
+        initializeLookups();
+
+    const auto& table = byLogQ[static_cast<size_t>(distType)][static_cast<size_t>(minSecLev)];
+    if (table.empty()) {
+        std::string errMsg("There is no security table for distribution type ");
+        errMsg += std::to_string(static_cast<int>(distType)) + " and security level ";
+        std::ostringstream os;
+        os << minSecLev;
+        errMsg += os.str() + ". HE_SPARSE_H192_128 requires a sparse secret key distribution (SPARSE_TERNARY or";
+        errMsg += " SPARSE_ENCAPSULATED), and all other security levels require a non-sparse distribution type.";
+        OPENFHE_THROW(errMsg);
+    }
+
+    uint32_t prev = 0;
+    uint32_t n = 0;
+    for (const auto& it : table) {
+        if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
+            return it.second->getRingDim();
+        prev = it.second->getMaxLogQ();
+        n = it.second->getRingDim();
+    }
+    return 2 * n;
+}
+
+DistributionType StdLatticeParm::GetDistributionType(SecretKeyDist secretKeyDist, SecurityLevel minSecLev) {
+    const bool sparseSecret = (secretKeyDist == SPARSE_TERNARY) || (secretKeyDist == SPARSE_ENCAPSULATED);
+    if (minSecLev == HE_SPARSE_H192_128) {
+        if (!sparseSecret) {
+            OPENFHE_THROW(
+                    "The security level HE_SPARSE_H192_128 is defined only for sparse secrets of Hamming weight 192 "
+                    "(SPARSE_TERNARY or SPARSE_ENCAPSULATED). Use HEORG24_128 for uniform ternary and Gaussian secrets.");
+        }
+        return HEStd_sparse;
+    }
+    // Sparse secrets are treated as uniform ternary secrets by the HEStd_* and HEORG24_* tables, which
+    // overestimates their security; HE_SPARSE_H192_128 is recommended for them instead.
+    return (secretKeyDist == GAUSSIAN) ? HEStd_error : HEStd_ternary;
+}
 
 // this is a collection of all of the parameter sets
 // the constructor for each one saves and indexes it so that you can search for
@@ -258,6 +328,71 @@ std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
         StdLatticeParm(HEStd_ternary, 131072, HEStd_128_quantum, 3348),
         StdLatticeParm(HEStd_ternary, 131072, HEStd_192_quantum, 2301),
         StdLatticeParm(HEStd_ternary, 131072, HEStd_256_quantum, 1784),
+
+        // Table 5.2 of the Security Guidelines for Implementing Homomorphic Encryption (IACR Communications in
+        // Cryptology 1(4), 2025, https://cic.iacr.org/p/1/4/26; also ePrint 2024/463): maximal log2(q) for Gaussian
+        // error with standard deviation 3.19, estimated with the Lattice Estimator (commit 8f1ff7e) and the
+        // RC.MATZOV cost model. The levels apply to both classical and quantum attacks.
+        // There are no rows for N = 1024 at the 192- and 256-bit levels.
+        StdLatticeParm(HEStd_ternary, 1024, HEORG24_128, 26),
+        StdLatticeParm(HEStd_ternary, 2048, HEORG24_128, 53),
+        StdLatticeParm(HEStd_ternary, 2048, HEORG24_192, 36),
+        StdLatticeParm(HEStd_ternary, 2048, HEORG24_256, 27),
+        StdLatticeParm(HEStd_ternary, 4096, HEORG24_128, 106),
+        StdLatticeParm(HEStd_ternary, 4096, HEORG24_192, 73),
+        StdLatticeParm(HEStd_ternary, 4096, HEORG24_256, 56),
+        StdLatticeParm(HEStd_ternary, 8192, HEORG24_128, 214),
+        StdLatticeParm(HEStd_ternary, 8192, HEORG24_192, 147),
+        StdLatticeParm(HEStd_ternary, 8192, HEORG24_256, 114),
+        StdLatticeParm(HEStd_ternary, 16384, HEORG24_128, 430),
+        StdLatticeParm(HEStd_ternary, 16384, HEORG24_192, 297),
+        StdLatticeParm(HEStd_ternary, 16384, HEORG24_256, 230),
+        StdLatticeParm(HEStd_ternary, 32768, HEORG24_128, 868),
+        StdLatticeParm(HEStd_ternary, 32768, HEORG24_192, 597),
+        StdLatticeParm(HEStd_ternary, 32768, HEORG24_256, 462),
+        StdLatticeParm(HEStd_ternary, 65536, HEORG24_128, 1747),
+        StdLatticeParm(HEStd_ternary, 65536, HEORG24_192, 1199),
+        StdLatticeParm(HEStd_ternary, 65536, HEORG24_256, 929),
+        StdLatticeParm(HEStd_ternary, 131072, HEORG24_128, 3523),
+        StdLatticeParm(HEStd_ternary, 131072, HEORG24_192, 2411),
+        StdLatticeParm(HEStd_ternary, 131072, HEORG24_256, 1866),
+
+        StdLatticeParm(HEStd_error, 1024, HEORG24_128, 28),
+        StdLatticeParm(HEStd_error, 2048, HEORG24_128, 55),
+        StdLatticeParm(HEStd_error, 2048, HEORG24_192, 38),
+        StdLatticeParm(HEStd_error, 2048, HEORG24_256, 30),
+        StdLatticeParm(HEStd_error, 4096, HEORG24_128, 108),
+        StdLatticeParm(HEStd_error, 4096, HEORG24_192, 75),
+        StdLatticeParm(HEStd_error, 4096, HEORG24_256, 58),
+        StdLatticeParm(HEStd_error, 8192, HEORG24_128, 216),
+        StdLatticeParm(HEStd_error, 8192, HEORG24_192, 149),
+        StdLatticeParm(HEStd_error, 8192, HEORG24_256, 116),
+        StdLatticeParm(HEStd_error, 16384, HEORG24_128, 432),
+        StdLatticeParm(HEStd_error, 16384, HEORG24_192, 299),
+        StdLatticeParm(HEStd_error, 16384, HEORG24_256, 232),
+        StdLatticeParm(HEStd_error, 32768, HEORG24_128, 870),
+        StdLatticeParm(HEStd_error, 32768, HEORG24_192, 599),
+        StdLatticeParm(HEStd_error, 32768, HEORG24_256, 464),
+        StdLatticeParm(HEStd_error, 65536, HEORG24_128, 1749),
+        StdLatticeParm(HEStd_error, 65536, HEORG24_192, 1201),
+        StdLatticeParm(HEStd_error, 65536, HEORG24_256, 931),
+        StdLatticeParm(HEStd_error, 131072, HEORG24_128, 3525),
+        StdLatticeParm(HEStd_error, 131072, HEORG24_192, 2413),
+        StdLatticeParm(HEStd_error, 131072, HEORG24_256, 1868),
+
+        // 128-bit classical security for sparse ternary secrets of Hamming weight 192 (the Hamming weight of
+        // SPARSE_TERNARY and SPARSE_ENCAPSULATED secret keys) for the ring dimensions used in CKKS bootstrapping.
+        // These are the OpenFHE parameter sets (IDs 5, 6, and 7) of the Sparse LWE Kit of HomomorphicEncryption.org
+        // (https://github.com/HomomorphicEncryption/SparseLWEkit), with error standard deviation 3.19. The work
+        // factors listed there were obtained with the Lattice Estimator (https://github.com/malb/lattice-estimator)
+        // using the BDGL16 reduction cost model; the best attack for all three sets is bdd_mitm_hybrid:
+        //   N = 32768,  log2(q) = 767:  134.1 bits (ID 5)
+        //   N = 65536,  log2(q) = 1553: 134.0 bits (ID 6)
+        //   N = 131072, log2(q) = 3104: 135.7 bits (ID 7)
+        // Ciphertext moduli below 767 bits map to N = 32768.
+        StdLatticeParm(HEStd_sparse, 32768, HE_SPARSE_H192_128, 767),
+        StdLatticeParm(HEStd_sparse, 65536, HE_SPARSE_H192_128, 1553),
+        StdLatticeParm(HEStd_sparse, 131072, HE_SPARSE_H192_128, 3104),
 });
 
 } /* namespace lbcrypto */
