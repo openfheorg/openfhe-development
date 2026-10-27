@@ -459,26 +459,30 @@ class CryptoContextImpl : public Serializable {
             } else {
                 elemParamsPtr = cryptoParams->GetElementParams();
             }
-            // Check if plaintext has got enough slots for data (value)
-            uint32_t ringDim = elemParamsPtr->GetRingDimension();
-            size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
+            // Check if plaintext has got enough slots for data (value). Native CI CKKS
+            // packs N real slots (vs N/2 complex), so its cap is ringDim, not ringDim/2.
+            uint32_t ringDim  = elemParamsPtr->GetRingDimension();
+            size_t valueSize  = value.size();
+            uint32_t maxSlots = (this->GetCKKSDataType() == REAL_CI) ? ringDim : (ringDim / 2);
+            if (valueSize > maxSlots) {
                 OPENFHE_THROW("The size [" + std::to_string(valueSize) +
-                              "] of the vector with values should not be greater than ringDim/2 [" +
-                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+                              "] of the vector with values should not be greater than the maximum number of slots [" +
+                              std::to_string(maxSlots) + "] for the chosen CKKS data type");
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
                                                                noiseScaleDeg, level, scFact, slots,
                                                                this->GetCKKSDataType()));
         } else {
-            // Check if plaintext has got enough slots for data (value)
-            uint32_t ringDim = params->GetRingDimension();
-            size_t valueSize = value.size();
-            if (valueSize > ringDim / 2) {
+            // Check if plaintext has got enough slots for data (value). Native CI CKKS
+            // packs N real slots (vs N/2 complex), so its cap is ringDim, not ringDim/2.
+            uint32_t ringDim  = params->GetRingDimension();
+            size_t valueSize  = value.size();
+            uint32_t maxSlots = (this->GetCKKSDataType() == REAL_CI) ? ringDim : (ringDim / 2);
+            if (valueSize > maxSlots) {
                 OPENFHE_THROW("The size [" + std::to_string(valueSize) +
-                              "] of the vector with values should not be greater than ringDim/2 [" +
-                              std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+                              "] of the vector with values should not be greater than the maximum number of slots [" +
+                              std::to_string(maxSlots) + "] for the chosen CKKS data type");
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,

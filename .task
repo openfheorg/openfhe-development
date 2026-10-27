@@ -1,0 +1,381 @@
+# .task — Native FFT-Style Bootstrapping for Conjugate-Invariant (Real) CKKS
+
+> This file is the project-local record of the implementation plan. The original
+> plan (authored by the project owner, targeting Lattigo) is preserved **verbatim**
+> below under "ORIGINAL PLAN". The "EXECUTION ADAPTATION" section at the top records
+> the decisions that reconcile that plan with this repository's reality (OpenFHE C++,
+> a prior CI prototype on `origin/cickks2`). The live, working execution plan lives at
+> `~/.claude/plans/here-is-a-plan-ethereal-mountain.md`.
+
+---
+
+## EXECUTION ADAPTATION (decisions settled with the owner, 2026-06-14)
+
+The original plan below targets **Lattigo (Go)** and explicitly says *"do not attempt the
+OpenFHE port."* We are executing in the **OpenFHE (C++)** repo. Four forks were resolved:
+
+1. **Target library = OpenFHE (this repo).** Keep the math (§4) and algorithm (§5)
+   library-agnostic so a later Lattigo cross-check is a re-implementation, not a
+   re-derivation. The original plan's Lattigo API names map to OpenFHE equivalents:
+   `circuits/ckks/dft` → `ckksrns-fhe.cpp` / `ckksrns-utils.cpp` homomorphic-DFT
+   machinery (`EvalCoeffsToSlots`, `CoeffEncodingCollapse`, `ExtractShiftedDiagonal`,
+   `GetCollapsedFFTParams`); `circuits/ckks/mod1` → `EvalChebyshevSeries` +
+   `ApplyDoubleAngleIterations`; "no `DomainSwitcher`" → no `ILDCRTParams(4N)`
+   (degree-2N) ring ever instantiated.
+2. **Prior prototype = reference + salvage.** A 2023 "quick and dirty" native CI prototype
+   lives on `origin/cickks2` (14 commits, range `a08bc8ba~1..1801273e`), based on a
+   Nov-2023 OpenFHE (~2.5y behind `main`). Reimplement cleanly on current `main`,
+   **salvaging the math** (twisted NTT/INTT, 4N FFTSpecial twiddles, `q≡1 mod 4N` prime
+   gen, merged real-DFT encode/decode) but **rewriting all integration** — the prototype
+   was a destructive global hijack (commented-out standard NTT, hardcoded `4n`), unmergeable.
+3. **Scope = full 6-phase pipeline.**
+4. **Benchmark = two-way only.** Native CI bootstrapping **N** real slots vs. standard
+   complex CKKS bootstrapping **N/2** real slots, at matched ring dimension / iso-128-bit /
+   iso-precision. No ring-switch "Baseline B" (it does not exist in OpenFHE).
+
+### Verified integration facts (re-confirmed against current-main source)
+
+- `enum CKKSDataType { REAL=0, COMPLEX }` (`src/pke/include/constants-defs.h:117`),
+  threaded through ~24 files. On main, `REAL` = real data in the **standard complex**
+  degree-2N ring (not CI). → Add a third value **`REAL_CI`**; every existing
+  `GetCKKSDataType()` site becomes the CI dispatch point. Default stays `REAL`
+  (no regression to existing tests).
+- **Rank-N mechanism** (salvaged, confirmed in diff): `n = cyclOrder/4 = N`;
+  `ILDCRTParams(cyclOrder/2 = 2N, …)` ⇒ `RingDimension = totient(2N) = N`; moduli
+  generated at `cyclOrder = 4N` ⇒ `q ≡ 1 mod 4N`. A degree-2N ring (`ILDCRTParams(4N)`,
+  totient 2N) is **never** built — this *is* the no-ring-switch invariant.
+- **Logical-M decoupling**: DCRTPoly cyclotomic order = 2N, but bootstrap/automorphism/DFT
+  need logical `M = 4N` (so `M/4 = N = #CI slots`). Route all such reads through a new
+  `GetLogicalCyclotomicOrder` helper.
+- **`CIBasisScale(i)`** single source of truth for the `‖u_0‖²=N/2` vs `‖u_i‖²=N`
+  basis asymmetry.
+- Build uses `GLOB_RECURSE lib/*.cpp` / `unittest/*.cpp` ⇒ new `.cpp` auto-discovered.
+
+### Commit cadence (branch `ci-ckks-2026`)
+
+Commit a working, test-passing increment after each milestone: **C0** `.task`+scaffold ·
+**C1** Phase 0 oracle · **C2** CI ring+encode/decode · **C3** CI rotations+DFT diagonals ·
+**C4** native bootstrap+guard · **C5** security harness · **C6** precision/META-BTS/sparse ·
+**C7** benchmark+report. Never commit a red build.
+
+---
+
+## ORIGINAL PLAN (verbatim)
+
+# Implementation Plan — Native FFT-Style Bootstrapping for Conjugate-Invariant (Real) CKKS
+
+**Audience:** Claude Code (agentic implementation), supervised by the project owner (OpenFHE maintainer, applied-cryptography background).
+**Status:** Greenfield research-engineering project. The artifact does not exist in the literature or in any library as of this writing.
+
+---
+
+## 0. Mission and how to use this document
+
+Build a CKKS bootstrapping procedure that operates **natively** over the conjugate-invariant ring `R = { a(X) ∈ Z[X]/(X^{2N}+1) : a(X) = a(X^{-1}) }` (rank `N`, `N` real slots), evaluating the `CoeffsToSlots` / `SlotsToCoeffs` linear transforms in **FFT-style (Cooley–Tukey, level-collapsed, BSGS-hoisted) form**, and **without switching to the standard degree-`2N` complex ring at any point**.
+
+The current state of the art (Lattigo `EvaluateConjugateInvariant`, and the refinement in Bae–Cheon–Kang–Kim WAHC'25) refreshes a CI ciphertext by switching it up into the standard complex ring of degree `2N`, packing two CI ciphertexts into one complex ciphertext (real + imaginary parts), running the mature complex bootstrap there, and switching back. We are building the alternative that nobody has written down: stay at rank `N` throughout.
+
+**Why this matters (the two payoffs we must demonstrate, not assume):**
+1. **Cost.** Arithmetic in a degree-`2N` ring is ~2× per operation (NTTs, key-switches) and the bootstrapping modulus chain and all evaluation/rotation keys live at dimension `2N` (≈2× key memory). Native rank-`N` bootstrapping should reduce **single-ciphertext latency** and **key/parameter size** at matched security and precision. The ring-switch amortizes over two ciphertexts for throughput, so the honest comparison is iso-security, iso-precision, on real-vector data.
+2. **Security hygiene.** Ring switching does the bootstrap at dimension `2N`, which changes the lattice-security analysis: you size and pay for a `2N`-dimensional ring while your data only needs `N`-dimensional security. Native bootstrapping keeps a single, clean `N`-dimensional LWE security analysis from leveled computation through refresh.
+
+**How Claude Code should work through this:**
+- This is **test-driven and oracle-backed**. Phase 0 builds a high-precision cleartext oracle and the explicit transform factorization *before* any homomorphic code. Nothing in later phases is "done" until it matches the oracle to the predicted precision.
+- Work **phase by phase** (Section 7). Each phase has explicit deliverables and acceptance criteria. Do not start a phase before the prior phase's acceptance criteria pass in CI.
+- **Read the current library source first.** Struct/field names, package paths, and APIs in this document are accurate as of the latest releases but must be re-confirmed against the checked-out source. Treat the source as ground truth over this document for API specifics.
+- **No tricks, no hacks** (Section 2). Every shortcut that would inflate a benchmark or weaken security is explicitly forbidden.
+
+---
+
+## 1. Context and motivation
+
+CKKS (Cheon–Kim–Kim–Song, ASIACRYPT 2017) packs `N/2` complex slots in the ring `Z[X]/(X^N+1)`. For **real-valued** workloads (almost all PPML), the imaginary half is wasted and, worse, accumulates error that can corrupt the real part in deep circuits (the "complex explosion" problem).
+
+Kim–Song (ICISC 2018, the paper this project derives from) fix this by using the conjugate-invariant ring — the ring of integers of the maximal real subfield `F = Q(ξ)`, `ξ = ζ + ζ^{-1}`. Its canonical embedding is **totally real**, so a rank-`N` CI ciphertext exposes `N` clean real SIMD slots at the same ciphertext size and ~same cost as a standard degree-`N` complex ciphertext (`N/2` complex slots). For real data this is 2× the usable SIMD width, with no imaginary-error hazard. The same `N` real coefficients are present in both schemes; CI re-bases them onto a real embedding so all `N` are usable for real multiplication.
+
+The original paper is a **leveled** scheme. It contains no bootstrapping. The §4.3 fast-NTT trick (reduce the CI ring multiplication to a dimension-`N/2` NTT plus a cheap twiddle) is a *cleartext* ring-multiplication optimization, not a homomorphic DFT.
+
+**The structural reason native bootstrapping is feasible (this is the crux of the algorithm):**
+- The CI ring has exactly the algebra a homomorphic linear transform needs: slot-wise real multiply, plaintext-ciphertext multiply, and a cyclic slot rotation. The Galois group of `F` is `(Z/4N Z)* / {±1}`, **cyclic of order `N`, generated by the image of `5`**, and (because `F/Q` is abelian-Galois) it acts **simply transitively on the `N` real slots**. So a full cyclic rotation of the `N` slots exists natively, with the same group order as standard CKKS at degree `2N`.
+- The CI canonical embedding is the **restriction of the complex canonical embedding to the conjugation-invariant subspace**. The complex special-FFT factors into Cooley–Tukey butterflies under (rotation group) × (conjugation). On the CI ring conjugation acts as the **identity**, so the conjugate-pair structure collapses and the butterfly factorization **descends** to a real-DFT factorization over the CI rotation group. This is what makes a native FFT-style transform exist by construction.
+- Consequence: the only bootstrap component that genuinely differs from complex CKKS is `CoeffsToSlots`/`SlotsToCoeffs` (a real DFT instead of a complex DFT). `ModRaise` is identical. `EvalMod` is **identical** — it is a slot-wise function on real values and does not care whether slots are real or complex; and because slots are already real, native CI avoids the real/imaginary split (the two-ciphertext dance) that complex full-packing bootstrapping needs through `EvalMod`. So native CI is structurally *simpler* through the middle of the pipeline, not harder.
+
+**What we build on:** Lattigo already ships first-class CI ring arithmetic (RNS, NTT with `q ≡ 1 mod 4N`, the CI Galois automorphisms), a parameterizable homomorphic-DFT engine (`circuits/ckks/dft`), the homomorphic mod-1 circuit (`circuits/ckks/mod1`), the complex bootstrap (Bossuat et al.), and the ring-switched CI bootstrap (`DomainSwitcher`/`bridge.go`, `EvaluateConjugateInvariant`). The surgical novelty is: (a) compute the **CI real-DFT diagonals** for the homomorphic-DFT engine instead of the complex ones, (b) generate the **CI rotation keys** for the needed rotation set, and (c) a **bootstrap driver** that runs `ModRaise → CI-CtS → Mod1 → CI-StC` and never instantiates the degree-`2N` ring.
+
+---
+
+## 2. Non-goals and "no tricks" constraints
+
+These are hard constraints. A violation invalidates the result.
+
+- **No ring switching, ever.** No `DomainSwitcher`, no `bridge.go`, no instantiation of a standard ring of degree `2N`, no "switch up, bootstrap, switch down." Add a runtime assertion + a build/test guard that fails if a ring of degree > the CI rank `N` is constructed anywhere in the native path.
+- **No silent precision downgrade to win latency.** Benchmarks are **iso-precision**: native CI and the baselines must deliver the same number of recovered mantissa bits (within a stated tolerance) before their latencies are compared.
+- **No security shortcuts.** Every shipped parameter set must be validated at **≥128-bit** security by the lattice estimator on the *actual* `(N, log Q_boot, secret distribution, error σ)` used, including the bootstrapping modulus. Sparse-secret tricks (encapsulation) are allowed only with their *own* sparse-LWE security estimate; you may not quote dense-key security while running a sparse key in the security-relevant slot.
+- **No benchmark gaming.** Same library, same RNS engine, same hardware, same compiler/Go version, same thread count, same secret distribution and precision target across all three configurations being compared. No cherry-picked parameter sets; report the full sweep.
+- **No approximate "looks close" verification.** Correctness is checked against a high-precision cleartext oracle to the analytically predicted noise bound, not eyeballed.
+- **No reliance on undocumented numerical coincidences.** The real-DFT factorization must be derived two independent ways (restriction-from-complex and direct fast-DCT) and the derivations must agree to ~2^-100 before it is trusted.
+
+---
+
+## 3. Required reading (annotated)
+
+Read these before writing code. The "why" tells Claude Code what to extract from each.
+
+**Foundational scheme + this project's base ring**
+- Kim & Song, *Approximate Homomorphic Encryption over the Conjugate-Invariant Ring*, ICISC 2018. The ring, the totally-real embedding, the §4.3 cleartext NTT factorization (the seed of our homomorphic factorization), and **Appendix A noise model** (use these exact variances `V_q, V_key, V_err, V_enc, V_rs, V_mult`, and the `‖u_0‖²=N/2` vs `‖u_i‖²=N` basis asymmetry — do not copy the complex-CKKS noise model). Also §3.2 cryptanalysis (the structured matrix `A`; no better-than-standard attack known → standard LWE estimate applies).
+- Cheon, Kim, Kim, Song, *Homomorphic Encryption for Arithmetic of Approximate Numbers*, ASIACRYPT 2017. Base CKKS encode/decode, rescale, RNS conventions.
+- Cheon, Han, Kim, Kim, Song, *Bootstrapping for Approximate Homomorphic Encryption*, EUROCRYPT 2018 (ePrint 2018/153). The `ModRaise → CoeffsToSlots → EvalMod → SlotsToCoeffs` blueprint, sparse vs full packing, the message-ratio / `K` bound on the `ModRaise` overflow.
+
+**FFT-style homomorphic linear transforms (the technique we port to the real ring)**
+- Chen, Chillotti, Song, *Improved Bootstrapping for Approximate Homomorphic Encryption*, EUROCRYPT 2019 ("[CCS19]"). The **level-collapsing / merged-stage** DFT factorization, Chebyshev sine, modified Paterson–Stockmeyer. This is the factorization we restrict to the CI subspace.
+- Han, Hhan, Cheon, *Improved/Faster Homomorphic Discrete Fourier Transforms and FHE Bootstrapping*, ePrint 2018/1073 / IEEE Access 2019. Homomorphic DFT acceleration and the radix/depth trade-off framing.
+- Bossuat, Mouchet, Troncoso-Pastoriza, Hubaux, *Efficient Bootstrapping for Approximate Homomorphic Encryption with Non-Sparse Keys*, EUROCRYPT 2021 (ePrint 2020/1203). **Primary engineering reference** — this is the bootstrap Lattigo ships: double-hoisting, the BSGS-structured linear transforms, the diagonal-packing of the DFT matrices. Our CI transform plugs into this machinery.
+
+**EvalMod precision and 128-bit "no tricks" parameters**
+- Han & Ki, *Better Bootstrapping for Approximate Homomorphic Encryption*, CT-RSA 2020. Linear-transform/EvalMod refinements and message-ratio handling.
+- Lee et al., *High-Precision Bootstrapping of RNS-CKKS … Optimal Minimax Polynomial Approximation and Inverse Sine Function*, ePrint 2020/552. Minimax mod-1 approximation + arcsine correction for high precision.
+- Jutla & Manohar, *Sine Series Approximation of the Mod Function for Bootstrapping*, EUROCRYPT 2022. Alternative high-precision `EvalMod`.
+- Bossuat, Troncoso-Pastoriza, Hubaux, *Bootstrapping … Negligible Failure-Probability by Sparse-Secret Encapsulation*, ACNS 2022 (ePrint 2022/024). Dense-key security with sparse-key capacity — relevant to hitting precision at 128-bit without cheating on the security analysis.
+- Bae, Cheon, Kim, Kim, *META-BTS: Bootstrapping Precision Beyond the Limit*, CCS 2022 (ePrint 2022/1167). Iterated bootstrapping for arbitrary precision; Lattigo supports it — keep the native path META-BTS-compatible.
+
+**Baselines we must beat / match (prior art for the ring-switch route)**
+- Lattigo `circuits/ckks/bootstrapping` `EvaluateConjugateInvariant`, and `ckks/bridge.go` / `DomainSwitcher` (`ComplexToReal`/`RealToComplex`). The ring-switched CI bootstrap = Baseline B.
+- Bae, Cheon, Kang, Kim, *High-Throughput AES Transciphering using CKKS: Less than 1ms*, WAHC 2025 (ePrint 2025/1865). The refined ring-conversion-to-CI technique used **inside bootstrapping** — the strongest published version of the approach we provide a native alternative to. Their citation for the conversion resolves back to Kim–Song; the conversion algorithm itself originated in Lattigo.
+
+**Security tooling**
+- Albrecht, Player, Scott, *On the Concrete Hardness of LWE*, plus the maintained **lattice-estimator** (Sage). Pin a commit. Run primal/dual/hybrid for `(n=N, q=Q_boot, secret, σ)`; report classical and quantum cost.
+- *Homomorphic Encryption Security Standard* (HomomorphicEncryption.org, 2018). Sanity cross-check of parameter choices.
+
+**Adjacent paradigms (be aware; not the chosen approach)**
+- Cheon, Hanrot, Kim, Stehlé, *SHIP*, EUROCRYPT 2025 (ePrint 2025/784) and Coron, *PaCo*, ePrint 2025/886. Blind-rotation-style CKKS bootstrapping that sidesteps the homomorphic DFT entirely. Different escape from the DFT bottleneck; do not conflate their "real bootstrapping" (real messages in complex CKKS via conjugation) with the conjugate-invariant ring.
+- OpenFHE sparse `CoeffToSlot`/`SlotToCoeff` (ePrint 2026/1023). Relevant if/when extending the native path to sparse packing.
+
+---
+
+## 4. Mathematical specification (the contract the code is verified against)
+
+Let `N` be a power of two (the CI rank and the real-slot count). Ambient cyclotomic `Z[X]/(X^{2N}+1)`, `m = 4N`, `ζ = ζ_{4N}`.
+
+**Ring and basis.** `R = { a ∈ Z[X]/(X^{2N}+1) : a(X)=a(X^{-1}) }`. Z-basis `b_0 = 1`, `b_i = X^i + X^{-i}` for `1 ≤ i < N`. An element is `a = a_0 + Σ_{i=1}^{N-1} a_i (X^i + X^{-i})`, stored as the coefficient vector `(a_0,…,a_{N-1})`. RNS moduli satisfy **`q_t ≡ 1 (mod 4N)`** (needed for the CI NTT; this is also exactly the standard-ring condition for degree `2N`, which is what makes the primes reusable — but we never instantiate that ring).
+
+**Slots and the canonical embedding (= decode).** `τ : R → R^N`, `τ(a) = (a(ξ_j))_{0≤j<N}` with `ξ_j = ζ^{4j+1} + ζ^{-(4j+1)} = 2 cos( π(4j+1) / (2N) )`. The embedding sends `X ↦ ζ^{4j+1}` for slot `j`. The image is real (totally real field) → `N` real slots.
+
+**The CI DFT matrix (this is the concrete target).** Decoding `U ∈ R^{N×N}`, `x = U·a` where `a` is the coefficient vector and `x` the slot vector:
+```
+U[j,0] = 1
+U[j,i] = 2 cos( π (4j+1) i / (2N) )     for 1 ≤ i < N,   0 ≤ j < N
+```
+(Sanity check against Kim–Song's toy example `N=2`: `U[0,1]=2cos(π/4)=√2`, `U[1,1]=2cos(5π/4)=-√2`, matching `{ξ_0,ξ_1}={√2,-√2}`.) Encoding is `U^{-1}` (plus rounding). `U` is a DCT-family matrix with a half-integer frequency offset (the `4j+1` "odd node" sampling); it admits a fast (Cooley–Tukey / fast-DCT) factorization.
+
+**Slot rotations.** `G = (Z/4N Z)* / {±1} ≅ Z/N`, generated by the image of `g = 5` (order of `5 mod 4N` is `N`; `5 ∉ {±1}` so it survives the quotient). Rotation by `k` is the automorphism `ψ_{g^k} : X ↦ X^{g^k}` restricted to `R`, applied homomorphically via a rotation (Galois) key. The slots are cyclically ordered by powers of `g` exactly as standard CKKS orders slots by powers of `5`; fix the precise index permutation in Phase 0 and pin it as a golden table. Conjugation `X ↦ X^{-1}` is the identity on `R`.
+
+**FFT-style factorization (core deliverable).** Write `U = U^{(t)} · … · U^{(1)}` as a product of `t` sparse stage matrices, each a sum of a few **generalized diagonals** under the CI rotation `g`, then **level-collapse** consecutive stages into `≤ t` "fat" stages to trade multiplicative depth for rotation count (the CCS19 / Bossuat schedule, parameterized by a radix/levels vector). Same for `U^{-1}`. Each fat stage is evaluated homomorphically as `Σ_d rot_d(ct) ⊙ diag_d` with BSGS (baby-step/giant-step) hoisting. **Derive the stages by restricting the complex special-FFT to the conjugation-fixed subspace** (primary), and independently via a standard fast-DCT factorization (cross-check). Both must reproduce dense `U` to ~2^-100.
+
+**Bootstrap pipeline (native, rank `N` throughout).**
+1. `ModRaise`: lift `ct` from `q_0` to `Q_boot`. Decryption now yields `t = m + q_0·I` in coefficient form, `‖I‖_∞ ≤ K` where `K` is set by the secret Hamming weight `h` and `N` (same analysis as complex CKKS, use the Kim–Song Appendix-A variances for the concrete bounds).
+2. `CoeffsToSlots` (CI-CtS): homomorphically apply the encoding transform so the coefficients of `t` land in the `N` real slots (the standard CKKS convention applied with `U` = the CI real DFT; fix the exact direction/scaling/bit-reversal in Phase 0 against the oracle).
+3. `EvalMod` (`Mod1`, **reused unchanged**): slot-wise approximate `x ↦ x mod q_0` via scaled-sine (+ arcsine correction or a direct minimax mod-1 polynomial) over `[-K, K]`. Single pass — no real/imaginary split, since slots are already real.
+4. `SlotsToCoeffs` (CI-StC): homomorphically apply the inverse transform, returning to coefficient encoding at the refreshed level.
+- META-BTS iteration optional, wrapping the above.
+
+**Noise/parameter model.** Use Kim–Song Appendix A for all variances and the basis asymmetry; propagate through each stage to predict output precision analytically. `Q_boot` must cover `depth(CI-StC) + depth(EvalMod) + depth(CI-CtS) + message-ratio gap`, all at rank `N`. The `EvalMod` degree (hence its depth) is set by the target precision (e.g., ~8–13 levels with arcsine correction for ≥~20–30 bits).
+
+---
+
+## 5. Suggested algorithm (pseudocode)
+
+```
+# ---------- Phase 0 (cleartext, Sage/mpmath): oracle + factorization ----------
+build_field(N): ζ = exp(2πi/(4N)); slots ξ_j = 2cos(π(4j+1)/(2N))
+dense_U(N): matrix with U[j,0]=1, U[j,i]=2cos(π(4j+1)i/(2N))         # high precision
+slot_order(N): cyclic order of slots under generator g=5; return index permutation P
+
+# Derivation A: restriction of the complex special-FFT
+complex_SF_stages(2N): the bit-reversed special-FFT butterfly stages of std CKKS@2N  # per CCS19/Bossuat
+proj = projection onto conjugation-fixed subspace (X↦X^{-1} = +1 eigenspace)
+incl = inclusion of CI subspace
+assert  ‖ dense_U(N) - proj ∘ ApplyStages(complex_SF_stages(2N)) ∘ incl ‖ < 2^-100
+CI_stages_A = restrict_each_stage(complex_SF_stages(2N), proj, incl)   # real sparse stages
+
+# Derivation B: direct fast real transform (independent cross-check)
+CI_stages_B = fast_dct_factorization(dense_U(N))     # e.g. recursive DCT split / Makhoul-style
+
+assert  ApplyStages(CI_stages_A) ≈ ApplyStages(CI_stages_B) ≈ dense_U(N)   # < 2^-100
+emit diagonals(CI_stages_A) and inverse-transform diagonals → golden JSON for Go tests
+emit cleartext_bootstrap_oracle(ModRaise_sim, dense_U, exact_mod, EvalMod_poly, dense_U^{-1})
+
+# ---------- Phases 1–2 (Lattigo, Go): homomorphic native bootstrap ----------
+GenCIDFTMatrices(params, levels_schedule):           # NEW
+    diags = load/recompute CI real-DFT diagonals (matches golden JSON)
+    return dft.LinearTransform built from CI diagonals (CtS) and inverse (StC)
+
+GenCIRotationKeys(sk, params):                       # NEW
+    rots = distinct rotations required by the collapsed CtS/StC BSGS schedule (under g=5)
+    return GaloisKeys for {ψ_{g^k} : k ∈ rots}       # CI Galois elements, NOT std-ring ones
+
+NativeCIBootstrap(ct):                               # NEW driver — no DomainSwitcher
+    assert ring.rank == N and no degree-2N ring exists
+    ct = ModRaise(ct, Q_boot)
+    ct = EvalLinearTransform(ct, CtS_matrices, CI_rot_keys)   # reuse dft evaluator
+    ct = Mod1(ct, mod1_params)                                # reuse mod1 circuit UNCHANGED
+    ct = EvalLinearTransform(ct, StC_matrices, CI_rot_keys)
+    return ct
+```
+
+Notes for Claude Code: the Lattigo homomorphic-DFT *evaluator* (`circuits/ckks/dft`) and `Mod1` (`circuits/ckks/mod1`) are the reuse targets; the new code is the **diagonal computation** and the **rotation-key set** under the CI Galois action plus the driver. Confirm whether the existing evaluator assumes standard-ring slot indexing; if so, the CI slot-order permutation `P` from Phase 0 must be threaded through (a Phase-1 task, called out in acceptance criteria).
+
+---
+
+## 6. Target library and repository layout
+
+**Primary base: Lattigo (`github.com/tuneinsight/lattigo`).** Rationale: CI ring arithmetic + Galois automorphisms exist; the homomorphic-DFT and `Mod1` circuits exist and are parameterizable; the complex bootstrap (Baseline A) and the ring-switched CI bootstrap (Baseline B) both exist for the head-to-head; pure Go → trivial reproducible builds and benchmarking. Fork it; do not vendor a stale copy.
+
+**Production target note: OpenFHE.** OpenFHE currently has **no conjugate-invariant ring** (standard complex CKKS only), so a native CI bootstrap there is a much larger effort that starts with implementing the CI ring itself. Keep the *algorithm* (Section 5) library-agnostic and the math spec (Section 4) self-contained so a later OpenFHE port is a re-implementation, not a re-derivation. Do **not** attempt the OpenFHE port in this project.
+
+Suggested layout (in the Lattigo fork):
+```
+/reference/                 # Phase 0: Sage + mpmath oracle, factorization, golden vectors
+  ci_embedding.sage
+  factorization_restrict.sage   # derivation A
+  factorization_dct.sage        # derivation B (cross-check)
+  bootstrap_oracle.py           # cleartext pipeline + analytic noise model
+  golden/                       # JSON diagonals, slot-order tables, expected outputs
+/circuits/ckks/dft/         # add CI diagonal computation alongside complex
+/circuits/ckks/bootstrapping/
+  native_ci.go                  # NativeCIBootstrap driver + key gen (NEW)
+  native_ci_test.go
+/security/                  # pinned lattice-estimator harness + parameter validator
+/bench/                     # three-way benchmark harness + results
+/params/                    # validated 128-bit parameter sets (JSON), with estimator output
+PROJECT_PLAN.md             # this document
+```
+
+---
+
+## 7. Phased implementation plan
+
+Each phase lists deliverables (D) and acceptance criteria (A). A phase is done only when all A pass in CI.
+
+### Phase 0 — Cleartext oracle and the transform factorization (no homomorphic code)
+- **D0.1** `dense_U(N)`, slot-order permutation `P`, and `ξ_j` table in high precision (mpmath, ≥200-bit).
+- **D0.2** Derivation A: complex special-FFT stages for degree `2N`, restriction to the conjugation-fixed subspace, emitted as real sparse stage matrices (diagonals + offsets under `g=5`).
+- **D0.3** Derivation B: independent fast-DCT factorization of `dense_U(N)`.
+- **D0.4** Cleartext bootstrap oracle: simulated `ModRaise` overflow, dense `U` CtS, exact `mod q_0` and the `EvalMod` polynomial, dense `U^{-1}` StC; plus the analytic noise/precision predictor using Kim–Song Appendix A.
+- **D0.5** Golden artifacts (JSON): stage diagonals for CtS and StC, slot-order table, and expected slot/coefficient vectors for fixed seeds.
+- **A0.1** `‖ApplyStages(A) − dense_U‖ < 2^-100` and `‖ApplyStages(B) − dense_U‖ < 2^-100`.
+- **A0.2** `‖ApplyStages(A) − ApplyStages(B)‖ < 2^-100` (two independent derivations agree).
+- **A0.3** `U · U^{-1} = I` to `< 2^-100`; round-trip `Ecd∘Dcd` matches Kim–Song's encode/decode semantics.
+- **A0.4** Oracle predicted precision matches a textbook leveled CKKS precision sanity case.
+
+### Phase 1 — Native CI homomorphic linear transforms (CtS/StC)
+- **D1.1** `GenCIDFTMatrices`: build Lattigo linear transforms from the Phase-0 diagonals, parameterized by a level-collapsing schedule (radix/levels vector).
+- **D1.2** `GenCIRotationKeys`: the exact rotation set under `g=5` for the chosen schedule.
+- **D1.3** Thread the CI slot-order permutation through the evaluator if it assumes standard indexing.
+- **A1.1** Decrypt(CI-CtS(Enc(a))) equals the Phase-0 dense-`U` result to within the analytically predicted noise, across random real `a` and multiple `N` (≥ `2^12`, `2^14`, `2^16`).
+- **A1.2** CI-StC is the inverse: Decrypt(CI-StC(CI-CtS(ct))) ≈ Decrypt(ct) to predicted precision.
+- **A1.3** Measured noise growth of CtS/StC matches the analytic prediction within a small constant factor over ≥1000 trials.
+- **A1.4** Rotation-key set is minimal for the schedule (no unused keys generated); document its size as a function of `N` and schedule.
+
+### Phase 2 — End-to-end native bootstrap
+- **D2.1** `NativeCIBootstrap` driver: `ModRaise → CI-CtS → Mod1 → CI-StC`, reusing `Mod1` unchanged.
+- **D2.2** Runtime + build guard asserting no ring of degree > `N` is ever instantiated in this path.
+- **A2.1** `Decrypt(Boot(ct)) ≈ Decrypt(ct)` to the target precision on random real vectors (full packing), for each `N`.
+- **A2.2** Bootstrap is homomorphism-preserving: `Boot` commutes with slot-wise add and mult up to predicted noise.
+- **A2.3** Approximate idempotence: a second `Boot` after the first changes the message only within noise.
+- **A2.4** The no-ring-switch guard is active and passes (and a deliberate fault-injection test confirms it would fire).
+
+### Phase 3 — Parameter generation and security validation
+- **D3.1** `security/` estimator harness (pinned lattice-estimator commit) computing classical + quantum cost for `(N, log Q_boot, secret dist, σ)`.
+- **D3.2** A parameter validator that **refuses** any set below 128-bit; CI fails if an unvalidated set is used in a benchmark.
+- **D3.3** ≥3 validated 128-bit parameter sets per `N` of interest (`2^15`, `2^16`), spanning precision targets, each with stored estimator output.
+- **A3.1** Every shipped/benchmarked parameter set has on-disk estimator evidence ≥128-bit (classical), with quantum reported.
+- **A3.2** Sparse-secret configurations (if used) carry their own sparse-LWE estimate; dense-key security is never quoted for a sparse-key run.
+- **A3.3** A documented argument that the CI structured-matrix distribution (Kim–Song §3.2) admits no better-than-standard attack, so the standard estimate applies.
+
+### Phase 4 — Precision, sparse packing, META-BTS
+- **D4.1** Arcsine-correction / minimax `Mod1` configuration to hit high precision; confirm META-BTS compatibility.
+- **D4.2** Sparse-packing support (fewer than `N` slots) with the repeated-slot transform handling.
+- **A4.1** Precision target (matched to the complex-CKKS baseline) is reached and stable over ≥1000 trials.
+- **A4.2** META-BTS iteration increases precision as predicted.
+- **A4.3** Sparse packing bootstraps correctly for ≥2 sparsity levels.
+
+### Phase 5 — Benchmarking and write-up
+- **D5.1** Three-way benchmark harness (Section 11) and results tables/plots.
+- **D5.2** A short technical report: derivation, the realized native-vs-ring-switch deltas, honest discussion of constants.
+- **A5.1** All Section-11 metrics produced for all three configurations at iso-security and iso-precision, with statistical rigor.
+
+---
+
+## 8. Verification ("are we building the thing right" — correctness vs. the math)
+
+- **Factorization exactness.** Phase-0 A0.1–A0.3: both derivations reproduce dense `U`/`U^{-1}` and each other to ~2^-100. This is the foundation; everything downstream assumes it.
+- **Stage-wise decryption oracles.** After each homomorphic stage, decrypt and compare to the corresponding cleartext-oracle intermediate: post-`ModRaise` decrypts to `m + q_0·I` with the expected `I`; post-CtS slots equal `U·(coeffs)`; post-`EvalMod` the overflow is removed; post-StC returns to coefficients. Each comparison is to the analytically predicted noise, not a loose epsilon.
+- **Noise vs. analytic model.** Empirical variance of each stage's error, over ≥1000 fixed-seed trials, must match the Kim–Song Appendix-A propagation within a small constant. Deviations indicate a bug (e.g., the `u_0` factor-of-2 mishandled).
+- **Property-based / metamorphic checks.** `Boot ≈ identity` on the message; `Boot` commutes with add/mult; approximate idempotence; scaling/shift equivariance of the linear transforms. Run with randomized inputs across the valid dynamic range.
+- **Tooling.** Sage + mpmath for the oracle; fixed RNG seeds everywhere; high-precision reference values checked in as golden vectors. All "≈" comparisons cite the predicted bound they are checked against.
+
+## 9. Validation ("are we building the right thing" — requirements satisfaction)
+
+- **Security requirement.** Every parameter set used anywhere is estimator-validated ≥128-bit on its true `(N, log Q_boot, secret, σ)` (Phase 3). This is a release gate.
+- **No-ring-switch requirement.** Code audit + the active runtime/build guard (Phase 2) prove rank `N` is never exceeded. Fault-injection test confirms the guard fires.
+- **Precision requirement.** Native CI delivers the same recovered-mantissa-bit target as the complex-CKKS baseline (Phase 4), validated before any latency comparison.
+- **Functional-on-real-workload requirement.** A real-valued circuit that exceeds the leveled depth and *requires* a refresh — e.g., a deep Chebyshev evaluation or a small encrypted real-vector inference (logistic regression / a few dense layers) — produces correct results end to end with native bootstrapping inserted.
+- **Packing requirement.** Confirm `N` independent real slots are usable with correct real SIMD multiply (the original Kim–Song advantage), and that the imaginary-error hazard is structurally absent.
+- **Research-question requirement.** The native-vs-ring-switch delta (latency and key/parameter size) is measured and reported, positive or null.
+
+## 10. Testing (the concrete suite + CI)
+
+- **Unit:** CI encode/decode round-trip; CI Galois automorphism / rotation correctness against the golden slot-order table; each individual DFT stage; `Mod1` polynomial accuracy on `[-K,K]`; rotation-key generation.
+- **Integration:** full `NativeCIBootstrap` at each validated parameter set; META-BTS; sparse packing.
+- **Differential (centerpiece):** native CI vs. ring-switched CI (Baseline B) vs. complex CKKS (Baseline A) on the **same real input vector** — decrypted outputs must agree to the shared precision target. This simultaneously checks correctness and sets up the benchmark.
+- **Regression / golden:** fixed-seed reproducibility; checked-in expected slot/coefficient vectors from the Phase-0 oracle; fail on drift.
+- **Edge cases:** minimal slot count; sparse packing; max level / smallest `q_0`; message magnitudes at the `EvalMod` interval boundaries; `K` / message-ratio limits; the `u_0` (constant slot) special row.
+- **Fuzz / stress:** random real vectors across the full dynamic range; repeated/iterated bootstrapping; long-running stability.
+- **CI:** GitHub Actions running unit + integration + differential + the no-ring-switch guard on every PR; the Sage Phase-0 checks on a schedule; coverage target ≥85% on the new code paths; benchmarks gated to a labeled job (not on every PR, to avoid noise) but reproducible from a pinned config.
+
+## 11. Benchmarking protocol (native CI vs. complex CKKS, reals only, 128-bit, no tricks)
+
+**Configurations (all in the same Lattigo fork, same RNS engine):**
+- **A — Complex CKKS bootstrap** at ring degree `N`, fed real-vector data (imaginary parts zero). This is the "what you'd use today for reals without CI" point.
+- **B — Ring-switched CI bootstrap** (`EvaluateConjugateInvariant`): CI at rank `N`, switched to standard degree `2N`, bootstrapped, switched back. The current state of the art and the **primary thing to beat**.
+- **C — Native CI bootstrap** (this project), rank `N` throughout.
+
+> EXECUTION NOTE: per owner decision (4), Baseline B is **dropped** for OpenFHE (no
+> ring-switch exists). The realized benchmark is two-way: **A** (standard complex CKKS,
+> N/2 real slots) vs **C** (native CI, N real slots), iso-ring-dimension / iso-128 /
+> iso-precision.
+
+**Controls (mandatory):** same hardware (pin CPU model, fixed clocks, disable turbo variance where possible), same Go version and build flags, same thread count (report both single-thread and a fixed multi-thread setting), same secret distribution, **iso-128-bit security** (each config's own validated parameters), and **iso-precision** (same recovered-mantissa-bit target — tune `EvalMod` degree / META-BTS per config to match before comparing latency). Real inputs only. No complex data anywhere.
+
+**Metrics to report (full sweep, no cherry-picking):**
+
+| Category | Metric |
+|---|---|
+| Latency | total bootstrap wall-clock; per-stage breakdown (`ModRaise`, CtS, `EvalMod`/`Mod1`, StC); single-thread and multi-thread |
+| Throughput | amortized time per real slot; useful real-slots per second (for B, account for its two-ciphertext amortization explicitly) |
+| Parameter size | `N`; `log Q_boot` (total modulus); number of RNS limbs `L`; gadget/`dnum` |
+| Key & ciphertext size | bytes: rotation/Galois keys (count distinct rotations for C's CI-CtS vs A/B), relinearization key, full bootstrap key set; ciphertext size |
+| Precision | recovered mantissa bits delivered (must be matched across configs before latency is compared) |
+| Security | estimator classical + quantum bits for each config (all ≥128) |
+
+**Statistical rigor:** ≥30 runs per measurement; report median and IQR (not just mean); fixed seeds; warm-up excluded; environment captured in the results file.
+
+**Hypothesis to test (state it, then let data decide):** at iso-security and iso-precision on real data, native C should show **lower single-ciphertext latency** and **smaller key/parameter footprint** than ring-switched B (no degree-`2N` arithmetic, no `2N` key chain), modulo the real-DFT factorization's constant overhead; vs. complex A on reals, C should additionally reflect the 2× usable-slot advantage in amortized throughput. If C only matches B, the contribution is still the clean single-`N` security analysis and the elimination of dimension doubling — report that honestly.
+
+## 12. Risks and open questions
+
+- **Real-DFT factorization constants.** The complex DFT's root-of-unity twiddles factor with great regularity; the offset-DCT factorization (the `4j+1` odd-node sampling) is slightly less uniform (the usual real-FFT "special first/last stage"). The per-stage diagonal count — hence the homomorphic cost — could differ from the complex case by a small factor either way. The Phase-0 derivation settles the exact numbers; this is the main quantitative unknown and the reason the benchmark, not intuition, decides the win.
+- **Basis asymmetry bookkeeping.** The CI orthogonal-but-not-orthonormal basis (`‖u_0‖²=N/2` vs `‖u_i‖²=N`) introduces a factor-of-two in scaling/precision handling that the standard pipeline lacks. It is an implementation wrinkle, not an obstruction, but it is a likely source of subtle precision bugs — hence the explicit noise-vs-analytic checks.
+- **Evaluator slot-indexing assumptions.** If Lattigo's homomorphic-DFT evaluator bakes in standard-ring slot ordering, threading the CI slot-order permutation cleanly is non-trivial; budget for it in Phase 1.
+- **Sparse-secret security.** Hitting high precision cheaply tempts sparse secrets; the "no tricks" rule requires a genuine sparse-LWE estimate for any sparse-key configuration. Do not let precision tuning quietly erode the security claim.
+- **Null result is acceptable and still publishable.** If native ≈ ring-switch on latency, the clean single-dimension security analysis, the eliminated dimension doubling, and the first written-down native real-DFT bootstrap factorization are the contribution.
+
+## 13. Definition of done
+
+1. Phase-0 oracle and the two independent factorizations agree to ~2^-100 (A0.*).
+2. Native CI bootstrap passes all correctness/verification checks against the oracle to predicted precision (A1.*, A2.*).
+3. No ring of degree > `N` is ever instantiated in the native path; guard active and fault-injection-tested (A2.4).
+4. Every benchmarked parameter set is estimator-validated ≥128-bit with on-disk evidence (A3.*).
+5. Iso-security, iso-precision three-way benchmark (A vs. B vs. C) produced with the full metric set and statistical rigor (Section 11).
+6. Differential test (native vs. ring-switched vs. complex on identical real inputs) green in CI.
+7. Technical report documenting the derivation and the measured native-vs-ring-switch deltas, with honest treatment of constants.

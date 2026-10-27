@@ -272,4 +272,18 @@ void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp) {
     }
 }
 
+void PrecomputeAutoMapCI(uint32_t N, uint32_t k, std::vector<uint32_t>* precomp) {
+    // CI eval domain: index j <-> node w_{4N}^{4j+1} (natural order). The automorphism
+    // X -> X^k maps node j to node fold((4j+1)k mod 4N), and AutomorphismTransform sets
+    // result[j] = input[precomp[j]] (EVALUATION format). Conjugation is the identity on
+    // R, so the +-(4t+1) fold introduces no sign. No bit-reversal (CI eval is natural).
+    const uint64_t m = 4ULL * N;
+    for (uint32_t j = 0; j < N; ++j) {
+        uint64_t r = ((4ULL * j + 1) * static_cast<uint64_t>(k)) % m;  // odd
+        if (r % 4 == 3)
+            r = m - r;  // fold -(4t+1) coset rep into +(4t+1)
+        (*precomp)[j] = static_cast<uint32_t>((r - 1) / 4);
+    }
+}
+
 }  // namespace lbcrypto

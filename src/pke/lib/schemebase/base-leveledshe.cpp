@@ -37,14 +37,34 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "cryptocontext.h"
 #include "key/privatekey.h"
 #include "schemebase/base-scheme.h"
+#include "schemerns/rns-cryptoparameters.h"
+#include "math/nbtheory.h"
 
 namespace lbcrypto {
+
+namespace {
+// True iff these crypto params are a native conjugate-invariant (CI) CKKS context.
+// CI automorphisms use logical cyclotomic order 4N (vs 2N) and the twisted-NTT eval
+// permutation PrecomputeAutoMapCI. Only DCRTPoly/RNS CKKS can be REAL_CI; everything
+// else (BGV/BFV, non-RNS) returns false.
+template <class Element>
+bool IsCICKKS(const std::shared_ptr<CryptoParametersBase<Element>>& cp) {
+    if constexpr (std::is_same_v<Element, DCRTPoly>) {
+        auto rns = std::dynamic_pointer_cast<CryptoParametersRNS>(cp);
+        return rns && rns->GetCKKSDataType() == REAL_CI;
+    }
+    else {
+        return false;
+    }
+}
+}  // namespace
 
 /////////////////////////////////////////
 // SHE NEGATION
@@ -363,12 +383,19 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     for (auto indx : newIndices)
         (*evalKeys)[indx];
 
+    // CI uses logical cyclotomic order 4N and the twisted-NTT eval permutation.
+    const bool isCI       = IsCICKKS<Element>(cc->GetCryptoParameters());
+    const uint32_t Mlog   = isCI ? (4 * N) : M;
+
     const uint32_t sz = newIndices.size();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
     for (uint32_t i = 0; i < sz; ++i) {
-        auto index = NativeInteger(newIndices[i]).ModInverse(M).ConvertToInt<uint32_t>();
+        auto index = NativeInteger(newIndices[i]).ModInverse(Mlog).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
-        PrecomputeAutoMap(N, index, &vec);
+        if (isCI)
+            PrecomputeAutoMapCI(N, index, &vec);
+        else
+            PrecomputeAutoMap(N, index, &vec);
 
         auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
@@ -404,7 +431,10 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphismCore(ConstCiphertex
     const auto cc = ciphertext->GetCryptoContext();
     const uint32_t N = cc->GetRingDimension();
     std::vector<uint32_t> vec(N);
-    PrecomputeAutoMap(N, autoIndex, &vec);
+    if (IsCICKKS<Element>(ciphertext->GetCryptoParameters()))
+        PrecomputeAutoMapCI(N, autoIndex, &vec);
+    else
+        PrecomputeAutoMap(N, autoIndex, &vec);
 
     const auto& cv0 = ciphertext->GetElements()[0];
 

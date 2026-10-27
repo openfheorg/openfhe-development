@@ -533,6 +533,17 @@ uint32_t FindAutomorphismIndexCyclic(int32_t i, uint32_t m, uint32_t g);
  */
 void PrecomputeAutoMap(uint32_t n, uint32_t k, std::vector<uint32_t>* precomp);
 
+/**
+ * Precompute the automorphism map for the native conjugate-invariant (CI) ring, in the
+ * twisted CI-NTT evaluation domain (natural node order, no bit-reversal). Eval index j
+ * corresponds to CI node w_{4N}^{4j+1}; the automorphism X -> X^k sends node j to node
+ * fold((4j+1)k mod 4N), so result[j] = input[precomp[j]]. k must be odd (coprime to 4N).
+ * @param N CI ring dimension (= number of real slots)
+ * @param k automorphism index (Galois element mod 4N)
+ * @param *precomp output permutation of length N
+ */
+void PrecomputeAutoMapCI(uint32_t N, uint32_t k, std::vector<uint32_t>* precomp);
+
 }  // namespace lbcrypto
 
 #endif  // SRC_CORE_INCLUDE_MATH_NBTHEORY_H_

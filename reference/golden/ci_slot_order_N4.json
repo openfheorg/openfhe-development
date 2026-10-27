@@ -1,0 +1,39 @@
+{
+  "N": 4,
+  "P": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "P_inv": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "Q_bitreverse": [
+    0,
+    2,
+    1,
+    3
+  ],
+  "Q_inv": [
+    0,
+    2,
+    1,
+    3
+  ],
+  "generator_version": "phase0-v1",
+  "m": 16,
+  "mp_prec_bits": 256,
+  "node_order": "natural_4jp1",
+  "rng_seed": null,
+  "rot_group": [
+    1,
+    5,
+    9,
+    13
+  ],
+  "schema": "ci-ckks/slot_order/v1"
+}

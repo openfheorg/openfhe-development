@@ -1,0 +1,38 @@
+Native CI vs standard CKKS bootstrap (reals only), matched ring dimension, iso-config
+(both UNIFORM_TERNARY, FIXEDMANUAL), single-thread. OpenFHE 1.5.1 fork ci-ckks-2026,
+gcc Release, NATIVE_SIZE=64, 20-core host. Warm-up excluded (CI diagonals precomputed once).
+
+AFTER the lazy-precompute latency optimization (C6-opt):
+
+  N=512:
+  config             realSlots  #galKeys  log2Q   boot(s)   us/realslot   prec(bits)
+  A (std complex)        256        26     1360     27.7      108154         37.4
+  C (native CI)          512        46     1160     33.9       66167          6.7
+    -> CI packs 2.00x real slots; CI is FASTER per real slot (66us vs 108us);
+       real-slot throughput ratio C/A = 1.63x  (WIN)
+
+  N=1024:
+  config             realSlots  #galKeys  log2Q   boot(s)   us/realslot   prec(bits)
+  A (std complex)        512        23     1360     22.1       43136         36.0
+  C (native CI)         1024        62     1160     52.3       51124          3.8
+    -> CI packs 2.00x real slots; real-slot throughput ratio C/A = 0.84x (near parity)
+
+Latency optimization impact (per-bootstrap, CI):
+  N=512:  69.9s -> 31-34s   (throughput ratio 0.63x -> 1.63x)
+  N=1024: 165.4s -> 52s     (throughput ratio 0.30x -> 0.84x)
+
+Reading:
+ - WIN (packing + amortized throughput): CI delivers 2x real slots and, at N=512, 1.63x
+   the useful real-slot throughput at matched ring dimension. CI is faster PER REAL SLOT.
+ - WIN (parameter size): CI log2Q is smaller (1160 vs 1360) -- the single-level CI
+   real-DFT LT is shallower than the complex level-collapsed FFT.
+ - SCALING: the throughput ratio drops from 1.63x (N=512) to 0.84x (N=1024) because the
+   single-level BSGS LT uses more Galois keys/rotations than the standard level-collapsed
+   FFT as N grows. The level-collapsed CI real-DFT (next optimization) is expected to
+   restore/extend the win at larger N.
+ - OPEN (iso-precision): CI currently recovers ~4-7 bits vs std ~37. The deficit is a
+   uniform additive noise floor (NOT a basis-asymmetry/slot-0 issue -- verified), i.e. the
+   EvalMod input normalization places the message at lower precision in the sine's linear
+   region than the standard path. This is a scale-tuning matter (the bootstrap refreshes
+   correctly, just at low precision); reaching iso-precision is the remaining work before
+   a strict iso-precision latency table.

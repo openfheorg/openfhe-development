@@ -114,6 +114,21 @@ double StdDev(const std::vector<std::complex<double>>& vec, const std::vector<st
     return 0.5 * std::sqrt(variance);
 }
 
+namespace {
+// Native conjugate-invariant (CI) decode matrix entry U[slot j][coeff i]:
+//   U[j][0] = 1,  U[j][i] = 2 cos(pi (4j+1) i / (2N))   (totally-real embedding).
+// Encode applies U^{-1} = diag(1/N, 1/2N, ..., 1/2N) U^T; decode applies U. This is the
+// oracle-validated (reference/) correctness path (O(N^2)); encode/decode are one-time I/O
+// off the bootstrap critical path. An FFT-accelerated path (FFTSpecial@4N, validated in
+// UnitTestCKKSrnsCI) is a future optimization.
+inline double CIDenseUEntry(uint32_t N, uint32_t j, uint32_t i) {
+    if (i == 0)
+        return 1.0;
+    return 2.0 * std::cos(M_PI * (4.0 * static_cast<double>(j) + 1.0) * static_cast<double>(i) /
+                          (2.0 * static_cast<double>(N)));
+}
+}  // namespace
+
 bool CKKSPackedEncoding::Encode() {
     if (isEncoded)
         return true;
@@ -131,6 +146,53 @@ bool CKKSPackedEncoding::Encode() {
     inverse.resize(slots);
 
     uint32_t ringDim = GetElementRingDimension();
+
+    // Native CI encode: real coefficients c = U^{-1} * msg, packed into all N ring
+    // coefficients (vs the standard real/imag split). Full real packing (slots == N).
+    if (ckksDataType == REAL_CI) {
+#if NATIVEINT != 64
+        OPENFHE_THROW("REAL_CI encoding currently supports the 64-bit native backend only");
+#else
+        const uint32_t N = ringDim;
+        if (slots != N)
+            OPENFHE_THROW("REAL_CI currently supports full packing (slots == ring dimension)");
+        std::vector<int64_t> temp(N, 0);
+        int64_t MaxBitValue = Max64BitValue();
+        for (uint32_t i = 0; i < N; ++i) {
+            const double wi = (i == 0) ? static_cast<double>(N) : static_cast<double>(2 * N);
+            double acc      = 0.0;
+            for (uint32_t j = 0; j < N; ++j)
+                acc += CIDenseUEntry(N, j, i) * inverse[j].real();
+            double ci = (acc / wi) * scalingFactor;
+            if (is64BitOverflow(ci))
+                OPENFHE_THROW("Overflow in CI data encoding - decrease the scaling factor");
+            int64_t v = std::llround(ci);
+            temp[i]   = (v < 0) ? MaxBitValue + v : v;
+        }
+        DCRTPoly::Integer intPowP(static_cast<uint64_t>(std::llround(scalingFactor)));
+        auto nativeParams  = encodedVectorDCRT.GetParams()->GetParams();
+        uint32_t numTowers = nativeParams.size();
+        std::vector<DCRTPoly::Integer> moduli(numTowers);
+        for (uint32_t t = 0; t < numTowers; ++t) {
+            moduli[t] = nativeParams[t]->GetModulus();
+            NativeVector nativeVec(ringDim, nativeParams[t]->GetModulus());
+            FitToNativeVector(temp, MaxBitValue, &nativeVec);
+            NativePoly element = GetElement<DCRTPoly>().GetElementAtIndex(t);
+            element.SetValues(std::move(nativeVec), Format::COEFFICIENT);
+            encodedVectorDCRT.SetElementAtIndex(t, std::move(element));
+        }
+        std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
+        auto currPowP = crtPowP;
+        for (size_t t = 2; t < noiseScaleDeg; ++t)
+            currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
+        if (noiseScaleDeg > 1)
+            encodedVectorDCRT = encodedVectorDCRT.Times(currPowP);
+        GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
+        scalingFactor = std::pow(scalingFactor, noiseScaleDeg);
+        return isEncoded = true;
+#endif
+    }
+
     DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
 
 #if NATIVEINT == 128
@@ -320,6 +382,49 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
     uint32_t gap = Nh / slots;
     value.clear();
     std::vector<std::complex<double>> curValues(slots);
+
+    // Native CI decode: read all N real coefficients and apply U (slots = U * coeffs).
+    if (ckksDataType == REAL_CI) {
+        const uint32_t N = GetElementRingDimension();
+        if (slots != N)
+            OPENFHE_THROW("REAL_CI currently supports full packing (slots == ring dimension)");
+        const bool flex = (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT ||
+                           scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL);
+        std::vector<double> coeffs(N);
+        double scale = 1.0;
+        if (typeFlag == IsNativePoly) {
+            scale               = flex ? std::pow(scalingFactor, -1) : std::pow(2, -p);
+            NativeInteger q     = GetElementModulus().ConvertToInt();
+            NativeInteger qHalf = q >> 1;
+            for (uint32_t i = 0; i < N; ++i) {
+                auto ci   = GetElement<NativePoly>()[i];
+                coeffs[i] = (ci > qHalf) ? -((q - ci).ConvertToDouble()) : ci.ConvertToDouble();
+            }
+            GetElement<NativePoly>().SetValuesToZero();
+        }
+        else {
+            const double sfPre =
+                flex ? (std::pow(scalingFactor, -1) * std::pow(2, p)) : std::pow(2, -p * (noiseScaleDeg - 1));
+            scale               = std::pow(2, -p);
+            const BigInteger& q = GetElementModulus();
+            BigInteger qHalf    = q >> 1;
+            for (uint32_t i = 0; i < N; ++i) {
+                auto ci  = GetElement<Poly>()[i];
+                double c = (ci > qHalf) ? -((q - ci).ConvertToDouble()) : ci.ConvertToDouble();
+                coeffs[i] = c * sfPre;
+            }
+            GetElement<Poly>().SetValuesToZero();
+        }
+        value.resize(slots);
+        for (uint32_t j = 0; j < N; ++j) {
+            double acc = 0.0;
+            for (uint32_t i = 0; i < N; ++i)
+                acc += CIDenseUEntry(N, j, i) * coeffs[i];
+            value[j] = std::complex<double>(acc * scale, 0.0);
+        }
+        m_logError = 0;  // TODO(CI): re-derive the CI canonical-norm noise proxy (Phase-1)
+        return true;
+    }
 
     if (typeFlag == IsNativePoly) {
         if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT || scalTech == COMPOSITESCALINGAUTO ||

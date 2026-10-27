@@ -1,0 +1,59 @@
+{
+  "N": 8,
+  "P": [
+    0,
+    1,
+    6,
+    7,
+    4,
+    5,
+    2,
+    3
+  ],
+  "P_inv": [
+    0,
+    1,
+    6,
+    7,
+    4,
+    5,
+    2,
+    3
+  ],
+  "Q_bitreverse": [
+    0,
+    4,
+    2,
+    6,
+    1,
+    5,
+    3,
+    7
+  ],
+  "Q_inv": [
+    0,
+    4,
+    2,
+    6,
+    1,
+    5,
+    3,
+    7
+  ],
+  "generator_version": "phase0-v1",
+  "m": 32,
+  "mp_prec_bits": 256,
+  "node_order": "natural_4jp1",
+  "rng_seed": null,
+  "rot_group": [
+    1,
+    5,
+    25,
+    29,
+    17,
+    21,
+    9,
+    13
+  ],
+  "schema": "ci-ckks/slot_order/v1"
+}

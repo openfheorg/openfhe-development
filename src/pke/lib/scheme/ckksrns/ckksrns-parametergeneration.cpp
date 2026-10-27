@@ -36,6 +36,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #define PROFILE
 
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
+#include "math/ci-transform.h"
+#include "math/nbtheory.h"
 
 #include <algorithm>
 #include <cmath>
@@ -157,8 +159,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
         OPENFHE_THROW("Please specify the ring dimension or desired security level.");
     }
 
-    if (encodingParams->GetBatchSize() > n / 2)
-        OPENFHE_THROW("The batch size cannot be larger than ring dimension / 2.");
+    // Native conjugate-invariant (CI) CKKS packs N real slots into the rank-N ring
+    // (vs N/2 complex slots for standard CKKS), so its batch size may be up to n.
+    const bool isCI            = (cryptoParamsCKKSRNS->GetCKKSDataType() == REAL_CI);
+    const uint32_t maxBatchSize = isCI ? n : (n / 2);
+    if (encodingParams->GetBatchSize() > maxBatchSize)
+        OPENFHE_THROW("The batch size cannot be larger than the maximum number of slots.");
 
     if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
         OPENFHE_THROW("The batch size can only be set to zero (for full packing) or a power of two.");
@@ -173,19 +179,44 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
     std::vector<NativeInteger> moduliQ(vecSize);
     std::vector<NativeInteger> rootsQ(vecSize);
 
+    // CI needs NTT-friendly primes q = 1 mod 4N (instead of the standard q = 1 mod 2N);
+    // the prime generators are parameterized by the cyclotomic order, so pass 4N for CI.
+    const uint32_t primeCyclOrder = isCI ? 2 * cyclOrder : cyclOrder;
+
     if ((scalTech == COMPOSITESCALINGAUTO || scalTech == COMPOSITESCALINGMANUAL) && (compositeDegree > 1)) {
-        CompositePrimeModuliGen(moduliQ, rootsQ, compositeDegree, numPrimes, firstModSize, dcrtBits, cyclOrder,
+        CompositePrimeModuliGen(moduliQ, rootsQ, compositeDegree, numPrimes, firstModSize, dcrtBits, primeCyclOrder,
                                 registerWordSize);
     } else
-        SinglePrimeModuliGen(moduliQ, rootsQ, scalTech, numPrimes, firstModSize, dcrtBits, cyclOrder, extraModSize);
+        SinglePrimeModuliGen(moduliQ, rootsQ, scalTech, numPrimes, firstModSize, dcrtBits, primeCyclOrder, extraModSize);
 
-    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
+    // For CI, rootsQ are 4N-th roots (used by the twisted CI NTT). The DCRTPoly itself
+    // keeps cyclotomic order 2N (ring dimension N) with proper 2N-th roots; the CI-ness
+    // lives in (a) q = 1 mod 4N and (b) the registered twisted NTT. No degree-2N ring is
+    // ever instantiated (ILDCRTParams(2N) -> totient(2N) = N).
+    std::vector<NativeInteger> rootsForParams = rootsQ;
+    if (isCI) {
+        for (size_t i = 0; i < moduliQ.size(); ++i) {
+            RegisterCIModulus(moduliQ[i], n, rootsQ[i]);                       // wm = 4N-th root
+            rootsForParams[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);  // 2N-th root
+        }
+    }
+
+    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsForParams);
+
+    // No-ring-switch invariant (CI): the ciphertext ring dimension must stay N (= n).
+    // A degree-2N ring would be ILDCRTParams(4N) (totient 4N/2 = 2N); we build
+    // ILDCRTParams(2N) (totient N), so this must always hold. Guard it explicitly.
+    if (isCI && paramsDCRT->GetRingDimension() != n) {
+        OPENFHE_THROW("CI no-ring-switch invariant violated: ring dimension " +
+                      std::to_string(paramsDCRT->GetRingDimension()) + " != N=" + std::to_string(n));
+    }
 
     cryptoParamsCKKSRNS->SetElementParams(paramsDCRT);
 
-    // if no batch size was specified, we set batchSize = n/2 by default (for full packing)
+    // if no batch size was specified, set the default full-packing batch size:
+    // n real slots for CI, n/2 complex slots for standard CKKS.
     if (encodingParams->GetBatchSize() == 0) {
-        uint32_t batchSize = n / 2;
+        uint32_t batchSize = isCI ? n : (n / 2);
         EncodingParams encodingParamsNew(
                 std::make_shared<EncodingParamsImpl>(encodingParams->GetPlaintextModulus(), batchSize));
         cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);

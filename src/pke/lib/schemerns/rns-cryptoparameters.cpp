@@ -41,7 +41,9 @@
 #include <utility>
 #include <vector>
 
+#include "math/ci-transform.h"
 #include "math/dftransform.h"
+#include "math/nbtheory.h"
 
 namespace lbcrypto {
 namespace {
@@ -166,6 +168,14 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         uint64_t primeStep = FindAuxPrimeStep();
 
+        // Native CI CKKS: the auxiliary (special) P primes must also be CI-friendly,
+        // q = 1 mod 4N, and registered as CI towers so that HYBRID key-switching (and
+        // thus EvalMult / rotations / bootstrap) operates consistently on CI ring
+        // elements across the extended QP basis. (Standard CKKS uses q = 1 mod 2N.)
+        const bool isCI = (GetCKKSDataType() == REAL_CI);
+        if (isCI)
+            primeStep = 4 * n;
+
         // Choose special primes in auxiliary basis and compute their roots
         // moduliP holds special primes p1, p2, ..., pk
         // m_modulusP holds the product of special primes P = p1*p2*...pk
@@ -187,13 +197,21 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                         foundInQ = true;
                 pPrev = moduliP[i];
             } while (foundInQ);
-            rootsP[i] = RootOfUnity<NativeInteger>(2 * n, moduliP[i]);
+            rootsP[i] = RootOfUnity<NativeInteger>(2 * n, moduliP[i]);  // 2N-th root for m_paramsP
+            // Register the P tower as CI (twisted NTT uses the 4N-th root) so its
+            // SwitchFormat is consistent with the CI Q towers.
+            if (isCI)
+                RegisterCIModulus(moduliP[i], n, RootOfUnity<NativeInteger>(4 * n, moduliP[i]));
             modulusP *= moduliP[i];
             pPrev = moduliP[i];
         }
 
         // Store the created moduli and roots in m_paramsP
         m_paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliP, rootsP);
+
+        // No-ring-switch invariant (CI): the auxiliary P basis must also stay at rank N.
+        if (isCI && m_paramsP->GetRingDimension() != n)
+            OPENFHE_THROW("CI no-ring-switch invariant violated: P-basis ring dimension != N");
 
         // Create the moduli and roots for the extended CRT basis QP
         std::vector<NativeInteger> moduliQP(sizeQ + sizeP);

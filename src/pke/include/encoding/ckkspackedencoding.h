@@ -361,8 +361,10 @@ class CKKSPackedEncoding : public PlaintextImpl {
         }
         if ((slots & (slots - 1)) != 0)
             OPENFHE_THROW("The number of slots should be a power of two");
-        if (slots > GetElementRingDimension() >> 1)
-            OPENFHE_THROW("The number of slots cannot be larger than half of ring dimension");
+        // Native CI CKKS packs N real slots (vs N/2 complex), so its slot cap is ringDim.
+        uint32_t maxSlots = (ckksDataType == REAL_CI) ? GetElementRingDimension() : (GetElementRingDimension() >> 1);
+        if (slots > maxSlots)
+            OPENFHE_THROW("The number of slots cannot be larger than the maximum number of slots for the data type");
         if (slots < vlen)
             OPENFHE_THROW("The number of slots cannot be smaller than value vector size");
         return slots;

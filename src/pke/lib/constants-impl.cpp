@@ -496,6 +496,8 @@ CKKSDataType convertToCKKSDataType(const std::string& str) {
         return REAL;
     else if (str == "COMPLEX")
         return COMPLEX;
+    else if (str == "REAL_CI")
+        return REAL_CI;
 
     std::string errMsg(std::string("Unknown CKKSDataType ") + str);
     OPENFHE_THROW(errMsg);
@@ -506,6 +508,8 @@ CKKSDataType convertToCKKSDataType(uint32_t num) {
         case REAL:
             return dataType;
         case COMPLEX:
+            return dataType;
+        case REAL_CI:
             return dataType;
         default:
             break;
@@ -521,6 +525,9 @@ std::ostream& operator<<(std::ostream& s, CKKSDataType t) {
             break;
         case COMPLEX:
             s << "COMPLEX";
+            break;
+        case REAL_CI:
+            s << "REAL_CI";
             break;
         default:
             s << "UNKNOWN";

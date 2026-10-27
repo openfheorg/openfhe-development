@@ -117,6 +117,11 @@ enum LargeScalingFactorConstants {
 enum CKKSDataType {
     REAL = 0,
     COMPLEX,
+    // Conjugate-invariant (native real) CKKS: N real slots in the rank-N ring
+    // R = {a in Z[X]/(X^{2N}+1) : a(X)=a(X^{-1})}, moduli q = 1 mod 4N, no degree-2N
+    // ring ever instantiated. Distinct from REAL (which is real data in the standard
+    // complex degree-2N ring). See native CI bootstrap (.task).
+    REAL_CI,
 };
 
 /**

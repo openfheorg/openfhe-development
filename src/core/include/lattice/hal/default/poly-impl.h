@@ -48,6 +48,7 @@
 #include <vector>
 
 #include "lattice/hal/default/poly.h"
+#include "math/ci-transform.h"
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/inttypes.h"
@@ -463,6 +464,22 @@ void PolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
 
     if (!m_values)
         OPENFHE_THROW("Poly switch format to empty values");
+
+    // Native conjugate-invariant (CI) ring towers route to the twisted CI NTT.
+    // Only opted-in native moduli take this path; all other arithmetic is unchanged.
+    if constexpr (std::is_same_v<VecType, NativeVector>) {
+        if (IsCIModulus((*m_values).GetModulus())) {
+            if (m_format != Format::COEFFICIENT) {
+                m_format = Format::COEFFICIENT;
+                CIInverseTransform(*m_values);
+            }
+            else {
+                m_format = Format::EVALUATION;
+                CIForwardTransform(*m_values);
+            }
+            return;
+        }
+    }
 
     if (m_format != Format::COEFFICIENT) {
         m_format = Format::COEFFICIENT;

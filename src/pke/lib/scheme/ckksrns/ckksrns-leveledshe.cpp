@@ -47,6 +47,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #include "cryptocontext.h"
 #include "math/hal/basicint.h"
+#include "math/nbtheory.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "schemebase/base-scheme.h"
 
@@ -604,8 +605,13 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
 
     const uint32_t M = cryptoParams->GetElementParams()->GetCyclotomicOrder();
 
+    // Native conjugate-invariant (CI) hoisted rotation: the caller passes the raw CI Galois
+    // element 5^k mod 4N directly as `index` (logical M=4N), and the eval permutation is the
+    // twisted-NTT map PrecomputeAutoMapCI. The standard path converts a slot-rotation index.
+    const bool isCI = (cryptoParams->GetCKKSDataType() == REAL_CI);
+
     // Find the automorphism index that corresponds to rotation index index.
-    const uint32_t autoIndex = FindAutomorphismIndex2nComplex(index, M);
+    const uint32_t autoIndex = isCI ? index : FindAutomorphismIndex2nComplex(index, M);
 
     // Retrieve the automorphism key that corresponds to the auto index.
     auto evalKeyIterator = evalKeys.find(autoIndex);
@@ -632,7 +638,10 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
 
     const uint32_t N = cryptoParams->GetElementParams()->GetRingDimension();
     std::vector<uint32_t> vec(N);
-    PrecomputeAutoMap(N, autoIndex, &vec);
+    if (isCI)
+        PrecomputeAutoMapCI(N, autoIndex, &vec);
+    else
+        PrecomputeAutoMap(N, autoIndex, &vec);
 
     cTilda[0] = cTilda[0].AutomorphismTransform(autoIndex, vec);
     cTilda[1] = cTilda[1].AutomorphismTransform(autoIndex, vec);
