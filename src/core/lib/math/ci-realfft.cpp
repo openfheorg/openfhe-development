@@ -182,9 +182,10 @@ std::vector<CISparse> CIBuildRealFFT(uint32_t N, std::vector<double>& sigma, std
     return F;
 }
 
-// C = A * B (B applied first), in cyclic-diagonal form. Drops numerically-zero diagonals.
 }  // namespace
 
+// C = A * B (B applied first), in cyclic-diagonal form. Drops numerically-zero diagonals
+// (max |entry| <= 1e-13 x the largest entry of C).
 CISparse CISparseMul(const CISparse& A, const CISparse& B, uint32_t N) {
     CISparse C;
     for (auto& [a, da] : A)
@@ -195,12 +196,19 @@ CISparse CISparseMul(const CISparse& A, const CISparse& B, uint32_t N) {
             for (uint32_t p = 0; p < N; ++p)
                 dc[p] += da[p] * db[(p + a) % N];
         }
-    for (auto it = C.begin(); it != C.end();) {
+    // Drop diagonals that are zero up to round-off, relative to the largest entry of C (scale-invariant).
+    std::map<uint32_t, double> dmax;
+    double gmax = 0.0;
+    for (auto& [k, d] : C) {
         double mx = 0.0;
-        for (double v : it->second)
+        for (double v : d)
             mx = std::max(mx, std::abs(v));
-        it = (mx < 1e-13) ? C.erase(it) : std::next(it);
+        dmax[k] = mx;
+        gmax    = std::max(gmax, mx);
     }
+    const double tol = 1e-13 * gmax;
+    for (auto it = C.begin(); it != C.end();)
+        it = (dmax[it->first] <= tol) ? C.erase(it) : std::next(it);
     return C;
 }
 

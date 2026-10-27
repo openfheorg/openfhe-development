@@ -128,6 +128,8 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
 3. `GetCIRealLevels` is cached twice (scaled for evaluation, unit-scaled for keygen). (Done in phase 0.3:
    one unscaled entry per (N, lbEnc, lbDec), scalars applied at encode time; peak RSS 11.39 -> 11.19 GB at 2^16.)
 4. The `CISparseMul` drop threshold is absolute; keygen and evaluation must agree on the sparsity pattern.
+   (Done in phase 0.4: relative threshold 1e-13 x the largest entry; `EvalBootstrap` throws if its rotation
+   set differs from the keygen Galois set; holds at 2^12..2^16 for {2,2}, {3,3}, {4,4}.)
 5. Diagonal plaintexts are built lazily inside a const `EvalBootstrap` (first call 70 s at 2^16; not safe under
    concurrent bootstraps) (phase 2.4).
 6. Section 4 item 2 above is mis-stated: CI and std have equal RMS precision; the K = 28 table costs EvalMod

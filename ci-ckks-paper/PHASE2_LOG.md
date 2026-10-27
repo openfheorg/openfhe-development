@@ -154,3 +154,100 @@ the before/after RMS agree to 0.01 bit.
 **Conclusion.** There is one unscaled cache entry per (N, lbEnc, lbDec). Peak RSS at 2^16 {4,4} falls from
 11.39 to 11.19 GB, which is exactly one copy of the levels. Time, precision and the Galois key set are
 unchanged. The baseline numbers in the plan header stand.
+
+## 0.4 Relative drop threshold in `CISparseMul`; keygen/evaluator Galois-set assertion (2026-10-27)
+
+**Change.**
+- `CISparseMul` (`src/core/lib/math/ci-realfft.cpp`): a diagonal of C = A * B is dropped when its max |entry|
+  is <= 1e-13 x the largest entry of C. Before, the rule was max |entry| < 1e-13 (absolute). The header
+  comment states the rule.
+- `CIRealFFTGaloisElements` (keygen, `ckksrns-fhe.cpp`): the set is now derived from the nonzero diagonals.
+  For each offset k = h * (t0 + n1 * j + i) it adds the baby shift h * i (i > 0) and the giant shift
+  h * (t0 + n1 * j) (when nonzero). Before, it added all baby shifts 1..n1-1 and all giant blocks, used or not.
+- `EvalBootstrap` (CI real-FFT path): `applyCISparse` records the Galois element of every rotation that it
+  performs (baby rotations of used residue classes, giant rotations of non-empty blocks). After StC, the
+  recorded set is compared with `CIRealFFTGaloisElements(N, lbEnc, lbDec)`. If they differ,
+  `OPENFHE_THROW` reports the two sizes and the counts "used but not generated" / "generated but unused".
+  The check runs at each bootstrap (cost: one pass over the cached level keys). With `CI_BOOT_TIMING=1` it
+  prints `[CI-BT] Galois check: R rotations == keygen set`. A mismatch can come from, for example, a
+  different `CI_BSGS_RATIO` at keygen and at evaluation.
+- New tool `ci-ckks-paper/tools/ci-sparse-margin.cpp` (standalone, links only `ci-realfft.cpp`): for every
+  intermediate level product, it prints the smallest kept and the largest dropped diagonal max relative to the
+  largest entry, and the number of diagonals on which the absolute and relative rules disagree.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p04_margin "cd openfhe-development && g++ -O2 -std=c++17 -Isrc/core/include \
+      ci-ckks-paper/tools/ci-sparse-margin.cpp src/core/lib/math/ci-realfft.cpp -o ../scratch/ci-sparse-margin \
+      && ../scratch/ci-sparse-margin"
+    # before (binary from adf8752e), then after the -j 32 build; 2^16 is 128-bit, 2^12..2^15 insecure
+    ./guard.sh p04_before "cd openfhe-development && for n in 12 13 14 15 16; do s=0; [ \$n = 16 ] && s=1; \
+      for b in 2 3 4; do OMP_NUM_THREADS=8 build/bin/benchmark/ci-fft-boot ci \$n \$b \$b 55 60 \$s 0 fa 0 encap; done; done"
+    ./guard.sh p04_build "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32"
+    ./guard.sh p04_after "<same loop as p04_before, with CI_BOOT_TIMING=1>"
+    ./guard.sh p04_base "cd openfhe-development && CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 \
+      build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap"
+
+The sweep is a correctness check, not a timing run (8 threads, reps 0: only the first bootstrap, which builds
+the plaintexts). ICELAKE had other users' load during the sweep (load average 3-9).
+
+**Results 1: drop-threshold margin** (`ci-sparse-margin`, all intermediate products of the level split).
+
+| logN | {2,2} diags | {3,3} diags | {4,4} diags | min kept / largest entry | max dropped / largest | abs vs rel disagree |
+|---|---|---|---|---|---|---|
+| 12 | 64/255 | 16/62/63 | 8/30/30/31 | 0.356 / 0.364 / 0.395 | 0 | 0 |
+| 13 | 128/255 | 32/62/63 | 16/30/30/31 | 0.356 / 0.364 / 0.395 | 0 | 0 |
+| 14 | 128/511 | 32/126/63 | 16/62/30/31 | 0.356 / 0.364 / 0.395 | 0 | 0 |
+| 15 | 256/511 | 32/126/127 | 16/62/62/31 | 0.356 / 0.364 / 0.395 | 0 | 0 |
+| 16 | 256/1023 | 64/126/127 | 16/62/62/63 | 0.354 / 0.364 / 0.364 | 0 | 0 |
+
+No product creates a diagonal that is zero up to round-off: every diagonal that appears has a max entry of at
+least 0.35 x the largest entry, and no diagonal is dropped by either rule. The library `CISparseMul` gave the
+same pattern as the tool at every step (no MISMATCH line). So the relative rule does not change the levels
+today. It makes the rule independent of the scale of the factors (for example if a scalar is folded into the
+factors before the product), and the margin between kept (>= 0.35) and dropped (<= 1e-13) is about 12 orders.
+
+**Results 2: Galois-set assertion** (CI, FLEXIBLEAUTO 55/60, encap, first bootstrap; keys = automorphism key
+map size, which includes the 2 encapsulation keys; RMS bits of the first bootstrap).
+
+| logN | budget | keys before | keys after | rotations == keygen set | RMS before | RMS after |
+|---|---|---|---|---|---|---|
+| 12 | {2,2} | 58 | 58 | 56 | 18.44 | 18.43 |
+| 12 | {3,3} | 49 | 49 | 47 | 18.47 | 18.53 |
+| 12 | {4,4} | 46 | 46 | 44 | 18.48 | 18.50 |
+| 13 | {2,2} | 67 | 67 | 65 | 19.41 | 19.43 |
+| 13 | {3,3} | 54 | 54 | 52 | 19.41 | 19.43 |
+| 13 | {4,4} | 48 | 48 | 46 | 19.43 | 19.42 |
+| 14 | {2,2} | 85 | 85 | 83 | 19.24 | 19.23 |
+| 14 | {3,3} | 65 | 65 | 63 | 19.21 | 19.23 |
+| 14 | {4,4} | 56 | 56 | 54 | 19.23 | 19.25 |
+| 15 | {2,2} | 96 | 96 | 94 | 22.24 | 22.26 |
+| 15 | {3,3} | 74 | 74 | 72 | 22.12 | 22.10 |
+| 15 | {4,4} | 64 | 64 | 62 | 22.00 | 22.00 |
+| 16 (128-bit) | {2,2} | 118 | 118 | 116 | 18.23 | 18.24 |
+| 16 (128-bit) | {3,3} | 79 | 79 | 77 | 18.24 | 18.23 |
+| 16 (128-bit) | {4,4} | 70 | 70 | 68 | 18.24 | 18.23 |
+
+The assertion holds in all 15 configurations (all 15 runs printed the check line and a RESULT line, rc = 0).
+The key counts are unchanged, so the old keygen also generated no unused keys: every baby residue class and
+every giant block of these levels holds a nonzero diagonal. First-bootstrap times are within the noise of
+the shared machine (2^16 {4,4}: 17.9 s before, 18.9 s after, 8 threads; the 1-thread run below shows no change).
+Peak RSS at 2^16: {2,2} 32.8 GB, {3,3} 13.4 GB, {4,4} 11.0 GB (8 threads, reps 0).
+
+**Results 3: CI baseline command** (`ci 16 4 4 55 60 1 2 fa 0 encap`, 1 thread, reps 2).
+
+| Run | warm median s | CtS / EvalMod / StC s (warm) | RMS bits | min bits | Galois keys | setup+keygen s | peak RSS GB |
+|---|---|---|---|---|---|---|---|
+| 0.3 (adf8752e) | 26.42 | 13.73 / 7.74 / 4.39 | 18.23 | 14.97 | 70 | 35.8 | 11.19 |
+| 0.4 | 26.55 | 13.76 / 7.80 / 4.42 and 13.58 / 7.81 / 4.42 | 18.23 | 14.58 | 70 | 35.7 | 11.19 |
+
+The median of 2 reps is the larger rep. The difference (+0.5%) is within noise; the load average was about 9
+during the run.
+
+**Conclusion.** `CISparseMul` now uses a scale-invariant drop rule. On the actual factors it gives the same
+pattern as the absolute rule, with a margin of about 12 orders of magnitude. Keygen derives the Galois set
+from the nonzero diagonals, and `EvalBootstrap` checks at each call that its rotations are exactly that set.
+The check holds at 2^12..2^16 for {2,2}, {3,3}, {4,4}. The key counts, precision, time and memory are
+unchanged, so the baseline numbers in the plan header stand. A negative test (forced mismatch) belongs to
+the key-set unit test of item 6.4.

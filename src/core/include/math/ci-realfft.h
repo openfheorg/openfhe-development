@@ -70,7 +70,8 @@ void CIRealFFTEncode(uint32_t N, const std::vector<double>& slots, std::vector<d
 // slots = U * coeffs (natural CI slot order), O(N log N).
 void CIRealFFTDecode(uint32_t N, const std::vector<double>& coeffs, std::vector<double>& slots);
 
-// Sparse helpers. C = A * B (B applied first); T = A^T.
+// Sparse helpers. C = A * B (B applied first), dropping diagonals whose max |entry| is <= 1e-13 x the
+// largest entry of C; T = A^T.
 CISparse CISparseMul(const CISparse& A, const CISparse& B, uint32_t N);
 CISparse CISparseTranspose(const CISparse& A, uint32_t N);
 

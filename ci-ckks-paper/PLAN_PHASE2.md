@@ -38,7 +38,7 @@ Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod f
 - [x] **0.3** Store unscaled levels once; apply `scaleEnc`/`scaleDec` as per-level scalars at encode time.
   Why: `GetCIRealLevels` caches a second full copy keyed on (1.0, 1.0) for keygen. Done when: one cache entry
   per (N, lbEnc, lbDec); peak RSS at 2^16 {4,4} re-measured.
-- [ ] **0.4** Relative drop threshold in `CISparseMul` (1e-13 x max entry) and an assertion that the keygen
+- [x] **0.4** Relative drop threshold in `CISparseMul` (1e-13 x max entry) and an assertion that the keygen
   Galois set equals the evaluator's rotation set. Done when: the assertion holds at 2^12..2^16 for budgets
   {2,2},{3,3},{4,4}.
 - [ ] **0.5** Fix `CI_FFT_REVIEW.md` section 4 item 2: it is an EvalMod *cost* item (degree 48 vs 36), not a
