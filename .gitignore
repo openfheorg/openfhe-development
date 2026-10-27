@@ -72,3 +72,5 @@ test_detail.xml
 
 # Visual Studio Code
 .vscode
+ci-ckks-paper/*.pdf
+ci-ckks-paper/*.pdf:Zone.Identifier

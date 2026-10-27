@@ -105,3 +105,31 @@ Tools in `ci-ckks-paper/tools/` (sync to ICELAKE, tmux-guarded jobs, result tabl
 `OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap`
 (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret). `CI_BOOT_TIMING=1`
 prints the per-level BSGS plan and stage times.
+
+## 7. Review of this work (second pass, 2026-10-27)
+Checked against the paper (Sections 3, 4.2, 5.1-5.2) and the code on the branch.
+
+Matches the paper: g=5 slot order, phase compensation, (Re, Im) replacement with the sqrt(2) norm scaling and the
+1/sqrt(2) per-layer factor, 2x2 / diagonal / 4x4 butterflies, final 2x2 phase rotation merged into F_l, S with
+1/sqrt(N) at coefficient 0 and 1/sqrt(2N) elsewhere, orthogonality used for StC (transposes), level collapsing
+in diagonal form, BSGS over the arithmetic progression of each collapsed level, EvalMod on one real ciphertext,
+permutation kept between CtS and StC. Per-layer diagonal counts [2, 3, 6, ..., 6, 7] agree with Lemma 4.
+Differences that are not defects: our level split assigns remainder layers to the first groups (fewer
+diagonals; the paper puts the short product last); any budget is allowed, not only powers of two.
+
+Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
+1. `REAL_CI` with `BTSlotsEncoding = true` would run the standard StC-first path on CI data (no guard).
+2. The CI correction-factor default change (`cfSlots = N/2`) is unmeasured. It does not change the 2^16 results
+   (default stays 11) but moves the 2^13 default from 12 to 13, against the sweep trend.
+3. `GetCIRealLevels` is cached twice (scaled for evaluation, unit-scaled for keygen).
+4. The `CISparseMul` drop threshold is absolute; keygen and evaluation must agree on the sparsity pattern.
+5. Diagonal plaintexts are built lazily inside a const `EvalBootstrap` (first call 70 s at 2^16; not safe under
+   concurrent bootstraps) (phase 2.4).
+6. Section 4 item 2 above is mis-stated: CI and std have equal RMS precision; the K = 28 table costs EvalMod
+   degree (48 vs 36), it does not cost precision. The fix is a weight-16 CI ephemeral key (phase 3.1).
+7. The chain is 1580 bits (P = 420) versus the paper's 1064; this, not the transforms, is the likely main
+   reason for the 2x absolute gap to the paper's 12.6 s. Both schemes are affected equally (phase 1).
+8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not
+   CI-aware; a mid-file `#include` in the CI unit tests (phase 6).
+No correctness defect was found in the transform itself: 24/24 CI tests, 1191/1191 CKKS tests, 184/184 core
+tests pass, and precision matches std at 2^16.
