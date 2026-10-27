@@ -35,7 +35,7 @@ Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod f
   in {5,...,9} at 2^16 (128-bit, 1 thread, encap, {4,4}) for CI and std. Why: measured, it moves the CI default
   from 7 to 8 and costs 1 bit RMS (18.24 -> 17.23). Done when: CI default chosen from data (keep std's OpenFHE
   default unless the data is overwhelming), and the baseline commands re-run.
-- [ ] **0.3** Store unscaled levels once; apply `scaleEnc`/`scaleDec` as per-level scalars at encode time.
+- [x] **0.3** Store unscaled levels once; apply `scaleEnc`/`scaleDec` as per-level scalars at encode time.
   Why: `GetCIRealLevels` caches a second full copy keyed on (1.0, 1.0) for keygen. Done when: one cache entry
   per (N, lbEnc, lbDec); peak RSS at 2^16 {4,4} re-measured.
 - [ ] **0.4** Relative drop threshold in `CISparseMul` (1e-13 x max entry) and an assertion that the keygen

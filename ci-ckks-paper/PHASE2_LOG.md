@@ -108,3 +108,49 @@ The speedup is 45.92 / 26.31 = 1.75x and RMS is 18.23 bits for both. The plan's 
 - The defaults stay in the baseline commands, so the comparison is CI 7 vs std 8, at equal precision (18.23).
   For precision tables, `corr 5` for both schemes gives CI 20.2 / std 21.2 bits RMS at the same time. Phase 1
   changes the prime sizes (and thus deg), so it should re-check this.
+
+## 0.3 One unscaled cache of the CI real-FFT levels; bootstrap scalars applied at encode time (2026-10-27)
+
+**Change** (`src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp`, CI code only).
+- `CIBuildRealLevels(N, lbEnc, lbDec)` no longer takes `scaleEnc` / `scaleDec`. The stored levels hold only
+  the fixed constants: N/sqrt(2N) (CtS) and sqrt(2N) (StC), spread evenly over the levels, and the sigma
+  row/column scale on the outermost level.
+- `GetCIRealLevels(N, lbEnc, lbDec)`: the cache key is now (N, lbEnc, lbDec). Before, it was
+  (N, lbEnc, lbDec, scaleEnc, scaleDec). Keygen (`CIRealFFTGaloisElements`, which used (1.0, 1.0)) and
+  evaluation now share one entry. Before, each held a full copy.
+- `applyReal(..., scale)` computes the per-level scalar `CIRealLevelScalar(scale, #levels) = scale^(1/#levels)`.
+  `applyCISparse(..., sc)` multiplies each diagonal value by `sc` when it encodes the plaintext. The product
+  over the levels is the same as before: pow(scale * c0, 1/r) = pow(scale, 1/r) * pow(c0, 1/r), up to
+  rounding. The sparsity pattern is unchanged, because the scalars were applied after `CISparseMul` before too.
+- The dense {1,1} path (`applyCILT`) was not cached and is unchanged. std is unchanged.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    # before (binary built from 611b54ba in item 0.2)
+    ./guard.sh p03_before "cd openfhe-development && CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 \
+      build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap"
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p03_build "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32"
+    ./guard.sh p03_after "cd openfhe-development && CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 \
+      build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap && \
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci 12 3 3 59 60 0 1 fm 0 uniform"
+
+**Results** (CI baseline command: 2^16, 128-bit, FLEXIBLEAUTO, encap, {4,4}, 1 thread, reps 2).
+
+| Run | peak RSS GB | warm median s | CtS / EvalMod / StC s (warm) | RMS bits | min bits | Galois keys | setup+keygen s |
+|---|---|---|---|---|---|---|---|
+| before (two cache entries) | 11.39 | 26.42 | 13.72 / 7.73 / 4.41 | 18.22 | 15.02 | 70 | 35.3 |
+| after (one cache entry) | **11.19** | 26.42 | 13.73 / 7.74 / 4.39 | 18.23 | 14.97 | 70 | 35.8 |
+
+The per-level diagonal counts (`CI_BOOT_TIMING`) are enc 16/62/62/63 and dec 63/62/62/16, so 406 diagonals
+in total. One copy of the levels is 406 x 65,536 x 8 B = 213 MB (0.20 GiB). This equals the measured drop
+of 0.20 in peak RSS.
+
+Correctness check at 2^12 (insecure, FIXEDMANUAL, uniform, {3,3}; real-FFT path): RMS 14.23 bits, min
+12.34 bits, 47 Galois keys. Item 0.1 measured 14.12 / 12.17 / 47. The input vector is fixed (seed 2026),
+but the keys and the encryption noise are random, so a variation of about 0.1-0.2 bits is expected. At 2^16
+the before/after RMS agree to 0.01 bit.
+
+**Conclusion.** There is one unscaled cache entry per (N, lbEnc, lbDec). Peak RSS at 2^16 {4,4} falls from
+11.39 to 11.19 GB, which is exactly one copy of the levels. Time, precision and the Galois key set are
+unchanged. The baseline numbers in the plan header stand.

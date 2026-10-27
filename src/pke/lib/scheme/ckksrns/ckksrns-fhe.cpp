@@ -217,15 +217,22 @@ inline uint32_t CIBootPrecomp(uint32_t N, uint32_t k, uint32_t j) {
 }
 
 // ---- Paper-style REAL FFT CtS/StC (Liu-Ma-Wang-Wang, ePrint 2026/2618); factors in math/ci-realfft ----
-// Collapsed CtS / StC levels in APPLY order (g=5 basis).
+// Collapsed CtS / StC levels in APPLY order (g=5 basis), stored WITHOUT the bootstrap scalars:
 //   CtS = scaleEnc * N * S * F_l ... F_1          (= scaleEnc * N * Q * V^{-1})
 //   StC = scaleDec * F_1^T ... F_l^T * S^{-1}     (= scaleDec * V * Q^T)
-// Scalars are spread evenly over the levels; the sigma row/column scale goes on the outermost level.
+// The stored levels hold N * S * F_l ... F_1 and F_1^T ... F_l^T * S^{-1}; the constants N/sqrt(2N) and
+// sqrt(2N) are spread evenly over the levels and the sigma row/column scale goes on the outermost level.
+// scaleEnc / scaleDec are applied at encode time as the per-level scalars CIRealLevelScalar(scale, #levels).
 struct CIRealLevels {
     std::vector<CISparse> enc, dec;
 };
 
-CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec, double scaleEnc, double scaleDec) {
+// Per-level share of a bootstrap scalar spread evenly over `levels` levels.
+inline double CIRealLevelScalar(double scale, size_t levels) {
+    return std::pow(scale, 1.0 / static_cast<double>(levels));
+}
+
+CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     const auto& plan = GetCIRealFFTPlan(N);
     const auto& F    = plan.F;
     std::vector<double> sigma(N);
@@ -257,7 +264,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec, doubl
     CIRealLevels out;
     {
         auto rg        = split(lbEnc);
-        const double c = std::pow(scaleEnc * N / std::sqrt(2.0 * N), 1.0 / rg.size());
+        const double c = std::pow(N / std::sqrt(2.0 * N), 1.0 / rg.size());
         for (auto& [a, b] : rg) {
             out.enc.push_back(product(a, b));
             scaleAll(out.enc.back(), c);
@@ -268,7 +275,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec, doubl
     }
     {
         auto rg        = split(lbDec);
-        const double c = std::pow(scaleDec * std::sqrt(2.0 * N), 1.0 / rg.size());
+        const double c = std::pow(std::sqrt(2.0 * N), 1.0 / rg.size());
         for (auto it = rg.rbegin(); it != rg.rend(); ++it) {
             out.dec.push_back(CISparseTranspose(product(it->first, it->second), N));
             scaleAll(out.dec.back(), c);
@@ -325,20 +332,21 @@ inline uint32_t CIGaloisForShift(uint32_t shift, uint32_t N) {  // 5^shift mod 4
     return static_cast<uint32_t>(r);
 }
 
-const CIRealLevels& GetCIRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec, double scaleEnc, double scaleDec) {
-    static std::map<std::tuple<uint32_t, uint32_t, uint32_t, double, double>, CIRealLevels> cache;
+// One unscaled cache entry per (N, lbEnc, lbDec), shared by keygen (Galois set) and evaluation.
+const CIRealLevels& GetCIRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
+    static std::map<std::tuple<uint32_t, uint32_t, uint32_t>, CIRealLevels> cache;
     static std::mutex mtx;
     std::lock_guard<std::mutex> lk(mtx);
-    auto key = std::make_tuple(N, lbEnc, lbDec, scaleEnc, scaleDec);
+    auto key = std::make_tuple(N, lbEnc, lbDec);
     auto it  = cache.find(key);
     if (it == cache.end())
-        it = cache.emplace(key, CIBuildRealLevels(N, lbEnc, lbDec, scaleEnc, scaleDec)).first;
+        it = cache.emplace(key, CIBuildRealLevels(N, lbEnc, lbDec)).first;
     return it->second;
 }
 
 // Galois elements needed by the sparse CI CtS/StC levels (same BSGS plan as the evaluator).
 std::vector<uint32_t> CIRealFFTGaloisElements(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
-    const auto& lv = GetCIRealLevels(N, lbEnc, lbDec, 1.0, 1.0);
+    const auto& lv = GetCIRealLevels(N, lbEnc, lbDec);
     std::set<uint32_t> elts;
     for (const auto* set : {&lv.enc, &lv.dec})
         for (const auto& A : *set) {
@@ -1309,7 +1317,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         const bool useRealFFT = (lbEnc > 1 || lbDec > 1);
         // Sparse hoisted BSGS: only the nonzero diagonals of A, baby/giant steps over their offset window.
         const auto& ciPlan = GetCIRealFFTPlan(Nn);
-        auto applyCISparse = [&](Ciphertext<DCRTPoly> ct, std::vector<ReadOnlyPlaintext>& store, const CISparse& A) {
+        // sc: per-level scalar applied to the stored (unscaled) diagonals when the plaintexts are encoded.
+        auto applyCISparse = [&](Ciphertext<DCRTPoly> ct, std::vector<ReadOnlyPlaintext>& store, const CISparse& A,
+                                 double sc) {
             const auto bp    = CIPlanBsgs(A, Nn);
             const bool build = store.empty();
             if (build)
@@ -1357,7 +1367,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                             std::vector<std::complex<double>> cval(Nn);
                             const auto& d = it->second;
                             for (uint32_t q = 0; q < Nn; ++q)
-                                cval[ciPlan.perm[q]] = std::complex<double>(d[(q + Nn - G) % Nn], 0.0);
+                                cval[ciPlan.perm[q]] = std::complex<double>(sc * d[(q + Nn - G) % Nn], 0.0);
                             auto enc = std::make_shared<CKKSPackedEncoding>(paramsQlP, cc->GetEncodingParams(), cval,
                                                                            1, lvl, scFactPt, Nn, REAL_CI);
                             enc->Encode();
@@ -1423,15 +1433,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         auto ciSec           = [](std::chrono::steady_clock::time_point t0) {
             return std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
         };
-        // Apply sparse g=5-basis levels (apply order), one rescale per level.
+        // Apply sparse g=5-basis levels (apply order), one rescale per level; `scale` (scaleEnc or scaleDec)
+        // is spread evenly over the levels at encode time.
         auto applyReal = [&](Ciphertext<DCRTPoly> in, const std::vector<CISparse>& levels,
-                             std::vector<std::vector<ReadOnlyPlaintext>>& stores) {
+                             std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale) {
             if (stores.size() < levels.size())
                 stores.resize(levels.size());
+            const double sc = CIRealLevelScalar(scale, levels.size());
             for (size_t s = 0; s < levels.size(); ++s) {
                 const CISparse& A = levels[s];
                 auto tl           = ciNow();
-                in                = applyCISparse(in, stores[s], A);
+                in                = applyCISparse(in, stores[s], A, sc);
                 if (ciTiming) {
                     auto bp = CIPlanBsgs(A, Nn);
                     std::cerr << "[CI-BT] level " << s << " diags=" << A.size() << " h=" << bp.h << " span=" << bp.span
@@ -1448,8 +1460,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         Ciphertext<DCRTPoly> ctxtEnc;
         auto tStage = ciNow();
         if (useRealFFT) {
-            ctxtEnc = applyReal(raised, GetCIRealLevels(Nn, lbEnc, lbDec, scaleEnc, scaleDec).enc,
-                                p.m_U0hatTPreFFT);
+            ctxtEnc = applyReal(raised, GetCIRealLevels(Nn, lbEnc, lbDec).enc, p.m_U0hatTPreFFT, scaleEnc);
         }
         else {
             // CtS = scaleEnc * N * U^-1 = scaleEnc * diag(1,.5..) * U^T. With decoded(raised)=U*t/N
@@ -1487,8 +1498,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // SlotsToCoeffs (U).
         Ciphertext<DCRTPoly> ctxtDecCI;
         if (useRealFFT) {
-            ctxtDecCI = applyReal(ctxtEnc, GetCIRealLevels(Nn, lbEnc, lbDec, scaleEnc, scaleDec).dec,
-                                  p.m_U0PreFFT);
+            ctxtDecCI = applyReal(ctxtEnc, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec);
         }
         else {
             ctxtDecCI = applyCILT(ctxtEnc, p.m_U0Pre,

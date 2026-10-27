@@ -125,7 +125,8 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    from 18.24 to 17.23 bits and min precision from 15.0 to 13.9 (std, which uses 8, is unchanged at 18.24).
    Table 3.1 was produced before this change and stands. Phase 0.2 of the plan reverts it and sweeps the
    correction factor for both schemes. (Done in phase 0.2: reverted; the new CI default is 7 at 2^16.)
-3. `GetCIRealLevels` is cached twice (scaled for evaluation, unit-scaled for keygen).
+3. `GetCIRealLevels` is cached twice (scaled for evaluation, unit-scaled for keygen). (Done in phase 0.3:
+   one unscaled entry per (N, lbEnc, lbDec), scalars applied at encode time; peak RSS 11.39 -> 11.19 GB at 2^16.)
 4. The `CISparseMul` drop threshold is absolute; keygen and evaluation must agree on the sparsity pattern.
 5. Diagonal plaintexts are built lazily inside a const `EvalBootstrap` (first call 70 s at 2^16; not safe under
    concurrent bootstraps) (phase 2.4).
