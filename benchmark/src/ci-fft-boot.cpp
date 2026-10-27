@@ -5,6 +5,7 @@
 //       [stcfirst: 0 = CtS-first (default), 1 = EvalBootstrapSetup with BTSlotsEncoding = true,
 //        2 = call EvalBootstrapStCFirst directly; 1 and 2 must throw for ci]
 //       [dnum: number of large digits for HYBRID key switching (SetNumLargeDigits); 0 = OpenFHE default]
+//       [after: levels left for the application after the bootstrap; default 2 (the paper uses 3)]
 // Thread count: OMP_NUM_THREADS. First bootstrap (includes lazy diagonal precompute) is
 // reported separately; the warm bootstraps are what count.
 //==================================================================================
@@ -48,11 +49,12 @@ int main(int argc, char** argv) {
     std::string dist   = (argc > 11) ? argv[11] : "uniform";        // uniform | encap
     uint32_t stcFirst  = (argc > 12) ? std::stoul(argv[12]) : 0;
     uint32_t dnum      = (argc > 13) ? std::stoul(argv[13]) : 0;  // 0 = OpenFHE default (3 for depth > 3)
+    uint32_t after     = (argc > 14) ? std::stoul(argv[14]) : 2;
     bool isCI          = (scheme == "ci");
     uint32_t N         = 1u << logN;
     std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
     SecretKeyDist skd                 = (dist == "encap") ? SPARSE_ENCAPSULATED : UNIFORM_TERNARY;
-    uint32_t levelsAfter              = 2;
+    uint32_t levelsAfter              = after;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     if (isCI)
@@ -80,10 +82,19 @@ int main(int argc, char** argv) {
     double log2Q   = 0;
     for (auto& p : cc->GetCryptoParameters()->GetElementParams()->GetParams())
         log2Q += std::log2(p->GetModulus().ConvertToDouble());
+    size_t towersQ = cc->GetCryptoParameters()->GetElementParams()->GetParams().size();
     double log2P = 0;
     auto cpr     = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
     for (auto& p : cpr->GetParamsP()->GetParams())
         log2P += std::log2(p->GetModulus().ConvertToDouble());
+
+    std::cout << "chain Q bits (q0 first):";
+    for (auto& p : cc->GetCryptoParameters()->GetElementParams()->GetParams())
+        std::cout << " " << std::lround(std::log2(p->GetModulus().ConvertToDouble()));
+    std::cout << " | P bits:";
+    for (auto& p : cpr->GetParamsP()->GetParams())
+        std::cout << " " << std::lround(std::log2(p->GetModulus().ConvertToDouble()));
+    std::cout << std::endl;
 
     auto t0 = Clock::now();
     cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots, corr, true, stcFirst == 1);
@@ -156,7 +167,7 @@ int main(int argc, char** argv) {
     double minB = bits.empty() ? fBits : *std::min_element(bits.begin(), bits.end());
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
-              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " slots=" << slots << " depth=" << depth << " log2Q=" << std::setprecision(0)
+              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " slots=" << slots << " depth=" << depth << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0)
               << log2Q << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
               << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys
               << std::setprecision(1) << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB

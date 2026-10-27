@@ -484,3 +484,165 @@ and has its minimum at dnum 3-4.
   StC wants a small P) stays the same.
 - The CI/2xstd ratio is 1.73-1.80x at every valid dnum. dnum does not change the CI advantage. The per-stage
   ratios (CtS 1.55-1.66x, StC 1.79-1.89x) also change little. Gap 1 (phase 2) is independent of dnum.
+
+## 1.2 Prime sizes: per-stage (paper) vs uniform, FIXEDMANUAL vs FLEXIBLEAUTO at 2^16 (2026-10-27)
+
+**Change.** `benchmark/src/ci-fft-boot.cpp` takes an optional 14th argument `after` (levels left for the
+application after the bootstrap; default 2, the paper uses 3). The RESULT line also prints `after` and `towersQ`,
+and a new line `chain Q bits (q0 first): ... | P bits: ...` lists the bit size of every Q and P prime. The
+baseline commands are unchanged. No library code changed: the per-stage scale was not built (see "Decision").
+
+**What OpenFHE can express.** FIXEDMANUAL and FLEXIBLE* both make every Q prime `scaleMod` bits except q0
+(`firstMod`). A paper-style chain (EvalMod 60-bit, StC 40-bit, CtS 56-bit) needs two things that do not exist:
+per-level prime sizes in `ParamsGenCKKSRNSInternal`, and a scale manager. FLEXIBLEAUTO's scale recursion
+Delta' = Delta^2 / q_l diverges when q_l is far from Delta (2^56 entering 60-bit EvalMod primes: 2^52, 2^44,
+2^28, ...). FIXEDMANUAL assumes q_l = Delta. A Lattigo-style manager (diagonals encoded at the dropped prime,
+EvalMod at its own 2^60 scale) is a large change. The item says to build it only if the numbers show that it
+pays. The runs below measure each of the three possible gains (time, log QP, precision) with what OpenFHE has.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`, source `SYNCED_FROM 500eeaa8` + this driver change).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p12_build "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32 && \
+      cd ../build-bt && cmake --build . --target ci-fft-boot -j 32"                          # rc 0
+    ./guard.sh p12_smoke "..."    # 2^12 insecure {3,3}, 4 threads: fa 59/60, fm 55/60, fm 59/60, fa 45/60 corr 15,
+                                  # fa 59/60 after 3; ci and std; all rc 0
+    # p12_sweep.sh "sm fm sc corr dnum after" ...: for each config, one ci run then one std run, 1 thread:
+    #   CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot ci 16 4 4 $sm $fm 1 2 $sc $corr encap 0 $dnum $after
+    #   build-bt/bin/benchmark/ci-fft-boot std 16 4 4 $sm $fm 1 2 $sc $corr encap 0 $dnum $after
+    ./guard.sh p12_sweepA "./p12_sweep.sh '59 60 fa 0 0 2' '55 60 fa 0 0 2' '59 60 fa 5 0 2' '50 60 fa 10 0 2' \
+      '45 60 fa 15 0 2' '55 60 fm 0 0 2' '59 60 fm 0 0 2'"                                   # rc 0
+    ./guard.sh p12_sweepB "./p12_sweep.sh '59 60 fa 4 0 2' '59 60 fa 3 0 2' '59 60 fa 2 0 2' '55 60 fa 0 0 2' \
+      '59 60 fa 0 0 2' '59 60 fa 5 0 3' '59 60 fa 5 4 3' '55 60 fa 0 0 3'"                   # rc 0
+    # p12_ab.sh: clean A/B, reps 3, order ci55 ci59 std55 std59 ci59 ci55 std59 std55:
+    #   ci  16 4 4 55 60 1 3 fa 0 encap   vs   ci  16 4 4 59 60 1 3 fa 4 encap
+    #   std 16 4 4 55 60 1 3 fa 0 encap   vs   std 16 4 4 59 60 1 3 fa 5 encap
+    ./guard.sh p12_ab ./p12_ab.sh                                                             # rc 0
+
+Logs: `~/ci-ckks-fft/logs/p12_*.log`; the scripts are `~/ci-ckks-fft/p12_sweep.sh` and `p12_ab.sh`. Load was
+1-6 except during the first two configs of `p12_sweepA` (load 13-22) and the `59 60 fa 5 4 3` pair of
+`p12_sweepB` (load 6-15); those times are marked "loaded" and not used for time conclusions. `corr` 0 means the
+default (CI 7, std 8 for FLEXIBLEAUTO; 7 for both under FIXEDMANUAL). With `scaleMod` < 55 the minimum correction
+`firstMod - scaleMod` is above the default, so those runs pass that minimum. `59 60 fa 5 0 3` threw "The specified
+ring dimension (65536) does not comply with HE standards recommendation (131072)" for both schemes (see below).
+
+**Results 1: clean A/B, uniform 55 (baseline) vs uniform 59** (2^16, 128-bit, FLEXIBLEAUTO, encap, {4,4}, 1 thread;
+two runs of reps 3 each; warm median per run; per-stage times are the mean of the two runs).
+
+| scheme | scaleMod / firstMod | corr | log Q / log P / log QP | warm s (run 1, run 2) | CtS | EvalMod | StC | RMS bits | min bits (= paper's metric) | p99 bits |
+|---|---|---|---|---|---|---|---|---|---|---|
+| CI | 55 / 60 (baseline) | 7 | 1160 / 420 / 1580 | 26.68, 26.40 | 13.74 | 7.84 | 4.43 | 18.22, 18.23 | 15.06, 14.67 | 16.40 |
+| CI | **59 / 60** | **4** | 1240 / 420 / 1660 | 26.31, 26.63 | 13.34 | 8.21 | 4.35 | **21.58, 21.56** | **18.69, 17.88** | 19.85 |
+| std | 55 / 60 (baseline) | 8 | 1160 / 420 / 1580 | 23.35, 23.09 | 8.29 | 12.12 | 2.36 | 18.22, 18.24 | 15.71, 15.59 | 16.76 |
+| std | **59 / 60** | **5** | 1240 / 420 / 1660 | 23.46, 23.37 | 7.97 | 12.69 | 2.30 | **22.75, 22.74** | **20.34, 19.88** | 21.33 |
+
+Uniform 59-bit primes are valid at 128-bit (1660 <= 1747) with the same 21 Q + 7 P towers. They give +3.3 bits RMS
+and +3.4 bits max-error precision (CI) and +4.5 / +4.5 bits (std) at the same time (CI -0.3%, std +0.9%, both
+within noise). CI/2xstd: 1.75x (55) and 1.77x (59). EvalMod is 0.4 s (CI) and 0.6 s (std) slower at 59 bits and
+CtS 0.3-0.4 s faster; the sums cancel. Galois keys (70 / 76), key memory (5.75 / 6.24 GB) and peak RSS (11.19 /
+9.08 GB) do not change.
+
+**Results 2: correction factor at uniform 59/60** (FLEXIBLEAUTO, `p12_sweepA`/`B`, reps 2; the minimum is
+`firstMod - scaleMod` = 1).
+
+| corr | CI RMS | CI min | std RMS | std min | CI warm s | std warm s |
+|---|---|---|---|---|---|---|
+| 2 | 18.71 | 16.83 | 17.69 | 15.94 | 26.51 | 24.27 |
+| 3 | 20.67 | 18.60 | 19.69 | 17.92 | 26.86 | 23.88 |
+| **4** | **21.56** | 18.31 | 21.66 | 19.86 | 27.17 | 23.54 |
+| **5** | 20.73 | 17.64 | **22.75** | **20.11** | 26.55 | 23.51 |
+| 7 / 8 (default) | 18.73 | 15.17-15.27 | 19.97 | 17.21-17.22 | 26.99 (loaded), 28.07 (loaded) | 23.97, 24.01 |
+
+With 59-bit primes the correction factor has an optimum: CI 4 and std 5. Above it, each step costs ~1 bit (as
+in item 0.2). Below it, the sine approximation error grows and precision drops 1-2 bits per step. By max error
+the CI optimum is 3-4 (18.60 / 18.31 bits). At its optimum CI is 1.2 bits RMS below std (21.56 vs 22.75), the
+same gap as in item 0.2. The default fit (7 / 8) depends on N and the slot count only, so at 59/60 it is 3 steps
+too high for both schemes. At 55/60 the optimum lies below the allowed minimum (5), which is why item 0.2 found
+that the lowest value is best.
+
+**Results 3: smaller uniform primes** (FLEXIBLEAUTO, `firstMod` 60, `corr` = `firstMod - scaleMod`, reps 2;
+`p12_sweepA`, load 1-3).
+
+| scaleMod | towers Q + P | log Q / log P / log QP | CI s | std s | CI CtS / EvalMod / StC | std CtS / EvalMod / StC | CI RMS / min | std RMS / min |
+|---|---|---|---|---|---|---|---|---|
+| 59 (corr 5) | 21 + 7 | 1240 / 420 / 1660 | 26.55 | 23.51 | 13.34 / 8.17 / 4.36 | 8.00 / 12.74 / 2.30 | 20.73 / 17.64 | 22.75 / 20.11 |
+| 55 (corr 7, `p12_sweepB`) | 21 + 7 | 1160 / 420 / 1580 | 26.52 | 23.67 | 13.68 / 7.83 / 4.42 | 8.48 / 12.30 / 2.43 | 18.23 / 15.05 | 18.23 / 15.58 |
+| 50 (corr 10) | 21 + 7 | 1060 / 420 / 1480 | 26.54 | 23.29 | 13.66 / 7.80 / 4.42 | 8.32 / 12.15 / 2.37 | 6.29 / 3.27 | 10.10 / 7.46 |
+| 45 (corr 15) | 21 + 6 | 960 / 360 / 1320 | 25.59 | 22.42 | 13.20 / 7.61 / 4.08 | 8.02 / 11.78 / 2.18 | -2.80 / -6.03 | 0.94 / -1.55 |
+
+- **Time does not depend on the prime bit size.** RNS words are 64-bit, so a 50-bit prime costs the same as a
+  59-bit one. 59, 55 and 50 bits give the same total time within 0.4 s (CI 26.52-26.55 s, std 23.29-23.67 s);
+  per stage, 59 bits moves 0.3-0.6 s from CtS to EvalMod. Only the number of P towers moves the total time. OpenFHE sizes P to the largest digit: towersP = ceil(maxDigitBits / 60), plus one when the margin
+  is below 4 bits (`rns-cryptoparameters.cpp`). At 45 bits the largest digit is 60 + 6 x 45 = 330 bits, so P has 6
+  towers instead of 7, and the bootstrap is 0.95 s (CI, -3.6%) and 0.88 s (std, -3.8%) faster.
+- **Precision collapses below 55 bits.** Every stage (EvalMod included) runs at the uniform scale, and the
+  minimum correction grows as the scale shrinks. 50-bit primes give 6.3 (CI) and 10.1 (std) bits RMS; 45-bit
+  primes give no precision.
+
+**Results 4: FIXEDMANUAL vs FLEXIBLEAUTO** (`p12_sweepA`, load 3-5, reps 2, default corr 7 for both under FM).
+
+| scheme | sc | scaleMod | warm s | CtS | EvalMod | StC | RMS / min bits |
+|---|---|---|---|---|---|---|---|
+| CI | fa | 55 | 26.52 | 13.68 | 7.83 | 4.42 | 18.23 / 15.05 |
+| CI | fm | 55 | 23.92 | 13.73 | 5.08 | 4.42 | 11.34 / 7.44 |
+| CI | fm | 59 | 23.85 | 13.42 | 5.23 | 4.41 | 14.77 / 10.05 |
+| std | fa | 55 | 23.67 | 8.48 | 12.30 | 2.43 | 18.23 / 15.58 |
+| std | fm | 55 | 19.86 | 8.49 | 8.50 | 2.36 | 13.27 / 11.14 |
+| std | fm | 59 | 19.92 | 8.21 | 8.78 | 2.35 | 17.03 / 14.86 |
+
+FIXEDMANUAL is 2.6 s (CI, -10%) and 3.8 s (std, -16%) faster, all of it in EvalMod (CI -35%, std -31%). Under
+FLEXIBLE*, `AdjustLevelsAndDepthInPlace` (`ckksrns-leveledshe.cpp`) runs `EvalMultCore` and a rescale for every
+addition of two ciphertexts at different levels, and the Paterson-Stockmeyer sine evaluation has many such
+additions. FIXEDMANUAL only drops towers there. FIXEDMANUAL loses 6.9 bits (CI) and 5.0 bits (std) of RMS at 55
+against FLEXIBLEAUTO 55/60, and 4.0 / 2.9 bits at 59 against FLEXIBLEAUTO 59/60 at its default corr (18.73 /
+19.97). It assumes every prime is exactly 2^scaleMod, and the resulting scale error is multiplied by
+the q0 x I term that EvalMod removes. CI likely loses more because its primes (q = 1 mod 4N) are spaced twice
+as far apart (not checked). So FIXEDMANUAL is not usable as is, but its EvalMod shows that ~2.7 s (CI) and ~3.8 s (std) per
+bootstrap are scale bookkeeping, not arithmetic that EvalMod needs. Under FIXEDMANUAL CI/2xstd falls to 1.66x,
+because std pays the overhead twice.
+
+**Results 5: three levels after the bootstrap (the paper's Base 60 + 40 x 3)** (`p12_sweepB`).
+
+| scheme | chain | dnum | towers Q + P | log Q / log P / log QP | warm s | vs after 2 | RMS / min |
+|---|---|---|---|---|---|---|---|
+| CI | 55/60, after 3 | 3 (alpha 8) | 22 + 8 | 1215 / 480 / 1695 | 29.06 | +2.54 s (+9.6%) | 18.23 / 15.02 |
+| std | 55/60, after 3 | 3 (alpha 8) | 22 + 8 | 1215 / 480 / 1695 | 25.28 | +1.61 s (+6.8%) | 18.23 / 15.83 |
+| CI | 59/60, after 3, corr 5 | 4 (alpha 6) | 22 + 6 | 1299 / 360 / 1659 | 30.81 (loaded) | - | 20.72 / 17.33 |
+| std | 59/60, after 3, corr 5 | 4 (alpha 6) | 22 + 6 | 1299 / 360 / 1659 | 26.28 (loaded) | - | 22.73 / 19.57 |
+
+One more level adds one Q tower, and at dnum 3 also one P tower (alpha 7 -> 8). With 59-bit primes and dnum 3
+the chain is 1299 + 480 = 1779 bits > 1747, and OpenFHE throws at 128-bit. dnum 4 (6 P towers, 1659 bits) is
+valid; its time was measured under load and is only an upper bound.
+
+**Decision: the per-stage scale is not built.** The three possible gains of mixed prime sizes in OpenFHE:
+- *Time:* none. Time depends on the tower counts, not on the prime sizes (Results 3). A paper-style chain puts
+  7 x 60-bit EvalMod primes into one dnum-3 digit (420 bits), so OpenFHE's P grows from 7 to 8 towers and the
+  bootstrap gets slower. P can only shrink when every digit has small primes, and small primes destroy
+  precision (Results 3).
+- *log QP:* none. In our level structure (q0 60, 2 x 40 after, StC 4 x 40, EvalMod 10 x 60, CtS 4 x 56) Q is
+  1124 bits. Its digits are 300 / 420 / 404 bits, so P = 8 x 60 = 480 and log QP = 1604, which is more than the
+  baseline's 1580. A smaller log QP also does not make anything faster at N = 2^16. Item 1.1 showed that the
+  dnum it would allow (2) is slower.
+- *Precision:* uniform 59/60 already gives large EvalMod primes. It gains +3.3 (CI) / +4.5 (std) bits RMS at the
+  same time and stays valid at 128-bit (Results 1).
+
+**Conclusions.**
+- Best parameters for item 1.3: FLEXIBLEAUTO, `scaleMod` 59, `firstMod` 60, `corr` 4 (CI) / 5 (std), dnum 3, i.e.
+  `ci 16 4 4 59 60 1 2 fa 4 encap` and `std 16 4 4 59 60 1 2 fa 5 encap`. They give CI 26.3-26.6 s, RMS 21.6 bits,
+  min 17.9-18.7 bits; std 23.4 s, RMS 22.7 bits, min 19.9-20.3 bits. The time equals the baseline's. The
+  baseline commands in the plan are unchanged (item 1.R decides whether to switch).
+- Precision metric: the paper's "Prec. 20.55 bits" is -log2 of the max error, which is `prec_bits_min` here,
+  not `rms_bits`. On that metric the baseline CI is 14.7-15.1 bits (5.5 bits below the paper), and 59/60 corr 4
+  closes it to 17.9-18.7 bits (about 2 bits below).
+- log QP <= ~1100 (item 1.R) is not reachable with useful precision in OpenFHE's level structure. 21 Q + 7 P
+  towers at 1100 bits would mean ~39-bit primes on average, and 50-bit primes already lose 8-12 bits RMS. The paper's chain is
+  shorter mainly in towers (EvalMod 8 vs 10 levels, StC 3 vs 4, P 3 vs 7). Its own table is also not
+  self-consistent: the listed columns of the 3+4 row sum to 60 + 120 + 120 + 480 + 224 + 180 = 1184 bits, and the
+  stated 1064 (and 1008 / 952 / 952 for the other rows) equals that sum without the StC column. Either way it
+  is a tower count of 19-22, not ours of 28.
+- New lever, not covered by the plan: FLEXIBLEAUTO's level/scale adjustments cost ~2.7 s of 7.8 s CI EvalMod and
+  ~3.8 s of 12.3 s std EvalMod (Results 4). An EvalMod that keeps the scale exact without the extra rescales,
+  for example by encoding the Chebyshev/PS constants at the scale that makes the operands of each addition
+  match (as Lattigo does), or FIXEDMANUAL with the actual primes folded into those constants, could keep
+  FLEXIBLEAUTO's precision at FIXEDMANUAL's speed. Suggested as a phase 3 item. It would shorten the CI
+  bootstrap by ~10% and lower CI/2xstd to ~1.66x.

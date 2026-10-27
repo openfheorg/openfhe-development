@@ -144,6 +144,10 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    EvalMod at 2^16 {4,4}, about 4% of the CI bootstrap, at the same depth and RMS.)
 7. The chain is 1580 bits (P = 420) versus the paper's 1064; this, not the transforms, is the likely main
    reason for the 2x absolute gap to the paper's 12.6 s. Both schemes are affected equally (phase 1).
+   (Phase 1.1-1.2: not confirmed. At N = 2^16 the time depends on the tower counts, not on log QP: dnum 3 is
+   the fastest valid dnum, and 50-59-bit primes cost the same time. Mixed per-stage primes would not lower
+   log QP in OpenFHE, because P is sized to the largest digit. Uniform 59/60 primes give +3.3 bits for CI at
+   the same time. See `PHASE2_LOG.md` 1.1 and 1.2.)
 8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not
    CI-aware; a mid-file `#include` in the CI unit tests (phase 6).
 Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,

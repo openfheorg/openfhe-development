@@ -25,7 +25,12 @@ stages CtS 8.36 / EvalMod 12.2 / StC 2.38 per bootstrap), speedup 1.74-1.76x, RM
 (no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
 Key switching: OpenFHE default dnum 3 (alpha 7, log P 420) is the fastest dnum valid at 128-bit for both schemes;
 dnum 2 exceeds the 1747-bit bound, dnum 4 ties, dnum 5-7 are slower (item 1.1).
-Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum]). Baseline commands (run at every phase review):
+Prime sizes (item 1.2): time depends on tower counts, not prime bits; uniform FLEXIBLEAUTO 59/60 with corr 4 (CI) /
+5 (std) is valid at 128-bit (log QP 1660) and gives CI RMS 21.6 / min 17.9-18.7 bits, std 22.7 / 19.9-20.3 bits
+at the baseline's time; use it in item 1.3. The paper's 20.55 bits is max error (our `prec_bits_min`; baseline CI
+15.0). Mixed per-stage primes would not lower time or log QP in OpenFHE, so no per-stage scale was built.
+FIXEDMANUAL is 10% (CI) / 16% (std) faster, all in EvalMod (FLEXIBLEAUTO's scale-adjust rescales), but loses 3-7 bits RMS.
+Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
 
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 55 60 1 2 fa 0 encap
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap
@@ -54,7 +59,7 @@ Our chain is log Q + log P = 1160 + 420 = 1580 bits; the paper's is 1064. Key-sw
 number of QP limbs, so this is likely most of the 2x absolute gap to the paper (26.3 s vs 12.6 s).
 - [x] **1.1** Sweep `SetNumLargeDigits` (dnum) in {3, 4, 5, 6} at 2^16 for CI and std; record log P, key size,
   time, precision (add a driver argument for dnum).
-- [ ] **1.2** Per-stage prime sizes as in the paper (EvalMod ~60-bit, StC ~40-bit, 3 usable levels after
+- [x] **1.2** Per-stage prime sizes as in the paper (EvalMod ~60-bit, StC ~40-bit, 3 usable levels after
   bootstrap): evaluate FIXEDMANUAL with mixed prime sizes vs FLEXIBLEAUTO uniform 55 (OpenFHE has no
   per-stage scale; only build one if the numbers show it pays). Record log QP, time, precision.
 - [ ] **1.3** Budget sweep with the best parameters from 1.1-1.2: {4,3}, {5,3}, {5,4}, {5,5} for CI and std
