@@ -42,10 +42,11 @@ int main(int argc, char** argv) {
     uint32_t reps      = (argc > 8) ? std::stoul(argv[8]) : 2;
     std::string sc     = (argc > 9) ? argv[9] : "fm";
     uint32_t corr      = (argc > 10) ? std::stoul(argv[10]) : 0;  // 0 = OpenFHE default
+    std::string dist   = (argc > 11) ? argv[11] : "uniform";        // uniform | encap
     bool isCI          = (scheme == "ci");
     uint32_t N         = 1u << logN;
     std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
-    SecretKeyDist skd                 = UNIFORM_TERNARY;
+    SecretKeyDist skd                 = (dist == "encap") ? SPARSE_ENCAPSULATED : UNIFORM_TERNARY;
     uint32_t levelsAfter              = 2;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -129,7 +130,7 @@ int main(int argc, char** argv) {
     double minB = bits.empty() ? fBits : *std::min_element(bits.begin(), bits.end());
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
-              << " secure=" << secure << " corr=" << corr << " slots=" << slots << " depth=" << depth << " log2Q=" << std::setprecision(0)
+              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " slots=" << slots << " depth=" << depth << " log2Q=" << std::setprecision(0)
               << log2Q << " log2P=" << log2P << " galoisKeys=" << nKeys << std::setprecision(3)
               << " setup+keygen_s=" << setupSec << " first_s=" << fSec << " warm_median_s=" << med
               << " us_per_real_slot=" << med / slots * 1e6 << " prec_bits_min=" << std::setprecision(2) << minB

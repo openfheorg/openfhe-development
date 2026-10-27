@@ -375,7 +375,18 @@ TEST(UTCKKSrnsCI, CITransform_LibraryMatchesReference) {
         auto a = RandVec(c.N, c.q, 31 + c.N);
         NativeVector av = ToNativeVector(a, q);
         CIForwardTransform(av);
-        EXPECT_EQ(FromNativeVector(av), CINTTForwardDirect(a, c.N, q, wm)) << "fwd N=" << c.N;
+        // the optimized CI NTT keeps the eval vector in bit-reversed node order
+        auto direct = CINTTForwardDirect(a, c.N, q, wm);
+        std::vector<NativeInteger> directRev(c.N);
+        uint32_t logN = 0;
+        while ((1u << logN) < c.N)
+            ++logN;
+        for (uint32_t j = 0; j < c.N; ++j)
+            directRev[ReverseBits(j, logN)] = direct[j];
+        EXPECT_EQ(FromNativeVector(av), directRev) << "fwd N=" << c.N;
+        NativeVector ar = ToNativeVector(a, q);
+        CIForwardTransformRef(ar);
+        EXPECT_EQ(FromNativeVector(ar), directRev) << "ref fwd N=" << c.N;
         CIInverseTransform(av);
         EXPECT_EQ(FromNativeVector(av), a) << "round-trip N=" << c.N;
 
@@ -1040,4 +1051,97 @@ TEST(UTCKKSrnsCI, CIRotation_EvalAutomorphism) {
         }
     }
     ClearCIModuli();
+}
+
+// ---- Paper-style real FFT (Liu-Ma-Wang-Wang, ePrint 2026/2618): O(N log N) CI encode/decode must
+// equal the dense U^{-1} / U, and the native bootstrap built on the sparse real factors must refresh
+// with real precision for several level budgets, both scaling modes and both secret distributions.
+#include "math/ci-realfft.h"
+
+TEST(UTCKKSrnsCI, CIRealFFT_EncodeDecodeMatchDense) {
+    for (uint32_t N : {8u, 16u, 64u, 512u}) {
+        std::mt19937_64 g(N);
+        std::uniform_real_distribution<double> U(-1.0, 1.0);
+        std::vector<double> x(N), c(N);
+        for (auto& v : x)
+            v = U(g);
+        for (auto& v : c)
+            v = U(g);
+        auto Ud = [N](uint32_t a, uint32_t b) {
+            return (b == 0) ? 1.0 : 2.0 * std::cos(M_PI * (4.0 * a + 1.0) * b / (2.0 * N));
+        };
+        std::vector<double> enc, dec;
+        CIRealFFTEncode(N, x, enc);
+        CIRealFFTDecode(N, c, dec);
+        double eEnc = 0, eDec = 0;
+        for (uint32_t b = 0; b < N; ++b) {  // U^{-1} = diag(1/N, 1/2N, ...) U^T
+            double acc = 0;
+            for (uint32_t a = 0; a < N; ++a)
+                acc += Ud(a, b) * x[a];
+            acc /= (b == 0) ? N : 2.0 * N;
+            eEnc = std::max(eEnc, std::abs(acc - enc[b]));
+        }
+        for (uint32_t a = 0; a < N; ++a) {
+            double acc = 0;
+            for (uint32_t b = 0; b < N; ++b)
+                acc += Ud(a, b) * c[b];
+            eDec = std::max(eDec, std::abs(acc - dec[a]));
+        }
+        EXPECT_LT(eEnc, 1e-13) << "encode N=" << N;
+        EXPECT_LT(eDec, 1e-11 * N) << "decode N=" << N;
+        // every factor has at most 7 cyclic diagonals (Lemma 4 of the paper)
+        for (const auto& F : GetCIRealFFTPlan(N).F)
+            EXPECT_LE(F.size(), 7u) << "N=" << N;
+    }
+}
+
+static double CIBootPrecisionBits(uint32_t logN, std::vector<uint32_t> budget, ScalingTechnique st,
+                                  SecretKeyDist skd) {
+    ClearCIModuli();
+    const uint32_t N = 1u << logN;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetCKKSDataType(REAL_CI);
+    parameters.SetRingDim(N);
+    parameters.SetSecretKeyDist(skd);
+    parameters.SetScalingTechnique(st);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    uint32_t depth = 2 + FHECKKSRNS::GetBootstrapDepth(budget, skd);
+    parameters.SetMultiplicativeDepth(depth);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(FHE);
+    cc->EvalBootstrapSetup(budget, {0, 0}, N);
+    auto keys = cc->KeyGen();
+    cc->EvalMultKeyGen(keys.secretKey);
+    cc->EvalBootstrapKeyGen(keys.secretKey, N);
+    std::vector<double> x(N);
+    std::mt19937_64 g(logN);
+    std::uniform_real_distribution<double> U(-1.0, 1.0);
+    for (auto& v : x)
+        v = U(g);
+    auto ct  = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, N));
+    auto out = cc->EvalBootstrap(ct);
+    Plaintext res;
+    cc->Decrypt(keys.secretKey, out, &res);
+    res->SetLength(N);
+    double e = 0;
+    for (uint32_t i = 0; i < N; ++i)
+        e = std::max(e, std::abs(res->GetCKKSPackedValue()[i].real() - x[i]));
+    ClearCIModuli();
+    return -std::log2(e);
+}
+
+TEST(UTCKKSrnsCI, CIRealFFTBootstrap_Uniform) {
+    EXPECT_GT(CIBootPrecisionBits(10, {2, 2}, FLEXIBLEAUTO, UNIFORM_TERNARY), 13.0);
+    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, UNIFORM_TERNARY), 13.0);
+    EXPECT_GT(CIBootPrecisionBits(10, {4, 3}, FIXEDMANUAL, UNIFORM_TERNARY), 11.0);
+}
+
+TEST(UTCKKSrnsCI, CIRealFFTBootstrap_SparseEncapsulated) {
+    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED), 16.0);
 }

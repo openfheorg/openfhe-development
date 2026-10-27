@@ -36,6 +36,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #define PROFILE
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "math/ci-transform.h"
 
 #include <algorithm>
 #include <cmath>
@@ -297,6 +298,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
         uint32_t n = GetElementParams()->GetRingDimension();
         uint64_t primeStep = FindAuxPrimeStep();
+        // Native CI CKKS: the sparse-encapsulation auxiliary primes must be q = 1 mod 4N and
+        // registered as CI towers (twisted NTT), like the hybrid key-switching P primes.
+        const bool isCI = (GetCKKSDataType() == REAL_CI);
+        if (isCI)
+            primeStep = 4 * n;
 
         // the auxiliary primes must differ from all moduli in Q and in the hybrid key
         // switching basis P (a repeated modulus would be registered with a different root
@@ -328,6 +334,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                               " bits for SPARSE_ENCAPSULATED at this ring dimension.");
             moduliPSparse[j] = pCur;
             rootsPSparse[j] = RootOfUnity<NativeInteger>(2 * n, moduliPSparse[j]);
+            if (isCI)
+                RegisterCIModulus(moduliPSparse[j], n, RootOfUnity<NativeInteger>(4 * n, moduliPSparse[j]));
             modulusPSparse *= BigInteger(moduliPSparse[j]);
         }
 

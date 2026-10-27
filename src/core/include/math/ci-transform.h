@@ -45,6 +45,9 @@ void ClearCIModuli();
 // In-place CI transforms on a single ring tower (length N, modulus a registered CI q).
 void CIForwardTransform(CINativeVector& vals);   // COEFFICIENT -> EVALUATION
 void CIInverseTransform(CINativeVector& vals);   // EVALUATION  -> COEFFICIENT
+// Original O(N log N) reference implementation (slow path), kept for validation.
+void CIForwardTransformRef(CINativeVector& vals);
+void CIInverseTransformRef(CINativeVector& vals);
 
 }  // namespace lbcrypto
 

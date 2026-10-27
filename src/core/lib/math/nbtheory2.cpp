@@ -277,12 +277,17 @@ void PrecomputeAutoMapCI(uint32_t N, uint32_t k, std::vector<uint32_t>* precomp)
     // X -> X^k maps node j to node fold((4j+1)k mod 4N), and AutomorphismTransform sets
     // result[j] = input[precomp[j]] (EVALUATION format). Conjugation is the identity on
     // R, so the +-(4t+1) fold introduces no sign. No bit-reversal (CI eval is natural).
+    // The optimized CI NTT (math/ci-transform) leaves the eval vector in BIT-REVERSED node order
+    // (position brev(j) holds node j), so the natural-order map is conjugated by the bit reversal.
     const uint64_t m = 4ULL * N;
+    uint32_t logn    = 0;
+    while ((1u << logn) < N)
+        ++logn;
     for (uint32_t j = 0; j < N; ++j) {
         uint64_t r = ((4ULL * j + 1) * static_cast<uint64_t>(k)) % m;  // odd
         if (r % 4 == 3)
             r = m - r;  // fold -(4t+1) coset rep into +(4t+1)
-        (*precomp)[j] = static_cast<uint32_t>((r - 1) / 4);
+        (*precomp)[ReverseBits(j, logn)] = ReverseBits(static_cast<uint32_t>((r - 1) / 4), logn);
     }
 }
 
