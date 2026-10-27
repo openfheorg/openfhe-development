@@ -46,6 +46,9 @@ int main() {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(2);
     parameters.SetPlaintextModulus(65537);
+    // 128-bit security according to the Security Guidelines for Implementing Homomorphic Encryption (2024);
+    // the default, HEStd_128_classic, uses the older tables of the Homomorphic Encryption Standard (2018)
+    parameters.SetSecurityLevel(HEORG24_128);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use

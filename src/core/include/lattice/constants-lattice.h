@@ -45,13 +45,12 @@ enum SecretKeyDist {
     GAUSSIAN = 0,
     UNIFORM_TERNARY = 1,  // Default value, all schemes support this key distribution
     SPARSE_TERNARY = 2,
-    SPARSE_ENCAPSULATED = 3,  // For more effient bootstrapping in SIMD schemes
-                              // (has been used for CKKS and BFV bootstrapping in literature)
-    HYBRID_TERNARY = 4,       // Uniform ternary secret for the main computation; a sparse secret is used only
-                              // for the modulus raise in CKKS bootstrapping (sparse secret encapsulation).
-                              // Security is determined by the uniform ternary secret.
-                              // HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended for CKKS bootstrapping,
-                              // as they achieve a probability of failure below 2^-128
+    SPARSE_ENCAPSULATED = 3,  // Sparse ternary secret (Hamming weight 192) with sparse secret encapsulation for
+                              // the modulus raise in CKKS bootstrapping; security of a sparse secret
+                              // (use HE_SPARSE_H192_128). Kept for compatibility: prefer HYBRID_TERNARY.
+    HYBRID_TERNARY = 4,       // Uniform ternary secret with sparse secret encapsulation for the modulus raise in
+                              // CKKS bootstrapping; security of a uniform ternary secret (use HEORG24_*).
+                              // Recommended for CKKS bootstrapping (probability of failure below 2^-128).
     // BINARY = X, // Future implementation
 };
 

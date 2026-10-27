@@ -117,8 +117,9 @@ smaller digits, and process these smaller digits separately.
 **Secret key distributions**
 
 Functional bootstrapping is supported for sparse secret keys (SPARSE_TERNARY and SPARSE_ENCAPSULATED) and for
-uniform ternary secret keys (UNIFORM_TERNARY and HYBRID_TERNARY). HYBRID_TERNARY and SPARSE_ENCAPSULATED are recommended,
-as they achieve a probability of failure below 2^-128; SPARSE_TERNARY is discouraged. The security level should match the
+uniform ternary secret keys (UNIFORM_TERNARY and HYBRID_TERNARY). HYBRID_TERNARY is recommended, as it achieves
+a probability of failure below 2^-128 with the security of uniform ternary secrets (SPARSE_ENCAPSULATED has the same
+bootstrapping behavior with a less secure sparse main secret); SPARSE_TERNARY is discouraged. The security level should match the
 distribution: HEORG24_128 (or HEORG24_192/HEORG24_256) for the uniform ternary distributions and HE_SPARSE_H192_128 for the
 sparse distributions (Hamming weight 192), see [CKKS_BOOTSTRAPPING.md](CKKS_BOOTSTRAPPING.md).
 
@@ -130,7 +131,8 @@ Compared to SPARSE_ENCAPSULATED, choosing this distribution requires an extra le
 to achieve correctness. This is the distribution used for the benchmarks in [[AKP25]](https://eprint.iacr.org/2024/1623.pdf).
 
 The SPARSE_ENCAPSULATED distribution (described in [[BTH22]](https://eprint.iacr.org/2022/024.pdf)) uses a Hamming weight of 32
-for the key used in (functional) bootstrapping and 192 for other operations. With the set number of overflows K = 16, this
+for the key used in (functional) bootstrapping and 192 for other operations, so its security is that of a sparse secret of
+Hamming weight 192, which is lower than for HYBRID_TERNARY below. With the set number of overflows K = 16, this
 distribution leads to a negligible probability of failure (below 2^-138 for N = 2^16 and 2^-137 for N = 2^17 with full
 packing). Moreover, for all supported LUT sizes (up to 14 bits), the number of levels for the complex exponential
 approximation is the same. The only caveat for the current implementation is that when the
@@ -245,7 +247,8 @@ number of slots, so a crypto context holds the precomputations of only one of th
 **Secret key distributions**
 All four distributions are supported, and the probabilities of failure are those of the bound K on the mod-raise overflows
 used for each of them (for full packing):
-- SPARSE_ENCAPSULATED (recommended): K = 16, probability of failure below 2^-128. For a first modulus larger than 60 bits
+- SPARSE_ENCAPSULATED: K = 16, probability of failure below 2^-128, with a sparse main secret of Hamming weight 192 (lower
+security than HYBRID_TERNARY, which has the same K, probability of failure and depth). For a first modulus larger than 60 bits
 (which requires composite scaling in the 64-bit build), the Hamming weight of the sparse key is 64 and K = 28 is used, which
 keeps the probability of failure negligible.
 - HYBRID_TERNARY (recommended): the same K, probability of failure and depth as SPARSE_ENCAPSULATED, with a uniform ternary secret for
