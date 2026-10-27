@@ -36,3 +36,75 @@ Chose "throw" (routing to CtS-first silently would ignore the caller's request; 
 route into the StC-first code with CI data is blocked at its entry. CtS-first CI output is unchanged
 (RMS 14.12 bits at 2^12, as in `CI_FFT_REVIEW.md` table 3.2). Item 2.5 removes the `EvalBootstrapStCFirst`
 guard if it adds a CI StC-first branch.
+
+## 0.2 Revert the CI correction-factor change; sweep the correction factor (2026-10-27)
+
+**Change.**
+- `EvalBootstrapSetup` (`ckksrns-fhe.cpp`): removed `cfSlots = N/2`. The FIXED* branch is back to OpenFHE's fit
+  with the actual slot count (CI not measured there). The FLEXIBLE* branch now uses this CI default, based
+  on the data below: OpenFHE's fit at the complex-equivalent slot count N/2, minus 1, clamped to [7, 14].
+  This gives 7 at 2^16 (the same as the plain revert) and 7 at 2^15 (the plain revert gives 8). std is
+  unchanged (8 at 2^15 and 2^16).
+- Driver: the RESULT line also prints `corrEff` (the factor actually used, `GetCKKSBootCorrectionFactor()`).
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    ./guard.sh p02_build "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32"
+    ./guard.sh p02_sweep "cd openfhe-development && for s in ci std; do for c in 5 6 7 8 9; do \
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot $s 16 4 4 55 60 1 1 fa $c encap; done; done"
+    # side checks (insecure: 2^15 and the uniform-secret chain are not 128-bit with this chain)
+    ./guard.sh p02_sweep3 "cd openfhe-development && for a in 'ci 15 6 encap' ... 'std 16 8 uniform'; do set -- $a; \
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot $1 $2 4 4 55 60 0 1 fa $3 $4; done"
+    ./guard.sh p02_build2 "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32"
+    ./guard.sh p02_base "cd openfhe-development && <the two baseline commands> && \
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot {ci,std} 15 4 4 55 60 0 1 fa 0 encap"
+
+(`p02_sweep2` was the same as `p02_sweep3` with secure=1. Every run threw "ring dimension does not comply with HE
+standards", so it gave no data.)
+
+**Results 1: main sweep** (2^16, 128-bit, FLEXIBLEAUTO, encap, {4,4}, 1 thread, reps 1). The reverted code is
+used, so the default factor is not involved. The bits are RMS / min.
+
+| corr | CI RMS | CI min | CI warm s | std RMS | std min | std warm s |
+|---|---|---|---|---|---|---|
+| 5 | **20.22** | 17.06 | 26.37 | **21.21** | 18.76 | 23.24 |
+| 6 | 19.23 | 15.79 | 26.56 | 20.24 | 17.37 | 23.19 |
+| 7 | 18.23 | 14.88 | 26.63 | 19.22 | 16.82 | 23.19 |
+| 8 | 17.24 | 13.88 | 26.48 | 18.24 | 15.74 | 23.12 |
+| 9 | 16.24 | 12.86 | 26.61 | 17.23 | 14.66 | 23.07 |
+
+**Results 2: side checks** (insecure, otherwise the same; RMS bits).
+
+| config | CI c=5 | CI c=6 | CI c=7 | CI c=8 | std c=5 | std c=6 | std c=7 | std c=8 |
+|---|---|---|---|---|---|---|---|---|
+| 2^15 encap | - | 22.98 | 22.00 | 20.99 | - | - | 23.39 | 22.38 |
+| 2^16 uniform | 13.87 | 12.85 | 11.77 | 10.89 | 15.57 | 14.46 | 13.52 | 12.53 |
+
+**Results 3: baseline commands after the change** (reps 2; `corr` = 0, which means the default).
+
+| Run | corrEff | warm median s | RMS bits | min bits | Galois keys | setup+keygen s | peak RSS GB |
+|---|---|---|---|---|---|---|---|
+| `ci 16 4 4 55 60 1 2 fa 0 encap` | 7 | 26.31 | 18.23 | 14.61 | 70 | 35.2 | 11.39 |
+| `std 16 4 4 55 60 1 2 fa 0 encap` | 8 | 22.96 (x2 = 45.92) | 18.23 | 15.69 | 76 | 43.2 | 9.08 |
+| `ci 15 ... 0 1 fa 0 encap` (insecure) | 7 | 11.91 | 22.00 | 18.97 | 64 | 15.9 | 5.09 |
+| `std 15 ... 0 1 fa 0 encap` (insecure) | 8 | 10.70 | 22.39 | 19.99 | 78 | 21.3 | 4.55 |
+
+The speedup is 45.92 / 26.31 = 1.75x and RMS is 18.23 bits for both. The plan's baseline (26.3 s, 45.9 s,
+1.74x, 18.2 bits) stands.
+
+**Conclusions.**
+- The precision of both schemes falls by about 1.0 bit for each step up in the correction factor. This holds
+  across the whole range at 2^16 encap, at 2^15 and with the uniform secret. The best value is the minimum
+  allowed value, `corr = deg = firstMod - scaleMod = 5` (no correction). A lower value throws in
+  `EvalBootstrap`. In this regime the noise amplification dominates, not the EvalMod approximation error.
+  The correction factor does not change the time (spread < 1%).
+- At an equal factor, CI is 1.0 bit below std at 2^16 encap, 1.4 bits at 2^15 encap and 1.7 bits at 2^16 uniform.
+  With one step less, CI is within 0.0 / 0.4 / 0.6-0.8 bits of std. That is the basis for the CI default:
+  "std fit at N/2 complex slots, minus 1". The reverted `cfSlots` rule did the opposite: it raised CI to 8 at
+  2^16 and cost 1 bit.
+- std keeps OpenFHE's default. The +3 bits at corr = 5 are consistent, but they were measured only with one
+  chain shape (deg = 5). OpenFHE's fit was made for a different deg. Changing the upstream default is outside
+  this item.
+- The defaults stay in the baseline commands, so the comparison is CI 7 vs std 8, at equal precision (18.23).
+  For precision tables, `corr 5` for both schemes gives CI 20.2 / std 21.2 bits RMS at the same time. Phase 1
+  changes the prime sizes (and thus deg), so it should re-check this.

@@ -78,8 +78,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
 - Under FIXEDMANUAL, CI loses ~3 bits from N = 2^13 on: CI primes must be q = 1 mod 4N, so they sit
   twice as far from 2^p and the fixed-scale mismatch shows up one ring size earlier than for std
   (`benchmark/src/ci-noise-probe.cpp`). Use FLEXIBLEAUTO for CI.
-- Lower correction factors help both schemes at insecure toy sizes; the CI default now uses the
-  complex-equivalent slot count (N/2) in OpenFHE's fit.
+- Lower correction factors help both schemes (about 1 bit per step down to the minimum allowed value
+  firstMod - scaleMod, measured at 2^15 and 2^16; `PHASE2_LOG.md` item 0.2). The CI default is OpenFHE's fit at
+  the complex-equivalent slot count N/2 minus one (7 at 2^16, std 8), which gives CI the RMS of std at defaults.
 
 ## 4. Remaining gaps and next steps
 1. **CtS is half the CI time.** A collapsed real level has ~2^(k+2) diagonals vs 2^(k+1) for a complex
@@ -123,7 +124,7 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    default at 2^16 (FLEXIBLEAUTO, CtS-first fit) from 7 to 8; measured with the committed code: CI RMS drops
    from 18.24 to 17.23 bits and min precision from 15.0 to 13.9 (std, which uses 8, is unchanged at 18.24).
    Table 3.1 was produced before this change and stands. Phase 0.2 of the plan reverts it and sweeps the
-   correction factor for both schemes.
+   correction factor for both schemes. (Done in phase 0.2: reverted; the new CI default is 7 at 2^16.)
 3. `GetCIRealLevels` is cached twice (scaled for evaluation, unit-scaled for keygen).
 4. The `CISparseMul` drop threshold is absolute; keygen and evaluation must agree on the sparsity pattern.
 5. Diagonal plaintexts are built lazily inside a const `EvalBootstrap` (first call 70 s at 2^16; not safe under

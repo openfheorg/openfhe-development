@@ -374,9 +374,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
-    // The empirical correction-factor fits below are in terms of complex slots; N real CI slots
-    // carry the embedding norm of N/2 complex slots, so use that count for CI.
-    const uint32_t cfSlots = (cc.GetCKKSDataType() == REAL_CI) ? std::max<uint32_t>(1, slots / 2) : slots;
 
     // Set correction factor by default, if it is not already set.
     if (correctionFactor == 0) {
@@ -386,12 +383,18 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             // We chose the best fit line from our experiments by running ckks-bootstrapping-precision.cpp.
             // The spreadsheet with our experiments is here:
             // https://docs.google.com/spreadsheets/d/1p6-ZG9rBEE9SrkKIt0JjU1aJiYHevzblKOTuhLFW27U
-            uint32_t tmp = BTSlotsEncoding ? std::round(-0.1887 * (2 * std::log2(M / 2) + std::log2(cfSlots)) + 19.763) :
-                                             std::round(-0.2419 * (2 * std::log2(M / 2) + std::log2(cfSlots)) + 19.081);
-            m_correctionFactor = std::clamp<uint32_t>(tmp, 7, 14);
+            // REAL_CI (N real slots): evaluate the fit at the complex-equivalent count N/2 and use one bit less.
+            // Measured (FLEXIBLEAUTO, CtS-first, sparse encapsulation, ci-ckks-paper/PHASE2_LOG.md item 0.2):
+            // at an equal correction factor CI is 1.0-1.4 bits below std, and each bit less gains ~1 bit for
+            // both schemes, so this gives CI the precision of std at the std default (2^16: CI 7 vs std 8).
+            const bool isCI      = (cc.GetCKKSDataType() == REAL_CI);
+            const double fitLog2 = std::log2(isCI ? std::max<uint32_t>(1, slots / 2) : slots);
+            int32_t tmp = BTSlotsEncoding ? std::round(-0.1887 * (2 * std::log2(M / 2) + fitLog2) + 19.763) :
+                                            std::round(-0.2419 * (2 * std::log2(M / 2) + fitLog2) + 19.081);
+            m_correctionFactor = std::clamp<int32_t>(tmp - (isCI ? 1 : 0), 7, 14);
         } else {
-            uint32_t tmp = BTSlotsEncoding ? std::round(-0.0645 * (2 * std::log2(M / 2) + std::log2(cfSlots)) + 13.855) :
-                                             std::round(-0.1516 * (2 * std::log2(M / 2) + std::log2(cfSlots)) + 14.284);
+            uint32_t tmp = BTSlotsEncoding ? std::round(-0.0645 * (2 * std::log2(M / 2) + std::log2(slots)) + 13.855) :
+                                             std::round(-0.1516 * (2 * std::log2(M / 2) + std::log2(slots)) + 14.284);
             m_correctionFactor = std::clamp<uint32_t>(tmp, 6, 13);
         }
     } else {

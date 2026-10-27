@@ -20,8 +20,9 @@ results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a st
 Baseline to beat (N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO, sparse encapsulation, budget {4,4}):
 CI 26.3 s for 65,536 reals (CtS 13.6 / EvalMod 7.6 / StC 4.4), two std bootstraps 45.9 s (std stages CtS 8.26 /
 EvalMod 12.0 / StC 2.35 per bootstrap), speedup 1.74x, RMS 18.2 bits both. Paper (Lattigo, Xeon Gold 6248R,
-1 core, log QP = 1064): CI 12.6 s, 20.5 bits. Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc
-lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst]). Baseline commands (run at every phase review):
+1 core, log QP = 1064): CI 12.6 s, 20.5 bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
+(no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
+Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst]). Baseline commands (run at every phase review):
 
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 55 60 1 2 fa 0 encap
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap
@@ -30,7 +31,7 @@ lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst]). Baseline co
 - [x] **0.1** Throw (or route to the CtS-first CI path) when `REAL_CI` and `BTSlotsEncoding` are both set.
   Why: `EvalBootstrap` dispatches to `EvalBootstrapStCFirst`, which has no CI branch. Done when: guarded with
   a clear message (test added in 6.4).
-- [ ] **0.2** Revert the CI correction-factor change (`cfSlots = N/2` in `EvalBootstrapSetup`), then sweep corr
+- [x] **0.2** Revert the CI correction-factor change (`cfSlots = N/2` in `EvalBootstrapSetup`), then sweep corr
   in {5,...,9} at 2^16 (128-bit, 1 thread, encap, {4,4}) for CI and std. Why: measured, it moves the CI default
   from 7 to 8 and costs 1 bit RMS (18.24 -> 17.23). Done when: CI default chosen from data (keep std's OpenFHE
   default unless the data is overwhelming), and the baseline commands re-run.

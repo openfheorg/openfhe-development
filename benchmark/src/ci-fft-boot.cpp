@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
     double minB = bits.empty() ? fBits : *std::min_element(bits.begin(), bits.end());
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
-              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " slots=" << slots << " depth=" << depth << " log2Q=" << std::setprecision(0)
+              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " slots=" << slots << " depth=" << depth << " log2Q=" << std::setprecision(0)
               << log2Q << " log2P=" << log2P << " galoisKeys=" << nKeys << std::setprecision(3)
               << " setup+keygen_s=" << setupSec << " first_s=" << fSec << " warm_median_s=" << med
               << " us_per_real_slot=" << med / slots * 1e6 << " prec_bits_min=" << std::setprecision(2) << minB
