@@ -378,3 +378,109 @@ unchanged. This is the diagonal-plaintext encoding that item 2.4 moves to setup.
   consistency (0.4).
 - The gaps for the next phases are unchanged: CI CtS = 1.63x std CtS and CI StC = 1.86x std StC (phase 2);
   absolute CI time 26.4-26.7 s vs the paper's 12.6 s with log QP 1580 vs 1064 (phase 1).
+
+## 1.1 Sweep of the number of key-switching digits (dnum) at 2^16 (2026-10-27)
+
+**Change.** `benchmark/src/ci-fft-boot.cpp` takes an optional 13th argument `dnum` (0 = OpenFHE default, which is
+3 here) and calls `SetNumLargeDigits(dnum)`. The RESULT line also prints `dnum` and `alpha` (towers per digit, as
+OpenFHE computed them), `towersP`, `keyMB` (the size of one rotation key) and `keysGB` (all switching keys: the
+automorphism map, which also holds the two sparse-encapsulation keys, plus the relinearization key). Key sizes
+count N x 8 bytes per tower, so they are the in-memory sizes. The baseline commands are unchanged (no 13th
+argument means dnum 3). No library code changed.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`, source `SYNCED_FROM 9b07eecf` + this driver change).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p11_build    "cd openfhe-development/build    && cmake --build . --target ci-fft-boot -j 32"   # rc 0
+    ./guard.sh p11_build_bt "cd openfhe-development/build-bt && cmake --build . --target ci-fft-boot -j 32"   # rc 0
+    ./guard.sh p11_smoke "..."   # 2^12 insecure {3,3} with `ci 12 3 3 55 60 0 1 fa 0 encap 0 $d`, and one std run
+    # p11_sweep, then p11_sweep2 (the same loop again, without d = 2):
+    ./guard.sh p11_sweep "cd openfhe-development && export OMP_NUM_THREADS=1; for d in 2 3 4 5 6 7; do \
+      CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap 0 \$d; \
+      build-bt/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap 0 \$d; done"
+    ./guard.sh p11_std3 "cd openfhe-development && export OMP_NUM_THREADS=1; \
+      build-bt/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap 0 3"      # rerun of an outlier
+    ./guard.sh p11_dnum2 "cd openfhe-development && export OMP_NUM_THREADS=1 && \
+      CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 0 2 fa 0 encap 0 2 && \
+      build-bt/bin/benchmark/ci-fft-boot std 16 4 4 55 60 0 2 fa 0 encap 0 2"     # dnum 2, security check off
+    ./guard.sh p11_dnum2ci "..."  # the ci run of p11_dnum2 again (load rose to 20 during the first one)
+
+All jobs ended with rc 0. The jobs before `p11_dnum2` ran in an earlier session that the host restart killed
+before it could log them. The loops above are reconstructed from the command lines that the aborted runs echo
+in `p11_sweep.log` and from the RESULT fields. The logs are in `~/ci-ckks-fft/logs/p11_*.log`. CI ran from
+`build` (with `CI_BOOT_TIMING=1`). std ran from `build-bt` (`-DBOOTSTRAPTIMING`, per-stage times). Item 0.R showed
+that the two std binaries agree within 0.5%.
+
+**Smoke test** (`p11_smoke`, 2^12, insecure, {3,3}, 19 Q towers). The argument reaches OpenFHE: default -> dnum 3
+(alpha 7, log P 420), dnum 2 -> alpha 10, log P 600, std dnum 5 -> alpha 4. dnum 6 and 21 throw OpenFHE's
+"Can't appropriately distribute 19 towers into 6 (21) digits". OpenFHE rejects a dnum when alpha =
+ceil(towers / dnum) leaves the last digit empty (towers <= alpha x (dnum - 1)). RMS stayed at 18.4-18.5 bits (CI).
+
+**dnum 2 at 128-bit is not possible with this chain.** In `p11_sweep`, dnum 2 threw in
+`ParamsGenCKKSRNSInternal` (ckksrns-parametergeneration.cpp l.154): "The specified ring dimension (65536) does
+not comply with HE standards recommendation (131072)". At 2^16 the 21 Q towers split into 2 digits of alpha 11,
+so P has 11 x 60 = 660 bits and log QP = 1160 + 660 = 1820. The HEStd_128_classic bound for ternary secrets at
+N = 2^16 is 1747 bits (`stdlatticeparms.cpp` l.186), so OpenFHE asks for N = 2^17. The failure is the 128-bit
+bound, as expected. `p11_dnum2` and `p11_dnum2ci` then ran dnum 2 with the security check off (`secure` = 0, same
+N and the same moduli) to measure its time.
+
+**Which runs count.** `p11_sweep` (15:41-16:06) had load 3-28 from other users. Its dnum 6 pair ran at load 28
+and is invalid (CI 30.88 s, std 27.90 s). `p11_sweep2` (to 16:39) had load 1-8 except during std dnum 3: load
+went from 2.6 to 25.9 during that run and its warm median was 27.53 s, more than the cold first bootstrap
+(24.35 s). That run was redone as `p11_std3` (17:35, load 0.6-1.4): 23.17 s. The table uses `p11_sweep2` with
+`p11_std3` for std dnum 3, and `p11_dnum2ci` (load 2.8-3.1) and the std run of `p11_dnum2` (load 10-20,
+per-stage times stable over its 3 bootstraps) for dnum 2.
+
+**Results 1: time, key size, precision** (N = 2^16, FLEXIBLEAUTO 55/60, encap, {4,4}, 1 thread, reps 2; depth
+20, 21 Q towers, log2 Q = 1160 for all; warm median of 2 bootstraps).
+
+| dnum | alpha = towers P | log P | log QP | 128-bit | one key MB | all keys GB CI / std | CI s | std s | 2 x std / CI | peak RSS GB CI / std | setup+keygen s CI / std | RMS bits CI / std |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2 | 11 | 660 | 1820 | no (> 1747) | 64 | 4.38 / 4.75 | 28.61 | 24.24 | 1.69x | 10.72 / 8.09 | 28.2 / 37.3 | 18.24 / 18.22 |
+| **3** (default) | 7 | 420 | 1580 | yes | 84 | 5.75 / 6.24 | **26.76** | **23.17** | 1.73x | 11.19 / 9.08 | 35.6 / 43.4 | 18.24 / 18.23 |
+| 4 | 6 | 360 | 1520 | yes | 108 | 7.39 / 8.02 | 26.76 | 23.42 | 1.75x | 12.62 / 10.75 | 45.0 / 52.5 | 18.23 / 18.24 |
+| 5 | 5 | 300 | 1460 | yes | 130 | 8.89 / 9.65 | 27.09 | 23.78 | 1.76x | 13.90 / 12.26 | 53.3 / 60.9 | 18.23 / 18.23 |
+| 6 | 4 | 240 | 1400 | yes | 150 | 10.26 / 11.14 | 28.33 | 25.50 | 1.80x | 15.05 / 13.63 | 61.3 / 68.8 | 18.23 / 18.22 |
+| 7 | 3 | 180 | 1340 | yes | 168 | 11.49 / 12.47 | 29.90 | 26.65 | 1.78x | 16.09 / 14.88 | 68.5 / 76.0 | 18.22 / 18.23 |
+
+One key is dnum x 2 x (21 + alpha) towers x 2^16 x 8 B (84 MB = 3 x 2 x 28 x 0.5 MB). Galois keys: CI 70, std 76
+at every dnum. Precision does not depend on dnum: RMS 18.22-18.24 bits, min 14.77-15.12 (CI) and 15.46-15.77
+(std), p99 16.39-16.42 (CI) and 16.74-16.78 (std). The Galois check of item 0.4 printed "68 rotations ==
+keygen set" at every CI bootstrap. `p11_sweep` gave the same picture where its load was low: CI 27.58 / 26.95 /
+27.12 / - / 29.70 s and std 23.69 / 23.51 / 24.16 / - / 26.54 s for dnum 3 / 4 / 5 / 6 / 7.
+
+**Results 2: per-stage times, warm** (CI: mean of the 2 warm bootstraps, `CI_BOOT_TIMING`; std: median of the 3
+bootstraps, `-DBOOTSTRAPTIMING`; s).
+
+| dnum | CI CtS | CI EvalMod | CI StC | std CtS | std EvalMod | std StC | CtS CI / std | StC CI / std |
+|---|---|---|---|---|---|---|---|---|
+| 2 | 13.95 | 8.17 | 5.87 | 8.10 | 12.58 | 3.11 | 1.72 | 1.89 |
+| 3 | 13.75 | 7.84 | 4.44 | 8.27 | 12.12 | 2.35 | 1.66 | 1.89 |
+| 4 | 13.88 | 7.85 | 4.40 | 8.56 | 12.05 | 2.33 | 1.62 | 1.89 |
+| 5 | 14.23 | 7.91 | 4.20 | 8.77 | 12.22 | 2.26 | 1.62 | 1.86 |
+| 6 | 15.38 | 8.11 | 4.06 | 9.80 | 12.68 | 2.26 | 1.57 | 1.80 |
+| 7 | 16.66 | 8.46 | 3.91 | 10.76 | 13.10 | 2.19 | 1.55 | 1.79 |
+
+The stages move in opposite directions. A hybrid key switch costs about (number of active digits) x (towers
+of Q + towers of P) for ModUp and the key product, plus towers of P x towers of Q for ModDown. CtS runs at 20 -> 17
+Q towers, where all digits are active. More digits make it slower (CI +2.9 s, std +2.5 s from dnum 3 to 7), and
+fewer digits do not make it faster (dnum 2: CI +0.2 s, std -0.17 s). StC runs at 7 -> 4 Q towers, where only one
+or two digits are active and the P towers are most of the basis. A smaller P makes it faster (CI -0.53 s from
+dnum 3 to 7), and the 11 P towers of dnum 2 make it slower (CI +1.43 s, std +0.76 s). EvalMod is in the middle
+and has its minimum at dnum 3-4.
+
+**Conclusions.**
+- Keep OpenFHE's default dnum 3 for both schemes. It is the fastest dnum that is valid at 128-bit: CI 26.76 s,
+  std 23.17 s. dnum 4 has the same time within noise (CI 26.76 s, std +1%), but it costs +1.6-1.8 GB of keys and
+  +1.4-1.7 GB peak RSS. dnum 5-7 are 1-12% (CI) and 3-15% (std) slower. The baseline commands and numbers in the plan header do not
+  change.
+- A higher dnum shortens log QP to 1340 bits at dnum 7, but the bootstrap gets slower. Shrinking log P is not
+  the lever for the gap to the paper (1580 vs 1064 bits, 26.8 s vs 12.6 s). The extra bits are in log Q
+  (1160 bits, 21 towers), which is item 1.2. A shorter Q also cuts the number of towers in every stage.
+- dnum 2 would be 1.9 s (CI) and 1.1 s (std) slower than dnum 3 even if it were secure, because its large P
+  makes StC and EvalMod slower. It becomes valid at 128-bit with one Q tower less (20 towers: log Q 1105 +
+  log P 600 = 1705 <= 1747). When item 1.2 or 1.3 changes the chain, re-check dnum at the new tower count
+  (log P = 60 x ceil(towers / dnum)) with the 13th driver argument. The trade-off above (CtS wants few digits,
+  StC wants a small P) stays the same.
+- The CI/2xstd ratio is 1.73-1.80x at every valid dnum. dnum does not change the CI advantage. The per-stage
+  ratios (CtS 1.55-1.66x, StC 1.79-1.89x) also change little. Gap 1 (phase 2) is independent of dnum.

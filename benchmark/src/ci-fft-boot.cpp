@@ -4,6 +4,7 @@
 // Args: scheme(ci|std) logN lbEnc lbDec scaleMod firstMod secure(0|1) reps scaling(fm|fa) corr secret(uniform|encap)
 //       [stcfirst: 0 = CtS-first (default), 1 = EvalBootstrapSetup with BTSlotsEncoding = true,
 //        2 = call EvalBootstrapStCFirst directly; 1 and 2 must throw for ci]
+//       [dnum: number of large digits for HYBRID key switching (SetNumLargeDigits); 0 = OpenFHE default]
 // Thread count: OMP_NUM_THREADS. First bootstrap (includes lazy diagonal precompute) is
 // reported separately; the warm bootstraps are what count.
 //==================================================================================
@@ -46,6 +47,7 @@ int main(int argc, char** argv) {
     uint32_t corr      = (argc > 10) ? std::stoul(argv[10]) : 0;  // 0 = OpenFHE default
     std::string dist   = (argc > 11) ? argv[11] : "uniform";        // uniform | encap
     uint32_t stcFirst  = (argc > 12) ? std::stoul(argv[12]) : 0;
+    uint32_t dnum      = (argc > 13) ? std::stoul(argv[13]) : 0;  // 0 = OpenFHE default (3 for depth > 3)
     bool isCI          = (scheme == "ci");
     uint32_t N         = 1u << logN;
     std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
@@ -64,6 +66,8 @@ int main(int argc, char** argv) {
     uint32_t bootDepth = FHECKKSRNS::GetBootstrapDepth(levelBudget, skd);
     uint32_t depth     = levelsAfter + bootDepth;
     parameters.SetMultiplicativeDepth(depth);
+    if (dnum > 0)
+        parameters.SetNumLargeDigits(dnum);
 
     auto cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
@@ -87,7 +91,24 @@ int main(int argc, char** argv) {
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalBootstrapKeyGen(keys.secretKey, slots);
     double setupSec = Sec(t0);
-    size_t nKeys    = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag()).size();
+    auto& autoKeys  = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag());
+    size_t nKeys    = autoKeys.size();
+    // Size of one switching key: dnum (a, b) pairs, each over the full Q*P basis.
+    auto keyBytes = [&](const EvalKey<DCRTPoly>& k) {
+        double b = 0;
+        for (auto& v : k->GetAVector())
+            b += double(v.GetNumOfElements()) * v.GetRingDimension() * 8;
+        for (auto& v : k->GetBVector())
+            b += double(v.GetNumOfElements()) * v.GetRingDimension() * 8;
+        return b;
+    };
+    double keyMB = autoKeys.empty() ? 0 : keyBytes(autoKeys.begin()->second) / 1048576.0;
+    double allKeysGB = 0;
+    for (auto& kv : autoKeys)
+        allKeysGB += keyBytes(kv.second);
+    for (auto& k : cc->GetEvalMultKeyVector(keys.secretKey->GetKeyTag()))
+        allKeysGB += keyBytes(k);
+    allKeysGB /= 1073741824.0;
 
     std::vector<double> x(slots);
     std::mt19937_64 rng(2026);
@@ -136,7 +157,9 @@ int main(int argc, char** argv) {
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
               << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " slots=" << slots << " depth=" << depth << " log2Q=" << std::setprecision(0)
-              << log2Q << " log2P=" << log2P << " galoisKeys=" << nKeys << std::setprecision(3)
+              << log2Q << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
+              << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys
+              << std::setprecision(1) << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB
               << " setup+keygen_s=" << setupSec << " first_s=" << fSec << " warm_median_s=" << med
               << " us_per_real_slot=" << med / slots * 1e6 << " prec_bits_min=" << std::setprecision(2) << minB
               << " first_prec=" << fBits << " rms_bits=" << lastRms << " p99_bits=" << lastP99 << " peakRSS_GB=" << RssGB() << " threads="
