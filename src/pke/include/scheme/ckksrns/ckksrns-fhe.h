@@ -158,23 +158,19 @@ using namespace std::literals::complex_literals;
  * FHECKKSRNS::ModRaiseInPlace.
  *
  * The normalization of the modulus raise shrinks the message by 2^-deg/N (and by the correction factor), so a key
- * switching whose rounding is not attenuated by a subsequent plaintext multiplication would add its noise at full
- * strength relative to the message. The switch back from the sparse secret of the encapsulation is such a key
- * switching, so it is carried by the hoisted key switching of the first layer, whose rounding happens only after
- * the multiplication by the encoding matrix. The partial sum of sparse packing is carried there too, but only when
- * the layer already runs under the sparse secret: folding it costs a second accumulation of the layer, and over
- * correction factors 5 to 13 at two sparse packings it was worth no precision, so without the encapsulation it is
- * evaluated after the raise instead (see FHECKKSRNS::ModRaiseForEncoding).
+ * switching whose rounding is not attenuated by a subsequent plaintext multiplication adds its noise at full
+ * strength relative to the message. For SPARSE_ENCAPSULATED/HYBRID_TERNARY the partial sum of sparse packing is
+ * normally fused into the switch back from the sparse secret, which precedes the rescale of the raise (see
+ * FHECKKSRNS::KeySwitchRaise); when the key switching basis leaves no auxiliary prime for that switch back, the
+ * partial sum is carried by the hoisted key switching of the first layer instead, whose rounding happens only
+ * after the multiplication by the encoding matrix. For the other distributions, folding it costs a second
+ * accumulation of the layer, and over correction factors 5 to 13 at two sparse packings it was worth no precision,
+ * so it is evaluated after the raise instead (see FHECKKSRNS::ModRaiseForEncoding).
  */
 struct RaisedFirstLayer {
-    /// the ciphertext is encrypted under the sparse secret of SPARSE_ENCAPSULATED/HYBRID_TERNARY: the baby steps
-    /// use the fused rotation keys of FHECKKSRNS::EvalBootstrapKeyGen, whose source is that secret, so that the
-    /// output of the layer is encrypted under the main secret
-    bool sparseSecret = false;
-    /// sparse packing under that sparse secret: the partial sum ct + Rotate(ct, slots) + ... +
-    /// Rotate(ct, (N/(2*slots) - 1) * slots) is folded into the layer (a second accumulation with the plaintexts
-    /// rotated by -slots, rotated by slots and added to the first one, then doublings by 2*slots, 4*slots, ... of
-    /// the output in the extended basis)
+    /// sparse packing: the partial sum ct + Rotate(ct, slots) + ... + Rotate(ct, (N/(2*slots) - 1) * slots) is
+    /// folded into the layer (a second accumulation with the plaintexts rotated by -slots, rotated by slots and
+    /// added to the first one, then doublings by 2*slots, 4*slots, ... of the output in the extended basis)
     bool partialSum = false;
 };
 
@@ -197,6 +193,12 @@ class FHECKKSRNS : public FHERNS {
 
     // key tuple is dim1, levelBudgetEnc, levelBudgetDec
     std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
+
+    // The sparse secret of the modulus raise of SPARSE_ENCAPSULATED/HYBRID_TERNARY, by key tag: all the keys
+    // derived from it (M - 4, M - 2 and the single-row keys of the partial sum, see KeySwitchRaise) must come from
+    // the same secret, and the context keeps the keys of an index that were inserted first, so every call of
+    // EvalBootstrapKeyGen for a key tag reuses the secret of the first one. Not serialized.
+    std::map<std::string, DCRTPoly> m_sparseSecrets;
 
     using ParmType = typename DCRTPoly::Params;
     using DugType = typename DCRTPoly::DugType;
@@ -869,7 +871,8 @@ class FHECKKSRNS : public FHERNS {
      * Multiplicative depth consumed by CKKS bootstrapping: the approximate modular reduction (Chebyshev
      * interpolation and double-angle iterations, selected by the secret key distribution) plus the CoeffsToSlots
      * and SlotsToCoeffs level budgets, less the level the normalization after the modulus raise no longer
-     * consumes (it is rescaled by the extra level of the raise; see ModRaiseInPlace). Add the number of levels
+     * consumes (it is rescaled by an auxiliary prime of the key switching basis; see ModRaiseInPlace). Add the
+     * number of levels
      * needed after bootstrapping to obtain the multiplicative depth of the cryptocontext.
      *
      * The ModRaise-first variant needs the input one level above the bottom one for the correction applied
@@ -968,6 +971,49 @@ class FHECKKSRNS : public FHERNS {
      */
     static EvalKey<DCRTPoly> KeySwitchGenSparse(const PrivateKey<DCRTPoly>& oldPrivateKey,
                                                 const PrivateKey<DCRTPoly>& newPrivateKey);
+
+    /**
+     * Generates the switching key of the modulus raise (SPARSE_ENCAPSULATED/HYBRID_TERNARY): a hybrid key from
+     * the sparse secret to the main secret for the ciphertext modulus Q' * R of the raised basis with the
+     * auxiliary modulus P' = P / R, so that the switch back can run over the raised basis before the rescale
+     * by R that attenuates its noise (see ModRaiseInPlace). Its digits are the ones of
+     * CryptoParametersCKKSRNS::GetModRaiseKSDigits and its rows live over Q * P, like the regular keys.
+     *
+     * With a nonzero automorphism index the target is the main secret permuted by the inverse automorphism, as
+     * for a regular rotation key: the key then switches and rotates at once (the automorphism being applied to
+     * the output), which the partial sum of sparse packing uses (see KeySwitchRaise).
+     *
+     * @param oldPrivateKey the sparse secret
+     * @param newPrivateKey the main secret
+     * @param autoIndex automorphism index of the rotation fused into the key (0 for none)
+     * @return the switching key
+     */
+    static EvalKey<DCRTPoly> KeySwitchGenRaise(const PrivateKey<DCRTPoly>& oldPrivateKey,
+                                               const PrivateKey<DCRTPoly>& newPrivateKey, uint32_t autoIndex = 0);
+
+    /**
+     * Index in the automorphism key map of the switching key of the modulus raise fused with the rotation of
+     * automorphism index autoIndex (see KeySwitchGenRaise); the indices M + autoIndex do not collide with the
+     * automorphism indices (below M) of the regular keys and the reserved keys M - 1, M - 2 and M - 4.
+     */
+    static uint32_t RaiseRotationKeyIndex(uint32_t autoIndex, uint32_t M) {
+        return M + autoIndex;
+    }
+
+    /**
+     * Switches a raised ciphertext (over Q' * R) from the sparse secret to the main secret with the keys of
+     * KeySwitchGenRaise, fused with the partial sum of sparse packing ct + Rotate(ct, slots) + ... +
+     * Rotate(ct, (N/(2*slots) - 1) * slots): the digit of the second element (extended to Q' * P) is multiplied
+     * by the key of every term (M - 2 for the identity, RaiseRotationKeyIndex for the rotations), divided by
+     * P' = P / R, the first element is added and the automorphism applied, and the terms are summed (the result
+     * stays over Q' * R).
+     *
+     * @param raised input/output ciphertext over the raised basis
+     * @param evalKeyMap the automorphism key map of the bootstrapping keys
+     * @param slots number of plaintext slots (the partial sum is empty for full packing)
+     */
+    static void KeySwitchRaise(Ciphertext<DCRTPoly>& raised, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap,
+                               uint32_t slots);
 
     /**
      * Switches the bottom basis Ql of a ciphertext to the secret of a key generated by KeySwitchGenSparse: the
@@ -1168,27 +1214,30 @@ class FHECKKSRNS : public FHERNS {
      * FLEXIBLEAUTOEXT) at noise degree 1, including the normalization multiplication. The steps are:
      * - for SPARSE_ENCAPSULATED and HYBRID_TERNARY, the ciphertext is switched to the sparse secret;
      * - the bottom RNS limbs (a single prime, or compositeDegree primes for composite scaling) are extended to the
-     *   raised basis Q' * E, E being the extra level of CryptoParametersCKKSRNS::GetParamsModRaise;
-     * - the ciphertext is multiplied by normalization (as EvalMult by a constant, encoded at the scaling factor of
-     *   the raised level) and rescaled by E, which brings it back to Q' without consuming a level of the chain and
-     *   before any key switching, so the security of the keys is unaffected (OverModRaise,
-     *   https://cic.iacr.org/p/2/3/32). The ciphertext keeps the scaling factor of the raised level; the ratio
-     *   E / scaling factor between this convention and the actual scale is folded into the CoeffsToSlots matrix
-     *   (see ModRaiseRescaleFold in the setups).
-     * For SPARSE_ENCAPSULATED and HYBRID_TERNARY the output stays encrypted under the sparse secret: the switch
-     * back is done by the first layer of the homomorphic encoding (see RaisedFirstLayer), whose hoisted key
-     * switching attenuates its rounding noise. The partial sum of sparse packing is not evaluated here either;
-     * ModRaiseForEncoding places it, in the layer or straight after the raise.
+     *   raised basis Q' * R of CryptoParametersCKKSRNS::GetParamsModRaise, R being the product of the first
+     *   auxiliary primes of the key switching basis P (about 2^58);
+     * - for SPARSE_ENCAPSULATED and HYBRID_TERNARY the ciphertext is switched back to the main secret over
+     *   Q' * R with the keys of KeySwitchGenRaise, fused with the partial sum of sparse packing (see
+     *   KeySwitchRaise), whose noise the rescale below attenuates;
+     * - the ciphertext is multiplied by the integer round(normalization * R) and rescaled by R, which brings it
+     *   back to Q' without consuming a level of the chain (OverModRaise, https://cic.iacr.org/p/2/3/32). The
+     *   ciphertext never exceeds the modulus Q * P the keys are generated for, so the security of the keys is
+     *   unaffected. It keeps the scaling factor of the raised level.
+     * When no auxiliary prime is left outside R, the switch back is done after the rescale with the regular key,
+     * without attenuation of its noise, and the partial sum is left to ModRaiseForEncoding, which folds it into
+     * the first layer of the homomorphic encoding; for the other distributions ModRaiseForEncoding evaluates it
+     * straight after the raise.
      *
      * @param raised input/output ciphertext
      * @param normalization the constant the raised ciphertext is multiplied by
+     * @param slots number of plaintext slots (the partial sum of sparse packing is fused into the switch back)
      */
-    void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised, double normalization) const;
+    void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
 
     /**
      * The modulus raise followed by the partial sum of sparse packing: ModRaiseInPlace, then the partial sum,
-     * which the first layer of the homomorphic encoding absorbs when the raised ciphertext is still under the
-     * sparse secret of the encapsulation and which is evaluated here otherwise (see RaisedFirstLayer).
+     * which the first layer of the homomorphic encoding absorbs for SPARSE_ENCAPSULATED/HYBRID_TERNARY and which
+     * is evaluated here otherwise (see RaisedFirstLayer).
      *
      * @param raised input/output ciphertext
      * @param normalization the constant the raised ciphertext is multiplied by (see ModRaiseInPlace)
@@ -1196,46 +1245,6 @@ class FHECKKSRNS : public FHERNS {
      * @return how the first layer of the homomorphic encoding consumes the result
      */
     RaisedFirstLayer ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
-
-    /**
-     * Rotation indices of the baby steps of the first layer of the homomorphic encoding (the layer applied to the
-     * ciphertext of ModRaiseInPlace), without the identity.
-     *
-     * @param slots number of plaintext slots
-     * @param M cyclotomic order
-     * @return the rotation indices
-     */
-    std::vector<uint32_t> FirstLayerBabyStepIndices(uint32_t slots, uint32_t M) const;
-
-    /**
-     * Index in the automorphism key map of the fused rotation key of the automorphism autoIndex: the key switching
-     * from the sparse secret of the encapsulation, rotated as for a regular rotation key, to the main secret (see
-     * EvalBootstrapKeyGen). The indices M + autoIndex do not collide with the automorphism indices (below M) of the
-     * regular keys and of the reserved keys M - 1, M - 2 and M - 4.
-     *
-     * @param autoIndex automorphism index of the rotation
-     * @param M cyclotomic order
-     * @return the index in the key map
-     */
-    static uint32_t FusedRotationKeyIndex(uint32_t autoIndex, uint32_t M) {
-        return M + autoIndex;
-    }
-
-    /**
-     * Hoisted rotation of the ciphertext of ModRaiseInPlace in the extended basis, with the first element added
-     * (as EvalFastRotationExt with addFirst), for the baby steps of the first layer of the homomorphic encoding:
-     * with the fused rotation key whose source is the sparse secret of the encapsulation when sparseSecret (the
-     * identity rotation is then the key switching M - 2 of EvalBootstrapKeyGen), with the regular keys otherwise.
-     *
-     * @param ct the ciphertext
-     * @param index rotation index (0 for the identity)
-     * @param digits the digit decomposition of the ciphertext (EvalFastRotationPrecompute)
-     * @param sparseSecret whether the ciphertext is encrypted under the sparse secret of the encapsulation
-     * @return the rotated ciphertext in the extended basis
-     */
-    Ciphertext<DCRTPoly> EvalFirstLayerRotationExt(ConstCiphertext<DCRTPoly>& ct, uint32_t index,
-                                                   const std::shared_ptr<std::vector<DCRTPoly>>& digits,
-                                                   bool sparseSecret) const;
 
     /**
      * Partial sum of sparse packing folded into the first layer of the homomorphic encoding, on its output in
