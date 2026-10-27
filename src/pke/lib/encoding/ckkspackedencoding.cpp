@@ -30,6 +30,7 @@
 //==================================================================================
 
 #include "encoding/ckkspackedencoding.h"
+#include "math/ci-realfft.h"
 
 #include <cmath>
 #include <complex>
@@ -158,12 +159,13 @@ bool CKKSPackedEncoding::Encode() {
             OPENFHE_THROW("REAL_CI currently supports full packing (slots == ring dimension)");
         std::vector<int64_t> temp(N, 0);
         int64_t MaxBitValue = Max64BitValue();
+        // c = U^{-1} msg via the O(N log N) real FFT (ePrint 2026/2618), replacing the O(N^2) dense loop.
+        std::vector<double> msg(N), cvec;
+        for (uint32_t j = 0; j < N; ++j)
+            msg[j] = inverse[j].real();
+        CIRealFFTEncode(N, msg, cvec);
         for (uint32_t i = 0; i < N; ++i) {
-            const double wi = (i == 0) ? static_cast<double>(N) : static_cast<double>(2 * N);
-            double acc      = 0.0;
-            for (uint32_t j = 0; j < N; ++j)
-                acc += CIDenseUEntry(N, j, i) * inverse[j].real();
-            double ci = (acc / wi) * scalingFactor;
+            double ci = cvec[i] * scalingFactor;
             if (is64BitOverflow(ci))
                 OPENFHE_THROW("Overflow in CI data encoding - decrease the scaling factor");
             int64_t v = std::llround(ci);
@@ -416,12 +418,10 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
             GetElement<Poly>().SetValuesToZero();
         }
         value.resize(slots);
-        for (uint32_t j = 0; j < N; ++j) {
-            double acc = 0.0;
-            for (uint32_t i = 0; i < N; ++i)
-                acc += CIDenseUEntry(N, j, i) * coeffs[i];
-            value[j] = std::complex<double>(acc * scale, 0.0);
-        }
+        std::vector<double> sv;
+        CIRealFFTDecode(N, coeffs, sv);  // slots = U * coeffs, O(N log N)
+        for (uint32_t j = 0; j < N; ++j)
+            value[j] = std::complex<double>(sv[j] * scale, 0.0);
         m_logError = 0;  // TODO(CI): re-derive the CI canonical-norm noise proxy (Phase-1)
         return true;
     }
