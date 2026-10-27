@@ -251,3 +251,49 @@ from the nonzero diagonals, and `EvalBootstrap` checks at each call that its rot
 The check holds at 2^12..2^16 for {2,2}, {3,3}, {4,4}. The key counts, precision, time and memory are
 unchanged, so the baseline numbers in the plan header stand. A negative test (forced mismatch) belongs to
 the key-set unit test of item 6.4.
+
+## 0.5 Review section 4 item 2 restated as an EvalMod cost item (2026-10-27)
+
+**Change.** `CI_FFT_REVIEW.md` section 4 item 2 said that sparse encapsulation costs CI precision and that a
+K ~ 23 table would recover bits. That is wrong: CI and std have the same RMS at 2^16 (18.24 / 18.23 bits,
+Table 3.1). The item now describes a cost: CI uses the K = 28 sine table (degree 48) because a weight-32 CI
+key acts like a weight-64 power-basis key, while std uses K = 16 (degree 36). Section 7 issue 6 is marked done.
+No library code changed in this commit.
+
+**Code facts (from the source).**
+- `g_coefficientsSparse` has 49 coefficients (degree 48), `g_coefficientsSparseEncapsulated` has 37 (degree 36).
+- `GetDepthByDegree`: degrees 28..59 all have depth 7, so both tables have depth 7 + R_SPARSE = 3 = 10.
+  `GetModDepthInternal` already budgets the degree-48 table for every sparse secret, so the chain does not
+  change. The CI depth is 20 with either table.
+- `ComputeDegreesPS`: (k, m) = (6, 3) for degree 36 and (7, 3) for degree 48 (one more power T_k, and
+  longer leaf linear sums).
+
+**Measurement (quick, temporary).** To give the cost a number, a temporary env switch `CI_SINE_K16` made the
+CI path use K = 16 (both `GetModRaiseOverflowBound` and the coefficient table). It was reverted before this
+commit, and ICELAKE was rebuilt from the committed source. K = 16 with this key is a cost probe only; whether
+it is sound (overflow probability, security of a weight-16 CI key) is item 3.1.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL, with the temporary switch)
+    ./guard.sh p05_build "cd openfhe-development/build && make -j 32 ci-fft-boot"
+    ./guard.sh p05_time "cd openfhe-development && export OMP_NUM_THREADS=1 CI_BOOT_TIMING=1; \
+      echo === K28; /usr/bin/time -v build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap; \
+      echo === K16; CI_SINE_K16=1 /usr/bin/time -v build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap"
+    # switch reverted on WSL, ci-ckks-paper/tools/sync.sh, then:
+    ./guard.sh p05_rebuild "cd openfhe-development/build && make -j 32 ci-fft-boot"   # rc 0, SYNCED_FROM c733491d 0
+
+**Results** (CI, 2^16, 128-bit, encap, {4,4}, FLEXIBLEAUTO 55/60, 1 thread, reps 2; load average about 4-5).
+
+| Sine table | EvalMod s (cold / warm / warm) | CtS / StC s (warm) | warm median s | RMS bits | min bits | depth | log2 Q + P | peak RSS GB |
+|---|---|---|---|---|---|---|---|---|
+| K = 28, degree 48 (current) | 7.89 / 7.83 / 7.79 | 13.82 / 4.45 and 13.51 / 4.41 | 26.66 | 18.23 | 14.82 | 20 | 1160 + 420 | 11.19 |
+| K = 16, degree 36 (probe) | 6.83 / 6.82 / 6.82 | 13.76 / 4.41 and 13.58 / 4.39 | 25.56 | 18.23 | 14.76 | 20 | 1160 + 420 | 11.19 |
+
+The degree-48 table costs 1.0 s of CI EvalMod (13%) and 1.1 s of the whole bootstrap (4%). CtS, StC, depth,
+modulus, keys (70) and memory are the same. RMS is the same, so the larger table does not cost precision.
+
+**Conclusion.** The report now states the gap correctly: it is a cost of about 1 s (4% of the CI bootstrap)
+at 2^16 {4,4}, at the same depth and precision. This bounds what item 3.1 can gain: about 1 s of the 26.7 s.
+For reference, with K = 16 the CI EvalMod (6.82 s for 65,536 reals) is 0.28x two std EvalMods (2 x 12.0 s).
+The baseline numbers in the plan header are unchanged.

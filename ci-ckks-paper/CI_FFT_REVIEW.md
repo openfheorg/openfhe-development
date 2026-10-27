@@ -86,8 +86,14 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
 1. **CtS is half the CI time.** A collapsed real level has ~2^(k+2) diagonals vs 2^(k+1) for a complex
    level (each real output mixes Re and Im inputs). Options: better butterfly layout, per-level BSGS
    tuning, double hoisting, accumulating giant steps in the extended basis.
-2. **Sparse encapsulation precision.** A weight-32 CI key acts like a weight-64 power-basis key, so CI uses
-   the K=28 sine table where std uses K=16. A CI-specific K~23 table would recover some bits.
+2. **Sparse encapsulation EvalMod cost (not precision).** A weight-32 CI key acts like a weight-64
+   power-basis key, so CI uses the K = 28 sine table (Chebyshev degree 48) where std uses K = 16 (degree 36).
+   Precision is not affected: CI and std have the same RMS (18.24 / 18.23 bits, Table 3.1). Both tables have
+   the same depth (7, plus R = 3 double-angle steps), so the chain does not change either. The cost is the
+   larger Paterson-Stockmeyer evaluation (k, m) = (7, 3) vs (6, 3). Measured at 2^16 {4,4} (1 thread, item
+   0.5, temporary switch): CI EvalMod 7.81 s with K = 28 vs 6.82 s with K = 16 (-1.0 s, -13%), total
+   26.66 -> 25.56 s (-4%), RMS 18.23 bits in both runs. The fix is a weight-16 CI ephemeral key so that K = 16
+   is sound (phase 3.1, subject to the security estimate).
 3. **CI ring overhead.** CI NTT is within 1.2x of the standard NTT; CI EvalMod still ~1.2x std per op.
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
@@ -134,6 +140,8 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    concurrent bootstraps) (phase 2.4).
 6. Section 4 item 2 above is mis-stated: CI and std have equal RMS precision; the K = 28 table costs EvalMod
    degree (48 vs 36), it does not cost precision. The fix is a weight-16 CI ephemeral key (phase 3.1).
+   (Done in phase 0.5: section 4 item 2 rewritten as a cost item; the K = 28 table costs 1.0 s of 7.8 s CI
+   EvalMod at 2^16 {4,4}, about 4% of the CI bootstrap, at the same depth and RMS.)
 7. The chain is 1580 bits (P = 420) versus the paper's 1064; this, not the transforms, is the likely main
    reason for the 2x absolute gap to the paper's 12.6 s. Both schemes are affected equally (phase 1).
 8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not

@@ -41,7 +41,7 @@ Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod f
 - [x] **0.4** Relative drop threshold in `CISparseMul` (1e-13 x max entry) and an assertion that the keygen
   Galois set equals the evaluator's rotation set. Done when: the assertion holds at 2^12..2^16 for budgets
   {2,2},{3,3},{4,4}.
-- [ ] **0.5** Fix `CI_FFT_REVIEW.md` section 4 item 2: it is an EvalMod *cost* item (degree 48 vs 36), not a
+- [x] **0.5** Fix `CI_FFT_REVIEW.md` section 4 item 2: it is an EvalMod *cost* item (degree 48 vs 36), not a
   precision item (RMS is equal). Done when: report updated.
 - [x] **0.6** `.gitignore` the PDF copies under `ci-ckks-paper/`. (Done in commit 85e4166b.)
 - [ ] **0.R** Phase 0 review: build on ICELAKE, run the baseline commands, log the numbers.
