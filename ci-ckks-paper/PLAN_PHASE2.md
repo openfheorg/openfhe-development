@@ -18,7 +18,7 @@ corr secret). Every phase ends with the same two commands so results stay compar
 | # | Item | Why | Done when |
 |---|---|---|---|
 | 0.1 | Throw (or route to the CtS-first path) when `REAL_CI` and `BTSlotsEncoding` are both set | `EvalBootstrap` dispatches to `EvalBootstrapStCFirst`, which has no CI branch and would run the complex transforms on CI data | unit test expects a throw |
-| 0.2 | Validate or revert the CI correction-factor change (`cfSlots = N/2` in `EvalBootstrapSetup`) | committed without measurement; at 2^16 it leaves the default at 11, at 2^13 it moves it 12 -> 13 while the sweep showed lower factors are better for both schemes | sweep corr in {6,...,11} at 2^16 for CI and std; set the CI default from data |
+| 0.2 | Revert the CI correction-factor change (`cfSlots = N/2` in `EvalBootstrapSetup`), then sweep | measured: it moves the CI default at 2^16 from 7 to 8 and costs 1 bit RMS (18.24 -> 17.23); lower factors were better for both schemes in every sweep | revert; sweep corr in {5,...,9} at 2^16 for CI and std; set both defaults from data and re-run the baseline commands |
 | 0.3 | Store unscaled levels once; apply `scaleEnc`/`scaleDec` as per-level scalars | `GetCIRealLevels` caches a second full copy keyed on (1.0, 1.0) for keygen (~0.7 GB at 2^16) | one cache entry per (N, lbEnc, lbDec) |
 | 0.4 | Relative drop threshold in `CISparseMul` (1e-13 x max entry) | absolute threshold could change the sparsity pattern, and keygen and evaluation must agree on it | keygen key set == evaluator key set, asserted |
 | 0.5 | Fix report wording: gap 2 is an EvalMod *cost* item, not a precision item | measured RMS precision is equal (18.24 vs 18.23) | report updated |
@@ -37,10 +37,12 @@ Done when: a parameter set with log QP <= ~1100 at 128-bit is found and both sch
 the new CI/2xstd ratio and the absolute CI time against the paper's 12.6 s.
 
 ## Phase 2: CoeffsToSlots cost (gap 1)
-CtS is 52% of the CI bootstrap. Part of that is inherent to the real factorization: a collapsed group of k full
-real layers has about 2^(k+2) cyclic diagonals versus 2^(k+1) for the complex factorization (BSGS makes the
-rotation count ~sqrt(2) worse and plaintext multiplications 2x worse). The paper has the same shape (CtS is
-66% of its 12.6 s). The items below attack the implementation part.
+Measured at 2^16 (same N, warm, 1 thread): CI CtS = 1.64x std CtS ({4,4}), CI StC = 1.88x std StC, while CI
+EvalMod = 0.64x (std runs EvalMod twice). The inherent cost of the real factorization is about 2x the
+plaintext multiplications and sqrt(2)x the rotations of the complex one (a collapsed group of k full real
+layers has ~2^(k+2) cyclic diagonals versus 2^(k+1)), i.e. roughly 1.5-1.7x. So CtS is near the bound and StC
+has ~0.2-0.3x of implementation slack; the paper has the same shape (CtS is 66% of its 12.6 s). The items
+below attack the implementation part and the StC ordering.
 1. Instrument: count key switches and plaintext multiplications per level (CI) and compare with std's
    `EvalCoeffsToSlots` at the same N; compare both to the theoretical 2*sqrt(#diagonals) + #diagonals.
    Any excess is a bug to fix before tuning.
@@ -54,8 +56,8 @@ rotation count ~sqrt(2) worse and plaintext multiplications 2x worse). The paper
 5. StC-first CI variant (gap 6, paper's ordering): add a CI branch to `EvalBootstrapStCFirst`: StC on the input
    at the bottom of the chain (few limbs, ~free), ModRaise, CtS, EvalMod; output at a higher level. Expected:
    StC 4.4 s -> ~1 s and more usable levels after bootstrap for the same chain.
-Done when: CI CtS+StC per real slot is within 1.3x of std's CtS+StC per real slot, or the excess is shown to be
-the inherent diagonal count.
+Done when: at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or the remaining excess is
+accounted for by the diagonal count), and with the StC-first variant CI StC drops below std's CtS-first StC.
 
 ## Phase 3: EvalMod and sparse encapsulation (gap 2, reframed)
 1. The CI ephemeral key uses `GetSparseKSHammingWeight()` = 32 nonzeros in the CI basis, i.e. L1 norm ~64 in

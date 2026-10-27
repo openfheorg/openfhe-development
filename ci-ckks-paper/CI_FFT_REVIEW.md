@@ -119,8 +119,11 @@ diagonals; the paper puts the short product last); any budget is allowed, not on
 
 Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
 1. `REAL_CI` with `BTSlotsEncoding = true` would run the standard StC-first path on CI data (no guard).
-2. The CI correction-factor default change (`cfSlots = N/2`) is unmeasured. It does not change the 2^16 results
-   (default stays 11) but moves the 2^13 default from 12 to 13, against the sweep trend.
+2. The CI correction-factor default change (`cfSlots = N/2`) is harmful and must be reverted. It moves the CI
+   default at 2^16 (FLEXIBLEAUTO, CtS-first fit) from 7 to 8; measured with the committed code: CI RMS drops
+   from 18.24 to 17.23 bits and min precision from 15.0 to 13.9 (std, which uses 8, is unchanged at 18.24).
+   Table 3.1 was produced before this change and stands. Phase 0.2 of the plan reverts it and sweeps the
+   correction factor for both schemes.
 3. `GetCIRealLevels` is cached twice (scaled for evaluation, unit-scaled for keygen).
 4. The `CISparseMul` drop threshold is absolute; keygen and evaluation must agree on the sparsity pattern.
 5. Diagonal plaintexts are built lazily inside a const `EvalBootstrap` (first call 70 s at 2^16; not safe under
@@ -131,5 +134,23 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    reason for the 2x absolute gap to the paper's 12.6 s. Both schemes are affected equally (phase 1).
 8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not
    CI-aware; a mid-file `#include` in the CI unit tests (phase 6).
+Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,
+warm run):
+
+| Budget | Stage | std (32,768 reals) | CI (65,536 reals) | CI / std | CI / std per real |
+|---|---|---|---|---|---|
+| {4,4} | CtS | 8.26 s | 13.57 s | 1.64 | 0.82 |
+| {4,4} | EvalMod (std runs it twice) | 12.02 s | 7.74 s | 0.64 | 0.32 |
+| {4,4} | StC | 2.35 s | 4.42 s | 1.88 | 0.94 |
+| {3,3} | CtS | 10.13 s | 15.83 s | 1.56 | 0.78 |
+| {3,3} | EvalMod | 10.91 s | 7.17 s | 0.66 | 0.33 |
+| {3,3} | StC | 3.11 s | 5.44 s | 1.75 | 0.88 |
+
+So the linear transforms cost 1.6-1.9x std's at the same N. The inherent cost of the real factorization is
+about 2x the plaintext multiplications and sqrt(2)x the rotations of the complex one, i.e. roughly 1.5-1.7x,
+so CtS is close to the inherent bound and StC has ~0.2-0.3x of implementation slack. Per real slot CI is
+already cheaper than std in every stage. The CI output ends with one fewer tower but std's output is left at
+noise degree 2 (rescale pending), so the usable depth after bootstrapping is the same.
+
 No correctness defect was found in the transform itself: 24/24 CI tests, 1191/1191 CKKS tests, 184/184 core
 tests pass, and precision matches std at 2^16.
