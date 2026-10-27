@@ -41,3 +41,67 @@ Ring", ePrint 2026/2618.
 - SPARSE_ENCAPSULATED support: CI-registered sparse-KS primes, switching keys, and the K=28 sine table
   (a weight-h CI key acts like a weight-2h power-basis key).
 - Removed the dense two-channel collapse and its env switches.
+
+## 3. Results (ICELAKE: Xeon Platinum 8360Y, single thread unless noted)
+
+Workload: N real values in [-1, 1]. "CI" = one native CI ciphertext with N real slots. "std" = standard
+CKKS at the same ring dimension N with N/2 slots, so N real values need **two separate bootstraps**.
+Driver: `benchmark/src/ci-fft-boot.cpp`. Times are warm bootstraps (median of 2 after one cold run).
+
+### 3.1 N = 2^16, 128-bit (HEStd_128_classic), FLEXIBLEAUTO, firstMod 60
+
+| Secret, scaleMod | Budget | CI (65,536 reals) | std x2 (65,536 reals) | Speedup | RMS bits CI / std | Max bits CI / std | log2 Q + log2 P | Keys CI / std | Peak RSS CI / std |
+|---|---|---|---|---|---|---|---|---|---|
+| SPARSE_ENCAPSULATED, 55 | {3,3} | 29.6 s | 2 x 24.9 = 49.7 s | **1.68x** | 18.25 / 18.23 | 14.8 / 15.4 | 1050 + 420 | 79 / 51 | 14.0 / 8.1 GB |
+| SPARSE_ENCAPSULATED, 55 | {4,4} | 26.3 s | 2 x 23.0 = 45.9 s | **1.74x** | 18.24 / 18.23 | 15.2 / 15.8 | 1160 + 420 | 70 / 76 | 11.4 / 9.1 GB |
+| UNIFORM_TERNARY, 52 | {3,3} | 46.1 s | 2 x 45.5 = 91.0 s | **1.97x** | 7.2 / 9.7 | 4.3 / 7.6 | 1204 + 480 | 77 / 49 | 16.2 / 9.4 GB |
+
+CI stage split at {4,4} (encapsulated): CtS 13.6 s, EvalMod 7.6 s, StC 4.4 s. Budget {5,5} exceeds the
+128-bit modulus bound at this scale. The uniform rows are a poor-precision configuration for both
+schemes (shown for the cost trend: CI's single EvalMod replaces four).
+
+### 3.2 Before vs after at N = 4096 (insecure toy size, FIXEDMANUAL, uniform, 8 threads, same driver)
+
+| Build | Budget | Warm boot | us / real slot | Max / RMS bits | Galois keys | Peak RSS |
+|---|---|---|---|---|---|---|
+| `ci-ckks-2026` (v1.5.1) CI | {3,3} | 3.78 s | 922 | 10.5 / 12.9 | 126 | 3.0 GB |
+| this branch CI | {3,3} | 0.36 s | 89 | 12.2 / 14.1 | 47 | 0.57 GB |
+| v1.5.1 std | {3,3} | 0.53 s (2048 reals) | 261 | 12.3 / 14.2 | 54 | 0.48 GB |
+| v1.6.1 std | {3,3} | 0.34 s (2048 reals) | 164 | 12.4 / 14.2 | 52 | 0.47 GB |
+
+The old fork was 3.5x slower than std per real slot; the new path is ~10x faster than the old fork and
+1.8x faster than std per real slot. At N = 2^16 the old fork cannot run (dense N x N stage matrices).
+
+### 3.3 Precision findings
+- With correct scaling, CI and std have the same RMS precision at N = 2^16 (Table 3.1). Max error is
+  0.5-0.6 bit lower for CI (max over twice as many slots plus sqrt(2) noise factors of the real embedding).
+- Under FIXEDMANUAL, CI loses ~3 bits from N = 2^13 on: CI primes must be q = 1 mod 4N, so they sit
+  twice as far from 2^p and the fixed-scale mismatch shows up one ring size earlier than for std
+  (`benchmark/src/ci-noise-probe.cpp`). Use FLEXIBLEAUTO for CI.
+- Lower correction factors help both schemes at insecure toy sizes; the CI default now uses the
+  complex-equivalent slot count (N/2) in OpenFHE's fit.
+
+## 4. Remaining gaps and next steps
+1. **CtS is half the CI time.** A collapsed real level has ~2^(k+2) diagonals vs 2^(k+1) for a complex
+   level (each real output mixes Re and Im inputs). Options: better butterfly layout, per-level BSGS
+   tuning, double hoisting, accumulating giant steps in the extended basis.
+2. **Sparse encapsulation precision.** A weight-32 CI key acts like a weight-64 power-basis key, so CI uses
+   the K=28 sine table where std uses K=16. A CI-specific K~23 table would recover some bits.
+3. **CI ring overhead.** CI NTT is within 1.2x of the standard NTT; CI EvalMod still ~1.2x std per op.
+4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
+   that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
+5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.
+6. **Not done:** the paper's functional bootstrapping (CI-AKP with radial correction, CI-Hermite),
+   StC-first ordering, multi-thread tuning.
+
+## 5. Other CI-CKKS work found
+Upstream `openfheorg/openfhe-development` main and dev (v1.6.1) have no CI-CKKS. Stale 2023 feature
+branches `cickks`, `cickks2`, `cickks2-instrumented*` (Caesar, Andrey Kim; based on v1.1) contain a CI
+ring and a dense single-level (`isLTBootstrap`) CI bootstrap only, changing CKKS globally rather than
+behind an option.
+
+## 6. Reproduce
+Tools in `ci-ckks-paper/tools/` (sync to ICELAKE, tmux-guarded jobs, result table). Example:
+`OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap`
+(args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret). `CI_BOOT_TIMING=1`
+prints the per-level BSGS plan and stage times.

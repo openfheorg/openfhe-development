@@ -495,6 +495,20 @@ TEST(UTCKKSrnsCI, CIAutomorphismMap_MatchesOracle) {
 //   M v = sum_t D_t (x) rot_t(v),   D_t[j] = M[j][precomp_t[j]],
 // evaluated homomorphically with CI rotations + plaintext diagonals (LT / O(N)-rotation
 // path; BSGS collapse is a later optimization). Validated against cleartext M v.
+// Slot-level CI rotation map: X -> X^k sends decoded slot j to slot fold((4j+1)k mod 4N), i.e.
+// rotated[j] = msg[map[j]]. (PrecomputeAutoMapCI is the EVALUATION-domain map, which the optimized
+// CI NTT keeps in bit-reversed node order, so it is not the slot permutation.)
+static void CISlotRotationMap(uint32_t N, uint32_t k, std::vector<uint32_t>* out) {
+    const uint64_t m = 4ULL * N;
+    out->resize(N);
+    for (uint32_t j = 0; j < N; ++j) {
+        uint64_t r = ((4ULL * j + 1) * k) % m;
+        if (r % 4 == 3)
+            r = m - r;
+        (*out)[j] = static_cast<uint32_t>((r - 1) / 4);
+    }
+}
+
 TEST(UTCKKSrnsCI, CIHomomorphicLinearTransform) {
     ClearCIModuli();
     const uint32_t N = 1u << 6;  // N=64 (O(N) rotations -> small N for the correctness test)
@@ -541,7 +555,7 @@ TEST(UTCKKSrnsCI, CIHomomorphicLinearTransform) {
     for (uint32_t t = 0; t < N; ++t) {
         auto rotated = (t == 0) ? ct : cc->EvalAutomorphism(ct, fivePow[t], *keyMap);
         std::vector<uint32_t> precomp(N);
-        PrecomputeAutoMapCI(N, fivePow[t], &precomp);
+        CISlotRotationMap(N, fivePow[t], &precomp);
         std::vector<double> Dt(N);
         for (uint32_t j = 0; j < N; ++j)
             Dt[j] = M[j][precomp[j]];
@@ -1038,7 +1052,7 @@ TEST(UTCKKSrnsCI, CIRotation_EvalAutomorphism) {
         pr->SetLength(N);
 
         std::vector<uint32_t> precomp(N);
-        PrecomputeAutoMapCI(N, k, &precomp);
+        CISlotRotationMap(N, k, &precomp);
         double maxerr = 0;
         for (uint32_t j = 0; j < N; ++j)
             maxerr = std::max(maxerr, std::abs(pr->GetCKKSPackedValue()[j].real() - msg[precomp[j]]));
