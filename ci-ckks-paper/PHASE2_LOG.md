@@ -297,3 +297,84 @@ modulus, keys (70) and memory are the same. RMS is the same, so the larger table
 at 2^16 {4,4}, at the same depth and precision. This bounds what item 3.1 can gain: about 1 s of the 26.7 s.
 For reference, with K = 16 the CI EvalMod (6.82 s for 65,536 reals) is 0.28x two std EvalMods (2 x 12.0 s).
 The baseline numbers in the plan header are unchanged.
+
+## 0.R Phase 0 review: build and baseline on ICELAKE (2026-10-27)
+
+**State.** Source synced from commit 8dbcae45 (the end of phase 0; items 0.1-0.6 done; `SYNCED_FROM 8dbcae45 0`).
+No code changed in this item.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p0R_build "cd openfhe-development/build && cmake --build . -j 32 && \
+      cd ../build-bt && cmake --build . --target ci-fft-boot -j 32"                       # rc 0, no warnings
+    ./guard.sh p0R_base "cd openfhe-development && export OMP_NUM_THREADS=1; \
+      CI_BOOT_TIMING=1 /usr/bin/time -v build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap && \
+      /usr/bin/time -v build/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap && \
+      build-bt/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap"
+    # p0R_base2: the same three runs in the order std, std (build-bt), ci, after the machine was quiet again
+
+`build` (all targets: the libraries and all benchmarks; unit tests are not configured there) and `build-bt`
+(`-DBOOTSTRAPTIMING`, target `ci-fft-boot`) both built with rc 0.
+
+**Interference in the first timing job.** During `p0R_base`, another user's 50-core job started while the std
+runs were in progress (load average 5 -> 22 -> 46). The CI run finished before that (load 5-8). The std runs
+are invalid: warm median 29.37 s, which is more than the first (cold) bootstrap at 23.49 s, and the `build-bt`
+std stages were 12.7 / 15.8 / 4.2 s. I waited until the load average was below 8 (about 30 minutes) and ran
+`p0R_base2`. Its load average was 2.9-5.9 for the whole job. Only the std numbers of `p0R_base` are discarded.
+
+**Results 1: baseline commands** (N = 2^16, 128-bit, FLEXIBLEAUTO 55/60, encap, {4,4}, 1 thread, reps 2;
+depth 20, log2 Q + P = 1160 + 420 for both).
+
+| Run | corrEff | first (cold) s | warm median s | RMS bits | min bits | p99 bits | Galois keys | setup+keygen s | peak RSS GB | output level / towers |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ci (`p0R_base`) | 7 | 46.91 | 26.44 | 18.24 | 15.03 | 16.41 | 70 | 35.7 | 11.19 | 18 / 3 |
+| ci (`p0R_base2`) | 7 | 47.06 | 26.73 | 18.23 | 14.72 | 16.42 | 70 | 35.5 | 11.19 | 18 / 3 |
+| std (`p0R_base2`) | 8 | 23.41 | 23.23 | 18.23 | 15.41 | 16.77 | 76 | 43.4 | 9.08 | 17 / 4 |
+| std, `build-bt` (`p0R_base2`) | 8 | 23.72 | 23.34 | 18.24 | 15.32 | 16.77 | 76 | 43.2 | 9.08 | 17 / 4 |
+
+Two std bootstraps: 2 x 23.23 = 46.46 s. Speedup (two std / one CI): 46.46 / 26.44 = 1.76x and
+46.46 / 26.73 = 1.74x. Time per real slot: CI 403-408 us, std 709 us. `/usr/bin/time -v`: peak RSS
+11.73 GB (CI) and 9.52 GB (std) in decimal kB (the driver prints GiB); wall time 2:18 (CI) and 1:55 (std).
+
+**Results 2: per-stage times, warm runs** (CI from `CI_BOOT_TIMING`, std from `-DBOOTSTRAPTIMING`; s).
+
+| Stage | std, per bootstrap (3 runs) | CI (`p0R_base`, 2 warm) | CI (`p0R_base2`, 2 warm) | CI / std (one CI vs one std) |
+|---|---|---|---|---|
+| CtS | 8.49 / 8.36 / 8.33 | 13.73 / 13.52 | 13.85 / 13.63 | 1.63 |
+| EvalMod | 12.30 / 12.15 / 12.18 | 7.76 / 7.76 | 7.86 / 7.85 | 0.64 |
+| StC | 2.46 / 2.38 / 2.37 | 4.39 / 4.40 | 4.45 / 4.47 | 1.86 |
+
+(Ratios use the medians: std 8.36 / 12.18 / 2.38, CI 13.68 / 7.81 / 4.42.) CI per-level times (warm,
+`p0R_base2`): CtS levels 0-3 = 1.60 / 4.10 / 3.92 / 3.76 s (16 / 62 / 62 / 63 diagonals, 20 -> 17 towers);
+StC levels 0-3 = 1.46 / 1.33 / 1.21 / 0.39 s (63 / 62 / 62 / 16 diagonals, 7 -> 4 towers). The Galois check
+of item 0.4 printed "68 rotations == keygen set" at every bootstrap.
+
+The first CI bootstrap costs 47 s, 20.5 s more than a warm one: CtS 26.6 s and StC 11.7-11.9 s cold, EvalMod
+unchanged. This is the diagonal-plaintext encoding that item 2.4 moves to setup. std has no such cold cost
+(first 23.4 s, warm 23.2 s).
+
+**Comparison with the plan's baseline (item 0.2 measurement).**
+
+| Quantity | plan header (0.2) | 0.R |
+|---|---|---|
+| CI warm median | 26.3 s | 26.44 / 26.73 s |
+| CI CtS / EvalMod / StC | 13.6 / 7.6 / 4.4 s | 13.7 / 7.8 / 4.4 s |
+| two std bootstraps | 45.9 s | 46.5 s |
+| std CtS / EvalMod / StC | 8.26 / 12.0 / 2.35 s | 8.36 / 12.18 / 2.38 s |
+| speedup | 1.74x | 1.74-1.76x |
+| RMS bits | 18.2 / 18.2 | 18.23-18.24 / 18.23-18.24 |
+| Galois keys CI / std | 70 / 76 | 70 / 76 |
+| peak RSS CI / std | 11.39 / 9.08 GB | 11.19 / 9.08 GB (item 0.3) |
+
+**Conclusions.**
+- Phase 0 is complete. Both trees build on ICELAKE from the phase-0 head, and the baseline commands run with
+  the expected keys, depth, modulus and precision.
+- The numbers are within 1-2% of the item-0.2 baseline. All runs after 0.2 put the CI bootstrap at
+  26.4-26.7 s (0.3: 26.42, 0.4: 26.55, 0.5: 26.66, here 26.44 / 26.73). The 26.3 s of 0.2 was at the low end,
+  and the difference is machine noise, not a code change. The plan header now gives the 0.R numbers.
+- Phase 0 did not change speed: none of 0.1-0.5 changed the transforms or EvalMod. It did change the CI
+  default correction factor (kept at 7 at 2^16; 0.2), CI peak RSS (-0.20 GB; 0.3), and keygen/evaluator
+  consistency (0.4).
+- The gaps for the next phases are unchanged: CI CtS = 1.63x std CtS and CI StC = 1.86x std StC (phase 2);
+  absolute CI time 26.4-26.7 s vs the paper's 12.6 s with log QP 1580 vs 1064 (phase 1).

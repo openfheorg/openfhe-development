@@ -18,8 +18,9 @@ results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a st
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
 
 Baseline to beat (N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO, sparse encapsulation, budget {4,4}):
-CI 26.3 s for 65,536 reals (CtS 13.6 / EvalMod 7.6 / StC 4.4), two std bootstraps 45.9 s (std stages CtS 8.26 /
-EvalMod 12.0 / StC 2.35 per bootstrap), speedup 1.74x, RMS 18.2 bits both. Paper (Lattigo, Xeon Gold 6248R,
+CI 26.4-26.7 s for 65,536 reals (CtS 13.7 / EvalMod 7.8 / StC 4.4), two std bootstraps 2 x 23.2 = 46.5 s (std
+stages CtS 8.36 / EvalMod 12.2 / StC 2.38 per bootstrap), speedup 1.74-1.76x, RMS 18.2 bits both (re-measured in
+0.R; 0.2 measured CI 26.3 s, std 45.9 s, 1.74x). Paper (Lattigo, Xeon Gold 6248R,
 1 core, log QP = 1064): CI 12.6 s, 20.5 bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
 (no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst]). Baseline commands (run at every phase review):
@@ -44,7 +45,7 @@ Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod f
 - [x] **0.5** Fix `CI_FFT_REVIEW.md` section 4 item 2: it is an EvalMod *cost* item (degree 48 vs 36), not a
   precision item (RMS is equal). Done when: report updated.
 - [x] **0.6** `.gitignore` the PDF copies under `ci-ckks-paper/`. (Done in commit 85e4166b.)
-- [ ] **0.R** Phase 0 review: build on ICELAKE, run the baseline commands, log the numbers.
+- [x] **0.R** Phase 0 review: build on ICELAKE, run the baseline commands, log the numbers.
 
 ## Phase 1: parameter leanness (both schemes; biggest absolute lever)
 Our chain is log Q + log P = 1160 + 420 = 1580 bits; the paper's is 1064. Key-switching cost grows with the
