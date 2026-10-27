@@ -193,7 +193,8 @@ class FHECKKSRNS : public FHERNS {
      * @param precompute whether to encode the linear transform plaintexts now (otherwise EvalBootstrapPrecompute
      * has to be called before EvalBootstrap)
      * @param BTSlotsEncoding true to select the slots-encoding variant (EvalBootstrapStCFirst), in which the
-     * approximate modular reduction is applied to the message values themselves; false for the regular variant
+     * approximate modular reduction is applied to the message values themselves; false for the regular variant.
+     * Not supported for the REAL_CI data type (throws).
      */
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor, bool precompute,

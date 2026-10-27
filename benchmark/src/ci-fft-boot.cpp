@@ -1,7 +1,9 @@
 //==================================================================================
 // CI (native conjugate-invariant, N real slots) vs standard CKKS (N/2 slots of real data)
 // bootstrap: latency + precision at matched ring dimension and level budget.
-// Args: scheme(ci|std) logN lbEnc lbDec scaleMod firstMod secure(0|1) reps scaling(fm|fa)
+// Args: scheme(ci|std) logN lbEnc lbDec scaleMod firstMod secure(0|1) reps scaling(fm|fa) corr secret(uniform|encap)
+//       [stcfirst: 0 = CtS-first (default), 1 = EvalBootstrapSetup with BTSlotsEncoding = true,
+//        2 = call EvalBootstrapStCFirst directly; 1 and 2 must throw for ci]
 // Thread count: OMP_NUM_THREADS. First bootstrap (includes lazy diagonal precompute) is
 // reported separately; the warm bootstraps are what count.
 //==================================================================================
@@ -43,6 +45,7 @@ int main(int argc, char** argv) {
     std::string sc     = (argc > 9) ? argv[9] : "fm";
     uint32_t corr      = (argc > 10) ? std::stoul(argv[10]) : 0;  // 0 = OpenFHE default
     std::string dist   = (argc > 11) ? argv[11] : "uniform";        // uniform | encap
+    uint32_t stcFirst  = (argc > 12) ? std::stoul(argv[12]) : 0;
     bool isCI          = (scheme == "ci");
     uint32_t N         = 1u << logN;
     std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
@@ -79,7 +82,7 @@ int main(int argc, char** argv) {
         log2P += std::log2(p->GetModulus().ConvertToDouble());
 
     auto t0 = Clock::now();
-    cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots, corr);
+    cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots, corr, true, stcFirst == 1);
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalBootstrapKeyGen(keys.secretKey, slots);
@@ -112,6 +115,8 @@ int main(int argc, char** argv) {
         return (e > 0) ? -std::log2(e) : 60.0;
     };
 
+    if (stcFirst == 2)
+        cc->EvalBootstrapStCFirst(ct);
     auto tf      = Clock::now();
     auto first   = cc->EvalBootstrap(ct);
     double fSec  = Sec(tf);

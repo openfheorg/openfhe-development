@@ -21,13 +21,13 @@ Baseline to beat (N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO, sparse encapsulatio
 CI 26.3 s for 65,536 reals (CtS 13.6 / EvalMod 7.6 / StC 4.4), two std bootstraps 45.9 s (std stages CtS 8.26 /
 EvalMod 12.0 / StC 2.35 per bootstrap), speedup 1.74x, RMS 18.2 bits both. Paper (Lattigo, Xeon Gold 6248R,
 1 core, log QP = 1064): CI 12.6 s, 20.5 bits. Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc
-lbDec scaleMod firstMod secure reps scaling corr secret). Baseline commands (run at every phase review):
+lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst]). Baseline commands (run at every phase review):
 
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 55 60 1 2 fa 0 encap
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap
 
 ## Phase 0: review fixes
-- [ ] **0.1** Throw (or route to the CtS-first CI path) when `REAL_CI` and `BTSlotsEncoding` are both set.
+- [x] **0.1** Throw (or route to the CtS-first CI path) when `REAL_CI` and `BTSlotsEncoding` are both set.
   Why: `EvalBootstrap` dispatches to `EvalBootstrapStCFirst`, which has no CI branch. Done when: guarded with
   a clear message (test added in 6.4).
 - [ ] **0.2** Revert the CI correction-factor change (`cfSlots = N/2` in `EvalBootstrapSetup`), then sweep corr

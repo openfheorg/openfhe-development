@@ -366,6 +366,11 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
+    // The slots-encoding variant dispatches to EvalBootstrapStCFirst, which has no conjugate-invariant branch.
+    if (BTSlotsEncoding && cc.GetCKKSDataType() == REAL_CI)
+        OPENFHE_THROW(
+            "BTSlotsEncoding (StC-first bootstrapping) is not supported for the REAL_CI data type; "
+            "use BTSlotsEncoding = false (CtS-first native CI bootstrapping).");
 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
@@ -1696,6 +1701,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
                                                        uint32_t precision) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
+    // Also reached from EvalBootstrap through a precomputation with BTSlotsEncoding = true (e.g. deserialized).
+    if (cryptoParams->GetCKKSDataType() == REAL_CI)
+        OPENFHE_THROW(
+            "EvalBootstrapStCFirst (BTSlotsEncoding) is not supported for the REAL_CI data type; "
+            "use EvalBootstrap with BTSlotsEncoding = false (CtS-first native CI bootstrapping).");
+
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS Bootstrapping only supported with Hybrid key switching.");
 
@@ -2053,6 +2064,9 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
 #if NATIVEINT == 128
     OPENFHE_THROW("128-bit CKKS FE functional bootstrapping is not supported.");
 #endif
+    // FE functional bootstrapping runs the StC-first pipeline, which has no conjugate-invariant branch.
+    if (cc.GetCKKSDataType() == REAL_CI)
+        OPENFHE_THROW("CKKS FE functional bootstrapping is not supported for the REAL_CI data type.");
 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
