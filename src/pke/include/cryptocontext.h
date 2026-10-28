@@ -3779,15 +3779,24 @@ class CryptoContextImpl : public Serializable {
      * SetCKKSBootCorrectionFactor) disables both; larger messages calibrate that way, measuring the
      * single-iteration precision at the explicit factor.
      *
+     * In the ModRaise-first variant, the message is scaled down by 2^-c before the modulus raise (c is the
+     * correction, see GetCKKSBootCorrection), a multiplication followed by a rescale that needs the input one
+     * level above the bottom one. The caller can apply that scaling as part of its own last computation (for
+     * instance by folding 2^-c into a plaintext or constant multiplication) and pass correctionApplied = true:
+     * the input may then be at the bottom level (or be a product one level above it with its rescale pending),
+     * and the result is scaled back up by 2^c as usual. Not available for two iterations, in the StC-first
+     * variant (which folds the correction into SlotsToCoeffs) or in the 128-bit build (no correction).
+     *
      * @param ciphertext     Input ciphertext.
      * @param numIterations  Number of Meta-BTS iterations to improve precision.
      * @param precision      Precision of a single bootstrapping round, used by the second iteration to scale the
      * error (measure it experimentally, minus a buffer of about 5 bits).
+     * @param correctionApplied  Whether the input has already been scaled by 2^-c (see above).
      * @return Refreshed ciphertext.
      */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
-                                      uint32_t precision = 0) const {
-        return m_scheme->EvalBootstrap(ciphertext, numIterations, precision);
+                                      uint32_t precision = 0, bool correctionApplied = false) const {
+        return m_scheme->EvalBootstrap(ciphertext, numIterations, precision, correctionApplied);
     }
 
     /**
@@ -4073,6 +4082,18 @@ class CryptoContextImpl : public Serializable {
      */
     uint32_t GetCKKSBootCorrectionFactor() {
         return m_scheme->GetCKKSBootCorrectionFactor();
+    }
+
+    /**
+     * @brief Gets the correction c of ModRaise-first CKKS bootstrapping: the exponent of the scaling 2^-c applied
+     *        to the message before the modulus raise, i.e., the correction factor minus log2(q0 / scaling factor),
+     *        or 0 when the latter is larger (as with composite scaling). This is the scaling a caller applies
+     *        itself when passing correctionApplied = true to EvalBootstrap. Supported only in CKKS.
+     *
+     * @return The correction.
+     */
+    uint32_t GetCKKSBootCorrection() const {
+        return m_scheme->GetCKKSBootCorrection(GetCryptoParameters());
     }
 
     /**

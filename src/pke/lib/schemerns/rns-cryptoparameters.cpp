@@ -47,6 +47,25 @@ namespace lbcrypto {
 namespace {
 // global used to validate the estimated sizeP value
 uint32_t sizeP_estimate_global{};
+
+// The HYBRID digit partition is uniform: ceil(sizeQ / numPartQ) towers go into every digit, so the last digit
+// comes out empty unless sizeQ > ceil(sizeQ / numPartQ) * (numPartQ - 1). Which counts satisfy that depends on
+// sizeQ, and the valid ones thin out as numPartQ approaches it, so a chain that loses a tower can invalidate a
+// digit count that used to work. Names the nearest usable count rather than leaving the caller to search.
+std::string HybridDigitDistributionError(uint32_t sizeQ, uint32_t numPartQ) {
+    uint32_t usable = 1;
+    for (uint32_t d = numPartQ; d > 1; --d) {
+        if (sizeQ > ((sizeQ + d - 1) / d) * (d - 1)) {
+            usable = d;
+            break;
+        }
+    }
+    return "HYBRID key switching parameters: can't distribute " + std::to_string(sizeQ) + " towers into " +
+           std::to_string(numPartQ) + " digits, as " + std::to_string((sizeQ + numPartQ - 1) / numPartQ) +
+           " towers per digit would leave the last one empty. The largest usable count at or below " +
+           std::to_string(numPartQ) + " is " + std::to_string(usable) +
+           "; set it with SetNumLargeDigits, or leave it at 0 for the automatic choice.";
+}
 }  // namespace
 
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
@@ -88,12 +107,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Compute ceil(sizeQ/numPartQ), the # of towers per digit
         uint32_t a = static_cast<uint32_t>(std::ceil(static_cast<double>(sizeQ) / numPartQ));
-        if (sizeQ <= (a * (numPartQ - 1))) {
-            auto str = "HYBRID key switching parameters: Can't appropriately distribute " + std::to_string(sizeQ) +
-                       " towers into " + std::to_string(numPartQ) +
-                       " digits. Please select different number of digits.";
-            OPENFHE_THROW(str);
-        }
+        if (sizeQ <= (a * (numPartQ - 1)))
+            OPENFHE_THROW(HybridDigitDistributionError(sizeQ, numPartQ));
 
         m_numPerPartQ = a;
 
@@ -464,11 +479,8 @@ std::pair<double, uint32_t> CryptoParametersRNS::EstimateLogP(uint32_t numPartQ,
 
     // Compute ceil(sizeQ/numPartQ), the # of towers per digit
     size_t numPerPartQ = static_cast<size_t>(std::ceil(static_cast<double>(sizeQ) / numPartQ));
-    if (sizeQ <= (numPerPartQ * (numPartQ - 1))) {
-        auto str = "HYBRID key switching parameters: Can't appropriately distribute " + std::to_string(sizeQ) +
-                   " towers into " + std::to_string(numPartQ) + " digits. Please select different number of digits.";
-        OPENFHE_THROW(str);
-    }
+    if (sizeQ <= (numPerPartQ * (numPartQ - 1)))
+        OPENFHE_THROW(HybridDigitDistributionError(static_cast<uint32_t>(sizeQ), numPartQ));
 
     // create a vector with the same value of bit sizes
     std::vector<double> qi(sizeQ, dcrtBits);

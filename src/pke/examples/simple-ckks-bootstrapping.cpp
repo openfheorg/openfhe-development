@@ -115,7 +115,11 @@ void SimpleBootstrapExample() {
 
     // Note that the number of levels available after bootstrapping, before the next bootstrapping, will be
     // levelsAvailableAfterBootstrap - 1 = 9 below, because an additional level is used for scaling the ciphertext
-    // before the modulus raise in the next bootstrapping (in 64-bit CKKS bootstrapping)
+    // before the modulus raise in the next bootstrapping (in 64-bit CKKS bootstrapping). That level is not used,
+    // and all 10 are available, when the correction c = cryptoContext->GetCKKSBootCorrection() is zero, which
+    // needs the first modulus to be at least 2^correctionFactor times the scaling modulus (the default factor is
+    // at least 6, so the gap has to be at least that), or when the scaling by 2^-c is folded into the last
+    // computation and EvalBootstrap is called with correctionApplied = true (see CKKS_BOOTSTRAPPING.md).
     uint32_t levelsAvailableAfterBootstrap = 10;
     uint32_t depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);

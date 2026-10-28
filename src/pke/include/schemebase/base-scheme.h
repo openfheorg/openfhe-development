@@ -1523,9 +1523,9 @@ class SchemeBase {
     }
 
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
-                                      uint32_t precision = 0) const {
+                                      uint32_t precision = 0, bool correctionApplied = false) const {
         VerifyFHEEnabled(__func__);
-        return m_FHE->EvalBootstrap(ciphertext, numIterations, precision);
+        return m_FHE->EvalBootstrap(ciphertext, numIterations, precision, correctionApplied);
     }
 
     Ciphertext<Element> EvalBootstrapStCFirst(ConstCiphertext<Element>& ciphertext, uint32_t numIterations = 1,
@@ -1629,6 +1629,11 @@ class SchemeBase {
     uint32_t GetCKKSBootCorrectionFactor() {
         VerifyFHEEnabled(__func__);
         return m_FHE->GetCKKSBootCorrectionFactor();
+    }
+
+    uint32_t GetCKKSBootCorrection(const std::shared_ptr<CryptoParametersBase<Element>>& cryptoParams) const {
+        VerifyFHEEnabled(__func__);
+        return m_FHE->GetCKKSBootCorrection(cryptoParams);
     }
 
     void SetCKKSBootCorrectionFactor(uint32_t cf) {
