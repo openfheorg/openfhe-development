@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
 
     auto t0 = Clock::now();
     cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots, corr, true, stcFirst == 1);
+    double bootSetupSec = Sec(t0);  // EvalBootstrapSetup alone (CI: includes the diagonal encodes, item 2.4)
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalBootstrapKeyGen(keys.secretKey, slots);
@@ -171,7 +172,7 @@ int main(int argc, char** argv) {
               << log2Q << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
               << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys
               << std::setprecision(1) << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB
-              << " setup+keygen_s=" << setupSec << " first_s=" << fSec << " warm_median_s=" << med
+              << " setup+keygen_s=" << setupSec << " bootsetup_s=" << bootSetupSec << " first_s=" << fSec << " warm_median_s=" << med
               << " us_per_real_slot=" << med / slots * 1e6 << " prec_bits_min=" << std::setprecision(2) << minB
               << " first_prec=" << fBits << " rms_bits=" << lastRms << " p99_bits=" << lastP99 << " peakRSS_GB=" << RssGB() << " threads="
               << (getenv("OMP_NUM_THREADS") ? getenv("OMP_NUM_THREADS") : "?") << std::endl;

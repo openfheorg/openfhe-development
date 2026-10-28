@@ -112,6 +112,7 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
 5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.
+   (Done in phase 2.4: `EvalBootstrapSetup` encodes them, in parallel; the first bootstrap is warm.)
 6. **Not done:** the paper's functional bootstrapping (CI-AKP with radial correction, CI-Hermite),
    StC-first ordering, multi-thread tuning.
 
@@ -151,7 +152,11 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    (Done in phase 0.4: relative threshold 1e-13 x the largest entry; `EvalBootstrap` throws if its rotation
    set differs from the keygen Galois set; holds at 2^12..2^16 for {2,2}, {3,3}, {4,4}.)
 5. Diagonal plaintexts are built lazily inside a const `EvalBootstrap` (first call 70 s at 2^16; not safe under
-   concurrent bootstraps) (phase 2.4).
+   concurrent bootstraps) (phase 2.4). (Done in phase 2.4: `EvalBootstrapSetup` and `EvalBootstrapPrecompute`
+   encode all CI diagonals (parallel, extended Q_l P basis, towers from the chain model); `EvalBootstrap` only
+   reads them and encodes a level locally only if its store does not match. WSL, 2^16 {5,3}, 1 thread: first
+   bootstrap 35.5 -> 18.0 s (warm 16.5 s), setup +18.5 s (2.9x faster on 8 threads at 2^15); warm time, keys and
+   peak RSS (13.54 GB) unchanged. See `PHASE2_LOG.md` 2.4.)
 6. Section 4 item 2 above is mis-stated: CI and std have equal RMS precision; the K = 28 table costs EvalMod
    degree (48 vs 36), it does not cost precision. The fix is a weight-16 CI ephemeral key (phase 3.1).
    (Done in phase 0.5: section 4 item 2 rewritten as a cost item; the K = 28 table costs 1.0 s of 7.8 s CI

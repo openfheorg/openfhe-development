@@ -1339,3 +1339,111 @@ bootstraps from `CI_BOOT_TIMING`; "old" = the pre-2.3 even split). `p23_ab` ran 
 - The table is static (computed offline for the chain shape lbEnc + 10 + lbDec + 2 + 1, dnum 3, alpha 7). A
   different chain could move the optimum; `CI_SPLIT_ENC/DEC` override it. Suggestion (not added to the plan): if key
   memory matters, a key-aware tie-break in the search (the {4,4} split trades 31 keys for 0.8 s).
+
+## 2.4 Precompute the CI diagonal plaintexts in EvalBootstrapSetup; WSL baseline (2026-10-28)
+
+First item on the WSL VM (i7-12700H laptop, `build-wsl` / `build-wsl-bt`, all jobs through
+`ci-ckks-paper/tools/wsl-guard.sh`). Nothing ran on ICELAKE. ICELAKE numbers (items 0.1-2.3) are not comparable with
+the numbers below.
+
+**WSL baseline at HEAD (b09005e7 = code of fbb0ad1a, item 2.3), measured before any change.** Header commands with
+`build-wsl` paths; std from `build-wsl-bt` (same code with `-DBOOTSTRAPTIMING`, for the std stage times). One guarded
+job, CI and std interleaved, 2^16, 128-bit, 1 thread, reps 3; warm medians; stage times are medians of the 3 warm
+bootstraps (`CI_BOOT_TIMING=1` for CI, `BOOTSTRAPTIMING` for std).
+
+    wsl-guard.sh p24_build_bt 12 'cmake --build build-wsl-bt --target ci-fft-boot -j 8'     # rc 0 (build-wsl was built at HEAD before)
+    wsl-guard.sh p24_base 15 'for a in "build-wsl/... ci 16 5 3" "build-wsl-bt/... std 16 5 3" "build-wsl/... ci 16 4 4" \
+        "build-wsl-bt/... std 16 4 4"; do CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 $bin $scheme 16 $lbE $lbD 59 60 1 3 fa $corr encap; done'
+        # corr 4 (CI) / 5 (std); rc 0, load 0.6-2.5
+
+| scheme {budget} | warm s | CtS | EvalMod | StC | first s | setup+keygen s | keys (GB) | peak RSS GB | RMS / min bits |
+|---|---|---|---|---|---|---|---|---|---|
+| CI {5,3} | **16.37** | 6.99 | 5.34 | 3.62 | 39.02 | 44.98 | 102 (8.37) | 13.55 | 21.55 / 18.15 |
+| std {5,3} | **16.25** | 5.16 | 8.44 | 2.32 | 17.54 | 35.06 | 61 (5.01) | 7.66 | 22.73 / 19.21 |
+| CI {4,4} | 17.48 | 8.37 | 6.30 | 2.68 | 36.20 | 47.13 | 92 (7.55) | 12.56 | 21.55 / 18.27 |
+| std {4,4} | 18.23 | 6.11 | 9.92 | 1.87 | 17.64 | 42.65 | 76 (6.24) | 9.08 | 22.74 / 19.95 |
+
+WSL baseline: CI/2xstd at each scheme's best budget {5,3} = 2 x 16.25 / 16.37 = **1.99x** (ICELAKE 1.97x); stage
+ratios CtS 1.36x, EvalMod 0.63x, StC 1.56x. Equal budget {4,4}: 2 x 18.23 / 17.48 = 2.09x (ICELAKE 2.03x); CtS 1.37x,
+EvalMod 0.64x, StC 1.43x. The laptop takes about 26% less time per bootstrap than ICELAKE (CI {5,3} 16.4 vs 22.15 s) and
+noisier: in `p24_ab` below the same binary gave 16.5 and 18.9 s warm medians 4 minutes apart (thermal / turbo), so
+only interleaved A/B pairs in one job are comparable. The cold first CI bootstrap was 39.0 s, 22.7 s above warm:
+the diagonal encodes that this item moves to setup.
+
+**What changed** (`src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp`, driver).
+1. `EvalBootstrapSetup` (with `precompute = true`, the default) and `EvalBootstrapPrecompute` now encode all CI
+   CtS / StC diagonal plaintexts: new `CIBootstrapPrecompute` fills `m_U0hatTPreFFT` / `m_U0PreFFT` (one store per
+   real-FFT level, budget > 1) or `m_U0hatTPre` / `m_U0Pre` (dense budget {1,1}). Before, `EvalBootstrapSetup`
+   returned early for `REAL_CI` and the const `EvalBootstrap` wrote the plaintexts into the precom on its first
+   call (not safe under concurrent bootstraps; `EvalBootstrapPrecompute` ran the complex std precompute on CI).
+2. The encodes keep the extended Q_l P form of the lazy path. The tower count of every level comes from the chain
+   shape (`CIBsgsLevelDigits`, the model keygen already uses, item 2.2); the basis is the first `towers` Q moduli plus
+   P (`CIParamsQlP`, the basis `KeySwitchExt` builds) and the level is |Q| - towers (as `ModRaiseInPlace` sets it).
+   The BSGS layout and pre-rotation are unchanged (`CIEncodeSparseLevel`, `CIEncodeDenseLevel`, factored out of the
+   old evaluator lambdas). The CI scalars scaleEnc / scaleDec come from one helper (`CIBootScales`) in setup and
+   evaluation.
+3. Encodes run in parallel at setup (`omp parallel for` over the diagonals of a level, dense: over giant blocks;
+   `OpenFHEParallelControls` thread limit). The CI encode path (`CIRealFFTEncode`, CI NTT registry) is thread safe
+   (mutex-guarded plan cache, lock-free registry lookups).
+4. `EvalBootstrap` only reads the stores. If a store does not match the level input (size, plaintext level and
+   tower count: `CIStoreMatches`), e.g. after `EvalBootstrapSetup(..., precompute = false)`, the level is encoded
+   into a local vector for that call only. `CI_BOOT_TIMING=1` prints `local diagonal encodes: <n> levels`; it was 0
+   in every run below.
+5. Driver `ci-fft-boot`: the RESULT line also prints `bootsetup_s` (EvalBootstrapSetup alone; `setup+keygen_s`
+   still includes it).
+
+**Commands.** `OLD` = a copy of the HEAD `build-wsl` binary and libraries (`~/ci-ckks-wsl/head-fbb0ad1a`, run with
+`LD_LIBRARY_PATH`), `NEW` = `build-wsl/bin/benchmark/ci-fft-boot` after the change.
+
+    wsl-guard.sh p24_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8'    # rc 0, no warnings
+    wsl-guard.sh p24_smoke 9 'for cfg in "12 1 1" "12 2 2" "12 3 3" "12 4 4" "12 5 3" "13 4 4" "14 5 3" "15 5 3" "15 4 4";
+        do for v in old new; do CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 $v ci $logN $lbE $lbD 59 60 0 2 fa 4 encap; done; done'  # rc 0
+    wsl-guard.sh p24_ab 15 'old, new, old, new: CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 $v ci 16 5 3 59 60 1 3 fa 4 encap;
+        then old, new: CI_BOOT_TIMING=1 OMP_NUM_THREADS=8 $v ci 15 5 3 59 60 0 1 fa 4 encap'   # rc 0, load 2.0-4.6
+    wsl-guard.sh p24_build_bt2 12 'cmake --build build-wsl-bt --target ci-fft-boot -j 8'  # rc 0 (bt dir at the new code)
+    wsl-guard.sh p24_build3 12 "<both build-wsl and build-wsl-bt, ci-fft-boot, -j 8>"     # rc 0 after a line-wrap-only edit
+
+**Results 1: correctness at 2^12..2^15** (`p24_smoke`, insecure, reps 2, 1 thread). Old and new give the same
+precision, keys and peak RSS in all 9 configurations ({1,1}, {2,2}, {3,3}, {4,4}, {5,3} at 2^12; {4,4} at 2^13;
+{5,3} at 2^14; {5,3}, {4,4} at 2^15). The Galois check held and no level was encoded locally in any bootstrap.
+
+| N, budget | old first / warm s | new bootsetup / first / warm s | RMS / min bits old, new | peak RSS GB |
+|---|---|---|---|---|
+| 2^12 {1,1} (dense) | 19.87 / 5.77 | 14.93 / 5.30 / 5.63 | 18.80 / 17.18, same | 4.88 |
+| 2^12 {5,3} | 1.21 / 0.79 | 0.37 / 0.73 / 0.71 | 18.80 / 17.18, same | 0.48 |
+| 2^13 {4,4} | 2.15 / 1.40 | 0.96 / 1.33 / 1.64 | 19.71 / 18.02, 19.71 / 18.04 | 1.18 |
+| 2^14 {5,3} | 5.88 / 3.30 | 2.68 / 3.11 / 3.39 | 20.71 / 18.89, 20.71 / 18.91 | 2.37 |
+| 2^15 {5,3} | 14.28 / 7.64 | 7.40 / 7.56 / 7.84 | 21.64 / 19.71, 21.65 / 19.68 | 5.89 / 5.88 |
+| 2^15 {4,4} | 14.71 / 7.78 | 6.94 / 7.63 / 7.65 | 21.64 / 19.57, 21.65 / 19.62 | 5.66 |
+
+**Results 2: 2^16 A/B** (`p24_ab`, 128-bit, CI {5,3}, 1 thread, reps 3, interleaved old/new/old/new; stage times
+are the medians of the 3 warm bootstraps; "cold extra" = the first bootstrap's CtS + StC minus the warm ones).
+
+| run | setup+keygen s | bootsetup s | first s | warm s | first CtS / StC | warm CtS / EvalMod / StC | RMS / min | peak RSS GB |
+|---|---|---|---|---|---|---|---|---|
+| old pass 1 | 44.30 | - | 35.51 | 17.32 | 15.76 / 13.50 (cold extra 17.8 s) | 7.85 / 5.38 / 3.66 | 21.56 / 18.17 | 13.55 |
+| new pass 1 | 62.67 | 18.49 | **18.04** | 16.53 | 8.01 / 3.67 | 7.06 / 5.63 / 3.77 | 21.55 / 18.24 | 13.54 |
+| old pass 2 | 45.88 | - | 35.35 | 19.46 | 15.73 / 13.32 (cold extra 17.0 s) | 8.10 / 6.81 / 4.00 | 21.56 / 18.22 | 13.55 |
+| new pass 2 | 75.99 | 20.95 | **19.60** | 18.86 | 9.46 / 3.69 | 7.83 / 5.81 / 3.67 | 21.55 / 18.08 | 13.54 |
+
+Pass 2 ran hotter (old warm +2.1 s, new +2.3 s, new keygen +12 s at the same code); compare within a pass. No job
+spanned a laptop sleep: every run's wall time in the logs (2.2-2.6 min per 2^16 run) matches setup + first + reps. Keys 102
+(8.37 GB) and the Galois check (100 rotations) are unchanged.
+
+**Results 3: parallel setup encodes** (`p24_ab` tail, 2^15 {5,3}, insecure, 8 threads, reps 1): old setup+keygen
+7.20 s, first 16.39 s, warm 7.16 s (the lazy encode in the first bootstrap is serial: 9.2 s extra); new
+bootsetup 2.52 s (1 thread: 7.40 s, `p24_smoke`; 2.9x on 8 threads of this 6P+8E CPU), setup+keygen 10.41 s,
+first 7.30 s, warm 6.87 s. Time to the first bootstrapped result: 23.6 -> 17.7 s.
+
+**Conclusions.**
+- The cold first bootstrap is gone: at 2^16 {5,3} the first bootstrap now takes 18.0 s against a 16.5 s warm median
+  (old: 35.5 s against 17.3 s). The remaining ~1 s first-call excess is ordinary warm-up (std shows the same: 17.5
+  vs 16.3 s). The encode work moved into `EvalBootstrapSetup`: 18.5 s at 1 thread (old cold extra 17.0-17.8 s, plus
+  the level products, which keygen built before), 2.9x faster on 8 threads.
+- Warm time, precision, keys and memory are unchanged: peak RSS 13.54 vs 13.55 GB at 2^16 {5,3} (the stores held the
+  same plaintexts after the first bootstrap before), inside the 15 GB the jobs requested (job cap now 19 GB). The plaintexts are
+  about 454 diagonals at {5,3} (137 CtS at 23-27 towers, 317 StC at 11-13 towers, Q_l + P).
+- `EvalBootstrap` no longer writes into the precom; it is read-only and so safe for concurrent bootstraps on one
+  context. `EvalBootstrapPrecompute` (the documented deserialize-then-recompute flow) now builds the CI stores too.
+- The "~70 s cold run" in the plan was an early ICELAKE number (before items 0.3-2.3); at HEAD it was 22.7 s on WSL
+  (39.0 - 16.4 s) and 20-23 s on ICELAKE.

@@ -510,6 +510,164 @@ std::vector<uint32_t> CIRealFFTGaloisElements(uint32_t N, uint32_t lbEnc, uint32
         }
     return std::vector<uint32_t>(elts.begin(), elts.end());
 }
+
+// ---- Item 2.4: CI CtS / StC diagonal plaintexts, encoded once at setup ----
+// CtS / StC bootstrap scalars of the native CI bootstrap (FLEXIBLE* / FIXED*, composite degree 1). The ModRaise
+// overflow bound kBoot is folded into the CtS matrix.
+std::pair<double, double> CIBootScales(double qDouble, double kBoot) {
+    const double factorBoot = std::pow(2.0, std::round(std::log2(qDouble)));
+    return {qDouble / factorBoot / kBoot, factorBoot / qDouble};
+}
+
+// The input of every CI level holds a prefix of the Q towers (ModRaise to the full chain, then one rescale per
+// level), so its extended basis is the first `towers` Q moduli followed by the P moduli (the basis KeySwitchExt
+// builds) and its level is |Q| - towers (as set by ModRaiseInPlace).
+std::shared_ptr<DCRTPoly::Params> CIParamsQlP(const CryptoParametersCKKSRNS& cp, uint32_t towers) {
+    const auto& q  = cp.GetElementParams()->GetParams();
+    const auto& pp = cp.GetParamsP()->GetParams();
+    std::vector<NativeInteger> moduli, roots;
+    for (uint32_t i = 0; i < towers && i < q.size(); ++i) {
+        moduli.push_back(q[i]->GetModulus());
+        roots.push_back(q[i]->GetRootOfUnity());
+    }
+    for (const auto& x : pp) {
+        moduli.push_back(x->GetModulus());
+        roots.push_back(x->GetRootOfUnity());
+    }
+    return std::make_shared<DCRTPoly::Params>(cp.GetElementParams()->GetCyclotomicOrder(), moduli, roots);
+}
+
+inline uint32_t CILevelOf(const CryptoParametersCKKSRNS& cp, uint32_t towers) {
+    return static_cast<uint32_t>(cp.GetElementParams()->GetParams().size()) - towers;
+}
+
+// One diagonal (natural slot order) CI-encoded in the extended basis of a level input with `towers` Q towers.
+ReadOnlyPlaintext CIEncodeDiagonal(const CryptoParametersCKKSRNS& cp, const std::shared_ptr<DCRTPoly::Params>& qlp,
+                                   uint32_t towers, const std::vector<std::complex<double>>& cval) {
+    const uint32_t lvl = CILevelOf(cp, towers);
+    auto enc           = std::make_shared<CKKSPackedEncoding>(qlp, cp.GetEncodingParams(), cval, 1, lvl,
+                                                    cp.GetScalingFactorReal(lvl),
+                                                    static_cast<uint32_t>(cval.size()), REAL_CI);
+    enc->Encode();
+    return enc;
+}
+
+// Diagonal plaintexts of one sparse CI level in its BSGS layout: entry u = n1 * j + i holds the diagonal at offset
+// h * (t0 + u), scaled by sc and pre-rotated by the giant shift -G_j (G_j = h * (t0 + n1 * j)), in natural slot
+// order; nullptr marks a zero diagonal. The encodes run in parallel.
+std::vector<ReadOnlyPlaintext> CIEncodeSparseLevel(const CryptoParametersCKKSRNS& cp, const CISparse& A, uint32_t N,
+                                                   const CIBsgsPlan& bp, double sc, uint32_t towers) {
+    const auto& perm = GetCIRealFFTPlan(N).perm;
+    const auto qlp   = CIParamsQlP(cp, towers);
+    std::vector<ReadOnlyPlaintext> store(static_cast<size_t>(bp.n1) * bp.n2);
+    std::vector<std::pair<uint32_t, const std::vector<double>*>> jobs;
+    for (uint32_t u = 0; u < bp.span; ++u) {
+        auto it = A.find(static_cast<uint32_t>((static_cast<uint64_t>(bp.h) * (bp.t0 + u)) % N));
+        if (it != A.end())
+            jobs.emplace_back(u, &it->second);
+    }
+#pragma omp parallel for schedule(dynamic) num_threads(OpenFHEParallelControls.GetThreadLimit(jobs.size()))
+    for (size_t t = 0; t < jobs.size(); ++t) {
+        const uint32_t u = jobs[t].first;
+        const uint32_t G = static_cast<uint32_t>((static_cast<uint64_t>(bp.h) * (bp.t0 + bp.n1 * (u / bp.n1))) % N);
+        const auto& d    = *jobs[t].second;
+        std::vector<std::complex<double>> cval(N);
+        for (uint32_t q = 0; q < N; ++q)
+            cval[perm[q]] = std::complex<double>(sc * d[(q + N - G) % N], 0.0);
+        store[u] = CIEncodeDiagonal(cp, qlp, towers, cval);
+    }
+    return store;
+}
+
+// Dense single-level CI transform (budget {1,1}, small N): CtS = scaleEnc * N * U^-1 = scaleEnc * diag(1,.5..) * U^T,
+// StC = scaleDec * U. Entry (a, b) of the matrix.
+inline double CIDenseEntry(bool enc, double scale, uint32_t N, uint32_t a, uint32_t b) {
+    return enc ? scale * ((a == 0) ? 1.0 : 0.5) * CIBootU(N, b, a) : scale * CIBootU(N, a, b);
+}
+
+// BSGS shape of the dense transform: n1 = 2^ceil(logN / 2) baby steps, n2 = N / n1 giant blocks.
+inline uint32_t CIDenseN1(uint32_t N) {
+    const uint32_t logN = static_cast<uint32_t>(std::round(std::log2(N)));
+    return 1u << ((logN + 1) / 2);
+}
+
+// Diagonal plaintexts of the dense transform in its BSGS layout: entry n1 * j + i holds diagonal k = n1 * j + i
+// (Galois 5^k) pre-rotated by the giant step 5^{-n1 j}; nullptr marks an all-zero diagonal.
+std::vector<ReadOnlyPlaintext> CIEncodeDenseLevel(const CryptoParametersCKKSRNS& cp, uint32_t N, uint32_t towers,
+                                                  bool enc, double scale) {
+    const uint64_t m4 = 4ULL * N;
+    const uint32_t n1 = CIDenseN1(N), n2 = N / n1;
+    const auto qlp    = CIParamsQlP(cp, towers);
+    std::vector<ReadOnlyPlaintext> store(static_cast<size_t>(n1) * n2);
+#pragma omp parallel for schedule(dynamic) num_threads(OpenFHEParallelControls.GetThreadLimit(n2))
+    for (uint32_t j = 0; j < n2; ++j) {
+        const uint32_t gj0   = CIGaloisForShift(n1 * j, N);  // 5^{n1 j}
+        const uint32_t gjInv = (j == 0) ? 1 : NativeInteger(gj0).ModInverse(m4).ConvertToInt<uint32_t>();
+        uint32_t fk          = gj0;  // 5^{n1 j + i}
+        std::vector<double> diag(N);
+        for (uint32_t i = 0; i < n1; ++i, fk = static_cast<uint32_t>((static_cast<uint64_t>(fk) * 5) % m4)) {
+            double maxabs = 0.0;
+            for (uint32_t s = 0; s < N; ++s) {
+                const uint32_t sp = (j == 0) ? s : CIBootPrecomp(N, gjInv, s);
+                diag[s]           = CIDenseEntry(enc, scale, N, sp, CIBootPrecomp(N, fk, sp));
+                maxabs            = std::max(maxabs, std::abs(diag[s]));
+            }
+            if (maxabs < 1e-14)  // sparse stage: skip all-zero diagonals
+                continue;
+            std::vector<std::complex<double>> cval(N);
+            for (uint32_t s = 0; s < N; ++s)
+                cval[s] = std::complex<double>(diag[s], 0.0);
+            store[static_cast<size_t>(j) * n1 + i] = CIEncodeDiagonal(cp, qlp, towers, cval);
+        }
+    }
+    return store;
+}
+
+// True when `store` was encoded for a level input with `towers` Q towers (size, level and extended basis of its
+// first plaintext). A mismatch (no setup precompute, or a chain the tower model does not cover) makes EvalBootstrap
+// encode the level locally for that call instead.
+bool CIStoreMatches(const CryptoParametersCKKSRNS& cp, const std::vector<ReadOnlyPlaintext>& store, size_t size,
+                    uint32_t towers) {
+    if (store.size() != size)
+        return false;
+    const size_t sizeP = cp.GetParamsP()->GetParams().size();
+    for (const auto& pd : store)
+        if (pd)
+            return pd->GetLevel() == CILevelOf(cp, towers) &&
+                   pd->GetElement<DCRTPoly>().GetNumOfElements() == towers + sizeP;
+    return true;  // all-zero level
+}
+
+// All CI CtS / StC diagonal plaintexts for the level budgets in `p`: one store per level of the real FFT
+// (p.m_U0hatTPreFFT, p.m_U0PreFFT; budget > 1) or the dense transform (p.m_U0hatTPre, p.m_U0Pre; budget {1,1}).
+// The towers of every level come from the chain shape (CIBsgsLevelDigits, as keygen); EvalBootstrap only reads.
+void CIBootstrapPrecompute(const CryptoParametersCKKSRNS& cp, CKKSBootstrapPrecom& p, uint32_t N, double scaleEnc,
+                           double scaleDec, uint32_t modDepth) {
+    const uint32_t lbEnc = p.m_paramsEnc.lvlb, lbDec = p.m_paramsDec.lvlb;
+    const auto dg        = CIBsgsLevelDigits(cp, lbEnc, lbDec, modDepth);
+    p.m_U0hatTPreFFT.clear();
+    p.m_U0PreFFT.clear();
+    p.m_U0hatTPre.clear();
+    p.m_U0Pre.clear();
+    if (lbEnc > 1 || lbDec > 1) {
+        const auto& lv = GetCIRealLevels(N, lbEnc, lbDec);
+        auto build     = [&](const std::vector<CISparse>& levels, double scale, const std::vector<uint32_t>& digits,
+                         const std::vector<uint32_t>& towers) {
+            std::vector<std::vector<ReadOnlyPlaintext>> out(levels.size());
+            const double sc = CIRealLevelScalar(scale, levels.size());
+            for (size_t s = 0; s < levels.size(); ++s)
+                out[s] = CIEncodeSparseLevel(cp, levels[s], N, CIPlanBsgs(levels[s], N, CIDigitsAt(digits, s)), sc,
+                                             CIDigitsAt(towers, s));
+            return out;
+        };
+        p.m_U0hatTPreFFT = build(lv.enc, scaleEnc, dg.enc, dg.towersEnc);
+        p.m_U0PreFFT     = build(lv.dec, scaleDec, dg.dec, dg.towersDec);
+    }
+    else {
+        p.m_U0hatTPre = CIEncodeDenseLevel(cp, N, CIDigitsAt(dg.towersEnc, 0), true, scaleEnc);
+        p.m_U0Pre     = CIEncodeDenseLevel(cp, N, CIDigitsAt(dg.towersDec, 0), false, scaleDec);
+    }
+}
 }  // namespace
 
 void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
@@ -590,10 +748,17 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget0, dim1[0]);
     precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget1, dim1[1]);
 
-    // Native CI bootstrap computes its real-DFT CtS/StC diagonals at evaluation time
-    // (from the CI embedding U), so no complex-U0 precompute is needed here.
-    if (cc.GetCKKSDataType() == REAL_CI)
+    // Native CI bootstrap: the real-FFT (or dense {1,1}) CtS/StC diagonals are encoded here, in parallel, in the
+    // extended QlP basis of each level (item 2.4); EvalBootstrap only reads them.
+    if (cc.GetCKKSDataType() == REAL_CI) {
+        if (precompute) {
+            const auto sc =
+                CIBootScales(GetBigModulus(cryptoParams), GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
+            CIBootstrapPrecompute(*cryptoParams, *precom, slots, sc.first, sc.second,
+                                  GetModDepthInternal(cryptoParams->GetSecretKeyDist()));
+        }
         return;
+    }
 
     if (precompute) {
         uint32_t m = 4 * slots;
@@ -845,6 +1010,13 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
 
     p.m_paramsEnc = GetCollapsedFFTParams(slots, p.m_paramsEnc.lvlb, p.m_paramsEnc.g);
     p.m_paramsDec = GetCollapsedFFTParams(slots, p.m_paramsDec.lvlb, p.m_paramsDec.g);
+
+    if (cc.GetCKKSDataType() == REAL_CI) {
+        const auto sc = CIBootScales(GetBigModulus(cryptoParams), GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
+        CIBootstrapPrecompute(*cryptoParams, p, slots, sc.first, sc.second,
+                              GetModDepthInternal(cryptoParams->GetSecretKeyDist()));
+        return;
+    }
 
     uint32_t m = 4 * slots;
     uint32_t mmask = m - 1;  // assumes m is power of 2
@@ -1319,26 +1491,18 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // scaleEnc/scaleDec mirror EvalBootstrapSetup (NOT the eval-stage `pre`=1/post). Since OpenFHE
         // v1.6 the ModRaise overflow bound K is folded into the CtS matrix (raised is only scaled by
         // pre/N above), so scaleEnc = pre_setup / K, scaleDec = 1 / pre_setup.
-        const double factorBoot = std::pow(2.0, std::round(std::log2(qDouble)));
-        const double kBoot      = GetModRaiseOverflowBound(cryptoParams, K_UNIFORM);
-        const double scaleEnc   = qDouble / factorBoot / kBoot;
-        const double scaleDec   = factorBoot / qDouble;
+        const auto ciScales   = CIBootScales(qDouble, GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
+        const double scaleEnc = ciScales.first;
+        const double scaleDec = ciScales.second;
+        // Item 2.4: the diagonal plaintexts are encoded in EvalBootstrapSetup (CIBootstrapPrecompute) and only read
+        // here. If a store does not match the level input (EvalBootstrapSetup with precompute = false, or a chain
+        // the tower model does not cover), that level is encoded locally for this call; `ciLocalEncodes` counts them.
+        uint32_t ciLocalEncodes = 0;
 
-        // Apply a real matrix M (row,col)->double to the encrypted slots via the CI
-        // homomorphic linear transform M v = sum_k D_k (x) rot_{5^k}(v), D_k[s]=M[s][precomp_k[s]].
-        // Baby-step/giant-step: k = n1*j + i, g = 5^{n1}:
+        // Apply the dense real matrix (budget {1,1}) via the CI homomorphic linear transform
+        // M v = sum_k D_k (x) rot_{5^k}(v), D_k[s]=M[s][precomp_k[s]]. Baby-step/giant-step: k = n1*j + i, g = 5^{n1}:
         //   out = sum_j psi_{g^j}( sum_i psi_{g^-j}(D_{n1 j+i}) (x) bx[i] ),  bx[i]=psi_{5^i}(v).
-        // ~n1+n2 = 2 sqrt(N) rotations (key-switches). The N diagonal plaintexts are
-        // LAZILY PRECOMPUTED on the first bootstrap (encoded at the runtime level) and
-        // cached in the precom (p.m_U0hatTPre for CtS, p.m_U0Pre for StC); subsequent
-        // bootstraps reuse them, so the per-bootstrap O(N^2) encode is paid once.
-        const uint64_t m4 = 4ULL * Nn;
-        const uint32_t logN = static_cast<uint32_t>(std::round(std::log2(Nn)));
-        const uint32_t n1 = 1u << ((logN + 1) / 2);
-        const uint32_t n2 = Nn / n1;
-        uint32_t gstep = 1;
-        for (uint32_t t = 0; t < n1; ++t)
-            gstep = static_cast<uint32_t>((static_cast<uint64_t>(gstep) * 5) % m4);  // g = 5^{n1}
+        // ~n1+n2 = 2 sqrt(N) rotations (key-switches); diagonal plaintexts from CIEncodeDenseLevel.
         // HOISTED, EXTENDED-BASIS BSGS linear transform (mirrors EvalCoeffsToSlots): baby
         // rotations 5^i are hoisted (one EvalFastRotationPrecompute, reused) and accumulated in
         // the extended QlP basis; a giant block ModDowns only its element 1 (EvalHornerGiantRotate) and
@@ -1346,13 +1510,22 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // this is the noise reduction that lets the level-collapse rescaling actually deliver precision. The N-term
         // diagonal sum is sparse-skipped (collapsed stages); diagonals are CI-encoded in the QlP
         // basis (CKKSPackedEncoding REAL_CI). Galois element 5^k passed directly (CI EvalFastRotationExt).
-        auto applyCILT = [&](Ciphertext<DCRTPoly> ct, std::vector<ReadOnlyPlaintext>& store,
-                             const std::function<double(uint32_t, uint32_t)>& M) {
-            const bool build = store.empty();
-            if (build)
-                store.resize(static_cast<size_t>(n1) * n2);
-            const uint32_t lvl    = ct->GetLevel();
-            const double scFactPt = cryptoParams->GetScalingFactorReal(lvl);
+        auto applyCILT = [&](Ciphertext<DCRTPoly> ct, const std::vector<ReadOnlyPlaintext>& store, bool enc,
+                             double scale) {
+            const uint64_t m4 = 4ULL * Nn;
+            const uint32_t n1 = CIDenseN1(Nn);
+            const uint32_t n2 = Nn / n1;
+            uint32_t gstep    = 1;
+            for (uint32_t t = 0; t < n1; ++t)
+                gstep = static_cast<uint32_t>((static_cast<uint64_t>(gstep) * 5) % m4);  // g = 5^{n1}
+            const uint32_t towers = ct->GetElements()[0].GetNumOfElements();
+            const std::vector<ReadOnlyPlaintext>* pts = &store;
+            std::vector<ReadOnlyPlaintext> local;
+            if (!CIStoreMatches(*cryptoParams, store, static_cast<size_t>(n1) * n2, towers)) {
+                local = CIEncodeDenseLevel(*cryptoParams, Nn, towers, enc, scale);
+                pts   = &local;
+                ++ciLocalEncodes;
+            }
 
             // Hoisted baby rotations in the extended basis: bx[i] = ext(psi_{5^i}(ct)).
             auto digits = cc->EvalFastRotationPrecompute(ct);
@@ -1363,47 +1536,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 fi    = static_cast<uint32_t>((static_cast<uint64_t>(fi) * 5) % m4);
                 bx[i] = cc->EvalFastRotationExt(ct, fi, digits, true);  // CI: 5^i used directly
             }
-            auto paramsQlP = bx[0]->GetElements()[0].GetParams();  // extended QlP basis at this level
 
             Ciphertext<DCRTPoly> outer;  // extended-basis accumulator
             const auto& autoKeys = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
             uint32_t gj          = 1;  // 5^{n1 j}
             std::vector<uint32_t> map(Nn);
             for (uint32_t j = 0; j < n2; ++j) {
-                uint32_t gj0   = gj;  // 5^{n1 j} (giant Galois element for this block)
-                uint32_t gjInv = (j == 0) ? 1 : NativeInteger(gj0).ModInverse(m4).ConvertToInt<uint32_t>();
+                uint32_t gj0 = gj;  // 5^{n1 j} (giant Galois element for this block)
                 Ciphertext<DCRTPoly> inner;
-                uint32_t fk = gj0;  // 5^{n1 j + i}
                 for (uint32_t i = 0; i < n1; ++i) {
-                    ReadOnlyPlaintext pd;
-                    bool zero = false;
-                    if (build) {
-                        std::vector<double> diag(Nn);
-                        double maxabs = 0.0;
-                        for (uint32_t s = 0; s < Nn; ++s) {
-                            uint32_t sp  = (j == 0) ? s : CIBootPrecomp(Nn, gjInv, s);
-                            uint32_t col = CIBootPrecomp(Nn, fk, sp);
-                            diag[s]      = M(sp, col);
-                            maxabs       = std::max(maxabs, std::abs(diag[s]));
-                        }
-                        zero = (maxabs < 1e-14);  // sparse stage: skip all-zero diagonals
-                        if (!zero) {
-                            std::vector<std::complex<double>> cval(Nn);
-                            for (uint32_t s = 0; s < Nn; ++s)
-                                cval[s] = std::complex<double>(diag[s], 0.0);
-                            auto enc = std::make_shared<CKKSPackedEncoding>(paramsQlP, cc->GetEncodingParams(), cval,
-                                                                           1, lvl, scFactPt, Nn, REAL_CI);
-                            enc->Encode();  // CI-encode the diagonal into the QlP extended basis
-                            pd = enc;
-                        }
-                        store[static_cast<size_t>(j) * n1 + i] = pd;
-                    }
-                    else {
-                        pd   = store[static_cast<size_t>(j) * n1 + i];
-                        zero = (pd == nullptr);
-                    }
-                    fk = static_cast<uint32_t>((static_cast<uint64_t>(fk) * 5) % m4);
-                    if (zero)
+                    const auto& pd = (*pts)[static_cast<size_t>(j) * n1 + i];
+                    if (pd == nullptr)
                         continue;
                     Ciphertext<DCRTPoly> term = EvalMultExt(bx[i], pd);  // extended-basis plaintext mult
                     if (inner == nullptr)
@@ -1452,22 +1595,25 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         const uint32_t lbDec  = p.m_paramsDec.lvlb;
         const bool useRealFFT = (lbEnc > 1 || lbDec > 1);
         // Sparse hoisted BSGS: only the nonzero diagonals of A, baby/giant steps over their offset window.
-        const auto& ciPlan = GetCIRealFFTPlan(Nn);
         // Galois elements of the rotations the sparse levels actually perform (checked against keygen below).
         std::set<uint32_t> ciGalUsed;
         // Modelled towers / key-switching digits per level (the BSGS plan input; same numbers as keygen).
         const auto ciDigits =
             CIBsgsLevelDigits(*cryptoParams, lbEnc, lbDec, GetModDepthInternal(cryptoParams->GetSecretKeyDist()));
-        // sc: per-level scalar applied to the stored (unscaled) diagonals when the plaintexts are encoded.
-        auto applyCISparse = [&](Ciphertext<DCRTPoly> ct, std::vector<ReadOnlyPlaintext>& store, const CISparse& A,
-                                 double sc, uint32_t ksDigits) {
-            const auto bp    = CIPlanBsgs(A, Nn, ksDigits);
-            const bool build = store.empty();
-            if (build)
-                store.resize(static_cast<size_t>(bp.n1) * bp.n2);
-            const uint32_t lvl    = ct->GetLevel();
-            const double scFactPt = cryptoParams->GetScalingFactorReal(lvl);
-            auto offsetOf         = [&](uint32_t u) {  // u = n1*j + i
+        // store: the level's diagonal plaintexts from CIBootstrapPrecompute (BSGS layout of CIEncodeSparseLevel);
+        // sc: per-level scalar applied to the stored (unscaled) diagonals, used only for a local encode.
+        auto applyCISparse = [&](Ciphertext<DCRTPoly> ct, const std::vector<ReadOnlyPlaintext>& store,
+                                 const CISparse& A, double sc, uint32_t ksDigits) {
+            const auto bp         = CIPlanBsgs(A, Nn, ksDigits);
+            const uint32_t towers = ct->GetElements()[0].GetNumOfElements();
+            const std::vector<ReadOnlyPlaintext>* pts = &store;
+            std::vector<ReadOnlyPlaintext> local;
+            if (!CIStoreMatches(*cryptoParams, store, static_cast<size_t>(bp.n1) * bp.n2, towers)) {
+                local = CIEncodeSparseLevel(*cryptoParams, A, Nn, bp, sc, towers);
+                pts   = &local;
+                ++ciLocalEncodes;
+            }
+            auto offsetOf = [&](uint32_t u) {  // u = n1*j + i
                 return static_cast<uint32_t>((static_cast<uint64_t>(bp.h) * (bp.t0 + u)) % Nn);
             };
             std::vector<char> babyUsed(bp.n1, 0);
@@ -1490,12 +1636,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                     bx[i] = LTRun(&LTStats::ext, &LTStats::tBaby, 1, [&] { return cc->KeySwitchExt(ct, true); });
                 }
             }
-            std::shared_ptr<DCRTPoly::Params> paramsQlP;
-            for (auto& b : bx)
-                if (b) {
-                    paramsQlP = b->GetElements()[0].GetParams();
-                    break;
-                }
             Ciphertext<DCRTPoly> outer;
             std::vector<uint32_t> map(Nn);
             const auto& autoKeys = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
@@ -1506,26 +1646,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                     const uint32_t u = bp.n1 * j + i;
                     if (u >= bp.span)
                         break;
-                    const size_t idx = static_cast<size_t>(j) * bp.n1 + i;
-                    ReadOnlyPlaintext pd;
-                    if (build) {
-                        auto it = A.find(offsetOf(u));
-                        if (it != A.end()) {
-                            // giant pre-rotation by -G, then g=5 position -> natural slot
-                            std::vector<std::complex<double>> cval(Nn);
-                            const auto& d = it->second;
-                            for (uint32_t q = 0; q < Nn; ++q)
-                                cval[ciPlan.perm[q]] = std::complex<double>(sc * d[(q + Nn - G) % Nn], 0.0);
-                            auto enc = std::make_shared<CKKSPackedEncoding>(paramsQlP, cc->GetEncodingParams(), cval,
-                                                                           1, lvl, scFactPt, Nn, REAL_CI);
-                            enc->Encode();
-                            pd = enc;
-                        }
-                        store[idx] = pd;
-                    }
-                    else {
-                        pd = store[idx];
-                    }
+                    const auto& pd = (*pts)[u];
                     if (pd == nullptr)
                         continue;
                     Ciphertext<DCRTPoly> term = EvalMultExt(bx[i], pd);
@@ -1563,10 +1684,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Apply sparse g=5-basis levels (apply order), one rescale per level; `scale` (scaleEnc or scaleDec)
         // is spread evenly over the levels at encode time.
         auto applyReal = [&](Ciphertext<DCRTPoly> in, const std::vector<CISparse>& levels,
-                             std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale, const char* tag,
-                             const std::vector<uint32_t>& digits, const std::vector<uint32_t>& towersModel) {
-            if (stores.size() < levels.size())
-                stores.resize(levels.size());
+                             const std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale,
+                             const char* tag, const std::vector<uint32_t>& digits,
+                             const std::vector<uint32_t>& towersModel) {
+            static const std::vector<ReadOnlyPlaintext> noStore;
             const double sc = CIRealLevelScalar(scale, levels.size());
             for (size_t s = 0; s < levels.size(); ++s) {
                 const CISparse& A = levels[s];
@@ -1574,7 +1695,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 LTLevel ltl(tag, static_cast<int32_t>(s), static_cast<uint32_t>(A.size()),
                             in->GetElements()[0].GetNumOfElements(), cryptoParams->GetParamsP()->GetParams().size());
                 const uint32_t towersIn = in->GetElements()[0].GetNumOfElements();
-                in = applyCISparse(in, stores[s], A, sc, CIDigitsAt(digits, s));
+                in = applyCISparse(in, (s < stores.size()) ? stores[s] : noStore, A, sc, CIDigitsAt(digits, s));
                 ltl.Print();
                 if (ciTiming) {
                     auto bp = CIPlanBsgs(A, Nn, CIDigitsAt(digits, s));
@@ -1600,9 +1721,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         else {
             // CtS = scaleEnc * N * U^-1 = scaleEnc * diag(1,.5..) * U^T. With decoded(raised)=U*t/N
             // this gives post-CtS slots = scaleEnc * t (the standard EvalMod input scale, k=1).
-            ctxtEnc = applyCILT(raised, p.m_U0hatTPre, [&](uint32_t a, uint32_t b) {
-                return scaleEnc * ((a == 0) ? 1.0 : 0.5) * CIBootU(Nn, b, a);
-            });
+            ctxtEnc = applyCILT(raised, p.m_U0hatTPre, true, scaleEnc);
             rescale1(ctxtEnc);
         }
 
@@ -1637,8 +1756,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                                   ciDigits.dec, ciDigits.towersDec);
         }
         else {
-            ctxtDecCI = applyCILT(ctxtEnc, p.m_U0Pre,
-                                  [&](uint32_t a, uint32_t b) { return scaleDec * CIBootU(Nn, a, b); });
+            ctxtDecCI = applyCILT(ctxtEnc, p.m_U0Pre, false, scaleDec);
             rescale1(ctxtDecCI);
         }
 
@@ -1663,6 +1781,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             if (ciTiming)
                 std::cerr << "[CI-BT] Galois check: " << ciGalUsed.size() << " rotations == keygen set\n";
         }
+        if (ciTiming)
+            std::cerr << "[CI-BT] local diagonal encodes: " << ciLocalEncodes << " levels (0 = all precomputed)\n";
 #if NATIVEINT != 128
         uint64_t corFactor = static_cast<uint64_t>(1) << std::llround(correction);
         algo->MultByIntegerInPlace(ctxtDecCI, corFactor);
