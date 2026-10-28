@@ -1695,3 +1695,62 @@ gain (measured -9% / -30% / -42%), and per-diagonal cost at or below std's CtS-f
 1.69 s / 189 = 8.9 ms at 2 after; 8.0 vs 10.7 ms at 3; 8.2 vs 13.3 ms at 5). Left open, outside phase 2: the
 original comparison at >= 6 levels after (17-18 GB CI job at 2^16, or a different, smaller-diagonal factorization).
 Attempt 2 reuses the runs above; no new job is needed.
+
+## 2.R Phase 2 review -- DONE (attempt 2, 2026-10-28)
+
+Attempt 2 is a paperwork pass against the revised criteria in `PLAN_PHASE2.md` (commit 939e4cef). No code changed since
+item 2.5 (`git diff --stat 61a83a1a HEAD` lists only `PLAN_PHASE2.md` and `PHASE2_LOG.md`), so the attempt-1 runs
+`p2R_base`, `p2R_after3b`, `p2R_after5` and `p2R_smoke` (all rc 0, on WSL through `wsl-guard.sh`, no sleep inside a
+job) are reused. No build and no job ran in this attempt; nothing ran on ICELAKE. The numbers below were re-derived
+from the logs in `~/ci-ckks-wsl/logs/` (stage time = median of the 3 warm bootstraps; plaintext mults = sum of
+`ptMult` over the StC `[LT]` levels of one bootstrap; per diagonal = stage median / plaintext mults).
+
+**Criterion 1: CI CtS <= 1.5x std CtS, CI StC <= 1.5x std StC, or the excess is the diagonal count** (2^16, 128-bit,
+2 levels after, `p2R_base`). Met.
+
+| stage, budget | CI / std stage s | stage ratio | diagonal ratio | same-shape level CI / std |
+|---|---|---|---|---|
+| CtS {5,3} | 5.16 / 3.59 | **1.44x** <= 1.5x | 137 / 75 = 1.83x | |
+| CtS {4,4} | 5.85 / 4.50 | **1.30x** <= 1.5x | 187 / 108 = 1.73x | level 1: 1.105 / 1.102 s = 1.00x |
+| StC {5,3} | 2.55 / 1.69 | **1.51x** < 1.68x | 317 / 189 = 1.68x | level 0: 0.622 / 0.594 s = 1.05x |
+| StC {4,4} | 2.15 / 1.27 | **1.69x** < 1.73x | 187 / 108 = 1.73x | |
+
+**Criterion 2: StC-first pays for CI StC** (2^16 {5,3}; StC stage medians in s; per-diagonal in ms). Met: StC-first CI
+StC is below CtS-first CI StC at every chain, the gain grows with the levels after, and per diagonal StC-first CI StC
+costs less than std's CtS-first StC at every chain.
+
+| levels after (run, chain) | CI StC-first StC | CI CtS-first StC | StC-first gain | CI StC-first per diag (/317) | std CtS-first StC | std per diag (/189) |
+|---|---|---|---|---|---|---|
+| 2 (`p2R_base`, 21 + 7, 128-bit) | 2.32 | 2.55 | **-9%** | **7.30** | 1.69 | 8.94 |
+| 3 (`p2R_after3b`, 22 + 8, dnum 3, insecure) | 2.54 | 3.62 | **-30%** | **8.02** | 2.02 | 10.66 |
+| 5 (`p2R_after5`, 24 + 8, dnum 3, insecure) | 2.59 | 4.43 | **-42%** | **8.16** | 2.51 | 13.29 |
+
+The 3- and 5-levels-after rows are same-chain stage comparisons at dnum 3 with the security check off (log QP 1779 /
+1897 > 1747); they are not 128-bit times. The `[LT]` sum for CI CtS-first StC at 5 after is 4.38 s (the attempt-1
+table gave 4.55); the stage median 4.43 s is the same in both readings and the conclusion does not change.
+
+**Criterion 3: both CI orderings build, run and give the expected precision.** Met.
+
+| run | CtS-first RMS / min bits | StC-first RMS / min bits |
+|---|---|---|
+| 2^16 {5,3}, 128-bit (`p2R_base`; item 2.5: 21.56 / 18.48, 21.92 / 19.71) | 21.57 / 18.05 | 21.91 / 19.85 |
+| 2^16 {5,3}, 3 after (`p2R_after3b`) | 21.57 / 18.34 | 21.92 / 19.81 |
+| 2^16 {5,3}, 5 after (`p2R_after5`) | 21.56 / 18.32 | 21.92 / 19.85 |
+| 2^12 {1,1} dense (`p2R_smoke`) | 18.80 / 17.18 | 22.68 / 21.24 |
+| 2^12 {3,3} | 18.80 / 17.18 | 24.68 / 23.27 |
+| 2^13 {4,4} | 19.71 / 18.03 | 22.67 / 21.17 |
+| 2^14 {5,3} | 20.71 / 18.89 | 22.48 / 20.53 |
+| 2^12 {3,3} uniform secret | 20.13 / 18.21 | 23.32 / 18.89 |
+
+The Galois check held at every bootstrap of the four jobs (44 checks, no mismatch), and no level was encoded at run
+time (`local diagonal encodes: 0 levels` in every bootstrap).
+
+**Phase 2 result (WSL, HEAD, 2^16 {5,3}, 128-bit, 2 levels after):** CI 11.99 s vs std 11.63 s CtS-first
+(2 x std / CI = 1.94x); CI 11.62 s vs std 8.43 s StC-first (1.45x). Stage ratios CtS 1.44x, StC 1.51x, EvalMod 0.65x.
+
+**Open, carried out of phase 2:**
+- The original criterion 2 (StC-first CI StC below std's CtS-first StC): measured 1.37x / 1.27x / 1.03x at 2 / 3 / 5
+  levels after; the crossover is at about 6 levels after, which at 2^16 needs a 17-18 GB CI job, or a factorization
+  with fewer CI StC diagonals (317 against std's 189).
+- 3 levels after (the paper's setting) at 128-bit with 59-bit primes needs dnum 4; CI then needs a job cap of about
+  17-18 GB (dnum 4 was OOM-killed at 15 GB in `p2R_after3`).

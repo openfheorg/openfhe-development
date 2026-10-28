@@ -59,6 +59,10 @@ budget {4,4}: CI 17.48 s (8.37 / 6.30 / 2.68), std 18.23 s (6.11 / 9.92 / 1.87),
 per bootstrap than ICELAKE and its run-to-run spread is up to ~15% (thermal): use interleaved A/B pairs. Since item 2.4 the CI
 diagonals are encoded in `EvalBootstrapSetup` (1 thread: 18.5 s at 2^16 {5,3}; parallel), so the first CI bootstrap
 is warm (18.0 vs 16.5 s; it was 35.5 s) and `setup+keygen_s` is ~18 s larger; warm time, keys and RSS unchanged.
+Phase 2 review (2.R) reference (`p2R_base`, WSL, HEAD after item 2.5, same settings, one interleaved job, reps 3):
+CI {5,3} 11.99 s vs std {5,3} 11.63 s CtS-first (1.94x); CI 11.62 s vs std 8.43 s StC-first (corr 12 / 13; 1.45x);
+stage ratios CtS 1.44x, StC 1.51x, EvalMod 0.65x. The clock varies by up to ~27% from session to session (this job
+took 27% less time than the 2.4 baseline above), so later items compare only within one interleaved job.
 
 ICELAKE baseline (item 2.3, reference only; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
 after, each scheme at its best budget, reps 3): both schemes' best budget is {5,3}. CI {5,3} corr 4: 22.15 s for
@@ -168,7 +172,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   into the precom from a const `EvalBootstrap`; parallel encodes at setup; extended QlP form as now).
 - [x] **2.5** StC-first CI variant (the paper's ordering): CI branch in `EvalBootstrapStCFirst` (StC at the
   bottom of the chain, ModRaise, CtS, EvalMod); compare time, precision and output level with CtS-first.
-- [ ] **2.R** Phase 2 review. Done when: (1) at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or
+- [x] **2.R** Phase 2 review. Done when: (1) at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or
   the excess is accounted for by the diagonal count); (2) the StC-first ordering pays for CI StC: at 2^16 {5,3},
   StC-first CI StC is below CtS-first CI StC at every measured chain (2, 3 and 5 levels after the bootstrap) with
   the gain growing with the levels after, and per diagonal (StC time / plaintext mults from the `[LT]` lines)
