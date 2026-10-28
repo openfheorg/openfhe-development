@@ -114,7 +114,10 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
 5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.
    (Done in phase 2.4: `EvalBootstrapSetup` encodes them, in parallel; the first bootstrap is warm.)
 6. **Not done:** the paper's functional bootstrapping (CI-AKP with radial correction, CI-Hermite),
-   StC-first ordering, multi-thread tuning.
+   StC-first ordering, multi-thread tuning. (StC-first done in phase 2.5: `BTSlotsEncoding = true` gives the CI
+   StC-first bootstrap; at 2^16 {5,3} it is 2.1% faster (StC -9.4%) and 1.2 bits more precise (max error) with
+   corr 12; std's real-data StC-first runs EvalMod once and is 27% faster than std CtS-first, so CI/2xstd is 1.53x
+   with both StC-first vs 2.05x with both CtS-first. See `PHASE2_LOG.md` 2.5.)
 
 ## 5. Other CI-CKKS work found
 Upstream `openfheorg/openfhe-development` main and dev (v1.6.1) have no CI-CKKS. Stale 2023 feature
@@ -141,6 +144,7 @@ diagonals; the paper puts the short product last; since item 2.3 the split comes
 
 Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
 1. `REAL_CI` with `BTSlotsEncoding = true` would run the standard StC-first path on CI data (no guard).
+   (Phase 0.1: guarded with a throw. Phase 2.5: replaced by a native CI StC-first branch in `EvalBootstrap`.)
 2. The CI correction-factor default change (`cfSlots = N/2`) is harmful and must be reverted. It moves the CI
    default at 2^16 (FLEXIBLEAUTO, CtS-first fit) from 7 to 8; measured with the committed code: CI RMS drops
    from 18.24 to 17.23 bits and min precision from 15.0 to 13.9 (std, which uses 8, is unchanged at 18.24).

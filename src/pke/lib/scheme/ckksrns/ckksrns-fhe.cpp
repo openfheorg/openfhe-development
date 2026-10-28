@@ -433,13 +433,16 @@ CIBsgsPlan CIPlanBsgs(const CISparse& A, uint32_t N, uint32_t digits) {
 // Q towers and key-switching digits of the input of every CI CtS / StC level (apply order), from the chain shape:
 // CtS level s starts with L0 - cd (1 + s) towers (after the ModRaise rescale), StC level s with
 // L0 - cd (lbEnc + modDepth + s) (modDepth = GetModDepthInternal; checked against the runtime tower counts for
-// encapsulated and uniform secrets at 2^10..2^16, item 2.2). Keygen and the evaluator plan from these numbers, not
-// from the runtime tower count, so that their rotation sets agree by construction.
+// encapsulated and uniform secrets at 2^10..2^16, item 2.2). StC-first (BTSlotsEncoding, item 2.5): StC runs at the
+// bottom of the chain, before the ModRaise, on an input with cd (lbDec + 2) (+1 for FLEXIBLEAUTOEXT) towers, so StC
+// level s starts with cd (lbDec + 2 - s) (+1) towers; the CtS towers are the same. Keygen and the evaluator plan from
+// these numbers, not from the runtime tower count, so that their rotation sets agree by construction.
 struct CILevelDigits {
     std::vector<uint32_t> towersEnc, towersDec, enc, dec;
 };
 
-CILevelDigits CIBsgsLevelDigits(const CryptoParametersCKKSRNS& cp, uint32_t lbEnc, uint32_t lbDec, uint32_t modDepth) {
+CILevelDigits CIBsgsLevelDigits(const CryptoParametersCKKSRNS& cp, uint32_t lbEnc, uint32_t lbDec, uint32_t modDepth,
+                                bool stcFirst) {
     const int64_t cd    = cp.GetCompositeDegree();
     const int64_t L0    = static_cast<int64_t>(cp.GetElementParams()->GetParams().size()) -
                        (cp.GetScalingTechnique() == FLEXIBLEAUTOEXT ? 1 : 0);
@@ -453,8 +456,9 @@ CILevelDigits CIBsgsLevelDigits(const CryptoParametersCKKSRNS& cp, uint32_t lbEn
     };
     for (uint32_t s = 0; s < lbEnc; ++s)
         add(L0 - cd * (1 + s), r.towersEnc, r.enc);
+    const int64_t ext = (cp.GetScalingTechnique() == FLEXIBLEAUTOEXT) ? 1 : 0;
     for (uint32_t s = 0; s < lbDec; ++s)
-        add(L0 - cd * (lbEnc + modDepth + s), r.towersDec, r.dec);
+        add(stcFirst ? cd * (lbDec + 2 - s) + ext : L0 - cd * (lbEnc + modDepth + s), r.towersDec, r.dec);
     return r;
 }
 
@@ -644,7 +648,7 @@ bool CIStoreMatches(const CryptoParametersCKKSRNS& cp, const std::vector<ReadOnl
 void CIBootstrapPrecompute(const CryptoParametersCKKSRNS& cp, CKKSBootstrapPrecom& p, uint32_t N, double scaleEnc,
                            double scaleDec, uint32_t modDepth) {
     const uint32_t lbEnc = p.m_paramsEnc.lvlb, lbDec = p.m_paramsDec.lvlb;
-    const auto dg        = CIBsgsLevelDigits(cp, lbEnc, lbDec, modDepth);
+    const auto dg        = CIBsgsLevelDigits(cp, lbEnc, lbDec, modDepth, p.BTSlotsEncoding);
     p.m_U0hatTPreFFT.clear();
     p.m_U0PreFFT.clear();
     p.m_U0hatTPre.clear();
@@ -681,11 +685,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
-    // The slots-encoding variant dispatches to EvalBootstrapStCFirst, which has no conjugate-invariant branch.
-    if (BTSlotsEncoding && cc.GetCKKSDataType() == REAL_CI)
-        OPENFHE_THROW(
-            "BTSlotsEncoding (StC-first bootstrapping) is not supported for the REAL_CI data type; "
-            "use BTSlotsEncoding = false (CtS-first native CI bootstrapping).");
+    // REAL_CI with BTSlotsEncoding: StC-first native CI bootstrap (StC at the bottom of the chain, ModRaise, CtS,
+    // EvalMod; item 2.5), evaluated by the CI branch of EvalBootstrap.
 
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
@@ -702,11 +703,13 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             // Measured (FLEXIBLEAUTO, CtS-first, sparse encapsulation, ci-ckks-paper/PHASE2_LOG.md item 0.2):
             // at an equal correction factor CI is 1.0-1.4 bits below std, and each bit less gains ~1 bit for
             // both schemes, so this gives CI the precision of std at the std default (2^16: CI 7 vs std 8).
+            // StC-first (BTSlotsEncoding): CI and std give the same precision at an equal correction factor (item 2.5,
+            // 2^15: the sine argument is the message itself for both), so CI uses std's StC-first default.
             const bool isCI      = (cc.GetCKKSDataType() == REAL_CI);
             const double fitLog2 = std::log2(isCI ? std::max<uint32_t>(1, slots / 2) : slots);
             int32_t tmp = BTSlotsEncoding ? std::round(-0.1887 * (2 * std::log2(M / 2) + fitLog2) + 19.763) :
                                             std::round(-0.2419 * (2 * std::log2(M / 2) + fitLog2) + 19.081);
-            m_correctionFactor = std::clamp<int32_t>(tmp - (isCI ? 1 : 0), 7, 14);
+            m_correctionFactor = std::clamp<int32_t>(tmp - ((isCI && !BTSlotsEncoding) ? 1 : 0), 7, 14);
         } else {
             uint32_t tmp = BTSlotsEncoding ? std::round(-0.0645 * (2 * std::log2(M / 2) + std::log2(slots)) + 13.855) :
                                              std::round(-0.1516 * (2 * std::log2(M / 2) + std::log2(slots)) + 14.284);
@@ -913,7 +916,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
                 const uint32_t lbE = pit->second->m_paramsEnc.lvlb, lbD = pit->second->m_paramsDec.lvlb;
                 if (lbE > 1 || lbD > 1) {
                     const auto dg = CIBsgsLevelDigits(*cryptoParams, lbE, lbD,
-                                                      GetModDepthInternal(cryptoParams->GetSecretKeyDist()));
+                                                      GetModDepthInternal(cryptoParams->GetSecretKeyDist()),
+                                                      pit->second->BTSlotsEncoding);
                     return addSparseKeys(
                             algo->EvalAutomorphismKeyGen(privateKey, CIRealFFTGaloisElements(N, lbE, lbD, dg)));
                 }
@@ -1304,7 +1308,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     uint32_t slots = ciphertext->GetSlots();
     auto& p = GetBootPrecom(slots, CKKSBootstrapPrecom::BOOTSTRAP);
 
-    if (p.BTSlotsEncoding) {
+    // REAL_CI: both orderings are evaluated below (ciStcFirst).
+    if (p.BTSlotsEncoding && ciphertext->GetCryptoContext()->GetCKKSDataType() != REAL_CI) {
         return EvalBootstrapStCFirst(ciphertext, numIterations, precision);
         // AA: Note that in the FIXEDMANUAL case, EvalBootstrap and EvalBootstrapStCFirst return ciphertexts with different NoiseDeg.
     }
@@ -1435,14 +1440,20 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     // it's being raised to.
     // Increasing the modulus
 
-    auto raised = ciphertext->Clone();
+    // StC-first native CI bootstrap (precomputation with BTSlotsEncoding, item 2.5): the CI branch below runs StC
+    // on the input first and raises its output; the input is not raised here.
+    const bool ciStcFirst = (cc->GetCKKSDataType() == REAL_CI) && p.BTSlotsEncoding;
     auto algo = cc->GetScheme();
-    algo->ModReduceInternalInPlace(raised, compositeDegree * (raised->GetNoiseScaleDeg() - 1));
     uint32_t lvl = cryptoParams->GetScalingTechnique() != FLEXIBLEAUTOEXT ? 0 : 1;
-    AdjustCiphertext(raised, std::pow(2, -static_cast<int32_t>(correction)), lvl);
-
+    auto raiseInPlace = [&](Ciphertext<DCRTPoly>& r) {
+        algo->ModReduceInternalInPlace(r, compositeDegree * (r->GetNoiseScaleDeg() - 1));
+        AdjustCiphertext(r, std::pow(2, -static_cast<int32_t>(correction)), lvl);
+        ModRaiseInPlace(r, elementParamsRaisedPtr);
+    };
+    auto raised = ciphertext->Clone();
     uint32_t N = cc->GetRingDimension();
-    ModRaiseInPlace(raised, elementParamsRaisedPtr);
+    if (!ciStcFirst)
+        raiseInPlace(raised);
 
 #ifdef BOOTSTRAPTIMING
     auto numTowers = raised->GetElements()[0].GetNumOfElements() - 1;
@@ -1469,7 +1480,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         coefficients = g_coefficientsUniform;
     }
 
-    cc->EvalMultInPlace(raised, pre / N);
+    if (!ciStcFirst)
+        cc->EvalMultInPlace(raised, pre / N);
 
     // no linear transformations are needed for Chebyshev series as the range has been normalized to [-1,1]
     double coeffLowerBound = -1.0;
@@ -1598,8 +1610,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Galois elements of the rotations the sparse levels actually perform (checked against keygen below).
         std::set<uint32_t> ciGalUsed;
         // Modelled towers / key-switching digits per level (the BSGS plan input; same numbers as keygen).
-        const auto ciDigits =
-            CIBsgsLevelDigits(*cryptoParams, lbEnc, lbDec, GetModDepthInternal(cryptoParams->GetSecretKeyDist()));
+        const auto ciDigits = CIBsgsLevelDigits(*cryptoParams, lbEnc, lbDec,
+                                                GetModDepthInternal(cryptoParams->GetSecretKeyDist()), ciStcFirst);
         // store: the level's diagonal plaintexts from CIBootstrapPrecompute (BSGS layout of CIEncodeSparseLevel);
         // sc: per-level scalar applied to the stored (unscaled) diagonals, used only for a local encode.
         auto applyCISparse = [&](Ciphertext<DCRTPoly> ct, const std::vector<ReadOnlyPlaintext>& store,
@@ -1710,10 +1722,57 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             return in;
         };
 
+        auto tStage = ciNow();
+        if (ciStcFirst) {
+            // StC-first (the paper's ordering): the input holds the message in its slots. Drop it to the StC input
+            // level (cd (lbDec + 2) towers, as std's EvalBootstrapStCFirst), apply StC (U: slots -> coefficients),
+            // ModRaise its output and continue with CtS and EvalMod; no StC after EvalMod. The scalars are those
+            // of CtS-first (scaleDec on StC, scaleEnc on CtS): the q0 I overflow only meets scaleEnc, and the
+            // message gets scaleDec * scaleEnc before the sine instead of scaleEnc before and scaleDec after it.
+            auto dep = ciphertext->Clone();
+            const uint32_t expectedLevel = L0 - compositeDegree * (lbDec + 2) - (st == FLEXIBLEAUTOEXT ? 1 : 0);
+            if (dep->GetLevel() + compositeDegree * (dep->GetNoiseScaleDeg() - 1) > expectedLevel)
+                OPENFHE_THROW("Not enough levels to perform StC-first CI bootstrapping: the input needs " +
+                              std::to_string(L0 - expectedLevel) + " towers.");
+            algo->ModReduceInternalInPlace(dep, compositeDegree * (dep->GetNoiseScaleDeg() - 1));
+            const uint32_t depLevel = dep->GetLevel();
+            if (depLevel < expectedLevel) {
+                if (st == FIXEDMANUAL || st == FIXEDAUTO) {
+                    algo->LevelReduceInternalInPlace(dep, expectedLevel - depLevel);
+                }
+                else {
+                    // as EvalBootstrapStCFirst: one constant multiply + rescale lands on the exact scaling factor
+                    // of expectedLevel
+                    double scf2      = dep->GetScalingFactor();
+                    double scf1      = cryptoParams->GetScalingFactorRealBig(expectedLevel - compositeDegree);
+                    double scf       = cryptoParams->GetScalingFactorReal(depLevel);
+                    double targetScf = cryptoParams->GetScalingFactorReal(expectedLevel);
+                    dep              = cc->EvalMult(dep, scf1 / scf2 / scf);
+                    if (depLevel + compositeDegree < expectedLevel)
+                        algo->LevelReduceInternalInPlace(dep, expectedLevel - depLevel - compositeDegree);
+                    algo->ModReduceInternalInPlace(dep, compositeDegree);
+                    dep->SetScalingFactor(targetScf);
+                }
+            }
+            if (useRealFFT) {
+                dep = applyReal(dep, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec, "ci-StC",
+                                ciDigits.dec, ciDigits.towersDec);
+            }
+            else {
+                dep = applyCILT(dep, p.m_U0Pre, false, scaleDec);
+                rescale1(dep);
+            }
+            if (ciTiming)
+                std::cerr << "[CI-BT] StC " << ciSec(tStage) << " s (StC-first)\n";
+            tStage = ciNow();
+            raised = dep;
+            raiseInPlace(raised);
+            cc->EvalMultInPlace(raised, pre / N);
+        }
+
         // CoeffsToSlots (U^{-1}).
         algo->ModReduceInternalInPlace(raised, compositeDegree);
         Ciphertext<DCRTPoly> ctxtEnc;
-        auto tStage = ciNow();
         if (useRealFFT) {
             ctxtEnc = applyReal(raised, GetCIRealLevels(Nn, lbEnc, lbDec).enc, p.m_U0hatTPreFFT, scaleEnc, "ci-CtS",
                                 ciDigits.enc, ciDigits.towersEnc);
@@ -1735,7 +1794,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         uint32_t numIter = (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ? R_UNIFORM : R_SPARSE;
         ApplyDoubleAngleIterations(ctxtEnc, numIter);
         algo->MultByIntegerInPlace(ctxtEnc, scalar);
-        if (st != FIXEDMANUAL)
+        if (st != FIXEDMANUAL && !ciStcFirst)
             algo->ModReduceInternalInPlace(ctxtEnc, compositeDegree);
         if (g_CIDbgSK) {  // E0.1: capture post-EvalMod (pre-StC) recovered coefficients
             Plaintext dp;
@@ -1749,9 +1808,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         if (ciTiming)
             std::cerr << "[CI-BT] EvalMod " << ciSec(tStage) << " s\n";
         tStage = ciNow();
-        // SlotsToCoeffs (U).
+        // SlotsToCoeffs (U); StC-first: already applied before the ModRaise.
         Ciphertext<DCRTPoly> ctxtDecCI;
-        if (useRealFFT) {
+        if (ciStcFirst) {
+            ctxtDecCI = ctxtEnc;
+        }
+        else if (useRealFFT) {
             ctxtDecCI = applyReal(ctxtEnc, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec, "ci-StC",
                                   ciDigits.dec, ciDigits.towersDec);
         }
@@ -1760,7 +1822,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             rescale1(ctxtDecCI);
         }
 
-        if (ciTiming)
+        if (ciTiming && !ciStcFirst)
             std::cerr << "[CI-BT] StC " << ciSec(tStage) << " s\n";
         if (useRealFFT) {
             // Keygen/evaluator consistency: the real-FFT Galois keys generated by EvalBootstrapKeyGen must be
@@ -1989,11 +2051,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
                                                        uint32_t precision) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
-    // Also reached from EvalBootstrap through a precomputation with BTSlotsEncoding = true (e.g. deserialized).
-    if (cryptoParams->GetCKKSDataType() == REAL_CI)
-        OPENFHE_THROW(
-            "EvalBootstrapStCFirst (BTSlotsEncoding) is not supported for the REAL_CI data type; "
-            "use EvalBootstrap with BTSlotsEncoding = false (CtS-first native CI bootstrapping).");
+    // REAL_CI: the StC-first CI bootstrap is the CI branch of EvalBootstrap; it needs a precomputation (diagonal
+    // towers, Galois keys) set up for that ordering.
+    if (cryptoParams->GetCKKSDataType() == REAL_CI) {
+        if (!GetBootPrecom(ciphertext->GetSlots(), CKKSBootstrapPrecom::BOOTSTRAP).BTSlotsEncoding)
+            OPENFHE_THROW(
+                "EvalBootstrapStCFirst for REAL_CI needs EvalBootstrapSetup(..., BTSlotsEncoding = true) "
+                "(the CtS-first precomputation and keys do not fit the StC-first chain); use EvalBootstrap.");
+        return EvalBootstrap(ciphertext, numIterations, precision);
+    }
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW("CKKS Bootstrapping only supported with Hybrid key switching.");

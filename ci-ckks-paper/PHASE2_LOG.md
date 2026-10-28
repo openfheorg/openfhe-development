@@ -1447,3 +1447,135 @@ first 7.30 s, warm 6.87 s. Time to the first bootstrapped result: 23.6 -> 17.7 s
   context. `EvalBootstrapPrecompute` (the documented deserialize-then-recompute flow) now builds the CI stores too.
 - The "~70 s cold run" in the plan was an early ICELAKE number (before items 0.3-2.3); at HEAD it was 22.7 s on WSL
   (39.0 - 16.4 s) and 20-23 s on ICELAKE.
+
+## 2.5 StC-first CI bootstrap (the paper's ordering) (2026-10-28)
+
+All builds and runs on the WSL VM (i7-12700H) through `ci-ckks-paper/tools/wsl-guard.sh`; nothing ran on ICELAKE.
+Compare only with WSL numbers. The CPU ran about 27% faster in this session than in item 2.4 (CI CtS-first {5,3} warm
+11.9 s here, 16.4 s in the 2.4 WSL baseline; same binary code path), so only the interleaved pairs below are
+comparable with each other.
+
+**What changed.**
+1. `src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp`: `EvalBootstrapSetup(..., BTSlotsEncoding = true)` is now allowed for
+   `REAL_CI` (the item 0.1 throw is removed) and selects the StC-first CI bootstrap. It is evaluated by the CI branch of
+   `EvalBootstrap` (flag `ciStcFirst`): the input is dropped to the StC input level, cd (lbDec + 2) towers (the same
+   level and the same FLEXIBLEAUTO scale fix-up as std's `EvalBootstrapStCFirst`), CI StC (scaleDec x U, the CtS-first
+   StC levels and stores) runs on it, then correction-factor adjust, ModRaise, x pre/N, CI CtS (scaleEnc), EvalMod
+   (one real ciphertext), x scalar, x 2^correction. There is no StC after EvalMod; the output has noise scale degree 2
+   (FLEXIBLEAUTO), as std StC-first. The scalars are those of CtS-first (the q0 I overflow meets only scaleEnc).
+2. `CIBsgsLevelDigits(..., stcFirst)`: StC level s of the StC-first chain has cd (lbDec + 2 - s) (+1 FLEXIBLEAUTOEXT)
+   towers; keygen (`EvalBootstrapKeyGen`, from the precom's `BTSlotsEncoding`), the setup encodes
+   (`CIBootstrapPrecompute`) and the evaluator use it, so the stores and Galois sets match by construction (checked:
+   every runtime tower count equals the model, the Galois check held, 0 local encodes, in every run below).
+3. `EvalBootstrapStCFirst` on `REAL_CI` forwards to `EvalBootstrap` when the precom was set up with
+   `BTSlotsEncoding = true` and throws otherwise (a CtS-first precom has the wrong StC towers and keys);
+   `EvalBootstrap` no longer dispatches CI to `EvalBootstrapStCFirst`. Header comments updated.
+4. Default correction factor for CI StC-first: std's StC-first fit without CI's "-1" (CI and std have the same
+   precision at an equal correction factor in StC-first, results 2). The measured best at 59/60 is higher (below).
+5. Driver `ci-fft-boot`: `stcfirst` 1 encrypts the input with lbDec + 2 towers (level depth - lbDec - 1), the StC
+   input level (before, std StC-first could not run from the driver: "Not enough levels"); the output line prints
+   the input level / towers and the output level / towers / noise scale degree; RESULT has `stcfirst`.
+6. `tools/ci-split-search.cpp`: optional last argument `stcFirst` (StC level s at lbDec + 2 - s towers).
+
+**Commands** (`B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` = `build-wsl-bt/...`, 1 thread, encap, FLEXIBLEAUTO 59/60):
+
+    wsl-guard.sh p25_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8 && cmake --build build-wsl-bt --target ci-fft-boot -j 8
+        && g++ -O2 -std=c++17 -Isrc/core/include ci-ckks-paper/tools/ci-split-search.cpp src/core/lib/math/ci-realfft.cpp -o ~/ci-ckks-wsl/tools/ci-split-search'  # rc 0
+    wsl-guard.sh p25_split 3 'ci-split-search 16 5 {2,3,4} 6 2 10 7 3 7 1; ci-split-search 16 5 3 4 2 10 7 3 7 0'   # rc 0
+    wsl-guard.sh p25_smoke 9 'CI_BOOT_TIMING=1 $B ci {12 1 1, 12 2 2, 12 3 3, 12 4 4, 12 5 3, 13 4 4, 14 5 3, 15 5 3, 15 4 4} 59 60 0 2 fa 4 encap {0,1};
+        $B ci 12 3 3 ... {fa 0 uniform, fm 0 encap} {0,1}; $B std 14 5 3 ... fa 5 encap {0,1}; $B ci 12 3 3 ... fa 4 encap 2'   # rc 0
+    wsl-guard.sh p25_corr15 8 '$B {ci,std} 15 5 3 59 60 0 2 fa corr encap 1, corr 6..12 (+ CtS-first refs ci corr 4, std corr 5)'  # rc 0 (*)
+    wsl-guard.sh p25_corr15b 8 '... corr 13..17'                                                                        # rc 0
+    wsl-guard.sh p25_build2 12 '<both build dirs, ci-fft-boot, -j 8>'     # rc 0, after the default-corr change (item 4 above)
+    wsl-guard.sh p25_ab 15 'CI_BOOT_TIMING=1: $B ci 16 5 3 59 60 1 3 fa 4 encap 0; $B ci ... fa 12 encap 1; $T std ... fa 5 encap 0;
+        $T std ... fa 13 encap 1; $B ci ... fa 13 encap 1; $T std ... fa 12 encap 1'                                 # rc 0
+    wsl-guard.sh p25_ab2 15 '$B ci ... 12 encap 1; $B ci ... 4 encap 0; (again); $T std ... 13 encap 1; $T std ... 5 encap 0'  # rc 0
+    wsl-guard.sh p25_extra 7 '$B ci 12 1 1 59 60 0 2 fa 12 encap 1; $B ci 12 3 3 59 60 0 2 fa 0 encap 1; ci-split-search 16 5 3 1 {2,3,5} 10 7 3 7 {0,1}'
+
+(*) `p25_corr15` spanned a laptop sleep (55 min wall, 9.4 min CPU, uptime advanced 10 min); its precision numbers
+are valid, its times are not used. `p25_ab` / `p25_ab2`: wall time equals the uptime advance (494 / 510 s), no sleep.
+(`p25_build_head`, a first build, compiled a partial edit of this item; it is not used.)
+
+**Results 1: correctness at 2^12..2^15** (`p25_smoke`, insecure, reps 2). StC-first runs at every budget, including
+the dense {1,1}, with the uniform secret and with FIXEDMANUAL; std StC-first runs from the driver. The CtS-first path
+is unchanged (RMS / min equal to `p24_smoke` within run-to-run noise: 2^13 {4,4} 19.71 / 18.03, 2^15 {5,3}
+21.64 / 19.45, {4,4} 21.64 / 19.58). Keys and Galois sets are the same for both orders at every budget here (all StC
+levels have one key-switching digit in both chains). `stcfirst` 2 (EvalBootstrapStCFirst on a CtS-first setup)
+throws as intended. At the CtS-first correction factor (corr 4 CI, 5 std) StC-first gives only 6.69 bits RMS (CI, every
+N) and 8.68 (std): the correction factor has to be retuned (results 2).
+
+| 2^12, insecure | CtS-first RMS / min | StC-first RMS / min | note |
+|---|---|---|---|
+| CI {3,3} uniform, default corr | 20.11 / 18.25 | 22.61 / 19.69 | |
+| CI {3,3} FIXEDMANUAL, default corr | 19.46 / 17.52 | 22.29 / 20.45 | |
+| CI {3,3} encap (CtS-first corr 4, StC-first default 13) | 18.80 / 17.18 | 24.68 / 23.26 | `p25_extra` |
+| CI {1,1} dense encap (corr 4 / 12) | 18.80 / 17.18 | 22.68 / 21.23 | `p25_extra` |
+
+**Results 2: correction factor for StC-first** (2^15 {5,3}, insecure, reps 2). In StC-first the sine argument is the
+message itself (coefficient = slot value after StC), about sqrt(N) larger than the CtS-first coefficients, so the
+message must be shrunk by 2^correction much more. Up to corr 12 the sine's cubic error dominates (+2 bits per step,
+the same for CI and std, independent of N); above it the EvalMod/key-switching noise, amplified by 2^correction, takes
+over (-1 bit per step). CtS-first references: CI corr 4 21.65 / 19.70, std corr 5 22.51 / 20.50.
+
+| corr | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| CI RMS | 10.68 | 12.68 | 14.68 | 16.68 | 18.68 | 20.68 | **22.48** | 22.46 | 21.50 | 20.49 | 19.48 | 18.50 |
+| CI min | 9.28 | 11.28 | 13.28 | 15.28 | 17.28 | 19.20 | **20.65** | 20.38 | 19.51 | 18.25 | 17.37 | 16.39 |
+| std RMS | 10.69 | 12.69 | 14.69 | 16.69 | 18.69 | 20.68 | 22.58 | **22.91** | 21.97 | 20.98 | 19.99 | 18.98 |
+| std min | 9.28 | 11.28 | 13.28 | 15.28 | 17.28 | 19.23 | 20.67 | **20.90** | 19.91 | 18.91 | 17.91 | 16.87 |
+
+The OpenFHE StC-first default (std fit) gives 11 at 2^16 and 13 at 2^12 for both schemes (CI default changed from
+10 to 11 at 2^16 by item 4 above); at 59/60 the best is 12 (CI) / 13 (std) at 2^16 (results 3). The driver passes it.
+
+**Results 3: 2^16 A/B** (128-bit, {5,3}, reps 3, two interleaved passes; warm medians; stage times are medians of the 3
+warm bootstraps, CI from `CI_BOOT_TIMING`, std from `build-wsl-bt`; std "CtS" includes the conjugate add).
+
+| run (job, order) | warm s | CtS | EvalMod | StC | RMS / min bits | keys | peak RSS GB | in towers -> out towers (nsd) |
+|---|---|---|---|---|---|---|---|---|
+| CI CtS-first corr 4 (ab 1) | 11.92 | 5.21 | 3.91 | 2.56 | 21.55 / 18.25 | 102 | 13.54 | 2 -> 3 (1) |
+| CI StC-first corr 12 (ab 2) | 12.35 | 5.78 | 3.95 | 2.33 | 21.92 / 19.73 | 102 | 13.39 | 5 -> 7 (2) |
+| CI StC-first corr 13 (ab 5) | 13.75 | 6.32 | 4.66 | 2.98 | 21.21 / 19.19 | 102 | 13.39 | 5 -> 7 (2) |
+| CI StC-first corr 12 (ab2 1) | 11.67 | 5.37 | 3.98 | 2.32 | 21.91 / 19.71 | 102 | 13.39 | 5 -> 7 (2) |
+| CI CtS-first corr 4 (ab2 2) | 12.05 | 5.15 | 4.09 | 2.58 | 21.56 / 18.48 | 102 | 13.54 | 2 -> 3 (1) |
+| CI StC-first corr 12 (ab2 3) | 11.47 | 5.33 | 3.89 | 2.28 | 21.92 / 19.50 | 102 | 13.39 | 5 -> 7 (2) |
+| CI CtS-first corr 4 (ab2 4) | 11.75 | 5.09 | 3.90 | 2.50 | 21.56 / 18.55 | 102 | 13.54 | 2 -> 3 (1) |
+| std CtS-first corr 5 (ab 3) | 12.36 | 3.89 | 6.22 | 1.93 | 22.75 / 19.79 | 61 | 7.66 | 2 -> 4 (2) |
+| std StC-first corr 13 (ab 4) | 9.01 | 3.44 | 3.40 | 1.92 | 22.92 / 20.83 | 61 | 7.58 | 5 -> 7 (2) |
+| std StC-first corr 12 (ab 6) | 8.35 | 3.51 | 3.00 | 1.56 | 22.57 / 20.74 | 61 | 7.58 | 5 -> 7 (2) |
+| std StC-first corr 13 (ab2 5) | 8.80 | 3.72 | 3.22 | 1.58 | 22.91 / 20.83 | 61 | 7.58 | 5 -> 7 (2) |
+| std CtS-first corr 5 (ab2 6) | 12.06 | 3.75 | 6.31 | 1.75 | 22.75 / 18.99 | 61 | 7.66 | 2 -> 4 (2) |
+
+Summary (medians of the runs above; CI StC-first at its best corr 12):
+
+| | CI CtS-first | CI StC-first | std CtS-first | std StC-first (corr 13) |
+|---|---|---|---|---|
+| warm s | 11.92 | **11.67** (-2.1%) | 12.21 | **8.90** (-27%) |
+| StC stage s | 2.56 | **2.32** (-9.4%) | 1.75-1.93 | 1.58-1.92 |
+| RMS / min bits | 21.56 / 18.48 | **21.92 / 19.71** | 22.75 / 18.99-19.79 | 22.91 / 20.83 |
+| CI / 2 x std (same order) | 2 x 12.21 / 11.92 = 2.05x | 2 x 8.90 / 11.67 = **1.53x** | | |
+
+**Conclusions.**
+- The CI StC-first bootstrap works at every budget and both secrets; keygen, setup stores and the evaluator agree on
+  the new StC tower counts. Same chain (21 Q towers, log QP 1660), same keys (102), peak RSS -0.15 GB.
+- Time: StC-first saves only its StC cost difference, 0.24 s at 2^16 {5,3} (StC 2.56 -> 2.32 s, -9.4%; CtS and
+  EvalMod do the same work in both orders), so the warm bootstrap is 2.1% faster (11.92 -> 11.67 s). The reason is
+  the chain shape: with 2 levels after the bootstrap, CtS-first StC already runs near the bottom (6 / 5 / 4 Q towers)
+  and StC-first moves it down by only one tower (5 / 4 / 3). The split model gives the same -8.5% for StC and shows
+  the gain grows with the levels left after the bootstrap: StC 4.82 -> 4.41 (after 2), 5.22 -> 4.41 (after 3, the
+  paper's setting, -16%), 6.83 -> 4.41 model-s (after 5, -35%; CtS-first StC there needs 2 digits). The StC split
+  [7,5,4] stays model-best in the StC-first chain (lbDec 3), so `CIDefaultLayerSplit` is unchanged.
+- Output level: StC-first returns lbDec = 3 towers more (7 with a pending rescale, i.e. 6, vs 3) but needs lbDec + 2 = 5
+  towers at its input instead of 2, so the levels usable between two bootstraps are the same (1 here) at the same
+  chain. StC-first therefore does not shorten the chain; it only makes StC cheaper and, since StC consumes the
+  application's levels, the saving grows with them.
+- Precision: StC-first is more precise once its correction factor is retuned (12 for CI, 13 for std at 59/60, vs 4 / 5
+  for CtS-first): CI RMS 21.56 -> 21.92 bits, min 18.48 -> 19.71 bits at 2^16 (+1.2 bits max error; the paper's
+  20.55 bits is 0.8 bits away now). The gain is larger at small N (2^12 {3,3}: +5.9 bits RMS).
+- Std's real-data bootstrap has the same option, and it matters more there: OpenFHE's std StC-first for `REAL` data
+  evaluates EvalMod on one ciphertext (CtS-first full packing evaluates it twice, real and imaginary parts), so std
+  StC-first is 27% faster than std CtS-first (8.90 vs 12.21 s; EvalMod 3.2 vs 6.3 s) at better precision. Against
+  that baseline CI/2xstd drops from 2.05x to **1.53x** (std StC-first corr 12: 8.35 s, 1.43x). A fair CI vs std
+  comparison for real data should use std StC-first. Suggested for 2.R: report both orders; the 2.R target "StC-first
+  CI StC below std's CtS-first StC" is not met (2.32 vs 1.75-1.93 s; CI has 1.88x the diagonals, item 2.1).
+- Suggested (not added to the plan): with StC-first the best CI budget may move (lbDec costs only bottom towers);
+  {5,4} needs dnum 4 at 128-bit (item 1.3).

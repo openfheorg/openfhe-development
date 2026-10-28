@@ -194,7 +194,8 @@ class FHECKKSRNS : public FHERNS {
      * has to be called before EvalBootstrap)
      * @param BTSlotsEncoding true to select the slots-encoding variant (EvalBootstrapStCFirst), in which the
      * approximate modular reduction is applied to the message values themselves; false for the regular variant.
-     * Not supported for the REAL_CI data type (throws).
+     * For REAL_CI it selects the StC-first native CI bootstrap (evaluated by EvalBootstrap; the input must hold
+     * compositeDegree * (levelBudget[1] + 2) towers or more).
      */
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor, bool precompute,
@@ -229,7 +230,8 @@ class FHECKKSRNS : public FHERNS {
      * SlotsToCoeffs is applied first to the depleted ciphertext, then the modulus is raised, CoeffsToSlots moves
      * the coefficients back to the slots and the approximate modular reduction is evaluated over the message values
      * themselves, so no final SlotsToCoeffs is needed. Requires HYBRID key switching. Note that for FIXEDMANUAL the
-     * noise scale degree of the output differs from that of EvalBootstrap.
+     * noise scale degree of the output differs from that of EvalBootstrap. For REAL_CI it forwards to EvalBootstrap,
+     * whose CI branch has the StC-first ordering, and requires EvalBootstrapSetup with BTSlotsEncoding = true.
      *
      * @param ciphertext the input ciphertext
      * @param numIterations number of Meta-BTS iterations (1 or 2)

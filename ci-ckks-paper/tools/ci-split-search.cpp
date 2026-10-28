@@ -10,10 +10,11 @@
 //   + d plaintext mults 0.646 + (d + g) extended adds 0.15
 // Towers follow the chain shape of CIBsgsLevelDigits (ckksrns-fhe.cpp): CtS level s has L0 - 1 - s Q towers, StC
 // level s L0 - (lbEnc + modDepth + s), L0 = lbEnc + modDepth + lbDec + after + 1; D = min(dnum, ceil(Ql / alpha)).
+// StC-first (last argument 1, item 2.5): StC runs before the ModRaise on lbDec + 2 towers, StC level s lbDec + 2 - s.
 // Prints the default split (even, larger parts first) and the top K CtS and StC splits, with their Galois keys.
 // Build and run (ICELAKE, from the source root):
 //   g++ -O2 -std=c++17 -Isrc/core/include ci-ckks-paper/tools/ci-split-search.cpp src/core/lib/math/ci-realfft.cpp \
-//       -o ../scratch/ci-split-search && ../scratch/ci-split-search logN lbEnc lbDec [topK] [after modDepth alpha dnum P]
+//       -o ../scratch/ci-split-search && ../scratch/ci-split-search logN lbEnc lbDec [topK] [after modDepth alpha dnum P stcFirst]
 #include "math/ci-realfft.h"
 #include <algorithm>
 #include <cmath>
@@ -98,7 +99,7 @@ void Enumerate(uint32_t left, uint32_t parts, std::vector<uint32_t>& cur, std::v
 
 int main(int argc, char** argv) {
     if (argc < 4) {
-        std::fprintf(stderr, "usage: logN lbEnc lbDec [topK] [after modDepth alpha dnum P]\n");
+        std::fprintf(stderr, "usage: logN lbEnc lbDec [topK] [after modDepth alpha dnum P stcFirst]\n");
         return 1;
     }
     const uint32_t logN = std::atoi(argv[1]), lbEnc = std::atoi(argv[2]), lbDec = std::atoi(argv[3]);
@@ -106,12 +107,13 @@ int main(int argc, char** argv) {
     const uint32_t after = argc > 5 ? std::atoi(argv[5]) : 2, modDepth = argc > 6 ? std::atoi(argv[6]) : 10;
     const uint32_t alpha = argc > 7 ? std::atoi(argv[7]) : 7, dnum = argc > 8 ? std::atoi(argv[8]) : 3;
     const uint32_t Pt = argc > 9 ? std::atoi(argv[9]) : 7;
+    const bool stcFirst = argc > 10 && std::atoi(argv[10]) != 0;
     gN               = 1u << logN;
     const auto& F    = GetCIRealFFTPlan(gN).F;
     gL               = static_cast<uint32_t>(F.size());
     const uint32_t L0 = lbEnc + modDepth + lbDec + after + 1;
-    std::printf("N=2^%u l=%u layers, lbEnc=%u lbDec=%u, L0=%u Q towers, modDepth=%u, alpha=%u dnum=%u P=%u\n", logN, gL,
-                lbEnc, lbDec, L0, modDepth, alpha, dnum, Pt);
+    std::printf("N=2^%u l=%u layers, lbEnc=%u lbDec=%u, L0=%u Q towers, modDepth=%u, alpha=%u dnum=%u P=%u%s\n", logN,
+                gL, lbEnc, lbDec, L0, modDepth, alpha, dnum, Pt, stcFirst ? " (StC-first)" : "");
     for (uint32_t t = 0; t < gL; ++t) {
         std::printf("layer %2u: %zu diags:", t, F[t].size());
         for (auto& kv : F[t])
@@ -167,7 +169,7 @@ int main(int argc, char** argv) {
                     break;
                 }
                 const CISparse A  = enc ? sym[r.first][r.second] : SymTranspose(sym[r.first][r.second]);
-                const uint32_t Ql = enc ? L0 - 1 - s : L0 - (lbEnc + modDepth + s);
+                const uint32_t Ql = enc ? L0 - 1 - s : (stcFirst ? lbDec + 2 - s : L0 - (lbEnc + modDepth + s));
                 const uint32_t D  = digitsOf(Ql);
                 const auto lc     = CostOf(A, D);
                 cd.ms += (Ql + Pt) * lc.perTower;

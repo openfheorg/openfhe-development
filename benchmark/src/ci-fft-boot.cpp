@@ -2,8 +2,9 @@
 // CI (native conjugate-invariant, N real slots) vs standard CKKS (N/2 slots of real data)
 // bootstrap: latency + precision at matched ring dimension and level budget.
 // Args: scheme(ci|std) logN lbEnc lbDec scaleMod firstMod secure(0|1) reps scaling(fm|fa) corr secret(uniform|encap)
-//       [stcfirst: 0 = CtS-first (default), 1 = EvalBootstrapSetup with BTSlotsEncoding = true,
-//        2 = call EvalBootstrapStCFirst directly; 1 and 2 must throw for ci]
+//       [stcfirst: 0 = CtS-first (default), 1 = EvalBootstrapSetup with BTSlotsEncoding = true (StC-first; the
+//        input is encrypted with lbDec + 2 towers, the StC input level; CI since item 2.5),
+//        2 = call EvalBootstrapStCFirst directly on a CtS-first setup (must throw for ci)]
 //       [dnum: number of large digits for HYBRID key switching (SetNumLargeDigits); 0 = OpenFHE default]
 //       [after: levels left for the application after the bootstrap; default 2 (the paper uses 3)]
 // Thread count: OMP_NUM_THREADS. First bootstrap (includes lazy diagonal precompute) is
@@ -127,7 +128,10 @@ int main(int argc, char** argv) {
     std::uniform_real_distribution<double> U(-1.0, 1.0);
     for (auto& v : x)
         v = U(rng);
-    auto pt = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, slots);
+    // CtS-first: 2 towers (one for the correction-factor adjust before the ModRaise). StC-first: lbDec + 2 towers
+    // (StC runs on the input; EvalBootstrapStCFirst / the CI StC-first branch need exactly this level or above).
+    const uint32_t encLevel = (stcFirst == 1) ? depth - lbDec - 1 : depth - 1;
+    auto pt = cc->MakeCKKSPackedPlaintext(x, 1, encLevel, nullptr, slots);
     auto ct = cc->Encrypt(keys.publicKey, pt);
 
     double lastRms = 0, lastP99 = 0;
@@ -161,14 +165,16 @@ int main(int argc, char** argv) {
         times.push_back(Sec(tb));
         bits.push_back(prec(o));
         if (r == 0)
-            std::cout << "out level=" << o->GetLevel() << " towers=" << o->GetElements()[0].GetNumOfElements() << "\n";
+            std::cout << "in level=" << ct->GetLevel() << " towers=" << ct->GetElements()[0].GetNumOfElements()
+                      << " | out level=" << o->GetLevel() << " towers=" << o->GetElements()[0].GetNumOfElements()
+                      << " noiseScaleDeg=" << o->GetNoiseScaleDeg() << "\n";
     }
     std::sort(times.begin(), times.end());
     double med  = times.empty() ? fSec : times[times.size() / 2];
     double minB = bits.empty() ? fBits : *std::min_element(bits.begin(), bits.end());
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
-              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " slots=" << slots << " depth=" << depth << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0)
+              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " stcfirst=" << stcFirst << " slots=" << slots << " depth=" << depth << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0)
               << log2Q << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
               << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys
               << std::setprecision(1) << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB

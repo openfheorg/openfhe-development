@@ -4,6 +4,11 @@ Branch: `ci-ckks-fft-v1.6.1` (continue on it). Scope excludes the paper's functi
 Progress is tracked by the checkboxes below; the harness ticks `[x]` when an item is done and appends its
 results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a stated reason.
 
+**PAUSE AFTER PHASE 2 (user, 2026-10-28):** the user needs this laptop for another task. Items 2.5 and 2.R run as
+usual. An executor of any item from 3.1 on must do nothing (no edits, no jobs, no commits) and return status "blocked"
+with the summary "paused by the user after phase 2". A plan adapter consulted on such an item must choose "defer"
+without editing the plan. This note is removed when the user resumes the work.
+
 ## Execution rules (apply to every item)
 **Host change (2026-10-28, user request): from item 2.4 on, all builds, benchmarks and tests run on this WSL VM. Nothing
 runs on ICELAKE (not even a read-only ssh) unless the user is told first; harness agents treat it as off limits.** Items 0.1-2.3 ran on ICELAKE; their numbers are not comparable with WSL numbers. The old ICELAKE rules are
@@ -96,6 +101,13 @@ from a table of model-best splits at 2^12..2^16 (`tools/ci-split-search.cpp`, di
 plans), even split elsewhere. At 2^16: StC lb 3 [7,5,4] (was [6,5,5]), lb 4 [6,4,3,3]; CtS lb 4 [5,3,4,4]; CtS lb 3
 and lb 5 keep the even split (already model-best). CI {5,3} 22.34 -> 22.15 s and -6 keys; {4,4} -0.85 s but +31 keys;
 {4,3} 23.50 -> 23.05 s. `CI_SPLIT_ENC` / `CI_SPLIT_DEC` = "n0,n1,..." force a split (layer order, F_1 first).
+StC-first (item 2.5): `EvalBootstrapSetup(..., BTSlotsEncoding = true)` now gives the CI StC-first bootstrap (CI
+branch of `EvalBootstrap`: StC on the input at lbDec + 2 towers, ModRaise, CtS, EvalMod; driver `stcfirst` 1 encrypts
+the input at that level). It needs corr 12 (CI) / 13 (std) at 59/60, not 4 / 5. WSL 2^16 {5,3}, interleaved: CI
+11.92 -> 11.67 s (-2.1%; only StC changes, 2.56 -> 2.32 s, one tower less per StC level with 2 levels after; the
+gain grows with the levels after), RMS / min 21.56 / 18.48 -> 21.92 / 19.71 bits, same chain, keys (102) and usable
+levels. Std's real-data StC-first runs EvalMod once instead of twice: std 12.21 -> 8.90 s, so CI/2xstd is 2.05x for
+CtS-first but 1.53x with both StC-first (this session's CPU ran ~27% faster than in the 2.4 baseline; use pairs).
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -103,6 +115,9 @@ Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod f
     # equal-budget reference for per-stage ratios (CI stages: CI_BOOT_TIMING=1; std stages: build-wsl-bt binary):
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
     OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 4 4 59 60 1 3 fa 5 encap
+    # StC-first pair (item 2.5; std StC-first is std's fastest real-data bootstrap):
+    CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 12 encap 1
+    OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 13 encap 1
 
 ## Phase 0: review fixes
 - [x] **0.1** Throw (or route to the CtS-first CI path) when `REAL_CI` and `BTSlotsEncoding` are both set.
@@ -151,7 +166,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   cost model; measure the top 3 at 2^16.
 - [x] **2.4** Precompute the diagonal plaintexts in `EvalBootstrapSetup` (remove the ~70 s cold run and the write
   into the precom from a const `EvalBootstrap`; parallel encodes at setup; extended QlP form as now).
-- [ ] **2.5** StC-first CI variant (the paper's ordering): CI branch in `EvalBootstrapStCFirst` (StC at the
+- [x] **2.5** StC-first CI variant (the paper's ordering): CI branch in `EvalBootstrapStCFirst` (StC at the
   bottom of the chain, ModRaise, CtS, EvalMod); compare time, precision and output level with CtS-first.
 - [ ] **2.R** Phase 2 review. Done when: at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or the
   excess is accounted for by the diagonal count), and StC-first CI StC is below std's CtS-first StC.
