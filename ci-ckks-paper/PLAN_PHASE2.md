@@ -5,37 +5,44 @@ Progress is tracked by the checkboxes below; the harness ticks `[x]` when an ite
 results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a stated reason.
 
 ## Execution rules (apply to every item)
-- **Code lives on WSL** in `/home/caesar/development/projects/za-real-ckks-boot-fft/openfhe-development`.
-  Edit and commit there. **Never build, run benchmarks or run tests on WSL** (it must not be loaded).
-- **All builds, benchmarks and tests run on ICELAKE** (`ssh -o BatchMode=yes ICE-Lake`, tree at
-  `~/ci-ckks-fft/openfhe-development`, build dir `build`; `build-bt` = same with `-DBOOTSTRAPTIMING`).
-  Push source with `ci-ckks-paper/tools/sync.sh` (it never deletes `build*/` dirs on ICELAKE).
-- **Guard every remote job**: `cd ~/ci-ckks-fft && ./guard.sh NAME 'cmd'` (tmux; log in `logs/NAME.log`,
-  exit code in `logs/NAME.rc`). Poll for the `.rc` file; an SSH drop must not kill a job.
-- ICELAKE is shared: builds with `-j 32`; timing runs with `OMP_NUM_THREADS=1` (unless the item is about
-  threads), one timing run at a time, never during a build.
+**Host change (2026-10-28, user request): from item 2.4 on, all builds, benchmarks and tests run on this WSL VM. Nothing
+runs on ICELAKE (not even a read-only ssh) unless the user is told first; harness agents treat it as off limits.** Items 0.1-2.3 ran on ICELAKE; their numbers are not comparable with WSL numbers. The old ICELAKE rules are
+kept at the end of this section for reference.
+- **Code lives on WSL** in `/home/caesar/development/projects/za-real-ckks-boot-fft/openfhe-development`. Edit and
+  commit there.
+- **Every build, benchmark and test goes through the guard**, never directly in a shell:
+  `ci-ckks-paper/tools/wsl-guard.sh NAME MEM_GB 'command'` (cwd = repo root; log `~/ci-ckks-wsl/logs/NAME.log`; exit
+  status in `NAME.rc`; `killed:oom-kill` if the job hit its memory cap; `refused:mem` if there was not enough free
+  memory to start). Wait with `ci-ckks-paper/tools/wsl-wait.sh NAME [timeout_s]`. Jobs survive VS Code/terminal
+  resets (systemd user manager), not a VM restart.
+- **Do not kill or starve the VM.** All guarded jobs share `cickks.slice`: 16 GB in total, no swap, 14 of 20 CPU
+  threads. Each job also has its own cap (`MEM_GB`, peak RSS + about 1 GB) and runs at nice 10. Peak RSS: CI 2^16 about
+  11-15 GB, std 2^16 about 8-9 GB, 2^15 about half, 2^12 under 1 GB. So only one 2^16 job runs at a time, and no build
+  runs beside it; concurrent jobs only while their `MEM_GB` sum is at most 15. A killed or refused job is answered by a
+  smaller N or budget, or by lowering memory in the code, never by raising the slice limit.
+- **Build dirs:** `build-wsl` (Release, benchmarks, no unit tests, no examples) and `build-wsl-bt` (the same with
+  `-DCMAKE_CXX_FLAGS=-DBOOTSTRAPTIMING`, for std stage times). Build only the needed targets, `-j 8`, `MEM_GB` 12. Leave
+  the old `build` dir alone. Item 6.5 turns on `BUILD_UNITTESTS` in `build-wsl` and builds tests with `-j 4`.
+- **Timing:** `OMP_NUM_THREADS=1` (unless the item is about threads), one timing job at a time, never during a build.
+  The i7-12700H laptop CPU has turbo and thermal variation: interleave A/B runs (before/after, CI/std) in one guarded
+  job, `reps` 3 for final numbers, medians. The first WSL item (2.4) first measures and logs the **WSL baseline** at
+  HEAD with the header commands (with `build-wsl` paths); later items compare against WSL numbers only.
 - Unit tests run only in item 6.5 (they are slow).
-- **Development-time rules (added 2026-10-28, apply from item 2.4 on).** Aim for at most about 45 minutes per item.
-  - *Screen cheap, confirm once.* Use N = 2^12-2^14 (insecure) for correctness checks and N = 2^15 or
-    2^16 with `reps` 1 for screening candidates. Only the final 1-3 candidates get the full 2^16, `reps` 3
-    timing. A sweep never runs every point at full 2^16 x 3 reps.
-  - *Parallel where timing is not measured.* Correctness and smoke runs (any N, any thread count) may run
-    concurrently with each other and with a build. Screening runs may run concurrently (at most 3 at 2^16 at
-    once), each with `OMP_NUM_THREADS=1`; say in the log that they were concurrent. Final timing numbers in
-    the log and the plan header still come from one run at a time on a quiet machine.
-    (The harness rule "one timing run at a time" means these final timing runs. The user approved
-    concurrent screening and correctness runs on 2026-10-28.)
-  - *RAM budget.* ICELAKE has 125 GB shared. A 2^16 run peaks at about 8-10 GB (std) and 11-15 GB (CI);
-    2^15 at about half; 2^12 under 1 GB. Keep the sum of concurrent peaks under 50 GB and check `free -g`
-    before starting concurrent runs. Item 2.4 adds the precomputed diagonals to CI memory: measure and log it.
-  - *A/B in one job.* Put the before/after (or CI/std) runs interleaved in one guarded job so machine load
-    affects both alike. Do not wait for a quiet machine for screening; wait only for the final timing, and
-    at most 20 minutes (then run anyway and log the load average).
-  - *Minimal rebuilds.* Build only the targets the item needs (`ci-fft-boot`, plus `build-bt` only when std
-    stage times are needed). Batch code fixes before rebuilding.
-  - *Phase reviews reuse numbers.* A phase review (x.R) reruns the baseline once per scheme (`reps` 3) only
-    if code changed since the last item's final timing run; otherwise it cites that run.
+- **Development-time rules (2026-10-28).** Aim for at most about 45 minutes per item.
+  - *Screen cheap, confirm once.* N = 2^12-2^14 (insecure) for correctness checks; N = 2^15, or 2^16 with `reps` 1,
+    for screening candidates. Only the final 1-3 candidates get the full 2^16, `reps` 3 timing.
+  - *Parallel only where memory allows.* Small-N correctness runs may run concurrently with each other (sum of
+    `MEM_GB` at most 15). 2^16 runs are always alone.
+  - *A/B in one job*, interleaved, as above.
+  - *Minimal rebuilds.* Build only the targets the item needs; batch code fixes before rebuilding.
+  - *Phase reviews reuse numbers.* A phase review (x.R) reruns the baseline once per scheme (`reps` 3) only if code
+    changed since the last item's final timing run; otherwise it cites that run.
+  - Item 2.4 adds the precomputed diagonals to CI memory: measure it and keep CI 2^16 under the 15 GB job cap (if it
+    does not fit, precompute per level lazily or at a smaller N, and log it).
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
+- *Old ICELAKE rules (items 0.1-2.3, for reference only):* builds and runs on ICELAKE (`ssh -o BatchMode=yes
+  ICE-Lake`, `~/ci-ckks-fft/openfhe-development`, dirs `build` and `build-bt`), source pushed with
+  `ci-ckks-paper/tools/sync.sh`, jobs guarded with `~/ci-ckks-fft/guard.sh`.
 
 Baseline to beat (item 2.3; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
 after, each scheme at its best budget, reps 3): both schemes' best budget is {5,3}. CI {5,3} corr 4: 22.15 s for
