@@ -1930,3 +1930,135 @@ All 24 runs: rc 0, passthrough 0. The CI META-BTS works in both orderings at eve
   19 but 44.3 at 16; CI StC-first is flat for 16-20. About 3 bits below the one-bootstrap min is the better
   choice; the 2^16 numbers above use the automatic rule (19 / 20), so they are conservative by up to ~2-4 bits.
 - No baseline numbers or commands change (1-iteration paths are unchanged; the driver defaults are iters 1).
+
+## 3.3 EvalMod time per real slot, CI and std side by side -- DONE (2026-10-28)
+
+**Host.** WSL only (i7-12700H laptop VM). The host file said `WSL` before every job; nothing ran on ICELAKE (user:
+"no runs in ICELAKE no matter what"). Compare these numbers only with WSL numbers.
+
+**What changed.** No library or driver code. New tool `ci-ckks-paper/tools/evalmod-per-slot.py LOG...`: it reads
+guarded-job logs of `ci-fft-boot` runs (CI EvalMod from the `[CI-BT] EvalMod` lines of `CI_BOOT_TIMING=1`, std
+EvalMod from "Approximate modular reduction time" of the `build-wsl-bt` binary), drops the first (cold) bootstrap,
+takes the median of the warm ones and prints, per run: real slots per bootstrap (CI N = 65536, std N/2 = 32768),
+EvalMod calls per bootstrap (CI 1; std CtS-first 2, real and imaginary part; std StC-first 1), EvalMod s, us per real
+slot, s per call, share of the bootstrap; then, for every CI run, the ratio to the nearest std run of each ordering
+in the same log. Runs need a `=== ... ci-fft-boot ...` header line (the `r()` wrapper below).
+
+**Commands** (WSL, repo root, `ci-ckks-paper/tools/wsl-guard.sh`; `B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` =
+`build-wsl-bt/bin/benchmark/ci-fft-boot`, `E` = `env CI_BOOT_TIMING=1 OMP_NUM_THREADS=1`; 2^16 {5,3}, 128-bit, reps 3,
+FLEXIBLEAUTO 59/60, encap, dnum 3, 2 levels after; `r()` echoes `=== time uptime cmd`, `uptime`, runs, `=== end`):
+
+    wsl-guard.sh p33_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8 && cmake --build build-wsl-bt --target ci-fft-boot -j 8'  # rc 0
+    wsl-guard.sh p33_smoke 4 '$T std 14 5 3 59 {60,61} 0 3 fa 5 encap; CI_BOOT_TIMING=1 $B ci 14 5 3 59 60 0 3 fa 4 encap'           # rc 0 (*)
+    wsl-guard.sh p33_em16 15 'pass 1: r $E $B ci ... fa 4 encap 0; r $E $T std ... fa 5 encap 0; r $E $B ci ... fa 12 encap 1;
+        r $E $T std ... fa 13 encap 1; pass 2: the same four in reverse order'                                                  # rc 0
+    wsl-guard.sh p33_em16b 15 'r $E $T std ... 13 encap 1; r $E $B ci ... 12 encap 1; r $E $T std ... 5 encap 0; r $E $B ci ... 4 encap 0;
+        then the same four in reverse order'                                                                                    # rc 0
+    python3 -I ci-ckks-paper/tools/evalmod-per-slot.py ~/ci-ckks-wsl/logs/{p33_em16,p33_em16b,p2R_base}.log
+
+(*) `p33_smoke` tried std with firstMod 61 to give std the K = 28 sine table (OpenFHE uses it for the weight-64
+encapsulation key when firstMod > 60) for a same-polynomial comparison; OpenFHE refuses primes above 60 bits
+("LastPrime(): Requested bit length 61 exceeds maximum allowed length 60"), so that comparison is not possible
+without a code switch (not done; item 0.5's switch measured the K = 28 cost on CI instead, see conclusions).
+
+No run spanned a sleep (uptime advance = wall time for every run). All 32 CI bootstraps: Galois check held, 0 local
+encodes. Precision as in 2.R (CI CtS-first RMS 21.55-21.57 / min 18.24-18.40; CI StC-first 21.91-21.92 /
+19.69-19.83; std CtS-first 22.74-22.76 / 19.61-19.84; std StC-first 22.90-22.91 / 20.69-20.77 bits). Keys 102 / 61,
+peak RSS 13.39-13.54 / 7.58-7.66 GB.
+
+**Timing noise.** The laptop ran in two speed states during these jobs. A run is either at the 2.R reference speed
+(warm bootstrap within 3% of `p2R_base`) or 1.15-1.9x slower in *every* stage uniformly (e.g. std StC-first in
+`p33_em16b`: decode / encode / EvalMod 2.0-2.5 / 4.6-5.3 / 3.9-4.5 s against 1.5-1.7 / 3.4-3.7 / 2.9-3.0 s in
+`p2R_base`). This fits the hybrid CPU (P-cores and E-cores; WSL does not pin a vCPU to a core type) and thermal
+throttling; other users' load was 4.2-6.7 in pass 1 of `p33_em16` and 1.0-1.8 afterwards. Neighbouring runs can
+be in different states, so a single adjacent CI/std pair can be off by up to 1.6x. The tables therefore give (1) the
+runs at reference speed, (2) all runs, (3) the per-call ratio over all 16 neighbour pairs, (4) the calm 2.R job
+re-read with the tool (same host and binaries' code paths: item 3.2 changed only the 2-iteration path).
+
+**Results 1: runs at reference speed** (warm within 3% of `p2R_base`; `p33_em16b` #1-#3 are adjacent in one job).
+
+| run | real slots | EvalMod calls | EvalMod s | **us / real slot** | s / call | share of bootstrap | bootstrap s |
+|---|---|---|---|---|---|---|---|
+| CI CtS-first corr 4 (em16b #3) | 65536 | 1 | 3.929 | **59.9** | 3.929 | 33% | 11.82 |
+| CI StC-first corr 12 (em16b #1) | 65536 | 1 | 3.966 | **60.5** | 3.966 | 34% | 11.70 |
+| std CtS-first corr 5 (em16b #2) | 32768 | 2 | 6.325 | **193.0** | 3.163 | 54% | 11.81 |
+| std StC-first corr 13 (em16 #4) | 32768 | 1 | 2.985 | **91.1** | 2.985 | 36% | 8.21 |
+
+| CI / std, per real slot | vs std CtS-first | vs std StC-first |
+|---|---|---|
+| CI CtS-first | **0.311x** (adjacent, em16b) | **0.658x** (across jobs) |
+| CI StC-first | **0.314x** (adjacent, em16b) | **0.664x** (across jobs) |
+| per EvalMod call (CI / std) | 1.24-1.25x | 1.32-1.33x |
+
+**Results 2: all runs** (`p33_em16`, `p33_em16b`; warm medians; "x ref" = warm bootstrap / the same config in `p2R_base`).
+
+| job #, run | EvalMod s | us / real slot | s / call | share | bootstrap s | x ref |
+|---|---|---|---|---|---|---|
+| em16 0 CI CtS-first | 7.369 | 112.4 | 7.369 | 32% | 22.78 | 1.90 |
+| em16 1 std CtS-first | 11.686 | 356.6 | 5.843 | 52% | 22.49 | 1.93 |
+| em16 2 CI StC-first | 5.820 | 88.8 | 5.820 | 34% | 17.29 | 1.49 |
+| em16 3 std StC-first | 3.659 | 111.7 | 3.659 | 38% | 9.74 | 1.16 |
+| em16 4 std StC-first | 2.985 | 91.1 | 2.985 | 36% | 8.21 | 0.97 |
+| em16 5 CI StC-first | 4.689 | 71.6 | 4.689 | 34% | 13.60 | 1.17 |
+| em16 6 std CtS-first | 7.899 | 241.1 | 3.950 | 54% | 14.72 | 1.27 |
+| em16 7 CI CtS-first | 5.482 | 83.6 | 5.482 | 34% | 16.18 | 1.35 |
+| em16b 0 std StC-first | 4.421 | 134.9 | 4.421 | 38% | 11.67 | 1.38 |
+| em16b 1 CI StC-first | 3.966 | 60.5 | 3.966 | 34% | 11.70 | 1.01 |
+| em16b 2 std CtS-first | 6.325 | 193.0 | 3.163 | 54% | 11.81 | 1.02 |
+| em16b 3 CI CtS-first | 3.929 | 59.9 | 3.929 | 33% | 11.82 | 0.99 |
+| em16b 4 CI CtS-first | 4.621 | 70.5 | 4.621 | 34% | 13.71 | 1.14 |
+| em16b 5 std CtS-first | 7.975 | 243.4 | 3.987 | 54% | 14.83 | 1.28 |
+| em16b 6 CI StC-first | 5.162 | 78.8 | 5.162 | 33% | 15.70 | 1.35 |
+| em16b 7 std StC-first | 4.083 | 124.6 | 4.083 | 35% | 11.51 | 1.37 |
+
+**Results 3: neighbour pairs** (each CI run with the nearest std run of each ordering; the tool's second table).
+Per call CI / std over all 16 pairs: 0.89-2.01x, median **1.26x**. Per real slot vs std CtS-first (8 pairs):
+0.25-0.35x, median **0.31x**. Vs std StC-first (8 pairs): 0.44-1.01x (too noisy to use alone; its expected value
+is per call / 2, results 4).
+
+**Results 4: 2.R job re-read with the tool** (`p2R_base`, WSL, one calm interleaved job, load 0.2-1.1).
+
+| run | EvalMod s | us / real slot | s / call | share |
+|---|---|---|---|---|
+| CI CtS-first {5,3} | 4.016 | 61.3 | 4.016 | 34% |
+| std CtS-first {5,3} | 6.173 | 188.4 | 3.087 | 53% |
+| CI StC-first {5,3} | 3.947 | 60.2 | 3.947 | 34% |
+| std StC-first {5,3} | 3.063 | 93.5 | 3.063 | 36% |
+| CI CtS-first {4,4} | 4.365 | 66.6 | 4.365 | 33% |
+| std CtS-first {4,4} | 6.796 | 207.4 | 3.398 | 53% |
+
+CI / std per real slot: {5,3} CtS-first pair 0.325x, StC-first pair 0.644x, CI CtS-first vs std StC-first 0.656x,
+CI StC-first vs std CtS-first 0.320x; {4,4} CtS-first pair 0.321x. Per call 1.28-1.31x.
+
+**Summary (WSL, 2^16 {5,3}, 128-bit, 1 thread).**
+
+| | CI CtS-first | CI StC-first | std CtS-first | std StC-first |
+|---|---|---|---|---|
+| real slots per bootstrap | 65536 | 65536 | 32768 | 32768 |
+| EvalMod calls per bootstrap (degree) | 1 (K = 28, deg 48) | 1 (K = 28) | 2 (K = 16, deg 36) | 1 (K = 16) |
+| EvalMod s | 3.93-4.02 | 3.95-3.97 | 6.17-6.33 | 2.99-3.06 |
+| **EvalMod us per real slot** | **60-61** | **60-61** | **188-193** | **91-94** |
+| CI / std per real slot | 0.31-0.33x vs CtS-first; 0.64-0.66x vs StC-first | same | | |
+| EvalMod share of the bootstrap | 33-34% | 34% | 52-54% | 36% |
+
+**Conclusions.**
+- Per real slot CI EvalMod costs **0.31-0.33x** std CtS-first's and **0.64-0.66x** std StC-first's. The two CI
+  orderings run the same EvalMod (60-61 us per real slot). Std's per-call EvalMod time is the same in both orderings
+  (2.99-3.16 s); the 2x between them is the call count.
+- The ratios follow from one number, the per-call ratio CI / std = **1.24-1.33x** (median of all pairs 1.26x):
+  CI does one call for 65536 reals, std CtS-first two calls for 32768, std StC-first one call for 32768, so per real
+  slot CI / std = per-call / 4 and per-call / 2. Both EvalMods start at the same level (after a 5-level CtS from 21
+  towers), so the per-call excess is per-op cost, not towers.
+- The per-call excess has two known parts: the K = 28 sine table (Paterson-Stockmeyer (7,3) vs (6,3), same depth),
+  which item 0.5 measured as 13% of CI EvalMod (ICELAKE, {4,4}; a ratio within that host, used here as a fraction:
+  CI with K = 16 would be about 1.26 x 0.87 = 1.10x std per call), and the CI ring overhead, the remaining ~1.10x
+  (`CI_FFT_REVIEW.md` section 4 item 3: ~1.2x per op). Item 3.1 keeps K = 28 (weight 16 is below 128 bits).
+- Against the phase-4 target "CI EvalMod time per real slot <= 0.55x std's" (4.R): met against std CtS-first
+  (0.31-0.33x), not against std StC-first (0.64-0.66x). With K = 28 fixed, even a CI per-op cost equal to std's
+  gives about 1.15 / 2 = 0.57x against std StC-first, so 4.R as written can only be met against std StC-first if CI
+  ops become cheaper than std's. Suggested for the plan adapter: state which std ordering 4.R compares with
+  (CtS-first: met now; StC-first: about 0.57x is the K = 28 floor).
+- Std StC-first is the cheaper std EvalMod per real data value (one call instead of two), which is why CI/2xstd
+  drops from ~1.95x to ~1.45x when both run StC-first (2.R); in EvalMod alone CI still saves 34-36% per real slot.
+- No baseline numbers or commands change. The WSL timing noise of this session (two speed states, up to 1.9x) is
+  logged above; later WSL items should check each run's "x ref" before using single pairs.

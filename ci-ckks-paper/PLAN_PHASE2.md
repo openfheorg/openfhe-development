@@ -120,6 +120,10 @@ rescales the CI result twice). 2^16 {5,3}, 128-bit (needs dnum 4 for the extra l
 min at 2.13-2.18x the one-iteration time (ICELAKE: CtS-first 48.2 vs 22.1 s), std CtS-first 41.0 / 38.0; std
 StC-first stops at ~31 bits (a floor of OpenFHE's std StC-first path, independent of metaprec). Driver args 15
 `iters`, 16 `metaprec` (0 = floor of one bootstrap's min bits; ~3 bits lower is better).
+EvalMod per real slot (item 3.3, WSL, `tools/evalmod-per-slot.py LOG`): CI 60-61 us (one call, 65536 reals, both
+orderings), std CtS-first 188-193 us (two calls), std StC-first 91-94 us (one call, 32768 reals); CI / std 0.31-0.33x
+vs CtS-first, 0.64-0.66x vs StC-first; per call CI / std 1.24-1.33x (K = 28 table ~1.15x, CI ring ~1.10x). The 4.R
+target 0.55x is met against std CtS-first only; against std StC-first the K = 28 floor is about 0.57x.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -203,7 +207,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   ternary weight 16) and record the security level; if below 128 bits, keep weight 32 and record why.
 - [x] **3.2** META-BTS (`numIterations = 2`) for CI and std at 2^16: check that the CI branch works with the
   iteration wrapper; compare precision and time with the paper's 20.5 bits.
-- [ ] **3.3** Log CI and std EvalMod time per real slot side by side.
+- [x] **3.3** Log CI and std EvalMod time per real slot side by side.
 - [ ] **3.R** Phase 3 review. Done when: CI EvalMod degree equals std's for the same secret distribution (or the
   security reason it cannot is recorded), and the precision gap to the paper is explained or closed.
 

@@ -111,6 +111,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    (Phase 3.1: rejected. A weight-16 CI key, n = 65536 at log q0 P' = 126, falls below 128 bits: MITM on the
    secret 2^116, primal drop-and-solve 129.8 bits; weight 32 has 213 bits. CI keeps weight 32 and K = 28, as the
    paper does (ephemeral weight 32 on the CI ring). See `PHASE2_LOG.md` 3.1.)
+   (Phase 3.3, WSL 2^16 {5,3}: CI EvalMod is 60-61 us per real slot, std 188-193 us CtS-first (two calls) and
+   91-94 us StC-first (one call): CI / std 0.31-0.33x and 0.64-0.66x. Per call CI is 1.24-1.33x std, about 1.15x
+   from the K = 28 table and 1.10x from the CI ring. See `PHASE2_LOG.md` 3.3.)
 3. **CI ring overhead.** CI NTT is within 1.2x of the standard NTT; CI EvalMod still ~1.2x std per op.
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
