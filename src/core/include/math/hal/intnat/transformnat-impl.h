@@ -337,6 +337,13 @@ template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(const VecType& rootOfUnityTable,
                                                                                const VecType& preconRootOfUnityTable,
                                                                                VecType* element) {
+    ForwardStagesFrom(1, rootOfUnityTable, preconRootOfUnityTable, element);
+}
+
+template <typename VecType>
+void NumberTheoreticTransformNat<VecType>::ForwardStagesFrom(uint32_t m0, const VecType& rootOfUnityTable,
+                                                             const VecType& preconRootOfUnityTable,
+                                                             VecType* element) {
     // NTT based on the Cooley-Tukey (CT) butterfly
     // Inputs: element (vector of size n in standard ordering)
     //         rootOfUnityTable (precomputed roots of unity in bit-reversed ordering)
@@ -372,7 +379,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
 #endif
     const bool lazy{kLazyWide && mv <= static_cast<NInt>(-1) / static_cast<NInt>(2 * stages + 3)};
     if (lazy) {
-        for (size_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
+        for (size_t m{m0}, t{n / m0}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
             for (size_t i{0}; i < m; ++i) {
                 const NInt omega{rootOfUnityTable[i + m].m_value};
                 const NInt preconOmega{preconRootOfUnityTable[i + m].m_value};
@@ -387,7 +394,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
             }
         }
     } else {
-        for (size_t m{1}, t{n}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
+        for (size_t m{m0}, t{n / m0}, logt{GetMSB(t)}; m < n; m <<= 1, t >>= 1, --logt) {
             for (size_t i{0}; i < m; ++i) {
                 const NInt omega{rootOfUnityTable[i + m].m_value};
                 const NInt preconOmega{preconRootOfUnityTable[i + m].m_value};
@@ -539,6 +546,49 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverse(const 
 }
 
 template <typename VecType>
+void NumberTheoreticTransformNat<VecType>::InverseStagesButLast(const VecType& rootOfUnityInverseTable,
+                                                                const VecType& preconRootOfUnityInverseTable,
+                                                                VecType* element) {
+    using NInt = typename IntType::Integer;
+    const NInt mv{element->GetModulus().m_value};
+    const NInt mv2{static_cast<NInt>(mv + mv)};
+    const uint32_t n(element->GetLength());
+    if (n > 2) {
+        // peeled off first stage for performance; the index-doubled pair form (2i, 2i + 1)
+        // is the stride-2 shape gcc's vectorizer accepts, i += 2 is not
+        const uint32_t nh{n >> 1};
+        for (size_t i{0}; i < nh; ++i) {
+            const NInt omega{rootOfUnityInverseTable[i + nh].m_value};
+            const NInt preconOmega{preconRootOfUnityInverseTable[i + nh].m_value};
+            NInt lo{(*element)[2 * i + 0].m_value};
+            NInt hi{(*element)[2 * i + 1].m_value};
+            NInt s{static_cast<NInt>(lo + hi)};
+            s = condSubNoCmp(s, mv2);
+            NInt d{static_cast<NInt>(lo - hi + mv2)};
+            (*element)[2 * i + 0].m_value = s;
+            (*element)[2 * i + 1].m_value = d * omega - shoupMulHi(d, preconOmega) * mv;
+        }
+    }
+    // inner stages
+    for (size_t m{n >> 2}, t{2}, logt{2}; m > 1; m >>= 1, t <<= 1, ++logt) {
+        for (size_t i{0}; i < m; ++i) {
+            const NInt omega{rootOfUnityInverseTable[i + m].m_value};
+            const NInt preconOmega{preconRootOfUnityInverseTable[i + m].m_value};
+            // size_t induction keeps [j1] and [j1 + t] affine for the vectorizer (u32 indexing could wrap)
+            for (size_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
+                NInt lo{(*element)[j1 + 0].m_value};
+                NInt hi{(*element)[j1 + t].m_value};
+                NInt s{static_cast<NInt>(lo + hi)};
+                s = condSubNoCmp(s, mv2);
+                NInt d{static_cast<NInt>(lo - hi + mv2)};
+                (*element)[j1 + 0].m_value = s;
+                (*element)[j1 + t].m_value = d * omega - shoupMulHi(d, preconOmega) * mv;
+            }
+        }
+    }
+}
+
+template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace(
         const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable,
         const IntType& cycloOrderInv, const IntType& preconCycloOrderInv, VecType* element) {
@@ -577,39 +627,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
     const NInt o1{omega1Inv.m_value};
     const NInt preconO1{omega1Inv.PrepModMulConst(modulus).m_value};
 
-    if (n > 2) {
-        // peeled off first stage for performance; the index-doubled pair form (2i, 2i + 1)
-        // is the stride-2 shape gcc's vectorizer accepts, i += 2 is not
-        const uint32_t nh{n >> 1};
-        for (size_t i{0}; i < nh; ++i) {
-            const NInt omega{rootOfUnityInverseTable[i + nh].m_value};
-            const NInt preconOmega{preconRootOfUnityInverseTable[i + nh].m_value};
-            NInt lo{(*element)[2 * i + 0].m_value};
-            NInt hi{(*element)[2 * i + 1].m_value};
-            NInt s{static_cast<NInt>(lo + hi)};
-            s = condSubNoCmp(s, mv2);
-            NInt d{static_cast<NInt>(lo - hi + mv2)};
-            (*element)[2 * i + 0].m_value = s;
-            (*element)[2 * i + 1].m_value = d * omega - shoupMulHi(d, preconOmega) * mv;
-        }
-    }
-    // inner stages
-    for (size_t m{n >> 2}, t{2}, logt{2}; m > 1; m >>= 1, t <<= 1, ++logt) {
-        for (size_t i{0}; i < m; ++i) {
-            const NInt omega{rootOfUnityInverseTable[i + m].m_value};
-            const NInt preconOmega{preconRootOfUnityInverseTable[i + m].m_value};
-            // size_t induction keeps [j1] and [j1 + t] affine for the vectorizer (u32 indexing could wrap)
-            for (size_t j1{i << logt}, j2{j1 + t}; j1 < j2; ++j1) {
-                NInt lo{(*element)[j1 + 0].m_value};
-                NInt hi{(*element)[j1 + t].m_value};
-                NInt s{static_cast<NInt>(lo + hi)};
-                s = condSubNoCmp(s, mv2);
-                NInt d{static_cast<NInt>(lo - hi + mv2)};
-                (*element)[j1 + 0].m_value = s;
-                (*element)[j1 + t].m_value = d * omega - shoupMulHi(d, preconOmega) * mv;
-            }
-        }
-    }
+    InverseStagesButLast(rootOfUnityInverseTable, preconRootOfUnityInverseTable, element);
 
     // peeled off final stage where n/2 of the scalar multiplies by (n inverse) are
     // incorporated into the omegaFactor calculation; outputs reduced to [0, modulus)
@@ -633,6 +651,118 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         NInt r{static_cast<NInt>(v * nInv - shoupMulHi(v, preconNInv) * mv)};
         r = condSubNoCmp(r, mv);
         (*element)[i].m_value = r;
+    }
+}
+
+template <typename VecType>
+void NumberTheoreticTransformNat<VecType>::CIForwardTransformToBitReverseInPlace(const VecType& rootTable,
+                                                                                 const VecType& preconRootTable,
+                                                                                 const VecType& ciConsts,
+                                                                                 const VecType& preconCiConsts,
+                                                                                 VecType* element) {
+    // First CT stage (node multiplier r = w^{n/2}, r^2 = w^n, r^4 = -1) fused with the fold
+    // g_i = a_i - r^2 a_{n-i}. For the quadruple A = a_j, B = a_{n-j}, C = a_{h+j}, D = a_{h-j}
+    // (h = n/2): U = r^2 B, P = A - U = g_j, rS = -r^3 (A + U) = r g_{n-j};
+    // V = r^2 C, R = D - V = g_{h-j}, rQ = -r^3 (D + V) = r g_{h+j};
+    // stage outputs [j] = P + rQ, [h+j] = P - rQ, [h-j] = R + rS, [n-j] = R - rS, all below
+    // 3 modulus as after an ordinary first stage. Then the remaining stages run unchanged.
+    using NInt = typename IntType::Integer;
+    const NInt mv{element->GetModulus().m_value};
+    const NInt mv2{static_cast<NInt>(mv + mv)};
+    const size_t N{element->GetLength()};
+    const size_t h{N >> 1}, q4{N >> 2};
+    const NInt r2{ciConsts[0].m_value}, r2p{preconCiConsts[0].m_value};
+    const NInt mr3{ciConsts[1].m_value}, mr3p{preconCiConsts[1].m_value};
+    const NInt k0{ciConsts[2].m_value}, k0p{preconCiConsts[2].m_value};
+    auto& e = *element;
+    {  // j = 0: g_0 = a_0, g_h = (1 - r^2) a_h
+        const NInt A{e[0].m_value}, B{e[h].m_value};
+        const NInt t{condSubNoCmp(static_cast<NInt>(B * k0 - shoupMulHi(B, k0p) * mv), mv)};
+        e[0].m_value = A + t;
+        e[h].m_value = A - t + mv;
+    }
+    {  // j = n/4 (the quadruple degenerates to the pair {n/4, 3n/4})
+        const NInt A{e[q4].m_value}, B{e[h + q4].m_value};
+        const NInt U{condSubNoCmp(static_cast<NInt>(B * r2 - shoupMulHi(B, r2p) * mv), mv)};
+        const NInt P{condSubNoCmp(static_cast<NInt>(A - U + mv), mv)};
+        const NInt AU{static_cast<NInt>(A + U)};
+        const NInt rS{static_cast<NInt>(AU * mr3 - shoupMulHi(AU, mr3p) * mv)};
+        e[q4].m_value     = P + rS;
+        e[h + q4].m_value = P - rS + mv2;
+    }
+    for (size_t j{1}; j < q4; ++j) {
+        const NInt A{e[j].m_value}, B{e[N - j].m_value}, C{e[h + j].m_value}, D{e[h - j].m_value};
+        const NInt U{condSubNoCmp(static_cast<NInt>(B * r2 - shoupMulHi(B, r2p) * mv), mv)};
+        const NInt V{condSubNoCmp(static_cast<NInt>(C * r2 - shoupMulHi(C, r2p) * mv), mv)};
+        const NInt P{condSubNoCmp(static_cast<NInt>(A - U + mv), mv)};
+        const NInt R{condSubNoCmp(static_cast<NInt>(D - V + mv), mv)};
+        const NInt AU{static_cast<NInt>(A + U)}, DV{static_cast<NInt>(D + V)};
+        const NInt rS{static_cast<NInt>(AU * mr3 - shoupMulHi(AU, mr3p) * mv)};
+        const NInt rQ{static_cast<NInt>(DV * mr3 - shoupMulHi(DV, mr3p) * mv)};
+        e[j].m_value     = P + rQ;
+        e[h + j].m_value = P - rQ + mv2;
+        e[h - j].m_value = R + rS;
+        e[N - j].m_value = R - rS + mv2;
+    }
+    ForwardStagesFrom(2, rootTable, preconRootTable, element);
+}
+
+template <typename VecType>
+void NumberTheoreticTransformNat<VecType>::CIInverseTransformFromBitReverseInPlace(const VecType& rootInvTable,
+                                                                                   const VecType& preconRootInvTable,
+                                                                                   const VecType& ciConsts,
+                                                                                   const VecType& preconCiConsts,
+                                                                                   VecType* element) {
+    // GS stages, then the last stage (multiplier r^{-1}) fused with the unfold
+    // a_i = (g_i + r^2 g_{n-i}) / 2 and the 1/n scaling, c = (2n)^{-1}. The table entries [2], [3]
+    // (second-to-last stage) carry an extra factor mu = r c, so x_{h-j}, x_{n-j}, x_{n/4}, x_{3n/4}
+    // arrive scaled by mu (h = n/2). For the quadruple j, h+j, h-j, n-j with s1 = x_j + x_{h+j},
+    // d1 = x_j - x_{h+j}, s2 = x_{h-j} + x_{n-j}, d2 = x_{h-j} - x_{n-j} (s2, d2 scaled by mu):
+    //   X = c s1:   a_j = X + d2,             a_{n-j} = r^2 (X - d2)
+    //   Z = r^2 c d1: a_{h-j} = r^{-1} (s2 + Z), a_{h+j} = r (s2 - Z)
+    // (five multiplications); a_0 = 2c s, a_h = 2c r^{-1} / (1 - r^2) d (unscaled, no halving).
+    InverseStagesButLast(rootInvTable, preconRootInvTable, element);
+    using NInt = typename IntType::Integer;
+    const NInt mv{element->GetModulus().m_value};
+    const NInt mv2{static_cast<NInt>(mv + mv)};
+    const size_t N{element->GetLength()};
+    const size_t h{N >> 1}, q4{N >> 2};
+    const NInt c{ciConsts[0].m_value}, cp{preconCiConsts[0].m_value};
+    const NInt r2{ciConsts[1].m_value}, r2p{preconCiConsts[1].m_value};
+    const NInt r2c{ciConsts[2].m_value}, r2cp{preconCiConsts[2].m_value};
+    const NInt ri{ciConsts[3].m_value}, rip{preconCiConsts[3].m_value};
+    const NInt r1{ciConsts[4].m_value}, r1p{preconCiConsts[4].m_value};
+    const NInt c2{ciConsts[5].m_value}, c2p{preconCiConsts[5].m_value};
+    const NInt cm{ciConsts[6].m_value}, cmp{preconCiConsts[6].m_value};
+    auto& e = *element;
+    auto mul = [mv](NInt x, NInt w, NInt wp) -> NInt {  // any word x, result in [0, modulus)
+        return condSubNoCmp(static_cast<NInt>(x * w - shoupMulHi(x, wp) * mv), mv);
+    };
+    auto red4 = [mv, mv2](NInt x) -> NInt {  // [0, 4 modulus) -> [0, modulus)
+        return condSubNoCmp(condSubNoCmp(x, mv2), mv);
+    };
+    {  // j = 0
+        const NInt x0{e[0].m_value}, x1{e[h].m_value};
+        e[0].m_value = mul(static_cast<NInt>(x0 + x1), c2, c2p);
+        e[h].m_value = mul(static_cast<NInt>(x0 - x1 + mv2), cm, cmp);
+    }
+    {  // j = n/4: both scaled by mu; a_{n/4} = r^{-1} s + d, a_{3n/4} = r^2 (r^{-1} s - d)
+        const NInt x0{e[q4].m_value}, x1{e[h + q4].m_value};
+        const NInt T{mul(static_cast<NInt>(x0 + x1), ri, rip)};
+        const NInt d{red4(static_cast<NInt>(x0 - x1 + mv2))};
+        e[q4].m_value     = condSubNoCmp(static_cast<NInt>(T + d), mv);
+        e[h + q4].m_value = mul(static_cast<NInt>(T - d + mv), r2, r2p);
+    }
+    for (size_t j{1}; j < q4; ++j) {
+        const NInt xa{e[j].m_value}, xb{e[h + j].m_value}, xc{e[h - j].m_value}, xd{e[N - j].m_value};
+        const NInt X{mul(static_cast<NInt>(xa + xb), c, cp)};
+        const NInt d2{red4(static_cast<NInt>(xc - xd + mv2))};
+        e[j].m_value     = condSubNoCmp(static_cast<NInt>(X + d2), mv);
+        e[N - j].m_value = mul(static_cast<NInt>(X - d2 + mv), r2, r2p);
+        const NInt Z{mul(static_cast<NInt>(xa - xb + mv2), r2c, r2cp)};
+        const NInt s2{static_cast<NInt>(xc + xd)};
+        e[h - j].m_value = mul(static_cast<NInt>(s2 + Z), ri, rip);
+        e[h + j].m_value = mul(static_cast<NInt>(s2 - Z + mv), r1, r1p);
     }
 }
 

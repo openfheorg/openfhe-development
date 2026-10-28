@@ -286,6 +286,47 @@ class NumberTheoreticTransformNat {
                                                const VecType& preconRootOfUnityInverseTable,
                                                const IntType& cycloOrderInv, const IntType& preconCycloOrderInv,
                                                VecType* element);
+
+    /**
+     * In-place forward conjugate-invariant (CI) transform: evaluates the CI element
+     * a_0 + sum_{i>0} a_i (X^i + X^{-i}) (length n, a_i in [0, modulus)) at the n points w^{4j+1},
+     * w a primitive 4n-th root of unity, output in bit-reversed order (position brev(j)).
+     * It is the CT NTT modulo X^n - w^n whose first stage is fused with the fold
+     * g_i = a_i - w^n a_{n-i}: four multiplications per index quadruple {j, n/2+j, n/2-j, n-j}.
+     *
+     * @param rootTable node multipliers w^{e_k} of the X^n - w^n tree (index k = 1..n-1).
+     * @param preconRootTable Shoup constants of rootTable.
+     * @param ciConsts {w^n, -w^{3n/2}, w^{n/2} - w^{3n/2}}.
+     * @param preconCiConsts Shoup constants of ciConsts.
+     * @param[in,out] element CI coefficients in, evaluations out (length n >= 4).
+     */
+    void CIForwardTransformToBitReverseInPlace(const VecType& rootTable, const VecType& preconRootTable,
+                                               const VecType& ciConsts, const VecType& preconCiConsts,
+                                               VecType* element);
+
+    /**
+     * In-place inverse of CIForwardTransformToBitReverseInPlace(): GS stages with the inverse node
+     * multipliers, the last stage fused with the unfold a_i = (g_i + w^n g_{n-i}) / 2 and the
+     * scaling by 1/n (five multiplications per index quadruple). Output reduced to [0, modulus).
+     *
+     * @param rootInvTable inverse node multipliers w^{-e_k}, entries [2] and [3] times w^{n/2} c.
+     * @param preconRootInvTable Shoup constants of rootInvTable.
+     * @param ciConsts {c, w^n, w^n c, w^{-n/2}, w^{n/2}, 2c, 2c w^{-n/2} / (1 - w^n)} with c = (2n)^{-1}.
+     * @param preconCiConsts Shoup constants of ciConsts.
+     * @param[in,out] element evaluations in (bit-reversed order), CI coefficients out.
+     */
+    void CIInverseTransformFromBitReverseInPlace(const VecType& rootInvTable, const VecType& preconRootInvTable,
+                                                 const VecType& ciConsts, const VecType& preconCiConsts,
+                                                 VecType* element);
+
+  private:
+    // CT stages m = m0, 2 m0, ..., n/2 and the peeled final stage; the inputs of stage m0 must be
+    // within the bound the deferred-reduction schedule assumes after m0 - 1 stages from [0, modulus)
+    void ForwardStagesFrom(uint32_t m0, const VecType& rootOfUnityTable, const VecType& preconRootOfUnityTable,
+                           VecType* element);
+    // GS stages except the last (m = 1) one; leaves the values in [0, 2 modulus)
+    void InverseStagesButLast(const VecType& rootOfUnityInverseTable, const VecType& preconRootOfUnityInverseTable,
+                              VecType* element);
 };
 
 /**

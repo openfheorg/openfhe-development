@@ -121,6 +121,10 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    91-94 us StC-first (one call): CI / std 0.31-0.33x and 0.64-0.66x. Per call CI is 1.24-1.33x std, about 1.15x
    from the K = 28 table and 1.10x from the CI ring. See `PHASE2_LOG.md` 3.3.)
 3. **CI ring overhead.** CI NTT is within 1.2x of the standard NTT; CI EvalMod still ~1.2x std per op.
+   (Phase 4.1, WSL: the CI NTT is now the NTT modulo X^N - wm^N of the fold g_i = a_i - wm^N a_{N-i}, fused into
+   the first CT / last GS stage as raw-word loops in `NumberTheoreticTransformNat`; round trip 1.04-1.05x the
+   standard NTT at 2^16 (was 1.19-1.20x), bit-exact; ModUp/ModDown -8%, CI bootstrap about -2%. See
+   `PHASE2_LOG.md` 4.1.)
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
 5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.

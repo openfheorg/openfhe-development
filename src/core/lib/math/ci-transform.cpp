@@ -15,13 +15,15 @@
 #include <utility>
 #include <vector>
 
-// Twisted CI NTT. Evaluates a CI element a = a_0 + sum_i a_i (X^i + X^{-i}) at the N points
-// wm^{4j+1} (wm a primitive 4N-th root), j = 0..N-1 in natural order. Implemented as
-//   b_i = a_i * wm^{-i} + a_{N-i} * wm^{-N-i}            (folded twist, Shoup constants)
-//   E   = negacyclic NTT of b with psi = wm^2             (OpenFHE's optimized in-place NTT)
-//   the eval vector stays in bit-reversed node order (no permutation pass).
-// The inverse runs the same steps backwards. The registry is published copy-on-write so the
-// per-transform lookups are lock-free.
+// CI NTT. Evaluates a CI element a = a_0 + sum_i a_i (X^i + X^{-i}) at the N points wm^{4j+1}
+// (wm a primitive 4N-th root), j = 0..N-1. Since x^{-i} = -wm^N x^{N-i} at those points, this is
+// the NTT modulo X^N - wm^N of the fold g_i = a_i - wm^N a_{N-i} (g_0 = a_0). The CT tree of
+// X^N - wm^N has node multipliers wm^{e_k}: e_1 = N/2, e_{2k} = e_k/2, e_{2k+1} = e_k/2 + N.
+// The fold is fused with the first CT stage and the unfold (with the 1/2) with the last GS
+// stage, as raw-word loops in NumberTheoreticTransformNat (CIForwardTransformToBitReverseInPlace,
+// CIInverseTransformFromBitReverseInPlace); the eval vector is in bit-reversed node order (no
+// permutation pass). The registry is published copy-on-write so the per-transform lookups are
+// lock-free.
 
 namespace lbcrypto {
 
@@ -31,12 +33,11 @@ struct CITables {
     uint32_t N = 0;
     CINativeInteger q;
     CINativeInteger wm;
-    CINativeVector psiRev, psiRevPre;        // psi^i at bit-reversed i, psi = wm^2 (forward NTT)
-    CINativeVector psiInvRev, psiInvRevPre;  // psi^{-i} at bit-reversed i (inverse NTT)
-    CINativeInteger Ninv, NinvPre;
-    std::vector<CINativeInteger> T1, T1p, T2, T2p;  // forward twist: wm^{-i}, wm^{-N-i}
-    std::vector<CINativeInteger> C1, C1p, C2, C2p;  // inverse untwist: wm^{N+i}/d, wm^{N-i}/d, d = 2 wm^N
-    CINativeInteger mid, midPre;                    // i = N/2: wm^N / (wm^{N/2} + wm^{-N/2})
+    CINativeVector root, rootPre;        // CT node multipliers wm^{e_k} of X^N - wm^N (forward)
+    CINativeVector rootInv, rootInvPre;  // wm^{-e_k} (inverse; [2], [3] times wm^{N/2} c)
+    CINativeVector fwdK, fwdKPre;        // {wm^N, -wm^{3N/2}, wm^{N/2} - wm^{3N/2}}
+    CINativeVector invK, invKPre;        // {c, wm^N, wm^N c, wm^{-N/2}, wm^{N/2}, 2c, 2c wm^{-N/2} / (1 - wm^N)}, c = (2N)^{-1}
+    CINativeInteger Ninv;
     std::vector<uint32_t> brev;
     // reference (slow) tables
     std::vector<CINativeInteger> wmPow;
@@ -103,41 +104,53 @@ void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativ
     t->brev.resize(N);
     for (uint32_t i = 0; i < N; ++i)
         t->brev[i] = RevBits(i, logN);
-    t->psiRev       = CINativeVector(N, q);
-    t->psiRevPre    = CINativeVector(N, q);
-    t->psiInvRev    = CINativeVector(N, q);
-    t->psiInvRevPre = CINativeVector(N, q);
-    for (uint32_t i = 0; i < N; ++i) {
-        const uint32_t r = t->brev[i];
-        t->psiRev[r]       = W(2 * static_cast<int64_t>(i));
-        t->psiRevPre[r]    = t->psiRev[r].PrepModMulConst(q);
-        t->psiInvRev[r]    = W(-2 * static_cast<int64_t>(i));
-        t->psiInvRevPre[r] = t->psiInvRev[r].PrepModMulConst(q);
+    // node multiplier exponents of the CT tree of X^N - wm^N (index 0 unused)
+    std::vector<int64_t> ex(N, 0);
+    if (N >= 2)
+        ex[1] = N / 2;
+    for (uint32_t k = 1; 2 * k + 1 < N; ++k) {
+        ex[2 * k]     = ex[k] / 2;
+        ex[2 * k + 1] = ex[k] / 2 + N;
     }
-    t->Ninv    = CINativeInteger(N).ModInverse(q);
-    t->NinvPre = t->Ninv.PrepModMulConst(q);
-    t->detInv  = W(N).ModMul(CINativeInteger(2), q).ModInverse(q);
-    auto pre   = [&](std::vector<CINativeInteger>& v, std::vector<CINativeInteger>& vp) {
-        vp.resize(v.size());
-        for (size_t i = 0; i < v.size(); ++i)
+    auto prep = [&](CINativeVector& v, CINativeVector& vp) {
+        vp = CINativeVector(v.GetLength(), q);
+        for (size_t i = 0; i < v.GetLength(); ++i)
             vp[i] = v[i].PrepModMulConst(q);
     };
-    t->T1.resize(N);
-    t->T2.resize(N);
-    t->C1.resize(N);
-    t->C2.resize(N);
-    for (uint32_t i = 0; i < N; ++i) {
-        t->T1[i] = W(-static_cast<int64_t>(i));
-        t->T2[i] = W(-static_cast<int64_t>(N) - i);
-        t->C1[i] = W(static_cast<int64_t>(N) + i).ModMul(t->detInv, q);
-        t->C2[i] = W(static_cast<int64_t>(N) - i).ModMul(t->detInv, q);
+    t->root    = CINativeVector(N, q);
+    t->rootInv = CINativeVector(N, q);
+    for (uint32_t k = 0; k < N; ++k) {
+        t->root[k]    = W(ex[k]);
+        t->rootInv[k] = W(-ex[k]);
     }
-    pre(t->T1, t->T1p);
-    pre(t->T2, t->T2p);
-    pre(t->C1, t->C1p);
-    pre(t->C2, t->C2p);
-    t->mid    = W(N).ModMul(W(N / 2).ModAdd(W(-static_cast<int64_t>(N / 2)), q).ModInverse(q), q);
-    t->midPre = t->mid.PrepModMulConst(q);
+    prep(t->root, t->rootPre);
+    prep(t->rootInv, t->rootInvPre);
+    const int64_t Ni = N;
+    t->Ninv          = CINativeInteger(N).ModInverse(q);
+    const CINativeInteger c = CINativeInteger(2 * static_cast<uint64_t>(N)).ModInverse(q);
+    t->fwdK          = CINativeVector(3, q);
+    t->fwdK[0]       = W(Ni);
+    t->fwdK[1]       = W(7 * Ni / 2);  // -wm^{3N/2}
+    t->fwdK[2]       = W(Ni / 2).ModAdd(W(7 * Ni / 2), q);
+    prep(t->fwdK, t->fwdKPre);
+    t->invK    = CINativeVector(7, q);
+    t->invK[0] = c;
+    t->invK[1] = W(Ni);
+    t->invK[2] = W(Ni).ModMul(c, q);
+    t->invK[3] = W(-Ni / 2);
+    t->invK[4] = W(Ni / 2);
+    t->invK[5] = t->Ninv;
+    t->invK[6] = t->Ninv.ModMul(W(-Ni / 2), q).ModMul(CINativeInteger(1).ModSub(W(Ni), q).ModInverse(q), q);
+    prep(t->invK, t->invKPre);
+    // second-to-last GS stage carries mu = wm^{N/2} c (absorbed in the fused last stage)
+    if (N >= 4) {
+        const CINativeInteger mu = W(Ni / 2).ModMul(c, q);
+        for (uint32_t k : {2u, 3u}) {
+            t->rootInv[k]    = t->rootInv[k].ModMul(mu, q);
+            t->rootInvPre[k] = t->rootInv[k].PrepModMulConst(q);
+        }
+    }
+    t->detInv = W(N).ModMul(CINativeInteger(2), q).ModInverse(q);
     t->rootN    = CINativeVector(N, q);
     t->rootNinv = CINativeVector(N, q);
     for (uint32_t k = 0; k < N; ++k) {
@@ -164,40 +177,28 @@ void ClearCIModuli() {
 
 void CIForwardTransform(CINativeVector& vals) {
     const CITables& t = Lookup(vals.GetModulus());
-    const uint32_t N  = t.N;
-    const auto& q     = t.q;
-    if (vals.GetLength() != N)
+    if (vals.GetLength() != t.N)
         OPENFHE_THROW("CIForwardTransform: length mismatch with registered ring dimension");
-    // folded twist, pairwise in place: b_i = a_i T1_i + a_{N-i} T2_i
-    for (uint32_t i = 1; i <= N / 2; ++i) {
-        const uint32_t k = N - i;
-        const CINativeInteger ai = vals[i], ak = vals[k];
-        vals[i] = ai.ModMulFastConst(t.T1[i], q, t.T1p[i]).ModAddFast(ak.ModMulFastConst(t.T2[i], q, t.T2p[i]), q);
-        if (k != i)
-            vals[k] = ak.ModMulFastConst(t.T1[k], q, t.T1p[k]).ModAddFast(ai.ModMulFastConst(t.T2[k], q, t.T2p[k]), q);
+    if (t.N < 4) {
+        CIForwardTransformRef(vals);
+        return;
     }
-    intnat::NumberTheoreticTransformNat<CINativeVector>().ForwardTransformToBitReverseInPlace(t.psiRev, t.psiRevPre,
-                                                                                            &vals);
+    intnat::NumberTheoreticTransformNat<CINativeVector>().CIForwardTransformToBitReverseInPlace(
+        t.root, t.rootPre, t.fwdK, t.fwdKPre, &vals);
     // output stays in bit-reversed node order (PrecomputeAutoMapCI accounts for it)
 }
 
 void CIInverseTransform(CINativeVector& vals) {
     const CITables& t = Lookup(vals.GetModulus());
-    const uint32_t N  = t.N;
-    const auto& q     = t.q;
-    if (vals.GetLength() != N)
+    if (vals.GetLength() != t.N)
         OPENFHE_THROW("CIInverseTransform: length mismatch with registered ring dimension");
-    // input is in bit-reversed node order
-    intnat::NumberTheoreticTransformNat<CINativeVector>().InverseTransformFromBitReverseInPlace(
-            t.psiInvRev, t.psiInvRevPre, t.Ninv, t.NinvPre, &vals);
-    // untwist, pairwise in place: a_i = b_i C1_i - b_{N-i} C2_i
-    for (uint32_t i = 1; i < N / 2; ++i) {
-        const uint32_t k = N - i;
-        const CINativeInteger bi = vals[i], bk = vals[k];
-        vals[i] = bi.ModMulFastConst(t.C1[i], q, t.C1p[i]).ModSubFast(bk.ModMulFastConst(t.C2[i], q, t.C2p[i]), q);
-        vals[k] = bk.ModMulFastConst(t.C1[k], q, t.C1p[k]).ModSubFast(bi.ModMulFastConst(t.C2[k], q, t.C2p[k]), q);
+    if (t.N < 4) {
+        CIInverseTransformRef(vals);
+        return;
     }
-    vals[N / 2] = vals[N / 2].ModMulFastConst(t.mid, q, t.midPre);
+    // input is in bit-reversed node order
+    intnat::NumberTheoreticTransformNat<CINativeVector>().CIInverseTransformFromBitReverseInPlace(
+        t.rootInv, t.rootInvPre, t.invK, t.invKPre, &vals);
 }
 
 // ---- reference (original) implementation, kept for validation ----

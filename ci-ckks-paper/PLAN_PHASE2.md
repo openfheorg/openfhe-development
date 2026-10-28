@@ -131,6 +131,11 @@ the paper's equal-reals comparison has no ring-noise gap. Gap to the paper's 20.
 CI 2^16 19.69-19.85 (-0.70 to -0.86) = ~0.4 bits CI-specific (CI vs std at equal reals, 2^14/2^15 and 2^15/2^16;
 source open) + ~0.3-0.45 bits OpenFHE-vs-Lattigo design shared with std (std 2^17 OOM on WSL, inferred); CtS-first
 loses another 1.2-1.6 bits (ordering); META-BTS closes it (37 bits min).
+CI NTT (item 4.1, WSL): the CI transform is the NTT modulo X^N - wm^N of the fold g_i = a_i - wm^N a_{N-i}, with the fold
+fused into the first CT stage and the unfold + 1/N into the last GS stage (raw-word members of
+`NumberTheoreticTransformNat`; same output order, bit-exact vs the reference). Round trip 1.04-1.05x std at 2^16 (was
+1.19-1.20x; `ci-ntt-check`, per-rep interleaved); ModUp/ModDown -8%, CI bootstrap about -2% (calm pair 11.82 -> 11.59 s),
+precision unchanged, peak RSS -0.17 GB. Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -219,7 +224,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   security reason it cannot is recorded), and the precision gap to the paper is explained or closed.
 
 ## Phase 4: CI ring overhead (gap 3)
-- [ ] **4.1** Raw-word Shoup twist loops for the CI NTT (move the twisted NTT next to
+- [x] **4.1** Raw-word Shoup twist loops for the CI NTT (move the twisted NTT next to
   `NumberTheoreticTransformNat` for word access). Target: CI NTT round trip within 1.05x of the standard NTT
   (now 1.19x at 2^16); validate with `benchmark/src/ci-ntt-check.cpp` (bit-exact vs reference).
 - [ ] **4.2** Measure CI vs std per-op cost (EvalMult, rotation, rescale) at 2^16; fix anything above 1.1x.

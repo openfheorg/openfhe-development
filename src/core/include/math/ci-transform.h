@@ -9,10 +9,11 @@
 //
 // The CI ring R_q = {a in Z_q[X]/(X^{2N}+1) : a(X)=a(X^{-1})}, stored as a length-N
 // coefficient vector, is isomorphic to Z_q^N via evaluation at the N real CI nodes
-// w_m^{4j+1} (w_m a primitive 4N-th root mod q). The transform is Kim-Song s4.3:
-//   forward  (COEFFICIENT -> EVALUATION): coefficient twiddle, then an N-point cyclic
-//            NTT with w_N = w_m^4 (reusing OpenFHE NumberTheoreticTransformNat);
-//   inverse  (EVALUATION -> COEFFICIENT): N-point cyclic INTT, then untwiddle.
+// w_m^{4j+1} (w_m a primitive 4N-th root mod q). The transform (Kim-Song s4.3) is computed as
+//   forward  (COEFFICIENT -> EVALUATION): the NTT modulo X^N - w_m^N of the fold
+//            g_i = a_i - w_m^N a_{N-i}, the fold fused into the first CT stage;
+//   inverse  (EVALUATION -> COEFFICIENT): GS stages, the unfold fused into the last one
+//   (raw-word kernels in NumberTheoreticTransformNat; outputs in bit-reversed node order).
 // Hadamard product in EVALUATION format then equals CI ring multiplication.
 //
 // A CI modulus is opted in via RegisterCIModulus(); only registered native moduli take

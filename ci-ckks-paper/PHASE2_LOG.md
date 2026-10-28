@@ -2216,3 +2216,137 @@ ICELAKE is excluded, so the 65536-real std row is open.
   HEAD). Open for later, with no item in the plan: the std 2^17 bootstrap (65536 reals), which needs more than
   18 GB, so ICELAKE or a larger WSL slice, to confirm item 5; the source of the 0.4-bit CI-specific part; and a
   K = 16 table with the weight-32 CI key, which has a failure estimate of about 2^-22 per bootstrap.
+
+## 4.1 Raw-word CI NTT, fold fused into the first/last butterfly stage -- DONE (WSL)
+
+**Host.** The host file said `WSL` before every job. All jobs ran on WSL through `wsl-guard.sh`. Nothing ran on
+ICELAKE. Jobs: `p41_build`, `p41_check`, `p41_buildab`, `p41_smoke`, `p41_ab16`, `p41_build3`, `p41_ab16b`,
+`p41_build4`, `p41_check2`, `p41_buildf`, `p41_final`. All have rc 0. One more build (`p41_build4`, first try) was
+`refused:mem` while `p41_ab16b` still ran. The guard did that, so the binary did not change during the job.
+
+**What changed.**
+- The CI transform is now the NTT modulo X^N - wm^N of the fold g_i = a_i - wm^N a_{N-i} (g_0 = a_0). At the CI
+  nodes wm^{4j+1}, x^{-i} = -wm^N x^{N-i}. The CT tree of X^N - wm^N has node multipliers wm^{e_k} with e_1 = N/2,
+  e_{2k} = e_k/2 and e_{2k+1} = e_k/2 + N, so OpenFHE's in-place CT/GS kernels run it unchanged with these tables.
+  The output order is the same as before: position brev(j) holds the value at wm^{4j+1}. So the automorphism maps
+  and all callers stay the same, and the output is bit-exact against `CIForwardTransformRef`.
+- Forward: the fold is fused into the first CT stage (multiplier r = wm^{N/2}, r^2 = wm^N, r^4 = -1). For each
+  index quadruple {j, h+j, h-j, N-j} (h = N/2) it computes U = r^2 a_{N-j}, V = r^2 a_{h+j}, P = a_j - U,
+  R = a_{h-j} - V, rS = -r^3 (a_j + U), rQ = -r^3 (a_{h-j} + V), and writes P +- rQ and R +- rS. That is 4
+  multiplications per quadruple, against 2 for a plain first stage. Before, the separate twist took 4 per pair.
+  The outputs stay below 3q, the bound OpenFHE's deferred-reduction schedule assumes after one stage.
+- Inverse: the unfold a_i = (g_i + r^2 g_{N-i}) / 2 and the 1/N scaling are fused into the last GS stage. The
+  table entries [2] and [3] (the second-to-last stage) also carry mu = r c, with c = (2N)^{-1}. That costs nothing,
+  and it saves one multiplication: 5 per quadruple, against 4 for OpenFHE's last stage plus the 1/N pass. Before,
+  the inverse used 4 per pair plus the 1/N pass. The special indices are 0 and N/2 (no halving, a_h = g_h/(1 - r^2))
+  and N/4 and 3N/4.
+- In total the CI round trip costs about N + N/4 more multiplications than std's 16.5 N at 2^16. The old twist
+  cost 4 N more, through `NativeInteger` calls that reduced every product fully.
+- Code:
+  - `NumberTheoreticTransformNat` (`transformnat.h` / `-impl.h`, which already has raw `m_value` access) gets
+    `CIForwardTransformToBitReverseInPlace` and `CIInverseTransformFromBitReverseInPlace`.
+  - The std kernels are split, with no change to their arithmetic: `ForwardTransformToBitReverseInPlace` calls the
+    new private `ForwardStagesFrom(1, ...)`, and `InverseTransformFromBitReverseInPlace` calls
+    `InverseStagesButLast` and then its own last stage.
+  - `ci-transform.cpp` builds the new tables and drops the psi tables, the four N-length twist tables and their
+    Shoup tables (peak RSS at 2^16 {5,3} 13.60 -> 13.43 GB).
+- `benchmark/src/ci-ntt-check.cpp` was rewritten:
+  - Bit-exactness against the reference at logN 2, 3, 4, 5, 10 and 12-16, with 50-bit (lazy CT schedule), 59-bit
+    and 60-bit (non-lazy at large N) primes. Each case has 3 inputs, one of them all near q - 1, and checks
+    forward, inverse and the round trip.
+  - Timing (59-bit prime) of the new CI NTT, the previous CI NTT (copied into the check as `OldCI`) and the std
+    negacyclic NTT, interleaved per rep. The medians of the per-rep times and of the per-rep ratios cancel the
+    laptop's speed states.
+
+**Commands** (WSL, repo root; host file `WSL` before each):
+
+    wsl-guard.sh p41_build 12 'cmake --build build-wsl --target ci-ntt-check ci-fft-boot -j 8'
+    wsl-guard.sh p41_check 3 'OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-ntt-check 100 3'     # 6-mult inverse
+    # temporary CI_NTT_OLD=1 switch in ci-transform.cpp (old twisted NTT), for the bootstrap A/B in one binary:
+    wsl-guard.sh p41_buildab 12 'cmake --build build-wsl --target ci-ntt-check ci-fft-boot -j 8'
+    wsl-guard.sh p41_smoke 6 'for old in 0 1; for cfg in {12 1 1, 12 3 3, 13 4 4, 14 5 3};
+        for st in {4 encap 0, 12 encap 1}: CI_NTT_OLD=$old ci-fft-boot ci $cfg 59 60 0 1 fa $st'
+    wsl-guard.sh p41_ab16 15 'ci-ntt-check 200 7; for old in 0 1 1 0:
+        CI_NTT_OLD=$old CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 ci-fft-boot ci 16 5 3 59 60 1 3 fa 4 encap'
+    wsl-guard.sh p41_build3 12 'cmake --build build-wsl --target ci-ntt-check -j 8'           # per-rep interleave
+    wsl-guard.sh p41_ab16b 15 'ci-ntt-check 200 7; for old in 0 1 0 1 0 1: (same CI run as p41_ab16)'
+    # 5-mult inverse (mu = r c in rootInv[2], [3]):
+    wsl-guard.sh p41_build4 12 'cmake --build build-wsl --target ci-ntt-check ci-fft-boot -j 8'
+    wsl-guard.sh p41_check2 3 'OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-ntt-check 200 7'
+    # final code (temporary switch removed):
+    wsl-guard.sh p41_buildf 12 'cmake --build build-wsl --target ci-ntt-check ci-fft-boot -j 8'
+    wsl-guard.sh p41_final 15 'ci-ntt-check 200 7; ci-fft-boot ci {12 1 1, 12 3 3, 13 4 4, 14 5 3} 59 60 0 1 fa
+        {4 encap 0, 12 encap 1}; CI_BOOT_TIMING=1 ci-fft-boot ci 16 5 3 59 60 1 1 fa {4 encap 0, 12 encap 1}'
+
+**NTT round trip** (59-bit prime, 1 thread, medians of per-rep times, per-rep interleaved new/old/std; the ratio
+column is the median of per-rep new/std ratios). Bit-exact (`all_match=1`) in every run, at every N and prime
+width.
+
+| logN | std us | new CI us | new / std | old CI / std | old / new | job |
+|---|---|---|---|---|---|---|
+| 16 | 1822 | 1905 | **1.041** (aggregate 1.046) | 1.192 | 1.137 | `p41_final` |
+| 16 | 1748 | 1834 | **1.046** (aggregate 1.049) | 1.199 | 1.145 | `p41_check2` |
+| 16 | 1290 | 1365 | 1.059 | 1.202 | 1.135 | `p41_ab16b`, 6-mult inverse |
+| 15 | 616 | 645 | 1.043 | 1.201 | 1.147 | `p41_final` |
+| 14 | 370 | 390 | 1.063 | 1.213 | 1.142 | `p41_final` |
+| 13 | 121 | 129 | 1.065 | 1.230 | 1.155 | `p41_final` |
+| 12 | 78.6 | 83.9 | 1.066 | 1.250 | 1.165 | `p41_final` |
+
+The absolute times move by up to 40% between jobs (the laptop's speed states). Only the per-rep ratios compare.
+At 2^12-2^14 the fixed cost of the fused stage is a larger share, so the ratio there is 1.06-1.07x. The target
+(2^16) is met. The old CI NTT measures 1.19-1.20x std here, the "1.19x" in the plan.
+
+**Bootstrap A/B** (CI {5,3}, 2^16, 128-bit, 1 thread, reps 3, CtS-first, one binary, `CI_NTT_OLD` 0/1, 6-mult
+inverse version). The laptop changed speed state during both jobs: `ptMult` has no NTT inside, yet it moved by up
+to 38% between passes. So the warm times below compare only within passes with equal `ptMult`. Sums of the `[LT]`
+classes over the 4 reps of each pass:
+
+| job / pass | NTT | warm median s | LT total | modUp | modDown | ptMult | modUp / ptMult | modDown / ptMult |
+|---|---|---|---|---|---|---|---|---|
+| `p41_ab16` 1 | new | 14.57 | 39.21 | 5.54 | 3.65 | 13.22 | 0.419 | 0.276 |
+| `p41_ab16` 2 | old | 12.29 | 31.21 | 4.85 | 3.11 | 10.09 | 0.481 | 0.308 |
+| `p41_ab16` 3 | old | 11.85 | 29.73 | 4.45 | 2.92 | 9.68 | 0.460 | 0.302 |
+| `p41_ab16` 4 | new | 13.34 | 33.04 | 4.84 | 3.23 | 11.09 | 0.436 | 0.291 |
+| `p41_ab16b` 1 | new | 15.27 | 39.29 | 5.48 | 3.64 | 13.35 | 0.410 | 0.273 |
+| `p41_ab16b` 2 | old | 11.83 | 36.17 | 5.44 | 3.55 | 11.88 | 0.458 | 0.299 |
+| `p41_ab16b` 3 | **new** | **11.59** | 29.95 | 4.35 | 2.82 | **9.72** | 0.448 | 0.290 |
+| `p41_ab16b` 4 | **old** | **11.82** | 30.17 | 4.65 | 3.00 | **9.70** | 0.479 | 0.309 |
+| `p41_ab16b` 5 | new | 13.80 | 35.31 | 4.94 | 3.29 | 11.79 | 0.419 | 0.279 |
+| `p41_ab16b` 6 | old | 16.35 | 40.57 | 6.14 | 4.07 | 13.39 | 0.459 | 0.304 |
+
+(LT sums include the first bootstrap of each pass; the warm median excludes it, so the two can disagree, e.g.
+`p41_ab16b` pass 2.)
+
+- In the calm pair (`p41_ab16b` passes 3-4, `ptMult` 9.72 vs 9.70 s) the bootstrap goes from 11.82 to 11.59 s
+  (-2.0%). ModUp goes from 4.65 to 4.35 s (-6.5%) and ModDown from 3.00 to 2.82 s (-6.0%).
+- Normalized by `ptMult` in all 10 passes, ModUp is 0.410-0.448 (new) against 0.458-0.481 (old), -9%, and
+  ModDown is 0.273-0.291 against 0.299-0.309, -8%. Item 2.1 attributed "~10% of ModUp/ModDown" to the CI NTT,
+  and most of that is now gone.
+- Precision is unchanged: RMS 21.55-21.57 bits in every pass. The Galois check held in all passes. Peak RSS is
+  13.43 GB (new) against 13.60 GB (old).
+- The final 5-multiplication inverse saves about 1.3% more NTT time. No bootstrap A/B was run for it, because the
+  effect is below this laptop's noise.
+
+**Correctness of the final code** (`p41_final`):
+
+| N, budget | CtS-first (corr 4) RMS / min bits | StC-first (corr 12) RMS / min bits |
+|---|---|---|
+| 2^12 {1,1} (dense) | 18.80 / 17.18 | 22.68 / 21.26 |
+| 2^12 {3,3} | 18.80 / 17.18 | 22.68 / 21.28 |
+| 2^13 {4,4} | 19.71 / 18.03 | 22.67 / 21.09 |
+| 2^14 {5,3} | 20.71 / 18.89 | 22.48 / 20.47 |
+| 2^16 {5,3}, 128-bit, reps 1 | 21.56 / 18.67 (11.70 s) | 21.91 / 19.82 (11.02 s) |
+
+These match the old NTT (`p41_smoke`, same matrix, CI_NTT_OLD=1: identical RMS, min within the seed spread). At
+2^16 they also match the 2.R / 2.5 numbers (21.56-21.57 / 21.91-21.92). Both orderings run. At 2^16 the Galois
+check held and no diagonal was encoded at run time.
+
+**Conclusions.**
+- Done: the CI NTT round trip is 1.04-1.05x the standard NTT at 2^16 (two runs of the final code), down from 1.19-1.20x.
+  It is bit-exact against the reference at all N and prime widths. In the bootstrap, ModUp/ModDown drop by about 8% and the
+  whole bootstrap by about 2% (one calm pair; the other passes are within the laptop's speed states).
+- The rest of the CI NTT overhead is about N + N/4 multiplications per round trip for the fold/unfold.
+  The forward side is at its minimum for this factorization: each output pair needs a separate r^2 product.
+- std arithmetic did not change. Its NTT kernels were only split into helpers. The std NTT timing in the check is
+  the same code before and after, but no separate std before/after run was made.
+- The baseline commands do not change. CI baseline times should drop by about 2% at the next phase review.
