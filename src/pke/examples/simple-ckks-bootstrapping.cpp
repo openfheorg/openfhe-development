@@ -78,8 +78,8 @@ void SimpleBootstrapExample() {
      * a smaller ring dimension. Note that this should be used only in
      * non-production environments, or by experts who understand the security
      * implications of their choices. In production-like environments, we recommend using
-     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * HEORG24_128, HEORG24_192, or HEORG24_256 for 128-bit, 192-bit,
+     * or 256-bit classical/quantum security, respectively. If you choose one of these as your security level,
      * you do not need to set the ring dimension.
      */
     parameters.SetSecurityLevel(HEStd_NotSet);
@@ -203,8 +203,8 @@ void SimpleBootstrapStCExample() {
      * a smaller ring dimension. Note that this should be used only in
      * non-production environments, or by experts who understand the security
      * implications of their choices. In production-like environments, we recommend using
-     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-     * or 256-bit security, respectively. If you choose one of these as your security level,
+     * HEORG24_128, HEORG24_192, or HEORG24_256 for 128-bit, 192-bit,
+     * or 256-bit classical/quantum security, respectively. If you choose one of these as your security level,
      * you do not need to set the ring dimension.
      */
     parameters.SetSecurityLevel(HEStd_NotSet);

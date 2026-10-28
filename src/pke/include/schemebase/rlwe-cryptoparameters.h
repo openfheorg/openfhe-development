@@ -545,7 +545,8 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     /// specifies whether the secret polynomials are generated from discrete
     /// Gaussian distribution or ternary distribution with the norm of unity
     SecretKeyDist m_secretKeyDist = GAUSSIAN;
-    /// Security level according in the HomomorphicEncryption.org standard
+    /// Security level according to the HomomorphicEncryption.org standard (HEStd_*) or the
+    /// Security Guidelines for Implementing Homomorphic Encryption (HEORG24_*, HE_SPARSE_*)
     SecurityLevel m_stdLevel = HEStd_NotSet;
 
     /// m_dgg gets the same default value as m_distributionParameter does

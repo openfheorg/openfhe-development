@@ -89,18 +89,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     // Bound of the key polynomial
     double Bkey = 0;
 
-    DistributionType distType;
+    DistributionType distType = StdLatticeParm::GetDistributionType(cryptoParamsBFVRNS->GetSecretKeyDist(), stdLevel);
 
     uint32_t thresholdParties = cryptoParamsBFVRNS->GetThresholdNumOfParties();
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
     if (cryptoParamsBFVRNS->GetSecretKeyDist() == GAUSSIAN) {
         Bkey = std::sqrt(thresholdParties) * Berr;
-        distType = HEStd_error;
     } else {
         // Bkey set to thresholdParties * 1 for ternary distribution
         Bkey = thresholdParties;
-        distType = HEStd_ternary;
     }
 
     // expansion factor delta for a multiplication of a Gaussian polynomial by a random polynomial

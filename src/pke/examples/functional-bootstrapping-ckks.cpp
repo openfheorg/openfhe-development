@@ -172,7 +172,7 @@ void ArbitraryLUT(BigInteger QBFVInit, BigInteger PInput, BigInteger POutput, Bi
     uint32_t levelsAvailableAfterBootstrap = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum = 3;
-    SecretKeyDist secretKeyDist = SPARSE_ENCAPSULATED;
+    SecretKeyDist secretKeyDist = HYBRID_TERNARY;
     ScalingTechnique scalTech = FLEXIBLEAUTO;
     std::vector<uint32_t> lvlb = {3, 3};
 
@@ -590,7 +590,7 @@ void MultiPrecisionSign(BigInteger QBFVInit, BigInteger PInput, BigInteger PDigi
     uint32_t levelsAvailableAfterBootstrap = 0;
     uint32_t levelsAvailableBeforeBootstrap = 0;
     uint32_t dnum = 3;
-    SecretKeyDist secretKeyDist = SPARSE_ENCAPSULATED;
+    SecretKeyDist secretKeyDist = HYBRID_TERNARY;
     ScalingTechnique scalTech = FIXEDMANUAL;
     std::vector<uint32_t> lvlb = {3, 3};
 

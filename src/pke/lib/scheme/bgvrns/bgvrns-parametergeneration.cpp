@@ -54,11 +54,9 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(
         uint32_t cyclOrder) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
-    // GAUSSIAN security constraint
-    DistributionType distType = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
-
     // HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
+    DistributionType distType = StdLatticeParm::GetDistributionType(cryptoParamsBGVRNS->GetSecretKeyDist(), stdLevel);
 
     uint32_t ringDimension = cyclOrder / 2;
 
@@ -633,7 +631,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
             logActualQ = cryptoParamsBGVRNS->GetElementParams()->GetModulus().GetMSB();
         }
 
-        DistributionType distType = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
+        DistributionType distType =
+                StdLatticeParm::GetDistributionType(cryptoParamsBGVRNS->GetSecretKeyDist(), stdLevel);
         uint32_t nActual = StdLatticeParm::FindRingDim(distType, stdLevel, logActualQ);
 
         if (n < nActual) {

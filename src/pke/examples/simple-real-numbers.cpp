@@ -104,24 +104,27 @@ int main() {
     uint32_t batchSize = 8;
 
     /* A4) Desired security level based on FHE standards.
-     * This parameter can take four values. Three of the possible values
-     * correspond to 128-bit, 192-bit, and 256-bit security, and the fourth value
-     * corresponds to "NotSet", which means that the user is responsible for
-     * choosing security parameters. Naturally, "NotSet" should be used only in
-     * non-production environments, or by experts who understand the security
-     * implications of their choices.
+     * HEORG24_128, HEORG24_192, and HEORG24_256 correspond to 128-bit, 192-bit, and
+     * 256-bit security according to the Security Guidelines for Implementing
+     * Homomorphic Encryption (https://cic.iacr.org/p/1/4/26) and are recommended
+     * for new applications; HEStd_128_classic (the default, kept for backward
+     * compatibility) and the other HEStd_* values use the older tables of the
+     * Homomorphic Encryption Standard (https://homomorphicencryption.org/standard/).
+     * "NotSet" means that the user is responsible for choosing security parameters;
+     * naturally, it should be used only in non-production environments, or by
+     * experts who understand the security implications of their choices.
      *
-     * If a given security level is selected, the library will consult the current
-     * security parameter tables defined by the FHE standards consortium
-     * (https://homomorphicencryption.org/introduction/) to automatically
-     * select the security parameters. Please see "TABLES of RECOMMENDED
-     * PARAMETERS" in  the following reference for more details:
-     * http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
+     * If a given security level is selected, the library will consult the
+     * corresponding security parameter table to automatically select the ring
+     * dimension (or to validate the one specified by the user).
      */
+    SecurityLevel securityLevel = HEORG24_128;
+
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
     parameters.SetBatchSize(batchSize);
+    parameters.SetSecurityLevel(securityLevel);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 

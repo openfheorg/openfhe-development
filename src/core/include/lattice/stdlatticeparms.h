@@ -30,7 +30,10 @@
 //==================================================================================
 
 /*
-  Header for the standard values for Lattice Parms, as determined by homomorphicencryption.org
+  Header for the standard values for Lattice Parms, as determined by homomorphicencryption.org, by the
+  Security Guidelines for Implementing Homomorphic Encryption (IACR Communications in Cryptology 1(4), 2025,
+  https://cic.iacr.org/p/1/4/26; also ePrint 2024/463, https://eprint.iacr.org/2024/463), and by estimates
+  with the Lattice Estimator (https://github.com/malb/lattice-estimator, commit 6019056) for sparse secrets
  */
 
 #ifndef SRC_CORE_INCLUDE_LATTICE_STDLATTICEPARMS_H_
@@ -45,35 +48,56 @@
 #include <utility>
 #include <vector>
 
+#include "lattice/constants-lattice.h"
 #include "utils/inttypes.h"
 
 namespace lbcrypto {
 
-// this is the representation of the standard lattice parameters defined in the
-// Homomorphic Encryption Standard, as defined by
-// http://homomorphicencryption.org
+// This is the representation of the standard lattice parameters defined in the Homomorphic Encryption Standard
+// (http://homomorphicencryption.org, HEStd_* security levels), in the Security Guidelines for Implementing
+// Homomorphic Encryption (IACR Communications in Cryptology 1(4), 2025, https://cic.iacr.org/p/1/4/26; also ePrint
+// 2024/463; HEORG24_* security levels), and by estimates with the Lattice Estimator
+// (https://github.com/malb/lattice-estimator, commit 6019056) for sparse secrets (HE_SPARSE_* security levels).
 
-// given a distribution type and a security level, you can get the maxQ for a
-// given ring dimension, and you can get the ring dimension given a maxQ
-
-// The code below is very specific to the layout of the DistributionType and
-// SecurityLevel enums IF you change them, go look at and change byRing and
-// byLogQ
+// Given a distribution type and a security level, you can get the maxQ for a given ring dimension, and you can
+// get the ring dimension given a maxQ.
 
 /**
- * @brief Secret key distribution used to select a table of the Homomorphic Encryption Standard.
- * The enumerators must stay consecutive from 0 because they index the lookup tables in StdLatticeParm.
+ * @brief Secret key distribution used to select a table of security parameters.
  */
 enum DistributionType {
-    HEStd_uniform,
-    HEStd_error,
-    HEStd_ternary,
+    HEStd_uniform,  ///< uniform secret (Homomorphic Encryption Standard only)
+    HEStd_error,    ///< Gaussian secret with standard deviation 3.19 (error distribution)
+    HEStd_ternary,  ///< uniform ternary secret
+    HEStd_sparse,   ///< sparse ternary secret of fixed Hamming weight (HE_SPARSE_* security levels only)
 };
 
 /**
- * @brief Security level of the Homomorphic Encryption Standard (bits of security, classical or quantum attacks).
- * HEStd_NotSet disables the standard-based parameter checks. The enumerators must stay consecutive from 0 because
- * they index the lookup tables in StdLatticeParm.
+ * @brief Security level, i.e., the table of security parameters used to select or validate the ring dimension
+ * for the ciphertext modulus.
+ *
+ * HEStd_* levels are the tables of the Homomorphic Encryption Standard v1.1 (2018), extended to ring dimensions 2^16
+ * and 2^17 with the values of the Security Guidelines for Implementing Homomorphic Encryption; they are kept for
+ * backward compatibility.
+ *
+ * HEORG24_* levels are Table 5.2 of the Security Guidelines for Implementing Homomorphic Encryption (Bossuat et
+ * al., IACR Communications in Cryptology 1(4), 2025, https://cic.iacr.org/p/1/4/26; also ePrint 2024/463),
+ * estimated with the Lattice Estimator and the MATZOV cost model for uniform ternary (HEStd_ternary) and Gaussian
+ * (HEStd_error) secrets. They provide 128-, 192-, and 256-bit security against both classical and quantum
+ * attacks (there are no separate classical and quantum tables). They are recommended over the HEStd_* levels for
+ * new applications, as they reflect more recent cryptanalysis (the bounds on the ciphertext modulus are up to a
+ * few bits smaller).
+ *
+ * HE_SPARSE_H192_128 is the 128-bit classical security table for sparse ternary secrets of Hamming weight 192
+ * (the Hamming weight of SPARSE_TERNARY and SPARSE_ENCAPSULATED secret keys in OpenFHE) and ring dimensions 2^15,
+ * 2^16, and 2^17, intended for CKKS bootstrapping with sparse secrets. The work factors of the three rows (134.1,
+ * 134.0, and 135.7 bits for 2^15, 2^16, and 2^17, respectively) were obtained with the Lattice Estimator
+ * (https://github.com/malb/lattice-estimator, commit 6019056) using the MATZOV reduction cost model (best attack:
+ * bdd_mitm_hybrid). It uses the HEStd_sparse
+ * distribution type and is the recommended security level for sparse secrets.
+ *
+ * HEStd_NotSet disables the security-based parameter checks. New enumerators must be appended at the end because
+ * the values are stored in serialized cryptocontexts.
  */
 enum SecurityLevel {
     HEStd_128_classic,
@@ -83,6 +107,10 @@ enum SecurityLevel {
     HEStd_192_quantum,
     HEStd_256_quantum,
     HEStd_NotSet,
+    HEORG24_128,         ///< 128-bit classical/quantum security (Security Guidelines 2024, Table 5.2)
+    HEORG24_192,         ///< 192-bit classical/quantum security (Security Guidelines 2024, Table 5.2)
+    HEORG24_256,         ///< 256-bit classical/quantum security (Security Guidelines 2024, Table 5.2)
+    HE_SPARSE_H192_128,  ///< 128-bit classical security for sparse ternary secrets of Hamming weight 192
 };
 
 /**
@@ -108,8 +136,8 @@ SecurityLevel convertToSecurityLevel(uint32_t num);
 std::ostream& operator<<(std::ostream& s, SecurityLevel sl);
 
 /**
- * @brief One row of the Homomorphic Encryption Standard parameter tables: for a secret key distribution,
- * a ring dimension, and a security level, the largest supported bit size of the ciphertext modulus.
+ * @brief One row of the security parameter tables: for a secret key distribution, a ring dimension, and a security
+ * level, the largest supported bit size of the ciphertext modulus.
  * The rows are stored in a static table and indexed by (distribution, security level), then by ring dimension
  * (FindMaxQ) or by modulus bit size (FindRingDim).
  */
@@ -119,19 +147,10 @@ class StdLatticeParm {
     SecurityLevel minSecLev;
     uint32_t maxLogQ;
 
-    // NOTE!!! the declaration below relies upon there being three possible values
-    // for the first index (the distribution type), and six possible values for
-    // the second index (the security level)
-    // The values in the enums, above, meet this criteria
-    // it's also important that the different values are numbered from 0-2
-    // again, the enums above do this
-    // DO NOT change the values of the enums to be anything other than consecutive
-    // numbers starting from 0, or this code will break in strange ways, and you
-    // will suffer MAKE SURE that the number of entries in the DistributionType
-    // enum is == the first index, and MAKE SURE that the number of entries in the
-    // SecurityLevel enum is == the second index
-    static std::map<uint32_t, StdLatticeParm*> byRing[3][6];
-    static std::map<uint32_t, StdLatticeParm*> byLogQ[3][6];
+    using TableKey = std::pair<DistributionType, SecurityLevel>;
+    using Table = std::map<uint32_t, StdLatticeParm*>;
+    static std::map<TableKey, Table> byRing;
+    static std::map<TableKey, Table> byLogQ;
 
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
     static bool initialized;
@@ -154,8 +173,8 @@ class StdLatticeParm {
     static void initializeLookups() {
         for (size_t i = 0; i < StandardLatticeParmSets.size(); i++) {
             StdLatticeParm& s = StandardLatticeParmSets[i];
-            byRing[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.ringDim] = &s;
-            byLogQ[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.maxLogQ] = &s;
+            byRing[{s.distType, s.minSecLev}][s.ringDim] = &s;
+            byLogQ[{s.distType, s.minSecLev}][s.maxLogQ] = &s;
         }
         initialized = true;
     }
@@ -168,39 +187,41 @@ class StdLatticeParm {
      * @return the maximum log2 of the ciphertext modulus, or 0 if the table has no row for this ring dimension
      */
     static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
-        int distTypeIdx = static_cast<int>(distType);
-        int minSecLevIdx = static_cast<int>(minSecLev);
         if (!initialized)
             initializeLookups();
-        auto it = byRing[distTypeIdx][minSecLevIdx].find(ringDim);
-        if (it == byRing[distTypeIdx][minSecLevIdx].end())
+        auto table = byRing.find({distType, minSecLev});
+        if (table == byRing.end())
             return 0;
-        return it->second->getMaxLogQ();
+        auto it = table->second.find(ringDim);
+        return (it == table->second.end()) ? 0 : it->second->getMaxLogQ();
     }
 
     /**
      * @brief Finds the smallest tabulated ring dimension whose maximum modulus bit size is at least curLogQ.
+     * Throws if there is no table for the combination of distribution and security level (e.g., HEStd_sparse
+     * with an HEStd_* or HEORG24_* level, or HE_SPARSE_H192_128 with a non-sparse distribution).
      * @param distType secret key distribution
      * @param minSecLev required security level
      * @param curLogQ log2 of the ciphertext modulus
-     * @return the ring dimension, or twice the largest tabulated ring dimension if curLogQ exceeds every table row
+     * @return the ring dimension (the smallest tabulated ring dimension if curLogQ is below every table row),
+     * or twice the largest tabulated ring dimension if curLogQ exceeds every table row
      */
-    static uint32_t FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
-        if (!initialized)
-            initializeLookups();
-        uint32_t prev = 0;
+    static uint32_t FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ);
 
-        int distTypeIdx = static_cast<int>(distType);
-        int minSecLevIdx = static_cast<int>(minSecLev);
-        uint32_t n = 0;
-        for (std::pair<const unsigned int, StdLatticeParm*>& it : byLogQ[distTypeIdx][minSecLevIdx]) {
-            if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
-                return it.second->getRingDim();
-            prev = it.second->getMaxLogQ();
-            n = it.second->getRingDim();
-        }
-        return 2 * n;
-    }
+    /**
+     * @brief Selects the secret key distribution column of the security tables for a secret key distribution and
+     * a security level, and checks that the tables have rows for this combination.
+     *
+     * HE_SPARSE_H192_128 requires a sparse secret of Hamming weight 192 (SPARSE_TERNARY or SPARSE_ENCAPSULATED) and
+     * maps to HEStd_sparse. All other security levels map GAUSSIAN to HEStd_error and every other secret key
+     * distribution to HEStd_ternary; for sparse secrets, this treats the secret as uniform ternary, which
+     * overestimates the security, so HE_SPARSE_H192_128 is recommended for sparse secrets instead.
+     * HEStd_NotSet is accepted with any secret key distribution (no tables are used in this case).
+     * @param secretKeyDist secret key distribution
+     * @param minSecLev required security level
+     * @return the distribution type indexing the security tables
+     */
+    static DistributionType GetDistributionType(SecretKeyDist secretKeyDist, SecurityLevel minSecLev);
 
     DistributionType getDistType() const {
         return distType;
