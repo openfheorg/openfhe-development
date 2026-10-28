@@ -4,15 +4,14 @@ Branch: `ci-ckks-fft-v1.6.1` (continue on it). Scope excludes the paper's functi
 Progress is tracked by the checkboxes below; the harness ticks `[x]` when an item is done and appends its
 results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a stated reason.
 
-**PAUSE AFTER PHASE 2 (user, 2026-10-28):** the user needs this laptop for another task. Items 2.5 and 2.R run as
-usual. An executor of any item from 3.1 on must do nothing (no edits, no jobs, no commits) and return status "blocked"
-with the summary "paused by the user after phase 2". A plan adapter consulted on such an item must choose "defer"
-without editing the plan. This note is removed when the user resumes the work.
-
 ## Execution rules (apply to every item)
-**Host change (2026-10-28, user request): from item 2.4 on, all builds, benchmarks and tests run on this WSL VM. Nothing
-runs on ICELAKE (not even a read-only ssh) unless the user is told first; harness agents treat it as off limits.** Items 0.1-2.3 ran on ICELAKE; their numbers are not comparable with WSL numbers. The old ICELAKE rules are
-kept at the end of this section for reference.
+**Run host is switchable (user, 2026-10-28).** The active host is the one word in the WSL file
+`/home/caesar/ci-ckks-host`: `ICELAKE` or `WSL`. Executors read it before every job and start the job there; the user
+may change it at any time. Items 0.1-2.3 ran on ICELAKE, 2.4-2.R on WSL; from 3.1 on, per the host file (ICELAKE on
+2026-10-28). The WSL rules below apply when the host is WSL; the ICELAKE rules (kept at the end of this section) apply
+when it is ICELAKE, with screening runs allowed concurrently there (at most 3 at 2^16, peaks under 50 GB). Numbers from
+different hosts are never compared: every A/B runs in one job on one host, and an item re-measures the baseline on its
+host when the last baseline for that host is older than the code.
 - **Code lives on WSL** in `/home/caesar/development/projects/za-real-ckks-boot-fft/openfhe-development`. Edit and
   commit there.
 - **Every build, benchmark and test goes through the guard**, never directly in a shell:
@@ -47,7 +46,7 @@ kept at the end of this section for reference.
   - Item 2.4 adds the precomputed diagonals to CI memory: measure it and keep CI 2^16 under a 19 GB job cap (and within free memory) (if it
     does not fit, precompute per level lazily or at a smaller N, and log it).
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
-- *Old ICELAKE rules (items 0.1-2.3, for reference only):* builds and runs on ICELAKE (`ssh -o BatchMode=yes
+- *ICELAKE rules (when the host file says ICELAKE):* builds and runs on ICELAKE (`ssh -o BatchMode=yes
   ICE-Lake`, `~/ci-ckks-fft/openfhe-development`, dirs `build` and `build-bt`), source pushed with
   `ci-ckks-paper/tools/sync.sh`, jobs guarded with `~/ci-ckks-fft/guard.sh`.
 
