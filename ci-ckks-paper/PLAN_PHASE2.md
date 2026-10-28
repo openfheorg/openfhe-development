@@ -170,6 +170,9 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   bottom of the chain, ModRaise, CtS, EvalMod); compare time, precision and output level with CtS-first.
 - [ ] **2.R** Phase 2 review. Done when: at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or the
   excess is accounted for by the diagonal count), and StC-first CI StC is below std's CtS-first StC.
+  **Both CI orderings must stay supported** (user, 2026-10-28): CtS-first (default) and StC-first
+  (`BTSlotsEncoding`); StC-first is the base for CI functional bootstrapping later. No item may remove or
+  disable either path; the review checks that both build, run and give the expected precision.
 
 ## Phase 3: EvalMod and sparse encapsulation (gap 2, a cost item)
 - [ ] **3.1** CI ephemeral sparse key with weight 16 in the CI basis (L1 norm ~32 in the power basis) and the
@@ -200,7 +203,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [ ] **6.2** Remove env switches (`CI_BSGS_RATIO`, `CI_BOOT_TIMING`), `std::cerr` prints and `g_CIDbg*` debug
   globals from library code; expose timing through `BOOTSTRAPTIMING`.
 - [ ] **6.3** `EvalBootstrapKeyMapIndices` CI-aware; CI context and bootstrap-key serialization test.
-- [ ] **6.4** Unit tests: StC-first CI (if built), encapsulated CI at two budgets, keygen/evaluator key-set
+- [ ] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set
   equality, CI + `BTSlotsEncoding` guard; move the mid-file `#include` in `UnitTestCKKSrnsCI.cpp` to the top;
   clang-format the touched files.
 - [ ] **6.5** Final run on ICELAKE: `pke_tests`, `core_tests`, `binfhe_tests`; final benchmark table (1 and 16

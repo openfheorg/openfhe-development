@@ -1579,3 +1579,109 @@ Summary (medians of the runs above; CI StC-first at its best corr 12):
   CI StC below std's CtS-first StC" is not met (2.32 vs 1.75-1.93 s; CI has 1.88x the diagonals, item 2.1).
 - Suggested (not added to the plan): with StC-first the best CI budget may move (lbDec costs only bottom towers);
   {5,4} needs dnum 4 at 128-bit (item 1.3).
+
+## 2.R Phase 2 review (2026-10-28) -- NOT DONE: the StC-first criterion is not met (attempt 1)
+
+All runs on the WSL VM (i7-12700H) through `ci-ckks-paper/tools/wsl-guard.sh`; nothing ran on ICELAKE. No code changed
+since item 2.5 (HEAD 61a83a1a; `build-wsl` / `build-wsl-bt` were built from this source, no file under `src/` or
+`benchmark/` is newer than the libraries), so nothing was rebuilt. Compare only the pairs inside one job.
+No job spanned a laptop sleep: in every job the wall time of each run equals its `/proc/uptime` advance and
+setup + first + 3 reps.
+
+**Commands** (`B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` = `build-wsl-bt/bin/benchmark/ci-fft-boot`; every run
+`CI_BOOT_TIMING=1 OMP_NUM_THREADS=1`, so CI and std both print `[LT]` lines; FLEXIBLEAUTO 59/60, encap, reps 3):
+
+    wsl-guard.sh p2R_base 15 '$B ci 16 5 3 59 60 1 3 fa 4 encap; $T std 16 5 3 59 60 1 3 fa 5 encap;
+        $B ci 16 5 3 59 60 1 3 fa 12 encap 1; $T std 16 5 3 59 60 1 3 fa 13 encap 1;
+        $B ci 16 4 4 59 60 1 3 fa 4 encap; $T std 16 4 4 59 60 1 3 fa 5 encap'            # rc 0, load 0.2-1.1
+    wsl-guard.sh p2R_after3 15 '... {std CtS-first, CI StC-first, CI CtS-first, std StC-first} 16 5 3 59 60 1 3 fa corr encap o 4 3'
+        # killed:oom-kill in the 2nd run (CI, dnum 4: 102 keys x 112 MB = 11.4 GB of keys); std CtS-first finished
+    wsl-guard.sh p2R_after3b 16 '$T std 16 5 3 59 60 0 3 fa 5 encap 0 3 3; $B ci ... fa 12 encap 1 3 3;
+        $B ci ... fa 4 encap 0 3 3; $T std ... fa 13 encap 1 3 3'                            # rc 0
+    wsl-guard.sh p2R_after5 17 '$T std 16 5 3 59 60 0 3 fa 5 encap 0 3 5; $B ci ... fa 12 encap 1 3 5;
+        $B ci ... fa 4 encap 0 3 5'                                                           # rc 0, CI peak RSS 15.77 GB
+    wsl-guard.sh p2R_smoke 7 '$B ci {12 1 1, 12 3 3, 13 4 4, 14 5 3} 59 60 0 1 fa {4 encap 0, 12 (13 at {3,3}) encap 1};
+        $B ci 12 3 3 59 60 0 1 fa 0 uniform {0,1}'                                           # rc 0
+
+After the OOM kill the 3-levels-after runs use dnum 3 with the security check off (`secure` 0; log QP 1779 at 3 levels
+after, 1897 at 5, over the 1747-bit 128-bit bound; dnum 4 is valid at 3 levels after but CI needs more than 15 GB).
+Both schemes run on the same chain in each pair, so the stage comparison is fair; the times are not 128-bit times.
+
+**Results 1: baseline at HEAD** (`p2R_base`, 2^16, 128-bit, 2 levels after; warm medians; stage times are medians of
+the 3 warm bootstraps; std stages from `BOOTSTRAPTIMING`, std "CtS" includes the conjugate add).
+
+| run | warm s | CtS | EvalMod | StC | RMS / min bits | keys | peak RSS GB |
+|---|---|---|---|---|---|---|---|
+| CI {5,3} CtS-first corr 4 | **11.99** | 5.16 | 4.02 | 2.55 | 21.57 / 18.05 | 102 | 13.54 |
+| std {5,3} CtS-first corr 5 | **11.63** | 3.59 | 6.17 | 1.69 | 22.75 / 19.24 | 61 | 7.66 |
+| CI {5,3} StC-first corr 12 | **11.62** | 5.35 | 3.95 | 2.32 | 21.91 / 19.85 | 102 | 13.39 |
+| std {5,3} StC-first corr 13 | **8.43** | 3.59 | 3.06 | 1.53 | 22.90 / 20.88 | 61 | 7.58 |
+| CI {4,4} CtS-first corr 4 | 13.16 | 5.85 | 4.37 | 2.15 | 21.57 / 18.55 | 92 | 12.56 |
+| std {4,4} CtS-first corr 5 | 12.79 | 4.50 | 6.80 | 1.27 | 22.74 / 19.46 | 76 | 9.08 |
+
+| pair | CI / 2 x std | CtS ratio | EvalMod ratio | StC ratio |
+|---|---|---|---|---|
+| {5,3} CtS-first | 2 x 11.63 / 11.99 = **1.94x** | 1.44x | 0.65x | 1.51x |
+| {5,3} StC-first | 2 x 8.43 / 11.62 = **1.45x** | 1.49x | 1.29x | 1.52x |
+| {4,4} CtS-first | 2 x 12.79 / 13.16 = 1.94x | 1.30x | 0.64x | 1.69x |
+| CI StC-first vs std CtS-first | 2 x 11.63 / 11.62 = 2.00x | | | 2.32 / 1.69 = 1.37x |
+
+Both CI orderings build, run and give the expected precision (user note of 2026-10-28): CtS-first 21.57 / 18.05 bits,
+StC-first 21.91 / 19.85 bits (item 2.5: 21.56 / 18.48 and 21.92 / 19.71); `p2R_smoke` (2^12..2^14, insecure,
+reps 1) runs both orders at {1,1} (dense), {3,3}, {4,4}, {5,3} and with the uniform secret: CtS-first / StC-first RMS
+18.80 / 22.68 ({1,1}), 18.80 / 24.68 ({3,3}), 19.71 / 22.67 (2^13 {4,4}), 20.71 / 22.48 (2^14 {5,3}), uniform {3,3}
+20.13 / 23.32 bits; the Galois check held (sparse budgets) and no level was encoded at run time in any bootstrap.
+
+**Results 2: criterion 1, CI CtS and StC vs std at the same N, accounted for by the diagonal count** (`[LT]` lines,
+`p2R_base`; diagonals = plaintext mults; LT time = sum of the per-level warm medians).
+
+| stage, budget | CI diags | std diags | diag ratio | CI / std LT s | LT ratio | stage ratio |
+|---|---|---|---|---|---|---|
+| CtS {5,3} | 137 (16, 30, 30, 30, 31) | 75 (15 x 5) | 1.83x | 4.93 / 3.19 | 1.54x | **1.44x** |
+| StC {5,3} | 317 (63, 126, 128) | 189 (63 x 3) | 1.68x | 2.52 / 1.66 | 1.52x | **1.51x** |
+| CtS {4,4} | 187 (32, 30, 62, 63) | 108 (31, 31, 31, 15) | 1.73x | 5.71 / 3.94 | 1.45x | **1.30x** |
+| StC {4,4} | 187 (31, 30, 62, 64) | 108 (31, 31, 31, 15) | 1.73x | 2.11 / 1.23 | 1.71x | **1.69x** |
+
+CtS is below 1.5x at both budgets. StC is 1.51x ({5,3}) and 1.69x ({4,4}), above 1.5x but below the diagonal ratio
+(1.68x / 1.73x), so the excess is the diagonal count. Levels of the same shape cost the same in both schemes:
+StC level 0 at {5,3} (63 diagonals, 6 + 7 towers, 15 baby + 3 giant) CI 0.622 s vs std 0.594 s (1.05x); CtS level 1
+at {4,4} (30 vs 31 diagonals, 19 + 7 towers, 15 + 1) CI 1.105 vs std 1.102 s (1.00x); {4,4} StC level 0 (31
+diagonals, 7 + 7) CI 0.39-0.57 s (2 of 4 reps 0.39 s, thermal) vs std 0.39 s. The CI per-op cost is at std's; the
+remaining stage ratio is the real factorization's extra diagonals (item 2.1). **Criterion 1 is met.**
+
+**Results 3: criterion 2, CI StC-first StC vs std CtS-first StC** (2^16 {5,3}; StC stage medians, LT sums in brackets).
+
+| levels after | chain (Q + P towers, log QP) | CI StC-first StC | std CtS-first StC | ratio | CI CtS-first StC | StC-first gain |
+|---|---|---|---|---|---|---|
+| 2 (`p2R_base`, 128-bit) | 21 + 7, 1660 | 2.32 (2.30) | 1.69 (1.66) | **1.37x** | 2.55 (2.52) | -9% |
+| 3 (`p2R_after3b`, dnum 3, insecure) | 22 + 8, 1779 | 2.54 (2.52) | 2.02 (1.98) | **1.27x** | 3.62 (3.49) | -30% |
+| 5 (`p2R_after5`, dnum 3, insecure) | 24 + 8, 1897 | 2.59 (2.56) | 2.51 (2.49) | **1.03x** | 4.43 (4.55) | -42% |
+| 3, dnum 4, 128-bit (`p2R_after3`) | 22 + 6, 1659 | (OOM-killed) | 2.57 | | | |
+
+Other stages of these runs (warm s): after 3: std CtS-first 12.71 (3.79 / 6.59 / 2.02), CI StC-first 13.98
+(6.59 / 4.82 / 2.54), CI CtS-first 15.42 (5.85 / 5.24 / 3.62; noisy, EvalMod reps 4.4-6.3), std StC-first 9.17
+(3.87 / 3.32 / 1.70); after 5: std CtS-first 15.52 (4.20 / 8.24 / 2.51), CI StC-first 15.23 (6.90 / 5.66 / 2.59),
+CI CtS-first 18.77 (7.74 / 6.36 / 4.43). Precision is the same as at 2 levels after (CI 21.92 / 19.8 StC-first,
+21.57 / 18.3 CtS-first; std CtS-first 22.75 / 19.9-20.3, StC-first 22.91 / 20.8).
+
+CI StC-first StC runs at fixed towers (lbDec + 2 = 5 / 4 / 3 Q + P), whatever the levels after; std CtS-first StC runs
+at after + lbDec + 1 = after + 4 down to after + 2 Q towers. So StC-first moves the CI StC down by (after - 1) towers per
+level, but CI StC still has 317 diagonals against std's 189 (1.68x). Measured, the ratio falls from 1.37x (2 after) to
+1.27x (3 after, the paper's setting) and 1.03x (5 after); by extrapolation (std StC +0.25 s per level, CI StC-first
++0 s at constant P) CI StC-first StC drops below std CtS-first StC only from about 6 levels after the bootstrap.
+**Criterion 2 ("StC-first CI StC is below std's CtS-first StC") is not met at 2, 3 or 5 levels after.** At the
+plan's settings it can only be reached by fewer CI StC diagonals (a different factorization, not a phase 2 lever) or
+by comparing at 6 or more levels after the bootstrap.
+
+**Conclusions.**
+- Phase 2 results on WSL at HEAD (2^16 {5,3}, 128-bit): CI 11.99 s vs std 11.63 s CtS-first (1.94x), CI 11.62 s vs
+  std 8.43 s StC-first (1.45x, std's real-data StC-first evaluates EvalMod once). Stage ratios CtS 1.44x, StC 1.51x
+  (diagonal ratio 1.83x / 1.68x), EvalMod 0.65x. Item 2.4 WSL baseline (CI 16.37 s; this session took 27% less time, as in
+  item 2.5): 1.99x; CtS 1.36x, StC 1.56x.
+- Criterion 1 is met (CtS <= 1.5x; StC excess = diagonal count; same-shape levels cost 1.00-1.05x std).
+- Criterion 2 is not met; the item is not ticked. Suggested plan revision: state criterion 2 as "accounted for by
+  the diagonal count" like criterion 1 (CI StC-first StC per diagonal 2.32 s / 317 = 7.3 ms vs std CtS-first
+  1.69 s / 189 = 8.9 ms), or as "StC-first CI StC below CI CtS-first StC, with the gain growing with the levels after"
+  (measured: -9% / -30% / -42% at 2 / 3 / 5 levels after), or move the comparison to >= 6 levels after.
+- Memory: CI at dnum 4 does not fit a 15 GB job (keys 112 MB each); 3 levels after at 128-bit with 59-bit primes needs
+  dnum 4 (item 1.2), so 128-bit runs with 3 levels after need a job cap of about 17-18 GB for CI.
