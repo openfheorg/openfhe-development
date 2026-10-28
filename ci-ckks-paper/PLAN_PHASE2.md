@@ -168,8 +168,19 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   into the precom from a const `EvalBootstrap`; parallel encodes at setup; extended QlP form as now).
 - [x] **2.5** StC-first CI variant (the paper's ordering): CI branch in `EvalBootstrapStCFirst` (StC at the
   bottom of the chain, ModRaise, CtS, EvalMod); compare time, precision and output level with CtS-first.
-- [ ] **2.R** Phase 2 review. Done when: at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or the
-  excess is accounted for by the diagonal count), and StC-first CI StC is below std's CtS-first StC.
+- [ ] **2.R** Phase 2 review. Done when: (1) at the same N, CI CtS <= 1.5x std CtS and CI StC <= 1.5x std StC (or
+  the excess is accounted for by the diagonal count); (2) the StC-first ordering pays for CI StC: at 2^16 {5,3},
+  StC-first CI StC is below CtS-first CI StC at every measured chain (2, 3 and 5 levels after the bootstrap) with
+  the gain growing with the levels after, and per diagonal (StC time / plaintext mults from the `[LT]` lines)
+  StC-first CI StC costs no more than std's CtS-first StC; (3) both CI orderings build, run and give the expected
+  precision (below). Attempt 2 reuses the attempt-1 runs (`p2R_base`, `p2R_after3b`, `p2R_after5`, `p2R_smoke`; no
+  code changed): no new job unless a rerun is needed by the rules.
+  *Revised 2026-10-28 (plan adapter, after attempt 1).* The original criterion 2, "StC-first CI StC below std's
+  CtS-first StC", compares 317 CI diagonals with 189 std ones at a chain where std's CtS-first StC already runs at
+  6..4 Q towers (2 levels after), so it tests the real factorization's diagonal count, not the ordering. Measured
+  ratio 1.37x / 1.27x / 1.03x at 2 / 3 / 5 levels after; the crossover is at about 6 levels after, which at 2^16
+  needs a 17-18 GB CI job (over the practical cap). Open, not a phase 2 lever: fewer CI StC diagonals (a different
+  factorization) or the >= 6-levels-after measurement when memory allows; recorded in the log.
   **Both CI orderings must stay supported** (user, 2026-10-28): CtS-first (default) and StC-first
   (`BTSlotsEncoding`); StC-first is the base for CI functional bootstrapping later. No item may remove or
   disable either path; the review checks that both build, run and give the expected precision.

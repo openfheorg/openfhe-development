@@ -1685,3 +1685,13 @@ by comparing at 6 or more levels after the bootstrap.
   (measured: -9% / -30% / -42% at 2 / 3 / 5 levels after), or move the comparison to >= 6 levels after.
 - Memory: CI at dnum 4 does not fit a 15 GB job (keys 112 MB each); 3 levels after at 128-bit with 59-bit primes needs
   dnum 4 (item 1.2), so 128-bit runs with 3 levels after need a job cap of about 17-18 GB for CI.
+
+**Plan adapter (2026-10-28, after attempt 1).** Criterion 2 of 2.R is revised in `PLAN_PHASE2.md`, not the code. As
+written it compared 317 CI StC diagonals with std's 189 at the plan's chain (2 levels after), where std's CtS-first
+StC already runs at 6..4 Q towers, so it measured the real factorization's diagonal count (item 2.1: inherent to the
+real FFT) rather than what the ordering changes. The ordering's effect is the tower count of CI StC, and that is
+what the revised criterion checks: StC-first CI StC below CtS-first CI StC at 2, 3 and 5 levels after with a growing
+gain (measured -9% / -30% / -42%), and per-diagonal cost at or below std's CtS-first StC (2.32 s / 317 = 7.3 ms vs
+1.69 s / 189 = 8.9 ms at 2 after; 8.0 vs 10.7 ms at 3; 8.2 vs 13.3 ms at 5). Left open, outside phase 2: the
+original comparison at >= 6 levels after (17-18 GB CI job at 2^16, or a different, smaller-diagonal factorization).
+Attempt 2 reuses the runs above; no new job is needed.
