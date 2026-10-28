@@ -62,13 +62,8 @@ namespace lbcrypto {
 // Given a distribution type and a security level, you can get the maxQ for a given ring dimension, and you can
 // get the ring dimension given a maxQ.
 
-// The lookup tables in StdLatticeParm are indexed by the enumerator values of DistributionType and SecurityLevel,
-// so the enumerators must stay consecutive from 0; new enumerators must be appended at the end (the values are
-// also stored in serialized cryptocontexts).
-
 /**
  * @brief Secret key distribution used to select a table of security parameters.
- * The enumerators must stay consecutive from 0 because they index the lookup tables in StdLatticeParm.
  */
 enum DistributionType {
     HEStd_uniform,  ///< uniform secret (Homomorphic Encryption Standard only)
@@ -101,9 +96,8 @@ enum DistributionType {
  * bdd_mitm_hybrid). It uses the HEStd_sparse
  * distribution type and is the recommended security level for sparse secrets.
  *
- * HEStd_NotSet disables the security-based parameter checks. The enumerators must stay consecutive from 0 because
- * they index the lookup tables in StdLatticeParm; new enumerators must be appended at the end because the values
- * are stored in serialized cryptocontexts.
+ * HEStd_NotSet disables the security-based parameter checks. New enumerators must be appended at the end because
+ * the values are stored in serialized cryptocontexts.
  */
 enum SecurityLevel {
     HEStd_128_classic,
@@ -153,13 +147,10 @@ class StdLatticeParm {
     SecurityLevel minSecLev;
     uint32_t maxLogQ;
 
-    // The lookup tables are indexed by the enumerator values of DistributionType and SecurityLevel, which must
-    // be consecutive numbers starting from 0. The sizes below are derived from the last enumerator of each enum,
-    // so they must be updated when an enumerator is appended.
-    static constexpr size_t NUM_DIST_TYPES = static_cast<size_t>(HEStd_sparse) + 1;
-    static constexpr size_t NUM_SEC_LEVELS = static_cast<size_t>(HE_SPARSE_H192_128) + 1;
-    static std::map<uint32_t, StdLatticeParm*> byRing[NUM_DIST_TYPES][NUM_SEC_LEVELS];
-    static std::map<uint32_t, StdLatticeParm*> byLogQ[NUM_DIST_TYPES][NUM_SEC_LEVELS];
+    using TableKey = std::pair<DistributionType, SecurityLevel>;
+    using Table = std::map<uint32_t, StdLatticeParm*>;
+    static std::map<TableKey, Table> byRing;
+    static std::map<TableKey, Table> byLogQ;
 
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
     static bool initialized;
@@ -182,8 +173,8 @@ class StdLatticeParm {
     static void initializeLookups() {
         for (size_t i = 0; i < StandardLatticeParmSets.size(); i++) {
             StdLatticeParm& s = StandardLatticeParmSets[i];
-            byRing[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.ringDim] = &s;
-            byLogQ[static_cast<int>(s.distType)][static_cast<int>(s.minSecLev)][s.maxLogQ] = &s;
+            byRing[{s.distType, s.minSecLev}][s.ringDim] = &s;
+            byLogQ[{s.distType, s.minSecLev}][s.maxLogQ] = &s;
         }
         initialized = true;
     }
@@ -196,14 +187,13 @@ class StdLatticeParm {
      * @return the maximum log2 of the ciphertext modulus, or 0 if the table has no row for this ring dimension
      */
     static uint32_t FindMaxQ(DistributionType distType, SecurityLevel minSecLev, uint32_t ringDim) {
-        int distTypeIdx = static_cast<int>(distType);
-        int minSecLevIdx = static_cast<int>(minSecLev);
         if (!initialized)
             initializeLookups();
-        auto it = byRing[distTypeIdx][minSecLevIdx].find(ringDim);
-        if (it == byRing[distTypeIdx][minSecLevIdx].end())
+        auto table = byRing.find({distType, minSecLev});
+        if (table == byRing.end())
             return 0;
-        return it->second->getMaxLogQ();
+        auto it = table->second.find(ringDim);
+        return (it == table->second.end()) ? 0 : it->second->getMaxLogQ();
     }
 
     /**

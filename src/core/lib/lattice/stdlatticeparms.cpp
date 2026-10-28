@@ -137,10 +137,8 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     return s;
 }
 
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byRing[StdLatticeParm::NUM_DIST_TYPES]
-                                                          [StdLatticeParm::NUM_SEC_LEVELS];
-std::map<uint32_t, StdLatticeParm*> StdLatticeParm::byLogQ[StdLatticeParm::NUM_DIST_TYPES]
-                                                          [StdLatticeParm::NUM_SEC_LEVELS];
+std::map<StdLatticeParm::TableKey, StdLatticeParm::Table> StdLatticeParm::byRing;
+std::map<StdLatticeParm::TableKey, StdLatticeParm::Table> StdLatticeParm::byLogQ;
 
 bool StdLatticeParm::initialized = false;
 
@@ -148,8 +146,8 @@ uint32_t StdLatticeParm::FindRingDim(DistributionType distType, SecurityLevel mi
     if (!initialized)
         initializeLookups();
 
-    const auto& table = byLogQ[static_cast<size_t>(distType)][static_cast<size_t>(minSecLev)];
-    if (table.empty()) {
+    auto found = byLogQ.find({distType, minSecLev});
+    if (found == byLogQ.end()) {
         std::ostringstream os;
         os << "No security table for distribution type " << static_cast<int>(distType) << " and security level "
            << minSecLev << " (HE_SPARSE_H192_128 is for sparse secrets only, the other levels for non-sparse ones)";
@@ -158,7 +156,7 @@ uint32_t StdLatticeParm::FindRingDim(DistributionType distType, SecurityLevel mi
 
     uint32_t prev = 0;
     uint32_t n = 0;
-    for (const auto& it : table) {
+    for (const auto& it : found->second) {
         if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
             return it.second->getRingDim();
         prev = it.second->getMaxLogQ();
