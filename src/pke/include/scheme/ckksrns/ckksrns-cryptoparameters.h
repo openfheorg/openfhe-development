@@ -301,6 +301,9 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
      * order of the extended basis), [(D_j/q_i)^{-1}]_{q_i} and its precomputation, [D_j/q_i]_q (indexed [i][q])
      * and the Barrett precomputations of the complement moduli
      */
+    const std::shared_ptr<ParmType>& GetModRaiseKSParamsExt() const {
+        return m_modRaiseKSParamsExt;
+    }
     const std::shared_ptr<ParmType>& GetModRaiseKSParamsDigit(uint32_t digit) const {
         return m_modRaiseKSParamsDigit[digit];
     }
@@ -634,6 +637,7 @@ class CryptoParametersCKKSRNS : public CryptoParametersRNS {
     // the digits of the switching key of the raise and the tables of their extension (see GetModRaiseKSDigits)
     std::vector<std::pair<uint32_t, uint32_t>> m_modRaiseKSDigits;
     bool m_modRaiseKSSingleDigit = false;
+    std::shared_ptr<ParmType> m_modRaiseKSParamsExt;
     std::vector<std::shared_ptr<ParmType>> m_modRaiseKSParamsDigit;
     std::vector<std::shared_ptr<ParmType>> m_modRaiseKSParamsCompl;
     std::vector<std::vector<NativeInteger>> m_modRaiseKSDigitHatInvModq;

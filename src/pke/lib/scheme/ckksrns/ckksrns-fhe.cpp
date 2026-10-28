@@ -4870,17 +4870,7 @@ void FHECKKSRNS::KeySwitchRaise(Ciphertext<DCRTPoly>& raised, const std::map<uin
     const uint32_t sizeExt = sizeQRaised + sizeP;
     const auto paramsQl = cryptoParams->GetParamsQlHybrid(sizeQRaised);
 
-    // the extended basis Q' * P
-    std::vector<NativeInteger> moduli, roots;
-    for (const auto& q : paramsQl->GetParams()) {
-        moduli.push_back(q->GetModulus());
-        roots.push_back(q->GetRootOfUnity());
-    }
-    for (const auto& p : paramsP->GetParams()) {
-        moduli.push_back(p->GetModulus());
-        roots.push_back(p->GetRootOfUnity());
-    }
-    auto paramsExt = std::make_shared<ParmType>(paramsQl->GetCyclotomicOrder(), moduli, roots);
+    const auto& paramsExt = cryptoParams->GetModRaiseKSParamsExt();
 
     auto& cv = raised->GetElements();
     auto digitsExt = std::make_shared<std::vector<DCRTPoly>>(digits.size());
@@ -4930,20 +4920,23 @@ void FHECKKSRNS::KeySwitchRaise(Ciphertext<DCRTPoly>& raised, const std::map<uin
     const uint32_t M = 2 * N;
     const uint32_t numTerms = (slots < N / 2) ? ModRaiseFusedTerms(slots, N) : 1;
     auto ba = cc->GetScheme()->EvalFastKeySwitchCoreExt(digitsExt, evalKeyMap.at(M - 2), paramsQl);
-    DCRTPoly c0 = cv[0];
-    for (uint32_t i = 1; i < numTerms; ++i) {
-        const uint32_t autoIndex = FindAutomorphismIndex2nComplex(i * slots, M);
-        auto keyIt = evalKeyMap.find(RaiseRotationKeyIndex(autoIndex, M));
-        if (keyIt == evalKeyMap.end())
-            OPENFHE_THROW("The key of the partial sum of the modulus raise for " + std::to_string(slots) +
-                          " slots is not found; generate the bootstrapping keys with EvalBootstrapKeyGen for this "
-                          "number of slots.");
-        auto term = cc->GetScheme()->EvalFastKeySwitchCoreExt(digitsExt, keyIt->second, paramsQl);
+    if (numTerms > 1) {
+        DCRTPoly c0 = cv[0];
         std::vector<uint32_t> map(N);
-        PrecomputeAutoMap(N, autoIndex, &map);
-        ba[0] += term[0].AutomorphismTransform(autoIndex, map);
-        ba[1] += term[1].AutomorphismTransform(autoIndex, map);
-        c0 += cv[0].AutomorphismTransform(autoIndex, map);
+        for (uint32_t i = 1; i < numTerms; ++i) {
+            const uint32_t autoIndex = FindAutomorphismIndex2nComplex(i * slots, M);
+            auto keyIt = evalKeyMap.find(RaiseRotationKeyIndex(autoIndex, M));
+            if (keyIt == evalKeyMap.end())
+                OPENFHE_THROW("The key of the partial sum of the modulus raise for " + std::to_string(slots) +
+                              " slots is not found; generate the bootstrapping keys with EvalBootstrapKeyGen for "
+                              "this number of slots.");
+            auto term = cc->GetScheme()->EvalFastKeySwitchCoreExt(digitsExt, keyIt->second, paramsQl);
+            PrecomputeAutoMap(N, autoIndex, &map);
+            ba[0] += term[0].AutomorphismTransform(autoIndex, map);
+            ba[1] += term[1].AutomorphismTransform(autoIndex, map);
+            c0 += cv[0].AutomorphismTransform(autoIndex, map);
+        }
+        cv[0] = std::move(c0);
     }
     for (uint32_t i = 0; i < 2; ++i) {
         ba[i] = ba[i].ApproxModDown(
@@ -4953,9 +4946,10 @@ void FHECKKSRNS::KeySwitchRaise(Ciphertext<DCRTPoly>& raised, const std::map<uin
                 cryptoParams->GetModRaiseModqBarrettMu(), cryptoParams->GettInvModp(),
                 cryptoParams->GettInvModpPrecon(), 0, cryptoParams->GettModqPrecon());
     }
+    auto& c0Limbs = cv[0].GetAllElements();
+    const auto& ba0Limbs = ba[0].GetAllElements();
     for (uint32_t m = 0; m < sizeRaised; ++m)
-        c0.GetAllElements()[m] += ba[0].GetAllElements()[m];
-    cv[0] = std::move(c0);
+        c0Limbs[m] += ba0Limbs[m];
     cv[1] = std::move(ba[1]);
 }
 
