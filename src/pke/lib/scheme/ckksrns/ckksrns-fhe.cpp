@@ -42,6 +42,7 @@
 #include <cstdlib>
 #include <cstdint>
 #include <functional>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <numeric>
@@ -107,6 +108,77 @@ namespace {
 bool UsesLargeSparseKey(SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
     return (skd == SPARSE_ENCAPSULATED) && (sparseKSHammingWeight > 32);
 }
+
+// Linear-transform instrumentation (CI_BOOT_TIMING=1): per BSGS level, the number and the time of
+//   modUp   digit decompositions (EvalFastRotationPrecompute / EvalKeySwitchPrecomputeCore),
+//   baby    hoisted rotations (key inner product + automorphism, no ModUp/ModDown; `ext` = the identity),
+//   giant   giant-step key inner products (+ automorphisms) after their own ModUp,
+//   modDown polynomial ModDowns QlP -> Ql (a KeySwitchDown counts 2),
+//   ptMult  extended-basis plaintext multiplications, add = extended-basis additions.
+// Serial runs only (OMP_NUM_THREADS=1): the counters are not atomic; parallel baby loops are timed as a whole.
+struct LTStats {
+    uint32_t modUp = 0, baby = 0, ext = 0, giant = 0, modDown = 0, ptMult = 0, add = 0;
+    double tModUp = 0, tBaby = 0, tGiant = 0, tModDown = 0, tPtMult = 0, tAdd = 0;
+};
+LTStats* g_lt = nullptr;  // non-null while an instrumented level runs
+bool LTStatsOn() {
+    static const bool on = (std::getenv("CI_BOOT_TIMING") != nullptr);
+    return on;
+}
+// Runs f(); when a level is instrumented, adds n to the counter and the elapsed time to the timer.
+template <class F>
+decltype(auto) LTRun(uint32_t LTStats::*cnt, double LTStats::*acc, uint32_t n, F&& f) {
+    if (g_lt == nullptr)
+        return f();
+    struct Tm {
+        double LTStats::*acc;
+        std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
+        ~Tm() {
+            if (g_lt)
+                g_lt->*acc += std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+        }
+    } tm{acc};
+    g_lt->*cnt += n;
+    return f();
+}
+// One instrumented level: counts from construction to Print().
+class LTLevel {
+public:
+    LTLevel(const char* tag, int32_t lvl, uint32_t diags, uint32_t towersQl, uint32_t towersP)
+        : tag_(tag), lvl_(lvl), diags_(diags), towersQl_(towersQl), towersP_(towersP) {
+        if (LTStatsOn())
+            g_lt = &st_;
+    }
+    ~LTLevel() {
+        if (g_lt == &st_)
+            g_lt = nullptr;
+    }
+    void Print() {
+        if (g_lt != &st_)
+            return;
+        g_lt         = nullptr;
+        const double t  = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0_).count();
+        const auto& s   = st_;
+        const double ot = t - s.tModUp - s.tBaby - s.tGiant - s.tModDown - s.tPtMult - s.tAdd;
+        std::ostringstream o;
+        o.setf(std::ios::fixed);
+        o.precision(4);
+        o << "[LT] " << tag_ << " level=" << lvl_ << " diags=" << diags_ << " towers=" << towersQl_ << "+" << towersP_
+          << " rot=" << (s.baby + s.giant) << " (baby " << s.baby << " + giant " << s.giant << ") 2sqrt(d)="
+          << 2.0 * std::sqrt(static_cast<double>(diags_)) << " ext=" << s.ext << " modUp=" << s.modUp
+          << " modDown=" << s.modDown << " ptMult=" << s.ptMult << " add=" << s.add << " | t=" << t
+          << " modUp=" << s.tModUp << " baby=" << s.tBaby << " giant=" << s.tGiant << " modDown=" << s.tModDown
+          << " ptMult=" << s.tPtMult << " add=" << s.tAdd << " other=" << ot << "\n";
+        std::cerr << o.str();
+    }
+
+private:
+    const char* tag_;
+    int32_t lvl_;
+    uint32_t diags_, towersQl_, towersP_;
+    LTStats st_;
+    std::chrono::steady_clock::time_point t0_ = std::chrono::steady_clock::now();
+};
 }  // namespace
 
 double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
@@ -161,22 +233,33 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHornerGiantRotate(ConstCiphertext<DCRTPoly>
     const auto paramsQl = cryptoParams->GetParamsQlHybrid(sizeQl);
     const PlaintextModulus t = (cryptoParams->GetNoiseScale() == 1) ? 0 : cryptoParams->GetPlaintextModulus();
 
-    DCRTPoly c1Std = cvExt[1].ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(),
-                                            cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-                                            cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-                                            cryptoParams->GetModqBarrettMu(), cryptoParams->GettInvModp(),
-                                            cryptoParams->GettInvModpPrecon(), t, cryptoParams->GettModqPrecon());
+    DCRTPoly c1Std = LTRun(&LTStats::modDown, &LTStats::tModDown, 1, [&] {
+        return cvExt[1].ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
+                                      cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
+                                      cryptoParams->GetPHatModq(), cryptoParams->GetModqBarrettMu(),
+                                      cryptoParams->GettInvModp(), cryptoParams->GettInvModpPrecon(), t,
+                                      cryptoParams->GettModqPrecon());
+    });
 
-    auto digits = algo->EvalKeySwitchPrecomputeCore(c1Std, cryptoParams);
-    auto cTilda = algo->EvalFastKeySwitchCoreExt(digits, giantKey, paramsQl);
+    auto digits = LTRun(&LTStats::modUp, &LTStats::tModUp, 1,
+                        [&] { return algo->EvalKeySwitchPrecomputeCore(c1Std, cryptoParams); });
+    auto cTilda = LTRun(&LTStats::giant, &LTStats::tGiant, 1,
+                        [&] { return algo->EvalFastKeySwitchCoreExt(digits, giantKey, paramsQl); });
 
     // cTilda[0] += cvExt[0]; element 0 is already extended, fold it in directly.
+    LTRun(&LTStats::add, &LTStats::tAdd, 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
-    for (uint32_t i = 0; i < sizeQlP; ++i)
-        cTilda[0].GetAllElements()[i] += cvExt[0].GetAllElements()[i];
+        for (uint32_t i = 0; i < sizeQlP; ++i)
+            cTilda[0].GetAllElements()[i] += cvExt[0].GetAllElements()[i];
+        return 0;
+    });
 
-    cTilda[0] = cTilda[0].AutomorphismTransform(autoIndex, map);
-    cTilda[1] = cTilda[1].AutomorphismTransform(autoIndex, map);
+    // the automorphisms belong to the giant step (count 0: already counted above)
+    LTRun(&LTStats::giant, &LTStats::tGiant, 0, [&] {
+        cTilda[0] = cTilda[0].AutomorphismTransform(autoIndex, map);
+        cTilda[1] = cTilda[1].AutomorphismTransform(autoIndex, map);
+        return 0;
+    });
 
     auto rotated = outer->CloneEmpty();
     rotated->SetElements(std::move(cTilda));
@@ -317,6 +400,15 @@ CIBsgsPlan CIPlanBsgs(const CISparse& A, uint32_t N) {
         ratio = std::atof(e);
     uint32_t n1 = static_cast<uint32_t>(std::ceil(std::sqrt(static_cast<double>(span)) * ratio));
     n1          = std::max<uint32_t>(1, std::min(n1, span));
+    // Align the window so that offset 0 starts a giant block: that block needs no rotation, so the level
+    // does n2 - 1 giant rotations instead of n2. Move the start back by r < n1 (the extra window positions
+    // hold no diagonals); skip when 0 is outside the window or the longer window would wrap around Z_T.
+    const uint32_t d = (T - t0) % T;  // window position of offset 0
+    const uint32_t r = (n1 - d % n1) % n1;
+    if (d < span && r != 0 && span + r <= T) {
+        t0 = (t0 + T - r) % T;
+        span += r;
+    }
     return {h, t0, span, n1, (span + n1 - 1) / n1};
 }
 
@@ -1195,9 +1287,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             gstep = static_cast<uint32_t>((static_cast<uint64_t>(gstep) * 5) % m4);  // g = 5^{n1}
         // HOISTED, EXTENDED-BASIS BSGS linear transform (mirrors EvalCoeffsToSlots): baby
         // rotations 5^i are hoisted (one EvalFastRotationPrecompute, reused) and accumulated in
-        // the extended QlP basis; KeySwitchDown is DEFERRED to once per giant block / once at the
-        // end (vs a ModDown per rotation in the old EvalAutomorphism path) -- this is the noise
-        // reduction that lets the level-collapse rescaling actually deliver precision. The N-term
+        // the extended QlP basis; a giant block ModDowns only its element 1 (EvalHornerGiantRotate) and
+        // one KeySwitchDown ends the level (vs a ModDown per rotation in the old EvalAutomorphism path) --
+        // this is the noise reduction that lets the level-collapse rescaling actually deliver precision. The N-term
         // diagonal sum is sparse-skipped (collapsed stages); diagonals are CI-encoded in the QlP
         // basis (CKKSPackedEncoding REAL_CI). Galois element 5^k passed directly (CI EvalFastRotationExt).
         auto applyCILT = [&](Ciphertext<DCRTPoly> ct, std::vector<ReadOnlyPlaintext>& store,
@@ -1220,9 +1312,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             auto paramsQlP = bx[0]->GetElements()[0].GetParams();  // extended QlP basis at this level
 
             Ciphertext<DCRTPoly> outer;  // extended-basis accumulator
-            DCRTPoly first;              // Ql element[0] accumulator (rotated constant terms)
-            bool firstInit = false;
-            uint32_t gj    = 1;  // 5^{n1 j}
+            const auto& autoKeys = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
+            uint32_t gj          = 1;  // 5^{n1 j}
             std::vector<uint32_t> map(Nn);
             for (uint32_t j = 0; j < n2; ++j) {
                 uint32_t gj0   = gj;  // 5^{n1 j} (giant Galois element for this block)
@@ -1269,38 +1360,23 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 gj = static_cast<uint32_t>((static_cast<uint64_t>(gj) * gstep) % m4);
                 if (inner == nullptr)
                     continue;  // empty giant block (all diagonals zero)
-                if (j == 0) {
-                    // giant identity: peel element[0] (KeySwitchDown'd), keep the rest extended.
-                    first     = cc->KeySwitchDownFirstElement(inner);
-                    firstInit = true;
-                    inner->GetElements()[0].SetValuesToZero();
-                    outer = inner;
-                }
-                else {
-                    auto innerQl = cc->KeySwitchDown(inner);  // back to Ql for the constant term
+                if (j != 0) {
+                    // giant step in the extended basis (EvalHornerGiantRotate): only element 1 is ModDown'd
+                    // and key-switched; element 0 is rotated in QlP and reaches Ql in the final KeySwitchDown.
+                    auto kit = autoKeys.find(gj0);
+                    if (kit == autoKeys.end())
+                        OPENFHE_THROW("EvalKey for index [" + std::to_string(gj0) + "] is not found.");
                     PrecomputeAutoMapCI(Nn, gj0, &map);
-                    DCRTPoly rotE0 = innerQl->GetElements()[0].AutomorphismTransform(gj0, map);
-                    if (!firstInit) {
-                        first     = rotE0;
-                        firstInit = true;
-                    }
-                    else {
-                        first += rotE0;
-                    }
-                    auto innerDigits = cc->EvalFastRotationPrecompute(innerQl);
-                    auto giant       = cc->EvalFastRotationExt(innerQl, gj0, innerDigits, false);
-                    if (outer == nullptr)
-                        outer = giant;
-                    else
-                        EvalAddExtInPlace(outer, giant);
+                    inner = EvalHornerGiantRotate(inner, gj0, map, kit->second);
                 }
+                if (outer == nullptr)
+                    outer = inner;
+                else
+                    EvalAddExtInPlace(outer, inner);
             }
             if (outer == nullptr)
                 return Ciphertext<DCRTPoly>();
-            auto out = cc->KeySwitchDown(outer);
-            if (firstInit)
-                out->GetElements()[0] += first;
-            return out;
+            return cc->KeySwitchDown(outer);
         };
 
         // CI CtS/StC dispatch on the level budget:
@@ -1341,15 +1417,21 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             for (uint32_t u = 0; u < bp.span; ++u)
                 if (A.count(offsetOf(u)))
                     babyUsed[u % bp.n1] = 1;
-            auto digits = cc->EvalFastRotationPrecompute(ct);
+            auto digits =
+                LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(ct); });
             std::vector<Ciphertext<DCRTPoly>> bx(bp.n1);
             for (uint32_t i = 0; i < bp.n1; ++i) {
                 if (!babyUsed[i])
                     continue;
-                if (i != 0)
+                if (i != 0) {
                     ciGalUsed.insert(CIGaloisForShift(bp.h * i, Nn));
-                bx[i] = (i == 0) ? cc->KeySwitchExt(ct, true) :
-                                   cc->EvalFastRotationExt(ct, CIGaloisForShift(bp.h * i, Nn), digits, true);
+                    bx[i] = LTRun(&LTStats::baby, &LTStats::tBaby, 1, [&] {
+                        return cc->EvalFastRotationExt(ct, CIGaloisForShift(bp.h * i, Nn), digits, true);
+                    });
+                }
+                else {
+                    bx[i] = LTRun(&LTStats::ext, &LTStats::tBaby, 1, [&] { return cc->KeySwitchExt(ct, true); });
+                }
             }
             std::shared_ptr<DCRTPoly::Params> paramsQlP;
             for (auto& b : bx)
@@ -1358,9 +1440,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                     break;
                 }
             Ciphertext<DCRTPoly> outer;
-            DCRTPoly first;
-            bool firstInit = false;
             std::vector<uint32_t> map(Nn);
+            const auto& autoKeys = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
             for (uint32_t j = 0; j < bp.n2; ++j) {
                 const uint32_t G = offsetOf(bp.n1 * j);
                 Ciphertext<DCRTPoly> inner;
@@ -1398,46 +1479,24 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 }
                 if (inner == nullptr)
                     continue;
-                if (G == 0) {
-                    DCRTPoly e0 = cc->KeySwitchDownFirstElement(inner);
-                    if (!firstInit) {
-                        first     = e0;
-                        firstInit = true;
-                    }
-                    else {
-                        first += e0;
-                    }
-                    inner->GetElements()[0].SetValuesToZero();
-                    if (outer == nullptr)
-                        outer = inner;
-                    else
-                        EvalAddExtInPlace(outer, inner);
-                }
-                else {
+                // Giant step in the extended basis (as std's EvalHornerGiantRotate): only element 1 is ModDown'd,
+                // key-switched and rotated; element 0 stays in QlP, is rotated there and reaches Ql in the single
+                // final KeySwitchDown. The block at offset 0 (CIPlanBsgs aligns one) needs no rotation.
+                if (G != 0) {
                     const uint32_t gal = CIGaloisForShift(G, Nn);
                     ciGalUsed.insert(gal);
-                    auto innerQl       = cc->KeySwitchDown(inner);
+                    auto kit = autoKeys.find(gal);
+                    if (kit == autoKeys.end())
+                        OPENFHE_THROW("EvalKey for index [" + std::to_string(gal) + "] is not found.");
                     PrecomputeAutoMapCI(Nn, gal, &map);
-                    DCRTPoly rotE0 = innerQl->GetElements()[0].AutomorphismTransform(gal, map);
-                    if (!firstInit) {
-                        first     = rotE0;
-                        firstInit = true;
-                    }
-                    else {
-                        first += rotE0;
-                    }
-                    auto innerDigits = cc->EvalFastRotationPrecompute(innerQl);
-                    auto giant       = cc->EvalFastRotationExt(innerQl, gal, innerDigits, false);
-                    if (outer == nullptr)
-                        outer = giant;
-                    else
-                        EvalAddExtInPlace(outer, giant);
+                    inner = EvalHornerGiantRotate(inner, gal, map, kit->second);
                 }
+                if (outer == nullptr)
+                    outer = inner;
+                else
+                    EvalAddExtInPlace(outer, inner);
             }
-            auto out = cc->KeySwitchDown(outer);
-            if (firstInit)
-                out->GetElements()[0] += first;
-            return out;
+            return LTRun(&LTStats::modDown, &LTStats::tModDown, 2, [&] { return cc->KeySwitchDown(outer); });
         };
         const bool ciTiming  = (std::getenv("CI_BOOT_TIMING") != nullptr);
         auto ciNow           = [] { return std::chrono::steady_clock::now(); };
@@ -1447,14 +1506,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Apply sparse g=5-basis levels (apply order), one rescale per level; `scale` (scaleEnc or scaleDec)
         // is spread evenly over the levels at encode time.
         auto applyReal = [&](Ciphertext<DCRTPoly> in, const std::vector<CISparse>& levels,
-                             std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale) {
+                             std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale, const char* tag) {
             if (stores.size() < levels.size())
                 stores.resize(levels.size());
             const double sc = CIRealLevelScalar(scale, levels.size());
             for (size_t s = 0; s < levels.size(); ++s) {
                 const CISparse& A = levels[s];
                 auto tl           = ciNow();
-                in                = applyCISparse(in, stores[s], A, sc);
+                LTLevel ltl(tag, static_cast<int32_t>(s), static_cast<uint32_t>(A.size()),
+                            in->GetElements()[0].GetNumOfElements(), cryptoParams->GetParamsP()->GetParams().size());
+                in = applyCISparse(in, stores[s], A, sc);
+                ltl.Print();
                 if (ciTiming) {
                     auto bp = CIPlanBsgs(A, Nn);
                     std::cerr << "[CI-BT] level " << s << " diags=" << A.size() << " h=" << bp.h << " span=" << bp.span
@@ -1471,7 +1533,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         Ciphertext<DCRTPoly> ctxtEnc;
         auto tStage = ciNow();
         if (useRealFFT) {
-            ctxtEnc = applyReal(raised, GetCIRealLevels(Nn, lbEnc, lbDec).enc, p.m_U0hatTPreFFT, scaleEnc);
+            ctxtEnc = applyReal(raised, GetCIRealLevels(Nn, lbEnc, lbDec).enc, p.m_U0hatTPreFFT, scaleEnc, "ci-CtS");
         }
         else {
             // CtS = scaleEnc * N * U^-1 = scaleEnc * diag(1,.5..) * U^T. With decoded(raised)=U*t/N
@@ -1509,7 +1571,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // SlotsToCoeffs (U).
         Ciphertext<DCRTPoly> ctxtDecCI;
         if (useRealFFT) {
-            ctxtDecCI = applyReal(ctxtEnc, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec);
+            ctxtDecCI = applyReal(ctxtEnc, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec, "ci-StC");
         }
         else {
             ctxtDecCI = applyCILT(ctxtEnc, p.m_U0Pre,
@@ -3269,13 +3331,21 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
 
         const int32_t scale = 1 << ((s - flagRem) * p.layersCollapse + p.remCollapse);
 
-        auto digits = cc->EvalFastRotationPrecompute(result);
+        LTLevel ltl("std-CtS", smax - s, p.numRotations, result->GetElements()[0].GetNumOfElements(),
+                    cryptoParams->GetParamsP()->GetParams().size());
+        auto digits =
+                LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(result); });
         std::vector<Ciphertext<DCRTPoly>> fastRotation(p.g);
+        LTRun(&LTStats::baby, &LTStats::tBaby, p.g - 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.g))
-        for (uint32_t j = 0; j < p.g; ++j)
-            fastRotation[j] =
-                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scale * j, reduceMod), digits, true) :
-                               cc->KeySwitchExt(result, true);
+            for (uint32_t j = 0; j < p.g; ++j)
+                fastRotation[j] =
+                        (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scale * j, reduceMod), digits, true) :
+                                   cc->KeySwitchExt(result, true);
+            return 0;
+        });
+        if (g_lt)
+            g_lt->ext += 1;
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3309,19 +3379,28 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
             auto deltaKey = GetGiantStepRotation(result, CtSDelta, deltaAutoIndex, deltaMap);
             outer = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
         }
-        result = cc->KeySwitchDown(outer);
+        result = LTRun(&LTStats::modDown, &LTStats::tModDown, 2, [&] { return cc->KeySwitchDown(outer); });
+        ltl.Print();
     }
 
     if (flagRem == 1) {
         algo->ModReduceInternalInPlace(result, compositeDegree);
 
-        auto digits = cc->EvalFastRotationPrecompute(result);
+        LTLevel ltl("std-CtS", smax - stop, p.numRotationsRem, result->GetElements()[0].GetNumOfElements(),
+                    cryptoParams->GetParamsP()->GetParams().size());
+        auto digits =
+                LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(result); });
         std::vector<Ciphertext<DCRTPoly>> fastRotationRem(p.gRem);
+        LTRun(&LTStats::baby, &LTStats::tBaby, p.gRem - 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
-        for (uint32_t j = 0; j < p.gRem; ++j)
-            fastRotationRem[j] = (j != 0) ?
-                                         cc->EvalFastRotationExt(result, ReduceRotation(j, reduceMod), digits, true) :
-                                         cc->KeySwitchExt(result, true);
+            for (uint32_t j = 0; j < p.gRem; ++j)
+                fastRotationRem[j] = (j != 0) ?
+                                             cc->EvalFastRotationExt(result, ReduceRotation(j, reduceMod), digits, true) :
+                                             cc->KeySwitchExt(result, true);
+            return 0;
+        });
+        if (g_lt)
+            g_lt->ext += 1;
 
         // Remainder scale is 1 in CtS; Horner giant stride = gRem
         const int32_t tRem = ReduceRotation(p.gRem, reduceMod);
@@ -3355,7 +3434,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
             auto deltaKey = GetGiantStepRotation(result, CtSDelta, deltaAutoIndex, deltaMap);
             outer = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
         }
-        result = cc->KeySwitchDown(outer);
+        result = LTRun(&LTStats::modDown, &LTStats::tModDown, 2, [&] { return cc->KeySwitchDown(outer); });
+        ltl.Print();
     }
 
     return result;
@@ -3391,13 +3471,21 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
 
         const int32_t scale = 1 << (s * p.layersCollapse);
 
-        auto digits = cc->EvalFastRotationPrecompute(result);
+        LTLevel ltl("std-StC", s, p.numRotations, result->GetElements()[0].GetNumOfElements(),
+                    cryptoParams->GetParamsP()->GetParams().size());
+        auto digits =
+                LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(result); });
         std::vector<Ciphertext<DCRTPoly>> fastRotation(p.g);
+        LTRun(&LTStats::baby, &LTStats::tBaby, p.g - 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.g))
-        for (uint32_t j = 0; j < p.g; ++j)
-            fastRotation[j] =
-                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scale * j, reduceMod), digits, true) :
-                               cc->KeySwitchExt(result, true);
+            for (uint32_t j = 0; j < p.g; ++j)
+                fastRotation[j] =
+                        (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scale * j, reduceMod), digits, true) :
+                                   cc->KeySwitchExt(result, true);
+            return 0;
+        });
+        if (g_lt)
+            g_lt->ext += 1;
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3431,7 +3519,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
             auto deltaKey = GetGiantStepRotation(result, StCDelta, deltaAutoIndex, deltaMap);
             outer = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
         }
-        result = cc->KeySwitchDown(outer);
+        result = LTRun(&LTStats::modDown, &LTStats::tModDown, 2, [&] { return cc->KeySwitchDown(outer); });
+        ltl.Print();
     }
 
     if (flagRem == 1) {
@@ -3439,13 +3528,21 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
 
         const int32_t scaleRem = 1 << (smax * p.layersCollapse);
 
-        auto digits = cc->EvalFastRotationPrecompute(result);
+        LTLevel ltl("std-StC", smax, p.numRotationsRem, result->GetElements()[0].GetNumOfElements(),
+                    cryptoParams->GetParamsP()->GetParams().size());
+        auto digits =
+                LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(result); });
         std::vector<Ciphertext<DCRTPoly>> fastRotationRem(p.gRem);
+        LTRun(&LTStats::baby, &LTStats::tBaby, p.gRem - 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
-        for (uint32_t j = 0; j < p.gRem; ++j)
-            fastRotationRem[j] =
-                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scaleRem * j, reduceMod), digits, true) :
-                               cc->KeySwitchExt(result, true);
+            for (uint32_t j = 0; j < p.gRem; ++j)
+                fastRotationRem[j] =
+                        (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scaleRem * j, reduceMod), digits, true) :
+                                   cc->KeySwitchExt(result, true);
+            return 0;
+        });
+        if (g_lt)
+            g_lt->ext += 1;
 
         // Horner giant stride for remainder: g_rem * scale_rem
         const int32_t tRem = ReduceRotation(scaleRem * p.gRem, reduceMod);
@@ -3479,7 +3576,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
             auto deltaKey = GetGiantStepRotation(result, StCDelta, deltaAutoIndex, deltaMap);
             outer = EvalHornerGiantRotate(outer, deltaAutoIndex, deltaMap, deltaKey);
         }
-        result = cc->KeySwitchDown(outer);
+        result = LTRun(&LTStats::modDown, &LTStats::tModDown, 2, [&] { return cc->KeySwitchDown(outer); });
+        ltl.Print();
     }
 
     return result;
@@ -3943,22 +4041,27 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 #endif
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) {
-    auto pt = plaintext->GetElement<DCRTPoly>();
-    pt.SetFormat(Format::EVALUATION);
-    auto result = ciphertext->Clone();
-    for (auto& c : result->GetElements())
-        c *= pt;
-    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
-    result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
-    return result;
+    return LTRun(&LTStats::ptMult, &LTStats::tPtMult, 1, [&] {
+        auto pt = plaintext->GetElement<DCRTPoly>();
+        pt.SetFormat(Format::EVALUATION);
+        auto result = ciphertext->Clone();
+        for (auto& c : result->GetElements())
+            c *= pt;
+        result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
+        result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
+        return result;
+    });
 }
 
 void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
-    auto& cv1 = ciphertext1->GetElements();
-    auto& cv2 = ciphertext2->GetElements();
-    uint32_t n = cv1.size();
-    for (uint32_t i = 0; i < n; ++i)
-        cv1[i] += cv2[i];
+    LTRun(&LTStats::add, &LTStats::tAdd, 1, [&] {
+        auto& cv1  = ciphertext1->GetElements();
+        auto& cv2  = ciphertext2->GetElements();
+        uint32_t n = cv1.size();
+        for (uint32_t i = 0; i < n; ++i)
+            cv1[i] += cv2[i];
+        return 0;
+    });
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1,

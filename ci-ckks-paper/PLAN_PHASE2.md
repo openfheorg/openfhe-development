@@ -17,14 +17,15 @@ results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a st
 - Unit tests run only in item 6.5 (they are slow).
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
 
-Baseline to beat (item 1.R; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
-after, each scheme at its best budget, reps 3): CI {4,3} corr 4: 25.98 s for 65,536 reals (CtS 12.7 / EvalMod 7.46 /
-StC 5.29), RMS 21.57 / min 18.50 bits, 101 keys, peak RSS 14.08 GB, log QP 1601; std {5,3} corr 5: 21.86 s (CtS 6.79 /
-EvalMod 11.57 / StC 3.05), RMS 22.74 / min 19.73 bits, log QP 1660; speedup 2 x 21.86 / 25.98 = 1.68x. Equal-budget
-reference {4,4} (use it for per-stage CI/std ratios): CI 26.31 s (13.3 / 8.16 / 4.34), std 23.40 s (7.97 / 12.68 /
-2.30), 1.78x; stage ratios CtS 1.67x, EvalMod 0.64x, StC 1.89x. Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP =
-1064): CI 12.6 s, 20.55 bits max error; our CI is 2.06x slower (about 1.8x at equal turbo clock) and 2.0 bits less
-precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
+Baseline to beat (item 2.1; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
+after, each scheme at its best budget, reps 3): CI {4,3} corr 4: 23.75 s for 65,536 reals (CtS 10.96 / EvalMod 7.46 /
+StC 4.76), RMS 21.55 / min 18.45 bits, 100 keys, peak RSS 13.97 GB, log QP 1601; std {5,3} corr 5: 21.89 s (CtS 6.80 /
+EvalMod 11.58 / StC 3.04), RMS 22.74 / min 20.11 bits, log QP 1660; speedup 2 x 21.89 / 23.75 = 1.84x. Equal-budget
+reference {4,4} (use it for per-stage CI/std ratios): CI 23.84 s (11.39 / 8.17 / 3.69; 61 keys, 10.42 GB), std 23.55 s
+(8.02 / 12.74 / 2.32), 1.98x; stage ratios CtS 1.42x, EvalMod 0.64x, StC 1.59x. [Item 1.R, before the 2.1 giant-step
+fixes: CI {4,3} 25.98 s, std {5,3} 21.86 s, 1.68x; {4,4} CI 26.31 s, std 23.40 s, stage ratios 1.67x / 0.64x / 1.89x.]
+Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP = 1064): CI 12.6 s, 20.55 bits max error; our CI is 1.89x slower
+(about 1.65x at equal turbo clock) and about 2 bits less precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
 bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
 (no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
 Key switching: OpenFHE default dnum 3 (alpha 7, log P 420) is the fastest dnum valid at 128-bit for both schemes;
@@ -40,6 +41,11 @@ Budgets (item 1.3, 59/60): best CI {4,3} 25.97 s (log QP 1601; {4,4} 26.28 s, wi
 log QP <= 1100 (item 1.R): only {2,2} with 55-bit primes (56 for CI) and dnum 9 (P = 2 towers) reaches it (log QP
 1060 / 1076, valid at 128-bit), but CI takes 56.6-59.4 s and std 45.0-46.1 s (2.3x / 2.1x the best sets) at CI RMS
 20.2 bits, and dnum 3 at the same Q (log QP 1300) is faster. log QP is not a time lever in OpenFHE; not adopted.
+Linear transforms (item 2.1): `CI_BOOT_TIMING=1` also prints one `[LT]` line per BSGS level for CI and std (diagonals,
+towers, baby/giant rotations, ModUps, ModDowns, plaintext mults, adds, and the time of each). Plaintext mults equal the
+diagonal count; CI giant steps now ModDown only element 1 (as std's Horner step) and the BSGS window is aligned so the
+block at offset 0 needs no rotation (CI -8.6% at {4,3}). The remaining gap is 1.88x plaintext mults (inherent) and
+10 vs 4 giant steps per transform; plaintext mult + add is 36% of CI CtS and 53% of CI StC.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
 
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 3 59 60 1 3 fa 4 encap
@@ -86,7 +92,7 @@ number of QP limbs, so this is likely most of the 2x absolute gap to the paper (
 Measured at 2^16 (same N, warm, 1 thread): CI CtS = 1.64x std CtS ({4,4}), CI StC = 1.88x std StC, CI EvalMod
 = 0.64x (std runs EvalMod twice). The real factorization inherently needs ~2x the plaintext multiplications
 and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the bound and StC has slack.
-- [ ] **2.1** Instrument: count key switches and plaintext multiplications per level (CI) and in std's
+- [x] **2.1** Instrument: count key switches and plaintext multiplications per level (CI) and in std's
   `EvalCoeffsToSlots` at the same N; compare with 2*sqrt(#diagonals) + #diagonals. Any excess is a bug to fix
   before tuning.
 - [ ] **2.2** Per-level BSGS ratio from a cost model (hoisted baby rotation vs giant rotation at that level's

@@ -86,6 +86,11 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
 1. **CtS is half the CI time.** A collapsed real level has ~2^(k+2) diagonals vs 2^(k+1) for a complex
    level (each real output mixes Re and Im inputs). Options: better butterfly layout, per-level BSGS
    tuning, double hoisting, accumulating giant steps in the extended basis.
+   (Phase 2.1: per-level op counts added (`CI_BOOT_TIMING=1`, `[LT]` lines for CI and std). Two excess giant-step
+   costs were fixed: the CI giant step now ModDowns only element 1 in the extended basis, as std's Horner step,
+   and the BSGS window is aligned so the block at offset 0 needs no rotation. CI {4,3} 25.98 -> 23.75 s; at {4,4}
+   CI CtS / StC went from 1.67x / 1.89x std's to 1.42x / 1.59x. Plaintext mults equal the diagonal count; the rest
+   of the gap is the 1.88x diagonal count and 10 vs 4 giant steps per transform. See `PHASE2_LOG.md` 2.1.)
 2. **Sparse encapsulation EvalMod cost (not precision).** A weight-32 CI key acts like a weight-64
    power-basis key, so CI uses the K = 28 sine table (Chebyshev degree 48) where std uses K = 16 (degree 36).
    Precision is not affected: CI and std have the same RMS (18.24 / 18.23 bits, Table 3.1). Both tables have

@@ -942,3 +942,159 @@ gaining more from its best budget (item 1.3).
 - Suggestion for the plan adapter (not added to the plan): item 1.2's EvalMod lever. An exact-scale EvalMod
   without the FLEXIBLEAUTO adjustment rescales would save ~2.7 s (CI) and ~3.8 s (std) per bootstrap. It
   needs a phase 3 item.
+
+## 2.1 Op counts per linear-transform level, CI vs std; two excess giant-step costs fixed (2026-10-27)
+
+**State.** After the VM restart ICELAKE had no 2.1 jobs or logs (its last logs were `p1R_*`), so the item started
+from the beginning. Source synced from b2f43d5b plus the working-tree change (`SYNCED_FROM b2f43d5b 1`); the
+committed code is the code of the last sync (`p21_build3`, `p21_final`).
+
+**What changed** (`src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp` only):
+1. **Instrumentation.** With `CI_BOOT_TIMING=1`, every BSGS level of the CI transforms (`applyCISparse`) and of
+   std's `EvalCoeffsToSlots` / `EvalSlotsToCoeffs` prints one `[LT]` line: diagonals, towers Ql+P, rotations
+   (hoisted baby + giant), the identity extension, ModUps (digit decompositions), ModDowns (polynomials QlP -> Ql;
+   a `KeySwitchDown` counts 2), extended-basis plaintext multiplications and additions, and the time of each
+   class. Counters live in a file-local `LTStats` (`LTRun`, `LTLevel`); `EvalMultExt`, `EvalAddExtInPlace` and
+   `EvalHornerGiantRotate` count themselves. Without the variable nothing is counted or printed (std from
+   `build-bt` printed no `[LT]` line). Serial runs only: std's parallel baby loops are timed as a whole.
+2. **Bug fix 1: giant step in the extended basis.** The CI giant step did a full `KeySwitchDown` of the block sum
+   (2 ModDowns), rotated element 0 in Ql, then ModUp + key switch of element 1; the block at offset 0 paid one
+   more ModDown (`KeySwitchDownFirstElement`). std's Horner giant (`EvalHornerGiantRotate`) ModDowns only element 1
+   and rotates element 0 in QlP. CI now calls `EvalHornerGiantRotate` with the CI Galois element, the CI map
+   (`PrecomputeAutoMapCI`) and that element's key, and adds the block at offset 0 to the accumulator in QlP. One
+   `KeySwitchDown` ends the level. The same change is made in the dense budget-{1,1} path (`applyCILT`).
+3. **Bug fix 2: window alignment.** `CIPlanBsgs` started the BSGS window at the first nonzero offset (for a
+   centred level, offset -31). No giant block then started at offset 0, so all n2 blocks were rotated. The window
+   start now moves back by r < n1 positions, so that offset 0 starts a block. That block needs no rotation: n2 - 1
+   giants instead of n2. This is skipped when 0 is outside the window or the longer window would wrap around Z_T.
+   Keygen (`CIRealFFTGaloisElements`) takes the plan from the same function; the item 0.4 Galois check held in
+   every run.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).** Helper scripts on ICELAKE only: `p21_run.sh "mode scheme logN lbEnc lbDec corr
+reps secure"` runs `CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot $2 $3 $4 $5 59 60 $8 $7 fa $6 encap 0 0`, 1 thread
+(mode 0 = item 2.1 code; mode 1 = pre-2.1 code through the temporary switches `CI_GIANT_OLD` + `CI_BSGS_NOALIGN`;
+mode 2 = fix 1 only). `p21_final.sh` runs the committed code (switches removed). In `p21_ab` (first build, before fix
+2 existed) "0" was fix 1 only and "1" was pre-2.1.
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL; three times: instrumentation + fix 1, + fix 2, final cleanup)
+    ./guard.sh p21_build  "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32 && \
+      cd ../build-bt && cmake --build . --target ci-fft-boot -j 32"                                    # rc 0, no warnings
+    ./guard.sh p21_smoke  "./p21_run.sh '0 ci 12 3 3 4 2 0' '1 ci 12 3 3 4 2 0' '0 std 12 3 3 5 2 0' \
+      '0 ci 10 1 1 4 2 0' '0 ci 11 1 1 4 2 0'"                                                          # rc 0
+    ./guard.sh p21_ab     "./p21_run.sh '0 ci 16 4 4 4 3 1' '1 ci 16 4 4 4 3 1' '0 std 16 4 4 5 3 1' \
+      '0 ci 16 4 3 4 3 1' '1 ci 16 4 3 4 3 1' '0 std 16 5 3 5 3 1'"                                     # rc 0
+    ./guard.sh p21_build2 "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32"  # rc 0
+    ./guard.sh p21_smoke2 "./p21_run.sh '0 ci 12 3 3 4 2 0' '2 ci 12 3 3 4 2 0' '1 ci 12 3 3 4 2 0' \
+      '0 ci 12 2 2 4 2 0' '1 ci 12 2 2 4 2 0' '0 ci 13 4 3 4 2 0' '1 ci 13 4 3 4 2 0'"                  # rc 0
+    ./guard.sh p21_ab2    "./p21_run.sh '0 ci 16 4 4 4 3 1' '2 ci 16 4 4 4 3 1' '1 ci 16 4 4 4 3 1' \
+      '0 ci 16 4 3 4 3 1' '2 ci 16 4 3 4 3 1' '1 ci 16 4 3 4 3 1' '1 ci 16 4 3 4 3 1' '2 ci 16 4 3 4 3 1' \
+      '0 ci 16 4 3 4 3 1' '1 ci 16 4 4 4 3 1' '2 ci 16 4 4 4 3 1' '0 ci 16 4 4 4 3 1'"                  # rc 0
+    ./guard.sh p21_build3 "<same as p21_build>"                                                         # rc 0, no warnings
+    ./guard.sh p21_final  ./p21_final.sh   # 2^12 ci/std {3,3}, 2^10 ci {1,1}, then the four plan baseline commands  # rc 0
+
+Logs: `~/ci-ckks-fft/logs/p21_*.log`. Load average 1-6 in all timing runs, except one pre-2.1 {4,3} run in `p21_ab` that
+started at 14.6; it is not used (its repeat in `p21_ab2` gives the same 25.92-26.01 s).
+
+**Results 1: op counts per level** (2^16, 128-bit, FLEXIBLEAUTO 59/60, encap, equal budget {4,4}; warm bootstrap).
+CtS level 0 is applied first. "rot" = baby + giant rotations; "2 sqrt(d)" is the item's reference; pt = plaintext
+multiplications; t = level time in s (`p21_final` for CI 2.1, `p21_ab2` first mode-1 run for pre-2.1, `p21_ab` for std).
+
+| transform, level | towers Ql+P | diags d | 2 sqrt(d) | rot pre-2.1 | rot 2.1 | ModUp pre / 2.1 | ModDown polys pre / 2.1 | pt | t pre-2.1 | t 2.1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| CI CtS 0 | 20+7 | 16 | 8.0 | 7+1 | 7+1 | 2 / 2 | 5 / 3 | 16 | 1.569 | 1.411 |
+| CI CtS 1 | 19+7 | 62 | 15.7 | 15+4 | 15+3 | 5 / 4 | 10 / 5 | 62 | 3.981 | 3.377 |
+| CI CtS 2 | 18+7 | 62 | 15.7 | 15+4 | 15+3 | 5 / 4 | 10 / 5 | 62 | 3.811 | 3.232 |
+| CI CtS 3 | 17+7 | 63 | 15.9 | 15+4 | 15+3 | 5 / 4 | 10 / 5 | 63 | 3.670 | 3.118 |
+| CI StC 0-2 | 7..5+7 | 63, 62, 62 | 15.7-15.9 | 15+4 | 15+3 | 5 / 4 | 10 / 5 | d | 1.425, 1.297, 1.185 | 1.197, 1.096, 0.987 |
+| CI StC 3 | 4+7 | 16 | 8.0 | 7+1 | 7+1 | 2 / 2 | 5 / 3 | 16 | 0.385 | 0.332 |
+| std CtS 0 | 20+7 | 31 | 11.1 | 15+0 | (same) | 1 | 2 | 31 | 1.856 | |
+| std CtS 1, 2 | 19, 18+7 | 31 | 11.1 | 15+1 | | 2 | 3 | 31 | 2.052, 1.986 | |
+| std CtS 3 | 17+7 | 15 | 7.7 | 7+2 (1 + the slot-order delta) | | 3 | 4 | 15 | 1.427 | |
+| std StC 0-2 | 7..5+7 | 31 | 11.1 | 15+1 | | 2 | 3 | 31 | 0.696, 0.645, 0.586 | |
+| std StC 3 | 4+7 | 15 | 7.7 | 7+1 (delta) | | 2 | 3 | 15 | 0.313 | |
+
+Totals per transform ({4,4}):
+
+| | rot (baby + giant) | sum 2 sqrt(d) | ModUp | ModDown polys | pt mult = sum d | t CtS (LT sum) | t StC (LT sum) |
+|---|---|---|---|---|---|---|---|
+| CI pre-2.1, per transform | 52 + 13 = 65 | 55.4 | 17 | 35 | 203 | 13.03 | 4.29 |
+| CI 2.1, per transform | 52 + 10 = 62 | 55.4 | 14 | 18 | 203 | 11.14 | 3.61 |
+| std, per transform | 52 + 4 = 56 | 41.2 | 8 | 12 | 108 | 7.32 | 2.24 |
+| CI 2.1 / std | 1.11x | 1.34x | 1.75x | 1.50x | 1.88x | 1.52x | 1.61x |
+
+- **Plaintext multiplications equal the diagonal count in every level** (CI and std). No zero diagonal is
+  multiplied and no diagonal is used twice. CI levels have 2x std's diagonals (62-63 vs 31), as the real
+  factorization requires.
+- **Rotations follow the BSGS plan.** CI with ratio 2 uses n1 = 16 for 62-63 diagonals: 15 baby + 3 giant = 18
+  against 2 sqrt(d) = 15.7. std's OpenFHE plan uses 15 babies + 1 giant for 31 diagonals (16 vs 11.1). The extra
+  rotations over 2 sqrt(d) are cheap hoisted babies in both schemes; the baby/giant split is item 2.2. The giant
+  step that was not needed (window not aligned to offset 0) was an excess and is fixed (fix 2).
+- **ModDowns were an excess.** Before 2.1 a CI level with g giants did 2g + 2 (+1 when one block sat at offset 0)
+  ModDowns; std's pattern is g + 2. After fix 1 and fix 2 CI does g + 2, with one giant fewer: 5 instead of 10 per
+  62-diagonal level.
+- **Per-op cost is the same in both schemes** at the same towers (19+7, {4,4} CtS level 1): plaintext
+  multiplication 16.8 ms (CI) / 16.7 ms (std); hoisted baby rotation 57 / 57 ms; ModUp 188 / 167 ms; ModDown
+  67 / 60 ms per polynomial. The ~10% on ModUp/ModDown is the CI NTT (item 4.1).
+
+**Results 2: time, A/B on the same binary** (warm median of 3, 1 thread; two runs per mode in `p21_ab2`, one
+in `p21_final` for 2.1):
+
+| CI budget | pre-2.1 (mode 1) | fix 1 only (mode 2) | 2.1 (mode 0, `p21_ab2`) | 2.1 committed (`p21_final`) | change | Galois keys | peak RSS GB |
+|---|---|---|---|---|---|---|---|
+| {4,3} | 25.98, 26.01 (1.R: 25.98) | 24.34, 24.58 | 23.81, 23.71 | **23.75** | -8.6% | 101 -> 100 | 14.08 -> 13.97 |
+| {4,4} | 26.41, 27.08 (load 4.2) (1.R: 26.31) | 25.17, 25.61 | 24.00, 23.70 | **23.84** | -9.4% vs 26.31 | 70 -> 61 | 11.19 -> 10.42 |
+
+| stage, warm s | CI {4,3} pre-2.1 | CI {4,3} 2.1 | CI {4,4} pre-2.1 | CI {4,4} 2.1 | std {5,3} | std {4,4} |
+|---|---|---|---|---|---|---|
+| CtS | 12.67-12.70 | 10.96 | 13.28 | 11.39 | 6.80 | 8.02 |
+| EvalMod | 7.45 | 7.46 | 8.18 | 8.17 | 11.58 | 12.74 |
+| StC | 5.30 | 4.76 | 4.37 | 3.69 | 3.04 | 2.32 |
+| total (warm median) | 25.98-26.01 | 23.75 | 26.41 | 23.84 | 21.89 | 23.55 |
+
+(CI stages from `CI_BOOT_TIMING`, std stages from `build-bt`; std from `p21_final`, which matches 1.R within 0.7%.)
+
+- Precision is unchanged: CI RMS 21.55-21.57 bits in every mode (1.R: 21.55-21.57), min 17.5-18.8 bits (the
+  usual run-to-run spread; pre-2.1 runs 18.3-18.6). At 2^12 {3,3} and {2,2} the pre-2.1 and 2.1 runs give the
+  same RMS 18.80 / min 17.18 bits; at 2^13 {4,3} 19.71 / 18.02-18.03 bits. The dense {1,1} path runs (2^10:
+  RMS 16.59 / min 15.10 bits; 2^11: 17.83 / 16.33 bits); it has no A/B, but it now uses the same giant routine.
+- Fix 1 saves 1.4-1.7 s at {4,3} and 0.7-1.9 s at {4,4}; fix 2 saves another 0.5-0.9 s at {4,3} and 1.2-1.9 s at
+  {4,4} ({4,4} has 6 levels that gain a block at offset 0, {4,3} has 5; the 64-diagonal StC level was already aligned). The Galois key set
+  changes with the giant offsets: {4,4} 70 -> 61 keys (5.75 -> 5.01 GB), {4,3} 101 -> 100; at 2^12 {3,3}
+  49 -> 44, at 2^13 {4,3} 67 -> 68.
+- New ratios. At each scheme's best budget: CI {4,3} 23.75 s vs std {5,3} 21.89 s, **2 x 21.89 / 23.75 = 1.84x**
+  (1.R: 1.68x). At equal {4,4}: 2 x 23.55 / 23.84 = 1.98x (1.R: 1.78x). Per-stage CI/std at {4,4}: CtS
+  11.39 / 8.02 = **1.42x** (1.R: 1.67x), EvalMod 0.64x, StC 3.69 / 2.32 = **1.59x** (1.R: 1.89x). Against the paper
+  (12.6 s) CI is now 1.89x (1.R: 2.06x).
+- CI {4,4} (23.84 s) is now within 0.4% of {4,3} (23.75 s) with 61 instead of 100 keys (5.0 vs 7.9 GB) and 10.4
+  instead of 14.0 GB peak RSS.
+
+**Results 3: where the CI transform time goes now** ({4,4}, LT sums, s):
+
+| class | CI CtS | std CtS | CI/std | CI StC | std StC | CI/std |
+|---|---|---|---|---|---|---|
+| ModUp | 2.54 | 1.28 | 1.97x | 0.40 | 0.20 | 2.0x |
+| hoisted baby rotations | 2.88 | 2.93 | 0.98x | 0.67 | 0.67 | 1.0x |
+| giant key switch + automorphisms | 0.47 | 0.18 | 2.5x | 0.10 | 0.04 | 2.6x |
+| ModDown | 1.17 | 0.71 | 1.66x | 0.52 | 0.31 | 1.7x |
+| plaintext mult | 3.30 | 1.80 | 1.84x | 1.59 | 0.85 | 1.88x |
+| extended add | 0.78 | 0.42 | 1.86x | 0.33 | 0.17 | 1.9x |
+| total | 11.14 | 7.32 | 1.52x | 3.61 | 2.24 | 1.61x |
+
+**Conclusions.**
+- Against "2 sqrt(d) + d", the CI transforms had two excess costs, both in the giant steps: an extra ModDown per
+  giant block (element 0 taken down to Ql in every block) and one unneeded giant rotation per level (window not
+  aligned to offset 0). Both are fixed. Now plaintext multiplications = d exactly, rotations = 15 + 3 for 62-63
+  diagonals (2 sqrt(d) = 15.7; the split is item 2.2's tuning), and ModUp / ModDown follow std's pattern (g + 1
+  ModUps, g + 2 ModDowns for g giants). CI is 8.6-9.4% faster, and CI CtS/StC went from 1.67x / 1.89x std's to
+  1.42x / 1.59x at {4,4}.
+- The remaining CI/std transform gap is the diagonal count (1.88x plaintext multiplications, inherent) and more
+  giant steps (CI 10 vs std 4 per transform: more diagonals per level with the same n1 = 16). This is what items
+  2.2 (baby/giant split) and 2.3 (layer splits) can tune.
+- Plaintext multiplication plus extended addition is 36% of CI CtS and 53% of CI StC (std: 30% / 46%). One
+  extended-basis multiplication of a 26-tower ciphertext takes 16.7 ms at 2^16, about 4.9 ns per coefficient
+  product. That is memory traffic, not arithmetic: `EvalMultExt` copies the plaintext polynomial, clones the
+  ciphertext, then multiplies, and `EvalAddExtInPlace` makes another pass. Suggestion for the plan adapter (not
+  added to the plan): a phase 2 item for a fused extended-basis multiply-accumulate (acc += ct * pt per tower, no
+  copy, no clone). It is shared with std, but CI has 1.9x the multiplications, so it shrinks the CI/std ratio.
+- Suggestion for the plan adapter: CI {4,4} now ties CI {4,3} in time with 39% fewer keys and 3.5 GB less
+  memory; item 2.R could re-pick CI's baseline budget. The baseline commands are unchanged in this item.
