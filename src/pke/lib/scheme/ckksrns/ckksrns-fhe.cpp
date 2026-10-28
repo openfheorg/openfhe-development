@@ -315,6 +315,36 @@ inline double CIRealLevelScalar(double scale, size_t levels) {
     return std::pow(scale, 1.0 / static_cast<double>(levels));
 }
 
+// Item 2.3: layer split (layers per level, layer order, F_1 first) of the CtS (enc) or StC (!enc) transform for
+// l = log2 N layers and lb levels. The table holds the splits with the lowest modelled cost (diagonals x towers,
+// item 2.2 BSGS plans; ci-ckks-paper/tools/ci-split-search.cpp) at 2^12..2^16; the best split did not depend on
+// the other transform's budget. The first layers are cheaper (k of them have 2^k diagonals, a k-layer range
+// further in has 2^(k+2) - 2), and levels high in the chain cost more per diagonal, so the best splits are uneven.
+// Other (l, lb): the even split, larger parts first.
+std::vector<uint32_t> CIDefaultLayerSplit(uint32_t l, uint32_t lb, bool enc) {
+    struct Entry {
+        uint32_t l, lb;
+        bool enc;
+        std::vector<uint32_t> parts;
+    };
+    static const std::vector<Entry> table = {
+        {12, 3, true, {5, 3, 4}},       {12, 4, true, {4, 2, 3, 3}},    {12, 5, true, {4, 2, 2, 2, 2}},
+        {12, 3, false, {6, 3, 3}},      {12, 4, false, {5, 3, 2, 2}},   {13, 5, true, {4, 2, 2, 2, 3}},
+        {13, 3, false, {6, 4, 3}},      {13, 4, false, {5, 3, 3, 2}},   {14, 3, true, {6, 4, 4}},
+        {14, 4, true, {5, 3, 3, 3}},    {14, 5, true, {4, 2, 2, 3, 3}}, {14, 3, false, {6, 4, 4}},
+        {14, 4, false, {5, 3, 3, 3}},   {15, 3, true, {6, 4, 5}},       {15, 4, true, {5, 3, 3, 4}},
+        {15, 5, true, {4, 2, 3, 3, 3}}, {15, 3, false, {7, 4, 4}},      {15, 4, false, {6, 3, 3, 3}},
+        {16, 4, true, {5, 3, 4, 4}},    {16, 3, false, {7, 5, 4}},      {16, 4, false, {6, 4, 3, 3}},
+    };
+    for (const auto& e : table)
+        if (e.l == l && e.lb == lb && e.enc == enc)
+            return e.parts;
+    std::vector<uint32_t> parts;
+    for (uint32_t i = 0; i < lb; ++i)
+        parts.push_back(l / lb + (i < l % lb ? 1 : 0));
+    return parts;
+}
+
 CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     const auto& plan = GetCIRealFFTPlan(N);
     const auto& F    = plan.F;
@@ -322,14 +352,34 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     for (uint32_t q = 0; q < N; ++q)
         sigma[q] = plan.S[q] * std::sqrt(2.0 * N);
     const uint32_t l = static_cast<uint32_t>(F.size());
-    auto split        = [&](uint32_t lb) {
+    // Layer split of each transform: parts[i] = number of FFT layers in level i, layer order (F_1 first). CtS level s
+    // is part s; StC level s is the transpose of part lb-1-s. Default: CIDefaultLayerSplit (item 2.3 model search);
+    // CI_SPLIT_ENC / CI_SPLIT_DEC = "n0,n1,..." force a split (A/B switch, removed in item 6.2).
+    auto split = [&](uint32_t lb, bool enc) {
         lb = std::max<uint32_t>(1, std::min(lb, l));
+        std::vector<uint32_t> parts;
+        const char* envName = enc ? "CI_SPLIT_ENC" : "CI_SPLIT_DEC";
+        if (const char* e = std::getenv(envName)) {
+            for (const char* q = e; *q;) {
+                parts.push_back(static_cast<uint32_t>(std::strtoul(q, nullptr, 10)));
+                while (*q && *q != ',')
+                    ++q;
+                if (*q)
+                    ++q;
+            }
+            if (parts.size() != lb || std::accumulate(parts.begin(), parts.end(), 0u) != l ||
+                std::count(parts.begin(), parts.end(), 0u))
+                OPENFHE_THROW(std::string(envName) + ": need " + std::to_string(lb) + " positive parts summing to " +
+                              std::to_string(l));
+        }
+        else {
+            parts = CIDefaultLayerSplit(l, lb, enc);
+        }
         std::vector<std::pair<uint32_t, uint32_t>> r;  // [start, end) layer ranges, layer 0 first
         uint32_t k = 0;
-        for (uint32_t i = 0; i < lb; ++i) {
-            uint32_t sz = l / lb + (i < l % lb ? 1 : 0);
-            r.emplace_back(k, k + sz);
-            k += sz;
+        for (auto x : parts) {
+            r.emplace_back(k, k + x);
+            k += x;
         }
         return r;
     };
@@ -346,7 +396,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     };
     CIRealLevels out;
     {
-        auto rg        = split(lbEnc);
+        auto rg        = split(lbEnc, true);
         const double c = std::pow(N / std::sqrt(2.0 * N), 1.0 / rg.size());
         for (auto& [a, b] : rg) {
             out.enc.push_back(product(a, b));
@@ -357,7 +407,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
                 d[p] *= sigma[p];
     }
     {
-        auto rg        = split(lbDec);
+        auto rg        = split(lbDec, false);
         const double c = std::pow(std::sqrt(2.0 * N), 1.0 / rg.size());
         for (auto it = rg.rbegin(); it != rg.rend(); ++it) {
             out.dec.push_back(CISparseTranspose(product(it->first, it->second), N));

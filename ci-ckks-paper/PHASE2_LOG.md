@@ -1220,3 +1220,122 @@ of the total.
   same stride h) if memory matters; and item 2.3 should use `CIPlanBsgsMinCost` counts (not 2 sqrt(d)) in its
   (diagonals x limbs) cost model, since the window shape decides the giant count.
 - The baseline commands change to CI {5,3} (same budget as std).
+
+## 2.3 Uneven layer splits from a (diagonals x towers) cost model (2026-10-28)
+
+**State.** An earlier executor of 2.3 was cut off (authentication failure, about 01:40) after writing the env probe
+and the search tool and running `p23_search`, `p23_search2`, `p23_build` and `p23_ab` on ICELAKE (all rc 0; ICELAKE
+was synced from the WSL tree with those two changes, `SYNCED_FROM d2cfdadc 2`, before the build). Those runs are
+reused below. This session added the default split table, rebuilt and ran `p23_search3`, `p23_smoke`, `p23_final`.
+
+**What changed.**
+1. `CIBuildRealLevels` (`ckksrns-fhe.cpp`) takes the split of the l = log2 N FFT layers over the levels from
+   `CIDefaultLayerSplit(l, lb, enc)`: a table of the model-best splits (layer order, F_1 first) at l = 12..16 and
+   lb = 3..5 (StC lb 3..4), and the even split (larger parts first, the old rule) for any other (l, lb). CtS level s
+   is part s; StC level s is the transpose of part lb-1-s. Keygen and the evaluator both build their levels through
+   `GetCIRealLevels`, so their rotation sets agree (the item 0.4 Galois check held in every run).
+2. `CI_SPLIT_ENC` / `CI_SPLIT_DEC` = "n0,n1,..." force a split (A/B switch; throws unless lb positive parts sum to
+   l). To be removed in item 6.2 with the other switches.
+3. New tool `ci-ckks-paper/tools/ci-split-search.cpp` (standalone, links `ci-realfft.cpp`). For every composition of
+   the l layers into lb parts it builds each level's numeric product (`CISparseMul`, as `CIBuildRealLevels`; ranges
+   above 1100 diagonals are skipped), plans it with `CIPlanBsgsMinCost` at the level's digits (item 2.2), and costs
+   it as (Ql + P) towers x [(g+1) ModUp 2.35 D + (b+g) key switch (0.63 D + 0.40) + (g+2) ModDown 2.45 + d ptMult
+   0.646 + (d+g) add 0.15] ms (item 2.1 per-op times at 2^16), with Ql and D from the chain shape as
+   `CIBsgsLevelDigits`. It prints the default split, the top K and their Galois shifts.
+   The first version (`p23_search`) counted diagonals from the sumset of the layers' offsets; that overcounts
+   (adjacent layers cancel exactly: e.g. a middle 3-layer range has 30 numeric vs 36 symbolic diagonals, 15 of 18
+   ranges differed) and gave wrong rankings, so the tool now uses numeric products (`p23_search2`).
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).** Helper scripts on ICELAKE only: `p23_search.sh B...` builds the tool into
+`../scratch` and runs `ci-split-search 16 lbEnc lbDec 10` per budget; `p23_run.sh "enc:dec:logN:lbEnc:lbDec:reps:secure[:dnum]"`
+runs `CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci logN lbEnc lbDec 59 60 secure reps fa 4
+encap 0 [dnum]` with `CI_SPLIT_ENC=enc` / `CI_SPLIT_DEC=dec` ("-" = default) under `/usr/bin/time`.
+
+    # earlier executor (env probe + tool, even split still the default)
+    ./guard.sh p23_search  "./p23_search.sh 5x3 4x4 4x3 3x3"            # rc 0, symbolic counts (discarded)
+    ./guard.sh p23_search2 "./p23_search.sh 5x3 4x4 4x3 3x3 5x4"        # rc 0, numeric counts
+    ./guard.sh p23_build   "<cmake --build build --target ci-fft-boot -j 32>"   # Built target (no .rc written)
+    ./guard.sh p23_ab      "./p23_run.sh -:-:12:3:3:2:0 5,4,3:6,3,3:12:3:3:2:0 -:-:12:5:3:2:0 4,2,2,2,2:5,4,3:12:5:3:2:0 \
+      -:-:16:5:3:3:1 -:7,5,4:16:5:3:3:1 5,2,3,3,3:7,5,4:16:5:3:3:1 -:7,4,5:16:5:3:3:1 -:-:16:5:3:3:1 -:7,5,4:16:5:3:3:1 \
+      -:-:16:4:4:3:1 5,3,4,4:6,4,3,3:16:4:4:3:1 -:-:16:4:3:3:1 5,3,4,4:7,5,4:16:4:3:3:1"          # rc 0
+    # this session
+    ./guard.sh p23_search3 ./p23_search3.sh   # ci-split-search at logN 12..15, budgets 3x3 4x4 5x3 4x3; rc 0
+    ci-ckks-paper/tools/sync.sh               # (WSL) SYNCED_FROM d2cfdadc 3
+    ./guard.sh p23_build2 "<cmake --build build --target ci-fft-boot -j 32>"  # Built target, no warnings (the
+                          # command's `exit` skipped the .rc); p23_build3 = same no-op rebuild, rc 0
+    ./guard.sh p23_smoke ./p23_smoke.sh       # 14 runs at 2^12..2^15, insecure, reps 2; rc 0
+    ./guard.sh p23_final ./p23_final.sh       # 2^16, 128-bit, reps 3, interleaved new/old; rc 0
+    #   p23_final.sh: ./p23_run.sh -:-:16:5:3:3:1 -:6,5,5:16:5:3:3:1 -:-:16:4:4:3:1 4,4,4,4:4,4,4,4:16:4:4:3:1 \
+    #     -:6,5,5:16:5:3:3:1 -:-:16:5:3:3:1 4,4,4,4:4,4,4,4:16:4:4:3:1 -:-:16:4:4:3:1 -:-:16:4:3:3:1
+
+Load average: `p23_ab` 0.5-1.1 for the first 2^16 pair, then another user's jobs raised it to 7.6-18 (01:16-01:30;
+the {5,3} pass 2 and the {4,4} default run are affected) and back to 1.0-2.6. `p23_final` 0.8-4.4 (one of those
+cores is the run itself); the second old-split {5,3} run (08:01) is disturbed (CtS 10.10 s, EvalMod 7.69 s).
+
+**Results 1: model search at 2^16** (`p23_search2`; parts in layer order, F_1 first; model time of the transform).
+Range diagonal counts: the first k layers have 2^k diagonals; a k-layer range in the middle has 2^(k+2) - 2; the last
+k layers 2^(k+2) - 1. So the first part can take 1-2 more layers than the others at the same cost.
+
+| transform, lb | even split (model s, rank) | model #1 | #2 | #3 |
+|---|---|---|---|---|
+| CtS lb 5 ({5,3}) | [4,3,3,3,3] 9.49 s, rank 1 | = even | [5,2,3,3,3] +0.03 | [5,3,2,3,3] +0.06 |
+| CtS lb 4 ({4,4}) | [4,4,4,4] 11.30 s, rank 7 | [5,3,4,4] -0.44 | [5,4,3,4] -0.40 | [6,3,3,4] -0.35 |
+| CtS lb 3 ({3,3}) | [6,5,5] 13.64 s, rank 1 | = even | [7,4,5] +0.04 | [7,5,4] +0.13 |
+| StC lb 3 (any CtS budget) | [6,5,5] 4.95 s, rank 3 | [7,5,4] -0.14 | [7,4,5] -0.07 | [6,5,5] 0 |
+| StC lb 4 | [4,4,4,4] 3.89 s, rank 11 | [6,4,3,3] -0.38 | [6,3,4,3] -0.34 | [6,3,3,4] -0.32 |
+
+The best split of one transform does not depend on the other transform's budget (the StC towers do not depend on
+lbEnc; CtS towers shift uniformly with lbDec). The plan's example [5,6,5] is #10 for StC lb 3 (+1.09 s: a middle
+6-layer range has 254 diagonals). At 2^12..2^15 (`p23_search3`) the even split is model-best only at l = 13 CtS lb 3
+and lb 4; elsewhere the model gains 0.06-0.87 model-s (the table in `CIDefaultLayerSplit` lists them).
+
+**Results 2: top-3 A/B at 2^16** (128-bit, 1 thread, reps 3; warm median; stage times are medians of the 3 warm
+bootstraps from `CI_BOOT_TIMING`; "old" = the pre-2.3 even split). `p23_ab` ran on the old binary with env splits;
+`p23_final` on the new binary (default = model split, old via env).
+
+| budget | CtS split | StC split | run | warm s | CtS | EvalMod | StC | keys (GB) | peak RSS GB | RMS / min bits |
+|---|---|---|---|---|---|---|---|---|---|---|
+| {5,3} | even | [6,5,5] old | ab p1 / final p1 | 22.31 / 22.35 | 9.64 / 9.64 | 7.47 | 4.63 / 4.64 | 108 (8.86) | 14.10 | 21.56 / 18.48-18.52 |
+| {5,3} | even | [6,5,5] old | ab p2 (load 10-14) / final p2 (disturbed) | 22.56 / 23.22 | 9.74 / 10.10 | 7.53 / 7.69 | 4.70 / 4.87 | 108 | 14.10 | 21.56 / 18.25-18.53 |
+| {5,3} | even | **[7,5,4]** #1 | ab p1, p2 (load 10-14) | 22.21, 22.40 | 9.65, 9.73 | 7.47, 7.50 | 4.50, 4.54 | 102 (8.37) | 13.55 | 21.55-21.56 / 17.97-18.43 |
+| {5,3} | even | **[7,5,4]** new default | final p1, p2 | **22.15**, 22.18 | 9.63, 9.65 | 7.47, 7.48 | 4.47, 4.49 | 102 (8.37) | 13.55 | 21.55-21.57 / 18.37-18.54 |
+| {5,3} | even | [7,4,5] #2 | ab (load 7.6-10) | 22.52 | 9.70 | 7.54 | 4.58 | 105 (8.62) | 13.83 | 21.56 / 18.44 |
+| {5,3} | [5,2,3,3,3] #2 | [7,5,4] | ab (load rose to 7.6) | 22.56 | 9.78 | 7.49 | 4.81 | 106 (8.70) | 13.91 | 21.57 / 18.73 |
+| {4,4} | [4,4,4,4] | [4,4,4,4] old | final p1, p2 | 24.03, 23.89 | 11.51, 11.41 | 8.20, 8.17 | 3.73, 3.72 | 61 (5.01) | 10.42 | 21.55 / 18.19-18.49 |
+| {4,4} | **[5,3,4,4]** | **[6,4,3,3]** new | final p1, p2 | **23.18, 23.11** | 11.02, 10.99 | 8.20, 8.16 | 3.37, 3.38 | 92 (7.55) | 12.56 | 21.56 / 18.30-18.68 |
+| {4,4} | [5,3,4,4] | [6,4,3,3] | ab (load 18 -> 2.6) | 23.00 | 10.96 | 8.12 | 3.34 | 92 | 12.56 | 21.55 / 18.22 |
+| {4,3} | [4,4,4,4] | [6,5,5] old | ab | 23.50 | 10.89 | 7.44 | 4.61 | 110 (8.70) | 14.76 | 21.56 / 18.58 |
+| {4,3} | **[5,3,4,4]** | **[7,5,4]** new | ab / final | 23.00 / **23.05** | 10.46 / 10.53 | 7.46 / 7.49 | 4.50 / 4.48 | 99 (7.83) | 13.63 | 21.56-21.57 / 17.98-18.45 |
+
+(The {4,4} old-split run in `p23_ab`, 24.77 s at load 10-18, is not used.) Setup + keygen: {5,3} 55.7 -> 52.6 s,
+{4,4} 31.9 -> 47.4 s. The cold first bootstrap is unchanged (42-45 s).
+
+**Model vs measured** (stage change, s):
+
+| change | model | measured |
+|---|---|---|
+| {5,3} StC [6,5,5] -> [7,5,4] | -0.14 | -0.16 (4.64 -> 4.48) |
+| {5,3} StC [6,5,5] -> [7,4,5] | -0.07 | -0.05 to -0.12 (under load) |
+| {4,4} CtS [4,4,4,4] -> [5,3,4,4] | -0.44 | -0.46 (11.46 -> 11.00) |
+| {4,4} StC [4,4,4,4] -> [6,4,3,3] | -0.38 | -0.35 (3.73 -> 3.38) |
+| {4,3} CtS [4,4,4,4] -> [5,3,4,4] | -0.43 | -0.43 (10.89 -> 10.46) |
+| {4,3} StC [6,5,5] -> [7,5,4] | -0.14 | -0.11 (4.61 -> 4.50) |
+
+**Results 3: correctness at 2^12..2^15** (`p23_smoke`, new defaults, insecure, reps 2; the Galois check held in all
+42 bootstraps). RMS / min bits are the same as with the old split: 2^12 18.80 / 17.18 ({3,3}, {4,4} new and old,
+{5,3}, {4,3}), 2^13 19.71 / 18.03, 2^14 20.71 / 18.90-18.95, 2^15 21.64-21.65 / 19.58-19.69. Keys at 2^12: {3,3}
+44 -> 64, {4,4} 55 -> 62.
+
+**Conclusions.**
+- The (diagonals x towers) model with the 2.2 BSGS counts predicts the stage change of every measured split within
+  0.03 s. The even split was already model-best for CtS lb 5 and lb 3 at 2^16, so CI's best budget {5,3} only gains
+  in StC: [7,5,4] puts the 4 cheap last layers (63 diagonals) at the level with the most towers. CI {5,3} 22.34 ->
+  22.15 s (-0.9%; final pass 1: 22.15 vs 22.35 interleaved), 108 -> 102 keys, peak RSS 14.10 -> 13.55 GB. New
+  baseline: 2 x 21.85 / 22.15 = 1.97x; at {5,3} StC is 4.47 / 3.04 = 1.47x std's (was 1.53x), CtS 1.42x.
+- At budget 4 the gain is larger (CtS -0.46 s, StC -0.35 s): {4,4} 23.98 -> 23.15 s (2.03x std {4,4}; CtS 1.37x,
+  StC 1.45x), {4,3} 23.50 -> 23.05 s. The cost is keys: the {4,4} split has 92 instead of 61 keys (+2.5 GB, +2.1 GB
+  peak RSS, keygen +15 s). {5,3} stays CI's best budget.
+- The #2 and #3 splits measured as the model ranks them ([7,4,5] between [7,5,4] and [6,5,5]; [5,2,3,3,3] no gain).
+- The table is static (computed offline for the chain shape lbEnc + 10 + lbDec + 2 + 1, dnum 3, alpha 7). A
+  different chain could move the optimum; `CI_SPLIT_ENC/DEC` override it. Suggestion (not added to the plan): if key
+  memory matters, a key-aware tie-break in the search (the {4,4} split trades 31 keys for 0.8 s).

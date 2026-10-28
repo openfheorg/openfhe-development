@@ -15,19 +15,40 @@ results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a st
 - ICELAKE is shared: builds with `-j 32`; timing runs with `OMP_NUM_THREADS=1` (unless the item is about
   threads), one timing run at a time, never during a build.
 - Unit tests run only in item 6.5 (they are slow).
+- **Development-time rules (added 2026-10-28, apply from item 2.4 on).** Aim for at most about 45 minutes per item.
+  - *Screen cheap, confirm once.* Use N = 2^12-2^14 (insecure) for correctness checks and N = 2^15 or
+    2^16 with `reps` 1 for screening candidates. Only the final 1-3 candidates get the full 2^16, `reps` 3
+    timing. A sweep never runs every point at full 2^16 x 3 reps.
+  - *Parallel where timing is not measured.* Correctness and smoke runs (any N, any thread count) may run
+    concurrently with each other and with a build. Screening runs may run concurrently (at most 3 at 2^16 at
+    once), each with `OMP_NUM_THREADS=1`; say in the log that they were concurrent. Final timing numbers in
+    the log and the plan header still come from one run at a time on a quiet machine.
+    (The harness rule "one timing run at a time" means these final timing runs. The user approved
+    concurrent screening and correctness runs on 2026-10-28.)
+  - *RAM budget.* ICELAKE has 125 GB shared. A 2^16 run peaks at about 8-10 GB (std) and 11-15 GB (CI);
+    2^15 at about half; 2^12 under 1 GB. Keep the sum of concurrent peaks under 50 GB and check `free -g`
+    before starting concurrent runs. Item 2.4 adds the precomputed diagonals to CI memory: measure and log it.
+  - *A/B in one job.* Put the before/after (or CI/std) runs interleaved in one guarded job so machine load
+    affects both alike. Do not wait for a quiet machine for screening; wait only for the final timing, and
+    at most 20 minutes (then run anyway and log the load average).
+  - *Minimal rebuilds.* Build only the targets the item needs (`ci-fft-boot`, plus `build-bt` only when std
+    stage times are needed). Batch code fixes before rebuilding.
+  - *Phase reviews reuse numbers.* A phase review (x.R) reruns the baseline once per scheme (`reps` 3) only
+    if code changed since the last item's final timing run; otherwise it cites that run.
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
 
-Baseline to beat (item 2.2; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
-after, each scheme at its best budget, reps 3): both schemes' best budget is now {5,3}. CI {5,3} corr 4: 22.34 s for
-65,536 reals (CtS 9.64 / EvalMod 7.47 / StC 4.64), RMS 21.56 / min 18.06 bits, 108 keys, peak RSS 14.10 GB; std {5,3}
+Baseline to beat (item 2.3; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
+after, each scheme at its best budget, reps 3): both schemes' best budget is {5,3}. CI {5,3} corr 4: 22.15 s for
+65,536 reals (CtS 9.63 / EvalMod 7.47 / StC 4.47), RMS 21.55 / min 18.37 bits, 102 keys, peak RSS 13.55 GB; std {5,3}
 corr 5: 21.85 s (CtS 6.78 / EvalMod 11.57 / StC 3.04), RMS 22.75 / min 19.50 bits, log QP 1660; speedup
-2 x 21.85 / 22.34 = 1.96x; stage ratios at {5,3} CtS 1.42x, EvalMod 0.65x, StC 1.53x. Equal-budget reference {4,4}
-(unchanged by 2.2): CI 23.98 s (11.48 / 8.19 / 3.73; 61 keys, 10.42 GB), std 23.54 s (8.03 / 12.74 / 2.32), 1.96x;
-stage ratios CtS 1.43x, EvalMod 0.64x, StC 1.61x. CI {4,3}: 23.58 s. [Item 2.1: CI {4,3} 23.75 s, std {5,3}
-21.89 s, 1.84x. Item 1.R, before the 2.1 giant-step fixes: CI {4,3} 25.98 s, std {5,3} 21.86 s, 1.68x; {4,4} CI
-26.31 s, std 23.40 s, stage ratios 1.67x / 0.64x / 1.89x.]
-Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP = 1064): CI 12.6 s, 20.55 bits max error; our CI is 1.77x slower
-(about 1.55x at equal turbo clock) and about 2 bits less precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
+2 x 21.85 / 22.15 = 1.97x; stage ratios at {5,3} CtS 1.42x, EvalMod 0.65x, StC 1.47x. Equal-budget reference {4,4}:
+CI 23.11-23.18 s (11.01 / 8.20 / 3.37; 92 keys, 12.56 GB), std 23.54 s (8.03 / 12.74 / 2.32), 2.03x; stage ratios
+CtS 1.37x, EvalMod 0.64x, StC 1.45x. CI {4,3}: 23.05 s. [Item 2.2, even layer split: CI {5,3} 22.34 s (StC 4.64,
+108 keys), 1.96x; {4,4} CI 23.98 s (11.48 / 8.19 / 3.73; 61 keys, 10.42 GB), ratios 1.43x / 0.64x / 1.61x; CI {4,3}
+23.58 s. Item 2.1: CI {4,3} 23.75 s, std {5,3} 21.89 s, 1.84x. Item 1.R, before the 2.1 giant-step fixes: CI {4,3}
+25.98 s, std {5,3} 21.86 s, 1.68x; {4,4} CI 26.31 s, std 23.40 s, stage ratios 1.67x / 0.64x / 1.89x.]
+Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP = 1064): CI 12.6 s, 20.55 bits max error; our CI is 1.76x slower
+(about 1.54x at equal turbo clock) and about 2 bits less precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
 bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
 (no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
 Key switching: OpenFHE default dnum 3 (alpha 7, log P 420) is the fastest dnum valid at 128-bit for both schemes;
@@ -52,6 +73,11 @@ BSGS split (item 2.2): n1 per level minimizes babies + rho(D) giants by exact co
 (`CIPlanBsgsMinCost`, `math/ci-realfft.h`); rho = giant/baby cost = 5.2-5.8 from the 2.1 per-op times, set by the
 key-switching digit count D (towers cancel). It removes 2 of 3 giants in the 30-31-diagonal lb-5 levels: CI {5,3}
 23.6 -> 22.34 s, {5,4} -5.8%; lb-4 plans unchanged; +11 keys at {5,3}. `CI_BSGS_RATIO=2` gives the old plan.
+Layer split (item 2.3): `CIDefaultLayerSplit` (`ckksrns-fhe.cpp`) takes the split of the FFT layers over the levels
+from a table of model-best splits at 2^12..2^16 (`tools/ci-split-search.cpp`, diagonals x towers with the 2.2 BSGS
+plans), even split elsewhere. At 2^16: StC lb 3 [7,5,4] (was [6,5,5]), lb 4 [6,4,3,3]; CtS lb 4 [5,3,4,4]; CtS lb 3
+and lb 5 keep the even split (already model-best). CI {5,3} 22.34 -> 22.15 s and -6 keys; {4,4} -0.85 s but +31 keys;
+{4,3} 23.50 -> 23.05 s. `CI_SPLIT_ENC` / `CI_SPLIT_DEC` = "n0,n1,..." force a split (layer order, F_1 first).
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
 
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -103,7 +129,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   before tuning.
 - [x] **2.2** Per-level BSGS ratio from a cost model (hoisted baby rotation vs giant rotation at that level's
   limb count) instead of the global 2.0; verify at 2^16.
-- [ ] **2.3** Uneven layer splits: search splits (e.g. [6,5,5] vs [7,5,4] vs [5,6,5]) with a (diagonals x limbs)
+- [x] **2.3** Uneven layer splits: search splits (e.g. [6,5,5] vs [7,5,4] vs [5,6,5]) with a (diagonals x limbs)
   cost model; measure the top 3 at 2^16.
 - [ ] **2.4** Precompute the diagonal plaintexts in `EvalBootstrapSetup` (remove the ~70 s cold run and the write
   into the precom from a const `EvalBootstrap`; parallel encodes at setup; extended QlP form as now).

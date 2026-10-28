@@ -96,6 +96,10 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    5.2-5.8 from the measured per-op costs. The 30-31-diagonal levels of CtS budget 5 drop from 3 giants to 1:
    CI {5,3} 23.6 -> 22.34 s, now CI's best budget (same as std's); CI/2xstd 1.96x, CtS / StC 1.42x / 1.53x std's
    at {5,3}. Budget-4 plans were already optimal. See `PHASE2_LOG.md` 2.2.)
+   (Phase 2.3: the layer split per level now comes from a model search (diagonals x towers, 2.2 BSGS plans) instead
+   of the even split. The first k layers have 2^k diagonals, a k-layer range further in about 2^(k+2), so the best
+   splits are uneven. At 2^16 StC lb 3 is [7,5,4] (was [6,5,5]): CI {5,3} 22.34 -> 22.15 s, StC 4.64 -> 4.47 s
+   (1.47x std's), 6 fewer keys; {4,4} -0.85 s with +31 keys. See `PHASE2_LOG.md` 2.3.)
 2. **Sparse encapsulation EvalMod cost (not precision).** A weight-32 CI key acts like a weight-64
    power-basis key, so CI uses the K = 28 sine table (Chebyshev degree 48) where std uses K = 16 (degree 36).
    Precision is not affected: CI and std have the same RMS (18.24 / 18.23 bits, Table 3.1). Both tables have
@@ -132,7 +136,7 @@ Matches the paper: g=5 slot order, phase compensation, (Re, Im) replacement with
 in diagonal form, BSGS over the arithmetic progression of each collapsed level, EvalMod on one real ciphertext,
 permutation kept between CtS and StC. Per-layer diagonal counts [2, 3, 6, ..., 6, 7] agree with Lemma 4.
 Differences that are not defects: our level split assigns remainder layers to the first groups (fewer
-diagonals; the paper puts the short product last); any budget is allowed, not only powers of two.
+diagonals; the paper puts the short product last; since item 2.3 the split comes from a cost-model table); any budget is allowed, not only powers of two.
 
 Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
 1. `REAL_CI` with `BTSlotsEncoding = true` would run the standard StC-first path on CI data (no guard).
