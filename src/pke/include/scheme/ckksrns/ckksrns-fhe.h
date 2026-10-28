@@ -803,17 +803,6 @@ class FHECKKSRNS : public FHERNS {
      */
     static void EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix);
 
-    /**
-     * Same as EvalPartialSumInPlace(raised, slots) followed by a rescaling by modReduceLevels towers
-     * (ModReduceInternalInPlace), but with the rescaling fused into the deferred ApproxModDown of the fold.
-     * HYBRID key switching only benefits; otherwise the rescaling follows the fold.
-     * @param raised input/output ciphertext at the raised level
-     * @param slots number of plaintext slots (sparse packing; slots < N / 2)
-     * @param modReduceLevels number of towers to drop (the composite degree for composite scaling); 0 = no rescaling
-     */
-    static void EvalPartialSumAndModReduceInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots,
-                                                  uint32_t modReduceLevels);
-
     //------------------------------------------------------------------------------
     // SERIALIZATION
     //------------------------------------------------------------------------------
@@ -1178,11 +1167,9 @@ class FHECKKSRNS : public FHERNS {
                           bool modReduce = true) const;
     void AdjustCiphertextFBT(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 
-    // implementations of the rotation folds (EvalPartialSumInPlace); modReduceLevels = 0 means no rescaling
-    static void EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix,
-                                          uint32_t modReduceLevels);
-    static void EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size,
-                                                uint32_t modReduceLevels);
+    // implementations of the rotation folds (EvalPartialSumInPlace)
+    static void EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix);
+    static void EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size);
 
     void ExtendCiphertext(std::vector<DCRTPoly>& ciphertext, const CryptoContextImpl<DCRTPoly>& cc) const;
 

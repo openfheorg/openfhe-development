@@ -730,59 +730,23 @@ static_assert(PARTIAL_SUM_RADIX >= 2 && (PARTIAL_SUM_RADIX & (PARTIAL_SUM_RADIX 
               "PARTIAL_SUM_RADIX must be a power of two >= 2");
 
 void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots) {
-    EvalPartialSumAndModReduceInPlace(raised, slots, 0);
-}
-
-void FHECKKSRNS::EvalPartialSumAndModReduceInPlace(Ciphertext<DCRTPoly>& raised, uint32_t slots,
-                                                   uint32_t modReduceLevels) {
     const uint32_t N = raised->GetCryptoContext()->GetRingDimension();
-    EvalPartialSumInPlaceCore(raised, slots, N / (2 * slots), PARTIAL_SUM_RADIX, modReduceLevels);
+    EvalPartialSumInPlaceCore(raised, slots, N / (2 * slots), PARTIAL_SUM_RADIX);
 }
 
 void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size) {
-    EvalPartialSumRadix2InPlaceCore(ct, stride, size, 0);
+    EvalPartialSumRadix2InPlaceCore(ct, stride, size);
 }
 
 void FHECKKSRNS::EvalPartialSumInPlace(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix) {
-    EvalPartialSumInPlaceCore(ct, stride, size, radix, 0);
+    EvalPartialSumInPlaceCore(ct, stride, size, radix);
 }
 
-namespace {
-
-// Settles both elements of a hoisted rotation fold with the fused ModDown + rescaling by `levels` towers:
-// ext0 holds element 0 accumulated in the extended basis QlP, ext1 the extended key switched terms of the
-// last level. Element 1 of ct (basis Ql) is raised by P and added to ext1; P * c1 has zero residues modulo P,
-// so the fused ModDown of the sum equals c1 + ApproxModDown(ext1) exactly. The result is bit-identical to the
-// unfused settling followed by ModReduceInternalInPlace(ct, levels).
-void SettleFoldAndModReduce(Ciphertext<DCRTPoly>& ct, DCRTPoly&& ext0, DCRTPoly&& ext1, uint32_t levels,
-                            const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams) {
-    const auto& c1 = ct->GetElements()[1];
-    const uint32_t sizeQl = c1.GetNumOfElements();
-    const auto& PModq = cryptoParams->GetPModq();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQl))
-    for (uint32_t i = 0; i < sizeQl; ++i)
-        ext1.GetAllElements()[i].MultAccEqNoCheck(c1.GetAllElements()[i], PModq[i]);
-
-    std::vector<DCRTPoly> elements;
-    elements.reserve(2);
-    elements.emplace_back(std::move(ext0));
-    elements.emplace_back(std::move(ext1));
-    auto ext = ct->CloneEmpty();
-    ext->SetElements(std::move(elements));
-    ct = ct->GetCryptoContext()->KeySwitchDownAndModReduce(ext, levels);
-}
-
-}  // namespace
-
-void FHECKKSRNS::EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size,
-                                                 uint32_t modReduceLevels) {
+void FHECKKSRNS::EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size) {
     const auto cc = ct->GetCryptoContext();
     const auto algo = cc->GetScheme();
-    if (size <= 1) {
-        if (modReduceLevels != 0)
-            algo->ModReduceInternalInPlace(ct, modReduceLevels);
+    if (size <= 1)
         return;
-    }
 
     const uint32_t N = cc->GetRingDimension();
     const uint32_t M = cc->GetCyclotomicOrder();
@@ -791,8 +755,6 @@ void FHECKKSRNS::EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint3
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID) {
         for (uint32_t s = 1; s < size; s <<= 1)
             cc->EvalAddInPlace(ct, cc->EvalRotate(ct, stride * s));
-        if (modReduceLevels != 0)
-            algo->ModReduceInternalInPlace(ct, modReduceLevels);
         return;
     }
 
@@ -837,12 +799,6 @@ void FHECKKSRNS::EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint3
         for (uint32_t i = 0; i < sizeQlP; ++i)
             acc.GetAllElements()[i] += ba[0].GetAllElements()[i];
 
-        // Last level with a requested rescaling: both elements are settled by one fused ModDown + rescaling.
-        if (modReduceLevels != 0 && (s << 1) >= size) {
-            SettleFoldAndModReduce(ct, std::move(acc), std::move(ba[1]), modReduceLevels, cryptoParams);
-            return;
-        }
-
         // Element 1 is settled every level: the next rotation needs its digit decomposition.
         cv[1] += ba[1].ApproxModDown(paramsQl, paramsP, cryptoParams->GetPInvModq(), cryptoParams->GetPInvModqPrecon(),
                                      cryptoParams->GetPHatInvModp(), cryptoParams->GetPHatInvModpPrecon(),
@@ -858,10 +814,9 @@ void FHECKKSRNS::EvalPartialSumRadix2InPlaceCore(Ciphertext<DCRTPoly>& ct, uint3
                               cryptoParams->GettModqPrecon());
 }
 
-void FHECKKSRNS::EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix,
-                                           uint32_t modReduceLevels) {
+void FHECKKSRNS::EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t stride, uint32_t size, uint32_t radix) {
     if (radix == 2 || size <= 1)
-        return EvalPartialSumRadix2InPlaceCore(ct, stride, size, modReduceLevels);
+        return EvalPartialSumRadix2InPlaceCore(ct, stride, size);
 
     const auto cc = ct->GetCryptoContext();
     const auto algo = cc->GetScheme();
@@ -877,8 +832,6 @@ void FHECKKSRNS::EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t st
             for (uint32_t idx = stride * s; idx < stride * size && idx < radix * stride * s; idx += stride * s)
                 cc->EvalAddInPlace(ct, cc->EvalFastRotation(base, idx, M, digits));
         }
-        if (modReduceLevels != 0)
-            algo->ModReduceInternalInPlace(ct, modReduceLevels);
         return;
     }
 
@@ -937,12 +890,6 @@ void FHECKKSRNS::EvalPartialSumInPlaceCore(Ciphertext<DCRTPoly>& ct, uint32_t st
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQlP))
         for (uint32_t i = 0; i < sizeQlP; ++i)
             acc.GetAllElements()[i] += lvl0.GetAllElements()[i];
-
-        // Last level with a requested rescaling, as in EvalPartialSumRadix2InPlaceCore.
-        if (modReduceLevels != 0 && (s << logRadix) >= size) {
-            SettleFoldAndModReduce(ct, std::move(acc), std::move(lvl1), modReduceLevels, cryptoParams);
-            return;
-        }
 
         // Element 1 settles once per level from the level's extended sum: the next level's
         // rotations need its digit decomposition.
