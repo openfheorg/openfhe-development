@@ -32,8 +32,8 @@
 /*
   Header for the standard values for Lattice Parms, as determined by homomorphicencryption.org, by the
   Security Guidelines for Implementing Homomorphic Encryption (IACR Communications in Cryptology 1(4), 2025,
-  https://cic.iacr.org/p/1/4/26; also ePrint 2024/463, https://eprint.iacr.org/2024/463), and by the
-  Sparse LWE Kit (https://github.com/HomomorphicEncryption/SparseLWEkit)
+  https://cic.iacr.org/p/1/4/26; also ePrint 2024/463, https://eprint.iacr.org/2024/463), and by estimates
+  with the Lattice Estimator (https://github.com/malb/lattice-estimator, commit 6019056) for sparse secrets
  */
 
 #ifndef SRC_CORE_INCLUDE_LATTICE_STDLATTICEPARMS_H_
@@ -56,8 +56,8 @@ namespace lbcrypto {
 // This is the representation of the standard lattice parameters defined in the Homomorphic Encryption Standard
 // (http://homomorphicencryption.org, HEStd_* security levels), in the Security Guidelines for Implementing
 // Homomorphic Encryption (IACR Communications in Cryptology 1(4), 2025, https://cic.iacr.org/p/1/4/26; also ePrint
-// 2024/463; HEORG24_* security levels), and in the Sparse LWE Kit
-// (https://github.com/HomomorphicEncryption/SparseLWEkit, HE_SPARSE_* security levels).
+// 2024/463; HEORG24_* security levels), and by estimates with the Lattice Estimator
+// (https://github.com/malb/lattice-estimator, commit 6019056) for sparse secrets (HE_SPARSE_* security levels).
 
 // Given a distribution type and a security level, you can get the maxQ for a given ring dimension, and you can
 // get the ring dimension given a maxQ.
@@ -95,10 +95,10 @@ enum DistributionType {
  *
  * HE_SPARSE_H192_128 is the 128-bit classical security table for sparse ternary secrets of Hamming weight 192
  * (the Hamming weight of SPARSE_TERNARY and SPARSE_ENCAPSULATED secret keys in OpenFHE) and ring dimensions 2^15,
- * 2^16, and 2^17, intended for CKKS bootstrapping with sparse secrets. The rows are the OpenFHE parameter sets of
- * the Sparse LWE Kit of HomomorphicEncryption.org (https://github.com/HomomorphicEncryption/SparseLWEkit), whose
- * work factors (134.1, 134.0, and 135.7 bits for 2^15, 2^16, and 2^17, respectively) were obtained with the Lattice
- * Estimator using the BDGL16 reduction cost model (best attack: bdd_mitm_hybrid). It uses the HEStd_sparse
+ * 2^16, and 2^17, intended for CKKS bootstrapping with sparse secrets. The work factors of the three rows (134.1,
+ * 134.0, and 135.7 bits for 2^15, 2^16, and 2^17, respectively) were obtained with the Lattice Estimator
+ * (https://github.com/malb/lattice-estimator, commit 6019056) using the MATZOV reduction cost model (best attack:
+ * bdd_mitm_hybrid). It uses the HEStd_sparse
  * distribution type and is the recommended security level for sparse secrets.
  *
  * HEStd_NotSet disables the security-based parameter checks. The enumerators must stay consecutive from 0 because

@@ -382,13 +382,12 @@ std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
 
         // 128-bit classical security for sparse ternary secrets of Hamming weight 192 (the Hamming weight of
         // SPARSE_TERNARY and SPARSE_ENCAPSULATED secret keys) for the ring dimensions used in CKKS bootstrapping.
-        // These are the OpenFHE parameter sets (IDs 5, 6, and 7) of the Sparse LWE Kit of HomomorphicEncryption.org
-        // (https://github.com/HomomorphicEncryption/SparseLWEkit), with error standard deviation 3.19. The work
-        // factors listed there were obtained with the Lattice Estimator (https://github.com/malb/lattice-estimator)
-        // using the BDGL16 reduction cost model; the best attack for all three sets is bdd_mitm_hybrid:
-        //   N = 32768,  log2(q) = 767:  134.1 bits (ID 5)
-        //   N = 65536,  log2(q) = 1553: 134.0 bits (ID 6)
-        //   N = 131072, log2(q) = 3104: 135.7 bits (ID 7)
+        // The work factors below were obtained with the Lattice Estimator (https://github.com/malb/lattice-estimator,
+        // commit 6019056) for error standard deviation 3.19 using the MATZOV reduction cost model; the best attack
+        // for all three sets is bdd_mitm_hybrid:
+        //   N = 32768,  log2(q) = 767:  134.1 bits
+        //   N = 65536,  log2(q) = 1553: 134.0 bits
+        //   N = 131072, log2(q) = 3104: 135.7 bits
         // Ciphertext moduli below 767 bits map to N = 32768.
         StdLatticeParm(HEStd_sparse, 32768, HE_SPARSE_H192_128, 767),
         StdLatticeParm(HEStd_sparse, 65536, HE_SPARSE_H192_128, 1553),
