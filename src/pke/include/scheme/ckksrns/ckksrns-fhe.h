@@ -154,27 +154,6 @@ class CKKSBootstrapPrecom {
 using namespace std::literals::complex_literals;
 
 /**
- * @brief How the first layer of the homomorphic encoding (CoeffsToSlots) consumes the ciphertext produced by
- * FHECKKSRNS::ModRaiseInPlace.
- *
- * The normalization of the modulus raise shrinks the message by 2^-deg/N (and by the correction factor), so a key
- * switching whose rounding is not attenuated by a subsequent plaintext multiplication adds its noise at full
- * strength relative to the message. For SPARSE_ENCAPSULATED/HYBRID_TERNARY the partial sum of sparse packing is
- * normally fused into the switch back from the sparse secret, which precedes the rescale of the raise (see
- * FHECKKSRNS::KeySwitchRaise); when the key switching basis leaves no auxiliary prime for that switch back, the
- * partial sum is carried by the hoisted key switching of the first layer instead, whose rounding happens only
- * after the multiplication by the encoding matrix. For the other distributions, folding it costs a second
- * accumulation of the layer, and over correction factors 5 to 13 at two sparse packings it was worth no precision,
- * so it is evaluated after the raise instead (see FHECKKSRNS::ModRaiseForEncoding).
- */
-struct RaisedFirstLayer {
-    /// sparse packing: the partial sum ct + Rotate(ct, slots) + ... + Rotate(ct, (N/(2*slots) - 1) * slots) is
-    /// folded into the layer (a second accumulation with the plaintexts rotated by -slots, rotated by slots and
-    /// added to the first one, then doublings by 2*slots, 4*slots, ... of the output in the extended basis)
-    bool partialSum = false;
-};
-
-/**
  * @brief CKKS implementation of the FHE (bootstrapping) capability.
  *
  * Provides regular CKKS bootstrapping (EvalBootstrap, in the coefficients-encoding and slots-encoding
@@ -758,12 +737,11 @@ class FHECKKSRNS : public FHERNS {
      * @param ct input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
      * with the rescaling fused into the final key switching of the transform
-     * @param first how the layer consumes the ciphertext of ModRaiseInPlace (CoeffsToSlots only)
+     * @param foldPartialSum fold the partial sum of sparse packing into the layer (CoeffsToSlots only)
      * @return the transformed ciphertext
      */
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly>& ct,
-                                             uint32_t modReduceLevels = 0,
-                                             RaisedFirstLayer first = RaisedFirstLayer()) const;
+                                             uint32_t modReduceLevels = 0, bool foldPartialSum = false) const;
 
     /**
      * Homomorphic encoding (CoeffsToSlots) over multiple BSGS levels, evaluated
@@ -773,12 +751,12 @@ class FHECKKSRNS : public FHERNS {
      * @param ctxt input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
      * with the rescaling fused into the key switching of the last level
-     * @param first how the first layer consumes the ciphertext of ModRaiseInPlace
+     * @param foldPartialSum fold the partial sum of sparse packing into the first layer
      * @return the ciphertext with the coefficients of the input moved to its slots
      */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt, uint32_t modReduceLevels = 0,
-                                           RaisedFirstLayer first = RaisedFirstLayer()) const;
+                                           bool foldPartialSum = false) const;
 
     /**
      * Homomorphic decoding (SlotsToCoeffs); the inverse of EvalCoeffsToSlots,
@@ -1235,16 +1213,23 @@ class FHECKKSRNS : public FHERNS {
     void ModRaiseInPlace(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
 
     /**
-     * The modulus raise followed by the partial sum of sparse packing: ModRaiseInPlace, then the partial sum,
-     * which the first layer of the homomorphic encoding absorbs for SPARSE_ENCAPSULATED/HYBRID_TERNARY and which
-     * is evaluated here otherwise (see RaisedFirstLayer).
+     * The modulus raise followed by the partial sum of sparse packing: ModRaiseInPlace, then the partial sum.
+     *
+     * The normalization of the raise shrinks the message by 2^-deg/N (and by the correction factor), so a key
+     * switching whose rounding is not attenuated by a subsequent plaintext multiplication adds its noise at full
+     * strength relative to the message. For SPARSE_ENCAPSULATED/HYBRID_TERNARY the partial sum is normally fused
+     * into the switch back from the sparse secret, which precedes the rescale of the raise (see KeySwitchRaise);
+     * when the key switching basis leaves no auxiliary prime for that switch back, it is carried by the hoisted
+     * key switching of the first layer instead, whose rounding happens only after the multiplication by the
+     * encoding matrix. For the other distributions, folding it costs a second accumulation of the layer, and over
+     * correction factors 5 to 13 at two sparse packings it was worth no precision, so it is evaluated here.
      *
      * @param raised input/output ciphertext
      * @param normalization the constant the raised ciphertext is multiplied by (see ModRaiseInPlace)
      * @param slots number of plaintext slots
-     * @return how the first layer of the homomorphic encoding consumes the result
+     * @return whether the first layer of the homomorphic encoding must fold the partial sum
      */
-    RaisedFirstLayer ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
+    bool ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
 
     /**
      * Partial sum of sparse packing folded into the first layer of the homomorphic encoding, on its output in
