@@ -15,10 +15,11 @@ kept at the end of this section for reference.
   status in `NAME.rc`; `killed:oom-kill` if the job hit its memory cap; `refused:mem` if there was not enough free
   memory to start). Wait with `ci-ckks-paper/tools/wsl-wait.sh NAME [timeout_s]`. Jobs survive VS Code/terminal
   resets (systemd user manager), not a VM restart.
-- **Do not kill or starve the VM.** All guarded jobs share `cickks.slice`: 16 GB in total, no swap, 14 of 20 CPU
-  threads. Each job also has its own cap (`MEM_GB`, peak RSS + about 1 GB) and runs at nice 10. Peak RSS: CI 2^16 about
+- **Do not kill or starve the VM.** All guarded jobs share `cickks.slice`: 20 GB in total (raised from 16 GB by the user on 2026-10-28;
+  this overrides any 16 GB figure in the harness prompt), no swap, 14 of 20 CPU threads, OOM-kill priority 1000. Each job also has its own cap (`MEM_GB`, peak RSS + about 1 GB) and runs at nice 10. Peak RSS: CI 2^16 about
   11-15 GB, std 2^16 about 8-9 GB, 2^15 about half, 2^12 under 1 GB. So only one 2^16 job runs at a time, and no build
-  runs beside it; concurrent jobs only while their `MEM_GB` sum is at most 15. A killed or refused job is answered by a
+  runs beside it; concurrent jobs only while their `MEM_GB` sum is at most 19. In practice VS Code and Claude use about
+  16-17 GB of the VM's 31 GB, so a job can get about 14-16 GB; the guard refuses a job if free memory < `MEM_GB` + 2. A killed or refused job is answered by a
   smaller N or budget, or by lowering memory in the code, never by raising the slice limit.
 - **Build dirs:** `build-wsl` (Release, benchmarks, no unit tests, no examples) and `build-wsl-bt` (the same with
   `-DCMAKE_CXX_FLAGS=-DBOOTSTRAPTIMING`, for std stage times). Build only the needed targets, `-j 8`, `MEM_GB` 12. Leave
@@ -37,7 +38,7 @@ kept at the end of this section for reference.
   - *Minimal rebuilds.* Build only the targets the item needs; batch code fixes before rebuilding.
   - *Phase reviews reuse numbers.* A phase review (x.R) reruns the baseline once per scheme (`reps` 3) only if code
     changed since the last item's final timing run; otherwise it cites that run.
-  - Item 2.4 adds the precomputed diagonals to CI memory: measure it and keep CI 2^16 under the 15 GB job cap (if it
+  - Item 2.4 adds the precomputed diagonals to CI memory: measure it and keep CI 2^16 under a 19 GB job cap (and within free memory) (if it
     does not fit, precompute per level lazily or at a smaller N, and log it).
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
 - *Old ICELAKE rules (items 0.1-2.3, for reference only):* builds and runs on ICELAKE (`ssh -o BatchMode=yes
