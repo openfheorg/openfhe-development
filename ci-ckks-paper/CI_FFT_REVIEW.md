@@ -108,6 +108,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    0.5, temporary switch): CI EvalMod 7.81 s with K = 28 vs 6.82 s with K = 16 (-1.0 s, -13%), total
    26.66 -> 25.56 s (-4%), RMS 18.23 bits in both runs. The fix is a weight-16 CI ephemeral key so that K = 16
    is sound (phase 3.1, subject to the security estimate).
+   (Phase 3.1: rejected. A weight-16 CI key, n = 65536 at log q0 P' = 126, falls below 128 bits: MITM on the
+   secret 2^116, primal drop-and-solve 129.8 bits; weight 32 has 213 bits. CI keeps weight 32 and K = 28, as the
+   paper does (ephemeral weight 32 on the CI ring). See `PHASE2_LOG.md` 3.1.)
 3. **CI ring overhead.** CI NTT is within 1.2x of the standard NTT; CI EvalMod still ~1.2x std per op.
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.

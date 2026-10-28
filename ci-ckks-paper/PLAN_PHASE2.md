@@ -111,6 +111,10 @@ the input at that level). It needs corr 12 (CI) / 13 (std) at 59/60, not 4 / 5. 
 gain grows with the levels after), RMS / min 21.56 / 18.48 -> 21.92 / 19.71 bits, same chain, keys (102) and usable
 levels. Std's real-data StC-first runs EvalMod once instead of twice: std 12.21 -> 8.90 s, so CI/2xstd is 2.05x for
 CtS-first but 1.53x with both StC-first (this session's CPU ran ~27% faster than in the 2.4 baseline; use pairs).
+Sparse key (item 3.1, ICELAKE): a weight-16 CI ephemeral key (needed for std's K = 16 sine table) is below 128 bits
+(n = 65536, log q0 P' = 126: MITM on the secret 2^116, primal drop-and-solve 129.8 bits;
+`tools/ci-sparse-security.py`, a subset of the lattice-estimator's attacks; the estimator itself could not be
+installed), so CI keeps weight 32 (213 bits) and the K = 28 table (about 1.0 s of EvalMod, item 0.5).
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -189,7 +193,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   disable either path; the review checks that both build, run and give the expected precision.
 
 ## Phase 3: EvalMod and sparse encapsulation (gap 2, a cost item)
-- [ ] **3.1** CI ephemeral sparse key with weight 16 in the CI basis (L1 norm ~32 in the power basis) and the
+- [x] **3.1** CI ephemeral sparse key with weight 16 in the CI basis (L1 norm ~32 in the power basis) and the
   K = 16 (degree 36) sine table, like std. Run the lattice estimator on ICELAKE for (N = 65536, log q ~ 126,
   ternary weight 16) and record the security level; if below 128 bits, keep weight 32 and record why.
 - [ ] **3.2** META-BTS (`numIterations = 2`) for CI and std at 2^16: check that the CI branch works with the

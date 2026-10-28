@@ -1754,3 +1754,71 @@ time (`local diagonal encodes: 0 levels` in every bootstrap).
   with fewer CI StC diagonals (317 against std's 189).
 - 3 levels after (the paper's setting) at 128-bit with 59-bit primes needs dnum 4; CI then needs a job cap of about
   17-18 GB (dnum 4 was OOM-killed at 15 GB in `p2R_after3`).
+
+## 3.1 CI ephemeral sparse key of weight 16 -- DONE: weight 16 is below 128 bits, weight 32 kept (2026-10-28)
+
+**Host:** ICELAKE for every job of this item (host file `ICELAKE`, read before each job; load average 1.0-1.1, no
+other heavy user). No build, benchmark or test ran; no library code changed. Nothing ran on WSL.
+
+**Question.** A weight-h CI ephemeral key (h nonzero ternary CI-basis coordinates) acts like a weight-2h power-basis
+key, so CI uses the K = 28 sine table (degree 48) with h = 32, where std uses K = 16 (degree 36). Item 0.5 measured
+what K = 16 would save: 1.0 s of CI EvalMod (-13%), about 4% of the CI bootstrap. K = 16 is sound for CI only with a
+weight-16 CI key (power-basis L1 ~32, the overflow distribution std's K = 16 table was made for). The item asks
+whether that key is 128-bit secure.
+
+**Attack instance.** The sparse-secret switching key (`KeySwitchGenSparse`) is an RLWE sample under the ephemeral
+secret s' modulo q0 * P'. With the plan's chain (64-bit build, no composite scaling) q0 is 60 bits and P' is two
+33-bit primes (`ckksrns-cryptoparameters.cpp`, `auxBitsPlain` = 66), so log q = 126. For CI the ring has rank
+N = 65536 and the attacker works in the CI basis: LWE with n = 65536, ternary secret of Hamming weight h,
+Gaussian error sigma = 3.19. (The paper, ePrint 2026/2618 Section 6, also uses an ephemeral key of Hamming
+weight 32 on the CI ring, with hwt(s) = ||s||_1 in its rank-N representation.)
+
+**Estimator.** The malb/lattice-estimator needs SageMath, which is not on ICELAKE (no `sage`, no conda). Installing
+it (micromamba + conda-forge `sage` + `git clone` of the estimator into `~/ci-ckks-fft/estimator`) was refused by the
+harness permission check (download and execution of external code), so it did not run. In its place,
+`ci-ckks-paper/tools/ci-sparse-security.py` (new, pure Python) evaluates a subset of the estimator's attacks with
+its formulas: primal uSVP (2016 estimate) with Bai-Galbraith scaling of the secret and "drop and solve" (guess
+zeta coordinates to be zero; success probability C(n - zeta, h) / C(n, h)), and the meet-in-the-middle attack on the
+secret alone (Odlyzko split into two halves of n/2 coordinates with h/2 nonzeros each; rounding hash, as q / sigma
+~ 2^123 lets 2 samples remove all false matches). The minimum over a subset of attacks is an upper bound on what
+the full estimator reports, so a value below 128 bits here is below 128 bits for the full estimator as well.
+BKZ cost: core-SVP (0.292 b) and BDGL16 with 8d tours (0.292 b + 16.4 + log2(8 d), lattice-estimator
+`RC.BDGL16`). The BDGL16 model reproduces the HE-standard 128-bit bounds for dense ternary secrets
+(127.9 / 128.3 / 130.4 bits at (4096, 109) / (8192, 218) / (65536, 1747)), so it is the calibrated column.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    ci-ckks-paper/tools/sync.sh   # on WSL; SYNCED_FROM 8980bf05 1 (the new script, uncommitted)
+    ./guard.sh p31_sec "python3 openfhe-development/ci-ckks-paper/tools/ci-sparse-security.py"
+    # runs 1 and 2: rc 1 (two script bugs in the block-size search bounds, fixed on WSL and re-synced);
+    # run 3: rc 0, 12:39, about 20 s
+
+**Results** (`p31_sec.log`, run 3; n = 65536, log q = 126, sigma = 3.19; bits of security = log2 of the attack cost).
+
+| CI weight h (power-basis L1) | primal + drop, core-SVP (n', b, guess bits) | primal + drop, BDGL16 | MITM time (log2 list, split bits) | log2 #secrets | sine table it allows |
+|---|---|---|---|---|---|
+| **16** (~32) | 98.7 (1536, 41, 86.8) | 129.8 | **116.0** (112.7, 2.35) | 227.7 | K = 16 (std's) |
+| 24 (~48) | 141.5 (2048, 73, 120.2) | 172.9 | 166.8 (163.2, 2.63) | 329.0 | none (would need K ~ 20) |
+| **32** (~64), current | 181.7 (2048, 73, 160.3) | 213.0 | 215.6 (211.7, 2.84) | 426.3 | K = 28 |
+| 64 (~128) | 330.8 (3072, 162, 283.5) | 362.7 | 398.6 (394.3, 3.33) | 792.0 | -- |
+
+Std's weight-32 key in rank 65536 is the same LWE instance as the CI weight-32 row: 213 / 216 bits.
+
+**Conclusions.**
+- **Weight 16 is below 128 bits.** The meet-in-the-middle attack on the secret alone costs 2^116.0 list entries
+  (two lists of 2^112.7 entries, 2^2.35 repetitions for the 8/8 split). This is a time count, as in the HE
+  standard; it needs 2^112.7 memory, but a 128-bit claim counts time. The primal drop-and-solve attack is at
+  129.8 bits (BDGL16) with only 87 bits of guessing and a BKZ-41 reduction in dimension 1536, so the hybrid
+  attacks of the full estimator (guessing combined with MITM or lattice reduction) can only go lower. Each MITM
+  list entry costs a few 126-bit additions (about 2^7 bit operations), which still leaves it at about 2^123, below
+  128 bits.
+- **Weight 32 is kept** (CI and std alike: 213 bits primal, 216 bits MITM, both far above 128). CI keeps the K = 28
+  table (degree 48). The cost of that is the item 0.5 measurement: about 1.0 s of CI EvalMod, 4% of the CI bootstrap
+  at 2^16 {4,4} (ICELAKE). No library code changed, so all baseline numbers and commands stand.
+- **Not done, possible later:** a weight-24 CI key (power-basis L1 ~48) is secure by this subset (141.5 core-SVP,
+  166.8 MITM; the full estimator must confirm it) but no sine table exists for it. It would need a new
+  Chebyshev table for K ~ 20 (between degree 36 and 48; at most about half of the 1.0 s) and a failure-probability
+  check of the overflow bound. A different encapsulation modulus does not help: log q = 126 is already the
+  smallest (q0 60 bits + P' 66 bits), and the 116-bit MITM does not depend on q.
+- The official lattice-estimator still has not run. Its result can only be lower than the values above, so the
+  decision (weight 16 rejected) does not depend on it. It would be needed to certify weight 24.
