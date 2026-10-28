@@ -7,6 +7,9 @@
 //        2 = call EvalBootstrapStCFirst directly on a CtS-first setup (must throw for ci)]
 //       [dnum: number of large digits for HYBRID key switching (SetNumLargeDigits); 0 = OpenFHE default]
 //       [after: levels left for the application after the bootstrap; default 2 (the paper uses 3)]
+//       [iters: EvalBootstrap numIterations, 1 (default) or 2 (META-BTS; the chain gets iters - 1 more levels)]
+//       [metaprec: the META-BTS precision argument in bits; 0 (default) = floor of the min precision of the
+//        first bootstrap, which then runs with 1 iteration (as OpenFHE's iterative-ckks-bootstrapping example)]
 // Thread count: OMP_NUM_THREADS. First bootstrap (includes lazy diagonal precompute) is
 // reported separately; the warm bootstraps are what count.
 //==================================================================================
@@ -51,6 +54,8 @@ int main(int argc, char** argv) {
     uint32_t stcFirst  = (argc > 12) ? std::stoul(argv[12]) : 0;
     uint32_t dnum      = (argc > 13) ? std::stoul(argv[13]) : 0;  // 0 = OpenFHE default (3 for depth > 3)
     uint32_t after     = (argc > 14) ? std::stoul(argv[14]) : 2;
+    uint32_t iters     = (argc > 15) ? std::stoul(argv[15]) : 1;
+    uint32_t metaPrec  = (argc > 16) ? std::stoul(argv[16]) : 0;
     bool isCI          = (scheme == "ci");
     uint32_t N         = 1u << logN;
     std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
@@ -67,7 +72,7 @@ int main(int argc, char** argv) {
     parameters.SetFirstModSize(firstMod);
     parameters.SetSecurityLevel(secure ? HEStd_128_classic : HEStd_NotSet);
     uint32_t bootDepth = FHECKKSRNS::GetBootstrapDepth(levelBudget, skd);
-    uint32_t depth     = levelsAfter + bootDepth;
+    uint32_t depth     = levelsAfter + bootDepth + (iters - 1);
     parameters.SetMultiplicativeDepth(depth);
     if (dnum > 0)
         parameters.SetNumLargeDigits(dnum);
@@ -154,16 +159,24 @@ int main(int argc, char** argv) {
 
     if (stcFirst == 2)
         cc->EvalBootstrapStCFirst(ct);
+    // META-BTS with metaprec 0: the first bootstrap runs with 1 iteration and sets the precision argument.
+    const bool autoPrec = (iters > 1 && metaPrec == 0);
     auto tf      = Clock::now();
-    auto first   = cc->EvalBootstrap(ct);
+    auto first   = cc->EvalBootstrap(ct, autoPrec ? 1 : iters, metaPrec);
     double fSec  = Sec(tf);
     double fBits = prec(first);
+    if (autoPrec)
+        metaPrec = static_cast<uint32_t>(std::floor(fBits));
+    // EvalBootstrap returns a clone of the input when its output would not have more towers than the input.
+    bool passthrough = false;
     std::vector<double> times, bits;
     for (uint32_t r = 0; r < reps; ++r) {
         auto tb = Clock::now();
-        auto o  = cc->EvalBootstrap(ct);
+        auto o  = cc->EvalBootstrap(ct, iters, metaPrec);
         times.push_back(Sec(tb));
         bits.push_back(prec(o));
+        if (o->GetElements()[0].GetNumOfElements() <= ct->GetElements()[0].GetNumOfElements())
+            passthrough = true;
         if (r == 0)
             std::cout << "in level=" << ct->GetLevel() << " towers=" << ct->GetElements()[0].GetNumOfElements()
                       << " | out level=" << o->GetLevel() << " towers=" << o->GetElements()[0].GetNumOfElements()
@@ -174,7 +187,7 @@ int main(int argc, char** argv) {
     double minB = bits.empty() ? fBits : *std::min_element(bits.begin(), bits.end());
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
-              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " stcfirst=" << stcFirst << " slots=" << slots << " depth=" << depth << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0)
+              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " stcfirst=" << stcFirst << " iters=" << iters << " metaprec=" << metaPrec << " passthrough=" << passthrough << " slots=" << slots << " depth=" << depth << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0)
               << log2Q << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
               << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys
               << std::setprecision(1) << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB

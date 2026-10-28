@@ -1344,9 +1344,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Step 1: Get the input.
         uint32_t powerOfTwoModulus = 1 << precision;
 
+        // The standard bootstrap returns noise scale degree 2 and is rescaled here. The native CI bootstrap
+        // (CtS-first: its StC output is already rescaled) returns degree 1, so it is rescaled only if its degree
+        // is above 1 (item 3.2: the unconditional rescale left the CI bootstrapping error at 1 tower, and its
+        // ModRaise threw). Std is unchanged.
+        const bool ciRescaled = (cc->GetCKKSDataType() == REAL_CI);
+        auto rescaleOutput    = [&](Ciphertext<DCRTPoly>& c) {
+            if (!ciRescaled || c->GetNoiseScaleDeg() > 1)
+                cc->GetScheme()->ModReduceInternalInPlace(c, compositeDegree);
+        };
+
         // Step 3: Bootstrap the initial ciphertext.
         auto ctInitialBootstrap = EvalBootstrap(ciphertext, numIterations - 1, 0);
-        cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap, compositeDegree);
+        rescaleOutput(ctInitialBootstrap);
 
         // Step 4: Scale up by powerOfTwoModulus.
         cc->GetScheme()->MultByIntegerInPlace(ctInitialBootstrap, powerOfTwoModulus);
@@ -1379,7 +1389,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 
         // Step 8: Bootstrap the error.
         auto ctBootstrappedError = EvalBootstrap(ctBootstrappingError, 1, 0);
-        cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, compositeDegree);
+        rescaleOutput(ctBootstrappedError);
 
         // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
         auto finalCiphertext = cc->EvalSub(ctInitialBootstrap, ctBootstrappedError);

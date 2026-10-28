@@ -1822,3 +1822,111 @@ Std's weight-32 key in rank 65536 is the same LWE instance as the CI weight-32 r
   smallest (q0 60 bits + P' 66 bits), and the 116-bit MITM does not depend on q.
 - The official lattice-estimator still has not run. Its result can only be lower than the values above, so the
   decision (weight 16 rejected) does not depend on it. It would be needed to certify weight 24.
+
+## 3.2 META-BTS (`numIterations = 2`) for CI and std -- DONE (2026-10-28)
+
+**Hosts.** Two attempts. The first attempt ran its 2^16 timing job on ICELAKE (job `p32_final`, rc 0) and was cut off
+by an account usage limit before it logged or committed. The user then forbade ICELAKE for this item ("no runs in
+ICELAKE no matter what"), so this attempt ran everything on WSL (host file `WSL`, read before each job) and did not
+connect to ICELAKE. The ICELAKE numbers below are from the first attempt's job as recorded by the orchestrator
+(labelled "ICELAKE, item 3.2 earlier attempt"); they are compared only with each other, never with WSL numbers.
+
+**Code (from the first attempt, reviewed and kept).**
+- `ckksrns-fhe.cpp`, `EvalBootstrap` iteration path (`numIterations > 1`): the two `ModReduceInternalInPlace`
+  calls after the inner bootstraps (initial and error bootstrap) now go through `rescaleOutput`, which rescales a
+  `REAL_CI` result only if its noise degree is above 1. The native CI bootstrap already returns degree 1, so the
+  old unconditional rescale dropped one tower too many: the error ciphertext ended at 1 tower and its `ModRaise`
+  threw. Std ciphertexts are rescaled as before (std code path unchanged). Both CI orderings take this path
+  (StC-first CI goes through the CI branch of `EvalBootstrap`).
+- Driver `benchmark/src/ci-fft-boot.cpp`: new optional args 15 `iters` (1 or 2) and 16 `metaprec` (the META-BTS
+  precision argument in bits; 0 = floor of the min precision of the first bootstrap, which then runs with 1
+  iteration, as in OpenFHE's iterative-ckks-bootstrapping example). The depth gets `iters - 1` more levels. The
+  RESULT line adds `iters`, `metaprec` and `passthrough` (1 if `EvalBootstrap` returned a clone of its input because
+  the output would not have more towers; it was 0 in every run).
+- At 128-bit, 2^16 {5,3}, 2 levels after, the extra level needs dnum 4: depth 21 with dnum 3 gives log QP 1779 >
+  1747 (the item 1.3 limit); dnum 4 gives 1299 + 360 = 1659.
+
+**Commands (WSL, repo root, all `ci-ckks-paper/tools/wsl-guard.sh`; `$B` = `build-wsl/bin/benchmark/ci-fft-boot`;
+args after the budget: scaleMod firstMod secure reps scaling corr secret stcfirst dnum after iters metaprec).**
+
+    wsl-guard.sh p32_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8'                  # rc 0
+    wsl-guard.sh p32_smoke 8 'for {12 2 2, 13 3 3, 14 5 3} x {ci,std} x {CtS-first corr 4/5, StC-first corr 12/13}
+        x iters {1,2}: OMP_NUM_THREADS=4 $B $s $cfg 59 60 0 2 fa $corr encap $st 0 2 $it 0'      # rc 0, 24 runs
+    wsl-guard.sh p32_metaprec 6 '$B {ci 12 StC-first, std 13 StC-first, std 5 CtS-first} 13 3 3 59 60 0 2 fa
+        $corr encap $st 0 2 2 {8,12,16,20,24}'                                                     # rc 0
+    wsl-guard.sh p32_fm 6 'same three, fm (FIXEDMANUAL), iters/metaprec {1/0, 2/8, 2/16}'          # rc 0
+    wsl-guard.sh p32_wsl16 19 'two passes: OMP_NUM_THREADS=1 $B ci 16 5 3 59 60 1 3 fa 4 encap 0 0 2 1 0;
+        OMP_NUM_THREADS=1 $B ci 16 5 3 59 60 1 3 fa 4 encap 0 4 2 2 19'                            # rc 0
+    wsl-guard.sh p32_wsl16b 19 '(the same job again)'                                              # rc 0
+
+ICELAKE (first attempt, `p32_final`, one guarded job, load 2-3, 2^16 {5,3}, 128-bit, 1 thread, reps 3, 59/60
+FLEXIBLEAUTO, encap, 2 levels after; 2-iteration runs at dnum 4).
+
+**Results 1: 2^16, 128-bit, ICELAKE (item 3.2 earlier attempt; same-host comparison).**
+
+| Ordering | Scheme | 1 iter: time / RMS / min bits | 2 iters (metaprec): time / RMS / min bits | time ratio |
+|---|---|---|---|---|
+| CtS-first | CI (corr 4) | 22.14 s / 21.54 / 18.24 | 48.20 s / 40.17 / 36.95 (19) | 2.18x |
+| CtS-first | std (corr 5) | 21.88 s / 22.75 / 20.43 | 47.91 s / 40.97 / 38.01 (19) | 2.19x |
+| StC-first | CI (corr 12) | 21.69 s / 21.92 / 19.84 | 46.14 s / 40.42 / 37.34 (20) | 2.13x |
+| StC-first | std (corr 13) | 15.63 s / 22.91 / 20.83 | 33.37 s / 31.08 / 28.95 (20) | 2.13x |
+
+**Results 2: 2^16, 128-bit, WSL (this attempt; CI CtS-first, 1 vs 2 iterations interleaved in one job).**
+
+| Job / pass | 1 iter (dnum 3): warm / RMS / min | 2 iters (dnum 4, metaprec 19): warm / RMS / min | ratio | load avg |
+|---|---|---|---|---|
+| p32_wsl16 pass 1 | 12.63 s / 21.56 / 18.65 | 32.29 s / 40.18 / 37.18 | 2.56x | 1.9-2.9 |
+| p32_wsl16 pass 2 | 43.18 s / 21.56 / 18.58 (discarded) | 27.10 s / 40.17 / 37.04 (discarded) | -- | up to 8.5 |
+| p32_wsl16b pass 1 | 15.39 s / 21.56 / 18.51 | 49.32 s / 40.17 / 37.33 | 3.20x | 4.4-5.2 |
+| p32_wsl16b pass 2 | 16.19 s / 21.57 / 18.11 | 49.17 s / 40.17 / 37.07 | 3.04x | 4.4-5.2 |
+
+Peak RSS: 13.54 GB (1 iter), 16.37 GB (2 iters, 11.16 GB of keys at dnum 4); both fit the WSL slice. No run spanned a
+sleep (wall time = setup + first + reps in every run). The VM was shared with other processes this session (load
+average 2-8.5 from other Claude/VS Code processes), and the 2-iteration run (16.4 GB, larger dnum-4 keys) slowed
+down more than the 1-iteration run under that load, so the WSL time ratios (2.56-3.20x) are not clean: pass 2 of
+`p32_wsl16` is discarded (the 1-iteration run took 3.4x its pass-1 time), and the quiet ICELAKE ratio (2.13-2.19x)
+is the reference for time. Precision is the same on both hosts and in every pass: CI CtS-first 2 iterations
+40.17-40.18 bits RMS, 36.95-37.33 bits min.
+
+**Results 3: correctness at small N (WSL, insecure, `p32_smoke`, 4 threads, reps 2; RMS / min bits).**
+
+| N, budget | CI CtS 1 / 2 iters | CI StC 1 / 2 iters | std CtS 1 / 2 iters | std StC 1 / 2 iters |
+|---|---|---|---|---|
+| 2^12 {2,2} | 18.80/17.18 -> 35.48/33.78 | 22.68/21.28 -> 40.34/39.50 | 19.69/17.95 -> 37.94/36.34 | 24.69/23.25 -> 33.12/31.10 |
+| 2^13 {3,3} | 19.71/18.03 -> 35.12/33.82 | 22.67/21.14 -> 41.65/39.96 | 20.81/19.15 -> 39.23/37.41 | 24.68/23.27 -> 32.63/30.62 |
+| 2^14 {5,3} | 20.71/18.90 -> 40.34/38.26 | 22.49/20.56 -> 42.04/40.53 | 21.70/19.91 -> 40.90/39.42 | 24.38/22.41 -> 32.19/30.21 |
+
+All 24 runs: rc 0, passthrough 0. The CI META-BTS works in both orderings at every N.
+
+**Results 4: the META-BTS precision argument (WSL, 2^13 {3,3}, insecure, `p32_metaprec` / `p32_fm`; RMS / min bits).**
+
+| metaprec | CI StC-first (corr 12) | std StC-first (corr 13) | std CtS-first (corr 5) |
+|---|---|---|---|
+| 8 | 33.69 / 31.60 | 32.60 / 30.72 | 39.11 / 35.11 |
+| 12 | 37.68 / 35.60 | 32.68 / 30.66 | 43.13 / 39.67 |
+| 16 | 41.62 / 39.68 | 32.64 / 30.79 | 44.33 / 42.22 |
+| 20 | 41.71 / 40.15 | 32.64 / 30.57 | 37.24 / 35.44 |
+| 24 | 36.91 / 35.53 | 32.60 / 30.59 | 29.24 / 27.44 |
+| FIXEDMANUAL, 8 / 16 | 29.02 / 27.70, 37.02 / 35.70 | 31.29 / 29.50, 32.98 / 30.96 | 32.94 / 30.93, 40.98 / 38.93 |
+
+**Conclusions.**
+- **CI works with META-BTS in both orderings** (2^12-2^16), after the fix above. At 2^16, 128-bit, 2 iterations
+  give CI 40.2-40.4 bits RMS and 37.0-37.3 bits min (max error), against the paper's 20.55 bits max error: about
+  16.5 bits more. The cost is one more level (dnum 4 at 128-bit) and 2.13-2.18x the time of one iteration
+  (ICELAKE; 46.1-48.2 s against the paper's 12.6 s for one bootstrap). With 1 iteration CI is 2.3 bits (CtS-first,
+  min 18.2-18.6) or 0.7 bits (StC-first, min 19.8) below the paper; META-BTS is not needed to reach 20.5 bits, it is
+  the option when the application needs much more.
+- **CI and std give the same META-BTS precision for CtS-first** (40.2 vs 41.0 bits RMS) at the same time ratio.
+- **Std StC-first reaches only ~31 bits.** The result does not depend on the precision argument (30.6-30.8 bits min
+  for metaprec 8 to 24) or on the scaling technique (FIXEDMANUAL gives the same floor), while CI StC-first and std
+  CtS-first follow the expected curve (rise with metaprec until the scaled error overflows the EvalMod range). A
+  floor that does not move with metaprec means std's StC-first bootstrap of the error ciphertext has an error
+  proportional to the error's magnitude (about 8 bits relative, against about 23 bits for a fresh input), so the
+  second iteration gains only ~8 bits. It is specific to OpenFHE's std StC-first path for real data
+  (`EvalBootstrapStCFirst`, single EvalMod on the real part after a conjugate add); the CI StC-first path does not
+  show it. Root cause not pinned down (time-boxed); it does not affect CI.
+- **The automatic precision argument is not optimal.** `metaprec` = floor(min bits of one bootstrap) (the OpenFHE
+  example's rule) puts the scaled error near the EvalMod range limit: at 2^13 std CtS-first gives 39.2 bits RMS at
+  19 but 44.3 at 16; CI StC-first is flat for 16-20. About 3 bits below the one-bootstrap min is the better
+  choice; the 2^16 numbers above use the automatic rule (19 / 20), so they are conservative by up to ~2-4 bits.
+- No baseline numbers or commands change (1-iteration paths are unchanged; the driver defaults are iters 1).

@@ -115,7 +115,12 @@ Sparse key (item 3.1, ICELAKE): a weight-16 CI ephemeral key (needed for std's K
 (n = 65536, log q0 P' = 126: MITM on the secret 2^116, primal drop-and-solve 129.8 bits;
 `tools/ci-sparse-security.py`, a subset of the lattice-estimator's attacks; the estimator itself could not be
 installed), so CI keeps weight 32 (213 bits) and the K = 28 table (about 1.0 s of EvalMod, item 0.5).
-Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
+META-BTS (item 3.2): `EvalBootstrap(ct, 2, metaprec)` works for CI in both orderings (the iteration path no longer
+rescales the CI result twice). 2^16 {5,3}, 128-bit (needs dnum 4 for the extra level): CI 40.2-40.4 bits RMS / 37.0-37.3
+min at 2.13-2.18x the one-iteration time (ICELAKE: CtS-first 48.2 vs 22.1 s), std CtS-first 41.0 / 38.0; std
+StC-first stops at ~31 bits (a floor of OpenFHE's std StC-first path, independent of metaprec). Driver args 15
+`iters`, 16 `metaprec` (0 = floor of one bootstrap's min bits; ~3 bits lower is better).
+Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
     OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
@@ -196,7 +201,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **3.1** CI ephemeral sparse key with weight 16 in the CI basis (L1 norm ~32 in the power basis) and the
   K = 16 (degree 36) sine table, like std. Run the lattice estimator on ICELAKE for (N = 65536, log q ~ 126,
   ternary weight 16) and record the security level; if below 128 bits, keep weight 32 and record why.
-- [ ] **3.2** META-BTS (`numIterations = 2`) for CI and std at 2^16: check that the CI branch works with the
+- [x] **3.2** META-BTS (`numIterations = 2`) for CI and std at 2^16: check that the CI branch works with the
   iteration wrapper; compare precision and time with the paper's 20.5 bits.
 - [ ] **3.3** Log CI and std EvalMod time per real slot side by side.
 - [ ] **3.R** Phase 3 review. Done when: CI EvalMod degree equals std's for the same secret distribution (or the
