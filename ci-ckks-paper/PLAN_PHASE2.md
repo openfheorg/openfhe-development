@@ -26,7 +26,8 @@ kept at the end of this section for reference.
   the old `build` dir alone. Item 6.5 turns on `BUILD_UNITTESTS` in `build-wsl` and builds tests with `-j 4`.
 - **Timing:** `OMP_NUM_THREADS=1` (unless the item is about threads), one timing job at a time, never during a build.
   The i7-12700H laptop CPU has turbo and thermal variation: interleave A/B runs (before/after, CI/std) in one guarded
-  job, `reps` 3 for final numbers, medians. The first WSL item (2.4) first measures and logs the **WSL baseline** at
+  job, `reps` 3 for final numbers, medians. The laptop may sleep: a timing job that spans a sleep (an outlier
+  rep, or wall time in the log much longer than setup + reps) is discarded and rerun, never reported. The first WSL item (2.4) first measures and logs the **WSL baseline** at
   HEAD with the header commands (with `build-wsl` paths); later items compare against WSL numbers only.
 - Unit tests run only in item 6.5 (they are slow).
 - **Development-time rules (2026-10-28).** Aim for at most about 45 minutes per item.
@@ -45,7 +46,16 @@ kept at the end of this section for reference.
   ICE-Lake`, `~/ci-ckks-fft/openfhe-development`, dirs `build` and `build-bt`), source pushed with
   `ci-ckks-paper/tools/sync.sh`, jobs guarded with `~/ci-ckks-fft/guard.sh`.
 
-Baseline to beat (item 2.3; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
+**WSL baseline to beat (item 2.4; compare WSL items only with this).** Same settings as below, `build-wsl` (CI) and
+`build-wsl-bt` (std, for stage times), one interleaved job, reps 3, warm medians: CI {5,3} 16.37 s (CtS 6.99 / EvalMod
+5.34 / StC 3.62; RMS 21.55 / min 18.15 bits; 102 keys; peak RSS 13.55 GB), std {5,3} 16.25 s (5.16 / 8.44 / 2.32;
+22.73 / 19.21 bits; 7.66 GB); 2 x 16.25 / 16.37 = 1.99x; stage ratios CtS 1.36x, EvalMod 0.63x, StC 1.56x. Equal
+budget {4,4}: CI 17.48 s (8.37 / 6.30 / 2.68), std 18.23 s (6.11 / 9.92 / 1.87), 2.09x. The laptop takes ~26% less time
+per bootstrap than ICELAKE and its run-to-run spread is up to ~15% (thermal): use interleaved A/B pairs. Since item 2.4 the CI
+diagonals are encoded in `EvalBootstrapSetup` (1 thread: 18.5 s at 2^16 {5,3}; parallel), so the first CI bootstrap
+is warm (18.0 vs 16.5 s; it was 35.5 s) and `setup+keygen_s` is ~18 s larger; warm time, keys and RSS unchanged.
+
+ICELAKE baseline (item 2.3, reference only; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
 after, each scheme at its best budget, reps 3): both schemes' best budget is {5,3}. CI {5,3} corr 4: 22.15 s for
 65,536 reals (CtS 9.63 / EvalMod 7.47 / StC 4.47), RMS 21.55 / min 18.37 bits, 102 keys, peak RSS 13.55 GB; std {5,3}
 corr 5: 21.85 s (CtS 6.78 / EvalMod 11.57 / StC 3.04), RMS 22.75 / min 19.50 bits, log QP 1660; speedup
@@ -86,13 +96,13 @@ from a table of model-best splits at 2^12..2^16 (`tools/ci-split-search.cpp`, di
 plans), even split elsewhere. At 2^16: StC lb 3 [7,5,4] (was [6,5,5]), lb 4 [6,4,3,3]; CtS lb 4 [5,3,4,4]; CtS lb 3
 and lb 5 keep the even split (already model-best). CI {5,3} 22.34 -> 22.15 s and -6 keys; {4,4} -0.85 s but +31 keys;
 {4,3} 23.50 -> 23.05 s. `CI_SPLIT_ENC` / `CI_SPLIT_DEC` = "n0,n1,..." force a split (layer order, F_1 first).
-Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
+Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
-    # equal-budget reference for per-stage ratios (CI stages: CI_BOOT_TIMING=1; std stages: build-bt binary):
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 4 4 59 60 1 3 fa 5 encap
+    CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
+    OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
+    # equal-budget reference for per-stage ratios (CI stages: CI_BOOT_TIMING=1; std stages: build-wsl-bt binary):
+    CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
+    OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 4 4 59 60 1 3 fa 5 encap
 
 ## Phase 0: review fixes
 - [x] **0.1** Throw (or route to the CtS-first CI path) when `REAL_CI` and `BTSlotsEncoding` are both set.
@@ -139,7 +149,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   limb count) instead of the global 2.0; verify at 2^16.
 - [x] **2.3** Uneven layer splits: search splits (e.g. [6,5,5] vs [7,5,4] vs [5,6,5]) with a (diagonals x limbs)
   cost model; measure the top 3 at 2^16.
-- [ ] **2.4** Precompute the diagonal plaintexts in `EvalBootstrapSetup` (remove the ~70 s cold run and the write
+- [x] **2.4** Precompute the diagonal plaintexts in `EvalBootstrapSetup` (remove the ~70 s cold run and the write
   into the precom from a const `EvalBootstrap`; parallel encodes at setup; extended QlP form as now).
 - [ ] **2.5** StC-first CI variant (the paper's ordering): CI branch in `EvalBootstrapStCFirst` (StC at the
   bottom of the chain, ModRaise, CtS, EvalMod); compare time, precision and output level with CtS-first.
