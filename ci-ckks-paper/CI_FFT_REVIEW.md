@@ -80,7 +80,13 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
   twice as far from 2^p and the fixed-scale mismatch shows up one ring size earlier than for std
   (`benchmark/src/ci-noise-probe.cpp`). Use FLEXIBLEAUTO for CI.
 - Lower correction factors help both schemes (about 1 bit per step down to the minimum allowed value
-  firstMod - scaleMod, measured at 2^15 and 2^16; `PHASE2_LOG.md` item 0.2). The CI default is OpenFHE's fit at
+  firstMod - scaleMod, measured at 2^15 and 2^16; `PHASE2_LOG.md` item 0.2).
+- (Phase 3.R, WSL.) The per-op noise of CI at N equals std's at 2N (fresh, mult, rotate, double angle: within 0.1
+  bit; std at the same N is 1.0 bit better), so CI has no ring-noise penalty at an equal real count, the paper's
+  comparison. The K = 28 sine table costs no precision (K = 16/28 swap: RMS within 0.02 bits). Gap to the paper's
+  20.55 bits (StC-first, max error): CI 2^16 19.69-19.85, i.e. about 0.4 bits CI-specific (source open) plus about
+  0.3-0.45 bits of OpenFHE-vs-Lattigo design shared with std; CtS-first loses another 1.2-1.6 bits; META-BTS
+  closes it (37 bits). See `PHASE2_LOG.md` 3.R. The CI default is OpenFHE's fit at
   the complex-equivalent slot count N/2 minus one (7 at 2^16, std 8), which gives CI the RMS of std at defaults.
 
 ## 4. Remaining gaps and next steps

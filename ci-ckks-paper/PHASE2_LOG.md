@@ -2062,3 +2062,157 @@ CI StC-first vs std CtS-first 0.320x; {4,4} CtS-first pair 0.321x. Per call 1.28
   drops from ~1.95x to ~1.45x when both run StC-first (2.R); in EvalMod alone CI still saves 34-36% per real slot.
 - No baseline numbers or commands change. The WSL timing noise of this session (two speed states, up to 1.9x) is
   logged above; later WSL items should check each run's "x ref" before using single pairs.
+
+## 3.R Phase 3 review -- DONE (2026-10-28)
+
+**Host.** WSL only (i7-12700H laptop VM). The host file said `WSL` before every job; nothing ran on ICELAKE (user:
+"no runs in ICELAKE no matter what"). All numbers in this entry are precision numbers (bits), which do not depend on
+the host or the thread count; no timing is reported.
+
+**What changed.** Nothing is committed in the library or the drivers. Two temporary probes were built, used and
+reverted (`git checkout`), and `build-wsl` was rebuilt from the committed source afterwards (`p3R_rebuild`, rc 0):
+- `CI_PROBE_SINE_K=16|28` in `ckksrns-fhe.cpp` forced the SPARSE_ENCAPSULATED sine table (the overflow bound K in
+  `GetModRaiseOverflowBound`, which is folded into the CtS matrices, and the Chebyshev coefficients) for CI and std
+  alike, in all three EvalMod sites (CI branch, std CtS-first, std StC-first).
+- `ci-noise-probe.cpp` printed the RMS of the imaginary part of std slots. It is always exactly 0 (OpenFHE's
+  real-data decode drops it), so it measured nothing and was dropped.
+
+**Commands** (WSL, repo root, `ci-ckks-paper/tools/wsl-guard.sh`; `B` = `build-wsl/bin/benchmark/ci-fft-boot`; args
+after the budget: scaleMod firstMod secure reps scaling corr secret stcfirst; precision runs use 8 threads):
+
+    wsl-guard.sh p3R_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8'          # with the K probe; rc 0
+    wsl-guard.sh p3R_k15 10 'bash ~/ci-ckks-wsl/scripts/p3R_k15.sh'                         # rc 0
+      # two passes, OMP_NUM_THREADS=8, for (ci corr 4 CtS-first, std 5 CtS-first, ci 12 StC-first, std 13 StC-first)
+      # x K in {28, 16}: CI_PROBE_SINE_K=$K $B $s 15 5 3 59 60 0 3 fa $corr encap $stcfirst
+    wsl-guard.sh p3R_build2 12 'cmake --build build-wsl --target ci-noise-probe -j 8'      # rc 0
+    wsl-guard.sh p3R_noise 8 'OMP_NUM_THREADS=8; for n in 14 15 16 (+ std 17); for s in ci std:
+        build-wsl/bin/benchmark/ci-noise-probe $s $n 59 fa'                                # rc 0
+    wsl-guard.sh p3R_eqreal 8 'bash ~/ci-ckks-wsl/scripts/p3R_eqreal.sh'                    # rc 0
+      # n in {13, 14}: $B ci n 5 3 59 60 0 3 fa 12 encap 1; std n+1 ... 13 encap 1; std n ... 13 encap 1;
+      #                $B ci n ... fa 4 encap 0;      std n+1 ... 5 encap 0;  std n ... 5 encap 0
+    wsl-guard.sh p3R_std17 18 'OMP_NUM_THREADS=8 $B std 17 5 3 59 60 1 2 fa 13 encap 1'    # killed:oom-kill at 18 GB
+    git checkout src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp benchmark/src/ci-noise-probe.cpp
+    wsl-guard.sh p3R_rebuild 12 'cmake --build build-wsl --target ci-fft-boot ci-noise-probe -j 8'   # rc 0
+
+The other numbers in this entry come from existing logs at the same code: `p33_em16`, `p33_em16b` (item 3.3: 2^16
+{5,3}, 128-bit, reps 3) and `p2R_base` (item 2.R). Item 3.3 changed no code, so no baseline was rerun (plan rule
+"phase reviews reuse numbers").
+
+### Criterion 1: CI EvalMod degree vs std's for the same secret distribution
+
+| ephemeral key (sparse encapsulation) | power-basis L1 of the overflow sum | sine table (degree) | security (item 3.1) |
+|---|---|---|---|
+| std, weight 32 (firstMod <= 60) | 32 | K = 16 (36) | 213 / 216 bits |
+| std, weight 64 (firstMod > 60) | 64 | K = 28 (48) | -- |
+| **CI, weight 32 in the CI basis (used)** | ~64 (b_i b_j = b_{i+j} + b_{abs(i-j)}) | K = 28 (48) | 213 / 216 bits |
+| CI, weight 16 in the CI basis | ~32 | K = 16 (36) would be sound | **116 bits (MITM): rejected** |
+
+- **For the same overflow distribution the degree is equal.** OpenFHE gives std the same K = 28, degree-48 table
+  when its overflow sum has L1 64 (`UsesLargeSparseKey`, weight 64). For the same LWE secret (weight 32, rank
+  65536, the paper's choice too) CI needs degree 48 where std uses 36, because a CI-basis product doubles the
+  overflow's L1. To get std's degree 36, CI would need weight 16, and item 3.1 showed that weight 16 has only
+  2^116 security. This is the security reason the criterion allows, and it is recorded.
+- **The larger table costs time, not precision** (new: item 0.5 checked this only at 55/60, where noise limits the
+  precision). `p3R_k15`, 2^15 {5,3}, 59/60, insecure, reps 3, two passes (RMS / min bits):
+
+| run | K = 28 (degree 48) | K = 16 (degree 36) |
+|---|---|---|
+| CI CtS-first corr 4 | 21.65 / 19.64, 21.65 / 19.66 | 21.64 / 19.61, 21.64 / 19.50 |
+| CI StC-first corr 12 | 22.47 / 20.58, 22.48 / 20.57 | 22.48 / 20.64, 22.47 / 20.49 |
+| std CtS-first corr 5 | 22.52 / 20.34, 22.51 / 20.53 | 22.51 / 20.43, 22.50 / 20.16 |
+| std StC-first corr 13 | 22.91 / 20.82, 22.92 / 20.91 | 22.93 / 20.91, 22.93 / 20.86 |
+
+  RMS changes by at most 0.02 bits. min moves by up to 0.3 bits in both directions, which is the run-to-run spread.
+  The precision gap between CI and std therefore does not come from the sine table.
+- *Note for the plan adapter (estimate, not measured).* The CI overflow sum with L1 ~64 has sigma = sqrt(64/12) =
+  2.31. K = 16 is 6.9 sigma, which gives a Gaussian tail of about 2^-38 per coefficient and 2^-22 per 2^16
+  bootstrap. With L1 32 the sum is bounded by 16, so std never overflows K = 16. K = 28 gives about 2^-94 per
+  bootstrap. A weight-32 CI key with the K = 16 table (about -1 s of EvalMod, item 0.5) would therefore fail about
+  once per 4 million bootstraps. That is a correctness trade-off, not a security one, and it is not adopted.
+
+### Criterion 2: the precision gap to the paper
+
+The paper (ePrint 2026/2618, Table 2) reports Prec = -log2 of the max error (our `prec_bits_min`) for 65536
+uniform reals in [-1, 1] with its StC-first bootstrap: CI 20.49-20.68 bits over its four factorizations, 20.55 at
+3+4. Its "via standard CKKS" baseline puts the same 65536 reals in a ring of dimension 2N = 2^17 and gets
+20.17-20.57 bits, so in the paper CI and std are equal to within 0.4 bits.
+
+**Ours, 2^16 {5,3}, 128-bit (items 2.R and 3.3, same code):**
+
+| ordering | CI RMS / min | std (2^16, 32768 reals) RMS / min | gap of CI min to the paper's 20.55 |
+|---|---|---|---|
+| CtS-first (OpenFHE default) | 21.55-21.57 / 18.05-18.40 | 22.74-22.76 / 19.61-19.84 | -2.15 to -2.50 |
+| StC-first (the paper's ordering) | 21.91-21.92 / 19.69-19.85 | 22.90-22.91 / 20.69-20.77 | **-0.70 to -0.86** |
+| META-BTS, 2 iterations (item 3.2) | 40.17-40.42 / 36.95-37.34 | | **+16.4 to +16.8** |
+
+**Per-operation noise: CI at N equals std at 2N** (`p3R_noise`, UNIFORM_TERNARY, depth 8, 59-bit FLEXIBLEAUTO,
+uniform reals, RMS bits of the real part).
+
+| ring | reals | fresh | mult + rescale | rotate | 6 chained double angles |
+|---|---|---|---|---|---|
+| CI 2^14 | 16384 | 42.13 | 41.94 | 42.03 | 35.39 |
+| std 2^14 | 8192 | 43.12 | 42.91 | 43.01 | 36.55 |
+| CI 2^15 | 32768 | 41.13 | 40.93 | 41.05 | 34.44 |
+| std 2^15 | 16384 | 42.11 | 41.91 | 42.06 | 35.49 |
+| CI 2^16 | 65536 | 40.12 | 39.91 | 40.00 | 33.22 |
+| std 2^16 | 32768 | 41.12 | 40.91 | 41.06 | 34.48 |
+| std 2^17 | 65536 | 40.13 | 39.91 | 40.09 | 33.32 |
+
+At the same N, every CI operation has 1.0 bit more noise per real slot than std. The real subring of rank N
+evaluates a power-basis polynomial of length 2N, so its slot noise is the noise of std at 2N (within 0.1 bit
+here). At the same number of reals, which is the paper's comparison, the noise is the same. So the noise of the CI
+ring itself costs nothing against the paper's baseline. It only matters when CI is compared with std at the same N,
+as in our plan's CI/std tables.
+
+**Bootstrap precision at the same number of reals** (`p3R_eqreal` and `p3R_k15` at 2^13-2^15, insecure, reps 3;
+the std 2^16 rows are from `p33_em16`/`p33_em16b`, 128-bit; RMS / min bits).
+
+| reals | CI StC-first (corr 12) | std StC-first at 2N (corr 13) | CI CtS-first (corr 4) | std CtS-first at 2N (corr 5) |
+|---|---|---|---|---|
+| 8192 | CI 2^13: 22.67 / 21.14 | std 2^14: 24.37-24.38 / 22.42-22.45 | 19.71 / 18.03 | 21.70 / 19.89-19.90 |
+| 16384 | CI 2^14: 22.49 / 20.54 | std 2^15: 22.91-22.93 / 20.82-21.04 | 20.71 / 18.92 | 22.50-22.52 / 20.16-20.53 |
+| 32768 | CI 2^15: 22.47-22.48 / 20.49-20.64 | std 2^16: 22.90-22.91 / 20.69-20.77 | 21.64-21.65 / 19.50-19.66 | 22.74-22.76 / 19.61-19.84 |
+| 65536 | CI 2^16: 21.91-21.92 / 19.69-19.85 | std 2^17: not measured (OOM, below) | 21.55-21.57 / 18.05-18.40 | -- |
+
+The two std 2^13 runs (4096 reals) gave StC-first 24.68 / 23.26 and CtS-first 20.81 / 19.15. The std 2^17 bootstrap
+(`p3R_std17`, 128-bit, 8 threads) was killed at its 18 GB cap during setup. The WSL slice cannot run it, and
+ICELAKE is excluded, so the 65536-real std row is open.
+
+**Accounting for the gap** (paper's ordering, max error, 2^16):
+1. **Ordering: 1.2-1.6 bits, and only for the default CtS-first.** The paper's 20.55 bits is a StC-first number.
+   CI CtS-first is 2.15-2.50 bits below the paper and CI StC-first 0.70-0.86 bits (item 2.5: StC-first +1.2 bits
+   min at the same chain and time). Both orderings stay supported.
+2. **Sine table: 0 bits** (criterion 1 table: K = 16 and K = 28 give the same RMS within 0.02 bits).
+3. **Ring noise: 0 bits against the paper's comparison.** CI at N has std's per-op noise at 2N. The 1.0-bit
+   CI/std RMS gap at the same N (21.92 vs 22.91 StC-first) is the 2x slot noise of twice as many reals per ring.
+4. **CI vs std in OpenFHE at the same number of reals: about 0.4 bits RMS** (StC-first: 0.43-0.44 at 16384 and
+   32768 reals; min 0.05-0.50). The paper sees no gap (+0.02 to +0.4 bits for CI). This part is specific to our
+   CI bootstrap. Its source is not pinned down. The sine table and the per-op ring noise are ruled out. The
+   remaining candidate is the rounding and rescale noise of the 1.9x more plaintext diagonals in CI CtS/StC
+   (item 2.1). In CtS-first the gap is 1.1 bits at equal reals (21.65 vs 22.75 at 32768), where StC runs after
+   EvalMod at the bottom of the chain. At 8192 reals (2^13/2^14) the gap is 1.7 bits. At that size, std's precision
+   rises by 1.5 bits from 2^15 to 2^14 at a fixed corr, which marks a different noise regime and is not used here.
+5. **The rest, about 0.3-0.45 bits (0.70-0.86 minus 4), comes from the library's bootstrap design, not from CI.**
+   OpenFHE's std StC-first with 32768 reals at 2^16 (20.69-20.77 min) is at the paper's level. With 65536 reals in a
+   ring of 2^17 (the paper's baseline) its per-op noise matches CI 2^16 (table above), so by item 4 it would reach
+   about 20.1-20.3 bits, 0.3-0.45 below Lattigo's 20.55. That inference stands until the std 2^17 run above can
+   be done. The design differences are: one 59/60 FLEXIBLEAUTO scale with a 2^12 correction shrink and a
+   degree-48 Chebyshev sine with 3 double angles (OpenFHE), against per-stage scales (60-bit EvalMod, 40-bit
+   StC/base) and Lattigo's cosine EvalMod (paper Table 1).
+6. **Closed when needed:** META-BTS (2 iterations, item 3.2) gives CI 36.95-37.34 bits min at 2^16, 16.4-16.8 bits
+   above the paper, at 2.13-2.18x the time of one bootstrap (ICELAKE ratio) and one more level (dnum 4 at 128-bit).
+
+**Conclusions.**
+- Criterion 1 is met through its security clause. CI and std use the same EvalMod degree for the same overflow
+  distribution (degree 48 at power-basis L1 64). For the same weight-32 LWE secret, CI needs degree 48 against
+  std's 36, and the only way to equalize, a weight-16 CI key, has 2^116 security (item 3.1). The larger table costs
+  no precision (new: checked at 59/60), and its cost is about 1 s of EvalMod (item 0.5).
+- Criterion 2 is met: the gap is explained, and META-BTS closes it. At the paper's ordering the gap is 0.70-0.86
+  bits, made of about 0.4 bits of CI-specific bootstrap error (source open; table and ring noise excluded) and
+  about 0.3-0.45 bits of OpenFHE-vs-Lattigo bootstrap design, which std shares. In the default CtS-first ordering
+  another 1.2-1.6 bits are lost to the ordering. The 1.0-bit CI/std gap at the same N in our tables is the CI
+  ring's per-op noise at twice the reals, and it vanishes at the paper's equal-reals comparison.
+- No baseline numbers or commands change, and no code changed (both probes reverted; `build-wsl` rebuilt from
+  HEAD). Open for later, with no item in the plan: the std 2^17 bootstrap (65536 reals), which needs more than
+  18 GB, so ICELAKE or a larger WSL slice, to confirm item 5; the source of the 0.4-bit CI-specific part; and a
+  K = 16 table with the weight-32 CI key, which has a failure estimate of about 2^-22 per bootstrap.

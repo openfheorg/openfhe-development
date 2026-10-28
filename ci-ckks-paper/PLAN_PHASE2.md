@@ -124,6 +124,13 @@ EvalMod per real slot (item 3.3, WSL, `tools/evalmod-per-slot.py LOG`): CI 60-61
 orderings), std CtS-first 188-193 us (two calls), std StC-first 91-94 us (one call, 32768 reals); CI / std 0.31-0.33x
 vs CtS-first, 0.64-0.66x vs StC-first; per call CI / std 1.24-1.33x (K = 28 table ~1.15x, CI ring ~1.10x). The 4.R
 target 0.55x is met against std CtS-first only; against std StC-first the K = 28 floor is about 0.57x.
+Phase 3 review (item 3.R, WSL, precision only): the K = 28 table costs no precision (K = 16 vs 28 swap: RMS within
+0.02 bits, CI and std, both orderings, 2^15 59/60); CI keeps degree 48 because a weight-16 CI key is insecure (3.1).
+Per-op noise of CI at N equals std at 2N (`ci-noise-probe`, within 0.1 bit; 1.0 bit worse than std at the same N), so
+the paper's equal-reals comparison has no ring-noise gap. Gap to the paper's 20.55 bits (max error, StC-first):
+CI 2^16 19.69-19.85 (-0.70 to -0.86) = ~0.4 bits CI-specific (CI vs std at equal reals, 2^14/2^15 and 2^15/2^16;
+source open) + ~0.3-0.45 bits OpenFHE-vs-Lattigo design shared with std (std 2^17 OOM on WSL, inferred); CtS-first
+loses another 1.2-1.6 bits (ordering); META-BTS closes it (37 bits min).
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -208,7 +215,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **3.2** META-BTS (`numIterations = 2`) for CI and std at 2^16: check that the CI branch works with the
   iteration wrapper; compare precision and time with the paper's 20.5 bits.
 - [x] **3.3** Log CI and std EvalMod time per real slot side by side.
-- [ ] **3.R** Phase 3 review. Done when: CI EvalMod degree equals std's for the same secret distribution (or the
+- [x] **3.R** Phase 3 review. Done when: CI EvalMod degree equals std's for the same secret distribution (or the
   security reason it cannot is recorded), and the precision gap to the paper is explained or closed.
 
 ## Phase 4: CI ring overhead (gap 3)
