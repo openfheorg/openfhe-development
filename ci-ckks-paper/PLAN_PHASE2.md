@@ -17,11 +17,15 @@ results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a st
 - Unit tests run only in item 6.5 (they are slow).
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
 
-Baseline to beat (N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO, sparse encapsulation, budget {4,4}):
-CI 26.4-26.7 s for 65,536 reals (CtS 13.7 / EvalMod 7.8 / StC 4.4), two std bootstraps 2 x 23.2 = 46.5 s (std
-stages CtS 8.36 / EvalMod 12.2 / StC 2.38 per bootstrap), speedup 1.74-1.76x, RMS 18.2 bits both (re-measured in
-0.R; 0.2 measured CI 26.3 s, std 45.9 s, 1.74x). Paper (Lattigo, Xeon Gold 6248R,
-1 core, log QP = 1064): CI 12.6 s, 20.5 bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
+Baseline to beat (item 1.R; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
+after, each scheme at its best budget, reps 3): CI {4,3} corr 4: 25.98 s for 65,536 reals (CtS 12.7 / EvalMod 7.46 /
+StC 5.29), RMS 21.57 / min 18.50 bits, 101 keys, peak RSS 14.08 GB, log QP 1601; std {5,3} corr 5: 21.86 s (CtS 6.79 /
+EvalMod 11.57 / StC 3.05), RMS 22.74 / min 19.73 bits, log QP 1660; speedup 2 x 21.86 / 25.98 = 1.68x. Equal-budget
+reference {4,4} (use it for per-stage CI/std ratios): CI 26.31 s (13.3 / 8.16 / 4.34), std 23.40 s (7.97 / 12.68 /
+2.30), 1.78x; stage ratios CtS 1.67x, EvalMod 0.64x, StC 1.89x. Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP =
+1064): CI 12.6 s, 20.55 bits max error; our CI is 2.06x slower (about 1.8x at equal turbo clock) and 2.0 bits less
+precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
+bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
 (no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
 Key switching: OpenFHE default dnum 3 (alpha 7, log P 420) is the fastest dnum valid at 128-bit for both schemes;
 dnum 2 exceeds the 1747-bit bound, dnum 4 ties, dnum 5-7 are slower (item 1.1).
@@ -33,10 +37,16 @@ FIXEDMANUAL is 10% (CI) / 16% (std) faster, all in EvalMod (FLEXIBLEAUTO's scale
 Budgets (item 1.3, 59/60): best CI {4,3} 25.97 s (log QP 1601; {4,4} 26.28 s, within 1.2%), best std {5,3} 22.0 s
 (-6% vs {4,4}); at each scheme's best budget CI/2xstd is 1.69x (1.78x at equal {4,4}). {5,4}/{5,5} need dnum 4 at
 128-bit; {5,5} is slower for both. RMS does not depend on the budget. Compare at each scheme's best budget from here on.
+log QP <= 1100 (item 1.R): only {2,2} with 55-bit primes (56 for CI) and dnum 9 (P = 2 towers) reaches it (log QP
+1060 / 1076, valid at 128-bit), but CI takes 56.6-59.4 s and std 45.0-46.1 s (2.3x / 2.1x the best sets) at CI RMS
+20.2 bits, and dnum 3 at the same Q (log QP 1300) is faster. log QP is not a time lever in OpenFHE; not adopted.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
 
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 55 60 1 2 fa 0 encap
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 4 4 55 60 1 2 fa 0 encap
+    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 3 59 60 1 3 fa 4 encap
+    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
+    # equal-budget reference for per-stage ratios (CI stages: CI_BOOT_TIMING=1; std stages: build-bt binary):
+    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
+    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 4 4 59 60 1 3 fa 5 encap
 
 ## Phase 0: review fixes
 - [x] **0.1** Throw (or route to the CtS-first CI path) when `REAL_CI` and `BTSlotsEncoding` are both set.
@@ -60,6 +70,7 @@ Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod f
 ## Phase 1: parameter leanness (both schemes; biggest absolute lever)
 Our chain is log Q + log P = 1160 + 420 = 1580 bits; the paper's is 1064. Key-switching cost grows with the
 number of QP limbs, so this is likely most of the 2x absolute gap to the paper (26.3 s vs 12.6 s).
+(Item 1.R: refuted. Time follows towers per key switch and diagonals per level, not log QP; see the log.)
 - [x] **1.1** Sweep `SetNumLargeDigits` (dnum) in {3, 4, 5, 6} at 2^16 for CI and std; record log P, key size,
   time, precision (add a driver argument for dnum).
 - [x] **1.2** Per-stage prime sizes as in the paper (EvalMod ~60-bit, StC ~40-bit, 3 usable levels after
@@ -67,7 +78,7 @@ number of QP limbs, so this is likely most of the 2x absolute gap to the paper (
   per-stage scale; only build one if the numbers show it pays). Record log QP, time, precision.
 - [x] **1.3** Budget sweep with the best parameters from 1.1-1.2: {4,3}, {5,3}, {5,4}, {5,5} for CI and std
   (CtS budget first in OpenFHE's order; the paper's best is StC 3 + CtS 4).
-- [ ] **1.R** Phase 1 review. Done when: a 128-bit parameter set with log QP <= ~1100 is found (or the reason it
+- [x] **1.R** Phase 1 review. Done when: a 128-bit parameter set with log QP <= ~1100 is found (or the reason it
   cannot be is recorded), both schemes re-measured, CI/2xstd ratio and absolute CI time vs the paper's 12.6 s
   logged. Update the baseline commands in this file if the parameters change.
 

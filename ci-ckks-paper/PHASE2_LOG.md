@@ -795,3 +795,150 @@ splits) can reduce the 127/126-diagonal StC levels.
 
       OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 3 59 60 1 3 fa 4 encap
       OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
+
+## 1.R Phase 1 review: new baseline, the log QP <= 1100 question, and the gap to the paper (2026-10-27)
+
+**State.** Source synced from 89b7cd5c (the end of items 1.1-1.3; `SYNCED_FROM 89b7cd5c 0`). No source code changed
+in this item. After the VM restart ICELAKE had no 1.R jobs or logs (its last logs were `p13_*`), so the item
+started from the beginning. Two helper scripts were added on ICELAKE only: `~/ci-ckks-fft/p1R_chk.sh` prints the
+chain of a configuration and stops after 40 s; `~/ci-ckks-fft/p1R_run.sh` runs configurations at 2^16, 128-bit,
+FLEXIBLEAUTO `sm`/60, encap, 1 thread, 2 levels after (CI from `build` with `CI_BOOT_TIMING=1`, std from `build-bt`).
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p1R_build "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32 && \
+      cd ../build-bt && cmake --build . --target ci-fft-boot -j 32"                                    # rc 0
+    # p1R_chk.sh "scheme lbEnc lbDec sm corr dnum": ci-fft-boot $1 16 $2 $3 $4 60 1 0 fa $5 encap 0 $6 (timeout 40)
+    ./guard.sh p1R_chk "./p1R_chk.sh 'ci 2 2 55 5 9' 'ci 2 2 56 4 9' 'ci 2 2 57 3 9' 'ci 2 2 55 5 6' 'ci 3 2 55 5 9' \
+      'ci 2 3 55 5 9' 'ci 2 2 59 4 9' 'ci 3 3 55 5 9' 'std 2 2 55 5 9' 'ci 2 2 55 5 3'"                 # rc 0
+    # p1R_run.sh "scheme lbEnc lbDec sm corr dnum reps":
+    #   CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot ci 16 $2 $3 $4 60 1 $7 fa $5 encap 0 $6
+    #   build-bt/bin/benchmark/ci-fft-boot std 16 $2 $3 $4 60 1 $7 fa $5 encap 0 $6
+    ./guard.sh p1R_base "./p1R_run.sh 'ci 4 3 59 4 0 3' 'std 5 3 59 5 0 3' 'ci 4 4 59 4 0 3' 'std 4 4 59 5 0 3'"  # rc 0
+    ./guard.sh p1R_low  "./p1R_run.sh 'ci 2 2 55 5 9 2' 'std 2 2 55 5 9 2' 'ci 2 2 55 5 3 2' 'std 2 2 55 5 3 2' \
+      'ci 2 2 56 4 9 2' 'std 2 2 56 4 9 2'"                                                              # rc 0
+    ./guard.sh p1R_low2 "./p1R_run.sh 'ci 2 2 55 5 9 2' 'ci 2 2 55 5 3 2' 'std 2 2 55 5 3 2' 'ci 2 2 56 4 9 2' \
+      'std 2 2 56 4 9 2' 'std 2 2 55 5 9 2'"                                                             # rc 0
+
+Logs: `~/ci-ckks-fft/logs/p1R_*.log`. `p1R_base` (20:55-21:05) ran at load 0.6-2.9. In `p1R_low`, another user's
+test jobs raised the load to 18-28 between about 21:20 and 21:38. Its CI {2,2} dnum 3, std {2,2} dnum 3, CI 56
+dnum 9 and std 56 dnum 9 runs are marked "loaded" and not used. `p1R_low2` (21:39-22:12) repeated them at load 1-8.
+
+**Results 1: new baseline, both schemes re-measured** (`p1R_base`; 2^16, 128-bit, FLEXIBLEAUTO 59/60, encap, dnum 3,
+2 levels after, 1 thread, reps 3; stage times are the warm bootstraps: CI `CI_BOOT_TIMING`, std `-DBOOTSTRAPTIMING`).
+
+| scheme, budget | corr | towers Q + P | log Q / P / QP | warm median s | CtS | EvalMod | StC | RMS bits | min bits | Galois keys | keys GB | peak RSS GB | setup+keygen s | cold first s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **CI {4,3}** (best) | 4 | 20 + 7 | 1181 / 420 / 1601 | **25.98** | 12.65-12.80 | 7.46 | 5.28-5.29 | 21.57 | 18.50 | 101 | 7.99 | 14.08 | 50.6 | 50.0 |
+| **std {5,3}** (best) | 5 | 21 + 7 | 1240 / 420 / 1660 | **21.86** | 6.78-6.90 | 11.57 | 3.04-3.05 | 22.74 | 19.73 | 61 | 5.01 | 7.66 | 37.4 | 22.0 |
+| CI {4,4} | 4 | 21 + 7 | 1240 / 420 / 1660 | 26.31 | 13.22-13.40 | 8.16 | 4.34 | 21.55 | 18.55 | 70 | 5.75 | 11.19 | 36.3 | 46.9 |
+| std {4,4} | 5 | 21 + 7 | 1240 / 420 / 1660 | 23.40 | 7.96-7.97 | 12.68 | 2.29-2.30 | 22.75 | 19.95 | 76 | 6.24 | 9.08 | 44.5 | 23.7 |
+
+- Speedup at each scheme's best budget: 2 x 21.86 / 25.98 = **1.68x** (item 1.3: 1.69x). At the equal budget {4,4}:
+  2 x 23.40 / 26.31 = 1.78x (item 1.3: 1.78x).
+- All values agree with items 1.2-1.3 within 0.1-0.2 s. The item 0.4 Galois check printed "99 rotations ==
+  keygen set" ({4,3}) and "68 rotations == keygen set" ({4,4}) at every CI bootstrap.
+- Per-stage ratios at {4,4} (one CI vs one std): CtS 1.67x, EvalMod 0.64x, StC 1.89x. At the best budgets:
+  CtS 1.87x, EvalMod 0.64x, StC 1.74x. Of the 25.98 s CI bootstrap, the linear transforms take 18.0 s (69%).
+
+**Results 2: log QP <= ~1100 at 128-bit.**
+
+Which chains can reach it. In OpenFHE log P = 60 x towersP, and towersP is set by the largest digit (the digit
+that holds q0) plus a 4-bit margin. So P >= 120 bits (2 towers), and only with alpha <= 2, which needs dnum >= 9
+at 17 towers. log Q must then be <= ~980 bits. The Q towers are q0 + 2 after + 10 EvalMod + lbEnc + lbDec, and
+primes below 55 bits lose 8-12 bits of precision (item 1.2). At 55 bits, 17 towers give 940 bits, so the budget
+can only be {2,2} (or {3,1} / {1,3}, which are even slower). `p1R_chk` confirms the arithmetic:
+
+| scheme, budget | scaleMod | dnum | towers Q + P | log Q / P / QP (sum of the rounded prime bits) | 128-bit |
+|---|---|---|---|---|---|
+| ci / std {2,2} | 55 | 9 (alpha 2) | 17 + 2 | 940 / 120 / **1060** | yes |
+| ci {2,2} | 56 | 9 | 17 + 2 | 956 / 120 / **1076** | yes |
+| std {2,2} | 56 | 9 | 17 + 3 | 956 / 180 / 1136 | yes (std's q0 q1 digit has >= 117 bits, less than the 4-bit margin below 120, so P gets 3 towers) |
+| ci {2,2} | 57 | 9 | 17 + 3 | 972 / 180 / 1152 | yes |
+| ci {2,2} | 59 | 9 | 17 + 3 | 1004 / 180 / 1184 | yes |
+| ci {2,2} | 55 | 6 (alpha 3) | 17 + 3 | 940 / 180 / 1120 | yes |
+| ci {3,2}, {2,3} | 55 | 9 | 18 + 2 | 995 / 120 / 1115 | yes |
+| ci {2,2} | 55 | 3 (alpha 6) | 17 + 6 | 940 / 360 / 1300 | yes |
+| ci {3,3} | 55 | 9 | - | - | throws: 19 towers do not fill 9 digits of alpha 3 |
+
+So a 128-bit parameter set with log QP <= 1100 exists: **{2,2}, 55/60 (or 56/60 for CI), dnum 9**. Its cost
+(`p1R_low` clean runs and `p1R_low2`; reps 2, so the warm median is the slower of the 2 warm bootstraps):
+
+| scheme | scaleMod / corr | dnum | log QP | warm s (runs) | CtS | EvalMod | StC | RMS | min | keys / GB | peak RSS GB | setup+keygen s | cold first s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| CI | 55 / 5 | 9 | **1060** | 59.16, 59.38 | 38.6-41.0 | 7.45-7.69 | 9.68-10.12 | 20.16 | 15.26, 15.76 | 118 / 19.7 | 40.09 | 121-132 | 145-159 |
+| std | 55 / 5 | 9 | **1060** | 46.10, 45.05 | 27.0-28.1 | 11.52-11.84 | 5.94-6.20 | 21.14-21.15 | 17.60, 17.93 | 131 / 21.9 | 33.17 | 161-164 | 46 |
+| CI | 56 / 4 | 9 | **1076** | 56.59 (67.75 loaded) | 38.4-38.8 | 7.40 | 9.71 | 20.22-20.23 | 16.69, 16.76 | 118 / 19.7 | 40.09 | 121 | 142 |
+| std | 56 / 4 | 9 | 1136 | 48.01 (48.29 loaded) | 28.5 | 12.08 | 6.81 | 21.64 | 19.68, 19.76 | 131 / 23.0 | 35.15 | 170 | 49 |
+| CI | 55 / 5 | 3 | 1300 | 54.99 (59.58 loaded) | 34.4-34.9 | 6.50 | 13.15 | 20.24-20.25 | 16.93, 17.24 | 118 / 7.95 | 33.57 | 55 | 167 |
+| std | 55 / 5 | 3 | 1300 | 42.15, 42.16 | 22.9-23.6 | 10.08-10.13 | 7.93-8.18 | 21.20 | 18.59, 18.60 | 131 / 8.83 | 23.30 | 101 | 42 |
+
+CI per level at {2,2} (warm): CtS 256 diagonals at 16 towers (11.1 s) and 1023 diagonals at 15 towers (29.5 s);
+StC 1023 diagonals at 5 towers (8.1 s) and 256 at 4 towers (2.0 s). The Galois check printed "116 rotations ==
+keygen set" at every CI bootstrap.
+
+- The log QP <= 1100 set is **2.3x slower for CI** (59.4 s vs 25.98 s) and **2.1x slower for std** (45.0-46.1 s
+  vs 21.86 s) than the best 1601/1660-bit sets. Two budget levels of 8 FFT layers each give 256 + 1023 CI
+  diagonals per transform, and CtS grows from 12.7 s to 40 s. The speedup falls to 2 x 45.05 / 59.38 = 1.52x
+  (1.56x in `p1R_low`), because the transforms (where CI costs 1.4-1.6x std) now dominate EvalMod (where CI
+  costs 0.65x).
+- It also costs precision: CI RMS 20.2 bits and min 15.3-16.8 bits, against 21.6 / 18.5 bits for CI {4,3}
+  59/60. 55-56-bit primes allow only corr >= 4-5, and their min precision is 1.7-3.2 bits lower.
+- At the same Q, dnum 9 (log QP 1060) is **slower** than dnum 3 (log QP 1300): CI 59.4 vs 55.0 s (+8%), std
+  45.0-46.1 vs 42.2 s (+7-9%). Shrinking P by adding digits makes CtS slower (CI 38.6-41.0 vs 34.4-34.9 s), as
+  in item 1.1. EvalMod is also slower (7.5 vs 6.5 s), and only StC gains (9.7 vs 13.2 s). Keys grow 2.5x
+  (19.7 vs 7.95 GB).
+- Conclusion: log QP <= 1100 is reachable at 128-bit, but it is not a speed lever in OpenFHE at N = 2^16. Time
+  follows the number of towers per key switch and the number of diagonals per level, not log QP. The set is
+  not adopted.
+
+**Results 3: our chain vs the paper's.** Paper row "StC 3 + CtS 4" (Lattigo; its stated log QP 1064 equals the sum
+below without the StC column, see item 1.2) against our new CI baseline {4,3} 59/60.
+
+| part | paper: towers x bits | ours (CI {4,3}): towers x bits | difference (bits) | what it would take in OpenFHE |
+|---|---|---|---|---|
+| q0 | 1 x 60 | 1 x 60 | 0 | - |
+| levels after the bootstrap | 3 x 40 = 120 | 2 x 59 = 118 | -2 | (paper keeps one more level) |
+| StC | 3 x 40 = 120 | 3 x 59 = 177 | +57 | per-stage scale (item 1.2: not built; no time gain) |
+| EvalMod | 8 x 60 = 480 | 10 x 59 = 590 | +110 | a sine evaluation 2 levels shallower (OpenFHE: Chebyshev depth 7 + 3 double-angle steps) |
+| CtS | 4 x 56 = 224 | 4 x 59 = 236 | +12 | - |
+| P | 3 x 60 = 180 | 7 x 60 = 420 | +240 | alpha <= 3 (dnum >= 7): slower in item 1.1 (+12% CI at {4,4}) |
+| total | 1184 (stated 1064) | 1601 | +417 | |
+| towers Q + P | 19 + 3 = 22 | 20 + 7 = 27 | +5 | |
+
+**Results 4: absolute CI time vs the paper.**
+
+| | paper (Lattigo, Xeon Gold 6248R, 1 core) | ours (OpenFHE, Xeon Platinum 8360Y, 1 thread) | ratio |
+|---|---|---|---|
+| CI bootstrap, 65,536 reals | 12.6 s | 25.98 s (best budget {4,3}) | 2.06x |
+| log QP | 1064 (1184 with StC) | 1601 | 1.50x (1.35x) |
+| towers Q + P | 22 | 27 | 1.23x |
+| precision, max error (`prec_bits_min`) | 20.55 bits | 18.50 bits (18.1-18.5 over items 1.3 and 1.R) | -2.05 bits |
+| max single-core turbo (Intel spec) | 4.0 GHz | 3.5 GHz | 1.14x |
+
+At equal clock the gap is about 2.06 / 1.14 = 1.8x. Phase 1 started from CI 26.4-26.7 s (RMS 18.2, min 14.7-15.1
+bits). It gained 0.4-0.7 s (2%) in time, 3.3 bits RMS and 3.0-3.8 bits min precision. The CI/2xstd ratio, when each
+scheme uses its best budget, went from 1.74-1.76x (equal {4,4}, 55/60) to 1.68x. Most of that drop is std
+gaining more from its best budget (item 1.3).
+
+**Conclusions.**
+- Phase 1 is complete. The parameters do not close the 2x gap to the paper. log Q and log P are not where the
+  time goes: every lever that shortens the chain in OpenFHE (more digits, smaller primes, smaller budgets)
+  either costs time or costs precision. The phase-1 hypothesis in the plan ("the 1580 vs 1064-bit chain is likely
+  most of the 2x gap") is refuted. CI_FFT_REVIEW.md issue 7 is updated.
+- The remaining gap is in the computation itself. The linear transforms take 18.0 of the 25.98 s CI bootstrap
+  (CI CtS 1.67x and StC 1.89x std's at {4,4}), which is phase 2. EvalMod spends ~2.7 s in FLEXIBLEAUTO
+  scale-adjustment rescales (item 1.2) and ~1.0 s in the K = 28 sine table (item 0.5, phase 3.1). The 5 extra
+  towers (27 vs 22) cost every key switch about 1.2x.
+- New baseline (plan header updated): FLEXIBLEAUTO 59/60, dnum 3, encap, each scheme at its best budget, reps 3:
+
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 3 59 60 1 3 fa 4 encap
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
+
+  Per-stage CI/std ratios (phase 2 targets) use the equal-budget pair `ci 16 4 4 59 60 1 3 fa 4 encap` and
+  `std 16 4 4 59 60 1 3 fa 5 encap`. CI stages come from `CI_BOOT_TIMING=1`, std stages from the `build-bt`
+  binary.
+- Suggestion for the plan adapter (not added to the plan): item 1.2's EvalMod lever. An exact-scale EvalMod
+  without the FLEXIBLEAUTO adjustment rescales would save ~2.7 s (CI) and ~3.8 s (std) per bootstrap. It
+  needs a phase 3 item.

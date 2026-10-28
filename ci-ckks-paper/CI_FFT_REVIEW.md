@@ -151,6 +151,12 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    (Phase 1.3: with 59/60 primes the fastest budgets are CI {4,3} (25.97 s, -1.2% vs {4,4}) and std {5,3}
    (22.0 s, -6%). At each scheme's best budget CI/2xstd is 1.69x, not the 1.78x of equal {4,4} budgets. {5,5} is
    valid at 128-bit with dnum 4, but it is slower for both schemes.)
+   (Phase 1.R: done, hypothesis refuted. log QP <= 1100 is reachable at 128-bit only with budget {2,2},
+   55/56-bit primes and dnum 9 (log QP 1060 / 1076). That set is 2.3x slower for CI (59 s) and 2.1x for std
+   (45-46 s) than the best sets, and at the same Q dnum 3 (log QP 1300) is faster than dnum 9. New baseline:
+   59/60, CI {4,3} 25.98 s vs std {5,3} 21.86 s, 1.68x; CI is 2.06x the paper's 12.6 s (about 1.8x at equal
+   clock) and 2.0 bits below its 20.55-bit max-error precision. The remaining gap is the linear transforms
+   (18.0 of 25.98 s, phase 2) and EvalMod scale bookkeeping (~2.7 s, item 1.2), not the chain length.)
 8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not
    CI-aware; a mid-file `#include` in the CI unit tests (phase 6).
 Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,
