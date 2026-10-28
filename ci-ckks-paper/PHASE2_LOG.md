@@ -1098,3 +1098,125 @@ in `p21_final` for 2.1):
   copy, no clone). It is shared with std, but CI has 1.9x the multiplications, so it shrinks the CI/std ratio.
 - Suggestion for the plan adapter: CI {4,4} now ties CI {4,3} in time with 39% fewer keys and 3.5 GB less
   memory; item 2.R could re-pick CI's baseline budget. The baseline commands are unchanged in this item.
+
+## 2.2 Per-level BSGS split from a cost model (2026-10-28)
+
+**State.** After the VM restart ICELAKE had no 2.2 jobs or logs (its last logs were `p21_*`), so the item started
+from the beginning. The committed code is the code of the last sync (`p22_build3`, `p22_final`; `SYNCED_FROM 00f4cb19 4`).
+
+**What changed.**
+1. **Planner moved to core** (`src/core/include/math/ci-realfft.h`, `src/core/lib/math/ci-realfft.cpp`):
+   `CIBsgsPlan` now also reports `babies` and `giants` (the rotations the level performs after window
+   alignment). `CIPlanBsgsN1` builds the aligned plan for a given n1, `CIPlanBsgsRatio` is the old rule
+   n1 = ceil(ratio sqrt(span)), and `CIPlanBsgsMinCost` tries every n1 in [1, span] and keeps the one with the
+   smallest `babies + giantCost * giants` (exact counts, ties to the smaller n1).
+2. **Cost model** `CIBsgsGiantCost(digits)`: cost of one giant step over one hoisted baby rotation, from the item 2.1
+   `[LT]` per-op times (ms per QlP tower at 2^16): baby 0.63 D + 0.40, giant = ModUp 2.35 D + key switch and
+   automorphisms (= a baby) + ModDown of one polynomial 2.45 + one extended add 0.15, with D = key-switching digits
+   of the level input. The tower count cancels, so the ratio depends on D only: 5.81 (D = 1), 5.40 (D = 2), 5.21
+   (D = 3). The fixed rule n1 = 2 sqrt(span) is the continuous optimum for a ratio of 4.
+3. **Per-level input** (`ckksrns-fhe.cpp`): `CIBsgsLevelDigits` gives the Q towers and digits of every CtS / StC
+   level from the chain shape (CtS level s: L0 - (1 + s) towers; StC level s: L0 - (lbEnc + modDepth + s);
+   D = min(dnum, ceil(Ql / alpha))). Keygen (`CIRealFFTGaloisElements`) and `EvalBootstrap` both plan from these
+   numbers, not from the runtime ciphertext, so their rotation sets agree by construction; the item 0.4 Galois check
+   held in every run. With `CI_BOOT_TIMING=1` the `[CI-BT] level` line prints n1, babies, giants, digits and the
+   runtime vs modelled towers: 0 mismatches in 156 levels at 2^12-2^14 (encapsulated and uniform secrets, budgets
+   {2,2}..{5,5}, `p22_build2`) and 484 levels at 2^16 (`p22_ab`, `p22_final`, dnum 3 and 4) after the StC formula
+   was corrected (first smoke `p22_smoke`: StC model one tower low).
+4. `CI_BSGS_RATIO=r` still forces the fixed rule (r = 2 gives the pre-2.2 plan); used for the A/B below and to
+   be removed in item 6.2 with the other switches.
+5. New tool `ci-ckks-paper/tools/ci-bsgs-plan.cpp` (standalone, links `ci-realfft.cpp`): for 2^12..2^16 and budgets
+   2..5 prints every level's window, the ratio-2 plan and the cost-model plan for D = 1..3 with modelled costs.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`).** Helper scripts on ICELAKE only: `p22_run.sh "mode scheme logN lbEnc lbDec
+corr reps secure [dnum]"` runs `CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot $2 $3 $4 $5 59 60 $8 $7 fa $6 encap 0
+${9:-0}` with 1 thread (mode 0 = cost model, mode 1 = `CI_BSGS_RATIO=2`, the pre-2.2 plan). `p22_final.sh` runs the
+committed code: 2^12 {3,3} and {5,5}, 2^10 {1,1}, then CI {5,3}, std {5,3} (build-bt), CI {4,3}, CI {4,4}, std {4,4}
+(build-bt) at 2^16, 128-bit, reps 3.
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL; four times)
+    ./guard.sh p22_plan   "cd openfhe-development && g++ -O2 -std=c++17 -Isrc/core/include ci-ckks-paper/tools/ci-bsgs-plan.cpp \
+      src/core/lib/math/ci-realfft.cpp -o ../scratch/ci-bsgs-plan && ../scratch/ci-bsgs-plan 12 16 sweep"  # rc 0
+    ./guard.sh p22_build  "<cmake --build build --target ci-fft-boot -j 32>"   # compile error (shadowed name), fixed; the
+                          # rebuild succeeded but its `exit` skipped the .rc file (log: Built target ci-fft-boot)
+    ./guard.sh p22_smoke  "./p22_run.sh '0 ci 12 3 3 4 2 0' '1 ci 12 3 3 4 2 0' '0 ci 12 4 4 4 2 0' '1 ci 12 4 4 4 2 0' \
+      '0 ci 12 5 5 4 2 0' '0 ci 12 2 2 4 2 0' '0 ci 13 4 3 4 2 0' '0 ci 14 5 3 4 2 0' '0 ci 15 3 3 4 2 0' '0 ci 10 1 1 4 2 0' \
+      && <ci 12 4 4 ... uniform>"                                                                       # rc 0
+    ./guard.sh p22_build2 "<build ci-fft-boot -j 32> && ./p22_run.sh '0 ci 12 3 3 4 2 0' '0 ci 12 4 4 4 2 0' \
+      '0 ci 12 5 5 4 2 0' '0 ci 12 2 2 4 2 0' '0 ci 14 5 3 4 2 0' && <ci 12 4 4 uniform> && <ci 13 5 3 uniform>"  # rc 0
+    ./guard.sh p22_ab     "./p22_run.sh '0 ci 16 4 3 4 3 1' '1 ci 16 4 3 4 3 1' '0 ci 16 5 3 4 3 1' '1 ci 16 5 3 4 3 1' \
+      '0 ci 16 4 4 4 3 1' '0 ci 16 5 4 4 3 1 4' '1 ci 16 5 4 4 3 1 4' '1 ci 16 5 3 4 3 1' '0 ci 16 5 3 4 3 1' \
+      '1 ci 16 4 3 4 3 1' '0 ci 16 4 3 4 3 1'"                                                          # rc 0
+    ./guard.sh p22_build3 "<build ci-fft-boot -j 32 in build and build-bt>"                            # rc 0, no warnings
+    ./guard.sh p22_final  ./p22_final.sh                                                               # rc 0
+
+Logs: `~/ci-ckks-fft/logs/p22_*.log`. Load average 1-5 in `p22_ab` (another user's test jobs ran at the start), 0.7-1.3
+in `p22_final`.
+
+**Results 1: plans** (`ci-bsgs-plan`, N = 2^16; b/g = baby / giant rotations; cost in hoisted-baby units at the
+level's D; CtS at 2^16 has D = 3, StC D = 1 for alpha 7).
+
+| budget | level(s) | diags / span | ratio-2 plan n1, b/g | cost-model plan n1, b/g | modelled rotation cost |
+|---|---|---|---|---|---|
+| lb 4 (all levels) | CtS / StC | 16 / 16, 62-63 / 63-64 | 8, 7/1; 16, 15/3 | same | same |
+| lb 3 | CtS 1, 2 / StC 0, 1 | 126-127 / 132-133 | 23, 22/5 | 32, 31/3 (StC 1 at D = 3: 21, 20/5) | -3.0% (D 3), -5.1% (D 1) |
+| lb 3 | CtS 0 / StC 2 | 64 / 64 | 16, 15/3 | same | same |
+| lb 5 | CtS 1-4 / StC 0-3 | 30-31 / 37-40 | 11-12, 10-11/3 | 15-16, 14-15/1 | -21% to -28% |
+| lb 2 | 256 / 1023 diags | 256 / 1024 | 32, 31/7; 64, 63/15 | 37, 36/6; 74, 73/13 | -0.3% to -1.1% |
+
+The lb-5 windows hold 30-31 diagonals spread over 37-40 positions, so 2 sqrt(span) = 12 gives 4 blocks (3 giants);
+n1 = 15-16 covers the window in 2 aligned blocks, one of them at offset 0 (1 giant). At 2^12..2^15 the same happens
+for the 30-31-diagonal levels of lb 4 and 5, and for the 8-diagonal levels (n1 6 -> 8, no giant).
+The {4,4} plan at 2^16 is unchanged.
+
+**Results 2: A/B at 2^16** (128-bit, 1 thread, warm median of 3, two runs per mode in `p22_ab`, `p22_final` for the
+committed code; CI stages from `CI_BOOT_TIMING`, warm medians).
+
+| CI budget | plan | warm s | CtS | EvalMod | StC | Galois keys | keys GB | peak RSS GB | RMS / min bits |
+|---|---|---|---|---|---|---|---|---|---|
+| {5,3} | ratio 2 (pre-2.2) | 23.73, 23.49 | 10.94, 10.84 | 7.47 | 4.74, 4.63 | 97 | 7.96 | 13.10 | 21.56 / 18.37-18.46 |
+| {5,3} | cost model | 22.41, 22.34; **22.34** (final) | 9.71, 9.65; 9.64 | 7.47 | 4.65, 4.63; 4.64 | 108 | 8.86 | 14.10 | 21.56 / 17.99-18.58 |
+| {4,3} | ratio 2 | 23.79, 24.17 (2.1: 23.75) | 10.95, 11.22 | 7.49-7.56 | 4.74, 4.80 | 100 | 7.91 | 13.97 | 21.56 / 18.16-18.37 |
+| {4,3} | cost model | 23.79, 23.48; 23.58 (final) | 10.94, 10.88; 10.91 | 7.44-7.50 | 4.68, 4.61; 4.64 | 110 | 8.70 | 14.76 | 21.56-21.57 / 18.24-18.43 |
+| {5,4} dnum 4 | ratio 2 | 24.87 | 12.24 | 8.26 | 3.69 | 83 | 9.08 | 13.37 | 21.54 / 17.48 |
+| {5,4} dnum 4 | cost model | 23.44 | 10.77 | 8.30 | 3.77 | 86 | 9.41 | 13.80 | 21.56 / 17.96 |
+| {4,4} | unchanged plan | 23.93; 23.98 (final) (2.1: 23.84) | 11.46, 11.48 | 8.18 | 3.69, 3.73 | 61 | 5.01 | 10.42 | 21.56 / 18.35-18.47 |
+
+Per level ({5,3} CtS, 19..16 + 7 towers, D = 3): ratio 2 does 10-11 babies + 3 giants, the cost model 15 + 1. The
+measured rotation cost of a level (ModUp + baby + giant + ModDown) drops from 1.80 / 1.73 / 1.65 / 1.63 s to
+1.48 / 1.43 / 1.36 / 1.30 s (-0.29 to -0.33 s per level, 1.28 s for CtS). The model predicts 5.4 baby units x
+57 ms = 0.31 s per level. At {4,3} StC levels 0-1 (6, 5 + 7 towers, D = 1) the model predicts 2.6 units x 13 ms =
+0.035 s; measured 0.735 -> 0.715 s and 0.678 -> 0.648 s rotation cost (-0.02 to -0.03 s), within run-to-run noise
+of the total.
+
+**Results 3: new baseline** (`p22_final`, committed code, load 0.7-1.3):
+
+| | warm s | CtS | EvalMod | StC | keys | RMS / min bits |
+|---|---|---|---|---|---|---|
+| CI {5,3} corr 4 | **22.34** | 9.64 | 7.47 | 4.64 | 108 (8.86 GB), peak RSS 14.10 GB | 21.56 / 18.06 |
+| std {5,3} corr 5 | **21.85** | 6.78 | 11.57 | 3.04 | 61 | 22.75 / 19.50 |
+| CI {4,3} | 23.58 | 10.91 | 7.47 | 4.64 | 110 | 21.56 / 18.24 |
+| CI {4,4} | 23.98 | 11.48 | 8.19 | 3.73 | 61 (5.01 GB), 10.42 GB | 21.56 / 18.35 |
+| std {4,4} | 23.54 | 8.03 | 12.74 | 2.32 | 76 | 22.75 / 20.24 |
+
+- CI's best budget is now {5,3}, the same as std's: **2 x 21.85 / 22.34 = 1.96x** (2.1: 1.84x with CI {4,3}).
+  Against the paper's 12.6 s, CI is 1.77x (2.1: 1.89x).
+- Stage ratios at the equal budget {5,3}: CtS 9.64 / 6.78 = 1.42x, EvalMod 0.65x, StC 4.64 / 3.04 = 1.53x. At
+  {4,4}: CtS 1.43x, EvalMod 0.64x, StC 1.61x (unchanged plan).
+- Precision does not change with the plan (RMS 21.56 bits in every CI run; min error in the usual 17.5-18.6 band).
+
+**Conclusions.**
+- The giant/baby cost ratio is 5.2-5.8 at every level of the 2^16 chain: it depends on the key-switching digit
+  count, not on the tower count, because baby, ModUp and ModDown all scale with the QlP towers. So "per-level"
+  changes little through the ratio itself; what matters is choosing n1 by exact counts after window alignment.
+  The old rule n1 = ceil(2 sqrt(span)) was badly off for the lb-5 levels (sparse windows of 30 diagonals in 37-40
+  positions: 3 giants where 1 suffices) and for span-8 levels; for the dense 63-64-diagonal levels of lb 4 it was
+  already optimal.
+- At 2^16 the model saves 1.3-1.4 s (-5.5% to -5.8%) at CtS budget 5 ({5,3}, {5,4}) and nothing measurable at
+  {4,3} / {4,4}. CI {5,3} (22.34 s) replaces {4,3} as CI's best budget; CI/2xstd is 1.96x.
+- Cost: the time-optimal plans use more baby keys. {5,3}: 97 -> 108 keys (+0.9 GB keys, +1.0 GB peak RSS);
+  {4,3}: 100 -> 110 keys (+0.8 GB) for a gain of about 0.03 s. The model ignores key memory. Suggestion for the plan
+  adapter (not added to the plan): a key-aware tie-break (count only keys not already used by another level with the
+  same stride h) if memory matters; and item 2.3 should use `CIPlanBsgsMinCost` counts (not 2 sqrt(d)) in its
+  (diagonals x limbs) cost model, since the window shape decides the giant count.
+- The baseline commands change to CI {5,3} (same budget as std).

@@ -75,6 +75,30 @@ void CIRealFFTDecode(uint32_t N, const std::vector<double>& coeffs, std::vector<
 CISparse CISparseMul(const CISparse& A, const CISparse& B, uint32_t N);
 CISparse CISparseTranspose(const CISparse& A, uint32_t N);
 
+// Baby-step/giant-step plan of one sparse level (CI CtS/StC): the nonzero offsets are k = h * t with t in a
+// circular window [t0, t0 + span) of Z_{N/h}; k = h * (t0 + n1 * j + i), baby shift h * i (i < n1), giant shift
+// h * (t0 + n1 * j). The window is aligned so that offset 0 starts a giant block (that block needs no rotation).
+struct CIBsgsPlan {
+    uint32_t h, t0, span, n1, n2;
+    uint32_t babies;  // baby rotations performed: distinct i > 0 that hold a nonzero diagonal
+    uint32_t giants;  // giant rotations performed: blocks with a nonzero diagonal and a nonzero shift
+};
+
+// Plan with a given baby-step count n1 (clamped to [1, span]).
+CIBsgsPlan CIPlanBsgsN1(const CISparse& A, uint32_t N, uint32_t n1);
+// Fixed-ratio rule n1 = ceil(ratio * sqrt(span)) (the rule before item 2.2 of PLAN_PHASE2.md, ratio 2).
+CIBsgsPlan CIPlanBsgsRatio(const CISparse& A, uint32_t N, double ratio);
+// Cost-model rule: n1 minimizes babies + giantCost * giants over 1 <= n1 <= span (ties: smaller n1, i.e. fewer
+// hoisted copies and keys). giantCost = cost of one giant step in units of one hoisted baby rotation.
+CIBsgsPlan CIPlanBsgsMinCost(const CISparse& A, uint32_t N, double giantCost);
+
+// Cost of one CI giant step (ModUp of element 1, key switch and automorphisms, ModDown of one polynomial,
+// one extended addition) over one hoisted baby rotation (key-switch inner product and automorphisms), for an
+// input with `digits` key-switching digits. Per tower of QlP, measured on ICELAKE at N = 2^16 (item 2.1 [LT]
+// lines, 4..20 Q towers + 7 P towers): baby 0.63 * digits + 0.40, ModUp 2.35 * digits, ModDown 2.45,
+// key switch as a baby, add 0.15 (ms per tower). The tower count cancels; the ratio is 5.2 (3 digits) to 5.8 (1).
+double CIBsgsGiantCost(uint32_t digits);
+
 }  // namespace lbcrypto
 
 #endif

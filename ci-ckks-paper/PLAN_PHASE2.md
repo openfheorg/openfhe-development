@@ -17,15 +17,17 @@ results to `ci-ckks-paper/PHASE2_LOG.md`. `[~]` marks an item deferred with a st
 - Unit tests run only in item 6.5 (they are slow).
 - One commit per item (code + this checkbox + log entry), message ending with the Co-Authored-By line.
 
-Baseline to beat (item 2.1; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
-after, each scheme at its best budget, reps 3): CI {4,3} corr 4: 23.75 s for 65,536 reals (CtS 10.96 / EvalMod 7.46 /
-StC 4.76), RMS 21.55 / min 18.45 bits, 100 keys, peak RSS 13.97 GB, log QP 1601; std {5,3} corr 5: 21.89 s (CtS 6.80 /
-EvalMod 11.58 / StC 3.04), RMS 22.74 / min 20.11 bits, log QP 1660; speedup 2 x 21.89 / 23.75 = 1.84x. Equal-budget
-reference {4,4} (use it for per-stage CI/std ratios): CI 23.84 s (11.39 / 8.17 / 3.69; 61 keys, 10.42 GB), std 23.55 s
-(8.02 / 12.74 / 2.32), 1.98x; stage ratios CtS 1.42x, EvalMod 0.64x, StC 1.59x. [Item 1.R, before the 2.1 giant-step
-fixes: CI {4,3} 25.98 s, std {5,3} 21.86 s, 1.68x; {4,4} CI 26.31 s, std 23.40 s, stage ratios 1.67x / 0.64x / 1.89x.]
-Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP = 1064): CI 12.6 s, 20.55 bits max error; our CI is 1.89x slower
-(about 1.65x at equal turbo clock) and about 2 bits less precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
+Baseline to beat (item 2.2; N = 2^16, 128-bit, 1 thread, FLEXIBLEAUTO 59/60, sparse encapsulation, dnum 3, 2 levels
+after, each scheme at its best budget, reps 3): both schemes' best budget is now {5,3}. CI {5,3} corr 4: 22.34 s for
+65,536 reals (CtS 9.64 / EvalMod 7.47 / StC 4.64), RMS 21.56 / min 18.06 bits, 108 keys, peak RSS 14.10 GB; std {5,3}
+corr 5: 21.85 s (CtS 6.78 / EvalMod 11.57 / StC 3.04), RMS 22.75 / min 19.50 bits, log QP 1660; speedup
+2 x 21.85 / 22.34 = 1.96x; stage ratios at {5,3} CtS 1.42x, EvalMod 0.65x, StC 1.53x. Equal-budget reference {4,4}
+(unchanged by 2.2): CI 23.98 s (11.48 / 8.19 / 3.73; 61 keys, 10.42 GB), std 23.54 s (8.03 / 12.74 / 2.32), 1.96x;
+stage ratios CtS 1.43x, EvalMod 0.64x, StC 1.61x. CI {4,3}: 23.58 s. [Item 2.1: CI {4,3} 23.75 s, std {5,3}
+21.89 s, 1.84x. Item 1.R, before the 2.1 giant-step fixes: CI {4,3} 25.98 s, std {5,3} 21.86 s, 1.68x; {4,4} CI
+26.31 s, std 23.40 s, stage ratios 1.67x / 0.64x / 1.89x.]
+Paper (Lattigo, Xeon Gold 6248R, 1 core, log QP = 1064): CI 12.6 s, 20.55 bits max error; our CI is 1.77x slower
+(about 1.55x at equal turbo clock) and about 2 bits less precise. Phase-0 baseline (55/60, {4,4}, default corr): CI 26.4-26.7 s, std 2 x 23.2 = 46.5 s, 1.74-1.76x, RMS 18.2
 bits. Default correction factors: CI 7, std 8 (item 0.2); `corr` = 5
 (no correction, the minimum for firstMod 60 / scaleMod 55) gives CI 20.2 / std 21.2 bits RMS at the same time.
 Key switching: OpenFHE default dnum 3 (alpha 7, log P 420) is the fastest dnum valid at 128-bit for both schemes;
@@ -46,9 +48,13 @@ towers, baby/giant rotations, ModUps, ModDowns, plaintext mults, adds, and the t
 diagonal count; CI giant steps now ModDown only element 1 (as std's Horner step) and the BSGS window is aligned so the
 block at offset 0 needs no rotation (CI -8.6% at {4,3}). The remaining gap is 1.88x plaintext mults (inherent) and
 10 vs 4 giant steps per transform; plaintext mult + add is 36% of CI CtS and 53% of CI StC.
+BSGS split (item 2.2): n1 per level minimizes babies + rho(D) giants by exact counts after window alignment
+(`CIPlanBsgsMinCost`, `math/ci-realfft.h`); rho = giant/baby cost = 5.2-5.8 from the 2.1 per-op times, set by the
+key-switching digit count D (towers cancel). It removes 2 of 3 giants in the 30-31-diagonal lb-5 levels: CI {5,3}
+23.6 -> 22.34 s, {5,4} -5.8%; lb-4 plans unchanged; +11 keys at {5,3}. `CI_BSGS_RATIO=2` gives the old plan.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
 
-    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 3 59 60 1 3 fa 4 encap
+    OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
     # equal-budget reference for per-stage ratios (CI stages: CI_BOOT_TIMING=1; std stages: build-bt binary):
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
@@ -95,7 +101,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **2.1** Instrument: count key switches and plaintext multiplications per level (CI) and in std's
   `EvalCoeffsToSlots` at the same N; compare with 2*sqrt(#diagonals) + #diagonals. Any excess is a bug to fix
   before tuning.
-- [ ] **2.2** Per-level BSGS ratio from a cost model (hoisted baby rotation vs giant rotation at that level's
+- [x] **2.2** Per-level BSGS ratio from a cost model (hoisted baby rotation vs giant rotation at that level's
   limb count) instead of the global 2.0; verify at 2^16.
 - [ ] **2.3** Uneven layer splits: search splits (e.g. [6,5,5] vs [7,5,4] vs [5,6,5]) with a (diagonals x limbs)
   cost model; measure the top 3 at 2^16.

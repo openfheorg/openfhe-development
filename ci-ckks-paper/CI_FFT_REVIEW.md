@@ -29,7 +29,8 @@ Ring", ePrint 2026/2618.
   factorization is needed. Any budget works (no `lvlb | log2 N` restriction), and enc/dec budgets may differ.
 - Single real channel: one real linear transform per level instead of four.
 - BSGS per collapsed level over the actual nonzero-offset window (stride h, circular window [t0, t0+span)),
-  hoisted baby steps, ratio n1 ~ 2 sqrt(span); Galois keys generated for exactly these shifts.
+  hoisted baby steps, n1 chosen per level by a cost model (exact baby/giant counts, giant = 5.2-5.8 babies by
+  key-switching digit count; item 2.2); Galois keys generated for exactly these shifts.
 
 **Additional fixes needed to make it work and fast in OpenFHE:**
 - v1.6.1 port: 1/K folded into the CI CtS scale (v1.6 moved K into the CtS matrix).
@@ -91,6 +92,10 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    and the BSGS window is aligned so the block at offset 0 needs no rotation. CI {4,3} 25.98 -> 23.75 s; at {4,4}
    CI CtS / StC went from 1.67x / 1.89x std's to 1.42x / 1.59x. Plaintext mults equal the diagonal count; the rest
    of the gap is the 1.88x diagonal count and 10 vs 4 giant steps per transform. See `PHASE2_LOG.md` 2.1.)
+   (Phase 2.2: n1 per level now minimizes babies + rho(D) giants by exact counts after window alignment, rho =
+   5.2-5.8 from the measured per-op costs. The 30-31-diagonal levels of CtS budget 5 drop from 3 giants to 1:
+   CI {5,3} 23.6 -> 22.34 s, now CI's best budget (same as std's); CI/2xstd 1.96x, CtS / StC 1.42x / 1.53x std's
+   at {5,3}. Budget-4 plans were already optimal. See `PHASE2_LOG.md` 2.2.)
 2. **Sparse encapsulation EvalMod cost (not precision).** A weight-32 CI key acts like a weight-64
    power-basis key, so CI uses the K = 28 sine table (Chebyshev degree 48) where std uses K = 16 (degree 36).
    Precision is not affected: CI and std have the same RMS (18.24 / 18.23 bits, Table 3.1). Both tables have
