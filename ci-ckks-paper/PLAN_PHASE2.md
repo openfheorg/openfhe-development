@@ -30,6 +30,9 @@ Prime sizes (item 1.2): time depends on tower counts, not prime bits; uniform FL
 at the baseline's time; use it in item 1.3. The paper's 20.55 bits is max error (our `prec_bits_min`; baseline CI
 15.0). Mixed per-stage primes would not lower time or log QP in OpenFHE, so no per-stage scale was built.
 FIXEDMANUAL is 10% (CI) / 16% (std) faster, all in EvalMod (FLEXIBLEAUTO's scale-adjust rescales), but loses 3-7 bits RMS.
+Budgets (item 1.3, 59/60): best CI {4,3} 25.97 s (log QP 1601; {4,4} 26.28 s, within 1.2%), best std {5,3} 22.0 s
+(-6% vs {4,4}); at each scheme's best budget CI/2xstd is 1.69x (1.78x at equal {4,4}). {5,4}/{5,5} need dnum 4 at
+128-bit; {5,5} is slower for both. RMS does not depend on the budget. Compare at each scheme's best budget from here on.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after]). Baseline commands (run at every phase review):
 
     OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 4 55 60 1 2 fa 0 encap
@@ -62,7 +65,7 @@ number of QP limbs, so this is likely most of the 2x absolute gap to the paper (
 - [x] **1.2** Per-stage prime sizes as in the paper (EvalMod ~60-bit, StC ~40-bit, 3 usable levels after
   bootstrap): evaluate FIXEDMANUAL with mixed prime sizes vs FLEXIBLEAUTO uniform 55 (OpenFHE has no
   per-stage scale; only build one if the numbers show it pays). Record log QP, time, precision.
-- [ ] **1.3** Budget sweep with the best parameters from 1.1-1.2: {4,3}, {5,3}, {5,4}, {5,5} for CI and std
+- [x] **1.3** Budget sweep with the best parameters from 1.1-1.2: {4,3}, {5,3}, {5,4}, {5,5} for CI and std
   (CtS budget first in OpenFHE's order; the paper's best is StC 3 + CtS 4).
 - [ ] **1.R** Phase 1 review. Done when: a 128-bit parameter set with log QP <= ~1100 is found (or the reason it
   cannot be is recorded), both schemes re-measured, CI/2xstd ratio and absolute CI time vs the paper's 12.6 s

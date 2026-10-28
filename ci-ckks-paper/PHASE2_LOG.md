@@ -646,3 +646,152 @@ valid; its time was measured under load and is only an upper bound.
   match (as Lattigo does), or FIXEDMANUAL with the actual primes folded into those constants, could keep
   FLEXIBLEAUTO's precision at FIXEDMANUAL's speed. Suggested as a phase 3 item. It would shorten the CI
   bootstrap by ~10% and lower CI/2xstd to ~1.66x.
+
+## 1.3 Level-budget sweep with the item 1.1-1.2 parameters at 2^16 (2026-10-27)
+
+**Change.** None in the source tree. The runs use the existing driver arguments (lbEnc lbDec ... dnum) with the
+item 1.2 parameters: FLEXIBLEAUTO, `scaleMod` 59, `firstMod` 60, `corr` 4 (CI) / 5 (std), encap, 2 levels after
+the bootstrap. The budget is {CtS, StC} in OpenFHE's order, so the paper's best "StC 3 + CtS 4" is {4,3}.
+After the VM restart ICELAKE had no 1.3 jobs or logs, so the item started from the beginning.
+
+**Commands (ICELAKE, `~/ci-ckks-fft`, source `SYNCED_FROM a817ecc7`).**
+
+    ci-ckks-paper/tools/sync.sh   # (on WSL)
+    ./guard.sh p13_build "cd openfhe-development/build && cmake --build . --target ci-fft-boot -j 32 && \
+      cd ../build-bt && cmake --build . --target ci-fft-boot -j 32"                              # rc 0
+    ./guard.sh p13_smoke "cd openfhe-development && export OMP_NUM_THREADS=4; for b in \"4 3\" \"5 3\" \"5 4\" \"5 5\"; do \
+      set -- \$b; CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot ci 12 \$1 \$2 59 60 0 1 fa 4 encap; echo ci rc=\$?; \
+      build/bin/benchmark/ci-fft-boot std 12 \$1 \$2 59 60 0 1 fa 5 encap; echo std rc=\$?; done"                     # rc 0
+    # p13_sweep.sh "lbEnc lbDec dnum reps" ...: per config one ci run, then one std run, 1 thread:
+    #   CI_BOOT_TIMING=1 build/bin/benchmark/ci-fft-boot ci 16 $1 $2 59 60 1 $4 fa 4 encap 0 $3
+    #   build-bt/bin/benchmark/ci-fft-boot std 16 $1 $2 59 60 1 $4 fa 5 encap 0 $3
+    ./guard.sh p13_sweepA "./p13_sweep.sh '5 4 3 1' '5 5 3 1' '4 4 0 2' '4 3 0 2' '5 3 0 2' '5 4 4 2' '5 5 4 2' \
+      '4 4 4 2'"                                                                                   # rc 0
+    # p13_ab.sh: clean A/B, reps 3, 1 thread, the same command lines; order
+    #   ci{4,4} std{4,4} ci{4,3} std{5,3} ci{5,3} std{4,3} ci{5,4}d4 std{5,4}d4, then the same list reversed
+    ./guard.sh p13_ab ./p13_ab.sh                                                                  # rc 0
+
+Logs: `~/ci-ckks-fft/logs/p13_*.log`; scripts `~/ci-ckks-fft/p13_sweep.sh` and `p13_ab.sh`. `p13_sweepA`
+(19:35-20:01) ran at load 1-5, except at the end of the CI {5,3} run (load 9.4). In `p13_ab` (20:02-20:44)
+another user's job raised the load to 18-21 between 20:13 and 20:21. The first-pass std {4,3}, CI {5,4} and std
+{5,4} runs were affected. They are marked "loaded" below and are not used for conclusions. The second pass ran
+at load 1-8.
+
+Note on `reps`: the driver's "warm median" is `times[reps / 2]` of the sorted warm times. With reps 2 it is the
+slower of the two warm bootstraps. This is why the reps-2 sweep reads 0.2-0.4 s (CI) higher than the reps-3 A/B.
+Use the A/B for comparisons between budgets.
+
+**Smoke test** (`p13_smoke`, 2^12, insecure). All four budgets bootstrap for both schemes (rc 0). The Galois
+check of item 0.4 holds (CI rotations 60 / 59 / 50 / 42 == keygen set). RMS: CI 18.80 bits, std 19.69 bits at
+every budget. At 2^12 the precision does not depend on the budget.
+
+**128-bit validity with 59/60 primes.** A budget level costs one Q tower. log P = 60 x ceil(towers / dnum) for
+dnum 3, plus one P tower when the largest digit is within 4 bits of the P size (item 1.2).
+
+| budget | towers Q | log Q | dnum 3: log P / log QP | dnum 4: log P / log QP | valid at dnum 3 |
+|---|---|---|---|---|---|
+| {4,3} | 20 | 1181 | 420 / 1601 | - | yes |
+| {4,4}, {5,3} | 21 | 1240 | 420 / 1660 | 360 / 1600 | yes |
+| {5,4} | 22 | 1299 | 480 / 1779 | 360 / 1659 | no (> 1747) |
+| {5,5} | 23 | 1358 | 480 / 1838 | 360 / 1718 | no (> 1747) |
+
+`p13_sweepA` confirms this. At dnum 3 both {5,4} and {5,5} throw "The specified ring dimension (65536) does not
+comply with HE standards recommendation (131072)" for both schemes (rc 134). They run at dnum 4. dnum 2 is also not
+valid at {4,3}: alpha 10 gives P = 600 bits and log QP = 1781.
+
+**Results 1: time** (2^16, 128-bit, 1 thread; warm median in s. A/B = `p13_ab` pass 1, pass 2 (reps 3); sweep =
+`p13_sweepA` (reps 2, slower of 2)).
+
+| budget | dnum | log QP | CI A/B | CI sweep | std A/B | std sweep | CI best estimate | std best estimate | 2 x std / CI at this budget |
+|---|---|---|---|---|---|---|---|---|---|
+| {4,4} (ref) | 3 | 1660 | 26.33, 26.24 | 26.70 | 23.48, 23.37 | 23.37 | 26.28 | 23.42 | 1.78x |
+| **{4,3}** | 3 | 1601 | **26.04, 25.90** | 26.29 | 23.41 (loaded), 22.83 | 22.86 | **25.97** | 22.85 | 1.76x |
+| {5,3} | 3 | 1660 | 26.22, 26.01 | 26.57 | **21.89, 22.16** | **21.88** | 26.12 | **22.0** | 1.69x |
+| {5,4} | 4 | 1659 | 26.89 (loaded), 26.01 | 26.19 | 22.74, 22.77 | 22.80 | 26.0-26.2 | 22.76 | 1.75x |
+| {5,5} | 4 | 1718 | - | 27.71 | - | 24.36 | 27.7 | 24.4 | 1.76x |
+| {4,4} | 4 | 1600 | - | 26.70 | - | 23.66 | 26.7 | 23.7 | 1.77x |
+
+- **CI is flat.** {4,3}, {5,3} and {5,4} (dnum 4) are within 0.3 s of each other. They are 0.2-0.3 s (about 1%)
+  faster than {4,4}, and the run-to-run spread is 0.1-0.2 s. {4,3} (the paper's choice) is the fastest by a small
+  margin: 25.97 s, -1.2% vs {4,4}. {5,5} needs 23 towers and dnum 4 and is 4-5% slower.
+- **std gains more.** {5,3} is the best std budget: 22.0 s, -6% vs {4,4} (23.42 s). {5,4} (dnum 4) and {4,3}
+  are -2.4% to -2.8%. {5,5} is +4%.
+- **CI/2xstd falls when both schemes use their best budget.** CI {4,3} 25.97 s vs 2 x std {5,3} 44.0 s gives
+  **1.69x**. At the equal budget {4,4} it is 1.78x. The tuned std gains 1.4 s per bootstrap and pays it twice.
+
+**Results 2: per-stage times, warm** (CI: mean of the warm bootstraps of the clean A/B runs; std: median of the
+bootstraps of the clean runs; `p13_sweepA` for {5,5} and {4,4} dnum 4; s).
+
+| budget | dnum | CI CtS | CI EvalMod | CI StC | std CtS | std EvalMod | std StC | CtS CI / std | StC CI / std |
+|---|---|---|---|---|---|---|---|---|---|
+| {4,4} | 3 | 13.28 | 8.16 | 4.33 | 7.97 | 12.70 | 2.30 | 1.67 | 1.88 |
+| {4,3} | 3 | 12.68 | 7.45 | 5.27 | 7.78 | 11.62 | 3.05 | 1.63 | 1.73 |
+| {5,3} | 3 | 12.30 | 7.70 | 5.59 | 6.89 | 11.63 | 3.08 | 1.79 | 1.81 |
+| {5,4} | 4 | 12.94 | 8.17 | 4.27 | 7.36 | 12.61 | 2.27 | 1.76 | 1.88 |
+| {5,5} | 4 | 13.93 | 8.95 | 4.05 | 7.89 | 13.84 | 2.07 | 1.77 | 1.96 |
+| {4,4} | 4 | 13.53 | 8.17 | 4.27 | 8.21 | 12.67 | 2.27 | 1.65 | 1.88 |
+
+CI per level (first warm bootstrap of the `p13_sweepA` run; diagonals / towers / s):
+
+| budget | CtS levels | StC levels |
+|---|---|---|
+| {4,4} | 16/20/1.68, 62/19/4.07, 62/18/3.81, 63/17/3.66 | 63/7/1.44, 62/6/1.31, 62/5/1.19, 16/4/0.39 |
+| {4,3} | 16/19/1.60, 62/18/3.93, 62/17/3.66, 63/16/3.51 | 127/6/2.22, 126/5/2.02, 64/4/1.02 |
+| {5,3} | 16/20/1.73, 30/19/2.86, 30/18/2.71, 30/17/2.61, 31/16/2.54 | 127/6/2.29, 126/5/2.12, 64/4/1.11 |
+| {5,4} d4 | 16/21/1.92, 30/20/3.08, 30/19/2.93, 30/18/2.43, 31/17/2.39 | 63/7/1.58, 62/6/1.20, 62/5/1.07, 16/4/0.35 |
+| {5,5} d4 | 16/22/1.99, 30/21/3.21, 30/20/3.05, 30/19/2.93, 31/18/2.50 | 31/8/1.14, 30/7/1.02, 30/6/0.75, 30/5/0.68, 16/4/0.35 |
+
+Where the time goes (vs {4,4}, both at dnum 3):
+- **StC 3 levels**: the 16 layers split 6/5/5, so the levels have 127 / 126 / 64 diagonals instead of
+  63 / 62 / 62 / 16. CI StC is +0.94 s ({4,3}) and +1.26 s ({5,3}); std StC is +0.75-0.78 s. The relative cost is
+  about the same for both schemes (+22-29% CI, +33% std).
+- **One level less below EvalMod**: EvalMod and everything above it run with one tower less. CI EvalMod is
+  -0.71 s at {4,3} and -0.46 s at {5,3}; std EvalMod is -1.08 s at both. std's EvalMod is 1.6x CI's, so it gains
+  more from each tower that is removed.
+- **CtS 5 levels**: 16 / 30 / 30 / 30 / 31 diagonals instead of 16 / 62 / 62 / 63. CI CtS is -0.98 s; std CtS is
+  -1.08 s, which is relatively twice as much (-14% vs -7%). At {4,3} the 4 CtS levels run with one tower less: CI
+  -0.60 s, std -0.19 s.
+- **dnum 4** ({5,4}, {5,5}) makes CtS slower (as in item 1.1), so the 5-level CtS gain shrinks to -0.34 s
+  for CI. {5,5} adds 2 towers to every stage, and the cheaper StC (-0.28 s CI) does not cover them.
+
+Net per bootstrap: CI {4,3} -0.37 s, {5,3} -0.18 s; std {5,3} -1.37 s. The real StC transform has 2x std's
+diagonals at every StC budget (127 vs about 64 at 3 levels). That is why an StC level less costs CI more in
+absolute terms, while the EvalMod and CtS savings are about the same for both schemes. Item 2.3 (uneven
+splits) can reduce the 127/126-diagonal StC levels.
+
+**Results 3: precision, keys, memory** (clean runs; CI keys and RSS include the cached diagonal plaintexts).
+
+| budget | dnum | CI RMS | CI min (all runs) | std RMS | std min (all runs) | Galois keys CI / std | keys GB CI / std | peak RSS GB CI / std | setup+keygen s CI / std |
+|---|---|---|---|---|---|---|---|---|---|
+| {4,4} | 3 | 21.55-21.56 | 18.24, 18.61, 18.66 | 22.74-22.75 | 19.80, 20.04, 20.09 | 70 / 76 | 5.75 / 6.24 | 11.19 / 9.08 | 36.4 / 44.5 |
+| {4,3} | 3 | 21.56 | 18.13, 18.34, 18.53 | 22.74-22.75 | 20.04, 20.09, 20.21 | 101 / 78 | 7.99 / 6.17 | 14.08 / 9.41 | 50.6 / 46.2 |
+| {5,3} | 3 | 21.56 | 18.41, 18.43, 18.48 | 22.74-22.75 | 19.39, 20.09, 20.23 | 95 / 61 | 7.80 / 5.01 | 12.96 / 7.66 | 49.4 / 37.8 |
+| {5,4} | 4 | 21.55 | 17.05, 18.46, 18.29 | 22.72-22.73 | 19.42, 18.21, 18.88 | 82 / 61 | 8.97 / 6.68 | 13.29 / 8.83 | 55.6 / 45.0 |
+| {5,5} | 4 | 21.55 | 16.91 | 22.74 | 19.63 | 61 / 38 | 6.91 / 4.31 | 10.88 / 6.32 | 42.8 / 30.4 |
+
+- **RMS does not depend on the budget** (CI 21.55-21.56, std 22.72-22.75 bits). The bootstrap error comes from
+  EvalMod and the scale, not from the linear transforms.
+- **Max error (`prec_bits_min`, the paper's metric)** varies by 0.5-1.5 bits from run to run at the same budget.
+  It shows no clear budget trend. The two lowest CI values ({5,4} 17.05, {5,5} 16.91) are single runs, and the
+  {5,4} reruns gave 18.29-18.46.
+- **CI keys grow at StC budget 3.** The 127-diagonal StC levels need 99 (instead of 68) rotations. That is +2.2 GB of keys
+  and +2.9 GB peak RSS at {4,3} (14.08 GB), and setup + keygen goes from 36 to 51 s. std's key set does not grow at StC 3
+  (78 vs 76), and at {5,3} it shrinks to 61. The item 0.4 Galois check held at every CI bootstrap (68 / 99 / 93 /
+  80 / 59 rotations == keygen set).
+
+**Conclusions.**
+- Best budgets with the 1.1-1.2 parameters (FLEXIBLEAUTO 59/60, corr 4 / 5, dnum 3 where valid): **CI {4,3}**
+  (25.97 s, log QP 1601, RMS 21.56, min 18.1-18.5 bits) and **std {5,3}** (22.0 s, log QP 1660, RMS 22.74, min
+  19.4-20.2 bits). For CI the gain over {4,4} is only 1.2% and costs +2.9 GB peak RSS. {4,4} (26.28 s, 11.19 GB)
+  is within 0.3 s, so either budget is a reasonable CI default. The paper's best ordering (StC 3 + CtS 4) is also
+  the fastest here, but by a much smaller margin.
+- The speedup at each scheme's best budget is **1.69x** (CI {4,3} 25.97 s vs 2 x std {5,3} 22.0 s). At the
+  equal budget {4,4} it is 1.78x, which overstates the CI advantage by 0.09x. Phase 2 (CI StC at 1.7-1.9x std's
+  StC) is where CI must gain this back. Item 1.R should compare at each scheme's best budget.
+- {5,4} and {5,5} need dnum 4 at 128-bit with 59-bit primes, and {5,5} is slower for both schemes. log QP stays at
+  1601-1718. The budget does not bring log QP near the paper's ~1100 (item 1.R).
+- The baseline commands in the plan header are unchanged. Item 1.R decides whether to switch to 59/60 and the
+  new budgets:
+
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci  16 4 3 59 60 1 3 fa 4 encap
+      OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap

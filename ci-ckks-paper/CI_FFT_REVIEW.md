@@ -148,6 +148,9 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    the fastest valid dnum, and 50-59-bit primes cost the same time. Mixed per-stage primes would not lower
    log QP in OpenFHE, because P is sized to the largest digit. Uniform 59/60 primes give +3.3 bits for CI at
    the same time. See `PHASE2_LOG.md` 1.1 and 1.2.)
+   (Phase 1.3: with 59/60 primes the fastest budgets are CI {4,3} (25.97 s, -1.2% vs {4,4}) and std {5,3}
+   (22.0 s, -6%). At each scheme's best budget CI/2xstd is 1.69x, not the 1.78x of equal {4,4} budgets. {5,5} is
+   valid at 128-bit with dnum 4, but it is slower for both schemes.)
 8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not
    CI-aware; a mid-file `#include` in the CI unit tests (phase 6).
 Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,
