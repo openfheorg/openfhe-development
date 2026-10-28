@@ -56,8 +56,6 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(
 
     // HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
-
-    // secret key distribution column of the security tables (also validates the distribution/level combination)
     DistributionType distType = StdLatticeParm::GetDistributionType(cryptoParamsBGVRNS->GetSecretKeyDist(), stdLevel);
 
     uint32_t ringDimension = cyclOrder / 2;

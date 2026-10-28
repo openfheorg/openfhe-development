@@ -144,14 +144,10 @@ class Params {
     // multiplicative depth
     uint32_t multiplicativeDepth;
 
-    // security level:
-    // HEORG24_* levels (recommended) use Table 5.2 of the Security Guidelines for Implementing Homomorphic
-    // Encryption (IACR Communications in Cryptology 1(4), 2025, https://cic.iacr.org/p/1/4/26; also ePrint
-    // 2024/463) and apply to both classical and quantum attacks; HE_SPARSE_H192_128 is the 128-bit level for
-    // sparse secrets of Hamming weight 192 (SPARSE_TERNARY, SPARSE_ENCAPSULATED); HEStd_* levels use the
-    // Homomorphic Encryption
-    // Standard v1.1 (2018) and are kept for backward compatibility. For given ring dimension and security level
-    // we have upper bound of possible highest modulus (Q for BV or P*Q for HYBRID)
+    // security level: the table that bounds the highest modulus (Q for BV or P*Q for HYBRID) for a ring dimension.
+    // HEORG24_* (recommended): Security Guidelines for Implementing Homomorphic Encryption, https://cic.iacr.org/p/1/4/26;
+    // HE_SPARSE_H192_128: sparse secrets of Hamming weight 192 (SPARSE_TERNARY, SPARSE_ENCAPSULATED);
+    // HEStd_*: Homomorphic Encryption Standard v1.1 (2018), kept for backward compatibility. See lattice/stdlatticeparms.h
     SecurityLevel securityLevel;
 
     // ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)

@@ -89,7 +89,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNSInternal(std::shared_ptr<CryptoPa
     // Bound of the key polynomial
     double Bkey = 0;
 
-    // secret key distribution column of the security tables (also validates the distribution/level combination)
     DistributionType distType = StdLatticeParm::GetDistributionType(cryptoParamsBFVRNS->GetSecretKeyDist(), stdLevel);
 
     uint32_t thresholdParties = cryptoParamsBFVRNS->GetThresholdNumOfParties();

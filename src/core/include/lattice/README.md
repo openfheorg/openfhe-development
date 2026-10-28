@@ -111,8 +111,10 @@ flowchart BT
 
 [stdlatticeparms.h](stdlatticeparms.h)
 
-- Header for the standard values for Lattice Parms, as determined
-  by [Homomorphic Encryption Org](homomorphicencryption.org)
+- Header for the standard values for Lattice Parms: the tables of the Homomorphic Encryption Standard of
+  [Homomorphic Encryption Org](homomorphicencryption.org) (`HEStd_*` security levels), of the
+  [Security Guidelines for Implementing Homomorphic Encryption](https://cic.iacr.org/p/1/4/26) (`HEORG24_*`),
+  and for sparse secrets of Hamming weight 192 (`HE_SPARSE_H192_128`); see `docs/static_docs/Security.md`
 
 - Given (distribution type, security level), we can get a `maxQ` for a given ring dimension, or get a ring dimension given some `maxQ`
 

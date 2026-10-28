@@ -30,9 +30,7 @@
 //==================================================================================
 
 /*
-  Implementation for the standard values for Lattice Parms, as determined by homomorphicencryption.org and by the
-  Security Guidelines for Implementing Homomorphic Encryption (IACR Communications in Cryptology 1(4), 2025,
-  https://cic.iacr.org/p/1/4/26; also ePrint 2024/463, https://eprint.iacr.org/2024/463)
+  Implementation for the standard values for Lattice Parms; see stdlatticeparms.h for the sources of the tables
  */
 
 #include "lattice/stdlatticeparms.h"
@@ -152,13 +150,10 @@ uint32_t StdLatticeParm::FindRingDim(DistributionType distType, SecurityLevel mi
 
     const auto& table = byLogQ[static_cast<size_t>(distType)][static_cast<size_t>(minSecLev)];
     if (table.empty()) {
-        std::string errMsg("There is no security table for distribution type ");
-        errMsg += std::to_string(static_cast<int>(distType)) + " and security level ";
         std::ostringstream os;
-        os << minSecLev;
-        errMsg += os.str() + ". HE_SPARSE_H192_128 requires a sparse secret key distribution (SPARSE_TERNARY or";
-        errMsg += " SPARSE_ENCAPSULATED), and all other security levels require a non-sparse distribution type.";
-        OPENFHE_THROW(errMsg);
+        os << "No security table for distribution type " << static_cast<int>(distType) << " and security level "
+           << minSecLev << " (HE_SPARSE_H192_128 is for sparse secrets only, the other levels for non-sparse ones)";
+        OPENFHE_THROW(os.str());
     }
 
     uint32_t prev = 0;
@@ -177,13 +172,11 @@ DistributionType StdLatticeParm::GetDistributionType(SecretKeyDist secretKeyDist
     if (minSecLev == HE_SPARSE_H192_128) {
         if (!sparseSecret) {
             OPENFHE_THROW(
-                    "The security level HE_SPARSE_H192_128 is defined only for sparse secrets of Hamming weight 192 "
-                    "(SPARSE_TERNARY or SPARSE_ENCAPSULATED). Use HEORG24_128 for uniform ternary and Gaussian secrets.");
+                    "HE_SPARSE_H192_128 is defined only for sparse secrets of Hamming weight 192 (SPARSE_TERNARY or "
+                    "SPARSE_ENCAPSULATED); use HEORG24_128 for uniform ternary and Gaussian secrets");
         }
         return HEStd_sparse;
     }
-    // Sparse secrets are treated as uniform ternary secrets by the HEStd_* and HEORG24_* tables, which
-    // overestimates their security; HE_SPARSE_H192_128 is recommended for them instead.
     return (secretKeyDist == GAUSSIAN) ? HEStd_error : HEStd_ternary;
 }
 

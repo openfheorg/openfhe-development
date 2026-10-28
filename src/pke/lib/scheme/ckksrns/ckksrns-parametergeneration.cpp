@@ -116,7 +116,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
                                DCRT_MODULUS::AUX_SIZE_CKKS;
     uint32_t n = cyclOrder / 2;
 
-    // secret key distribution column of the security tables (also validates the distribution/level combination)
     DistributionType distType = StdLatticeParm::GetDistributionType(cryptoParamsCKKSRNS->GetSecretKeyDist(), stdLevel);
     if (stdLevel != HEStd_NotSet) {
         uint32_t qBound = firstModSize + (numPrimes - 1) * scalingModSize + extraModSize;
