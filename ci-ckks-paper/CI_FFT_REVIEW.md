@@ -146,6 +146,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    (Phase 5.1, WSL 2^16 {5,3} CtS-first: CI and std both get about 2x at 4 threads (best CI 2.07x, std 2.19x).
    Above 4 threads the laptop VM gives no usable scaling number (2-4x run spread, 14-CPU quota); best 16-thread
    times give CI 2.20x, std 2.43x. Multi-thread tuning stays open. See `PHASE2_LOG.md` 5.1.)
+   (Phase 5.2, WSL: the CI sparse BSGS now runs its baby rotations in parallel and sums each giant block in
+   per-thread partial sums; CI at 4 threads 6.10 -> 5.18 s, speedup 1.98x -> 2.35x vs std 2.13x; 1 thread unchanged.
+   See `PHASE2_LOG.md` 5.2.)
 
 ## 5. Other CI-CKKS work found
 Upstream `openfheorg/openfhe-development` main and dev (v1.6.1) have no CI-CKKS. Stale 2023 feature

@@ -2619,3 +2619,89 @@ CI 13.43 GB (1 thread) to 13.64 GB (16), std 7.66 to 8.21 GB; the sweep processe
   0.95-1.03; or run a sweep in a quiet window (nothing else on the laptop, AC power) and accept only rounds whose
   1-thread time is within 10% of the 11.0-11.7 s calm value.
 - Baseline commands do not change. The driver keeps its 1-thread default; the sweep is an opt-in env variable.
+
+## 5.2 Parallel CI sparse BSGS (baby rotations + per-thread partial sums) -- DONE (WSL, 2026-10-28)
+
+**Host.** The host file said `WSL` before every job, and the user's request for this run forbids ICELAKE. All jobs
+ran on WSL through `wsl-guard.sh`, all rc 0: `p52_build`, `p52_smoke`, `p52_ab`, `p52_ab2`, `p52_build2`,
+`p52_smoke2`. Nothing ran on ICELAKE. No laptop sleep in any timing run (`/proc/uptime` advance = wall-clock advance
+within 1 s between all start/end marks of the 15 processes). Load average 2.3-5.5 at the process starts.
+
+**Is the condition "CI scales worse" met?** Item 5.1 left it open (best times: CI 2.07x vs std 2.19x at 4 threads;
+in-process sweeps the reverse). The code showed a real difference: std's `EvalCoeffsToSlots` / `EvalSlotsToCoeffs`
+run their hoisted baby rotations in an `omp parallel for`, while the CI sparse BSGS (`applyCISparse` in
+`EvalBootstrap`) ran all baby rotations and all plaintext products serially, with only the tower loops inside each
+op parallel. The A/B below confirms it at the stage level: in calm rounds the old CI StC gets 1.68x at 4 threads
+against std StC's 2.02x, and the whole old CI bootstrap 1.98x against std's 2.13x (CI speedup / std speedup 0.93).
+So the item ran.
+
+**What changed** (`src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp`, `applyCISparse` only; std, EvalMod and the dense
+{1,1} transform unchanged):
+- **Baby rotations in parallel** when more than one thread is allowed: `omp parallel for schedule(dynamic)` over the
+  used baby indices, as std does (each rotation's tower loops then run on one thread). The Galois set (`ciGalUsed`)
+  is filled before the parallel loop, and `[LT]` counts the loop as a whole.
+- **Per-thread partial sums per giant block:** the block's nonzero diagonals are split into contiguous runs, one per
+  thread (at least 2 diagonals per thread); each thread accumulates `bx[i] (x) D` into its own extended-basis
+  (QlP) partial sum, and the partials are added once per giant block before the giant rotation. The giant rotation
+  and the final `KeySwitchDown` stay as before (tower-parallel inside). The sums are exact mod q, so the output does
+  not depend on the thread count.
+- **One thread:** `GetThreadLimit` returns 1 and the old serial loops run unchanged (same code path as before).
+- Memory: one extended ciphertext per thread per block (about 28 MB at 2^16, 27 QlP towers); peak RSS at 4 threads
+  13.93-13.95 GB new vs 13.77 GB old (+0.17 GB).
+- The A/B used a temporary env switch `CI_LT_PAR=0` (old serial path) in the same binary; it was removed after the
+  measurement and `build-wsl` was rebuilt from the final source (`p52_build2`), then smoke-tested (`p52_smoke2`).
+
+**Commands** (WSL, repo root; `B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` = `build-wsl-bt/bin/benchmark/ci-fft-boot`;
+2^16 {5,3} CtS-first, 128-bit, FLEXIBLEAUTO 59/60, encap, dnum 3, 2 levels after, `CI_BOOT_TIMING=1`; job scripts
+in `~/ci-ckks-wsl/scripts/p52_*.sh`):
+
+    wsl-guard.sh p52_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8'
+    wsl-guard.sh p52_smoke 5 'CI 2^12 {3,3}, 2^13 {4,4}, 2^14 {5,3}, 2^14 {4,4}, stcfirst 0 (corr 4) / 1 (corr 12),
+        OMP_NUM_THREADS=4, CI_LT_PAR=1 then 0: $B ci N b1 b2 59 60 0 2 fa corr encap sf; plus 2^14 {5,3} at 1 thread'
+    wsl-guard.sh p52_ab 16 'per process: CI_LT_PAR=par OMP_NUM_THREADS=8 CI_THREAD_SWEEP=1,4,8 CI_SWEEP_ROUNDS=4
+        $B ci 16 5 3 59 60 1 1 fa 4 encap 0  (par 1, 0)  /  $T std 16 5 3 59 60 1 1 fa 5 encap 0;
+        order: CI new, CI old, std, std, CI old, CI new'
+    wsl-guard.sh p52_ab2 16 'same with OMP_NUM_THREADS=4 CI_THREAD_SWEEP=1,4; 3 passes of CI new, CI old, std'
+    wsl-guard.sh p52_build2 12 'cmake --build build-wsl --target ci-fft-boot -j 8'   (switch removed)
+    wsl-guard.sh p52_smoke2 5 'CI 2^12 {3,3}, 2^13 {4,4}, 2^14 {5,3}, both orderings, 4 and 1 threads'
+
+The in-process sweep (item 5.1) puts the 1- and 4-thread bootstraps of a round next to each other in one process, so
+each round gives a speedup measured in one speed state. Stage times: CI `[CI-BT]` lines, std `BOOTSTRAPTIMING`
+(Encoding = CtS, Approximate modular reduction = EvalMod, Decoding = StC).
+
+**Timing noise.** As in 5.1, the laptop switched between a calm state (1-thread bootstrap 11.1-12.4 s, the 4.R
+reference speed) and slow states (14.6-19.2 s) from process to process. Only the 7 (CI new), 11 (CI old) and 5 (std)
+rounds whose 1-thread bootstrap took at most 12.5 s are used for the main table (the 12.5 s cut is not critical:
+13.0 s gives the same numbers within 0.04x).
+
+**Results: calm rounds, 2^16 {5,3} CtS-first, 1 vs 4 threads** (medians; speedup = the round's 1-thread time /
+its 4-thread time, per stage):
+
+| scheme | 1 thread s | 4 threads s (range) | speedup | CtS 1t / 4t s (speedup) | EvalMod 1t / 4t s (speedup) | StC 1t / 4t s (speedup) |
+|---|---|---|---|---|---|---|
+| CI old (serial BSGS) | 11.66 | 6.10 (5.04-10.22) | 1.98x | 5.09 / 2.63 (2.01x) | 3.77 / 1.70 (2.23x) | 2.53 / 1.53 (1.68x) |
+| **CI new** (parallel BSGS) | 11.94 | **5.18** (4.73-5.45) | **2.35x** | 5.26 / 2.22 (2.32x) | 3.80 / 1.64 (2.23x) | 2.56 / 1.15 (2.26x) |
+| std | 11.85 | 5.53 (5.07-5.92) | 2.13x | 3.72 / 1.57 (2.24x) | 6.37 / 3.01 (2.12x) | 1.74 / 0.90 (2.02x) |
+
+- At 4 threads the new CI bootstrap takes 5.18 s against 6.10 s for the old one (-15%): CtS -16%, StC -25%, EvalMod
+  unchanged (not touched).
+- CI speedup / std speedup at 4 threads: old 0.93, new 1.10. CI/2xstd: 1.98x at 1 thread (2 x 11.85 / 11.94), 2.14x at
+  4 threads with the new code (2 x 5.53 / 5.18), 1.81x with the old code (2 x 5.53 / 6.10).
+- At 1 thread nothing changes (same code path; 11.66 vs 11.94 s is the spread between processes in the calm state).
+- All rounds, no calm filter (`p52_ab2`, 12 rounds each): speedup at 4 threads CI new 2.11x, CI old 1.96x, std 2.03x;
+  the order is the same.
+- 8 threads (`p52_ab` only, informative; no calm std round): CI new 5.41-6.11 s (3 calm rounds), CI old 5.28-6.92 s
+  (6 calm rounds). As in 5.1, more than 4 threads give no usable number on this VM.
+
+**Checks.** Precision is unchanged and does not depend on the thread count or the path: 2^16 CI RMS 21.55-21.57 bits
+in all 96 CI sweep bootstraps and the warm reps of the 10 CI processes (new and old), std 22.74-22.76. Small N (`p52_smoke`, `p52_smoke2`): CtS-first and StC-first
+at 2^12 {3,3}, 2^13 {4,4}, 2^14 {5,3} (and 2^14 {4,4} in `p52_smoke`) give the same RMS at 1 and 4 threads and with
+the old path (for example 2^14 {5,3}: 20.71 bits CtS-first, 22.48-22.49 bits StC-first); the Galois check held in all
+87 smoke bootstraps and no level was encoded at run time. Both orderings stay supported.
+
+**Conclusions.**
+- CI did scale worse than std at 4 threads before this item (whole bootstrap 1.98x vs 2.13x; StC 1.68x vs 2.02x)
+  because its sparse BSGS was serial above the tower level. With parallel baby rotations and per-thread partial sums
+  per giant block, CI gets 2.35x at 4 threads (CtS 2.32x, StC 2.26x) and now scales at least as well as std.
+- The 5.R criterion (16 threads) still needs a host with 16 free cores and stable clocks; on WSL only 1-4 threads
+  give usable numbers (item 5.1). Baseline commands do not change (1 thread; same code path there).

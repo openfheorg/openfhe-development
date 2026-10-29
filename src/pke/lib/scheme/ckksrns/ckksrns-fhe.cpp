@@ -1645,7 +1645,34 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             auto digits =
                 LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(ct); });
             std::vector<Ciphertext<DCRTPoly>> bx(bp.n1);
-            for (uint32_t i = 0; i < bp.n1; ++i) {
+            std::vector<uint32_t> babyList;
+            for (uint32_t i = 0; i < bp.n1; ++i)
+                if (babyUsed[i])
+                    babyList.push_back(i);
+            const uint32_t nThrBaby = static_cast<uint32_t>(OpenFHEParallelControls.GetThreadLimit(babyList.size()));
+            if (nThrBaby > 1) {
+                // Multi-threaded: the hoisted baby rotations run in parallel (as std's EvalCoeffsToSlots); each
+                // rotation's own tower loops then run on one thread.
+                uint32_t nb = 0;
+                for (uint32_t i : babyList)
+                    if (i != 0) {
+                        ciGalUsed.insert(CIGaloisForShift(bp.h * i, Nn));
+                        ++nb;
+                    }
+                LTRun(&LTStats::baby, &LTStats::tBaby, nb, [&] {
+#pragma omp parallel for schedule(dynamic) num_threads(nThrBaby)
+                    for (size_t k = 0; k < babyList.size(); ++k) {
+                        const uint32_t i = babyList[k];
+                        bx[i] = (i != 0) ?
+                                    cc->EvalFastRotationExt(ct, CIGaloisForShift(bp.h * i, Nn), digits, true) :
+                                    cc->KeySwitchExt(ct, true);
+                    }
+                    return 0;
+                });
+                if (g_lt && babyUsed[0])
+                    g_lt->ext += 1;
+            }
+            for (uint32_t i = 0; i < bp.n1 && nThrBaby <= 1; ++i) {
                 if (!babyUsed[i])
                     continue;
                 if (i != 0) {
@@ -1661,21 +1688,75 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             Ciphertext<DCRTPoly> outer;
             std::vector<uint32_t> map(Nn);
             const auto& autoKeys = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
+            std::vector<uint32_t> blockDiags;
             for (uint32_t j = 0; j < bp.n2; ++j) {
                 const uint32_t G = offsetOf(bp.n1 * j);
                 Ciphertext<DCRTPoly> inner;
+                blockDiags.clear();
                 for (uint32_t i = 0; i < bp.n1; ++i) {
                     const uint32_t u = bp.n1 * j + i;
                     if (u >= bp.span)
                         break;
-                    const auto& pd = (*pts)[u];
-                    if (pd == nullptr)
-                        continue;
-                    Ciphertext<DCRTPoly> term = EvalMultExt(bx[i], pd);
-                    if (inner == nullptr)
-                        inner = term;
-                    else
-                        EvalAddExtInPlace(inner, term);
+                    if ((*pts)[u] != nullptr)
+                        blockDiags.push_back(i);
+                }
+                // >= 2 diagonals per thread; the sums are exact mod q, so the result does not depend on the threads
+                const uint32_t nThrAcc =
+                    static_cast<uint32_t>(OpenFHEParallelControls.GetThreadLimit(blockDiags.size() / 2));
+                if (nThrAcc > 1) {
+                    // Multi-threaded: per-thread partial sums of the block's plaintext products in the extended
+                    // basis (a contiguous run of diagonals per thread), reduced once per giant block.
+                    const size_t nd = blockDiags.size();
+                    std::vector<Ciphertext<DCRTPoly>> part(nThrAcc);
+                    LTRun(&LTStats::ptMult, &LTStats::tPtMult, static_cast<uint32_t>(nd), [&] {
+#pragma omp parallel for schedule(static, 1) num_threads(nThrAcc)
+                        for (uint32_t t = 0; t < nThrAcc; ++t) {
+                            const size_t k0 = nd * t / nThrAcc, k1 = nd * (t + 1) / nThrAcc;
+                            for (size_t k = k0; k < k1; ++k) {
+                                const uint32_t i = blockDiags[k];
+                                auto pt          = (*pts)[bp.n1 * j + i]->GetElement<DCRTPoly>();
+                                pt.SetFormat(Format::EVALUATION);
+                                if (part[t] == nullptr) {
+                                    part[t] = bx[i]->Clone();
+                                    for (auto& c : part[t]->GetElements())
+                                        c *= pt;
+                                    part[t]->SetNoiseScaleDeg(part[t]->GetNoiseScaleDeg() +
+                                                              (*pts)[bp.n1 * j + i]->GetNoiseScaleDeg());
+                                    part[t]->SetScalingFactor(part[t]->GetScalingFactor() *
+                                                              (*pts)[bp.n1 * j + i]->GetScalingFactor());
+                                }
+                                else {
+                                    const auto& src = bx[i]->GetElements();
+                                    auto& dst       = part[t]->GetElements();
+                                    for (size_t e = 0; e < dst.size(); ++e) {
+                                        DCRTPoly prod = src[e];
+                                        prod *= pt;
+                                        dst[e] += prod;
+                                    }
+                                }
+                            }
+                        }
+                        return 0;
+                    });
+                    for (auto& pc : part) {
+                        if (pc == nullptr)
+                            continue;
+                        if (inner == nullptr)
+                            inner = pc;
+                        else
+                            EvalAddExtInPlace(inner, pc);
+                    }
+                    if (g_lt)
+                        g_lt->add += static_cast<uint32_t>(nd) - nThrAcc;  // in-thread adds (reduction counted)
+                }
+                else {
+                    for (uint32_t i : blockDiags) {
+                        Ciphertext<DCRTPoly> term = EvalMultExt(bx[i], (*pts)[bp.n1 * j + i]);
+                        if (inner == nullptr)
+                            inner = term;
+                        else
+                            EvalAddExtInPlace(inner, term);
+                    }
                 }
                 if (inner == nullptr)
                     continue;

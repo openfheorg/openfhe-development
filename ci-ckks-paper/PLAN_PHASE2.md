@@ -147,6 +147,11 @@ Threads (item 5.1, WSL): CI and std both get about 2x at 4 threads (best CI 2.07
 spread; best 16-thread CI 2.20x / std 2.43x, in-process sweeps the reverse), so 5.R needs a stable 16-core host or a
 narrower thread range. Driver env `CI_THREAD_SWEEP=1,4,8,16` (`CI_SWEEP_ROUNDS`) times one process at several
 thread counts; `tools/thread-scaling.py LOG` tabulates.
+Parallel CI BSGS (item 5.2, WSL): the CI sparse BSGS ran its baby rotations and plaintext products serially (std's
+runs its baby rotations in parallel), so CI scaled worse at 4 threads (calm rounds: 1.98x vs std 2.13x; StC 1.68x vs
+2.02x). Baby rotations now run in an `omp parallel for` and each giant block sums its products in per-thread partial
+sums (extended basis, reduced once per block); 1 thread runs the old code. CI at 4 threads 6.10 -> 5.18 s (2.35x;
+CtS 2.32x, StC 2.26x), CI/2xstd 2.14x at 4 threads vs 1.98x at 1 thread; precision unchanged. Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -248,7 +253,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
     (both schemes ~2x at 4 threads; 8-16 threads varied 2-4x between runs, see `PHASE2_LOG.md` 5.1). Rerun the same
     measurement on ICELAKE (16 free physical cores, stable clocks): 1/4/8/16 threads, CI and std, 2^16 {5,3}, both
     orderings, using the `CI_THREAD_SWEEP` driver option and `tools/thread-scaling.py`; then re-evaluate 5.2 and 5.R.
-- [ ] **5.2** If CI scales worse: parallelize the sparse BSGS baby-step accumulation (per-thread partial sums in
+- [x] **5.2** If CI scales worse: parallelize the sparse BSGS baby-step accumulation (per-thread partial sums in
   the extended basis, reduce once per giant block).
 - [ ] **5.R** Phase 5 review. Done when: CI/std speedup at 16 threads is within 10% of the single-thread one.
 
