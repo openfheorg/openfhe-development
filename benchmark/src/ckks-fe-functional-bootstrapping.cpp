@@ -41,6 +41,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "benchmark/benchmark.h"
@@ -403,6 +404,7 @@ const std::vector<fe_function> fe_functions = {
 struct fefbt_config {
     FEFunction func;
     ScalingTechnique scalTech;
+    SecretKeyDist skd;        // HYBRID_TERNARY (security level HEORG24_128) or SPARSE_ENCAPSULATED (HE_SPARSE_H192_128)
     uint32_t scalingModSize;  // the first modulus is one bit larger, as FE functional bootstrapping requires
     uint32_t levelsAfter;
     uint32_t ringDim;
@@ -413,81 +415,130 @@ struct fefbt_config {
 
 [[maybe_unused]] constexpr ScalingTechnique FM = FIXEDMANUAL;
 [[maybe_unused]] constexpr ScalingTechnique FA = FLEXIBLEAUTO;
+[[maybe_unused]] constexpr SecretKeyDist HT = HYBRID_TERNARY;
+[[maybe_unused]] constexpr SecretKeyDist SE = SPARSE_ENCAPSULATED;
 
-// All configurations use SPARSE_ENCAPSULATED secrets and full packing (N/2 slots), and keep log(QP) within the
-// 128-bit limits for sparse secrets (767 / 1553 / 3104 bits at N = 2^15 / 2^16 / 2^17). The ring dimension, dnum and
-// level budget of each group are the fastest combination measured (36 threads). The smallest ring dimension is not
-// always the fastest: with several levels after bootstrapping, staying at the smaller ring dimension forces a {2,2}
-// budget and a large dnum, so six levels run about 40% faster at N = 2^16 than at N = 2^15 (29-bit scaling) and 8-17%
-// faster at N = 2^17 than at N = 2^16 (where only 53-55-bit scaling fits), with half the memory or less. With one
-// level, the larger dnum at the smaller ring dimension costs less than doubling N. Likewise the smallest dnum is not
-// always the fastest: ten levels at N = 2^17 run about 18% faster with {5,4} and dnum 3 than with {4,3} and dnum 2.
-// levelsAfter is the number of levels added on top of GetFEFBTDepth; the output also keeps the lvlb[1] levels that
-// the SlotsToCoeffs of the next FE functional bootstrapping consumes. Mean precision (bits relative to the range of
-// the function): about 8.3-8.5 at 29 bits and 34-35 at 59 bits for FLEXIBLEAUTO; about 3 bits lower for FIXEDMANUAL.
+// the security table that matches the secret key distribution (see CKKS_BOOTSTRAPPING.md)
+SecurityLevel SecurityLevelFor(SecretKeyDist skd) {
+    return (skd == SPARSE_ENCAPSULATED || skd == SPARSE_TERNARY) ? HE_SPARSE_H192_128 : HEORG24_128;
+}
+
+// All rows use HYBRID_TERNARY secrets under HEORG24_128 (the security table of the 2024 guidelines; the library checks
+// the bound at context generation and a non-compliant row is skipped) and full packing (N/2 slots). The ring
+// dimension, dnum and level budget of each group are the fastest combination measured at 36 threads among the
+// configurations that keep the group's precision. HYBRID_TERNARY costs one to two bits at 29-bit scaling against
+// SPARSE_ENCAPSULATED (the rescaling noise of a dense secret) and nothing at 59 bits. levelsAfter is the number of
+// levels added on top of GetFEFBTDepth; the output also keeps the lvlb[1] levels that the SlotsToCoeffs of the next
+// FE functional bootstrapping consumes.
 // clang-format off
 const std::vector<fefbt_config> fefbt_configs = {
-    // func,  scalTech, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs                      log(QP)
+    // func,  scalTech, skd, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs   log(QP)
     // 29-bit scaling, one level: N = 2^15
-    {IDENTITY, FA, 29,  1, 1 << 15,  4, {3, 2}, &coeff_identity_1_double_5},   //  761
-    {EXP,      FA, 29,  1, 1 << 15,  4, {3, 2}, &coeff_exp_2_double_5},        //  761
-    {TANH,     FA, 29,  1, 1 << 15,  7, {3, 2}, &coeff_tanh_4_double_8},       //  730
-    {SIGMOID,  FA, 29,  1, 1 << 15,  7, {3, 2}, &coeff_sigmoid_8_double_8},    //  730
-    {GELU,     FA, 29,  1, 1 << 15,  7, {3, 2}, &coeff_gelu_8_double_10},      //  730
-    // 29-bit scaling, six levels: N = 2^16 (N = 2^15 fits only with {2,2}, one tower per digit and a degree-5 series)
-    {IDENTITY, FA, 29,  6, 1 << 16,  2, {5, 4}, &coeff_identity_1_double_5},   // 1321
-    {EXP,      FA, 29,  6, 1 << 16,  2, {5, 4}, &coeff_exp_2_double_5},        // 1321
-    {TANH,     FA, 29,  6, 1 << 16,  2, {5, 4}, &coeff_tanh_4_double_8},       // 1350
-    {SIGMOID,  FA, 29,  6, 1 << 16,  2, {5, 4}, &coeff_sigmoid_8_double_8},    // 1350
-    {GELU,     FA, 29,  6, 1 << 16,  2, {5, 4}, &coeff_gelu_8_double_10},      // 1350
+    {IDENTITY, FA, HT, 29,  1, 1 << 15,  4, {5, 4}, &coeff_identity_1_double_5},   // 848
+    {EXP,      FA, HT, 29,  1, 1 << 15,  4, {5, 4}, &coeff_exp_2_double_5},        // 848
+    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_tanh_4_double_8},       // 819
+    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_sigmoid_8_double_8},    // 819
+    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_gelu_8_double_10},      // 819
+    // 29-bit scaling, six levels: N = 2^15 for the degree-5 series, N = 2^16 for the longer ones
+    {IDENTITY, FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_identity_1_double_5},   // 817
+    {EXP,      FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_exp_2_double_5},        // 817
+    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_tanh_4_double_8},       // 1321
+    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_sigmoid_8_double_8},    // 1321
+    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_gelu_8_double_10},      // 1321
     // 59-bit scaling, one level: N = 2^16
-    {IDENTITY, FA, 59,  1, 1 << 16,  8, {3, 2}, &coeff_identity_1_double_27},  // 1539
-    {EXP,      FA, 59,  1, 1 << 16,  8, {3, 2}, &coeff_exp_2_double_27},       // 1539
-    {TANH,     FA, 59,  1, 1 << 16, 12, {3, 2}, &coeff_tanh_4_double_40},      // 1538
-    {SIGMOID,  FA, 59,  1, 1 << 16, 12, {3, 2}, &coeff_sigmoid_8_double_40},   // 1538
-    {GELU,     FA, 59,  1, 1 << 16, 12, {3, 2}, &coeff_gelu_8_double_45},      // 1538
-    {IDENTITY, FM, 59,  1, 1 << 16,  8, {3, 2}, &coeff_identity_1_double_27},  // 1539
-    {EXP,      FM, 59,  1, 1 << 16,  8, {3, 2}, &coeff_exp_2_double_27},       // 1539
-    {TANH,     FM, 59,  1, 1 << 16, 12, {3, 2}, &coeff_tanh_4_double_40},      // 1538
-    {SIGMOID,  FM, 59,  1, 1 << 16, 12, {3, 2}, &coeff_sigmoid_8_double_40},   // 1538
-    {GELU,     FM, 59,  1, 1 << 16, 12, {3, 2}, &coeff_gelu_8_double_45},      // 1538
-    // 59-bit scaling, six levels: N = 2^17 (N = 2^16 fits only with {2,2}, dnum 13-14 and 53-55-bit scaling)
-    {IDENTITY, FA, 59,  6, 1 << 17,  4, {5, 4}, &coeff_identity_1_double_27},  // 2310
-    {EXP,      FA, 59,  6, 1 << 17,  4, {5, 4}, &coeff_exp_2_double_27},       // 2310
-    {TANH,     FA, 59,  6, 1 << 17,  4, {5, 4}, &coeff_tanh_4_double_40},      // 2369
-    {SIGMOID,  FA, 59,  6, 1 << 17,  4, {5, 4}, &coeff_sigmoid_8_double_40},   // 2369
-    {GELU,     FA, 59,  6, 1 << 17,  4, {5, 4}, &coeff_gelu_8_double_45},      // 2369
-    {IDENTITY, FM, 59,  6, 1 << 17,  4, {5, 4}, &coeff_identity_1_double_27},  // 2310
-    {EXP,      FM, 59,  6, 1 << 17,  4, {5, 4}, &coeff_exp_2_double_27},       // 2310
-    {TANH,     FM, 59,  6, 1 << 17,  4, {5, 4}, &coeff_tanh_4_double_40},      // 2369
-    {SIGMOID,  FM, 59,  6, 1 << 17,  4, {5, 4}, &coeff_sigmoid_8_double_40},   // 2369
-    {GELU,     FM, 59,  6, 1 << 17,  4, {5, 4}, &coeff_gelu_8_double_45},      // 2369
+    {IDENTITY, FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
+    {EXP,      FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
+    {TANH,     FA, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_tanh_4_double_40},      // 1717
+    {SIGMOID,  FA, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_sigmoid_8_double_40},   // 1717
+    {GELU,     FA, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_gelu_8_double_45},      // 1717
+    // 59-bit scaling, one level: N = 2^16 (FIXEDMANUAL)
+    {IDENTITY, FM, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
+    {EXP,      FM, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
+    {TANH,     FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_tanh_4_double_40},      // 1717
+    {SIGMOID,  FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_sigmoid_8_double_40},   // 1717
+    {GELU,     FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_gelu_8_double_45},      // 1717
+    // 59-bit scaling, six levels: N = 2^17 (N = 2^16 fits only with 53-55-bit scaling, at about 4 bits less precision)
+    {IDENTITY, FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_identity_1_double_27},  // 2251
+    {EXP,      FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_exp_2_double_27},       // 2251
+    {TANH,     FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_tanh_4_double_40},      // 2310
+    {SIGMOID,  FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_sigmoid_8_double_40},   // 2310
+    {GELU,     FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_gelu_8_double_45},      // 2310
+    // 59-bit scaling, six levels: N = 2^17 (FIXEDMANUAL; 3 digits for the degree-27 series)
+    {IDENTITY, FM, HT, 59,  6, 1 << 17,  3, {5, 4}, &coeff_identity_1_double_27},  // 2371
+    {EXP,      FM, HT, 59,  6, 1 << 17,  3, {5, 4}, &coeff_exp_2_double_27},       // 2371
+    {TANH,     FM, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_tanh_4_double_40},      // 2310
+    {SIGMOID,  FM, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_sigmoid_8_double_40},   // 2310
+    {GELU,     FM, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_gelu_8_double_45},      // 2310
     // 59-bit scaling, ten levels: N = 2^17
-    {IDENTITY, FA, 59, 10, 1 << 17,  3, {5, 4}, &coeff_identity_1_double_27},  // 2786
-    {EXP,      FA, 59, 10, 1 << 17,  3, {5, 4}, &coeff_exp_2_double_27},       // 2786
-    {TANH,     FA, 59, 10, 1 << 17,  3, {5, 4}, &coeff_tanh_4_double_40},      // 2845
-    {SIGMOID,  FA, 59, 10, 1 << 17,  3, {5, 4}, &coeff_sigmoid_8_double_40},   // 2845
-    {GELU,     FA, 59, 10, 1 << 17,  3, {5, 4}, &coeff_gelu_8_double_45},      // 2845
-    {IDENTITY, FM, 59, 10, 1 << 17,  3, {5, 4}, &coeff_identity_1_double_27},  // 2786
-    {EXP,      FM, 59, 10, 1 << 17,  3, {5, 4}, &coeff_exp_2_double_27},       // 2786
-    {TANH,     FM, 59, 10, 1 << 17,  3, {5, 4}, &coeff_tanh_4_double_40},      // 2845
-    {SIGMOID,  FM, 59, 10, 1 << 17,  3, {5, 4}, &coeff_sigmoid_8_double_40},   // 2845
-    {GELU,     FM, 59, 10, 1 << 17,  3, {5, 4}, &coeff_gelu_8_double_45},      // 2845
+    {IDENTITY, FA, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_identity_1_double_27},  // 2727
+    {EXP,      FA, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_exp_2_double_27},       // 2727
+    {TANH,     FA, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_tanh_4_double_40},      // 2786
+    {SIGMOID,  FA, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_sigmoid_8_double_40},   // 2786
+    {GELU,     FA, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_gelu_8_double_45},      // 2786
+    // 59-bit scaling, ten levels: N = 2^17 (FIXEDMANUAL)
+    {IDENTITY, FM, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_identity_1_double_27},  // 2727
+    {EXP,      FM, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_exp_2_double_27},       // 2727
+    {TANH,     FM, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_tanh_4_double_40},      // 2786
+    {SIGMOID,  FM, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_sigmoid_8_double_40},   // 2786
+    {GELU,     FM, HT, 59, 10, 1 << 17,  3, {5, 4}, &coeff_gelu_8_double_45},      // 2786
+};
+
+// GPU-leaning rows, one per row above: the configuration with the fewest key-switching digits (fewer kernel launches
+// per key switch and smaller keys on a GPU) among those within 25% of the CPU row's time and within 0.3 bits of its
+// precision, or the CPU row itself where there is none. Registered as FEFBT-GPU/... so that --benchmark_filter
+// selects either table.
+const std::vector<fefbt_config> fefbt_configs_gpu = {
+    // func,  scalTech, skd, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs   log(QP)
+    // 29-bit scaling, one level: N = 2^15 (3 digits for the degree-5 series)
+    {IDENTITY, FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_identity_1_double_5},   // 850
+    {EXP,      FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_exp_2_double_5},        // 850
+    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_tanh_4_double_8},       // 819
+    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_sigmoid_8_double_8},    // 819
+    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_gelu_8_double_10},      // 819
+    // 29-bit scaling, six levels: N = 2^15 for the degree-5 series (as above), N = 2^16 with 2 digits for the longer ones
+    {IDENTITY, FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_identity_1_double_5},   // 817
+    {EXP,      FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_exp_2_double_5},        // 817
+    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_tanh_4_double_8},       // 1321
+    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_sigmoid_8_double_8},    // 1321
+    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_gelu_8_double_10},      // 1321
+    // 59-bit scaling, one level: N = 2^16 (as above for the degree-27 series, 4 digits for the longer ones)
+    {IDENTITY, FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
+    {EXP,      FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
+    {TANH,     FA, HT, 59,  1, 1 << 16,  4, {3, 3}, &coeff_tanh_4_double_40},      // 1718
+    {SIGMOID,  FA, HT, 59,  1, 1 << 16,  4, {3, 3}, &coeff_sigmoid_8_double_40},   // 1718
+    {GELU,     FA, HT, 59,  1, 1 << 16,  4, {3, 3}, &coeff_gelu_8_double_45},      // 1718
+    // 59-bit scaling, one level: N = 2^16 (FIXEDMANUAL, as above)
+    {IDENTITY, FM, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
+    {EXP,      FM, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
+    {TANH,     FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_tanh_4_double_40},      // 1717
+    {SIGMOID,  FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_sigmoid_8_double_40},   // 1717
+    {GELU,     FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_gelu_8_double_45},      // 1717
+    // 59-bit scaling, six levels: N = 2^17 with 2 digits
+    {IDENTITY, FA, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_identity_1_double_27},  // 2671
+    {EXP,      FA, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_exp_2_double_27},       // 2671
+    {TANH,     FA, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_tanh_4_double_40},      // 2790
+    {SIGMOID,  FA, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_sigmoid_8_double_40},   // 2790
+    {GELU,     FA, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_gelu_8_double_45},      // 2790
+    // 59-bit scaling, six levels: N = 2^17 with 2 digits (FIXEDMANUAL)
+    {IDENTITY, FM, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_identity_1_double_27},  // 2671
+    {EXP,      FM, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_exp_2_double_27},       // 2671
+    {TANH,     FM, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_tanh_4_double_40},      // 2790
+    {SIGMOID,  FM, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_sigmoid_8_double_40},   // 2790
+    {GELU,     FM, HT, 59,  6, 1 << 17,  2, {5, 4}, &coeff_gelu_8_double_45},      // 2790
+    // 59-bit scaling, ten levels: N = 2^17 with 2 digits
+    {IDENTITY, FA, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_identity_1_double_27},  // 3027
+    {EXP,      FA, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_exp_2_double_27},       // 3027
+    {TANH,     FA, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_tanh_4_double_40},      // 3146
+    {SIGMOID,  FA, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_sigmoid_8_double_40},   // 3146
+    {GELU,     FA, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_gelu_8_double_45},      // 3146
+    // 59-bit scaling, ten levels: N = 2^17 with 2 digits (FIXEDMANUAL)
+    {IDENTITY, FM, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_identity_1_double_27},  // 3027
+    {EXP,      FM, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_exp_2_double_27},       // 3027
+    {TANH,     FM, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_tanh_4_double_40},      // 3146
+    {SIGMOID,  FM, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_sigmoid_8_double_40},   // 3146
+    {GELU,     FM, HT, 59, 10, 1 << 17,  2, {5, 4}, &coeff_gelu_8_double_45},      // 3146
 };
 // clang-format on
-
-double LogQPLimit(uint32_t ringDim) {
-    switch (ringDim) {
-        case 1 << 15:
-            return 767;
-        case 1 << 16:
-            return 1553;
-        case 1 << 17:
-            return 3104;
-        default:
-            return 0;
-    }
-}
 
 double LogModulus(const std::shared_ptr<ILDCRTParams<BigInteger>>& params) {
     double bits = 0;
@@ -497,13 +548,13 @@ double LogModulus(const std::shared_ptr<ILDCRTParams<BigInteger>>& params) {
 }
 
 uint32_t GetDepth(const fefbt_config& t) {
-    return FHECKKSRNS::GetFEFBTDepth(t.lvlb, *t.coeffs, SPARSE_ENCAPSULATED, t.scalingModSize + 1) + t.levelsAfter;
+    return FHECKKSRNS::GetFEFBTDepth(t.lvlb, *t.coeffs, t.skd, t.scalingModSize + 1) + t.levelsAfter;
 }
 
 CryptoContext<DCRTPoly> GenFEFBTContext(const fefbt_config& t) {
     CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(SPARSE_ENCAPSULATED);
-    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetSecretKeyDist(t.skd);
+    parameters.SetSecurityLevel(SecurityLevelFor(t.skd));
     parameters.SetRingDim(t.ringDim);
     parameters.SetNumLargeDigits(t.dnum);
     parameters.SetKeySwitchTechnique(HYBRID);
@@ -545,14 +596,16 @@ double MeanPrecisionBits(const std::vector<double>& expected, const std::vector<
 }
 
 [[maybe_unused]] void FEFBT(benchmark::State& state, const fefbt_config& t) {
-    auto cc = GenFEFBTContext(t);
-    auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
-    double logQP = LogModulus(cryptoParams->GetElementParams()) + LogModulus(cryptoParams->GetParamsP());
-    if (logQP > LogQPLimit(t.ringDim)) {
-        state.SkipWithError("log(QP) exceeds the 128-bit limit for the ring dimension");
+    CryptoContext<DCRTPoly> cc;
+    try {
+        cc = GenFEFBTContext(t);  // throws when the row does not meet the security bound of its level
+    } catch (const std::exception& e) {
+        state.SkipWithError(e.what());
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
         return;
     }
+    auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+    double logQP = LogModulus(cryptoParams->GetElementParams()) + LogModulus(cryptoParams->GetParamsP());
 
     uint32_t depth = GetDepth(t);
     uint32_t slots = t.ringDim / 2;
@@ -586,7 +639,13 @@ double MeanPrecisionBits(const std::vector<double>& expected, const std::vector<
 }
 
 // setup and key generation for the sigmoid with 59-bit scaling and one level after bootstrapping (FLEXIBLEAUTO)
-const fefbt_config& setup_config = fefbt_configs[13];
+const fefbt_config& SetupConfig() {
+    for (const auto& t : fefbt_configs)
+        if (t.func == SIGMOID && t.scalTech == FA && t.scalingModSize == 59 && t.levelsAfter == 1)
+            return t;
+    return fefbt_configs.front();
+}
+const fefbt_config& setup_config = SetupConfig();
 
 [[maybe_unused]] void FEFBTSetup(benchmark::State& state) {
     auto cc = GenFEFBTContext(setup_config);
@@ -614,11 +673,17 @@ const fefbt_config& setup_config = fefbt_configs[13];
 }  // namespace
 
 int main(int argc, char** argv) {
-    for (const auto& t : fefbt_configs) {
-        std::string name = "FEFBT/" + fe_functions[t.func].name + (t.scalTech == FA ? "/FA" : "/FM") +
-                           "/sf:" + std::to_string(t.scalingModSize) + "/levels:" + std::to_string(t.levelsAfter) +
-                           "/logN:" + std::to_string(static_cast<uint32_t>(std::log2(t.ringDim)));
-        benchmark::RegisterBenchmark(name, FEFBT, t)->Unit(benchmark::kSecond)->Iterations(4);
+    for (const auto& [prefix, table] :
+         {std::pair<const char*, const std::vector<fefbt_config>*>{"FEFBT/", &fefbt_configs},
+          std::pair<const char*, const std::vector<fefbt_config>*>{"FEFBT-GPU/", &fefbt_configs_gpu}}) {
+        for (const auto& t : *table) {
+            std::string name = prefix + fe_functions[t.func].name + (t.scalTech == FA ? "/FA" : "/FM") +
+                               (t.skd == HYBRID_TERNARY ? "" : "/SE") + "/sf:" + std::to_string(t.scalingModSize) +
+                               "/levels:" + std::to_string(t.levelsAfter) +
+                               "/logN:" + std::to_string(static_cast<uint32_t>(std::log2(t.ringDim))) +
+                               "/dnum:" + std::to_string(t.dnum);
+            benchmark::RegisterBenchmark(name, FEFBT, t)->Unit(benchmark::kSecond)->Iterations(4);
+        }
     }
     benchmark::RegisterBenchmark("FEFBTSetup", FEFBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
     benchmark::RegisterBenchmark("FEFBTKeyGen", FEFBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);
