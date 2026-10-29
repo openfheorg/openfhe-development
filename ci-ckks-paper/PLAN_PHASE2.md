@@ -152,6 +152,11 @@ runs its baby rotations in parallel), so CI scaled worse at 4 threads (calm roun
 2.02x). Baby rotations now run in an `omp parallel for` and each giant block sums its products in per-thread partial
 sums (extended basis, reduced once per block); 1 thread runs the old code. CI at 4 threads 6.10 -> 5.18 s (2.35x;
 CtS 2.32x, StC 2.26x), CI/2xstd 2.14x at 4 threads vs 1.98x at 1 thread; precision unchanged. Baseline commands unchanged.
+Phase 5 review (5.R, WSL, `p5R_sweep`/`p5R_sweep2`, HEAD after 5.2, in-process 1/4/14/16-thread sweeps): best times
+CI 11.46 -> 3.85 s (2.98x) and std 11.86 -> 4.57 s (2.60x) at 16 threads, so CI/2xstd 2.07x at 1 thread -> 2.37x at 16
+(calm-round medians: CI 2.97x, std 2.24x); before 5.2 CI was 9% behind std (5.1). Criterion met on calm-state estimates;
+WSL throttles 16 threads at its 14-CPU quota and single-job medians swing either way, so 5.1-ICE (on hold) would confirm.
+Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -255,7 +260,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
     orderings, using the `CI_THREAD_SWEEP` driver option and `tools/thread-scaling.py`; then re-evaluate 5.2 and 5.R.
 - [x] **5.2** If CI scales worse: parallelize the sparse BSGS baby-step accumulation (per-thread partial sums in
   the extended basis, reduce once per giant block).
-- [ ] **5.R** Phase 5 review. Done when: CI/std speedup at 16 threads is within 10% of the single-thread one.
+- [x] **5.R** Phase 5 review. Done when: CI/std speedup at 16 threads is within 10% of the single-thread one.
 
 ## Phase 6: engineering (last)
 - [ ] **6.1** Ring type as a property of the element parameters (or a (modulus, N)-keyed registry) instead of the

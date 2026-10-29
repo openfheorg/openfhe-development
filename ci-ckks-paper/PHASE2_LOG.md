@@ -2705,3 +2705,86 @@ the old path (for example 2^14 {5,3}: 20.71 bits CtS-first, 22.48-22.49 bits StC
   per giant block, CI gets 2.35x at 4 threads (CtS 2.32x, StC 2.26x) and now scales at least as well as std.
 - The 5.R criterion (16 threads) still needs a host with 16 free cores and stable clocks; on WSL only 1-4 threads
   give usable numbers (item 5.1). Baseline commands do not change (1 thread; same code path there).
+
+## 5.R Phase 5 review -- DONE (WSL, 2026-10-28; 16-thread numbers are best-time estimates on a noisy VM)
+
+**Host.** The host file said `WSL` before every job, and the user's request for this run forbids ICELAKE. All jobs
+ran on WSL through `wsl-guard.sh`, all rc 0: `p5R_build`, `p5R_sweep`, `p5R_sweep2`. Nothing ran on ICELAKE. No
+laptop sleep (`/proc/uptime` advance = wall-clock advance at all 20 process start/end marks). Load average 0.9-7.4
+at the process starts (mostly the job's own threads).
+
+**What changed.** No code. The review re-measured thread scaling at HEAD after item 5.2 (parallel CI sparse BSGS),
+because 5.1's 16-thread numbers predate it. `p5R_build` rebuilt both `ci-fft-boot` binaries from HEAD (`build-wsl-bt`
+was last linked before 5.2; std code is unchanged by 5.2).
+
+**Commands** (WSL, repo root; `B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` = `build-wsl-bt/bin/benchmark/ci-fft-boot`;
+2^16 {5,3} CtS-first, 128-bit, FLEXIBLEAUTO 59/60, encap, dnum 3, 2 levels after, `CI_BOOT_TIMING=1`; job scripts
+`~/ci-ckks-wsl/scripts/p5R_sweep.sh`, `p5R_sweep2.sh`; the slice's `cpu.stat` throttle counters are printed at
+every process start and end):
+
+    wsl-guard.sh p5R_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8 && cmake --build build-wsl-bt --target ci-fft-boot -j 8'
+    wsl-guard.sh p5R_sweep 16 'per process: OMP_NUM_THREADS=16 CI_THREAD_SWEEP=1,4,16 CI_SWEEP_ROUNDS=4
+        $B ci 16 5 3 59 60 1 1 fa 4 encap 0  /  $T std 16 5 3 59 60 1 1 fa 5 encap 0;
+        order: CI, std, std, CI, CI, std'
+    wsl-guard.sh p5R_sweep2 16 'same with OMP_WAIT_POLICY=passive CI_THREAD_SWEEP=1,14,16; order CI, std, std, CI'
+    python3 -I ci-ckks-paper/tools/thread-scaling.py ~/ci-ckks-wsl/logs/p5R_sweep.log
+    python3 -I ci-ckks-paper/tools/thread-scaling.py ~/ci-ckks-wsl/logs/p5R_sweep2.log
+
+Speedup = a round's 1-thread bootstrap time / the same round's N-thread time (adjacent in one process). "Calm" = the
+round's 1-thread bootstrap took at most 12.5 s (the 4.R / 5.2 reference speed, as in 5.2).
+
+**Throttling (new finding).** The slice quota is 14 CPUs (`CPUQuota=1400%`). With 16 threads it was throttled:
+`nr_throttled` rose 4795 -> 6486 (190 s throttled) during `p5R_sweep` and 6486 -> 6822 (52 s) during `p5R_sweep2`
+(passive waiting spins less). So on WSL 16 threads are over the quota by design, and the 16-thread times include
+quota stalls on top of the VM speed states seen in 5.1.
+
+**Results: in-process sweeps** (12 rounds per scheme in `p5R_sweep`, 8 in `p5R_sweep2`):
+
+| job (wait policy) | scheme | threads | calm rounds: n, median speedup | all rounds: median (range) | best 1t / best Nt s |
+|---|---|---|---|---|---|
+| `p5R_sweep` (default) | CI | 4 | 8, 2.37x | 2.28x (1.71-2.53) | 11.46 / 4.68 |
+| `p5R_sweep` (default) | std | 4 | 1, 2.23x | 2.17x (1.85-2.27) | 12.15 / 5.44 |
+| `p5R_sweep` (default) | CI | 16 | 8, **2.97x** (2.37-3.11) | 2.82x (0.99-3.11) | 11.46 / **3.85** |
+| `p5R_sweep` (default) | std | 16 | 1, 2.17x | 1.82x (0.91-2.48) | 12.15 / 5.33 |
+| `p5R_sweep2` (passive) | CI | 14 | 0 | 1.92x (1.76-2.53) | 14.17 / 5.61 |
+| `p5R_sweep2` (passive) | std | 14 | 6, 2.26x | 2.15x (1.53-2.64) | 11.86 / 4.57 |
+| `p5R_sweep2` (passive) | CI | 16 | 0 | 1.83x (1.55-2.36) | 14.17 / 6.58 |
+| `p5R_sweep2` (passive) | std | 16 | 6, **2.24x** (1.81-2.64) | 2.22x (1.44-2.64) | 11.86 / **4.57** |
+
+The two jobs disagree in the same way as 5.1: in `p5R_sweep` the CI processes ran mostly in the calm state and std
+did not (all-rounds CI/std speedup ratio 1.56 at 16 threads); in `p5R_sweep2` it was the reverse (0.83). The ratio of
+all-rounds medians follows the speed state of each process, not the scheme. The calm rounds and the best times remove
+most of that: they are the numbers used for the criterion.
+
+**Criterion: CI/std speedup at 16 threads within 10% of the single-thread one.**
+
+| estimate | CI 16-thread speedup | std 16-thread speedup | CI / std speedup | CI/2xstd at 1 thread | CI/2xstd at 16 threads |
+|---|---|---|---|---|---|
+| best times, both jobs (CI 11.46 / 3.85 s, std 11.86 / 4.57 s) | 2.98x | 2.60x | 1.15 | 2.07x | **2.37x** |
+| calm-round medians (CI `p5R_sweep`, std mostly `p5R_sweep2`) | 2.97x | 2.24x | 1.33 | - | - |
+| best times, `p5R_sweep` only (one wait policy) | 2.98x | 2.28x | 1.31 | 2.12x | 2.77x |
+| for reference, 4 threads (item 5.2, calm rounds) | 2.35x | 2.13x | 1.10 | 1.98x | 2.14x |
+| for reference, 16 threads before 5.2 (item 5.1, best times) | 2.20x | 2.43x | 0.91 | 2.01x | 1.82x |
+
+The criterion is read as "CI's advantage over std does not shrink by more than 10% at 16 threads". It is met on every
+calm-state estimate: CI/2xstd goes from 2.07x at 1 thread to 2.37x at 16 threads (best times), so CI scales about
+15% better than std, not worse. Before item 5.2 the same estimate had CI 9% behind std (5.1: 2.20x vs 2.43x), so the
+parallel sparse BSGS is what closed it. The only estimate with CI behind std is the all-rounds median of `p5R_sweep2`
+(0.83), where every CI round ran in the slow state (1-thread 14.2-16.8 s) and every std round but one in the calm one.
+
+**Caveats.** On WSL, 16 threads exceed the 14-CPU slice quota (throttling measured above) on a 6 P-core + 8 E-core
+laptop, so these are not clean 16-core numbers; the absolute 16-thread speedups (2.2-3.0x) are far below what a
+16-core server gives. They support "CI scales at least as well as std", not a scaling curve. The ICELAKE
+re-measurement (item 5.1-ICE) stays on hold as the user set it; it would confirm this on 16 free physical cores.
+
+**Other checks.** Precision does not depend on threads or wait policy: CI RMS 21.56-21.57 bits, std 22.73-22.76
+bits in all 120 sweep bootstraps and the warm reps of the 10 processes; the keygen/evaluator Galois-set assertion did not fire (all rc 0, no error lines). Peak RSS
+(processes set up with 16 threads): CI 14.57-14.74 GB, std 8.42-8.60 GB.
+
+**Conclusions.**
+- Phase 5 criterion met on the calm-state estimates: at 16 threads CI/2xstd is 2.37x against 2.07x at 1 thread
+  (best times); CI's 16-thread speedup 2.98x vs std's 2.60x. At 4 threads (the only thread count that is stable on WSL)
+  it is 2.14x vs 1.98x (item 5.2).
+- The WSL VM throttles 16 threads at its 14-CPU quota and changes speed state between processes; single-job medians
+  at 14-16 threads can show either scheme ahead by 20-50%. A clean 16-core curve needs ICELAKE (5.1-ICE, on hold).
+- Baseline commands do not change (1 thread).
