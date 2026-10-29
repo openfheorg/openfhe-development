@@ -12,6 +12,10 @@
 //        first bootstrap, which then runs with 1 iteration (as OpenFHE's iterative-ckks-bootstrapping example)]
 // Thread count: OMP_NUM_THREADS. First bootstrap (includes lazy diagonal precompute) is
 // reported separately; the warm bootstraps are what count.
+// Thread sweep (item 5.1): CI_THREAD_SWEEP="1,4,8,16" adds CI_SWEEP_ROUNDS (default 3) rounds after the warm reps;
+// each round bootstraps once per listed thread count (OpenFHEParallelControls.SetNumThreads, capped at
+// OMP_NUM_THREADS), in an order rotated by one each round, and prints one "SWEEP" line per bootstrap. Adjacent
+// bootstraps at different thread counts share the process and the laptop's speed state.
 //==================================================================================
 #include "openfhe.h"
 #include <algorithm>
@@ -181,6 +185,31 @@ int main(int argc, char** argv) {
             std::cout << "in level=" << ct->GetLevel() << " towers=" << ct->GetElements()[0].GetNumOfElements()
                       << " | out level=" << o->GetLevel() << " towers=" << o->GetElements()[0].GetNumOfElements()
                       << " noiseScaleDeg=" << o->GetNoiseScaleDeg() << "\n";
+    }
+    if (const char* sw = getenv("CI_THREAD_SWEEP")) {
+        std::vector<int> tl;
+        for (std::string tok, str(sw); !str.empty();) {
+            auto pos = str.find(',');
+            tok      = str.substr(0, pos);
+            str      = (pos == std::string::npos) ? "" : str.substr(pos + 1);
+            if (!tok.empty())
+                tl.push_back(std::stoi(tok));
+        }
+        uint32_t rounds = getenv("CI_SWEEP_ROUNDS") ? std::stoul(getenv("CI_SWEEP_ROUNDS")) : 3;
+        for (uint32_t r = 0; r < rounds && !tl.empty(); ++r) {
+            for (size_t k = 0; k < tl.size(); ++k) {
+                int t = tl[(k + r) % tl.size()];
+                OpenFHEParallelControls.SetNumThreads(t);
+                auto tb  = Clock::now();
+                auto o   = cc->EvalBootstrap(ct, iters, metaPrec);
+                double s = Sec(tb);
+                double b = prec(o);
+                std::cout << std::fixed << std::setprecision(3) << "SWEEP scheme=" << scheme << " round=" << r
+                          << " threads=" << OpenFHEParallelControls.GetNumThreads() << " s=" << s
+                          << std::setprecision(2) << " prec_min=" << b << " rms_bits=" << lastRms << std::endl;
+            }
+        }
+        OpenFHEParallelControls.Enable();
     }
     std::sort(times.begin(), times.end());
     double med  = times.empty() ? fSec : times[times.size() / 2];

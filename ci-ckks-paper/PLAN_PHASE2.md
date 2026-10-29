@@ -142,6 +142,11 @@ is 1.02-1.06x for mult, relin, rescale, rotate, ModUp, KeySwitchDown and 0.97-1.
 Phase 4 review (4.R, WSL, `p4R_em16`, calm pair at HEAD after 4.2): CI {5,3} 11.37 s vs std 11.27 s CtS-first
 (1.98x; CtS 1.46x, EvalMod 0.61x, StC 1.48x), CI StC-first 10.94 s; RMS unchanged. CI EvalMod per real slot 0.31x
 std CtS-first (criterion met); 0.61x std StC-first (per call 1.23x, was 1.30x; K = 28 floor 0.57x, item 3.1).
+Threads (item 5.1, WSL): CI and std both get about 2x at 4 threads (best CI 2.07x, std 2.19x; CI/2xstd 1.89x vs
+2.01x at 1 thread). Above 4 threads the WSL VM gives no usable number (14-CPU slice quota, hybrid laptop, 2-4x run
+spread; best 16-thread CI 2.20x / std 2.43x, in-process sweeps the reverse), so 5.R needs a stable 16-core host or a
+narrower thread range. Driver env `CI_THREAD_SWEEP=1,4,8,16` (`CI_SWEEP_ROUNDS`) times one process at several
+thread counts; `tools/thread-scaling.py LOG` tabulates.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -237,7 +242,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **4.R** Phase 4 review. Done when: CI EvalMod time per real slot <= 0.55x std's.
 
 ## Phase 5: multi-thread scaling
-- [ ] **5.1** Measure 1/4/8/16 threads for CI and std at 2^16.
+- [x] **5.1** Measure 1/4/8/16 threads for CI and std at 2^16.
 - [ ] **5.2** If CI scales worse: parallelize the sparse BSGS baby-step accumulation (per-thread partial sums in
   the extended basis, reduce once per giant block).
 - [ ] **5.R** Phase 5 review. Done when: CI/std speedup at 16 threads is within 10% of the single-thread one.

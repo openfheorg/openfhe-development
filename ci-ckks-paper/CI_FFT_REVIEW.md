@@ -143,6 +143,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    (Phase 2 review 2.R, WSL 2^16 {5,3}: CI/std stage ratios CtS 1.44x, StC 1.51x, below the diagonal ratios 1.83x /
    1.68x; StC-first cuts CI StC by 9% / 30% / 42% at 2 / 3 / 5 levels after, at 7.3-8.2 ms per diagonal vs std
    CtS-first 8.9-13.3 ms. Both orderings stay supported. See `PHASE2_LOG.md` 2.R.)
+   (Phase 5.1, WSL 2^16 {5,3} CtS-first: CI and std both get about 2x at 4 threads (best CI 2.07x, std 2.19x).
+   Above 4 threads the laptop VM gives no usable scaling number (2-4x run spread, 14-CPU quota); best 16-thread
+   times give CI 2.20x, std 2.43x. Multi-thread tuning stays open. See `PHASE2_LOG.md` 5.1.)
 
 ## 5. Other CI-CKKS work found
 Upstream `openfheorg/openfhe-development` main and dev (v1.6.1) have no CI-CKKS. Stale 2023 feature

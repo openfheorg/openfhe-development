@@ -2523,3 +2523,99 @@ neighbour pairs 1.27x (range 0.98-1.49x, noise). The expected value after item 4
   1.03x of it. The rest (about 4%) is within this laptop's noise for a single pair.
 - Baseline commands do not change. The phase-4 WSL reference is the calm pair above (CI 11.37 s, std 11.27 s,
   1.98x, CI StC-first 10.94 s). No calm std StC-first or {4,4} number exists from this review.
+
+## 5.1 Thread scaling 1/4/8/16 for CI and std at 2^16 -- DONE (WSL; scaling above 4 threads not measurable on WSL)
+
+**Host.** The host file said `WSL` before every job, and the user's request for this run forbids ICELAKE. All jobs
+ran on WSL through `wsl-guard.sh`, all rc 0: `p51_build`, `p51_thr`, `p51_thr2`, `p51_build2`, `p51_sweep`. Nothing
+ran on ICELAKE. No laptop sleep in any run (the `/proc/uptime` advance equals the wall-clock advance at all 80 run
+marks). Load average 0.4-16.4 (most of it the job's own threads; one other VM process, a `MainThread` at up to 100% of
+a core, ran throughout).
+
+**What changed.** No library code. Driver `benchmark/src/ci-fft-boot.cpp`: new env `CI_THREAD_SWEEP="1,4,8,16"`
+(plus `CI_SWEEP_ROUNDS`, default 3). After the warm reps it runs rounds of one bootstrap per listed thread count
+(`OpenFHEParallelControls.SetNumThreads`, capped at `OMP_NUM_THREADS`), the order rotated by one each round, and
+prints a `SWEEP scheme= round= threads= s= prec_min= rms_bits=` line per bootstrap. So bootstraps at different
+thread counts are adjacent in time and share one process. New tool `ci-ckks-paper/tools/thread-scaling.py LOG...`:
+per-run stage sums (CI `[CI-BT]` CtS + EvalMod + StC, std `BOOTSTRAPTIMING` Encoding + modular reduction + Decoding;
+the cold first bootstrap skipped), min / median per (scheme, threads), and per-round sweep speedups.
+
+**Commands** (WSL, repo root; `B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` = `build-wsl-bt/bin/benchmark/ci-fft-boot`;
+2^16 {5,3} CtS-first, 128-bit, FLEXIBLEAUTO 59/60, encap, dnum 3, 2 levels after, `CI_BOOT_TIMING=1`; job scripts
+in `~/ci-ckks-wsl/scripts/p51_*.sh`):
+
+    wsl-guard.sh p51_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8 && cmake --build build-wsl-bt --target ci-fft-boot -j 8'
+    wsl-guard.sh p51_thr 16 'for t in 1 4 8 14 16: OMP_NUM_THREADS=$t $B ci 16 5 3 59 60 1 3 fa 4 encap 0; OMP_NUM_THREADS=$t $T std 16 5 3 59 60 1 3 fa 5 encap 0
+        then t = 16 14 8 4 1 with std before CI'
+    wsl-guard.sh p51_thr2 16 'same pairs, t = 16 1 8 4 (CI, std), then t = 4 8 1 16 (std, CI)'
+    wsl-guard.sh p51_build2 12 '(as p51_build, driver with CI_THREAD_SWEEP)'
+    wsl-guard.sh p51_sweep 16 '2 passes of: OMP_NUM_THREADS=16 CI_THREAD_SWEEP=1,4,8,14,16 CI_SWEEP_ROUNDS=3 $B ci 16 5 3 59 60 1 1 fa 4 encap 0;
+        same for $T std ... fa 5 encap 0'
+    python3 -I ci-ckks-paper/tools/thread-scaling.py ~/ci-ckks-wsl/logs/p51_thr.log ~/ci-ckks-wsl/logs/p51_thr2.log
+    python3 -I ci-ckks-paper/tools/thread-scaling.py ~/ci-ckks-wsl/logs/p51_sweep.log
+
+The slice gives guarded jobs 14 CPUs of quota (`CPUQuota=1400%`) at nice 10 on the 20 vCPUs of an i7-12700H (6 P-cores
+with 2 threads + 8 E-cores). So 16 threads are over the quota by design, and 14 was added as the largest thread
+count that fits it.
+
+**Timing noise (the main finding).** The laptop changed speed state many times during the 65 minutes of runs. The
+1-thread std bootstrap took 11.1 s at 20:51, 14.6-16.4 s at 21:17-21:38 and 21-42 s at 21:45-21:53, with no sleep.
+At more than 4 threads the noise is worse. The same std 16-thread run takes 4.6 s in one process and 18.9 s twenty
+minutes later. In the slow states, more threads make the bootstrap slower: std 16 threads 33.7-54.9 s against
+21.0-42.1 s at 1 thread in the same process. During `p51_sweep` the slice used only about 6-7 CPUs with 16 threads
+and was not throttled in that window (`cpu.stat` `nr_throttled` unchanged over 20 s), with the VM about 50% idle. So
+the threads wait. The likely cause is VM vCPU scheduling on the hybrid laptop (wake-up latency of idle vCPUs at
+OpenMP fork/join, E-cores, Windows power states). Single-process medians are therefore not comparable between thread
+counts, or between CI and std, unless the two runs are adjacent and in the same state.
+
+**Results 1: per-process runs** (`p51_thr`, `p51_thr2`; 12 warm bootstraps per cell, 4 processes per cell; times
+are per bootstrap, CI = 65536 reals, std = 32768 reals). "Best" = the fastest warm bootstrap, the usual estimate on
+a noisy host. The medians are given to show the spread.
+
+| threads | CI best / median s | std best / median s | CI speedup (best) | std speedup (best) | CI / std time (best) | CI/2xstd (best) |
+|---|---|---|---|---|---|---|
+| 1 | 11.04 / 13.63 | 11.08 / 15.43 | 1.00x | 1.00x | 1.00 | 2.01x |
+| 4 | 5.34 / 8.75 | 5.05 / 7.01 | 2.07x | 2.19x | 1.06 | 1.89x |
+| 8 | 8.09 / 11.63 | 6.66 / 12.87 | 1.37x | 1.66x | 1.21 | 1.65x |
+| 14 (`p51_thr` only, 6 each) | 9.95 / 16.93 | 11.35 / 12.85 | 1.11x | 0.98x | 0.88 | 2.28x |
+| 16 | 5.02 / 6.81 | 4.56 / 6.14 | 2.20x | 2.43x | 1.10 | 1.82x |
+
+The calmest same-state pairs: `p51_thr` 20:49-20:53 (1 and 4 threads: CI 11.68 / 7.21 s, std 11.84 / 7.88 s warm
+median, so CI 1.62x and std 1.50x at 4 threads), and `p51_thr` 21:01-21:03 plus `p51_thr2` 21:14-21:15 (16 threads:
+CI 6.60 / 6.61 s, std 4.77-5.09 / 7.07 s). The 8- and 14-thread cells contain no calm run.
+
+**Results 2: in-process sweeps** (`p51_sweep`; speedup = the same round's 1-thread bootstrap / the N-thread
+bootstrap; 6 rounds per scheme in 4 processes).
+
+| threads | CI speedup median (range) | std speedup median (range) | CI speedup / std speedup |
+|---|---|---|---|
+| 4 | 1.94x (1.11-2.10) | 1.89x (1.51-2.28) | 1.03 |
+| 8 | 1.80x (0.78-2.11) | 1.57x (1.21-1.71) | 1.14 |
+| 14 | 1.86x (0.61-2.35) | 1.01x (0.85-1.18) | 1.84 |
+| 16 | 1.52x (0.77-2.22) | 0.92x (0.62-1.04) | 1.64 |
+
+The first CI and std sweep processes (21:34-21:40) ran in one state, with stable rounds: CI 4 / 8 / 16 threads
+2.04-2.10x / 1.75-1.88x / 1.46-1.64x and std 1.80-2.24x / 1.35-1.71x / 0.89-1.04x. The second pair ran in a slower,
+unstable state (one CI round went from 15.6 s to 5.3 s at 16 threads).
+
+**Other checks.** Precision does not depend on the thread count: CI RMS 21.55-21.57 bits, std 22.73-22.76 bits, in
+all runs and all 60 sweep bootstraps. Galois check held in all CI bootstraps. Peak RSS grows a little with threads:
+CI 13.43 GB (1 thread) to 13.64 GB (16), std 7.66 to 8.21 GB; the sweep processes, set up with 16 threads, peak at
+14.46 / 8.56 GB. Setup time falls with threads (CI `setup+keygen_s` 43 s at 1 thread to 8-9 s at 16 in calm runs).
+
+**Conclusions.**
+- **Both schemes scale to about 2x at 4 threads on WSL** (best: CI 2.07x, std 2.19x; in-process medians 1.94x /
+  1.89x). This is the only thread count with consistent results. At 4 threads CI/2xstd is 1.89x (best), against
+  2.01x at 1 thread.
+- **Above 4 threads WSL does not give a usable measurement.** 8, 14 and 16 threads are often slower than 4 threads
+  for both schemes, and the spread between runs is 2-4x. The best 16-thread times give CI 2.20x and std 2.43x
+  (CI/std time 1.10x, CI/2xstd 1.82x). The in-process sweeps give the opposite order (CI 1.52x, std 0.92x).
+- **No evidence yet that CI scales worse than std.** The best-time estimate puts CI about 10% behind std at 16 threads
+  (the edge of the 5.R criterion); the in-process sweeps put CI ahead. This decides nothing about item 5.2.
+- **For the plan adapter.** The 5.R criterion (CI/std speedup at 16 threads within 10% of the single-thread one)
+  needs a host with 16 free physical cores and stable clocks. On this laptop the slice gives 14 CPUs of quota and
+  the VM's multi-thread speed varies 2-4x. Options: ICELAKE only if the user sets the host file to it (the user
+  forbade ICELAKE for this run); or restrict phase 5 on WSL to 1-4 threads, where the CI/std scaling ratio is
+  0.95-1.03; or run a sweep in a quiet window (nothing else on the laptop, AC power) and accept only rounds whose
+  1-thread time is within 10% of the 11.0-11.7 s calm value.
+- Baseline commands do not change. The driver keeps its 1-thread default; the sweep is an opt-in env variable.
