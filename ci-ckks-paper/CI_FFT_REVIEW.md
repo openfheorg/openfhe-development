@@ -89,6 +89,41 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
   closes it (37 bits). See `PHASE2_LOG.md` 3.R. The CI default is OpenFHE's fit at
   the complex-equivalent slot count N/2 minus one (7 at 2^16, std 8), which gives CI the RMS of std at defaults.
 
+### 3.4 Final benchmark after phases 0-6 (item 6.5; WSL laptop VM, not ICELAKE)
+Host: the WSL VM on an i7-12700H laptop (6 P + 8 E cores; guarded jobs get a 14-CPU quota), not the ICELAKE server of
+3.1-3.3, so do not compare these numbers with 3.1. ICELAKE was not used because the user forbade external hosts for this
+run. Settings: N = 2^16, 128-bit, FLEXIBLEAUTO 59/60, SPARSE_ENCAPSULATED (weight 32), dnum 3, 2 levels after the
+bootstrap, `build-wsl-bt` (`-DBOOTSTRAPTIMING`), reps 3, warm medians. CI and std ran interleaved in jobs `p65_t1`,
+`p65_t1b` (1 thread) and `p65_t16`, `p65_t16b` (16 threads). The laptop changes speed between processes: the same
+1-thread command took 11.0-16.1 s. The table therefore uses the fastest process of each configuration, as 4.R and
+5.R did. Every run is listed in `PHASE2_LOG.md` 6.5.
+
+| Ordering, budget | Threads | CI (65,536 reals) | std x2 (65,536 reals) | CI / 2xstd | CI CtS / EvalMod / StC | std CtS / EvalMod / StC (one boot) | RMS bits CI / std | Keys CI / std | Peak RSS CI / std |
+|---|---|---|---|---|---|---|---|---|---|
+| CtS-first {5,3} | 1 | 11.30 s | 2 x 11.98 = 23.97 s | **2.12x** | 4.87 / 3.62 / 2.56 s | 3.79 / 6.14 / 1.78 s | 21.56 / 22.74 | 102 / 61 | 13.43 / 7.66 GB |
+| CtS-first {4,4} | 1 | 15.66 s | 2 x 14.93 = 29.86 s | 1.91x | 8.04 / 5.31 / 2.14 s | 5.20 / 8.20 / 1.32 s | 21.57 / 22.74 | 92 / 76 | 12.44 / 9.08 GB |
+| StC-first {5,3} | 1 | 11.00 s | 2 x 8.37 = 16.74 s | **1.52x** | 5.19 / 3.51 / 2.29 s | 3.48 / 2.97 / 1.60 s | 21.92 / 22.91 | 102 / 61 | 13.28 / 7.58 GB |
+| CtS-first {5,3} | 16 | 4.51 s | 2 x 5.01 = 10.02 s | 2.22x | 2.23 / 1.76 / 1.08 s | 1.58 / 2.74 / 1.02 s | 21.56 / 22.75 | 102 / 61 | 14.54 / 8.47 GB |
+| StC-first {5,3} | 16 | 4.18 s | 2 x 3.53 = 7.06 s | 1.69x | 2.27 / 1.79 / 0.95 s | 1.87 / 1.17 / 0.82 s | 21.91 / 22.90 | 102 / 61 | 14.43 / 8.35 GB |
+
+- At 1 thread CtS-first, the other interleaved pair gives 2.21x (CI 11.72 s, std 12.92 s). The CI {4,4} process ran
+  in a slow state (first bootstrap 17.7 s, CtS falling from 9.3 to 7.8 s over the reps), so its 1.91x is low. StC-first
+  is std's fastest real-data bootstrap (one EvalMod), so it gives CI the smallest lead. The 1.52x is close to 2.R's
+  1.45x and 4.R's CI 10.94 s.
+- 16 threads are noisy on WSL. The quota throttled the slice for 205 s and 162 s in the two jobs. The same 16-thread
+  configuration took 3.5-13.7 s (std StC-first) and 4.2-16.8 s (CI StC-first). Read the 16-thread rows as best-time
+  estimates only. The calmer estimate is 5.R's: CI 11.46 -> 3.85 s (2.98x), std 11.86 -> 4.57 s (2.60x), and CI/2xstd
+  2.07x at 1 thread against 2.37x at 16 threads. Here the best times give CI 2.51x and std 2.39x speedup CtS-first,
+  so CI again scales at least as well as std.
+- Min bits (-log2 max error) at 1 thread: CI 18.36-18.62 CtS-first and 19.79-19.90 StC-first; std 19.56-19.87 and
+  20.87-20.98. Precision does not depend on the thread count. Both CI orderings ran, and the keygen/evaluator Galois
+  check held in every CI bootstrap.
+- Unit tests, all on WSL after the two fixes below: `core_tests` 184/184, `pke_tests` 2117/2117 (31 of them CI),
+  `binfhe_tests` 150/150. The first run found two regressions from item 6.1, which were fixed in 6.5. (a) Two CI tests
+  built `ILNativeParams` without the CI ring tag. (b) `ElemParams::save` wrote the ring-type field even when the
+  archive's class version was below 2. Translation units that do not see the version registration then wrote a field
+  that `load` skipped, so 7 binfhe serialization tests threw `std::bad_alloc`. See `PHASE2_LOG.md` 6.5.
+
 ## 4. Remaining gaps and next steps
 1. **CtS is half the CI time.** A collapsed real level has ~2^(k+2) diagonals vs 2^(k+1) for a complex
    level (each real output mixes Re and Im inputs). Options: better butterfly layout, per-level BSGS
@@ -258,3 +293,5 @@ noise degree 2 (rescale pending), so the usable depth after bootstrapping is the
 
 No correctness defect was found in the transform itself: 24/24 CI tests, 1191/1191 CKKS tests, 184/184 core
 tests pass, and precision matches std at 2^16.
+(Item 6.5, WSL, final code: 31/31 CI tests, 2117/2117 `pke_tests`, 184/184 `core_tests`, 150/150 `binfhe_tests`;
+final benchmark table in 3.4.)

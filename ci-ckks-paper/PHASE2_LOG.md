@@ -3220,3 +3220,143 @@ the `BTSlotsEncoding` routing and its guards. All asserted values hold with at l
 runs. One flaky old threshold was fixed. Formatting changed no behavior (bit-exact cross-build bootstraps). Item 6.5
 builds and runs the tests. Finding: a missing bootstrap key under OpenMP aborts the process instead of throwing (CI
 and std alike), because the rotations run inside parallel regions.
+
+## 6.5 Final run: unit tests, final benchmark table, cleanup -- DONE (WSL, 2026-10-29)
+
+**Host.** The host file said `WSL` before every job, and every job ran on WSL through `wsl-guard.sh`. The user forbade
+every external host for this run ("we cannot run anything on any external host"), so nothing ran on ICELAKE, not even
+a read-only ssh. **Skipped at the user's instruction:** the ICELAKE parts of 6.5 (removing stale ICELAKE build dirs
+other than `build`, and any ICELAKE run). The item ran in two sessions. The first one ran `p65_build`, `p65_t1`,
+`p65_t16`, `p65_t1b`, `p65_t16b` and `p65_tbuild` (00:46-01:30, all rc 0) and was cut off; the VM restarted at about
+02:19. The second one reused those runs and ran the jobs from `p65_core` on. No timing job spanned a sleep:
+`/proc/uptime` advanced with the wall clock at all 44 process start/end marks.
+
+**What changed.**
+- `src/core/include/lattice/hal/elemparams.h` (**fix of an item 6.1 regression**): `ElemParams::save` now writes the
+  ring-type field only when the archive's class `version` is >= 2, which is the same condition `load` uses. It throws
+  if a CI ring type would be saved at a lower version. Root cause: `CEREAL_CLASS_VERSION` for `ElemParams<NativeInteger>`
+  / `ILNativeParams` sits in `src/core/lib/lattice/lattice.cpp`, and `ElemParams<NativeInteger32>` (binfhe narrow keys)
+  is not registered at all. A translation unit that does not see the registration uses cereal's default version 0 and
+  writes 0 into the archive. Since 6.1, `save` still wrote `rt` and `load` (version 0) skipped it, so the rest of the
+  archive was read one field off. In `p65_binfhe`, 7 binfhe serialization tests threw `std::bad_alloc`:
+  `UnitTestFHEWNativeSize.NarrowKeysSerializeNarrow`, `UnitTestFHEWPKESerialAP/GINX.BINARY` and
+  `UnitTestFHEWSerialAP/GINX/LMKCDEY/Gaussian.BINARY`. The CKKS path sees version 2, which is why the 6.3 CI
+  serialization matrix and the CKKS serialization tests passed. They still pass (below), and the CI tag still
+  round-trips.
+- `src/pke/unittest/utckksrns/UnitTestCKKSrnsCI.cpp` (**test not updated in 6.1**):
+  `PolyImpl_SwitchFormat_CIRingMult` and `CIAutomorphismMap_MatchesOracle` build a bare `ILNativeParams` and rely on
+  `RegisterCIModulus` to make `SwitchFormat` take the CI NTT. Since 6.1, `SwitchFormat` dispatches on the params' ring
+  type, so the tests ran the cyclotomic NTT and failed (`p65_pke`, 2 of 2117). The tests now call
+  `params->SetRingType(RingType::CONJUGATE_INVARIANT)`. The library behavior is the intended 6.1 design.
+- `ci-ckks-paper/tools/ci-fft-boot-ci2026.cpp` is now committed. It is the driver of the `ci-ckks-2026 (v1.5.1)` rows of
+  `CI_FFT_REVIEW.md` Table 3.2, preserved from the removed `openfhe-ci2026-orig` worktree (branch `ci-ckks-2026` @
+  27be1315, where it was untracked). It builds only inside a `ci-ckks-2026` checkout and is kept for reproducibility.
+- The `openfhe-ci2026-orig` worktree was removed in the first session (`git worktree list` shows only the main tree).
+- `CI_FFT_REVIEW.md`: new section 3.4 (final benchmark table, 1 and 16 threads, both orderings) and the final test
+  counts.
+- Both edited files were formatted with the pinned clang-format 23.1.1 (scratch venv). This only changed
+  `} else if` placement in `elemparams.h`, after the test binaries were built.
+
+**Commands** (WSL, repo root; `G` = `ci-ckks-paper/tools/wsl-guard.sh`; the benchmark job scripts are
+`~/ci-ckks-wsl/scripts/p65_t1.sh`, `p65_t1b.sh`, `p65_t16.sh`, `p65_t16b.sh`; `T` = `build-wsl-bt/bin/benchmark/ci-fft-boot`):
+
+    # session 1 (00:46-01:30)
+    G p65_build  12 'rebuild ci-fft-boot at HEAD f6a7d4bc'                     # rc 0
+    G p65_t1     15 'OMP_NUM_THREADS=1: T ci 16 5 3 59 60 1 3 fa 4 encap; T std ... fa 5 encap; T std 16 4 4 ... fa 5 encap;
+                     T ci 16 4 4 ... fa 4 encap; T ci 16 5 3 ... fa 12 encap 1; T std 16 5 3 ... fa 13 encap 1'
+    G p65_t16    16 'OMP_NUM_THREADS=16: CI/std alternating, CtS-first (corr 4/5) and StC-first (corr 12/13), 2^16 {5,3}'
+    G p65_t1b    15 'OMP_NUM_THREADS=1: StC-first CI, std, std, CI (ABBA); then CtS-first CI, std'
+    G p65_t16b   16 'OMP_NUM_THREADS=16: StC-first CI, std, std, CI'
+    G p65_tbuild 12 'cmake -DBUILD_UNITTESTS=ON build-wsl; cmake --build build-wsl --target core_tests pke_tests binfhe_tests -j 4'
+    # session 2
+    G p65_core    8 'build-wsl/unittest/core_tests --gtest_brief=1'     # 184/184 pass (rc file "killed:success": an `exit`
+                                                                        #   in the command skipped the rc write; exit 0)
+    G p65_pke     8 'build-wsl/unittest/pke_tests --gtest_brief=1'      # 2115/2117, 2 CI tests fail (above), 611 s
+    G p65_binfhe  8 'build-wsl/unittest/binfhe_tests --gtest_brief=1'   # 143/150, 7 serialization tests bad_alloc (above)
+    # fixes, then:
+    G p65_fixbuild 12 'cmake --build build-wsl --target core_tests pke_tests binfhe_tests ci-boot-serial ci-fft-boot -j 8'  # 0 warnings;
+                                                                        #   rc file "killed:success" (same `exit` issue)
+    G p65_binfhe2  8 'build-wsl/unittest/binfhe_tests --gtest_brief=1'  # 150/150, 36 s
+    G p65_core2    8 'build-wsl/unittest/core_tests --gtest_brief=1'    # 184/184, 7 s
+    G p65_pke2     8 'build-wsl/unittest/pke_tests --gtest_brief=1'     # 2117/2117, 362 s
+    G p65_serial   8 'OMP_NUM_THREADS=4 ci-ckks-paper/tools/serial-matrix.sh build-wsl <the 16 cases of 6.3>'  # 16/16 pass
+    G p65_btbuild 12 'cmake --build build-wsl-bt --target ci-fft-boot -j 8'                                    # rc 0
+    G p65_smoke    6 'OMP_NUM_THREADS=4: T ci 13 4 4 59 60 0 1 fa 4 encap 0; T ci ... fa 12 encap 1; T std ... fa 5 encap 0'
+    G p65_list     2 'build-wsl/unittest/pke_tests --gtest_list_tests'   # per-suite counts
+
+**Unit tests (final code):**
+
+| suite | tests | result | wall |
+|---|---|---|---|
+| `core_tests` | 184 (19 suites) | 184 pass | 7 s |
+| `pke_tests` | 2117 (41 suites; 31 `UTCKKSrnsCI`, 171 `UTCKKSRNS_BOOT`, 52 `UTCKKSRNSCS_BOOT`, 164 FBT, 32 SER) | 2117 pass | 362 s |
+| `binfhe_tests` | 150 (14 suites) | 150 pass | 36 s |
+
+Before the fixes: core 184/184, pke 2115/2117 (the two CI tests above), binfhe 143/150 (the 7 serialization tests).
+Both failures came from item 6.1 and were fixed here. Neither is a pre-existing upstream failure. The binfhe tests read
+the misaligned field that 6.1 added, and the two CI tests depend on the prime registry that 6.1 replaced. Both
+follow from the 6.1 diff; the commit before 6.1 was not rebuilt to confirm this.
+Serialization after the fix (`p65_serial`): all 16 cases of 6.3 pass (12 CI incl. both orderings, dense {1,1},
+META-BTS, 2^12-2^14; 4 std). Each case loads with the CI tag check of `ci-boot-serial` (`IsConjugateInvariant() ==
+isCI` on every tower) and bootstraps bit-exactly as the saving process. Smoke (`p65_smoke`, 2^13 {4,4}, `build-wsl-bt`
+rebuilt with the fix): CI CtS-first 18.03 / 19.71 bits min / RMS, CI StC-first 21.14 / 22.66, std 19.15 / 20.81. 6.4
+gave 18.04 / 19.71 and 21.19 / 22.67. The Galois check held in every bootstrap.
+
+**Final benchmark** (2^16 {5,3} unless noted, 128-bit, FLEXIBLEAUTO 59/60, encap, dnum 3, 2 levels after, `build-wsl-bt`
+at f6a7d4bc (the 6.5 fixes touch only serialization and tests), reps 3, warm medians; stage times are medians of the
+warm reps; std stages are per bootstrap, and std CtS-first runs EvalMod twice inside one bootstrap). Every process:
+
+| job | order | scheme | ordering | threads | warm s | CtS / EvalMod / StC s | RMS / min bits | keys | peak RSS GB |
+|---|---|---|---|---|---|---|---|---|---|
+| p65_t1 | 1 | CI | CtS {5,3} | 1 | **11.30** | 4.87 / 3.62 / 2.56 | 21.56 / 18.62 | 102 | 13.43 |
+| p65_t1 | 2 | std | CtS {5,3} | 1 | **11.98** | 3.79 / 6.14 / 1.78 | 22.74 / 19.81 | 61 | 7.66 |
+| p65_t1 | 3 | std | CtS {4,4} | 1 | 14.93 | 5.20 / 8.20 / 1.32 | 22.74 / 19.87 | 76 | 9.08 |
+| p65_t1 | 4 | CI | CtS {4,4} | 1 | 15.66 (slow state) | 8.04 / 5.31 / 2.14 | 21.57 / 18.51 | 92 | 12.44 |
+| p65_t1 | 5 | CI | StC {5,3} | 1 | 16.06 (slow state) | 7.15 / 5.25 / 3.39 | 21.92 / 19.79 | 102 | 13.28 |
+| p65_t1 | 6 | std | StC {5,3} | 1 | **8.37** | 3.48 / 2.97 / 1.60 | 22.91 / 20.87 | 61 | 7.58 |
+| p65_t1b | 1 | CI | StC {5,3} | 1 | 14.86 (slow state) | 6.54 / 5.31 / 2.82 | 21.91 / 19.79 | 102 | 13.28 |
+| p65_t1b | 2 | std | StC {5,3} | 1 | 11.75 | 5.05 / 4.42 / 2.21 | 22.91 / 20.98 | 61 | 7.58 |
+| p65_t1b | 3 | std | StC {5,3} | 1 | 12.27 | 5.09 / 4.52 / 2.23 | 22.91 / 20.89 | 61 | 7.58 |
+| p65_t1b | 4 | CI | StC {5,3} | 1 | **11.00** | 5.19 / 3.51 / 2.29 | 21.92 / 19.90 | 102 | 13.28 |
+| p65_t1b | 5 | CI | CtS {5,3} | 1 | 11.72 | 5.13 / 3.73 / 2.55 | 21.56 / 18.36 | 102 | 13.43 |
+| p65_t1b | 6 | std | CtS {5,3} | 1 | 12.92 | 3.79 / 7.23 / 1.73 | 22.74 / 19.56 | 61 | 7.66 |
+| p65_t16 | 1 | CI | CtS {5,3} | 16 | **4.51** | 2.23 / 1.76 / 1.08 | 21.56 / 18.28 | 102 | 14.54 |
+| p65_t16 | 2 | std | CtS {5,3} | 16 | 7.48 | 2.41 / 3.76 / 1.30 | 22.75 / 20.12 | 61 | 8.42 |
+| p65_t16 | 3 | std | StC {5,3} | 16 | 9.78 | 5.11 / 4.38 / 1.82 | 22.91 / 20.98 | 61 | 8.34 |
+| p65_t16 | 4 | CI | StC {5,3} | 16 | 16.78 | 7.31 / 6.30 / 2.33 | 21.93 / 19.78 | 102 | 14.35 |
+| p65_t16 | 5 | std | CtS {5,3} | 16 | **5.01** | 1.58 / 2.74 / 1.02 | 22.75 / 20.04 | 61 | 8.47 |
+| p65_t16 | 6 | CI | CtS {5,3} | 16 | 5.25 | 2.50 / 2.11 / 1.22 | 21.56 / 17.69 | 102 | 14.56 |
+| p65_t16b | 1 | CI | StC {5,3} | 16 | 8.85 | 4.80 / 4.08 / 1.82 | 21.93 / 19.71 | 102 | 14.45 |
+| p65_t16b | 2 | std | StC {5,3} | 16 | 13.73 | 5.26 / 4.84 / 2.26 | 22.92 / 20.72 | 61 | 8.35 |
+| p65_t16b | 3 | std | StC {5,3} | 16 | **3.53** | 1.87 / 1.17 / 0.82 | 22.90 / 20.85 | 61 | 8.35 |
+| p65_t16b | 4 | CI | StC {5,3} | 16 | **4.18** | 2.27 / 1.79 / 0.95 | 21.91 / 19.80 | 102 | 14.43 |
+
+Load average at process starts: 0.7-2.3 in `p65_t1`, 7.1-10.8 in the 16-thread jobs (mostly their own threads) and
+1.4-7.4 in `p65_t1b`. The slice's 14-CPU quota throttled the 16-thread jobs for 205 s (`p65_t16`, 1860 periods) and
+162 s (`p65_t16b`, 1387 periods).
+
+**Summary table** (fastest process per configuration, bold above; this is `CI_FFT_REVIEW.md` 3.4):
+
+| ordering, budget | threads | CI | std x2 | CI / 2xstd | other estimates |
+|---|---|---|---|---|---|
+| CtS-first {5,3} | 1 | 11.30 s | 23.97 s | **2.12x** | other interleaved pair 2.21x; 4.R 1.98x; 5.R 2.07x |
+| CtS-first {4,4} | 1 | 15.66 s | 29.86 s | 1.91x | the CI process ran in a slow state; 2.4: 2.09x |
+| StC-first {5,3} | 1 | 11.00 s | 16.74 s | **1.52x** | 2.R 1.45x; 4.R CI 10.94 s |
+| CtS-first {5,3} | 16 | 4.51 s | 10.02 s | 2.22x | 5.R (calm best times): CI 3.85 s, std 4.57 s, 2.37x |
+| StC-first {5,3} | 16 | 4.18 s | 7.06 s | 1.69x | same configs ran 4.2-16.8 s (CI) and 3.5-13.7 s (std) |
+
+16-thread speedups from the best times: CI 11.30 -> 4.51 s (2.51x), std 11.98 -> 5.01 s (2.39x) CtS-first; CI 11.00
+-> 4.18 s (2.63x), std 8.37 -> 3.53 s (2.37x) StC-first. As in 5.R, CI scales at least as well as std. The 16-thread
+WSL numbers are best-time estimates only: they include quota throttling and VM speed states. The 16-thread rows were
+not rerun, at the orchestrator's instruction.
+
+**Conclusions.**
+- Phase 2 ends with all three unit-test suites passing on WSL: 184 + 2117 + 150 tests, including the 31 CI tests that
+  cover both orderings. The first run found two regressions from item 6.1, both fixed here. One is a binfhe
+  serialization break (field written at a class version where it is not read). The other is two CI tests that
+  relied on the replaced prime registry. Both CI orderings remain supported and tested.
+- Final WSL numbers at 2^16 {5,3}, 1 thread: CI 11.30 s for 65,536 reals against 2 x 11.98 s for std CtS-first
+  (2.12x), and 1.52x against std StC-first (std's fastest real-data bootstrap). CI precision is 21.56 / 21.92 bits RMS
+  (std 22.74 / 22.91). CI peak RSS is 13.4 GB against std's 7.7 GB, with 102 keys against 61.
+- Not done, at the user's instruction: the ICELAKE cleanup and any ICELAKE confirmation. 5.1-ICE stays on hold.
+- Baseline commands are unchanged.

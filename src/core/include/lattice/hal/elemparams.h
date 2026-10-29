@@ -229,8 +229,17 @@ class ElemParams : public Serializable {
         ar(::cereal::make_nvp("ru", m_rootOfUnity));
         ar(::cereal::make_nvp("bm", m_bigCiphertextModulus));
         ar(::cereal::make_nvp("br", m_bigRootOfUnity));
-        const uint32_t rt = static_cast<uint32_t>(m_ringType);
-        ar(::cereal::make_nvp("rt", rt));
+        // `version` is the class version cereal writes into this archive, and load() reads the ring type only
+        // when that version is >= 2. A translation unit that does not see the CEREAL_CLASS_VERSION registration
+        // (lattice.cpp) gets version 0, e.g. the binfhe key serialization and ElemParams<NativeInteger32>, so
+        // the field must be written under the same condition or the archive is misaligned (item 6.5:
+        // binfhe_tests *Serial* failed with std::bad_alloc).
+        if (version >= 2) {
+            const uint32_t rt = static_cast<uint32_t>(m_ringType);
+            ar(::cereal::make_nvp("rt", rt));
+        } else if (m_ringType != RingType::CYCLOTOMIC) {
+            OPENFHE_THROW("a conjugate-invariant ring type needs ElemParams serialization version >= 2");
+        }
     }
 
     template <class Archive>

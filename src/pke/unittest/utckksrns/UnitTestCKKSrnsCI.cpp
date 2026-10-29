@@ -422,8 +422,10 @@ TEST(UTCKKSrnsCI, PolyImpl_SwitchFormat_CIRingMult) {
         ClearCIModuli();
         NativeInteger q(c.q), wm = RootOfUnity<NativeInteger>(4 * c.N, q);
         RegisterCIModulus(q, c.N, wm);
-        // ILNativeParams: cyclotomic order 2N -> ring dimension N; root unused on CI path.
+        // ILNativeParams: cyclotomic order 2N -> ring dimension N; root unused on CI path. Since item 6.1 the
+        // ring type is a property of the parameters (not of the registered prime), so tag them as CI.
         auto params = std::make_shared<ILNativeParams>(2 * c.N, q, NativeInteger(1));
+        params->SetRingType(RingType::CONJUGATE_INVARIANT);
 
         auto a = RandVec(c.N, c.q, 41 + c.N);
         auto b = RandVec(c.N, c.q, 53 + c.N);
@@ -470,6 +472,7 @@ TEST(UTCKKSrnsCI, CIAutomorphismMap_MatchesOracle) {
         NativeInteger q(c.q), wm = RootOfUnity<NativeInteger>(4 * c.N, q);
         RegisterCIModulus(q, c.N, wm);
         auto params = std::make_shared<ILNativeParams>(2 * c.N, q, NativeInteger(1));
+        params->SetRingType(RingType::CONJUGATE_INVARIANT);  // CI tower (item 6.1: ring type lives in the params)
         auto a = RandVec(c.N, c.q, 17 + c.N);
 
         // Galois elements 5^r mod 4N (the CI rotation generator powers) and -1.

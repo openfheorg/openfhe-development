@@ -176,6 +176,12 @@ encapsulated secrets, META-BTS in both orderings, keygen/evaluator key-set equal
 the `BTSlotsEncoding` routing and guards; the mid-file `#include` moved to the top. The CI-touched C++ files are
 clang-formatted (pinned 23.1.1; reformatted build bit-exact vs the old one). Tests built and run in 6.5. Baseline
 commands unchanged.
+Item 6.5 (WSL only; the user forbade external hosts, so the ICELAKE build-dir cleanup was skipped): `core_tests`
+184/184, `pke_tests` 2117/2117 (31 CI), `binfhe_tests` 150/150 after two fixes of 6.1 regressions (`ElemParams::save`
+writes the ring type only at class version >= 2, as `load` reads it; two CI tests tag their `ILNativeParams` as CI).
+Final 2^16 {5,3} table in `CI_FFT_REVIEW.md` 3.4: 1 thread CI 11.30 s vs std 2 x 11.98 s CtS-first (2.12x), 1.52x vs
+std StC-first; 16 threads best times 2.22x / 1.69x (noisy). `openfhe-ci2026-orig` worktree removed (its driver kept as
+`tools/ci-fft-boot-ci2026.cpp`). Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     # since item 6.2 both schemes' stage times come from the -DBOOTSTRAPTIMING build (build-wsl-bt; ICELAKE build-bt):
@@ -292,7 +298,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set
   equality, CI + `BTSlotsEncoding` guard; move the mid-file `#include` in `UnitTestCKKSrnsCI.cpp` to the top;
   clang-format the touched files.
-- [ ] **6.5** Final run on the active host (host file; ICELAKE only if the user set it): `pke_tests`, `core_tests`, `binfhe_tests`; final benchmark table (1 and 16
+- [x] **6.5** Final run on the active host (host file; ICELAKE only if the user set it): `pke_tests`, `core_tests`, `binfhe_tests`; final benchmark table (1 and 16
   threads) in `CI_FFT_REVIEW.md`; remove the `openfhe-ci2026-orig` worktree (WSL) and stale ICELAKE build dirs
   other than `build`.
 
