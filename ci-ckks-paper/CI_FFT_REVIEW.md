@@ -128,6 +128,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    (Phase 4.2, WSL 2^16, 21/11/4 towers, `benchmark/src/ci-op-cost.cpp`: CI/std per op is 1.02-1.06x for EvalMult,
    relinearization, rescale, rotation, ModUp and ModDown, and equal for the NTT-free ops; nothing above 1.1x. The
    CI/std bootstrap stage ratios come from op counts. See `PHASE2_LOG.md` 4.2.)
+   (Phase 4.R, WSL 2^16 {5,3}: CI EvalMod per call is 1.23x std's (was 1.30x), so per real slot 0.31x std
+   CtS-first and 0.61x std StC-first; the rest is the K = 28 table (floor 0.57x). CI 11.37 s vs std 11.27 s
+   CtS-first (1.98x). See `PHASE2_LOG.md` 4.R.)
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
 5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.

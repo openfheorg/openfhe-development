@@ -2437,3 +2437,89 @@ states (raw CI/std 0.66-1.04).
 - Use the calibrated `norm` ratio for any further CI/std per-op comparison on this laptop: raw ratios from separate
   processes are off by up to 35% here.
 - Baseline commands and numbers do not change.
+
+## 4.R Phase 4 review -- DONE (WSL, 2026-10-28)
+
+**Host.** The host file said `WSL` before every job. All jobs ran on WSL through `wsl-guard.sh`, all rc 0. Nothing
+ran on ICELAKE. Jobs: `p4R_build`, `p4R_em16`, `p4R_em16b`. No laptop sleep inside any run (the `/proc/uptime`
+advance equals the wall-clock advance for all 18 runs). Load average 0.6-2.5 in `p4R_em16`, 1.3-5.9 in `p4R_em16b`.
+
+**What changed.** No code. Code changed since the last baseline run (items 4.1 and 4.2: CI NTT, `PrecomputeAutoMapCI`),
+so this review reruns the baseline commands once per scheme, interleaved, and the StC-first pair. `p4R_build` rebuilt
+`build-wsl` and `build-wsl-bt` at HEAD (`bbf9cf8b`); `build-wsl-bt` was older than item 4.1 and relinked the
+libraries.
+
+**Commands** (WSL, repo root; `B` = `build-wsl/bin/benchmark/ci-fft-boot`, `T` = `build-wsl-bt/bin/benchmark/ci-fft-boot`,
+`E` = `env CI_BOOT_TIMING=1 OMP_NUM_THREADS=1`; 2^16, 128-bit, reps 3, FLEXIBLEAUTO 59/60, encap, dnum 3, 2 levels
+after; `r()` prints `=== time uptime_s cmd`, `uptime`, runs the command, `=== end time uptime_s rc`):
+
+    wsl-guard.sh p4R_build 12 'cmake --build build-wsl --target ci-fft-boot -j 8 && cmake --build build-wsl-bt --target ci-fft-boot -j 8'
+    wsl-guard.sh p4R_em16 15 'r $E $B ci 16 5 3 59 60 1 3 fa 4 encap 0;  r $E $T std 16 5 3 59 60 1 3 fa 5 encap 0;
+        r $E $B ci 16 5 3 59 60 1 3 fa 12 encap 1; r $E $T std 16 5 3 59 60 1 3 fa 13 encap 1;
+        r $E $B ci 16 4 4 59 60 1 3 fa 4 encap 0;  r $E $T std 16 4 4 59 60 1 3 fa 5 encap 0;
+        then the four {5,3} runs again in reverse order'
+    wsl-guard.sh p4R_em16b 15 'std StC-first, CI StC-first, std StC-first, CI CtS-first, std CtS-first, std StC-first,
+        CI StC-first, std StC-first (same arguments as above)'   # more std StC-first runs, see "Timing noise"
+    python3 -I ci-ckks-paper/tools/evalmod-per-slot.py ~/ci-ckks-wsl/logs/p4R_em16.log ~/ci-ckks-wsl/logs/p4R_em16b.log
+
+**Timing noise.** As in item 3.3, the laptop changed speed state during both jobs. Per-rep stage times moved by up
+to 2x inside one process (e.g. std StC-first decode 1.77-4.03 s in `p4R_em16b` #2). Only one CI/std pair ran at the
+calm speed of `p2R_base` (`p4R_em16` #0 CI CtS-first and #1 std CtS-first: every stage within 5% of `p2R_base`, the
+CI stages 2-10% below it as items 4.1/4.2 predict). CI StC-first `p4R_em16` #7 is also calm. No std StC-first run
+was calm: the best (`p4R_em16b` #2, 10.58 s) is 1.26x `p2R_base`'s 8.43 s, with its decode and encode 1.2x slower
+too. `p4R_em16b` ran entirely in slow states (load 2-6 from other processes on the VM). So the tables below use the
+calm runs; all-run ranges are given for the per-real-slot ratio only.
+
+**Results 1: phase-4 baseline (calm runs, warm medians of reps 2-4).**
+
+| run | bootstrap s | CtS s | EvalMod s | StC s | RMS / min bits | keys | peak RSS GB |
+|---|---|---|---|---|---|---|---|
+| CI {5,3} CtS-first corr 4 (`p4R_em16` #0) | **11.37** | 5.03 | 3.62 | 2.53 | 21.56 / 18.19 | 102 | 13.43 |
+| std {5,3} CtS-first corr 5 (#1) | **11.27** | 3.45 | 5.89 | 1.71 | 22.74 / 19.54 | 61 | 7.66 |
+| CI {5,3} StC-first corr 12 (#7) | **10.94** | 5.06 | 3.59 | 2.26 | 21.92 / 19.75 | 102 | 13.28 |
+| 2.R reference (`p2R_base`): CI / std CtS-first | 11.99 / 11.63 | 5.16 / 3.59 | 4.02 / 6.17 | 2.55 / 1.69 | 21.57 / 22.75 | | |
+| 2.R reference: CI StC-first | 11.62 | 5.34 | 3.95 | 2.32 | 21.91 | | |
+
+- CI/2xstd (CtS-first, calm pair): 2 x 11.27 / 11.37 = **1.98x** (2.R 1.94x). Stage ratios CI / std: CtS **1.46x**,
+  EvalMod **0.61x**, StC **1.48x** (2.R: 1.44x / 0.65x / 1.51x).
+- CI is 5.2% (CtS-first) and 5.9% (StC-first) below `p2R_base`, std 3.1%. So items 4.1/4.2 give CI about 2-3% on
+  top of the session's speed, most of it in EvalMod (-10% vs -4.5% for std per call), as item 4.2 predicted.
+- Not reportable (slow speed states): the {4,4} pair (CI 16.48 s, std 17.74 s, each 1.25-1.39x its `p2R_base`
+  time) and every std StC-first run (10.58-13.77 s). Their precision is valid: {4,4} CI 21.56 / std 22.74 bits RMS
+  (92 / 76 keys, 12.44 / 9.08 GB); std StC-first 22.90-22.91 / 20.72-20.95 bits, 61 keys, 7.58 GB.
+- Precision is unchanged from 2.R and 4.1 in all 18 runs: CI CtS-first 21.56 / 18.08-18.19, CI StC-first
+  21.91-21.92 / 19.75-19.82, std CtS-first 22.74-22.75 / 19.46-19.83 bits. Galois check held and 0 run-time
+  diagonal encodes in all 32 CI bootstraps. Both CI orderings build and run.
+
+**Results 2: EvalMod per real slot (the 4.R criterion).** Real slots per bootstrap: CI 65536 (one EvalMod call),
+std 32768 (CtS-first: two calls; StC-first: one call). Std's per-call EvalMod time is the same in both orderings
+(item 3.3; `p2R_base` 3.087 vs 3.063 s), so for std StC-first, which had no calm run, the calm std CtS-first per-call
+time stands in.
+
+| comparison | CI us / real slot | std us / real slot | **CI / std** | source |
+|---|---|---|---|---|
+| CI CtS-first vs std CtS-first (calm pair) | 55.2 | 179.9 | **0.307x** | `p4R_em16` #0 / #1 |
+| CI StC-first vs std CtS-first (calm CI, calm std) | 54.8 | 179.9 | **0.305x** | #7 / #1 |
+| any CI vs std CtS-first, all 8 neighbour pairs, both jobs | 54.8-88.1 | 179.9-299.2 | 0.24-0.37x | both jobs |
+| CI vs std StC-first, from the calm per-call ratio | 55.2 | 89.9 (2.947 s / 32768) | **0.614x** | #0 / #1 |
+| same, model: K = 28 table x per-op cost (items 0.5, 4.2) | | | 1.145 x 1.03 / 2 = 0.59x | |
+| same, K = 28 floor (CI per-op cost equal to std's) | | | 1.145 / 2 = 0.57x | |
+| 2.R / 3.3 reference: vs std CtS-first / StC-first | 60-61 | 188-193 / 91-94 | 0.31-0.33x / 0.64-0.66x | `p2R_base`, `p33_*` |
+
+Per EvalMod call CI / std: calm pair **1.23x** (2.R 1.30x, 3.3 median 1.26x); median over the 8 CI vs std CtS-first
+neighbour pairs 1.27x (range 0.98-1.49x, noise). The expected value after item 4.2 was 1.15 x 1.03 = 1.19x.
+
+**Conclusions.**
+- **Criterion met** against std's default (CtS-first) bootstrap, the ordering of the plan's baseline commands: CI
+  EvalMod per real slot is **0.31x** std's (calm pair; 0.24-0.37x over all pairs), well under 0.55x. It was already
+  met at 2.R (0.32x); phase 4 moves it a little (per call 1.30x -> 1.23x).
+- **Not met against std StC-first** (std's cheapest real-data bootstrap, one EvalMod call): **0.61x** (calm per-call
+  proxy; model 0.59x). Phase 4 removed most of the CI ring part (per op 1.02-1.06x, item 4.2): 0.64-0.66x -> 0.61x.
+  What remains is the K = 28 sine table (degree 48 vs 36, 1.145x per call, item 0.5), which sets a floor of 0.57x.
+  Item 3.1 keeps K = 28 because a weight-16 CI key is below 128 bits. So 0.55x against std StC-first is not
+  reachable with this EvalMod polynomial; it would need a cheaper EvalMod for the weight-32 key (e.g. a different
+  approximation of the same depth), which is not a ring-overhead item.
+- About 1.07x of the 1.23x per call is not explained by the K = 28 table (1.145x); the per-op ring cost explains
+  1.03x of it. The rest (about 4%) is within this laptop's noise for a single pair.
+- Baseline commands do not change. The phase-4 WSL reference is the calm pair above (CI 11.37 s, std 11.27 s,
+  1.98x, CI StC-first 10.94 s). No calm std StC-first or {4,4} number exists from this review.
