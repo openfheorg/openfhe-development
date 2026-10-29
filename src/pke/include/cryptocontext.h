@@ -461,8 +461,8 @@ class CryptoContextImpl : public Serializable {
             }
             // Check if plaintext has got enough slots for data (value). Native CI CKKS
             // packs N real slots (vs N/2 complex), so its cap is ringDim, not ringDim/2.
-            uint32_t ringDim  = elemParamsPtr->GetRingDimension();
-            size_t valueSize  = value.size();
+            uint32_t ringDim = elemParamsPtr->GetRingDimension();
+            size_t valueSize = value.size();
             uint32_t maxSlots = (this->GetCKKSDataType() == REAL_CI) ? ringDim : (ringDim / 2);
             if (valueSize > maxSlots) {
                 OPENFHE_THROW("The size [" + std::to_string(valueSize) +
@@ -476,8 +476,8 @@ class CryptoContextImpl : public Serializable {
         } else {
             // Check if plaintext has got enough slots for data (value). Native CI CKKS
             // packs N real slots (vs N/2 complex), so its cap is ringDim, not ringDim/2.
-            uint32_t ringDim  = params->GetRingDimension();
-            size_t valueSize  = value.size();
+            uint32_t ringDim = params->GetRingDimension();
+            size_t valueSize = value.size();
             uint32_t maxSlots = (this->GetCKKSDataType() == REAL_CI) ? ringDim : (ringDim / 2);
             if (valueSize > maxSlots) {
                 OPENFHE_THROW("The size [" + std::to_string(valueSize) +

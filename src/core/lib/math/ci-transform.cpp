@@ -5,9 +5,6 @@
 //==================================================================================
 
 #include "math/ci-transform.h"
-#include "math/hal/intnat/transformnat.h"
-#include "math/nbtheory.h"
-#include "utils/exception.h"
 
 #include <atomic>
 #include <map>
@@ -15,6 +12,10 @@
 #include <mutex>
 #include <utility>
 #include <vector>
+
+#include "math/hal/intnat/transformnat.h"
+#include "math/nbtheory.h"
+#include "utils/exception.h"
 
 // CI NTT. Evaluates a CI element a = a_0 + sum_i a_i (X^i + X^{-i}) at the N points wm^{4j+1}
 // (wm a primitive 4N-th root), j = 0..N-1. Since x^{-i} = -wm^N x^{N-i} at those points, this is
@@ -39,7 +40,8 @@ struct CITables {
     CINativeVector root, rootPre;        // CT node multipliers wm^{e_k} of X^N - wm^N (forward)
     CINativeVector rootInv, rootInvPre;  // wm^{-e_k} (inverse; [2], [3] times wm^{N/2} c)
     CINativeVector fwdK, fwdKPre;        // {wm^N, -wm^{3N/2}, wm^{N/2} - wm^{3N/2}}
-    CINativeVector invK, invKPre;        // {c, wm^N, wm^N c, wm^{-N/2}, wm^{N/2}, 2c, 2c wm^{-N/2} / (1 - wm^N)}, c = (2N)^{-1}
+    CINativeVector invK,
+            invKPre;  // {c, wm^N, wm^N c, wm^{-N/2}, wm^{N/2}, 2c, 2c wm^{-N/2} / (1 - wm^N)}, c = (2N)^{-1}
     CINativeInteger Ninv;
     std::vector<uint32_t> brev;
     // reference (slow) tables
@@ -48,7 +50,7 @@ struct CITables {
     CINativeInteger detInv;
 };
 
-using Key      = std::pair<uint64_t, uint32_t>;  // (q, N)
+using Key = std::pair<uint64_t, uint32_t>;  // (q, N)
 using Registry = std::map<Key, std::shared_ptr<const CITables>>;
 std::atomic<const Registry*> g_reg{nullptr};
 std::mutex g_regMutex;
@@ -89,11 +91,11 @@ void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativ
     const Key key{modulus.ConvertToInt(), N};
     if (Find(key) != nullptr)
         return;
-    auto t      = std::make_shared<CITables>();
+    auto t = std::make_shared<CITables>();
     const auto& q = modulus;
-    t->N        = N;
-    t->q        = q;
-    t->wm       = wm;
+    t->N = N;
+    t->q = q;
+    t->wm = wm;
     const uint32_t m = 4 * N;
     t->wmPow.resize(m);
     t->wmPow[0] = CINativeInteger(1);
@@ -116,7 +118,7 @@ void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativ
     if (N >= 2)
         ex[1] = N / 2;
     for (uint32_t k = 1; 2 * k + 1 < N; ++k) {
-        ex[2 * k]     = ex[k] / 2;
+        ex[2 * k] = ex[k] / 2;
         ex[2 * k + 1] = ex[k] / 2 + N;
     }
     auto prep = [&](CINativeVector& v, CINativeVector& vp) {
@@ -124,23 +126,23 @@ void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativ
         for (size_t i = 0; i < v.GetLength(); ++i)
             vp[i] = v[i].PrepModMulConst(q);
     };
-    t->root    = CINativeVector(N, q);
+    t->root = CINativeVector(N, q);
     t->rootInv = CINativeVector(N, q);
     for (uint32_t k = 0; k < N; ++k) {
-        t->root[k]    = W(ex[k]);
+        t->root[k] = W(ex[k]);
         t->rootInv[k] = W(-ex[k]);
     }
     prep(t->root, t->rootPre);
     prep(t->rootInv, t->rootInvPre);
     const int64_t Ni = N;
-    t->Ninv          = CINativeInteger(N).ModInverse(q);
+    t->Ninv = CINativeInteger(N).ModInverse(q);
     const CINativeInteger c = CINativeInteger(2 * static_cast<uint64_t>(N)).ModInverse(q);
-    t->fwdK          = CINativeVector(3, q);
-    t->fwdK[0]       = W(Ni);
-    t->fwdK[1]       = W(7 * Ni / 2);  // -wm^{3N/2}
-    t->fwdK[2]       = W(Ni / 2).ModAdd(W(7 * Ni / 2), q);
+    t->fwdK = CINativeVector(3, q);
+    t->fwdK[0] = W(Ni);
+    t->fwdK[1] = W(7 * Ni / 2);  // -wm^{3N/2}
+    t->fwdK[2] = W(Ni / 2).ModAdd(W(7 * Ni / 2), q);
     prep(t->fwdK, t->fwdKPre);
-    t->invK    = CINativeVector(7, q);
+    t->invK = CINativeVector(7, q);
     t->invK[0] = c;
     t->invK[1] = W(Ni);
     t->invK[2] = W(Ni).ModMul(c, q);
@@ -153,20 +155,20 @@ void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativ
     if (N >= 4) {
         const CINativeInteger mu = W(Ni / 2).ModMul(c, q);
         for (uint32_t k : {2u, 3u}) {
-            t->rootInv[k]    = t->rootInv[k].ModMul(mu, q);
+            t->rootInv[k] = t->rootInv[k].ModMul(mu, q);
             t->rootInvPre[k] = t->rootInv[k].PrepModMulConst(q);
         }
     }
     t->detInv = W(N).ModMul(CINativeInteger(2), q).ModInverse(q);
-    t->rootN    = CINativeVector(N, q);
+    t->rootN = CINativeVector(N, q);
     t->rootNinv = CINativeVector(N, q);
     for (uint32_t k = 0; k < N; ++k) {
-        t->rootN[k]    = W(4 * static_cast<int64_t>(k));
+        t->rootN[k] = W(4 * static_cast<int64_t>(k));
         t->rootNinv[k] = W(-4 * static_cast<int64_t>(k));
     }
     const Registry* old = g_reg.load(std::memory_order_acquire);
-    auto next           = std::make_unique<Registry>(old ? *old : Registry());
-    (*next)[key]        = std::move(t);
+    auto next = std::make_unique<Registry>(old ? *old : Registry());
+    (*next)[key] = std::move(t);
     g_reg.store(next.get(), std::memory_order_release);
     Retired().push_back(std::move(next));
 }
@@ -197,7 +199,7 @@ void CIForwardTransform(CINativeVector& vals) {
         return;
     }
     intnat::NumberTheoreticTransformNat<CINativeVector>().CIForwardTransformToBitReverseInPlace(
-        t.root, t.rootPre, t.fwdK, t.fwdKPre, &vals);
+            t.root, t.rootPre, t.fwdK, t.fwdKPre, &vals);
     // output stays in bit-reversed node order (PrecomputeAutoMapCI accounts for it)
 }
 
@@ -209,14 +211,14 @@ void CIInverseTransform(CINativeVector& vals) {
     }
     // input is in bit-reversed node order
     intnat::NumberTheoreticTransformNat<CINativeVector>().CIInverseTransformFromBitReverseInPlace(
-        t.rootInv, t.rootInvPre, t.invK, t.invKPre, &vals);
+            t.rootInv, t.rootInvPre, t.invK, t.invKPre, &vals);
 }
 
 // ---- reference (original) implementation, kept for validation ----
 void CIForwardTransformRef(CINativeVector& vals) {
     const CITables& t = Lookup(vals.GetModulus(), vals.GetLength());
-    const uint32_t N  = t.N;
-    const uint32_t m  = 4 * N;
+    const uint32_t N = t.N;
+    const uint32_t m = 4 * N;
     const CINativeInteger& q = t.q;
     CINativeVector at(N, q);
     at[0] = vals[0] % q;
@@ -230,8 +232,8 @@ void CIForwardTransformRef(CINativeVector& vals) {
 
 void CIInverseTransformRef(CINativeVector& vals) {
     const CITables& t = Lookup(vals.GetModulus(), vals.GetLength());
-    const uint32_t N  = t.N;
-    const uint32_t m  = 4 * N;
+    const uint32_t N = t.N;
+    const uint32_t m = 4 * N;
     const CINativeInteger& q = t.q;
     CINativeVector nat(N, q), at(N, q);
     for (uint32_t j = 0; j < N; ++j)  // from bit-reversed node order
@@ -246,10 +248,9 @@ void CIInverseTransformRef(CINativeVector& vals) {
         if (i < k) {
             a[i] = at[i].ModMul(t.wmPow[N - i], q).ModSub(t.wmPow[m - (N - i)].ModMul(at[k], q), q).ModMul(t.detInv, q);
             a[k] = t.wmPow[i].ModMul(at[k], q).ModSub(at[i].ModMul(t.wmPow[m - i], q), q).ModMul(t.detInv, q);
-        }
-        else if (i == k) {
+        } else if (i == k) {
             CINativeInteger d = t.wmPow[i].ModAdd(t.wmPow[m - i], q);
-            a[i]              = at[i].ModMul(d.ModInverse(q), q);
+            a[i] = at[i].ModMul(d.ModInverse(q), q);
         }
     }
     vals = a;

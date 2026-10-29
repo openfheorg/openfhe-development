@@ -342,8 +342,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
 
 template <typename VecType>
 void NumberTheoreticTransformNat<VecType>::ForwardStagesFrom(uint32_t m0, const VecType& rootOfUnityTable,
-                                                             const VecType& preconRootOfUnityTable,
-                                                             VecType* element) {
+                                                             const VecType& preconRootOfUnityTable, VecType* element) {
     // NTT based on the Cooley-Tukey (CT) butterfly
     // Inputs: element (vector of size n in standard ordering)
     //         rootOfUnityTable (precomputed roots of unity in bit-reversed ordering)
@@ -687,7 +686,7 @@ void NumberTheoreticTransformNat<VecType>::CIForwardTransformToBitReverseInPlace
         const NInt P{condSubNoCmp(static_cast<NInt>(A - U + mv), mv)};
         const NInt AU{static_cast<NInt>(A + U)};
         const NInt rS{static_cast<NInt>(AU * mr3 - shoupMulHi(AU, mr3p) * mv)};
-        e[q4].m_value     = P + rS;
+        e[q4].m_value = P + rS;
         e[h + q4].m_value = P - rS + mv2;
     }
     for (size_t j{1}; j < q4; ++j) {
@@ -699,7 +698,7 @@ void NumberTheoreticTransformNat<VecType>::CIForwardTransformToBitReverseInPlace
         const NInt AU{static_cast<NInt>(A + U)}, DV{static_cast<NInt>(D + V)};
         const NInt rS{static_cast<NInt>(AU * mr3 - shoupMulHi(AU, mr3p) * mv)};
         const NInt rQ{static_cast<NInt>(DV * mr3 - shoupMulHi(DV, mr3p) * mv)};
-        e[j].m_value     = P + rQ;
+        e[j].m_value = P + rQ;
         e[h + j].m_value = P - rQ + mv2;
         e[h - j].m_value = R + rS;
         e[N - j].m_value = R - rS + mv2;
@@ -750,14 +749,14 @@ void NumberTheoreticTransformNat<VecType>::CIInverseTransformFromBitReverseInPla
         const NInt x0{e[q4].m_value}, x1{e[h + q4].m_value};
         const NInt T{mul(static_cast<NInt>(x0 + x1), ri, rip)};
         const NInt d{red4(static_cast<NInt>(x0 - x1 + mv2))};
-        e[q4].m_value     = condSubNoCmp(static_cast<NInt>(T + d), mv);
+        e[q4].m_value = condSubNoCmp(static_cast<NInt>(T + d), mv);
         e[h + q4].m_value = mul(static_cast<NInt>(T - d + mv), r2, r2p);
     }
     for (size_t j{1}; j < q4; ++j) {
         const NInt xa{e[j].m_value}, xb{e[h + j].m_value}, xc{e[h - j].m_value}, xd{e[N - j].m_value};
         const NInt X{mul(static_cast<NInt>(xa + xb), c, cp)};
         const NInt d2{red4(static_cast<NInt>(xc - xd + mv2))};
-        e[j].m_value     = condSubNoCmp(static_cast<NInt>(X + d2), mv);
+        e[j].m_value = condSubNoCmp(static_cast<NInt>(X + d2), mv);
         e[N - j].m_value = mul(static_cast<NInt>(X - d2 + mv), r2, r2p);
         const NInt Z{mul(static_cast<NInt>(xa - xb + mv2), r2c, r2cp)};
         const NInt s2{static_cast<NInt>(xc + xd)};

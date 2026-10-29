@@ -1,20 +1,21 @@
 // Noise probe: CI vs std CKKS basic-operation precision vs ring dimension.
 // Args: scheme(ci|std) logN scaleMod. Prints -log2(max err) and -log2(rms err) for:
 // fresh enc, mult+rescale, rotation (by 1 slot), 6 chained squarings (x -> 2x^2-1).
-#include "openfhe.h"
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <random>
+
+#include "openfhe.h"
 using namespace lbcrypto;
 
 int main(int argc, char** argv) {
     std::string scheme = (argc > 1) ? argv[1] : "ci";
-    uint32_t logN      = (argc > 2) ? std::stoul(argv[2]) : 12;
-    uint32_t scaleMod  = (argc > 3) ? std::stoul(argv[3]) : 50;
-    std::string sc     = (argc > 4) ? argv[4] : "fm";
-    bool isCI          = scheme == "ci";
-    uint32_t N         = 1u << logN, slots = isCI ? N : N / 2;
+    uint32_t logN = (argc > 2) ? std::stoul(argv[2]) : 12;
+    uint32_t scaleMod = (argc > 3) ? std::stoul(argv[3]) : 50;
+    std::string sc = (argc > 4) ? argv[4] : "fm";
+    bool isCI = scheme == "ci";
+    uint32_t N = 1u << logN, slots = isCI ? N : N / 2;
     CCParams<CryptoContextCKKSRNS> pr;
     if (isCI)
         pr.SetCKKSDataType(REAL_CI);
@@ -34,8 +35,7 @@ int main(int argc, char** argv) {
     if (isCI) {
         // CI rotation by one g=5 step = Galois element 5
         cc->EvalAutomorphismKeyGen(k.secretKey, {5});
-    }
-    else {
+    } else {
         cc->EvalRotateKeyGen(k.secretKey, {1});
     }
     std::vector<double> x(slots);
@@ -51,11 +51,12 @@ int main(int argc, char** argv) {
         double mx = 0, ss = 0;
         for (uint32_t i = 0; i < slots; ++i) {
             double e = std::abs(p->GetCKKSPackedValue()[i].real() - ref[i]);
-            mx       = std::max(mx, e);
+            mx = std::max(mx, e);
             ss += e * e;
         }
-        std::cout << std::fixed << std::setprecision(2) << "PROBE " << scheme << " " << sc << " logN=" << logN << " " << name
-                  << " max_bits=" << -std::log2(mx) << " rms_bits=" << -std::log2(std::sqrt(ss / slots)) << "\n";
+        std::cout << std::fixed << std::setprecision(2) << "PROBE " << scheme << " " << sc << " logN=" << logN << " "
+                  << name << " max_bits=" << -std::log2(mx) << " rms_bits=" << -std::log2(std::sqrt(ss / slots))
+                  << "\n";
     };
     rep("fresh", ct, x);
     auto sq = cc->EvalMult(ct, ct);
@@ -70,7 +71,7 @@ int main(int argc, char** argv) {
     std::vector<double> xr(slots);
     if (isCI) {
         auto km = cc->GetEvalAutomorphismKeyMap(k.secretKey->GetKeyTag());
-        rot     = cc->EvalAutomorphism(ct, 5, km);
+        rot = cc->EvalAutomorphism(ct, 5, km);
         Plaintext p0;
         cc->Decrypt(k.secretKey, rot, &p0);  // reference via exact permutation of x: use decrypt of fresh
         // build reference by permuting x with the CI map: find permutation from a noiseless check
@@ -92,8 +93,7 @@ int main(int argc, char** argv) {
                     best = jt->first;
             xr[i] = best;
         }
-    }
-    else {
+    } else {
         rot = cc->EvalRotate(ct, 1);
         for (uint32_t i = 0; i < slots; ++i)
             xr[i] = x[(i + 1) % slots];

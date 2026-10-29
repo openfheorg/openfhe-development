@@ -36,16 +36,16 @@
 #include "scheme/ckksrns/ckksrns-fhe.h"
 
 #include <algorithm>
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <complex>
 #include <cstdint>
 #include <functional>
 #include <iostream>
 #include <limits>
 #include <map>
-#include <mutex>
 #include <memory>
+#include <mutex>
 #include <tuple>
 #ifdef BOOTSTRAPTIMING
     #include <ostream>
@@ -124,11 +124,11 @@ struct LTStats {
 LTStats* g_lt = nullptr;  // non-null while an instrumented level runs
 // Runs f(); when a level is instrumented, adds n to the counter and the elapsed time to the timer.
 template <class F>
-decltype(auto) LTRun(uint32_t LTStats::*cnt, double LTStats::*acc, uint32_t n, F&& f) {
+decltype(auto) LTRun(uint32_t LTStats::* cnt, double LTStats::* acc, uint32_t n, F&& f) {
     if (g_lt == nullptr)
         return f();
     struct Tm {
-        double LTStats::*acc;
+        double LTStats::* acc;
         std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
         ~Tm() {
             if (g_lt)
@@ -139,13 +139,13 @@ decltype(auto) LTRun(uint32_t LTStats::*cnt, double LTStats::*acc, uint32_t n, F
     return f();
 }
 // Adds n to a counter of the instrumented level (no timing).
-inline void LTAdd(uint32_t LTStats::*cnt, uint32_t n) {
+inline void LTAdd(uint32_t LTStats::* cnt, uint32_t n) {
     if (g_lt)
         g_lt->*cnt += n;
 }
 // One instrumented level: counts from construction to Print().
 class LTLevel {
-public:
+  public:
     LTLevel(const char* tag, int32_t lvl, uint32_t diags, uint32_t towersQl, uint32_t towersP)
         : tag_(tag), lvl_(lvl), diags_(diags), towersQl_(towersQl), towersP_(towersP) {
         g_lt = &st_;
@@ -157,23 +157,23 @@ public:
     void Print() {
         if (g_lt != &st_)
             return;
-        g_lt         = nullptr;
-        const double t  = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0_).count();
-        const auto& s   = st_;
+        g_lt = nullptr;
+        const double t = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0_).count();
+        const auto& s = st_;
         const double ot = t - s.tModUp - s.tBaby - s.tGiant - s.tModDown - s.tPtMult - s.tAdd;
         std::ostringstream o;
         o.setf(std::ios::fixed);
         o.precision(4);
         o << "[LT] " << tag_ << " level=" << lvl_ << " diags=" << diags_ << " towers=" << towersQl_ << "+" << towersP_
-          << " rot=" << (s.baby + s.giant) << " (baby " << s.baby << " + giant " << s.giant << ") 2sqrt(d)="
-          << 2.0 * std::sqrt(static_cast<double>(diags_)) << " ext=" << s.ext << " modUp=" << s.modUp
+          << " rot=" << (s.baby + s.giant) << " (baby " << s.baby << " + giant " << s.giant
+          << ") 2sqrt(d)=" << 2.0 * std::sqrt(static_cast<double>(diags_)) << " ext=" << s.ext << " modUp=" << s.modUp
           << " modDown=" << s.modDown << " ptMult=" << s.ptMult << " add=" << s.add << " | t=" << t
           << " modUp=" << s.tModUp << " baby=" << s.tBaby << " giant=" << s.tGiant << " modDown=" << s.tModDown
           << " ptMult=" << s.tPtMult << " add=" << s.tAdd << " other=" << ot << "\n";
         OPENFHE_DIAGNOSTIC_ERR << o.str();
     }
 
-private:
+  private:
     const char* tag_;
     int32_t lvl_;
     uint32_t diags_, towersQl_, towersP_;
@@ -286,8 +286,8 @@ namespace {
 // Native conjugate-invariant (CI) bootstrap helpers (double precision).
 // CI decode matrix U[slot a][coeff b]: U[a][0]=1, else 2 cos(pi(4a+1)b/(2N)).
 inline double CIBootU(uint32_t N, uint32_t a, uint32_t b) {
-    return (b == 0) ? 1.0
-                    : 2.0 * std::cos(M_PI * (4.0 * static_cast<double>(a) + 1.0) * static_cast<double>(b) /
+    return (b == 0) ? 1.0 :
+                      2.0 * std::cos(M_PI * (4.0 * static_cast<double>(a) + 1.0) * static_cast<double>(b) /
                                      (2.0 * static_cast<double>(N)));
 }
 // CI automorphism (X->X^k) eval-index permutation: result[j]=input[precomp[j]].
@@ -328,13 +328,13 @@ std::vector<uint32_t> CIDefaultLayerSplit(uint32_t l, uint32_t lb, bool enc) {
         std::vector<uint32_t> parts;
     };
     static const std::vector<Entry> table = {
-        {12, 3, true, {5, 3, 4}},       {12, 4, true, {4, 2, 3, 3}},    {12, 5, true, {4, 2, 2, 2, 2}},
-        {12, 3, false, {6, 3, 3}},      {12, 4, false, {5, 3, 2, 2}},   {13, 5, true, {4, 2, 2, 2, 3}},
-        {13, 3, false, {6, 4, 3}},      {13, 4, false, {5, 3, 3, 2}},   {14, 3, true, {6, 4, 4}},
-        {14, 4, true, {5, 3, 3, 3}},    {14, 5, true, {4, 2, 2, 3, 3}}, {14, 3, false, {6, 4, 4}},
-        {14, 4, false, {5, 3, 3, 3}},   {15, 3, true, {6, 4, 5}},       {15, 4, true, {5, 3, 3, 4}},
-        {15, 5, true, {4, 2, 3, 3, 3}}, {15, 3, false, {7, 4, 4}},      {15, 4, false, {6, 3, 3, 3}},
-        {16, 4, true, {5, 3, 4, 4}},    {16, 3, false, {7, 5, 4}},      {16, 4, false, {6, 4, 3, 3}},
+            {12, 3, true, {5, 3, 4}},       {12, 4, true, {4, 2, 3, 3}},    {12, 5, true, {4, 2, 2, 2, 2}},
+            {12, 3, false, {6, 3, 3}},      {12, 4, false, {5, 3, 2, 2}},   {13, 5, true, {4, 2, 2, 2, 3}},
+            {13, 3, false, {6, 4, 3}},      {13, 4, false, {5, 3, 3, 2}},   {14, 3, true, {6, 4, 4}},
+            {14, 4, true, {5, 3, 3, 3}},    {14, 5, true, {4, 2, 2, 3, 3}}, {14, 3, false, {6, 4, 4}},
+            {14, 4, false, {5, 3, 3, 3}},   {15, 3, true, {6, 4, 5}},       {15, 4, true, {5, 3, 3, 4}},
+            {15, 5, true, {4, 2, 3, 3, 3}}, {15, 3, false, {7, 4, 4}},      {15, 4, false, {6, 3, 3, 3}},
+            {16, 4, true, {5, 3, 4, 4}},    {16, 3, false, {7, 5, 4}},      {16, 4, false, {6, 4, 3, 3}},
     };
     for (const auto& e : table)
         if (e.l == l && e.lb == lb && e.enc == enc)
@@ -347,7 +347,7 @@ std::vector<uint32_t> CIDefaultLayerSplit(uint32_t l, uint32_t lb, bool enc) {
 
 CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     const auto& plan = GetCIRealFFTPlan(N);
-    const auto& F    = plan.F;
+    const auto& F = plan.F;
     std::vector<double> sigma(N);
     for (uint32_t q = 0; q < N; ++q)
         sigma[q] = plan.S[q] * std::sqrt(2.0 * N);
@@ -355,7 +355,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     // Layer split of each transform: parts[i] = number of FFT layers in level i, layer order (F_1 first). CtS level s
     // is part s; StC level s is the transpose of part lb-1-s, from CIDefaultLayerSplit (item 2.3 model search).
     auto split = [&](uint32_t lb, bool enc) {
-        lb               = std::max<uint32_t>(1, std::min(lb, l));
+        lb = std::max<uint32_t>(1, std::min(lb, l));
         const auto parts = CIDefaultLayerSplit(l, lb, enc);
         std::vector<std::pair<uint32_t, uint32_t>> r;  // [start, end) layer ranges, layer 0 first
         uint32_t k = 0;
@@ -378,7 +378,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
     };
     CIRealLevels out;
     {
-        auto rg        = split(lbEnc, true);
+        auto rg = split(lbEnc, true);
         const double c = std::pow(N / std::sqrt(2.0 * N), 1.0 / rg.size());
         for (auto& [a, b] : rg) {
             out.enc.push_back(product(a, b));
@@ -389,7 +389,7 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
                 d[p] *= sigma[p];
     }
     {
-        auto rg        = split(lbDec, false);
+        auto rg = split(lbDec, false);
         const double c = std::pow(std::sqrt(2.0 * N), 1.0 / rg.size());
         for (auto it = rg.rbegin(); it != rg.rend(); ++it) {
             out.dec.push_back(CISparseTranspose(product(it->first, it->second), N));
@@ -423,11 +423,11 @@ struct CILevelDigits {
 
 CILevelDigits CIBsgsLevelDigits(const CryptoParametersCKKSRNS& cp, uint32_t lbEnc, uint32_t lbDec, uint32_t modDepth,
                                 bool stcFirst) {
-    const int64_t cd    = cp.GetCompositeDegree();
-    const int64_t L0    = static_cast<int64_t>(cp.GetElementParams()->GetParams().size()) -
+    const int64_t cd = cp.GetCompositeDegree();
+    const int64_t L0 = static_cast<int64_t>(cp.GetElementParams()->GetParams().size()) -
                        (cp.GetScalingTechnique() == FLEXIBLEAUTOEXT ? 1 : 0);
     const uint32_t alpha = std::max<uint32_t>(1, cp.GetNumPerPartQ());
-    const uint32_t dnum  = std::max<uint32_t>(1, cp.GetNumPartQ());
+    const uint32_t dnum = std::max<uint32_t>(1, cp.GetNumPartQ());
     CILevelDigits r;
     auto add = [&](int64_t towers, std::vector<uint32_t>& tw, std::vector<uint32_t>& dg) {
         const uint32_t t = static_cast<uint32_t>(std::max<int64_t>(1, towers));
@@ -464,7 +464,7 @@ const CIRealLevels& GetCIRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) 
     static std::mutex mtx;
     std::lock_guard<std::mutex> lk(mtx);
     auto key = std::make_tuple(N, lbEnc, lbDec);
-    auto it  = cache.find(key);
+    auto it = cache.find(key);
     if (it == cache.end())
         it = cache.emplace(key, CIBuildRealLevels(N, lbEnc, lbDec)).first;
     return it->second;
@@ -480,7 +480,7 @@ std::vector<uint32_t> CIRealFFTGaloisElements(uint32_t N, uint32_t lbEnc, uint32
     for (const bool enc : {true, false})
         for (size_t s = 0; s < (enc ? lv.enc : lv.dec).size(); ++s) {
             const CISparse& A = (enc ? lv.enc : lv.dec)[s];
-            const auto bp     = CIPlanBsgs(A, N, CIDigitsAt(enc ? dg.enc : dg.dec, s));
+            const auto bp = CIPlanBsgs(A, N, CIDigitsAt(enc ? dg.enc : dg.dec, s));
             const uint32_t T = N / bp.h;
             for (const auto& kv : A) {
                 const uint32_t u = (kv.first / bp.h + T - bp.t0) % T;  // position in the BSGS window
@@ -507,7 +507,7 @@ std::pair<double, double> CIBootScales(double qDouble, double kBoot) {
 // level), so its extended basis is the first `towers` Q moduli followed by the P moduli (the basis KeySwitchExt
 // builds) and its level is |Q| - towers (as set by ModRaiseInPlace).
 std::shared_ptr<DCRTPoly::Params> CIParamsQlP(const CryptoParametersCKKSRNS& cp, uint32_t towers) {
-    const auto& q  = cp.GetElementParams()->GetParams();
+    const auto& q = cp.GetElementParams()->GetParams();
     const auto& pp = cp.GetParamsP()->GetParams();
     std::vector<NativeInteger> moduli, roots;
     for (uint32_t i = 0; i < towers && i < q.size(); ++i) {
@@ -531,9 +531,9 @@ inline uint32_t CILevelOf(const CryptoParametersCKKSRNS& cp, uint32_t towers) {
 ReadOnlyPlaintext CIEncodeDiagonal(const CryptoParametersCKKSRNS& cp, const std::shared_ptr<DCRTPoly::Params>& qlp,
                                    uint32_t towers, const std::vector<std::complex<double>>& cval) {
     const uint32_t lvl = CILevelOf(cp, towers);
-    auto enc           = std::make_shared<CKKSPackedEncoding>(qlp, cp.GetEncodingParams(), cval, 1, lvl,
-                                                    cp.GetScalingFactorReal(lvl),
-                                                    static_cast<uint32_t>(cval.size()), REAL_CI);
+    auto enc = std::make_shared<CKKSPackedEncoding>(qlp, cp.GetEncodingParams(), cval, 1, lvl,
+                                                    cp.GetScalingFactorReal(lvl), static_cast<uint32_t>(cval.size()),
+                                                    REAL_CI);
     enc->Encode();
     return enc;
 }
@@ -544,7 +544,7 @@ ReadOnlyPlaintext CIEncodeDiagonal(const CryptoParametersCKKSRNS& cp, const std:
 std::vector<ReadOnlyPlaintext> CIEncodeSparseLevel(const CryptoParametersCKKSRNS& cp, const CISparse& A, uint32_t N,
                                                    const CIBsgsPlan& bp, double sc, uint32_t towers) {
     const auto& perm = GetCIRealFFTPlan(N).perm;
-    const auto qlp   = CIParamsQlP(cp, towers);
+    const auto qlp = CIParamsQlP(cp, towers);
     std::vector<ReadOnlyPlaintext> store(static_cast<size_t>(bp.n1) * bp.n2);
     std::vector<std::pair<uint32_t, const std::vector<double>*>> jobs;
     for (uint32_t u = 0; u < bp.span; ++u) {
@@ -556,7 +556,7 @@ std::vector<ReadOnlyPlaintext> CIEncodeSparseLevel(const CryptoParametersCKKSRNS
     for (size_t t = 0; t < jobs.size(); ++t) {
         const uint32_t u = jobs[t].first;
         const uint32_t G = static_cast<uint32_t>((static_cast<uint64_t>(bp.h) * (bp.t0 + bp.n1 * (u / bp.n1))) % N);
-        const auto& d    = *jobs[t].second;
+        const auto& d = *jobs[t].second;
         std::vector<std::complex<double>> cval(N);
         for (uint32_t q = 0; q < N; ++q)
             cval[perm[q]] = std::complex<double>(sc * d[(q + N - G) % N], 0.0);
@@ -583,20 +583,20 @@ std::vector<ReadOnlyPlaintext> CIEncodeDenseLevel(const CryptoParametersCKKSRNS&
                                                   bool enc, double scale) {
     const uint64_t m4 = 4ULL * N;
     const uint32_t n1 = CIDenseN1(N), n2 = N / n1;
-    const auto qlp    = CIParamsQlP(cp, towers);
+    const auto qlp = CIParamsQlP(cp, towers);
     std::vector<ReadOnlyPlaintext> store(static_cast<size_t>(n1) * n2);
 #pragma omp parallel for schedule(dynamic) num_threads(OpenFHEParallelControls.GetThreadLimit(n2))
     for (uint32_t j = 0; j < n2; ++j) {
-        const uint32_t gj0   = CIGaloisForShift(n1 * j, N);  // 5^{n1 j}
+        const uint32_t gj0 = CIGaloisForShift(n1 * j, N);  // 5^{n1 j}
         const uint32_t gjInv = (j == 0) ? 1 : NativeInteger(gj0).ModInverse(m4).ConvertToInt<uint32_t>();
-        uint32_t fk          = gj0;  // 5^{n1 j + i}
+        uint32_t fk = gj0;  // 5^{n1 j + i}
         std::vector<double> diag(N);
         for (uint32_t i = 0; i < n1; ++i, fk = static_cast<uint32_t>((static_cast<uint64_t>(fk) * 5) % m4)) {
             double maxabs = 0.0;
             for (uint32_t s = 0; s < N; ++s) {
                 const uint32_t sp = (j == 0) ? s : CIBootPrecomp(N, gjInv, s);
-                diag[s]           = CIDenseEntry(enc, scale, N, sp, CIBootPrecomp(N, fk, sp));
-                maxabs            = std::max(maxabs, std::abs(diag[s]));
+                diag[s] = CIDenseEntry(enc, scale, N, sp, CIBootPrecomp(N, fk, sp));
+                maxabs = std::max(maxabs, std::abs(diag[s]));
             }
             if (maxabs < 1e-14)  // sparse stage: skip all-zero diagonals
                 continue;
@@ -630,14 +630,14 @@ bool CIStoreMatches(const CryptoParametersCKKSRNS& cp, const std::vector<ReadOnl
 void CIBootstrapPrecompute(const CryptoParametersCKKSRNS& cp, CKKSBootstrapPrecom& p, uint32_t N, double scaleEnc,
                            double scaleDec, uint32_t modDepth) {
     const uint32_t lbEnc = p.m_paramsEnc.lvlb, lbDec = p.m_paramsDec.lvlb;
-    const auto dg        = CIBsgsLevelDigits(cp, lbEnc, lbDec, modDepth, p.BTSlotsEncoding);
+    const auto dg = CIBsgsLevelDigits(cp, lbEnc, lbDec, modDepth, p.BTSlotsEncoding);
     p.m_U0hatTPreFFT.clear();
     p.m_U0PreFFT.clear();
     p.m_U0hatTPre.clear();
     p.m_U0Pre.clear();
     if (lbEnc > 1 || lbDec > 1) {
         const auto& lv = GetCIRealLevels(N, lbEnc, lbDec);
-        auto build     = [&](const std::vector<CISparse>& levels, double scale, const std::vector<uint32_t>& digits,
+        auto build = [&](const std::vector<CISparse>& levels, double scale, const std::vector<uint32_t>& digits,
                          const std::vector<uint32_t>& towers) {
             std::vector<std::vector<ReadOnlyPlaintext>> out(levels.size());
             const double sc = CIRealLevelScalar(scale, levels.size());
@@ -647,11 +647,10 @@ void CIBootstrapPrecompute(const CryptoParametersCKKSRNS& cp, CKKSBootstrapPreco
             return out;
         };
         p.m_U0hatTPreFFT = build(lv.enc, scaleEnc, dg.enc, dg.towersEnc);
-        p.m_U0PreFFT     = build(lv.dec, scaleDec, dg.dec, dg.towersDec);
-    }
-    else {
+        p.m_U0PreFFT = build(lv.dec, scaleDec, dg.dec, dg.towersDec);
+    } else {
         p.m_U0hatTPre = CIEncodeDenseLevel(cp, N, CIDigitsAt(dg.towersEnc, 0), true, scaleEnc);
-        p.m_U0Pre     = CIEncodeDenseLevel(cp, N, CIDigitsAt(dg.towersDec, 0), false, scaleDec);
+        p.m_U0Pre = CIEncodeDenseLevel(cp, N, CIDigitsAt(dg.towersDec, 0), false, scaleDec);
     }
 }
 }  // namespace
@@ -687,7 +686,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
             // both schemes, so this gives CI the precision of std at the std default (2^16: CI 7 vs std 8).
             // StC-first (BTSlotsEncoding): CI and std give the same precision at an equal correction factor (item 2.5,
             // 2^15: the sine argument is the message itself for both), so CI uses std's StC-first default.
-            const bool isCI      = (cc.GetCKKSDataType() == REAL_CI);
+            const bool isCI = (cc.GetCKKSDataType() == REAL_CI);
             const double fitLog2 = std::log2(isCI ? std::max<uint32_t>(1, slots / 2) : slots);
             int32_t tmp = BTSlotsEncoding ? std::round(-0.1887 * (2 * std::log2(M / 2) + fitLog2) + 19.763) :
                                             std::round(-0.2419 * (2 * std::log2(M / 2) + fitLog2) + 19.081);
@@ -738,7 +737,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     if (cc.GetCKKSDataType() == REAL_CI) {
         if (precompute) {
             const auto sc =
-                CIBootScales(GetBigModulus(cryptoParams), GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
+                    CIBootScales(GetBigModulus(cryptoParams), GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
             CIBootstrapPrecompute(*cryptoParams, *precom, slots, sc.first, sc.second,
                                   GetModDepthInternal(cryptoParams->GetSecretKeyDist()));
         }
@@ -879,7 +878,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
     // Sparse encapsulation keys use the even indices M-4, M-2, which never collide with odd CI Galois elements.
     if (cryptoParams->GetCKKSDataType() == REAL_CI) {
         auto evalKeys = algo->EvalAutomorphismKeyGen(
-            privateKey, FindCIBootstrapGaloisElements(*cryptoParams, cc->GetRingDimension()));
+                privateKey, FindCIBootstrapGaloisElements(*cryptoParams, cc->GetRingDimension()));
         if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
             DCRTPoly::TugType tug;
             auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
@@ -1307,7 +1306,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // is above 1 (item 3.2: the unconditional rescale left the CI bootstrapping error at 1 tower, and its
         // ModRaise threw). Std is unchanged.
         const bool ciRescaled = (cc->GetCKKSDataType() == REAL_CI);
-        auto rescaleOutput    = [&](Ciphertext<DCRTPoly>& c) {
+        auto rescaleOutput = [&](Ciphertext<DCRTPoly>& c) {
             if (!ciRescaled || c->GetNoiseScaleDeg() > 1)
                 cc->GetScheme()->ModReduceInternalInPlace(c, compositeDegree);
         };
@@ -1468,11 +1467,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // so the K = 28 (SPARSE_TERNARY) sine table is used (its depth is what GetBootstrapDepth budgets).
         if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED)
             coefficients = g_coefficientsSparse;
-        const uint32_t Nn = slots;          // full real packing: slots == ring dimension N
+        const uint32_t Nn = slots;  // full real packing: slots == ring dimension N
         // scaleEnc/scaleDec mirror EvalBootstrapSetup (NOT the eval-stage `pre`=1/post). Since OpenFHE
         // v1.6 the ModRaise overflow bound K is folded into the CtS matrix (raised is only scaled by
         // pre/N above), so scaleEnc = pre_setup / K, scaleDec = 1 / pre_setup.
-        const auto ciScales   = CIBootScales(qDouble, GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
+        const auto ciScales = CIBootScales(qDouble, GetModRaiseOverflowBound(cryptoParams, K_UNIFORM));
         const double scaleEnc = ciScales.first;
         const double scaleDec = ciScales.second;
         // Item 2.4: the diagonal plaintexts are encoded in EvalBootstrapSetup (CIBootstrapPrecompute) and only read
@@ -1496,7 +1495,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             const uint64_t m4 = 4ULL * Nn;
             const uint32_t n1 = CIDenseN1(Nn);
             const uint32_t n2 = Nn / n1;
-            uint32_t gstep    = 1;
+            uint32_t gstep = 1;
             for (uint32_t t = 0; t < n1; ++t)
                 gstep = static_cast<uint32_t>((static_cast<uint64_t>(gstep) * 5) % m4);  // g = 5^{n1}
             const uint32_t towers = ct->GetElements()[0].GetNumOfElements();
@@ -1504,23 +1503,23 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             std::vector<ReadOnlyPlaintext> local;
             if (!CIStoreMatches(*cryptoParams, store, static_cast<size_t>(n1) * n2, towers)) {
                 local = CIEncodeDenseLevel(*cryptoParams, Nn, towers, enc, scale);
-                pts   = &local;
+                pts = &local;
                 ++ciLocalEncodes;
             }
 
             // Hoisted baby rotations in the extended basis: bx[i] = ext(psi_{5^i}(ct)).
             auto digits = cc->EvalFastRotationPrecompute(ct);
             std::vector<Ciphertext<DCRTPoly>> bx(n1);
-            bx[0]       = cc->KeySwitchExt(ct, true);  // i=0: identity, extend to QlP
+            bx[0] = cc->KeySwitchExt(ct, true);  // i=0: identity, extend to QlP
             uint32_t fi = 1;
             for (uint32_t i = 1; i < n1; ++i) {
-                fi    = static_cast<uint32_t>((static_cast<uint64_t>(fi) * 5) % m4);
+                fi = static_cast<uint32_t>((static_cast<uint64_t>(fi) * 5) % m4);
                 bx[i] = cc->EvalFastRotationExt(ct, fi, digits, true);  // CI: 5^i used directly
             }
 
             Ciphertext<DCRTPoly> outer;  // extended-basis accumulator
             const auto& autoKeys = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
-            uint32_t gj          = 1;  // 5^{n1 j}
+            uint32_t gj = 1;  // 5^{n1 j}
             std::vector<uint32_t> map(Nn);
             for (uint32_t j = 0; j < n2; ++j) {
                 uint32_t gj0 = gj;  // 5^{n1 j} (giant Galois element for this block)
@@ -1565,15 +1564,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             if (st == FIXEDMANUAL) {
                 while (c->GetNoiseScaleDeg() > 1)
                     cc->ModReduceInPlace(c);
-            }
-            else if (c->GetNoiseScaleDeg() == 2) {
+            } else if (c->GetNoiseScaleDeg() == 2) {
                 algo->ModReduceInternalInPlace(c, compositeDegree);
             }
         };
         // Paper real FFT (single channel, sparse diagonals) whenever a level budget > 1 is requested;
         // budget {1,1} keeps the dense single-level BSGS transform.
-        const uint32_t lbEnc  = p.m_paramsEnc.lvlb;
-        const uint32_t lbDec  = p.m_paramsDec.lvlb;
+        const uint32_t lbEnc = p.m_paramsEnc.lvlb;
+        const uint32_t lbDec = p.m_paramsDec.lvlb;
         const bool useRealFFT = (lbEnc > 1 || lbDec > 1);
         // Sparse hoisted BSGS: only the nonzero diagonals of A, baby/giant steps over their offset window.
         // Galois elements of the rotations the sparse levels actually perform (checked against keygen below).
@@ -1585,13 +1583,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // sc: per-level scalar applied to the stored (unscaled) diagonals, used only for a local encode.
         auto applyCISparse = [&](Ciphertext<DCRTPoly> ct, const std::vector<ReadOnlyPlaintext>& store,
                                  const CISparse& A, double sc, uint32_t ksDigits) {
-            const auto bp         = CIPlanBsgs(A, Nn, ksDigits);
+            const auto bp = CIPlanBsgs(A, Nn, ksDigits);
             const uint32_t towers = ct->GetElements()[0].GetNumOfElements();
             const std::vector<ReadOnlyPlaintext>* pts = &store;
             std::vector<ReadOnlyPlaintext> local;
             if (!CIStoreMatches(*cryptoParams, store, static_cast<size_t>(bp.n1) * bp.n2, towers)) {
                 local = CIEncodeSparseLevel(*cryptoParams, A, Nn, bp, sc, towers);
-                pts   = &local;
+                pts = &local;
                 ++ciLocalEncodes;
             }
             auto offsetOf = [&](uint32_t u) {  // u = n1*j + i
@@ -1602,7 +1600,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 if (A.count(offsetOf(u)))
                     babyUsed[u % bp.n1] = 1;
             auto digits =
-                LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(ct); });
+                    LTRun(&LTStats::modUp, &LTStats::tModUp, 1, [&] { return cc->EvalFastRotationPrecompute(ct); });
             std::vector<Ciphertext<DCRTPoly>> bx(bp.n1);
             std::vector<uint32_t> babyList;
             for (uint32_t i = 0; i < bp.n1; ++i)
@@ -1622,9 +1620,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 #pragma omp parallel for schedule(dynamic) num_threads(nThrBaby)
                     for (size_t k = 0; k < babyList.size(); ++k) {
                         const uint32_t i = babyList[k];
-                        bx[i] = (i != 0) ?
-                                    cc->EvalFastRotationExt(ct, CIGaloisForShift(bp.h * i, Nn), digits, true) :
-                                    cc->KeySwitchExt(ct, true);
+                        bx[i] = (i != 0) ? cc->EvalFastRotationExt(ct, CIGaloisForShift(bp.h * i, Nn), digits, true) :
+                                           cc->KeySwitchExt(ct, true);
                     }
                     return 0;
                 });
@@ -1639,8 +1636,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                     bx[i] = LTRun(&LTStats::baby, &LTStats::tBaby, 1, [&] {
                         return cc->EvalFastRotationExt(ct, CIGaloisForShift(bp.h * i, Nn), digits, true);
                     });
-                }
-                else {
+                } else {
                     bx[i] = LTRun(&LTStats::ext, &LTStats::tBaby, 1, [&] { return cc->KeySwitchExt(ct, true); });
                 }
             }
@@ -1661,7 +1657,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 }
                 // >= 2 diagonals per thread; the sums are exact mod q, so the result does not depend on the threads
                 const uint32_t nThrAcc =
-                    static_cast<uint32_t>(OpenFHEParallelControls.GetThreadLimit(blockDiags.size() / 2));
+                        static_cast<uint32_t>(OpenFHEParallelControls.GetThreadLimit(blockDiags.size() / 2));
                 if (nThrAcc > 1) {
                     // Multi-threaded: per-thread partial sums of the block's plaintext products in the extended
                     // basis (a contiguous run of diagonals per thread), reduced once per giant block.
@@ -1673,7 +1669,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                             const size_t k0 = nd * t / nThrAcc, k1 = nd * (t + 1) / nThrAcc;
                             for (size_t k = k0; k < k1; ++k) {
                                 const uint32_t i = blockDiags[k];
-                                auto pt          = (*pts)[bp.n1 * j + i]->GetElement<DCRTPoly>();
+                                auto pt = (*pts)[bp.n1 * j + i]->GetElement<DCRTPoly>();
                                 pt.SetFormat(Format::EVALUATION);
                                 if (part[t] == nullptr) {
                                     part[t] = bx[i]->Clone();
@@ -1683,10 +1679,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                                                               (*pts)[bp.n1 * j + i]->GetNoiseScaleDeg());
                                     part[t]->SetScalingFactor(part[t]->GetScalingFactor() *
                                                               (*pts)[bp.n1 * j + i]->GetScalingFactor());
-                                }
-                                else {
+                                } else {
                                     const auto& src = bx[i]->GetElements();
-                                    auto& dst       = part[t]->GetElements();
+                                    auto& dst = part[t]->GetElements();
                                     for (size_t e = 0; e < dst.size(); ++e) {
                                         DCRTPoly prod = src[e];
                                         prod *= pt;
@@ -1706,8 +1701,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                             EvalAddExtInPlace(inner, pc);
                     }
                     LTAdd(&LTStats::add, static_cast<uint32_t>(nd) - nThrAcc);  // in-thread adds (reduction counted)
-                }
-                else {
+                } else {
                     for (uint32_t i : blockDiags) {
                         Ciphertext<DCRTPoly> term = EvalMultExt(bx[i], (*pts)[bp.n1 * j + i]);
                         if (inner == nullptr)
@@ -1740,7 +1734,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 #ifdef BOOTSTRAPTIMING
         // Stage times ("[CI-BT] CtS / EvalMod / StC <s> s", as std's "Encoding / Approximate modular reduction /
         // Decoding time") on the diagnostic error stream.
-        auto ciNow = [] { return std::chrono::steady_clock::now(); };
+        auto ciNow = [] {
+            return std::chrono::steady_clock::now();
+        };
         auto ciSec = [](std::chrono::steady_clock::time_point t0) {
             return std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
         };
@@ -1748,15 +1744,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Apply sparse g=5-basis levels (apply order), one rescale per level; `scale` (scaleEnc or scaleDec)
         // is spread evenly over the levels at encode time.
         auto applyReal = [&](Ciphertext<DCRTPoly> in, const std::vector<CISparse>& levels,
-                             const std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale,
-                             const char* tag, const std::vector<uint32_t>& digits,
+                             const std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale, const char* tag,
+                             const std::vector<uint32_t>& digits,
                              [[maybe_unused]] const std::vector<uint32_t>& towersModel) {
             static const std::vector<ReadOnlyPlaintext> noStore;
             const double sc = CIRealLevelScalar(scale, levels.size());
             for (size_t s = 0; s < levels.size(); ++s) {
                 const CISparse& A = levels[s];
 #if defined(BOOTSTRAPTIMING) && defined(BOOTSTRAPTIMING_LT)
-                auto tl                 = ciNow();
+                auto tl = ciNow();
                 const uint32_t towersIn = in->GetElements()[0].GetNumOfElements();
 #endif
                 LTLevel ltl(tag, static_cast<int32_t>(s), static_cast<uint32_t>(A.size()),
@@ -1766,12 +1762,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
 #if defined(BOOTSTRAPTIMING) && defined(BOOTSTRAPTIMING_LT)
                 {  // BSGS plan of the level, its runtime and modelled input towers
                     auto bp = CIPlanBsgs(A, Nn, CIDigitsAt(digits, s));
-                    OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] level " << s << " diags=" << A.size() << " h=" << bp.h
-                                           << " span=" << bp.span << " n1=" << bp.n1 << " n2=" << bp.n2
-                                           << " babies=" << bp.babies << " giants=" << bp.giants
-                                           << " digits=" << CIDigitsAt(digits, s) << " towers=" << towersIn
-                                           << " (model " << CIDigitsAt(towersModel, s) << ") t=" << ciSec(tl)
-                                           << "s\n";
+                    OPENFHE_DIAGNOSTIC_ERR
+                            << "[CI-BT] level " << s << " diags=" << A.size() << " h=" << bp.h << " span=" << bp.span
+                            << " n1=" << bp.n1 << " n2=" << bp.n2 << " babies=" << bp.babies << " giants=" << bp.giants
+                            << " digits=" << CIDigitsAt(digits, s) << " towers=" << towersIn << " (model "
+                            << CIDigitsAt(towersModel, s) << ") t=" << ciSec(tl) << "s\n";
                 }
 #endif
                 rescale1(in);
@@ -1798,15 +1793,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             if (depLevel < expectedLevel) {
                 if (st == FIXEDMANUAL || st == FIXEDAUTO) {
                     algo->LevelReduceInternalInPlace(dep, expectedLevel - depLevel);
-                }
-                else {
+                } else {
                     // as EvalBootstrapStCFirst: one constant multiply + rescale lands on the exact scaling factor
                     // of expectedLevel
-                    double scf2      = dep->GetScalingFactor();
-                    double scf1      = cryptoParams->GetScalingFactorRealBig(expectedLevel - compositeDegree);
-                    double scf       = cryptoParams->GetScalingFactorReal(depLevel);
+                    double scf2 = dep->GetScalingFactor();
+                    double scf1 = cryptoParams->GetScalingFactorRealBig(expectedLevel - compositeDegree);
+                    double scf = cryptoParams->GetScalingFactorReal(depLevel);
                     double targetScf = cryptoParams->GetScalingFactorReal(expectedLevel);
-                    dep              = cc->EvalMult(dep, scf1 / scf2 / scf);
+                    dep = cc->EvalMult(dep, scf1 / scf2 / scf);
                     if (depLevel + compositeDegree < expectedLevel)
                         algo->LevelReduceInternalInPlace(dep, expectedLevel - depLevel - compositeDegree);
                     algo->ModReduceInternalInPlace(dep, compositeDegree);
@@ -1816,8 +1810,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             if (useRealFFT) {
                 dep = applyReal(dep, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec, "ci-StC",
                                 ciDigits.dec, ciDigits.towersDec);
-            }
-            else {
+            } else {
                 dep = applyCILT(dep, p.m_U0Pre, false, scaleDec);
                 rescale1(dep);
             }
@@ -1836,8 +1829,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         if (useRealFFT) {
             ctxtEnc = applyReal(raised, GetCIRealLevels(Nn, lbEnc, lbDec).enc, p.m_U0hatTPreFFT, scaleEnc, "ci-CtS",
                                 ciDigits.enc, ciDigits.towersEnc);
-        }
-        else {
+        } else {
             // CtS = scaleEnc * N * U^-1 = scaleEnc * diag(1,.5..) * U^T. With decoded(raised)=U*t/N
             // this gives post-CtS slots = scaleEnc * t (the standard EvalMod input scale, k=1).
             ctxtEnc = applyCILT(raised, p.m_U0hatTPre, true, scaleEnc);
@@ -1865,12 +1857,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         Ciphertext<DCRTPoly> ctxtDecCI;
         if (ciStcFirst) {
             ctxtDecCI = ctxtEnc;
-        }
-        else if (useRealFFT) {
+        } else if (useRealFFT) {
             ctxtDecCI = applyReal(ctxtEnc, GetCIRealLevels(Nn, lbEnc, lbDec).dec, p.m_U0PreFFT, scaleDec, "ci-StC",
                                   ciDigits.dec, ciDigits.towersDec);
-        }
-        else {
+        } else {
             ctxtDecCI = applyCILT(ctxtEnc, p.m_U0Pre, false, scaleDec);
             rescale1(ctxtDecCI);
         }
@@ -2114,8 +2104,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     if (cryptoParams->GetCKKSDataType() == REAL_CI) {
         if (!GetBootPrecom(ciphertext->GetSlots(), CKKSBootstrapPrecom::BOOTSTRAP).BTSlotsEncoding)
             OPENFHE_THROW(
-                "EvalBootstrapStCFirst for REAL_CI needs EvalBootstrapSetup(..., BTSlotsEncoding = true) "
-                "(the CtS-first precomputation and keys do not fit the StC-first chain); use EvalBootstrap.");
+                    "EvalBootstrapStCFirst for REAL_CI needs EvalBootstrapSetup(..., BTSlotsEncoding = true) "
+                    "(the CtS-first precomputation and keys do not fit the StC-first chain); use EvalBootstrap.");
         return EvalBootstrap(ciphertext, numIterations, precision);
     }
 
@@ -2943,25 +2933,25 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 //------------------------------------------------------------------------------
 
 std::vector<uint32_t> FHECKKSRNS::FindCIBootstrapGaloisElements(const CryptoParametersCKKSRNS& cryptoParams,
-                                                                 uint32_t N) {
+                                                                uint32_t N) {
     // Real-FFT levels (level budget > 1): exactly the rotations the sparse BSGS levels perform (EvalBootstrap
     // checks its rotations against this set), with the per-level key-switching digits of the chain shape.
     auto pit = m_bootPrecomMap.find(N);
     if (pit != m_bootPrecomMap.end()) {
         const uint32_t lbE = pit->second->m_paramsEnc.lvlb, lbD = pit->second->m_paramsDec.lvlb;
         if (lbE > 1 || lbD > 1) {
-            const auto dg = CIBsgsLevelDigits(cryptoParams, lbE, lbD,
-                                              GetModDepthInternal(cryptoParams.GetSecretKeyDist()),
-                                              pit->second->BTSlotsEncoding);
+            const auto dg =
+                    CIBsgsLevelDigits(cryptoParams, lbE, lbD, GetModDepthInternal(cryptoParams.GetSecretKeyDist()),
+                                      pit->second->BTSlotsEncoding);
             return CIRealFFTGaloisElements(N, lbE, lbD, dg);
         }
     }
     // Dense single-level transform (budget {1,1}): baby {5^i : 0 < i < n1} and giant {(5^{n1})^j : 0 < j < n2},
     // n1 * n2 = N, so ~2 sqrt(N) keys instead of N - 1.
-    const uint64_t mm   = 4ULL * N;
+    const uint64_t mm = 4ULL * N;
     const uint32_t logN = static_cast<uint32_t>(std::round(std::log2(N)));
-    const uint32_t n1   = 1u << ((logN + 1) / 2);
-    const uint32_t n2   = N / n1;
+    const uint32_t n1 = 1u << ((logN + 1) / 2);
+    const uint32_t n2 = N / n1;
     std::set<uint32_t> elts;
     uint32_t fi = 1;
     for (uint32_t i = 1; i < n1; ++i) {
@@ -3743,9 +3733,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         LTRun(&LTStats::baby, &LTStats::tBaby, p.gRem - 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
             for (uint32_t j = 0; j < p.gRem; ++j)
-                fastRotationRem[j] = (j != 0) ?
-                                             cc->EvalFastRotationExt(result, ReduceRotation(j, reduceMod), digits, true) :
-                                             cc->KeySwitchExt(result, true);
+                fastRotationRem[j] =
+                        (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(j, reduceMod), digits, true) :
+                                   cc->KeySwitchExt(result, true);
             return 0;
         });
         LTAdd(&LTStats::ext, 1);
@@ -3883,9 +3873,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         LTRun(&LTStats::baby, &LTStats::tBaby, p.gRem - 1, [&] {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
             for (uint32_t j = 0; j < p.gRem; ++j)
-                fastRotationRem[j] =
-                        (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scaleRem * j, reduceMod), digits, true) :
-                                   cc->KeySwitchExt(result, true);
+                fastRotationRem[j] = (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scaleRem * j, reduceMod),
+                                                                        digits, true) :
+                                                cc->KeySwitchExt(result, true);
             return 0;
         });
         LTAdd(&LTStats::ext, 1);
@@ -4401,8 +4391,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
 
 void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
     LTRun(&LTStats::add, &LTStats::tAdd, 1, [&] {
-        auto& cv1  = ciphertext1->GetElements();
-        auto& cv2  = ciphertext2->GetElements();
+        auto& cv1 = ciphertext1->GetElements();
+        auto& cv2 = ciphertext2->GetElements();
         uint32_t n = cv1.size();
         for (uint32_t i = 0; i < n; ++i)
             cv1[i] += cv2[i];

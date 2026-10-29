@@ -476,8 +476,7 @@ void PolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
             if (m_format != Format::COEFFICIENT) {
                 m_format = Format::COEFFICIENT;
                 CIInverseTransform(*m_values);
-            }
-            else {
+            } else {
                 m_format = Format::EVALUATION;
                 CIForwardTransform(*m_values);
             }

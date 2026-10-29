@@ -30,7 +30,6 @@
 //==================================================================================
 
 #include "encoding/ckkspackedencoding.h"
-#include "math/ci-realfft.h"
 
 #include <cmath>
 #include <complex>
@@ -45,6 +44,7 @@
 #include <vector>
 
 #include "lattice/lat-hal.h"
+#include "math/ci-realfft.h"
 #include "math/dftransform.h"
 #include "math/hal/basicint.h"
 #include "utils/exception.h"
@@ -169,10 +169,10 @@ bool CKKSPackedEncoding::Encode() {
             if (is64BitOverflow(ci))
                 OPENFHE_THROW("Overflow in CI data encoding - decrease the scaling factor");
             int64_t v = std::llround(ci);
-            temp[i]   = (v < 0) ? MaxBitValue + v : v;
+            temp[i] = (v < 0) ? MaxBitValue + v : v;
         }
         DCRTPoly::Integer intPowP(static_cast<uint64_t>(std::llround(scalingFactor)));
-        auto nativeParams  = encodedVectorDCRT.GetParams()->GetParams();
+        auto nativeParams = encodedVectorDCRT.GetParams()->GetParams();
         uint32_t numTowers = nativeParams.size();
         std::vector<DCRTPoly::Integer> moduli(numTowers);
         for (uint32_t t = 0; t < numTowers; ++t) {
@@ -395,23 +395,22 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         std::vector<double> coeffs(N);
         double scale = 1.0;
         if (typeFlag == IsNativePoly) {
-            scale               = flex ? std::pow(scalingFactor, -1) : std::pow(2, -p);
-            NativeInteger q     = GetElementModulus().ConvertToInt();
+            scale = flex ? std::pow(scalingFactor, -1) : std::pow(2, -p);
+            NativeInteger q = GetElementModulus().ConvertToInt();
             NativeInteger qHalf = q >> 1;
             for (uint32_t i = 0; i < N; ++i) {
-                auto ci   = GetElement<NativePoly>()[i];
+                auto ci = GetElement<NativePoly>()[i];
                 coeffs[i] = (ci > qHalf) ? -((q - ci).ConvertToDouble()) : ci.ConvertToDouble();
             }
             GetElement<NativePoly>().SetValuesToZero();
-        }
-        else {
+        } else {
             const double sfPre =
-                flex ? (std::pow(scalingFactor, -1) * std::pow(2, p)) : std::pow(2, -p * (noiseScaleDeg - 1));
-            scale               = std::pow(2, -p);
+                    flex ? (std::pow(scalingFactor, -1) * std::pow(2, p)) : std::pow(2, -p * (noiseScaleDeg - 1));
+            scale = std::pow(2, -p);
             const BigInteger& q = GetElementModulus();
-            BigInteger qHalf    = q >> 1;
+            BigInteger qHalf = q >> 1;
             for (uint32_t i = 0; i < N; ++i) {
-                auto ci  = GetElement<Poly>()[i];
+                auto ci = GetElement<Poly>()[i];
                 double c = (ci > qHalf) ? -((q - ci).ConvertToDouble()) : ci.ConvertToDouble();
                 coeffs[i] = c * sfPre;
             }

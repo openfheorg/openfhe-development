@@ -3119,3 +3119,104 @@ both bootstraps (it throws on a mismatch in every build).
 item 6.1) and its bootstrap keys round-trip through BINARY serialization into a fresh process in both orderings, for
 the real-FFT and the dense {1,1} transform, with encapsulation and with META-BTS, and the deserialized context
 bootstraps bit-exactly as the original. The std path is unchanged. Keygen and 2^16 precision are unchanged.
+
+## 6.4 Unit tests for both CI orderings, key-set equality and the `BTSlotsEncoding` guards; clang-format -- DONE (WSL, 2026-10-29)
+
+**Host.** The host file said `WSL` before every job; every job ran on WSL through `wsl-guard.sh`. Nothing ran on
+ICELAKE. Jobs: `p64_chkbuild`, `p64_chk`, `p64_chk2`, `p64_chk3`, `p64_xsave`, `p64_build`, `p64_verify`, all rc 0.
+No timing in this item (tests and formatting only). Unit tests were not built or run (item 6.5 does that, by the
+execution rules); the new test bodies were validated through a scratch program that calls the same helper code
+(`helpers.h`, copied verbatim into the test file; the fixture struct was diffed identical) and prints what the tests
+assert on.
+
+**Test changes** (`src/pke/unittest/utckksrns/UnitTestCKKSrnsCI.cpp`):
+- The mid-file `#include "math/ci-realfft.h"` moved to the top (and `<algorithm>` added).
+- New helper `CIBootFixture` / `MakeCIBootFixture(logN, budget, st, skd, stcFirst, iters)`: REAL_CI context, 59/60,
+  two levels after (plus one per extra META-BTS iteration), setup for either ordering, keys; `InputLevel()` is the
+  bottom for CtS-first and lbDec + 2 towers for StC-first. `CIBootPrecisionBits` now takes `stcFirst`, `iters`,
+  `metaPrec` and uses the fixture.
+- `CIRealFFTBootstrap_Uniform` / `_SparseEncapsulated` (CtS-first) and new `_StCFirst_Uniform` /
+  `_StCFirst_SparseEncapsulated`: budgets {2,2}, {3,3} (FLEXIBLEAUTO) and {4,3} (FIXEDMANUAL) in each ordering for
+  each secret, plus dense {1,1} encapsulated in both orderings. So both orderings are tested at three budgets with
+  both secrets.
+- New `CIRealFFTBootstrap_MetaBTS`: two iterations in both orderings (encap {3,3}), metaprec = floor(one) - 3;
+  expects > 37 bits and > one-iteration + 10 bits.
+- New `CIBootstrapKeySet_KeygenEqualsEvaluator` (helper `CIBootstrapKeySetReport`): for 6 cases (both orderings,
+  {2,2} uniform, {3,3} encap at 2^10; dense {1,1} encap CtS-first and uniform StC-first at 2^8) the generated
+  automorphism keys equal `EvalBootstrapKeyMapIndices`, contain no conjugation key, contain M-4 / M-2 iff
+  encapsulated, the bootstrap runs (its own check throws if its rotations differ from the real-FFT Galois set), and
+  removing any single generated key makes the bootstrap throw (no unused key). The removal loop runs with
+  `OpenFHEParallelControls.SetNumThreads(1)` (restored after): with more threads the missing key throws inside the
+  parallel baby-step loop of the CI BSGS (item 5.2), where an exception cannot leave the OpenMP region, so the
+  process aborts (`terminate called ... EvalKey for index [5] is not found`, seen in `p64_chk2`). Std's parallel
+  CtS/StC rotations behave the same way, so the library is unchanged; a missing key is a usage error.
+- New `CIBootstrap_BTSlotsEncodingGuards` (item 0.1's guard, now the StC-first routing of item 2.5): with
+  `BTSlotsEncoding = true`, `EvalBootstrap` and `EvalBootstrapStCFirst` return the same ciphertext (bit-exact); an
+  input above the StC input level is dropped to it and bootstraps; an input with fewer than lbDec + 2 towers throws
+  ("Not enough levels to perform StC-first CI bootstrapping"); `EvalBootstrapStCFirst` on a CtS-first precomputation
+  throws ("needs EvalBootstrapSetup(..., BTSlotsEncoding = true)"); a `SPARSE_TERNARY` CI secret throws ("Native CI
+  bootstrap supports UNIFORM_TERNARY and SPARSE_ENCAPSULATED").
+- Thresholds are about 2 bits below the lowest of 10-20 runs (encryption noise moves a case by up to 1.7 bits). The
+  old `{4,3} FIXEDMANUAL uniform > 11.0` was flaky (2 of 10 runs below it, 10.76 / 10.97); it is now `> 9.0`. The old
+  uniform `> 13.0` and encapsulated `> 16.0` were loose and are now 17.5 / 21.5.
+
+**Precision at N = 2^10** (min bits = -log2 max error; `p64_chk`, `p64_chk2` x8, `p64_verify`; OMP_NUM_THREADS=4;
+each case under 0.6 s):
+
+| case | runs | CtS-first min..max | test threshold | StC-first min..max | test threshold |
+|---|---|---|---|---|---|
+| {2,2} FA uniform | 10 | 19.86..20.36 | 17.5 | 19.68..21.37 | 17.5 |
+| {3,3} FA uniform | 10 | 19.76..20.22 | 17.5 | 19.37..21.14 | 17.5 |
+| {4,3} FM uniform | 10 | 10.76..11.67 | 9.0 | 14.52..14.53 | 12.5 |
+| {2,2} FA encap | 10 | 23.68..24.30 | 21.5 | 24.87..25.17 | 22.5 |
+| {3,3} FA encap | 20 | 23.70..24.43 | 21.5 | 24.51..25.14 | 22.5 |
+| {4,3} FM encap | 10 | 17.10..17.31 | 15.0 | 20.56..21.01 | 18.5 |
+| {1,1} FA encap (dense) | 10 | 22.00..22.77 | 20.0 | 24.22..24.63 | 22.0 |
+| {3,3} FA encap, META-BTS | 10 | 39.36..41.00 | 37 and one + 10 | 40.48..40.53 | 37 and one + 10 |
+
+**Key sets** (`p64_chk3`, `p64_verify`): every case has indices == generated keys, no M-1, M-4 / M-2 iff encap, the
+bootstrap runs, 0 unused keys. Generated keys: 2^8 {2,2} 25, {3,3} encap 31, {1,1} encap CtS 32, {1,1} uniform StC
+30; 2^10 {2,2} 49, {3,3} encap 41, {1,1} encap 64 / uniform StC 62. Time per case 0.1-2 s at 2^10 real-FFT and
+2^8 dense (the 2^10 dense case takes 5 s, so the test uses 2^8 for {1,1}).
+
+**clang-format.** `pre-commit` is broken on this VM (`No module named 'pre_commit'`), so the pinned version was
+installed in a scratch venv (`pip install clang-format==23.1.1`, as `.clang-format` suggests) and run with
+`--style=file -i` on every C/C++ file the CI work touched (`git diff --name-only b6927630~1 HEAD -- '*.cpp' '*.h'`
+plus the test file): 25 files changed (library: `ckksrns-fhe.cpp`, `ci-transform.cpp/.h`, `ci-realfft.cpp`,
+`transformnat-impl.h`, `poly-impl.h`, `cryptocontext.h`, `ckkspackedencoding.cpp`, `ckksrns-parametergeneration.cpp`,
+`base-leveledshe.cpp`, `nbtheory2.cpp`, `ckksrns-cryptoparameters.cpp`; the `benchmark/src/ci-*.cpp` drivers; the
+`ci-ckks-paper/tools/*.cpp` tools; the unit test). Upstream files the CI work never touched show no change with this
+binary. Includes were regrouped by the style (`SortIncludes`, `IncludeBlocks: Regroup`); everything builds.
+Formatting-only check, bit-exact across builds: `p64_xsave` saved 6 serialization cases (CI 2^12 {3,3} encap
+CtS/StC, CI 2^12 uniform META-BTS, CI 2^13 {4,4} encap StC, std 2^12 encap StC, std 2^12 uniform CtS) with the
+pre-format `build-wsl`; after the rebuild, `p64_verify` loaded them with the new binaries and every bootstrap output
+was bit-exact to the saved one (6/6 `bit-exact vs save-side output: 1`). Library and drivers built with 0 warnings
+(`-Wall -Werror`); the test file, `ckksrns-fhe.cpp` with `-DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT`, and the three
+non-CMake drivers pass `-fsyntax-only`; the two tools whose header comment ends in `\` pass with their documented
+`g++ -O2 -std=c++17` command (with `-Wall -Werror` they fail on `-Wcomment`, as before the formatting).
+Smoke (`p64_verify`, `build-wsl-bt`, 2^13 {4,4} encap, insecure, reps 1): CI CtS-first 18.04 / 19.71 bits min / RMS
+(corr 4), CI StC-first 21.19 / 22.67 (corr 12), Galois check 72 rotations == keygen set in every bootstrap.
+
+**Commands** (WSL, repo root; `G` = `ci-ckks-paper/tools/wsl-guard.sh`; `$S` = the session scratchpad `ci64/`
+holding `helpers.h`, `check.cpp` (modes `prec`, `keys`, `guards`), `build.sh` (compile/link `check` against
+`build-wsl/lib`), `build2.sh`, `xsave.sh` (`save|load BUILD_DIR` for the 6 cases above with `ci-boot-serial`)):
+
+    G p64_chkbuild 6 'bash $S/build.sh'
+    G p64_chk      6 'OMP_NUM_THREADS=4 $S/check guards && OMP_NUM_THREADS=4 $S/check prec'
+    G p64_chk2     6 'export OMP_NUM_THREADS=4; $S/check keys; for i in 1..8; do $S/check prec; done'  # keys aborted (see above)
+    G p64_chk3     6 'bash $S/build.sh && OMP_NUM_THREADS=4 $S/check keys'                            # 1-thread removal loop
+    G p64_xsave    8 'OMP_NUM_THREADS=4 bash $S/xsave.sh save build-wsl'                              # pre-format build
+    # clang-format 23.1.1 -i on the 25 files, then:
+    G p64_build   12 'bash $S/build2.sh'   # cmake --build build-wsl --target ci-boot-serial ci-fft-boot ci-noise-probe
+                                           #   ci-ntt-check ci-op-cost ci-ring-conflict -j 8; build-wsl-bt ci-fft-boot -j 8;
+                                           # -fsyntax-only test file / fhe.cpp with BOOTSTRAPTIMING_LT / other drivers; check
+    G p64_verify   8 'export OMP_NUM_THREADS=4; bash $S/xsave.sh load build-wsl; g++ -O2 -std=c++17 -Isrc/core/include
+        -fsyntax-only ci-ckks-paper/tools/{ci-bsgs-plan,ci-split-search}.cpp; $S/check all;
+        build-wsl-bt/bin/benchmark/ci-fft-boot {ci,std} 13 4 4 59 60 0 1 {fa 4 encap 0 | fa 12 encap 1}'
+
+**Conclusions.** The CI unit tests now cover both orderings (required by the user) at three budgets with both
+secret distributions, META-BTS in both orderings, keygen/evaluator key-set equality including "no unused key", and
+the `BTSlotsEncoding` routing and its guards. All asserted values hold with at least about 2 bits of margin in 10-20
+runs. One flaky old threshold was fixed. Formatting changed no behavior (bit-exact cross-build bootstraps). Item 6.5
+builds and runs the tests. Finding: a missing bootstrap key under OpenMP aborts the process instead of throwing (CI
+and std alike), because the rotations run inside parallel regions.

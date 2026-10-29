@@ -29,19 +29,7 @@
 // verified against the Phase-0 golden vectors under reference/golden/.
 //
 
-#include "constants.h"
-#include "math/nbtheory.h"
-#include "math/math-hal.h"
-#include "math/dftransform.h"
-#include "math/ci-transform.h"
-#include "lattice/lat-hal.h"
-#include "openfhe.h"
-#include "ciphertext-ser.h"
-#include "cryptocontext-ser.h"
-#include "key/key-ser.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
-#include "gtest/gtest.h"
-
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <random>
@@ -49,6 +37,20 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "ciphertext-ser.h"
+#include "constants.h"
+#include "cryptocontext-ser.h"
+#include "gtest/gtest.h"
+#include "key/key-ser.h"
+#include "lattice/lat-hal.h"
+#include "math/ci-realfft.h"
+#include "math/ci-transform.h"
+#include "math/dftransform.h"
+#include "math/math-hal.h"
+#include "math/nbtheory.h"
+#include "openfhe.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 
 using namespace lbcrypto;
 
@@ -90,8 +92,8 @@ NativeInteger CIWPow(const NativeInteger& wm, int64_t e, uint32_t N, const Nativ
 }
 
 // Direct: ahat[j] = a(wm^{4j+1}) = a_0 + sum_{i>=1} a_i (wm^{(4j+1)i} + wm^{-(4j+1)i}).
-std::vector<NativeInteger> CINTTForwardDirect(const std::vector<NativeInteger>& a, uint32_t N,
-                                              const NativeInteger& q, const NativeInteger& wm) {
+std::vector<NativeInteger> CINTTForwardDirect(const std::vector<NativeInteger>& a, uint32_t N, const NativeInteger& q,
+                                              const NativeInteger& wm) {
     std::vector<NativeInteger> ahat(N);
     for (uint32_t j = 0; j < N; ++j) {
         int64_t node = 4 * static_cast<int64_t>(j) + 1;
@@ -106,13 +108,13 @@ std::vector<NativeInteger> CINTTForwardDirect(const std::vector<NativeInteger>& 
 }
 
 // Kim-Song s4.3 fast: twiddle then N-point cyclic NTT (w_N = wm^4).
-std::vector<NativeInteger> CINTTForwardFast(const std::vector<NativeInteger>& a, uint32_t N,
-                                            const NativeInteger& q, const NativeInteger& wm) {
+std::vector<NativeInteger> CINTTForwardFast(const std::vector<NativeInteger>& a, uint32_t N, const NativeInteger& q,
+                                            const NativeInteger& wm) {
     std::vector<NativeInteger> at(N);
     at[0] = a[0] % q;
     for (uint32_t i = 1; i < N; ++i)
         at[i] = a[i].ModMul(CIWPow(wm, (int64_t)i, N, q), q)
-                    .ModAdd(a[N - i].ModMul(CIWPow(wm, -(int64_t)(N - i), N, q), q), q);
+                        .ModAdd(a[N - i].ModMul(CIWPow(wm, -(int64_t)(N - i), N, q), q), q);
     std::vector<NativeInteger> ahat(N);
     for (uint32_t j = 0; j < N; ++j) {
         NativeInteger acc(0);
@@ -124,8 +126,8 @@ std::vector<NativeInteger> CINTTForwardFast(const std::vector<NativeInteger>& a,
 }
 
 // Inverse of the fast forward: N-point INTT then untwiddle (2x2 solve per (i,N-i) pair).
-std::vector<NativeInteger> CINTTInverseFast(const std::vector<NativeInteger>& ahat, uint32_t N,
-                                            const NativeInteger& q, const NativeInteger& wm) {
+std::vector<NativeInteger> CINTTInverseFast(const std::vector<NativeInteger>& ahat, uint32_t N, const NativeInteger& q,
+                                            const NativeInteger& wm) {
     std::vector<NativeInteger> at(N);
     NativeInteger Ninv = NativeInteger(N).ModInverse(q);
     for (uint32_t i = 0; i < N; ++i) {
@@ -142,13 +144,13 @@ std::vector<NativeInteger> CINTTInverseFast(const std::vector<NativeInteger>& ah
         if (i < k) {
             // a_i = (at_i wm^{N-i} - wm^{-(N-i)} at_{N-i}) / det ; det = 2 wm^N
             a[i] = at[i].ModMul(CIWPow(wm, (int64_t)(N - i), N, q), q)
-                       .ModSub(CIWPow(wm, -(int64_t)(N - i), N, q).ModMul(at[k], q), q)
-                       .ModMul(detInv, q);
-            a[k] = CIWPow(wm, (int64_t)i, N, q).ModMul(at[k], q)
-                       .ModSub(at[i].ModMul(CIWPow(wm, -(int64_t)i, N, q), q), q)
-                       .ModMul(detInv, q);
-        }
-        else if (i == k) {  // self-paired (i = N/2): at_i = a_i (wm^{N/2}+wm^{-N/2})
+                           .ModSub(CIWPow(wm, -(int64_t)(N - i), N, q).ModMul(at[k], q), q)
+                           .ModMul(detInv, q);
+            a[k] = CIWPow(wm, (int64_t)i, N, q)
+                           .ModMul(at[k], q)
+                           .ModSub(at[i].ModMul(CIWPow(wm, -(int64_t)i, N, q), q), q)
+                           .ModMul(detInv, q);
+        } else if (i == k) {  // self-paired (i = N/2): at_i = a_i (wm^{N/2}+wm^{-N/2})
             NativeInteger d = CIWPow(wm, (int64_t)i, N, q).ModAdd(CIWPow(wm, -(int64_t)i, N, q), q);
             a[i] = at[i].ModMul(d.ModInverse(q), q);
         }
@@ -192,20 +194,20 @@ std::vector<NativeInteger> CIRingMultNegacyclic(const std::vector<NativeInteger>
 
 // Cleartext CI automorphism oracle a -> a(X^k) on CI coefficients: Laurent lift
 // (b_i = X^i - X^{2N-i}), permute X^e -> X^{ek} (negacyclic, X^{2N}=-1), extract.
-std::vector<NativeInteger> CIAutomorphismOracle(const std::vector<NativeInteger>& a, uint32_t k,
-                                                uint32_t N, const NativeInteger& q) {
+std::vector<NativeInteger> CIAutomorphismOracle(const std::vector<NativeInteger>& a, uint32_t k, uint32_t N,
+                                                const NativeInteger& q) {
     uint32_t M = 2 * N;
     std::vector<NativeInteger> A(M, NativeInteger(0)), B(M, NativeInteger(0));
     A[0] = a[0] % q;
     for (uint32_t i = 1; i < N; ++i) {
-        A[i]     = A[i].ModAdd(a[i], q);
+        A[i] = A[i].ModAdd(a[i], q);
         A[M - i] = A[M - i].ModSub(a[i], q);
     }
     for (uint32_t e = 0; e < M; ++e) {
         if (A[e] == NativeInteger(0))
             continue;
-        uint64_t ek   = static_cast<uint64_t>(e) * k;
-        uint32_t p    = static_cast<uint32_t>(ek % M);
+        uint64_t ek = static_cast<uint64_t>(e) * k;
+        uint32_t p = static_cast<uint32_t>(ek % M);
         bool negative = ((ek / M) % 2) != 0;  // X^{2N} = -1
         B[p] = negative ? B[p].ModSub(A[e], q) : B[p].ModAdd(A[e], q);
     }
@@ -249,8 +251,7 @@ static void CheckPrimeChainModulo4N(uint32_t N, uint32_t numPrimes, uint32_t bit
     NativeInteger q = FirstPrime<NativeInteger>(bits, fourN);
     for (uint32_t i = 0; i < numPrimes; ++i) {
         uint64_t qi = q.ConvertToInt();
-        EXPECT_EQ(qi % fourN, 1ULL) << "prime " << qi << " is not 1 mod 4N=" << fourN
-                                    << " at N=" << N;
+        EXPECT_EQ(qi % fourN, 1ULL) << "prime " << qi << " is not 1 mod 4N=" << fourN << " at N=" << N;
         EXPECT_TRUE(seen.insert(qi).second) << "duplicate prime " << qi << " at N=" << N;
         q = PreviousPrime<NativeInteger>(q, fourN);
     }
@@ -308,7 +309,7 @@ struct CINttCase {
     uint64_t q;
 };
 static const CINttCase kCINttCases[] = {
-    {4, 257}, {8, 257}, {16, 257}, {32, 257}, {16, 769}, {64, 769},
+        {4, 257}, {8, 257}, {16, 257}, {32, 257}, {16, 769}, {64, 769},
 };
 
 static std::vector<NativeInteger> RandVec(uint32_t N, uint64_t q, uint32_t seed) {
@@ -323,8 +324,7 @@ TEST(UTCKKSrnsCI, CINTT_FastEqualsDirect) {
     for (const auto& c : kCINttCases) {
         NativeInteger q(c.q), wm = RootOfUnity<NativeInteger>(4 * c.N, q);
         auto a = RandVec(c.N, c.q, 7 + c.N);
-        EXPECT_EQ(CINTTForwardFast(a, c.N, q, wm), CINTTForwardDirect(a, c.N, q, wm))
-            << "N=" << c.N << " q=" << c.q;
+        EXPECT_EQ(CINTTForwardFast(a, c.N, q, wm), CINTTForwardDirect(a, c.N, q, wm)) << "N=" << c.N << " q=" << c.q;
     }
 }
 
@@ -332,8 +332,7 @@ TEST(UTCKKSrnsCI, CINTT_ForwardInverseIdentity) {
     for (const auto& c : kCINttCases) {
         NativeInteger q(c.q), wm = RootOfUnity<NativeInteger>(4 * c.N, q);
         auto a = RandVec(c.N, c.q, 11 + c.N);
-        EXPECT_EQ(CINTTInverseFast(CINTTForwardFast(a, c.N, q, wm), c.N, q, wm), a)
-            << "N=" << c.N << " q=" << c.q;
+        EXPECT_EQ(CINTTInverseFast(CINTTForwardFast(a, c.N, q, wm), c.N, q, wm), a) << "N=" << c.N << " q=" << c.q;
     }
 }
 
@@ -414,7 +413,10 @@ TEST(UTCKKSrnsCI, CITransform_LibraryMatchesReference) {
 // negacyclic CI-mult oracle. This is the integration that makes the whole DCRTPoly
 // scheme stack (Enc/Dec/Mult/KeySwitch) operate on CI ring elements.
 TEST(UTCKKSrnsCI, PolyImpl_SwitchFormat_CIRingMult) {
-    struct PCase { uint32_t N; uint64_t q; };
+    struct PCase {
+        uint32_t N;
+        uint64_t q;
+    };
     const PCase cases[] = {{4, 257}, {8, 257}, {16, 769}, {32, 7681}};
     for (const auto& c : cases) {
         ClearCIModuli();
@@ -432,8 +434,8 @@ TEST(UTCKKSrnsCI, PolyImpl_SwitchFormat_CIRingMult) {
         }
         pa.SwitchFormat();  // COEFFICIENT -> EVALUATION (CI)
         pb.SwitchFormat();
-        NativePoly pc = pa * pb;          // pointwise (Hadamard) in EVALUATION
-        pc.SwitchFormat();                // EVALUATION -> COEFFICIENT (CI)
+        NativePoly pc = pa * pb;  // pointwise (Hadamard) in EVALUATION
+        pc.SwitchFormat();        // EVALUATION -> COEFFICIENT (CI)
 
         std::vector<NativeInteger> got(c.N);
         for (uint32_t i = 0; i < c.N; ++i)
@@ -458,19 +460,25 @@ TEST(UTCKKSrnsCI, PolyImpl_SwitchFormat_CIRingMult) {
 // eval domain equals the cleartext CI automorphism a -> a(X^k). Includes k = 4N-1 (=-1),
 // which is the identity on the CI ring (conjugation X->X^{-1} fixes R).
 TEST(UTCKKSrnsCI, CIAutomorphismMap_MatchesOracle) {
-    struct ACase { uint32_t N; uint64_t q; };
+    struct ACase {
+        uint32_t N;
+        uint64_t q;
+    };
     const ACase cases[] = {{8, 257}, {16, 769}, {32, 7681}, {64, 7681}};
     for (const auto& c : cases) {
         ClearCIModuli();
         NativeInteger q(c.q), wm = RootOfUnity<NativeInteger>(4 * c.N, q);
         RegisterCIModulus(q, c.N, wm);
         auto params = std::make_shared<ILNativeParams>(2 * c.N, q, NativeInteger(1));
-        auto a      = RandVec(c.N, c.q, 17 + c.N);
+        auto a = RandVec(c.N, c.q, 17 + c.N);
 
         // Galois elements 5^r mod 4N (the CI rotation generator powers) and -1.
         std::vector<uint32_t> ks;
         uint32_t five = 1, m = 4 * c.N;
-        for (int r = 0; r < 5; ++r) { ks.push_back(five); five = (five * 5) % m; }
+        for (int r = 0; r < 5; ++r) {
+            ks.push_back(five);
+            five = (five * 5) % m;
+        }
         ks.push_back(m - 1);  // -1 mod 4N -> identity on CI
 
         for (uint32_t k : ks) {
@@ -480,15 +488,14 @@ TEST(UTCKKSrnsCI, CIAutomorphismMap_MatchesOracle) {
             NativePoly pa(params, Format::COEFFICIENT, true);
             for (uint32_t i = 0; i < c.N; ++i)
                 pa[i] = a[i];
-            pa.SwitchFormat();                          // COEFFICIENT -> EVALUATION (CI)
+            pa.SwitchFormat();  // COEFFICIENT -> EVALUATION (CI)
             NativePoly pAuto = pa.AutomorphismTransform(k, cimap);
-            pAuto.SwitchFormat();                        // EVALUATION -> COEFFICIENT (CI)
+            pAuto.SwitchFormat();  // EVALUATION -> COEFFICIENT (CI)
 
             std::vector<NativeInteger> got(c.N);
             for (uint32_t i = 0; i < c.N; ++i)
                 got[i] = pAuto[i];
-            EXPECT_EQ(got, CIAutomorphismOracle(a, k, c.N, q))
-                << "N=" << c.N << " k=" << k;
+            EXPECT_EQ(got, CIAutomorphismOracle(a, k, c.N, q)) << "N=" << c.N << " k=" << k;
         }
     }
     ClearCIModuli();
@@ -553,7 +560,7 @@ TEST(UTCKKSrnsCI, CIHomomorphicLinearTransform) {
     auto keyMap = cc->EvalAutomorphismKeyGen(keys.secretKey, ks);
 
     Plaintext pv = cc->MakeCKKSPackedPlaintext(v, 1, 0, nullptr, N);
-    auto ct      = cc->Encrypt(keys.publicKey, pv);
+    auto ct = cc->Encrypt(keys.publicKey, pv);
 
     Ciphertext<DCRTPoly> result;
     for (uint32_t t = 0; t < N; ++t) {
@@ -564,8 +571,8 @@ TEST(UTCKKSrnsCI, CIHomomorphicLinearTransform) {
         for (uint32_t j = 0; j < N; ++j)
             Dt[j] = M[j][precomp[j]];
         Plaintext pDt = cc->MakeCKKSPackedPlaintext(Dt, 1, 0, nullptr, N);
-        auto term     = cc->EvalMult(rotated, pDt);
-        result        = (t == 0) ? term : cc->EvalAdd(result, term);
+        auto term = cc->EvalMult(rotated, pDt);
+        result = (t == 0) ? term : cc->EvalAdd(result, term);
     }
     result = cc->ModReduce(result);
 
@@ -591,7 +598,7 @@ TEST(UTCKKSrnsCI, CIHomomorphicLinearTransform) {
 TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
     const uint32_t N = 1u << 8;  // log2N=8
     uint32_t levelsAfter = 6;
-    SecretKeyDist skd    = UNIFORM_TERNARY;
+    SecretKeyDist skd = UNIFORM_TERNARY;
     std::vector<double> x(N);
     for (uint32_t i = 0; i < N; ++i)
         x[i] = std::sin(0.05 * (i + 1));  // [-1,1]
@@ -636,47 +643,46 @@ TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
 
     // E0.1 side-by-side: does STANDARD CKKS collapse CLIMB at the same N/scale? (COMPLEX, N/2 slots)
     for (auto lb : std::vector<uint32_t>{2, 4, 8}) {
-      try {
-        std::vector<uint32_t> levelBudget = {lb, lb};
-        CCParams<CryptoContextCKKSRNS> parameters;
-        parameters.SetRingDim(N);  // default COMPLEX
-        parameters.SetSecretKeyDist(skd);
-        parameters.SetScalingTechnique(FIXEDMANUAL);
-        parameters.SetScalingModSize(59);
-        parameters.SetFirstModSize(60);
-        parameters.SetSecurityLevel(HEStd_NotSet);
-        uint32_t depth = levelsAfter + FHECKKSRNS::GetBootstrapDepth(levelBudget, skd);
-        parameters.SetMultiplicativeDepth(depth);
-        auto cc = GenCryptoContext(parameters);
-        cc->Enable(PKE);
-        cc->Enable(KEYSWITCH);
-        cc->Enable(LEVELEDSHE);
-        cc->Enable(ADVANCEDSHE);
-        cc->Enable(FHE);
-        uint32_t slots = N / 2;
-        cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots);
-        auto keys = cc->KeyGen();
-        cc->EvalMultKeyGen(keys.secretKey);
-        cc->EvalBootstrapKeyGen(keys.secretKey, slots);
-        std::vector<double> xs(slots);
-        for (uint32_t i = 0; i < slots; ++i)
-            xs[i] = std::sin(0.05 * (i + 1));
-        auto pt  = cc->MakeCKKSPackedPlaintext(xs, 1, depth - 1, nullptr, slots);
-        auto ct  = cc->Encrypt(keys.publicKey, pt);
-        auto ctA = cc->EvalBootstrap(ct);
-        Plaintext res;
-        cc->Decrypt(keys.secretKey, ctA, &res);
-        res->SetLength(slots);
-        double e = 0;
-        for (uint32_t i = 0; i < slots; ++i)
-            e = std::max(e, std::abs(res->GetCKKSPackedValue()[i].real() - xs[i]));
-        std::cerr << "[STDroute] lvlb={" << lb << "," << lb << "} depth=" << depth
-                  << " : final slot = " << std::fixed << std::setprecision(1) << (e > 0 ? -std::log2(e) : 60.0)
-                  << " bits\n";
-      }
-      catch (const std::exception& ex) {
-        std::cerr << "[STDroute] lvlb={" << lb << "," << lb << "} : FAILED (" << ex.what() << ")\n";
-      }
+        try {
+            std::vector<uint32_t> levelBudget = {lb, lb};
+            CCParams<CryptoContextCKKSRNS> parameters;
+            parameters.SetRingDim(N);  // default COMPLEX
+            parameters.SetSecretKeyDist(skd);
+            parameters.SetScalingTechnique(FIXEDMANUAL);
+            parameters.SetScalingModSize(59);
+            parameters.SetFirstModSize(60);
+            parameters.SetSecurityLevel(HEStd_NotSet);
+            uint32_t depth = levelsAfter + FHECKKSRNS::GetBootstrapDepth(levelBudget, skd);
+            parameters.SetMultiplicativeDepth(depth);
+            auto cc = GenCryptoContext(parameters);
+            cc->Enable(PKE);
+            cc->Enable(KEYSWITCH);
+            cc->Enable(LEVELEDSHE);
+            cc->Enable(ADVANCEDSHE);
+            cc->Enable(FHE);
+            uint32_t slots = N / 2;
+            cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots);
+            auto keys = cc->KeyGen();
+            cc->EvalMultKeyGen(keys.secretKey);
+            cc->EvalBootstrapKeyGen(keys.secretKey, slots);
+            std::vector<double> xs(slots);
+            for (uint32_t i = 0; i < slots; ++i)
+                xs[i] = std::sin(0.05 * (i + 1));
+            auto pt = cc->MakeCKKSPackedPlaintext(xs, 1, depth - 1, nullptr, slots);
+            auto ct = cc->Encrypt(keys.publicKey, pt);
+            auto ctA = cc->EvalBootstrap(ct);
+            Plaintext res;
+            cc->Decrypt(keys.secretKey, ctA, &res);
+            res->SetLength(slots);
+            double e = 0;
+            for (uint32_t i = 0; i < slots; ++i)
+                e = std::max(e, std::abs(res->GetCKKSPackedValue()[i].real() - xs[i]));
+            std::cerr << "[STDroute] lvlb={" << lb << "," << lb << "} depth=" << depth
+                      << " : final slot = " << std::fixed << std::setprecision(1) << (e > 0 ? -std::log2(e) : 60.0)
+                      << " bits\n";
+        } catch (const std::exception& ex) {
+            std::cerr << "[STDroute] lvlb={" << lb << "," << lb << "} : FAILED (" << ex.what() << ")\n";
+        }
     }
 }
 
@@ -685,10 +691,10 @@ TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
 // ring switch (rank N throughout). Decrypt(Boot(ct)) ~ Decrypt(ct).
 TEST(UTCKKSrnsCI, CINativeBootstrap) {
     ClearCIModuli();
-    const uint32_t N = 1u << 8;   // N=256 real slots (log2N=8)
+    const uint32_t N = 1u << 8;                  // N=256 real slots (log2N=8)
     std::vector<uint32_t> levelBudget = {4, 4};  // hoisted 2-channel collapsed CI real-DFT (4 | log2N)
     uint32_t levelsAfter = 6;
-    SecretKeyDist skd    = UNIFORM_TERNARY;
+    SecretKeyDist skd = UNIFORM_TERNARY;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetCKKSDataType(REAL_CI);
@@ -717,7 +723,7 @@ TEST(UTCKKSrnsCI, CINativeBootstrap) {
     for (uint32_t i = 0; i < N; ++i)
         x[i] = std::sin(0.05 * (i + 1));  // spans [-1,1], the CKKS bootstrap input range
     Plaintext pt = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, N);  // near the bottom level
-    auto ct      = cc->Encrypt(keys.publicKey, pt);
+    auto ct = cc->Encrypt(keys.publicKey, pt);
 
     // DIAGNOSTIC: plain encrypt->decrypt round-trip precision at THIS config (no bootstrap), to
     // check whether the CI encode/decode itself caps precision.
@@ -739,7 +745,7 @@ TEST(UTCKKSrnsCI, CINativeBootstrap) {
     double maxerr = 0, maxerrNo0 = 0;
     for (uint32_t i = 0; i < N; ++i) {
         double e = std::abs(res->GetCKKSPackedValue()[i].real() - x[i]);
-        maxerr   = std::max(maxerr, e);
+        maxerr = std::max(maxerr, e);
         if (i != 0)
             maxerrNo0 = std::max(maxerrNo0, e);
     }
@@ -771,9 +777,9 @@ TEST(UTCKKSrnsCI, CINoRingSwitchInvariant) {
 
     auto rns = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
     ASSERT_NE(rns, nullptr);
-    EXPECT_EQ(rns->GetElementParams()->GetRingDimension(), N);   // Q towers
-    EXPECT_EQ(rns->GetParamsP()->GetRingDimension(), N);          // auxiliary P towers
-    EXPECT_EQ(rns->GetParamsQP()->GetRingDimension(), N);         // extended QP basis
+    EXPECT_EQ(rns->GetElementParams()->GetRingDimension(), N);  // Q towers
+    EXPECT_EQ(rns->GetParamsP()->GetRingDimension(), N);        // auxiliary P towers
+    EXPECT_EQ(rns->GetParamsQP()->GetRingDimension(), N);       // extended QP basis
     for (const auto& t : rns->GetParamsQP()->GetParams())
         EXPECT_EQ(t->GetRingDimension(), N) << "a QP tower exceeds rank N (ring switch!)";
 
@@ -972,10 +978,10 @@ TEST(UTCKKSrnsCI, CIDoubleAngleChainVsStd) {
         return maxerr;
     };
     const uint32_t N = 1u << 12, depth = 6;
-    double eCI  = runChain(REAL_CI, N, depth);
+    double eCI = runChain(REAL_CI, N, depth);
     double eStd = runChain(COMPLEX, N, depth);
-    std::cout << "[CIdiag] double-angle chain depth=" << depth << " N=" << N
-              << ": CI maxerr=" << eCI << " (" << -std::log2(eCI) << " bits)"
+    std::cout << "[CIdiag] double-angle chain depth=" << depth << " N=" << N << ": CI maxerr=" << eCI << " ("
+              << -std::log2(eCI) << " bits)"
               << " | std maxerr=" << eStd << " (" << -std::log2(eStd) << " bits)\n";
 }
 
@@ -1004,7 +1010,7 @@ TEST(UTCKKSrnsCI, CIRotation_EvalAutomorphism) {
     for (uint32_t i = 0; i < N; ++i)
         msg[i] = std::sin(0.1 * (i + 1));
     Plaintext pm = cc->MakeCKKSPackedPlaintext(msg, 1, 0, nullptr, N);
-    auto ct      = cc->Encrypt(keys.publicKey, pm);
+    auto ct = cc->Encrypt(keys.publicKey, pm);
 
     const uint32_t m = 4 * N;
     std::vector<uint32_t> ks = {5u, (5u * 5u) % m, m - 1};  // 5^1, 5^2, -1 (identity)
@@ -1035,7 +1041,6 @@ TEST(UTCKKSrnsCI, CIRotation_EvalAutomorphism) {
 // ---- Paper-style real FFT (Liu-Ma-Wang-Wang, ePrint 2026/2618): O(N log N) CI encode/decode must
 // equal the dense U^{-1} / U, and the native bootstrap built on the sparse real factors must refresh
 // with real precision for several level budgets, both scaling modes and both secret distributions.
-#include "math/ci-realfft.h"
 
 TEST(UTCKKSrnsCI, CIRealFFT_EncodeDecodeMatchDense) {
     for (uint32_t N : {8u, 16u, 64u, 512u}) {
@@ -1074,55 +1079,252 @@ TEST(UTCKKSrnsCI, CIRealFFT_EncodeDecodeMatchDense) {
     }
 }
 
-static double CIBootPrecisionBits(uint32_t logN, std::vector<uint32_t> budget, ScalingTechnique st,
-                                  SecretKeyDist skd) {
-    ClearCIModuli();
-    const uint32_t N = 1u << logN;
+// Item 6.4 helpers (no gtest macros inside, so the tests below state every expectation).
+// A REAL_CI context with the native bootstrap set up for one level budget and one ordering (CtS-first, or StC-first
+// through BTSlotsEncoding), two levels after the bootstrap (one more per extra META-BTS iteration), and its keys.
+struct CIBootFixture {
+    CryptoContext<DCRTPoly> cc;
+    KeyPair<DCRTPoly> keys;
+    uint32_t N = 0;
+    uint32_t depth = 0;
+    std::vector<uint32_t> budget;
+    bool stcFirst = false;
+    std::vector<double> x;
+
+    // CtS-first takes the input at the bottom of the chain; StC-first at lbDec + 2 towers (its StC runs first).
+    uint32_t InputLevel() const {
+        return stcFirst ? depth - budget[1] - 1 : depth - 1;
+    }
+    Ciphertext<DCRTPoly> EncryptInput(uint32_t level) const {
+        return cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, level, nullptr, N));
+    }
+    Ciphertext<DCRTPoly> EncryptInput() const {
+        return EncryptInput(InputLevel());
+    }
+    // -log2 of the maximum slot error (the paper's precision measure).
+    double PrecisionBits(const Ciphertext<DCRTPoly>& ct) const {
+        Plaintext res;
+        cc->Decrypt(keys.secretKey, ct, &res);
+        res->SetLength(N);
+        double e = 0;
+        for (uint32_t i = 0; i < N; ++i)
+            e = std::max(e, std::abs(res->GetCKKSPackedValue()[i].real() - x[i]));
+        return -std::log2(e);
+    }
+};
+
+static CIBootFixture MakeCIBootFixture(uint32_t logN, const std::vector<uint32_t>& budget, ScalingTechnique st,
+                                       SecretKeyDist skd, bool stcFirst, uint32_t iters = 1) {
+    CIBootFixture f;
+    f.N = 1u << logN;
+    f.budget = budget;
+    f.stcFirst = stcFirst;
+    f.depth = 2 + FHECKKSRNS::GetBootstrapDepth(budget, skd) + (iters - 1);
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetCKKSDataType(REAL_CI);
-    parameters.SetRingDim(N);
+    parameters.SetRingDim(f.N);
     parameters.SetSecretKeyDist(skd);
     parameters.SetScalingTechnique(st);
     parameters.SetScalingModSize(59);
     parameters.SetFirstModSize(60);
     parameters.SetSecurityLevel(HEStd_NotSet);
-    uint32_t depth = 2 + FHECKKSRNS::GetBootstrapDepth(budget, skd);
-    parameters.SetMultiplicativeDepth(depth);
-    auto cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-    cc->Enable(FHE);
-    cc->EvalBootstrapSetup(budget, {0, 0}, N);
-    auto keys = cc->KeyGen();
-    cc->EvalMultKeyGen(keys.secretKey);
-    cc->EvalBootstrapKeyGen(keys.secretKey, N);
-    std::vector<double> x(N);
+    parameters.SetMultiplicativeDepth(f.depth);
+    f.cc = GenCryptoContext(parameters);
+    f.cc->Enable(PKE);
+    f.cc->Enable(KEYSWITCH);
+    f.cc->Enable(LEVELEDSHE);
+    f.cc->Enable(ADVANCEDSHE);
+    f.cc->Enable(FHE);
+    f.cc->EvalBootstrapSetup(budget, {0, 0}, f.N, 0, true, stcFirst);
+    f.keys = f.cc->KeyGen();
+    f.cc->EvalMultKeyGen(f.keys.secretKey);
+    f.cc->EvalBootstrapKeyGen(f.keys.secretKey, f.N);
+    f.x.resize(f.N);
     std::mt19937_64 g(logN);
     std::uniform_real_distribution<double> U(-1.0, 1.0);
-    for (auto& v : x)
+    for (auto& v : f.x)
         v = U(g);
-    auto ct  = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, N));
-    auto out = cc->EvalBootstrap(ct);
-    Plaintext res;
-    cc->Decrypt(keys.secretKey, out, &res);
-    res->SetLength(N);
-    double e = 0;
-    for (uint32_t i = 0; i < N; ++i)
-        e = std::max(e, std::abs(res->GetCKKSPackedValue()[i].real() - x[i]));
-    ClearCIModuli();
-    return -std::log2(e);
+    return f;
 }
 
+// Precision (bits, max error) of one native CI bootstrap; with iters = 2, of META-BTS with metaPrec = 0 meaning
+// "3 bits below the one-iteration precision" (item 3.2: about 3 bits below one bootstrap's precision is best).
+static double CIBootPrecisionBits(uint32_t logN, std::vector<uint32_t> budget, ScalingTechnique st, SecretKeyDist skd,
+                                  bool stcFirst = false, uint32_t iters = 1, uint32_t metaPrec = 0) {
+    ClearCIModuli();
+    auto f = MakeCIBootFixture(logN, budget, st, skd, stcFirst, iters);
+    auto ct = f.EncryptInput();
+    auto out = f.cc->EvalBootstrap(ct, iters, metaPrec);
+    double bits = f.PrecisionBits(out);
+    f.cc->ClearStaticMapsAndVectors();
+    ClearCIModuli();
+    return bits;
+}
+
+// Keygen/evaluator key-set equality for the native CI bootstrap: the generated automorphism keys are exactly the
+// EvalBootstrapKeyMapIndices list, contain no conjugation key (M - 1), contain the sparse encapsulation keys (M - 4,
+// M - 2) iff the secret is SPARSE_ENCAPSULATED, suffice for the bootstrap (whose own check throws if its rotations
+// differ from the real-FFT Galois set), and every one of them is needed (the bootstrap throws without it).
+struct CIKeySetReport {
+    size_t generated = 0;
+    bool indicesEqual = false;
+    bool hasConjugate = true;
+    bool hasEncapKeys = false;
+    bool bootstrapRuns = false;
+    std::vector<uint32_t> unused;  // keys whose removal does not make the bootstrap throw
+};
+
+static CIKeySetReport CIBootstrapKeySetReport(uint32_t logN, const std::vector<uint32_t>& budget, SecretKeyDist skd,
+                                              bool stcFirst) {
+    ClearCIModuli();
+    auto f = MakeCIBootFixture(logN, budget, FIXEDMANUAL, skd, stcFirst);
+    const auto tag = f.keys.secretKey->GetKeyTag();
+    const uint32_t M = f.cc->GetCyclotomicOrder();
+    auto& keyMap = f.cc->GetEvalAutomorphismKeyMap(tag);
+    std::set<uint32_t> generated;
+    for (const auto& kv : keyMap)
+        generated.insert(kv.first);
+    const auto idx = f.cc->GetScheme()->EvalBootstrapKeyMapIndices(f.cc, f.N);
+    CIKeySetReport r;
+    r.generated = generated.size();
+    r.indicesEqual = (std::set<uint32_t>(idx.begin(), idx.end()) == generated) && (idx.size() == generated.size());
+    r.hasConjugate = generated.count(M - 1) != 0;
+    r.hasEncapKeys = generated.count(M - 4) != 0 && generated.count(M - 2) != 0;
+    auto ct = f.EncryptInput();
+    try {
+        f.cc->EvalBootstrap(ct);
+        r.bootstrapRuns = true;
+    } catch (const std::exception&) {
+        r.bootstrapRuns = false;
+    }
+    // A missing key throws from inside the parallel baby-step loop, where an exception cannot leave an OpenMP region
+    // (std::terminate, as in std's parallel CtS / StC), so the removal checks run single-threaded.
+    const int threads = OpenFHEParallelControls.GetNumThreads();
+    OpenFHEParallelControls.SetNumThreads(1);
+    for (uint32_t k : generated) {
+        auto saved = keyMap.at(k);
+        keyMap.erase(k);
+        bool threw = false;
+        try {
+            f.cc->EvalBootstrap(ct);
+        } catch (const std::exception&) {
+            threw = true;
+        }
+        keyMap[k] = saved;
+        if (!threw)
+            r.unused.push_back(k);
+    }
+    OpenFHEParallelControls.SetNumThreads(threads);
+    f.cc->ClearStaticMapsAndVectors();
+    ClearCIModuli();
+    return r;
+}
+
+// Native CI bootstrap precision, at N = 2^10 (59/60, two levels after). Thresholds are about 2 bits below the lowest of
+// 8-16 runs per case (item 6.4, ci-ckks-paper/PHASE2_LOG.md): the encryption noise moves the result by up to ~1 bit.
+// CtS-first (default ordering), three budgets each, both secret distributions; {1,1} is the dense transform.
 TEST(UTCKKSrnsCI, CIRealFFTBootstrap_Uniform) {
-    EXPECT_GT(CIBootPrecisionBits(10, {2, 2}, FLEXIBLEAUTO, UNIFORM_TERNARY), 13.0);
-    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, UNIFORM_TERNARY), 13.0);
-    EXPECT_GT(CIBootPrecisionBits(10, {4, 3}, FIXEDMANUAL, UNIFORM_TERNARY), 11.0);
+    EXPECT_GT(CIBootPrecisionBits(10, {2, 2}, FLEXIBLEAUTO, UNIFORM_TERNARY), 17.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, UNIFORM_TERNARY), 17.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {4, 3}, FIXEDMANUAL, UNIFORM_TERNARY), 9.0);
 }
 
 TEST(UTCKKSrnsCI, CIRealFFTBootstrap_SparseEncapsulated) {
-    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED), 16.0);
+    EXPECT_GT(CIBootPrecisionBits(10, {2, 2}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED), 21.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED), 21.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {4, 3}, FIXEDMANUAL, SPARSE_ENCAPSULATED), 15.0);
+    EXPECT_GT(CIBootPrecisionBits(10, {1, 1}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED), 20.0);
+}
+
+// StC-first (BTSlotsEncoding; the paper's ordering): the same budgets and secrets.
+TEST(UTCKKSrnsCI, CIRealFFTBootstrap_StCFirst_Uniform) {
+    EXPECT_GT(CIBootPrecisionBits(10, {2, 2}, FLEXIBLEAUTO, UNIFORM_TERNARY, true), 17.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, UNIFORM_TERNARY, true), 17.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {4, 3}, FIXEDMANUAL, UNIFORM_TERNARY, true), 12.5);
+}
+
+TEST(UTCKKSrnsCI, CIRealFFTBootstrap_StCFirst_SparseEncapsulated) {
+    EXPECT_GT(CIBootPrecisionBits(10, {2, 2}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED, true), 22.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED, true), 22.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {4, 3}, FIXEDMANUAL, SPARSE_ENCAPSULATED, true), 18.5);
+    EXPECT_GT(CIBootPrecisionBits(10, {1, 1}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED, true), 22.0);
+}
+
+// META-BTS (two iterations, item 3.2) in both orderings: about 15 bits above one bootstrap.
+TEST(UTCKKSrnsCI, CIRealFFTBootstrap_MetaBTS) {
+    for (bool stcFirst : {false, true}) {
+        const double one = CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED, stcFirst);
+        const double two = CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED, stcFirst, 2,
+                                               static_cast<uint32_t>(std::floor(one)) - 3);
+        EXPECT_GT(two, 37.0) << (stcFirst ? "StC-first" : "CtS-first");
+        EXPECT_GT(two, one + 10.0) << (stcFirst ? "StC-first" : "CtS-first");
+    }
+}
+
+// Keygen/evaluator key-set equality (items 0.4, 6.3) in both orderings, for the real-FFT and the dense {1,1}
+// transform, with and without sparse encapsulation.
+TEST(UTCKKSrnsCI, CIBootstrapKeySet_KeygenEqualsEvaluator) {
+    struct Case {
+        uint32_t logN;
+        std::vector<uint32_t> budget;
+        SecretKeyDist skd;
+        bool stcFirst;
+    };
+    const std::vector<Case> cases = {
+            {10, {2, 2}, UNIFORM_TERNARY, false},    {10, {3, 3}, SPARSE_ENCAPSULATED, false},
+            {10, {2, 2}, UNIFORM_TERNARY, true},     {10, {3, 3}, SPARSE_ENCAPSULATED, true},
+            {8, {1, 1}, SPARSE_ENCAPSULATED, false}, {8, {1, 1}, UNIFORM_TERNARY, true},
+    };
+    for (const auto& c : cases) {
+        const auto r = CIBootstrapKeySetReport(c.logN, c.budget, c.skd, c.stcFirst);
+        const std::string name = "logN " + std::to_string(c.logN) + " {" + std::to_string(c.budget[0]) + "," +
+                                 std::to_string(c.budget[1]) + "} " + (c.stcFirst ? "StC-first" : "CtS-first") +
+                                 (c.skd == SPARSE_ENCAPSULATED ? " encap" : " uniform");
+        EXPECT_GT(r.generated, 0u) << name;
+        EXPECT_TRUE(r.indicesEqual) << name;
+        EXPECT_FALSE(r.hasConjugate) << name;
+        EXPECT_EQ(r.hasEncapKeys, c.skd == SPARSE_ENCAPSULATED) << name;
+        EXPECT_TRUE(r.bootstrapRuns) << name;
+        EXPECT_TRUE(r.unused.empty()) << name << ": " << r.unused.size() << " generated keys are not used";
+    }
+}
+
+// REAL_CI + BTSlotsEncoding (item 0.1, StC-first since item 2.5): EvalBootstrapSetup(..., BTSlotsEncoding = true)
+// routes EvalBootstrap to the CI StC-first bootstrap, and EvalBootstrapStCFirst gives the same ciphertext; the
+// StC-first entry point refuses a CtS-first precomputation; an StC-first input below the StC input level and a
+// SPARSE_TERNARY secret are refused with a clear message.
+TEST(UTCKKSrnsCI, CIBootstrap_BTSlotsEncodingGuards) {
+    {
+        ClearCIModuli();
+        auto f = MakeCIBootFixture(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED, true);
+        auto ct = f.EncryptInput();
+        auto o1 = f.cc->EvalBootstrap(ct);
+        auto o2 = f.cc->GetScheme()->EvalBootstrapStCFirst(ct);
+        EXPECT_TRUE(o1->GetElements() == o2->GetElements());
+        EXPECT_GT(f.PrecisionBits(o1), 22.5);
+        // an input above the StC input level is brought down to it
+        EXPECT_GT(f.PrecisionBits(f.cc->EvalBootstrap(f.EncryptInput(f.InputLevel() - 1))), 22.5);
+        // an input with fewer than lbDec + 2 towers is refused
+        auto low = f.EncryptInput(f.InputLevel() + 1);
+        EXPECT_THROW(f.cc->EvalBootstrap(low), OpenFHEException);
+        f.cc->ClearStaticMapsAndVectors();
+    }
+    {
+        ClearCIModuli();
+        auto f = MakeCIBootFixture(10, {3, 3}, FLEXIBLEAUTO, UNIFORM_TERNARY, false);
+        auto ct = f.EncryptInput();
+        EXPECT_THROW(f.cc->GetScheme()->EvalBootstrapStCFirst(ct), OpenFHEException);
+        EXPECT_GT(f.PrecisionBits(f.cc->EvalBootstrap(ct)), 17.5);
+        f.cc->ClearStaticMapsAndVectors();
+    }
+    {
+        ClearCIModuli();
+        auto f = MakeCIBootFixture(10, {3, 3}, FLEXIBLEAUTO, SPARSE_TERNARY, false);
+        auto ct = f.EncryptInput();
+        EXPECT_THROW(f.cc->EvalBootstrap(ct), OpenFHEException);
+        f.cc->ClearStaticMapsAndVectors();
+    }
+    ClearCIModuli();
 }
 
 // Item 6.3: EvalBootstrapKeyMapIndices lists exactly the CI bootstrap keys (real-FFT set, no conjugation key, plus the
@@ -1133,7 +1335,7 @@ static void CIBootstrapSerialRoundTrip(bool stcFirst) {
     const uint32_t logN = 10, N = 1u << logN;
     const std::vector<uint32_t> budget = {3, 3};
     const SecretKeyDist skd = SPARSE_ENCAPSULATED;
-    const uint32_t depth    = 2 + FHECKKSRNS::GetBootstrapDepth(budget, skd);
+    const uint32_t depth = 2 + FHECKKSRNS::GetBootstrapDepth(budget, skd);
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetCKKSDataType(REAL_CI);
     parameters.SetRingDim(N);
@@ -1168,7 +1370,7 @@ static void CIBootstrapSerialRoundTrip(bool stcFirst) {
     for (auto& v : x)
         v = U(g);
     const uint32_t encLevel = stcFirst ? depth - budget[1] - 1 : depth - 1;
-    auto ct  = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, encLevel, nullptr, N));
+    auto ct = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, encLevel, nullptr, N));
     auto ref = cc->EvalBootstrap(ct);
 
     std::stringstream sCC, sSK, sCT, sMult, sBoot;

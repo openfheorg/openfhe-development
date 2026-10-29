@@ -233,6 +233,11 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    generated keys, 18 of them missing. CI context and bootstrap keys now round-trip through serialization in both
    orderings, with META-BTS and budget {1,1}, and the deserialized context bootstraps bit-exactly as the original
    (`benchmark/src/ci-boot-serial.cpp`, 2^12-2^14). See `PHASE2_LOG.md` 6.3.)
+   (Phase 6.4: the mid-file `#include` is gone. `UnitTestCKKSrnsCI.cpp` now covers the native bootstrap in both
+   orderings (CtS-first and StC-first, three budgets each plus dense {1,1}, uniform and encapsulated secrets),
+   META-BTS in both orderings, keygen/evaluator key-set equality (every generated key is needed and none is
+   missing), and the `BTSlotsEncoding` routing and guards. The CI files are clang-formatted (pinned 23.1.1); the
+   reformatted build bootstraps bit-exactly as the old one. Unit tests run in 6.5. See `PHASE2_LOG.md` 6.4.)
 Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,
 warm run):
 

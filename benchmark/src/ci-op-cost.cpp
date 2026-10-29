@@ -25,8 +25,6 @@
 //   automorph one DCRTPoly element: AutomorphismTransform (permutation only)
 //   automap  PrecomputeAutoMap / PrecomputeAutoMapCI for one Galois element (once per rotation call)
 //==================================================================================
-#include "openfhe.h"
-#include "math/ci-transform.h"
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -38,6 +36,9 @@
 #include <string>
 #include <vector>
 
+#include "math/ci-transform.h"
+#include "openfhe.h"
+
 using namespace lbcrypto;
 using Clock = std::chrono::steady_clock;
 
@@ -48,14 +49,14 @@ static double MedianOf(std::vector<double> v) {
 
 int main(int argc, char** argv) {
     std::string scheme = (argc > 1) ? argv[1] : "ci";
-    uint32_t logN      = (argc > 2) ? std::stoul(argv[2]) : 12;
-    uint32_t depth     = (argc > 3) ? std::stoul(argv[3]) : 10;
-    bool secure        = (argc > 4) ? std::stoul(argv[4]) != 0 : false;
-    uint32_t reps      = (argc > 5) ? std::stoul(argv[5]) : 3;
-    uint32_t iters     = (argc > 6) ? std::stoul(argv[6]) : 5;
-    std::string tlist  = (argc > 7) ? argv[7] : "full,half,4";
-    const bool isCI    = (scheme == "ci");
-    const uint32_t N   = 1u << logN;
+    uint32_t logN = (argc > 2) ? std::stoul(argv[2]) : 12;
+    uint32_t depth = (argc > 3) ? std::stoul(argv[3]) : 10;
+    bool secure = (argc > 4) ? std::stoul(argv[4]) != 0 : false;
+    uint32_t reps = (argc > 5) ? std::stoul(argv[5]) : 3;
+    uint32_t iters = (argc > 6) ? std::stoul(argv[6]) : 5;
+    std::string tlist = (argc > 7) ? argv[7] : "full,half,4";
+    const bool isCI = (scheme == "ci");
+    const uint32_t N = 1u << logN;
 
     CCParams<CryptoContextCKKSRNS> pr;
     if (isCI)
@@ -72,12 +73,12 @@ int main(int argc, char** argv) {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
 
-    auto cpr          = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+    auto cpr = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
     const uint32_t L1 = cc->GetCryptoParameters()->GetElementParams()->GetParams().size();
     std::cout << "CONFIG scheme=" << scheme << " logN=" << logN << " depth=" << depth << " towersQ=" << L1
               << " towersP=" << cpr->GetParamsP()->GetParams().size() << " dnum=" << cpr->GetNumPartQ()
-              << " secure=" << secure << " reps=" << reps << " iters=" << iters << " threads="
-              << (getenv("OMP_NUM_THREADS") ? getenv("OMP_NUM_THREADS") : "?") << std::endl;
+              << " secure=" << secure << " reps=" << reps << " iters=" << iters
+              << " threads=" << (getenv("OMP_NUM_THREADS") ? getenv("OMP_NUM_THREADS") : "?") << std::endl;
 
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
@@ -87,7 +88,7 @@ int main(int argc, char** argv) {
     else
         cc->EvalRotateKeyGen(keys.secretKey, {1});
     const uint32_t rotIdxExt = isCI ? galois : 1;  // EvalFastRotationExt takes the CI Galois element directly
-    auto& km                 = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag());
+    auto& km = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag());
 
     const uint32_t slots = isCI ? N : N / 2;
     std::vector<double> x(slots), y(slots);
@@ -119,15 +120,15 @@ int main(int argc, char** argv) {
     std::vector<LevelData> lv;
     for (uint32_t t : towers) {
         LevelData d;
-        d.t           = t;
-        uint32_t lvl  = L1 - t;
-        d.a           = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, lvl, nullptr, slots));
-        d.b           = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(y, 1, lvl, nullptr, slots));
-        d.p           = cc->MakeCKKSPackedPlaintext(y, 1, lvl, nullptr, slots);
-        d.prod3       = cc->EvalMultNoRelin(d.a, d.b);
-        d.prod        = cc->EvalMult(d.a, d.b);
-        d.digits      = cc->EvalFastRotationPrecompute(d.a);
-        d.ext         = cc->EvalFastRotationExt(d.a, rotIdxExt, d.digits, true);
+        d.t = t;
+        uint32_t lvl = L1 - t;
+        d.a = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, lvl, nullptr, slots));
+        d.b = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(y, 1, lvl, nullptr, slots));
+        d.p = cc->MakeCKKSPackedPlaintext(y, 1, lvl, nullptr, slots);
+        d.prod3 = cc->EvalMultNoRelin(d.a, d.b);
+        d.prod = cc->EvalMult(d.a, d.b);
+        d.digits = cc->EvalFastRotationPrecompute(d.a);
+        d.ext = cc->EvalFastRotationExt(d.a, rotIdxExt, d.digits, true);
         // sanity: x * y after rescale
         Plaintext r;
         cc->Decrypt(keys.secretKey, cc->Rescale(d.prod), &r);
@@ -143,43 +144,43 @@ int main(int argc, char** argv) {
     using Op = std::pair<std::string, std::function<void(LevelData&)>>;
     std::vector<uint32_t> amap(N);
     std::vector<Op> ops = {
-        {"add", [&](LevelData& d) { auto c = cc->EvalAdd(d.a, d.b); }},
-        {"ptmult", [&](LevelData& d) { auto c = cc->EvalMult(d.a, d.p); }},
-        {"tensor", [&](LevelData& d) { auto c = cc->EvalMultNoRelin(d.a, d.b); }},
-        {"relin", [&](LevelData& d) { auto c = cc->Relinearize(d.prod3); }},
-        {"mult", [&](LevelData& d) { auto c = cc->EvalMult(d.a, d.b); }},
-        {"rescale", [&](LevelData& d) { auto c = cc->Rescale(d.prod); }},
-        {"rotate", [&](LevelData& d) { auto c = cc->EvalAutomorphism(d.a, galois, km); }},
-        {"modup", [&](LevelData& d) { auto g = cc->EvalFastRotationPrecompute(d.a); }},
-        {"rotext", [&](LevelData& d) { auto c = cc->EvalFastRotationExt(d.a, rotIdxExt, d.digits, true); }},
-        {"ksdown", [&](LevelData& d) { auto c = cc->KeySwitchDown(d.ext); }},
-        {"ntt",
-         [&](LevelData& d) {
-             DCRTPoly e = d.a->GetElements()[0];
-             e.SwitchFormat();
-             e.SwitchFormat();
-         }},
-        {"automorph",
-         [&](LevelData& d) {
-             if (isCI)
-                 PrecomputeAutoMapCI(N, galois, &amap);
-             else
-                 PrecomputeAutoMap(N, galois, &amap);
-             auto e = d.a->GetElements()[0].AutomorphismTransform(galois, amap);
-         }},
-        {"automap",
-         [&](LevelData& d) {
-             if (isCI)
-                 PrecomputeAutoMapCI(N, galois, &amap);
-             else
-                 PrecomputeAutoMap(N, galois, &amap);
-         }},
+            {"add", [&](LevelData& d) { auto c = cc->EvalAdd(d.a, d.b); }},
+            {"ptmult", [&](LevelData& d) { auto c = cc->EvalMult(d.a, d.p); }},
+            {"tensor", [&](LevelData& d) { auto c = cc->EvalMultNoRelin(d.a, d.b); }},
+            {"relin", [&](LevelData& d) { auto c = cc->Relinearize(d.prod3); }},
+            {"mult", [&](LevelData& d) { auto c = cc->EvalMult(d.a, d.b); }},
+            {"rescale", [&](LevelData& d) { auto c = cc->Rescale(d.prod); }},
+            {"rotate", [&](LevelData& d) { auto c = cc->EvalAutomorphism(d.a, galois, km); }},
+            {"modup", [&](LevelData& d) { auto g = cc->EvalFastRotationPrecompute(d.a); }},
+            {"rotext", [&](LevelData& d) { auto c = cc->EvalFastRotationExt(d.a, rotIdxExt, d.digits, true); }},
+            {"ksdown", [&](LevelData& d) { auto c = cc->KeySwitchDown(d.ext); }},
+            {"ntt",
+             [&](LevelData& d) {
+                 DCRTPoly e = d.a->GetElements()[0];
+                 e.SwitchFormat();
+                 e.SwitchFormat();
+             }},
+            {"automorph",
+             [&](LevelData& d) {
+                 if (isCI)
+                     PrecomputeAutoMapCI(N, galois, &amap);
+                 else
+                     PrecomputeAutoMap(N, galois, &amap);
+                 auto e = d.a->GetElements()[0].AutomorphismTransform(galois, amap);
+             }},
+            {"automap",
+             [&](LevelData& d) {
+                 if (isCI)
+                     PrecomputeAutoMapCI(N, galois, &amap);
+                 else
+                     PrecomputeAutoMap(N, galois, &amap);
+             }},
     };
 
     // Calibrator: the plain (std) negacyclic NTT round trip, called directly through ChineseRemainderTransformFTT on
     // a fixed 58-bit prime that is in neither chain, once per tower. It is the same code and data in both
     // processes, so op / calib (timed back to back in every iteration) cancels the laptop's speed state.
-    const NativeInteger cq    = FirstPrime<NativeInteger>(58, 2 * N);  // both chains use 59- and 60-bit primes
+    const NativeInteger cq = FirstPrime<NativeInteger>(58, 2 * N);  // both chains use 59- and 60-bit primes
     const NativeInteger croot = RootOfUnity<NativeInteger>(2 * N, cq);
     NativeVector cvec(N, cq);
     for (uint32_t i = 0; i < N; ++i)
@@ -205,7 +206,7 @@ int main(int argc, char** argv) {
                     ops[oi].second(lv[li]);
                     auto t1 = Clock::now();
                     calib(lv[li].t);
-                    auto t2   = Clock::now();
+                    auto t2 = Clock::now();
                     double to = std::chrono::duration<double, std::milli>(t1 - t0).count();
                     double tc = std::chrono::duration<double, std::milli>(t2 - t1).count();
                     ts.push_back(to);

@@ -36,7 +36,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #define PROFILE
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "math/ci-transform.h"
 
 #include <algorithm>
 #include <cmath>
@@ -45,6 +44,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <string>
 #include <vector>
 
+#include "math/ci-transform.h"
 #include "math/dftransform.h"
 
 namespace lbcrypto {

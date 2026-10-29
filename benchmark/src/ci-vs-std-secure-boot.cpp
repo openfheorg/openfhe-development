@@ -8,7 +8,6 @@
 // Precision = -log2( max_i | Re(decode(Dec(Boot(ct))))[i] - x[i] | ) over all real slots, where x
 // is the input vector (reals in [-1,1]); i.e. -log2 of the worst-case absolute slot error.
 //==================================================================================
-#include "openfhe.h"
 #include <chrono>
 #include <cmath>
 #include <iomanip>
@@ -16,27 +15,30 @@
 #include <random>
 #include <vector>
 
+#include "openfhe.h"
+
 using namespace lbcrypto;
 using Clock = std::chrono::steady_clock;
-static double Sec(Clock::time_point t0) { return std::chrono::duration<double>(Clock::now() - t0).count(); }
+static double Sec(Clock::time_point t0) {
+    return std::chrono::duration<double>(Clock::now() - t0).count();
+}
 
 int main(int argc, char** argv) {
-    std::string scheme    = (argc > 1) ? argv[1] : "std";
-    uint32_t logN         = (argc > 2) ? std::stoul(argv[2]) : 16;
-    std::string distName  = (argc > 3) ? argv[3] : "uniform";
+    std::string scheme = (argc > 1) ? argv[1] : "std";
+    uint32_t logN = (argc > 2) ? std::stoul(argv[2]) : 16;
+    std::string distName = (argc > 3) ? argv[3] : "uniform";
     uint32_t scaleModSize = (argc > 4) ? std::stoul(argv[4]) : 59;
-    bool secure           = (argc > 5) ? (std::stoul(argv[5]) != 0) : true;
+    bool secure = (argc > 5) ? (std::stoul(argv[5]) != 0) : true;
     uint32_t firstModSize = (argc > 6) ? std::stoul(argv[6]) : 60;
-    uint32_t N            = 1u << logN;
-    bool isCI             = (scheme == "ci");
-    SecretKeyDist skd     = (distName == "sparse") ? SPARSE_TERNARY : UNIFORM_TERNARY;
+    uint32_t N = 1u << logN;
+    bool isCI = (scheme == "ci");
+    SecretKeyDist skd = (distName == "sparse") ? SPARSE_TERNARY : UNIFORM_TERNARY;
     std::vector<uint32_t> levelBudget = {3, 3};
-    uint32_t levelsAfter              = 2;  // a couple of usable levels after refresh
+    uint32_t levelsAfter = 2;  // a couple of usable levels after refresh
 
     std::cout << "\n=== " << (isCI ? "CI" : "std") << " CKKS bootstrap | logN=" << logN << " (N=" << N
-              << ") | secret=" << distName << " | scaleMod=" << scaleModSize
-              << " | budget={" << levelBudget[0] << "," << levelBudget[1]
-              << "} | secure=" << (secure ? "HEStd_128" : "NotSet") << " ===\n";
+              << ") | secret=" << distName << " | scaleMod=" << scaleModSize << " | budget={" << levelBudget[0] << ","
+              << levelBudget[1] << "} | secure=" << (secure ? "HEStd_128" : "NotSet") << " ===\n";
 
     CCParams<CryptoContextCKKSRNS> parameters;
     if (isCI)
@@ -49,7 +51,7 @@ int main(int argc, char** argv) {
     parameters.SetFirstModSize(firstModSize);
     parameters.SetSecurityLevel(secure ? HEStd_128_classic : HEStd_NotSet);
     uint32_t bootDepth = FHECKKSRNS::GetBootstrapDepth(levelBudget, skd);
-    uint32_t depth     = levelsAfter + bootDepth;
+    uint32_t depth = levelsAfter + bootDepth;
     parameters.SetMultiplicativeDepth(depth);
 
     auto cc = GenCryptoContext(parameters);
@@ -59,8 +61,8 @@ int main(int argc, char** argv) {
     cc->Enable(ADVANCEDSHE);
     cc->Enable(FHE);
 
-    uint32_t slots   = isCI ? N : N / 2;
-    double log2Q     = 0;
+    uint32_t slots = isCI ? N : N / 2;
+    double log2Q = 0;
     for (auto& p : cc->GetCryptoParameters()->GetElementParams()->GetParams())
         log2Q += std::log2(p->GetModulus().ConvertToDouble());
 
@@ -68,13 +70,13 @@ int main(int argc, char** argv) {
     // CtS spends levelBudget[0], EvalMod spends the middle, StC spends levelBudget[1].
     uint32_t cts = levelBudget[0], stc = levelBudget[1];
     uint32_t evalMod = (bootDepth > cts + stc) ? bootDepth - cts - stc : 0;
-    std::cout << "params: ringDim=" << cc->GetRingDimension() << " slots=" << slots
-              << " scaleMod=" << scaleModSize << " firstMod=" << firstModSize
-              << " log2(QP-chain)=" << std::fixed << std::setprecision(0) << log2Q
+    std::cout << "params: ringDim=" << cc->GetRingDimension() << " slots=" << slots << " scaleMod=" << scaleModSize
+              << " firstMod=" << firstModSize << " log2(QP-chain)=" << std::fixed << std::setprecision(0) << log2Q
               << " multDepth=" << depth << "\n";
     std::cout << "bootstrap level budget: total=" << bootDepth << "  [ModRaise/ModUp: lifts to top (0 usable)"
-              << " | CoeffsToSlots: " << cts << " | EvalMod(ModReduce): " << evalMod
-              << " | SlotsToCoeffs: " << stc << "]\n" << std::flush;
+              << " | CoeffsToSlots: " << cts << " | EvalMod(ModReduce): " << evalMod << " | SlotsToCoeffs: " << stc
+              << "]\n"
+              << std::flush;
 
     cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots);
     auto keys = cc->KeyGen();
@@ -93,10 +95,11 @@ int main(int argc, char** argv) {
     auto pt = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, slots);
     auto ct = cc->Encrypt(keys.publicKey, pt);
     std::cout << "input ct level=" << ct->GetLevel() << " (towers=" << ct->GetElements()[0].GetNumOfElements()
-              << "), encrypted at most-depleted level\n" << std::flush;
+              << "), encrypted at most-depleted level\n"
+              << std::flush;
 
     cc->EvalBootstrap(ct);  // warm-up (paid once; excluded)
-    auto tb      = Clock::now();
+    auto tb = Clock::now();
     auto ctAfter = cc->EvalBootstrap(ct);  // the single measured bootstrap
     double bootSec = Sec(tb);
 

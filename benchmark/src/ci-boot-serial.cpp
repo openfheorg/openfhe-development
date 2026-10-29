@@ -12,12 +12,6 @@
 // Prints "SERIAL-OK ..." and exits 0 on success; any failed check prints "SERIAL-FAIL <reason>" and exits 1.
 // Insecure small rings (HEStd_NotSet), FIXEDMANUAL 59/60 bits, 2 levels after the bootstrap.
 //==================================================================================
-#include "openfhe.h"
-#include "ciphertext-ser.h"
-#include "cryptocontext-ser.h"
-#include "key/key-ser.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
-
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -27,6 +21,12 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "key/key-ser.h"
+#include "openfhe.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 
 using namespace lbcrypto;
 
@@ -51,18 +51,18 @@ int main(int argc, char** argv) {
     const std::string mode = argv[1], dir = argv[2], scheme = argv[3];
     const uint32_t logN = std::stoul(argv[4]), lbEnc = std::stoul(argv[5]), lbDec = std::stoul(argv[6]);
     const std::string dist = argv[7];
-    const bool stcFirst    = std::stoul(argv[8]) != 0;
-    const uint32_t iters   = std::stoul(argv[9]);
-    const bool isCI        = (scheme == "ci");
-    const uint32_t N       = 1u << logN;
-    const uint32_t slots   = isCI ? N : N / 2;
+    const bool stcFirst = std::stoul(argv[8]) != 0;
+    const uint32_t iters = std::stoul(argv[9]);
+    const bool isCI = (scheme == "ci");
+    const uint32_t N = 1u << logN;
+    const uint32_t slots = isCI ? N : N / 2;
     const std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
     const SecretKeyDist skd = (dist == "encap") ? SPARSE_ENCAPSULATED : UNIFORM_TERNARY;
-    const uint32_t depth    = 2 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skd) + (iters - 1);
+    const uint32_t depth = 2 + FHECKKSRNS::GetBootstrapDepth(levelBudget, skd) + (iters - 1);
     const uint32_t encLevel = stcFirst ? depth - lbDec - 1 : depth - 1;
-    const std::string tag   = "case " + scheme + " logN=" + std::to_string(logN) + " budget={" +
-                            std::to_string(lbEnc) + "," + std::to_string(lbDec) + "} " + dist +
-                            " stcfirst=" + std::to_string(stcFirst) + " iters=" + std::to_string(iters);
+    const std::string tag = "case " + scheme + " logN=" + std::to_string(logN) + " budget={" + std::to_string(lbEnc) +
+                            "," + std::to_string(lbDec) + "} " + dist + " stcfirst=" + std::to_string(stcFirst) +
+                            " iters=" + std::to_string(iters);
     const auto ST = SerType::BINARY;
 
     std::vector<double> x(slots);
@@ -129,7 +129,8 @@ int main(int argc, char** argv) {
 
         bool ok = Serial::SerializeToFile(dir + "/cc.bin", cc, ST) &&
                   Serial::SerializeToFile(dir + "/sk.bin", keys.secretKey, ST) &&
-                  Serial::SerializeToFile(dir + "/ct.bin", ct, ST) && Serial::SerializeToFile(dir + "/out.bin", out, ST);
+                  Serial::SerializeToFile(dir + "/ct.bin", ct, ST) &&
+                  Serial::SerializeToFile(dir + "/out.bin", out, ST);
         if (!ok)
             return Fail(tag + ": serializing context/key/ciphertexts");
         std::ofstream mk(dir + "/mult.bin", std::ios::binary);
@@ -140,8 +141,7 @@ int main(int argc, char** argv) {
         try {
             if (!cc->SerializeEvalBootstrapKey(bk, ST, cc, keys.secretKey->GetKeyTag(), slots))
                 return Fail(tag + ": SerializeEvalBootstrapKey returned false");
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             return Fail(tag + ": SerializeEvalBootstrapKey threw: " + e.what());
         }
         bk.close();
@@ -158,8 +158,10 @@ int main(int argc, char** argv) {
     CryptoContext<DCRTPoly> cc;
     PrivateKey<DCRTPoly> sk;
     Ciphertext<DCRTPoly> ct, ref;
-    if (!Serial::DeserializeFromFile(dir + "/cc.bin", cc, ST) || !Serial::DeserializeFromFile(dir + "/sk.bin", sk, ST) ||
-        !Serial::DeserializeFromFile(dir + "/ct.bin", ct, ST) || !Serial::DeserializeFromFile(dir + "/out.bin", ref, ST))
+    if (!Serial::DeserializeFromFile(dir + "/cc.bin", cc, ST) ||
+        !Serial::DeserializeFromFile(dir + "/sk.bin", sk, ST) ||
+        !Serial::DeserializeFromFile(dir + "/ct.bin", ct, ST) ||
+        !Serial::DeserializeFromFile(dir + "/out.bin", ref, ST))
         return Fail(tag + ": deserializing context/key/ciphertexts");
     if ((cc->GetCKKSDataType() == REAL_CI) != isCI)
         return Fail(tag + ": deserialized context has the wrong CKKS data type");
@@ -178,8 +180,7 @@ int main(int argc, char** argv) {
         std::ifstream bk2(dir + "/boot.bin", std::ios::binary);
         if (!cc->DeserializeEvalBootstrapKey(bk2, ST, sk->GetKeyTag(), idx))
             return Fail(tag + ": DeserializeEvalBootstrapKey (by index list) returned false");
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         return Fail(tag + ": DeserializeEvalBootstrapKey threw: " + e.what());
     }
     const auto loaded = KeySet(cc->GetEvalAutomorphismKeyMap(sk->GetKeyTag()));
@@ -189,8 +190,7 @@ int main(int argc, char** argv) {
     Ciphertext<DCRTPoly> out;
     try {
         out = cc->EvalBootstrap(ct, iters, metaPrec);
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         return Fail(tag + ": EvalBootstrap with deserialized keys threw: " + e.what());
     }
     const bool same = out->GetElements() == ref->GetElements() && out->GetLevel() == ref->GetLevel() &&

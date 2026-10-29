@@ -4,7 +4,6 @@
 // levelBudget = {4,4} if 4|logN, else {3,3} if 3|logN, else {1,1}. Input uniform in [-1,1].
 // Multi-threaded via OMP_NUM_THREADS. Measures keygen + bootstrap latency and recovered bits.
 //==================================================================================
-#include "openfhe.h"
 #include <chrono>
 #include <cmath>
 #include <iomanip>
@@ -12,26 +11,30 @@
 #include <random>
 #include <vector>
 
+#include "openfhe.h"
+
 using namespace lbcrypto;
 using Clock = std::chrono::steady_clock;
-static double Sec(Clock::time_point t0) { return std::chrono::duration<double>(Clock::now() - t0).count(); }
+static double Sec(Clock::time_point t0) {
+    return std::chrono::duration<double>(Clock::now() - t0).count();
+}
 
 int main(int argc, char** argv) {
-    uint32_t logN         = (argc > 1) ? std::stoul(argv[1]) : 12;
+    uint32_t logN = (argc > 1) ? std::stoul(argv[1]) : 12;
     uint32_t scaleModSize = (argc > 2) ? std::stoul(argv[2]) : 59;
     uint32_t firstModSize = (argc > 3) ? std::stoul(argv[3]) : 60;
-    uint32_t N            = 1u << logN;
+    uint32_t N = 1u << logN;
 
-    std::vector<uint32_t> levelBudget = (logN % 4 == 0) ? std::vector<uint32_t>{4, 4}
-                                        : (logN % 3 == 0) ? std::vector<uint32_t>{3, 3}
-                                                          : std::vector<uint32_t>{1, 1};
+    std::vector<uint32_t> levelBudget = (logN % 4 == 0) ? std::vector<uint32_t>{4, 4} :
+                                        (logN % 3 == 0) ? std::vector<uint32_t>{3, 3} :
+                                                          std::vector<uint32_t>{1, 1};
     uint32_t levelsAfter = 6;
-    SecretKeyDist skd    = UNIFORM_TERNARY;
+    SecretKeyDist skd = UNIFORM_TERNARY;
 
     std::cout << "\n=== Native CI CKKS bootstrap probe ===\n"
               << "logN=" << logN << " (N=" << N << "), scaleModSize=" << scaleModSize
-              << ", firstModSize=" << firstModSize << ", levelBudget={" << levelBudget[0] << ","
-              << levelBudget[1] << "}, threads=" << OpenFHEParallelControls.GetThreadLimit(1u << 20) << "\n";
+              << ", firstModSize=" << firstModSize << ", levelBudget={" << levelBudget[0] << "," << levelBudget[1]
+              << "}, threads=" << OpenFHEParallelControls.GetThreadLimit(1u << 20) << "\n";
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetCKKSDataType(REAL_CI);
@@ -52,10 +55,11 @@ int main(int argc, char** argv) {
     cc->Enable(ADVANCEDSHE);
     cc->Enable(FHE);
     std::cout << "context+depth(" << depth << ") built in " << std::fixed << std::setprecision(2) << Sec(t0)
-              << "s; log2Q ~ " << depth * scaleModSize << " bits\n" << std::flush;
+              << "s; log2Q ~ " << depth * scaleModSize << " bits\n"
+              << std::flush;
 
     uint32_t slots = N;  // full CI real packing
-    t0             = Clock::now();
+    t0 = Clock::now();
     cc->EvalBootstrapSetup(levelBudget, {0, 0}, slots);
     std::cout << "EvalBootstrapSetup: " << Sec(t0) << "s\n" << std::flush;
 
@@ -64,7 +68,7 @@ int main(int argc, char** argv) {
     t0 = Clock::now();
     cc->EvalBootstrapKeyGen(keys.secretKey, slots);
     double keygenSec = Sec(t0);
-    uint32_t nkeys   = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag()).size();
+    uint32_t nkeys = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag()).size();
     std::cout << "EvalBootstrapKeyGen: " << keygenSec << "s (" << nkeys << " Galois keys)\n" << std::flush;
 
     std::vector<double> x(slots);
@@ -75,14 +79,14 @@ int main(int argc, char** argv) {
     auto pt = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, slots);
     auto ct = cc->Encrypt(keys.publicKey, pt);
 
-    t0          = Clock::now();
+    t0 = Clock::now();
     auto ctWarm = cc->EvalBootstrap(ct);  // warm-up: pays the (one-time) diagonal precompute
     std::cout << "first EvalBootstrap (incl. diagonal precompute): " << Sec(t0) << "s\n" << std::flush;
 
     std::vector<double> times;
     double bits = 0;
     for (int it = 0; it < 3; ++it) {
-        auto tb      = Clock::now();
+        auto tb = Clock::now();
         auto ctAfter = cc->EvalBootstrap(ct);
         times.push_back(Sec(tb));
         Plaintext res;
@@ -101,7 +105,7 @@ int main(int argc, char** argv) {
               << levelBudget[1] << "}\n"
               << "bootstrap latency (median of 3, warm): " << std::setprecision(2) << med << " s\n"
               << "amortized: " << std::setprecision(1) << med / slots * 1e6 << " us / real-slot\n"
-              << "recovered precision: " << std::setprecision(2) << bits << " bits (maxerr "
-              << std::scientific << std::pow(2.0, -bits) << ")\n";
+              << "recovered precision: " << std::setprecision(2) << bits << " bits (maxerr " << std::scientific
+              << std::pow(2.0, -bits) << ")\n";
     return 0;
 }

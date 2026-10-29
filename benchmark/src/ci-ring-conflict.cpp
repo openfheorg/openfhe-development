@@ -11,7 +11,6 @@
 // fails (exit 1) when a step throws or its precision is below 15 bits (EvalMult) / 7 bits (bootstrap; CI 2^13 / 2^14 {3,3}
 // CtS-first alone reach about 9.2 / 7.8-8.3 bits at this setting, before and after item 6.1).
 //==================================================================================
-#include "openfhe.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -19,6 +18,8 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -46,21 +47,21 @@ static double Bits(const std::vector<double>& want, Plaintext& r, uint32_t slots
 
 int main(int argc, char** argv) {
     std::string spec = (argc > 1) ? argv[1] : "ci12,std12";
-    bool boot        = (argc > 2) ? std::stoul(argv[2]) != 0 : true;
+    bool boot = (argc > 2) ? std::stoul(argv[2]) != 0 : true;
     const std::vector<uint32_t> lb{3, 3};
 
     std::vector<Ctx> ctxs;
     for (std::string str = spec; !str.empty();) {
-        auto pos        = str.find(',');
+        auto pos = str.find(',');
         std::string tok = str.substr(0, pos);
-        str             = (pos == std::string::npos) ? "" : str.substr(pos + 1);
+        str = (pos == std::string::npos) ? "" : str.substr(pos + 1);
         Ctx c;
-        c.name     = tok;
-        c.ci       = tok.rfind("ci", 0) == 0;
+        c.name = tok;
+        c.ci = tok.rfind("ci", 0) == 0;
         c.stcFirst = tok.back() == 's';
-        c.logN     = std::stoul(tok.substr(c.ci ? 2 : 3));
+        c.logN = std::stoul(tok.substr(c.ci ? 2 : 3));
         uint32_t N = 1u << c.logN;
-        c.slots    = c.ci ? N : N / 2;
+        c.slots = c.ci ? N : N / 2;
 
         CCParams<CryptoContextCKKSRNS> p;
         if (c.ci)
@@ -115,8 +116,8 @@ int main(int argc, char** argv) {
     for (auto& c : ctxs) {
         std::vector<double> x(c.slots), y(c.slots), xy(c.slots);
         for (uint32_t i = 0; i < c.slots; ++i) {
-            x[i]  = U(rng);
-            y[i]  = U(rng);
+            x[i] = U(rng);
+            y[i] = U(rng);
             xy[i] = x[i] * y[i];
         }
         double mulBits = -1, bootBits = -1;
@@ -124,26 +125,24 @@ int main(int argc, char** argv) {
         try {
             auto cx = c.cc->Encrypt(c.keys.publicKey, c.cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, c.slots));
             auto cy = c.cc->Encrypt(c.keys.publicKey, c.cc->MakeCKKSPackedPlaintext(y, 1, 0, nullptr, c.slots));
-            auto m  = c.cc->Rescale(c.cc->EvalMult(cx, cy));
+            auto m = c.cc->Rescale(c.cc->EvalMult(cx, cy));
             Plaintext r;
             c.cc->Decrypt(c.keys.secretKey, m, &r);
             mulBits = Bits(xy, r, c.slots);
             if (boot) {
                 const uint32_t lvl = c.stcFirst ? c.depth - lb[1] - 1 : c.depth - 1;
                 auto ct = c.cc->Encrypt(c.keys.publicKey, c.cc->MakeCKKSPackedPlaintext(x, 1, lvl, nullptr, c.slots));
-                auto o  = c.cc->EvalBootstrap(ct);
+                auto o = c.cc->EvalBootstrap(ct);
                 Plaintext rb;
                 c.cc->Decrypt(c.keys.secretKey, o, &rb);
                 bootBits = Bits(x, rb, c.slots);
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             err = e.what();
         }
         bool ok = err.empty() && mulBits >= 15 && (!boot || bootBits >= 7);
         fails += !ok;
-        std::cout << "RESULT ctx=" << c.name << " mult_bits=" << mulBits << " boot_bits=" << bootBits
-                  << " ok=" << ok;
+        std::cout << "RESULT ctx=" << c.name << " mult_bits=" << mulBits << " boot_bits=" << bootBits << " ok=" << ok;
         if (!err.empty())
             std::cout << " error=\"" << err.substr(0, 160) << "\"";
         std::cout << std::endl;

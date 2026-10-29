@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-
 #include "math/ci-realfft.h"
 
 #include <algorithm>
@@ -61,7 +60,7 @@ std::vector<CISparse> CIBuildRealFFT(uint32_t N, std::vector<double>& sigma, std
         uint64_t f = 1;
         for (uint32_t j = 0; j < N; ++j) {
             p5[j] = f;
-            f     = (f * 5) % M;
+            f = (f * 5) % M;
         }
     }
     auto zeta = [&](int64_t e) {
@@ -98,8 +97,7 @@ std::vector<CISparse> CIBuildRealFFT(uint32_t N, std::vector<double>& sigma, std
                 }
                 nsegs.push_back({false, 0, s, L});
                 nsegs.push_back({false, m, s + L, L});
-            }
-            else if (!g.pair) {  // r == m/2: real -> pair(r)
+            } else if (!g.pair) {  // r == m/2: real -> pair(r)
                 for (uint32_t j = 0; j < L; ++j) {
                     auto w = zeta(-static_cast<int64_t>(r) *
                                   (static_cast<int64_t>(p5[j + L]) - static_cast<int64_t>(p5[j])));
@@ -108,8 +106,7 @@ std::vector<CISparse> CIBuildRealFFT(uint32_t N, std::vector<double>& sigma, std
                     T.emplace_back(s + L + j, s + L + j, w.imag());
                 }
                 nsegs.push_back({true, r, s, L});
-            }
-            else {  // pair r (1 <= r < m/2): Re at [s, s+2L), Im at [s+2L, s+4L)
+            } else {  // pair r (1 <= r < m/2): Re at [s, s+2L), Im at [s+2L, s+4L)
                 for (uint32_t j = 0; j < L; ++j) {
                     auto w = zeta(-static_cast<int64_t>(r) *
                                   (static_cast<int64_t>(p5[j + L]) - static_cast<int64_t>(p5[j])));
@@ -205,7 +202,7 @@ CISparse CISparseMul(const CISparse& A, const CISparse& B, uint32_t N) {
         for (double v : d)
             mx = std::max(mx, std::abs(v));
         dmax[k] = mx;
-        gmax    = std::max(gmax, mx);
+        gmax = std::max(gmax, mx);
     }
     const double tol = 1e-13 * gmax;
     for (auto it = C.begin(); it != C.end();)
@@ -217,7 +214,7 @@ CISparse CISparseTranspose(const CISparse& A, uint32_t N) {
     CISparse T;
     for (auto& [k, d] : A) {
         const uint32_t kk = (N - k) % N;
-        auto& dt          = T[kk];
+        auto& dt = T[kk];
         dt.assign(N, 0.0);
         for (uint32_t p = 0; p < N; ++p)
             dt[p] = d[(p + kk) % N];
@@ -240,7 +237,7 @@ CIBsgsWindow CIBsgsGetWindow(const CISparse& A, uint32_t N) {
     w.T = N / w.h;
     for (auto& kv : A)
         w.ts.push_back(kv.first / w.h);  // ascending (map order)
-    w.t0   = w.ts.empty() ? 0 : w.ts[0];
+    w.t0 = w.ts.empty() ? 0 : w.ts[0];
     w.span = 1;
     if (w.ts.size() > 1) {
         uint32_t bestGap = w.ts[0] + w.T - w.ts.back(), bestIdx = static_cast<uint32_t>(w.ts.size()) - 1;
@@ -249,7 +246,7 @@ CIBsgsWindow CIBsgsGetWindow(const CISparse& A, uint32_t N) {
                 bestGap = w.ts[i + 1] - w.ts[i];
                 bestIdx = i;
             }
-        w.t0   = w.ts[(bestIdx + 1) % w.ts.size()];
+        w.t0 = w.ts[(bestIdx + 1) % w.ts.size()];
         w.span = w.T - bestGap + 1;
     }
     return w;
@@ -271,8 +268,8 @@ CIBsgsPlan CIBsgsMake(const CIBsgsWindow& w, uint32_t n1) {
     std::vector<char> bu(n1, 0), gu(n2, 0);
     for (uint32_t t : w.ts) {
         const uint32_t u = (t + w.T - t0) % w.T;
-        bu[u % n1]       = 1;
-        gu[u / n1]       = 1;
+        bu[u % n1] = 1;
+        gu[u / n1] = 1;
     }
     uint32_t babies = 0, giants = 0;
     for (uint32_t i = 1; i < n1; ++i)
@@ -297,10 +294,10 @@ CIBsgsPlan CIPlanBsgsMinCost(const CISparse& A, uint32_t N, double giantCost) {
     CIBsgsPlan best{};
     double bestCost = 0.0;
     for (uint32_t n1 = 1; n1 <= w.span; ++n1) {
-        const auto p   = CIBsgsMake(w, n1);
+        const auto p = CIBsgsMake(w, n1);
         const double c = p.babies + giantCost * p.giants;
         if (n1 == 1 || c < bestCost - 1e-9) {
-            best     = p;
+            best = p;
             bestCost = c;
         }
     }
@@ -308,11 +305,10 @@ CIBsgsPlan CIPlanBsgsMinCost(const CISparse& A, uint32_t N, double giantCost) {
 }
 
 double CIBsgsGiantCost(uint32_t digits) {
-    const double D    = std::max<uint32_t>(1, digits);
+    const double D = std::max<uint32_t>(1, digits);
     const double baby = 0.63 * D + 0.40;
     return (baby + 2.35 * D + 2.45 + 0.15) / baby;
 }
-
 
 const CIRealFFTPlan& GetCIRealFFTPlan(uint32_t N) {
     static std::map<uint32_t, std::unique_ptr<CIRealFFTPlan>> cache;
@@ -321,7 +317,7 @@ const CIRealFFTPlan& GetCIRealFFTPlan(uint32_t N) {
     auto& slot = cache[N];
     if (!slot) {
         auto plan = std::make_unique<CIRealFFTPlan>();
-        plan->N   = N;
+        plan->N = N;
         std::vector<double> sigma;
         plan->F = CIBuildRealFFT(N, sigma, plan->pos);
         plan->S.resize(N);
@@ -331,11 +327,11 @@ const CIRealFFTPlan& GetCIRealFFTPlan(uint32_t N) {
         // g=5 position -> natural CI slot index (5^p mod 4N folded to 4t+1)
         plan->perm.resize(N);
         const uint64_t M = 4ULL * N;
-        uint64_t r       = 1;
+        uint64_t r = 1;
         for (uint32_t p = 0; p < N; ++p) {
             uint64_t rr = (r % 4 == 3) ? (M - r) % M : r;
             plan->perm[p] = static_cast<uint32_t>((rr - 1) / 4);
-            r             = (r * 5) % M;
+            r = (r * 5) % M;
         }
         slot = std::move(plan);
     }

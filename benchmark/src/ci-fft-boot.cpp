@@ -17,7 +17,6 @@
 // OMP_NUM_THREADS), in an order rotated by one each round, and prints one "SWEEP" line per bootstrap. Adjacent
 // bootstraps at different thread counts share the process and the laptop's speed state.
 //==================================================================================
-#include "openfhe.h"
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -28,9 +27,13 @@
 #include <string>
 #include <vector>
 
+#include "openfhe.h"
+
 using namespace lbcrypto;
 using Clock = std::chrono::steady_clock;
-static double Sec(Clock::time_point t0) { return std::chrono::duration<double>(Clock::now() - t0).count(); }
+static double Sec(Clock::time_point t0) {
+    return std::chrono::duration<double>(Clock::now() - t0).count();
+}
 static double RssGB() {
     std::ifstream f("/proc/self/status");
     std::string k;
@@ -45,26 +48,26 @@ static double RssGB() {
 
 int main(int argc, char** argv) {
     std::string scheme = (argc > 1) ? argv[1] : "ci";
-    uint32_t logN      = (argc > 2) ? std::stoul(argv[2]) : 12;
-    uint32_t lbEnc     = (argc > 3) ? std::stoul(argv[3]) : 3;
-    uint32_t lbDec     = (argc > 4) ? std::stoul(argv[4]) : 3;
-    uint32_t scaleMod  = (argc > 5) ? std::stoul(argv[5]) : 59;
-    uint32_t firstMod  = (argc > 6) ? std::stoul(argv[6]) : 60;
-    bool secure        = (argc > 7) ? std::stoul(argv[7]) != 0 : false;
-    uint32_t reps      = (argc > 8) ? std::stoul(argv[8]) : 2;
-    std::string sc     = (argc > 9) ? argv[9] : "fm";
-    uint32_t corr      = (argc > 10) ? std::stoul(argv[10]) : 0;  // 0 = OpenFHE default
-    std::string dist   = (argc > 11) ? argv[11] : "uniform";        // uniform | encap
-    uint32_t stcFirst  = (argc > 12) ? std::stoul(argv[12]) : 0;
-    uint32_t dnum      = (argc > 13) ? std::stoul(argv[13]) : 0;  // 0 = OpenFHE default (3 for depth > 3)
-    uint32_t after     = (argc > 14) ? std::stoul(argv[14]) : 2;
-    uint32_t iters     = (argc > 15) ? std::stoul(argv[15]) : 1;
-    uint32_t metaPrec  = (argc > 16) ? std::stoul(argv[16]) : 0;
-    bool isCI          = (scheme == "ci");
-    uint32_t N         = 1u << logN;
+    uint32_t logN = (argc > 2) ? std::stoul(argv[2]) : 12;
+    uint32_t lbEnc = (argc > 3) ? std::stoul(argv[3]) : 3;
+    uint32_t lbDec = (argc > 4) ? std::stoul(argv[4]) : 3;
+    uint32_t scaleMod = (argc > 5) ? std::stoul(argv[5]) : 59;
+    uint32_t firstMod = (argc > 6) ? std::stoul(argv[6]) : 60;
+    bool secure = (argc > 7) ? std::stoul(argv[7]) != 0 : false;
+    uint32_t reps = (argc > 8) ? std::stoul(argv[8]) : 2;
+    std::string sc = (argc > 9) ? argv[9] : "fm";
+    uint32_t corr = (argc > 10) ? std::stoul(argv[10]) : 0;  // 0 = OpenFHE default
+    std::string dist = (argc > 11) ? argv[11] : "uniform";   // uniform | encap
+    uint32_t stcFirst = (argc > 12) ? std::stoul(argv[12]) : 0;
+    uint32_t dnum = (argc > 13) ? std::stoul(argv[13]) : 0;  // 0 = OpenFHE default (3 for depth > 3)
+    uint32_t after = (argc > 14) ? std::stoul(argv[14]) : 2;
+    uint32_t iters = (argc > 15) ? std::stoul(argv[15]) : 1;
+    uint32_t metaPrec = (argc > 16) ? std::stoul(argv[16]) : 0;
+    bool isCI = (scheme == "ci");
+    uint32_t N = 1u << logN;
     std::vector<uint32_t> levelBudget = {lbEnc, lbDec};
-    SecretKeyDist skd                 = (dist == "encap") ? SPARSE_ENCAPSULATED : UNIFORM_TERNARY;
-    uint32_t levelsAfter              = after;
+    SecretKeyDist skd = (dist == "encap") ? SPARSE_ENCAPSULATED : UNIFORM_TERNARY;
+    uint32_t levelsAfter = after;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     if (isCI)
@@ -76,7 +79,7 @@ int main(int argc, char** argv) {
     parameters.SetFirstModSize(firstMod);
     parameters.SetSecurityLevel(secure ? HEStd_128_classic : HEStd_NotSet);
     uint32_t bootDepth = FHECKKSRNS::GetBootstrapDepth(levelBudget, skd);
-    uint32_t depth     = levelsAfter + bootDepth + (iters - 1);
+    uint32_t depth = levelsAfter + bootDepth + (iters - 1);
     parameters.SetMultiplicativeDepth(depth);
     if (dnum > 0)
         parameters.SetNumLargeDigits(dnum);
@@ -89,12 +92,12 @@ int main(int argc, char** argv) {
     cc->Enable(FHE);
 
     uint32_t slots = isCI ? N : N / 2;
-    double log2Q   = 0;
+    double log2Q = 0;
     for (auto& p : cc->GetCryptoParameters()->GetElementParams()->GetParams())
         log2Q += std::log2(p->GetModulus().ConvertToDouble());
     size_t towersQ = cc->GetCryptoParameters()->GetElementParams()->GetParams().size();
     double log2P = 0;
-    auto cpr     = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+    auto cpr = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
     for (auto& p : cpr->GetParamsP()->GetParams())
         log2P += std::log2(p->GetModulus().ConvertToDouble());
 
@@ -113,8 +116,8 @@ int main(int argc, char** argv) {
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalBootstrapKeyGen(keys.secretKey, slots);
     double setupSec = Sec(t0);
-    auto& autoKeys  = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag());
-    size_t nKeys    = autoKeys.size();
+    auto& autoKeys = cc->GetEvalAutomorphismKeyMap(keys.secretKey->GetKeyTag());
+    size_t nKeys = autoKeys.size();
     // Size of one switching key: dnum (a, b) pairs, each over the full Q*P basis.
     auto keyBytes = [&](const EvalKey<DCRTPoly>& k) {
         double b = 0;
@@ -152,7 +155,7 @@ int main(int argc, char** argv) {
         std::vector<double> errs(slots);
         for (uint32_t i = 0; i < slots; ++i) {
             errs[i] = std::abs(r->GetCKKSPackedValue()[i].real() - x[i]);
-            e       = std::max(e, errs[i]);
+            e = std::max(e, errs[i]);
             ss += errs[i] * errs[i];
         }
         std::sort(errs.begin(), errs.end());
@@ -165,9 +168,9 @@ int main(int argc, char** argv) {
         cc->EvalBootstrapStCFirst(ct);
     // META-BTS with metaprec 0: the first bootstrap runs with 1 iteration and sets the precision argument.
     const bool autoPrec = (iters > 1 && metaPrec == 0);
-    auto tf      = Clock::now();
-    auto first   = cc->EvalBootstrap(ct, autoPrec ? 1 : iters, metaPrec);
-    double fSec  = Sec(tf);
+    auto tf = Clock::now();
+    auto first = cc->EvalBootstrap(ct, autoPrec ? 1 : iters, metaPrec);
+    double fSec = Sec(tf);
     double fBits = prec(first);
     if (autoPrec)
         metaPrec = static_cast<uint32_t>(std::floor(fBits));
@@ -176,7 +179,7 @@ int main(int argc, char** argv) {
     std::vector<double> times, bits;
     for (uint32_t r = 0; r < reps; ++r) {
         auto tb = Clock::now();
-        auto o  = cc->EvalBootstrap(ct, iters, metaPrec);
+        auto o = cc->EvalBootstrap(ct, iters, metaPrec);
         times.push_back(Sec(tb));
         bits.push_back(prec(o));
         if (o->GetElements()[0].GetNumOfElements() <= ct->GetElements()[0].GetNumOfElements())
@@ -190,8 +193,8 @@ int main(int argc, char** argv) {
         std::vector<int> tl;
         for (std::string tok, str(sw); !str.empty();) {
             auto pos = str.find(',');
-            tok      = str.substr(0, pos);
-            str      = (pos == std::string::npos) ? "" : str.substr(pos + 1);
+            tok = str.substr(0, pos);
+            str = (pos == std::string::npos) ? "" : str.substr(pos + 1);
             if (!tok.empty())
                 tl.push_back(std::stoi(tok));
         }
@@ -200,8 +203,8 @@ int main(int argc, char** argv) {
             for (size_t k = 0; k < tl.size(); ++k) {
                 int t = tl[(k + r) % tl.size()];
                 OpenFHEParallelControls.SetNumThreads(t);
-                auto tb  = Clock::now();
-                auto o   = cc->EvalBootstrap(ct, iters, metaPrec);
+                auto tb = Clock::now();
+                auto o = cc->EvalBootstrap(ct, iters, metaPrec);
                 double s = Sec(tb);
                 double b = prec(o);
                 std::cout << std::fixed << std::setprecision(3) << "SWEEP scheme=" << scheme << " round=" << r
@@ -212,17 +215,21 @@ int main(int argc, char** argv) {
         OpenFHEParallelControls.Enable();
     }
     std::sort(times.begin(), times.end());
-    double med  = times.empty() ? fSec : times[times.size() / 2];
+    double med = times.empty() ? fSec : times[times.size() / 2];
     double minB = bits.empty() ? fBits : *std::min_element(bits.begin(), bits.end());
     std::cout << std::fixed << std::setprecision(3) << "RESULT scheme=" << scheme << " logN=" << logN << " budget={"
               << lbEnc << "," << lbDec << "} sc=" << sc << " scaleMod=" << scaleMod << " firstMod=" << firstMod
-              << " secure=" << secure << " dist=" << dist << " corr=" << corr << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " stcfirst=" << stcFirst << " iters=" << iters << " metaprec=" << metaPrec << " passthrough=" << passthrough << " slots=" << slots << " depth=" << depth << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0)
-              << log2Q << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
-              << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys
-              << std::setprecision(1) << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB
-              << " setup+keygen_s=" << setupSec << " bootsetup_s=" << bootSetupSec << " first_s=" << fSec << " warm_median_s=" << med
+              << " secure=" << secure << " dist=" << dist << " corr=" << corr
+              << " corrEff=" << cc->GetCKKSBootCorrectionFactor() << " stcfirst=" << stcFirst << " iters=" << iters
+              << " metaprec=" << metaPrec << " passthrough=" << passthrough << " slots=" << slots << " depth=" << depth
+              << " after=" << levelsAfter << " towersQ=" << towersQ << " log2Q=" << std::setprecision(0) << log2Q
+              << " log2P=" << log2P << " dnum=" << cpr->GetNumPartQ() << " alpha=" << cpr->GetNumPerPartQ()
+              << " towersP=" << cpr->GetParamsP()->GetParams().size() << " galoisKeys=" << nKeys << std::setprecision(1)
+              << " keyMB=" << keyMB << std::setprecision(3) << " keysGB=" << allKeysGB << " setup+keygen_s=" << setupSec
+              << " bootsetup_s=" << bootSetupSec << " first_s=" << fSec << " warm_median_s=" << med
               << " us_per_real_slot=" << med / slots * 1e6 << " prec_bits_min=" << std::setprecision(2) << minB
-              << " first_prec=" << fBits << " rms_bits=" << lastRms << " p99_bits=" << lastP99 << " peakRSS_GB=" << RssGB() << " threads="
-              << (getenv("OMP_NUM_THREADS") ? getenv("OMP_NUM_THREADS") : "?") << std::endl;
+              << " first_prec=" << fBits << " rms_bits=" << lastRms << " p99_bits=" << lastP99
+              << " peakRSS_GB=" << RssGB()
+              << " threads=" << (getenv("OMP_NUM_THREADS") ? getenv("OMP_NUM_THREADS") : "?") << std::endl;
     return 0;
 }

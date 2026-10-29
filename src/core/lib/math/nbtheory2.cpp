@@ -282,8 +282,8 @@ void PrecomputeAutoMapCI(uint32_t N, uint32_t k, std::vector<uint32_t>* precomp)
     // m = 4N is a power of two: reduce with a mask, not a 64-bit division (item 4.2: at 2^12 the division made this
     // map 1.6x the cost of std's PrecomputeAutoMap).
     const uint64_t mask = 4ULL * N - 1;
-    const uint64_t m    = 4ULL * N;
-    uint32_t logn       = 0;
+    const uint64_t m = 4ULL * N;
+    uint32_t logn = 0;
     while ((1u << logn) < N)
         ++logn;
     for (uint32_t j = 0; j < N; ++j) {

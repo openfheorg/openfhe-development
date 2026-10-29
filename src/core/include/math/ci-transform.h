@@ -26,14 +26,14 @@
 #ifndef LBCRYPTO_MATH_CI_TRANSFORM_H
 #define LBCRYPTO_MATH_CI_TRANSFORM_H
 
-#include "math/hal/nativeintbackend.h"
-
 #include <cstdint>
+
+#include "math/hal/nativeintbackend.h"
 
 namespace lbcrypto {
 
 using CINativeInteger = NativeInteger;
-using CINativeVector  = NativeVector;
+using CINativeVector = NativeVector;
 
 // Pre-build the CI tables of modulus q (q = 1 mod 4N) at ring dimension N with primitive
 // 4N-th root wm = RootOfUnity(4N, q). Idempotent per (q, N); does not by itself make any tower CI.
@@ -47,8 +47,8 @@ bool IsCIModulus(const CINativeInteger& modulus);
 void ClearCIModuli();
 
 // In-place CI transforms on a single ring tower (length N, modulus q = 1 mod 4N; tables built on first use).
-void CIForwardTransform(CINativeVector& vals);   // COEFFICIENT -> EVALUATION
-void CIInverseTransform(CINativeVector& vals);   // EVALUATION  -> COEFFICIENT
+void CIForwardTransform(CINativeVector& vals);  // COEFFICIENT -> EVALUATION
+void CIInverseTransform(CINativeVector& vals);  // EVALUATION  -> COEFFICIENT
 // Original O(N log N) reference implementation (slow path), kept for validation.
 void CIForwardTransformRef(CINativeVector& vals);
 void CIInverseTransformRef(CINativeVector& vals);

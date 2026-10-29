@@ -15,7 +15,6 @@
 // Build and run (ICELAKE, from the source root):
 //   g++ -O2 -std=c++17 -Isrc/core/include ci-ckks-paper/tools/ci-split-search.cpp src/core/lib/math/ci-realfft.cpp \
 //       -o ../scratch/ci-split-search && ../scratch/ci-split-search logN lbEnc lbDec [topK] [after modDepth alpha dnum P stcFirst]
-#include "math/ci-realfft.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -24,6 +23,8 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "math/ci-realfft.h"
 
 using namespace lbcrypto;
 
@@ -48,8 +49,8 @@ struct LevelCost {
 
 LevelCost CostOf(const CISparse& A, uint32_t D) {
     LevelCost c;
-    c.p                = CIPlanBsgsMinCost(A, gN, CIBsgsGiantCost(D));
-    c.d                = A.size();
+    c.p = CIPlanBsgsMinCost(A, gN, CIBsgsGiantCost(D));
+    c.d = A.size();
     const double b = c.p.babies, g = c.p.giants, d = static_cast<double>(c.d);
     c.perTower = (g + 1) * 2.35 * D + (b + g) * (0.63 * D + 0.40) + (g + 2) * 2.45 + d * 0.646 + (d + g) * 0.15;
     return c;
@@ -108,17 +109,17 @@ int main(int argc, char** argv) {
     const uint32_t alpha = argc > 7 ? std::atoi(argv[7]) : 7, dnum = argc > 8 ? std::atoi(argv[8]) : 3;
     const uint32_t Pt = argc > 9 ? std::atoi(argv[9]) : 7;
     const bool stcFirst = argc > 10 && std::atoi(argv[10]) != 0;
-    gN               = 1u << logN;
-    const auto& F    = GetCIRealFFTPlan(gN).F;
-    gL               = static_cast<uint32_t>(F.size());
+    gN = 1u << logN;
+    const auto& F = GetCIRealFFTPlan(gN).F;
+    gL = static_cast<uint32_t>(F.size());
     const uint32_t L0 = lbEnc + modDepth + lbDec + after + 1;
     std::printf("N=2^%u l=%u layers, lbEnc=%u lbDec=%u, L0=%u Q towers, modDepth=%u, alpha=%u dnum=%u P=%u%s\n", logN,
                 gL, lbEnc, lbDec, L0, modDepth, alpha, dnum, Pt, stcFirst ? " (StC-first)" : "");
     for (uint32_t t = 0; t < gL; ++t) {
         std::printf("layer %2u: %zu diags:", t, F[t].size());
         for (auto& kv : F[t])
-            std::printf(" %d", kv.first > gN / 2 ? static_cast<int>(kv.first) - static_cast<int>(gN)
-                                                 : static_cast<int>(kv.first));
+            std::printf(" %d", kv.first > gN / 2 ? static_cast<int>(kv.first) - static_cast<int>(gN) :
+                                                   static_cast<int>(kv.first));
         std::printf("\n");
     }
     // Numeric products of every layer range (as CIBuildRealLevels builds them); keys only. A range is not
@@ -141,10 +142,12 @@ int main(int argc, char** argv) {
         }
         std::fprintf(stderr, "ranges from layer %u done\n", a);
     }
-    auto digitsOf = [&](uint32_t Ql) { return std::min(dnum, (Ql + alpha - 1) / alpha); };
+    auto digitsOf = [&](uint32_t Ql) {
+        return std::min(dnum, (Ql + alpha - 1) / alpha);
+    };
 
     for (int e = 0; e < 2; ++e) {
-        const bool enc   = e == 0;
+        const bool enc = e == 0;
         const uint32_t lb = enc ? lbEnc : lbDec;
         std::vector<std::vector<uint32_t>> comps;
         std::vector<uint32_t> cur;
@@ -163,15 +166,15 @@ int main(int argc, char** argv) {
             cd.parts = c;
             bool tooDense = false;
             for (uint32_t s = 0; s < lb; ++s) {
-                const auto& r     = enc ? rg[s] : rg[lb - 1 - s];
+                const auto& r = enc ? rg[s] : rg[lb - 1 - s];
                 if (dense[r.first][r.second]) {
                     tooDense = true;
                     break;
                 }
-                const CISparse A  = enc ? sym[r.first][r.second] : SymTranspose(sym[r.first][r.second]);
+                const CISparse A = enc ? sym[r.first][r.second] : SymTranspose(sym[r.first][r.second]);
                 const uint32_t Ql = enc ? L0 - 1 - s : (stcFirst ? lbDec + 2 - s : L0 - (lbEnc + modDepth + s));
-                const uint32_t D  = digitsOf(Ql);
-                const auto lc     = CostOf(A, D);
+                const uint32_t D = digitsOf(Ql);
+                const auto lc = CostOf(A, D);
                 cd.ms += (Ql + Pt) * lc.perTower;
                 GaloisOf(A, lc.p, cd.shifts);
                 char buf[160];
@@ -187,15 +190,15 @@ int main(int argc, char** argv) {
         size_t defRank = 0;
         for (size_t i = 0; i < cands.size(); ++i)
             if (cands[i].parts == def) {
-                defMs   = cands[i].ms;
+                defMs = cands[i].ms;
                 defRank = i + 1;
             }
         std::printf("\n%s lb=%u: %zu splits (layer order, F_1 first); default %s model %.2f s, rank %zu\n",
                     enc ? "CtS" : "StC", lb, cands.size(), Str(def).c_str(), defMs / 1000.0, defRank);
         for (size_t i = 0; i < cands.size(); ++i)
             if (i < topK || cands[i].parts == def)
-                std::printf("%s #%zu %-18s model %.2f s (%+.2f s vs default) shifts %zu |%s\n", enc ? "CtS" : "StC", i + 1,
-                            Str(cands[i].parts).c_str(), cands[i].ms / 1000.0, (cands[i].ms - defMs) / 1000.0,
+                std::printf("%s #%zu %-18s model %.2f s (%+.2f s vs default) shifts %zu |%s\n", enc ? "CtS" : "StC",
+                            i + 1, Str(cands[i].parts).c_str(), cands[i].ms / 1000.0, (cands[i].ms - defMs) / 1000.0,
                             cands[i].shifts.size(), cands[i].detail.c_str());
     }
     return 0;

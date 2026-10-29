@@ -36,8 +36,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #define PROFILE
 
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
-#include "math/ci-transform.h"
-#include "math/nbtheory.h"
 
 #include <algorithm>
 #include <cmath>
@@ -50,6 +48,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include <unordered_set>
 #include <vector>
 
+#include "math/ci-transform.h"
+#include "math/nbtheory.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 namespace lbcrypto {
@@ -161,7 +161,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
 
     // Native conjugate-invariant (CI) CKKS packs N real slots into the rank-N ring
     // (vs N/2 complex slots for standard CKKS), so its batch size may be up to n.
-    const bool isCI            = (cryptoParamsCKKSRNS->GetCKKSDataType() == REAL_CI);
+    const bool isCI = (cryptoParamsCKKSRNS->GetCKKSDataType() == REAL_CI);
     const uint32_t maxBatchSize = isCI ? n : (n / 2);
     if (encodingParams->GetBatchSize() > maxBatchSize)
         OPENFHE_THROW("The batch size cannot be larger than the maximum number of slots.");
@@ -187,7 +187,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
         CompositePrimeModuliGen(moduliQ, rootsQ, compositeDegree, numPrimes, firstModSize, dcrtBits, primeCyclOrder,
                                 registerWordSize);
     } else
-        SinglePrimeModuliGen(moduliQ, rootsQ, scalTech, numPrimes, firstModSize, dcrtBits, primeCyclOrder, extraModSize);
+        SinglePrimeModuliGen(moduliQ, rootsQ, scalTech, numPrimes, firstModSize, dcrtBits, primeCyclOrder,
+                             extraModSize);
 
     // For CI, rootsQ are 4N-th roots (used by the twisted CI NTT). The DCRTPoly itself
     // keeps cyclotomic order 2N (ring dimension N) with proper 2N-th roots; the CI-ness
@@ -196,7 +197,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
     std::vector<NativeInteger> rootsForParams = rootsQ;
     if (isCI) {
         for (size_t i = 0; i < moduliQ.size(); ++i) {
-            RegisterCIModulus(moduliQ[i], n, rootsQ[i]);                       // wm = 4N-th root
+            RegisterCIModulus(moduliQ[i], n, rootsQ[i]);                            // wm = 4N-th root
             rootsForParams[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);  // 2N-th root
         }
     }

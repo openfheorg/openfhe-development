@@ -43,9 +43,9 @@
 
 #include "cryptocontext.h"
 #include "key/privatekey.h"
+#include "math/nbtheory.h"
 #include "schemebase/base-scheme.h"
 #include "schemerns/rns-cryptoparameters.h"
-#include "math/nbtheory.h"
 
 namespace lbcrypto {
 
@@ -59,8 +59,7 @@ bool IsCICKKS(const std::shared_ptr<CryptoParametersBase<Element>>& cp) {
     if constexpr (std::is_same_v<Element, DCRTPoly>) {
         auto rns = std::dynamic_pointer_cast<CryptoParametersRNS>(cp);
         return rns && rns->GetCKKSDataType() == REAL_CI;
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -384,8 +383,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
         (*evalKeys)[indx];
 
     // CI uses logical cyclotomic order 4N and the twisted-NTT eval permutation.
-    const bool isCI       = IsCICKKS<Element>(cc->GetCryptoParameters());
-    const uint32_t Mlog   = isCI ? (4 * N) : M;
+    const bool isCI = IsCICKKS<Element>(cc->GetCryptoParameters());
+    const uint32_t Mlog = isCI ? (4 * N) : M;
 
     const uint32_t sz = newIndices.size();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))

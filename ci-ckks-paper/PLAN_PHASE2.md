@@ -171,6 +171,11 @@ Item 6.3 (WSL): `EvalBootstrapKeyMapIndices` is CI-aware (same Galois set as `Ev
 / `DeserializeEvalBootstrapKey` work for CI. Serialization test: `benchmark/src/ci-boot-serial.cpp` (save / load in
 separate processes, `ci-ckks-paper/tools/serial-matrix.sh`) and unit tests `CIBootstrapKeySerialization_*`. Keygen
 unchanged (2^16 {5,3}: 102 keys, RMS 21.56 / 21.91). Baseline commands unchanged.
+Item 6.4 (WSL): `UnitTestCKKSrnsCI.cpp` covers both CI orderings at three budgets each (+ dense {1,1}), uniform and
+encapsulated secrets, META-BTS in both orderings, keygen/evaluator key-set equality (each generated key is needed),
+the `BTSlotsEncoding` routing and guards; the mid-file `#include` moved to the top. The CI-touched C++ files are
+clang-formatted (pinned 23.1.1; reformatted build bit-exact vs the old one). Tests built and run in 6.5. Baseline
+commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     # since item 6.2 both schemes' stage times come from the -DBOOTSTRAPTIMING build (build-wsl-bt; ICELAKE build-bt):
@@ -284,7 +289,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **6.2** Remove env switches (`CI_BSGS_RATIO`, `CI_BOOT_TIMING`), `std::cerr` prints and `g_CIDbg*` debug
   globals from library code; expose timing through `BOOTSTRAPTIMING`.
 - [x] **6.3** `EvalBootstrapKeyMapIndices` CI-aware; CI context and bootstrap-key serialization test.
-- [ ] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set
+- [x] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set
   equality, CI + `BTSlotsEncoding` guard; move the mid-file `#include` in `UnitTestCKKSrnsCI.cpp` to the top;
   clang-format the touched files.
 - [ ] **6.5** Final run on the active host (host file; ICELAKE only if the user set it): `pke_tests`, `core_tests`, `binfhe_tests`; final benchmark table (1 and 16
