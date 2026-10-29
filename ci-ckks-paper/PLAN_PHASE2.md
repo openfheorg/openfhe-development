@@ -166,6 +166,11 @@ Item 6.2 (WSL): `CI_BOOT_TIMING`, `CI_BSGS_RATIO`, `CI_SPLIT_ENC` / `CI_SPLIT_DE
 the `g_CIDbg*` debug globals are gone. CI stage times (`[CI-BT] CtS / EvalMod / StC`) now need a `-DBOOTSTRAPTIMING`
 build (`build-wsl-bt`, ICELAKE `build-bt`), as std's; `-DBOOTSTRAPTIMING_LT` adds the per-level `[LT]` counters and
 BSGS plans (serial only). Precision unchanged. The baseline commands below now run CI from `build-wsl-bt` too.
+Item 6.3 (WSL): `EvalBootstrapKeyMapIndices` is CI-aware (same Galois set as `EvalBootstrapKeyGen`, through the shared
+`FindCIBootstrapGaloisElements`; no conjugation key; sparse encapsulation keys M-4, M-2), so `SerializeEvalBootstrapKey`
+/ `DeserializeEvalBootstrapKey` work for CI. Serialization test: `benchmark/src/ci-boot-serial.cpp` (save / load in
+separate processes, `ci-ckks-paper/tools/serial-matrix.sh`) and unit tests `CIBootstrapKeySerialization_*`. Keygen
+unchanged (2^16 {5,3}: 102 keys, RMS 21.56 / 21.91). Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     # since item 6.2 both schemes' stage times come from the -DBOOTSTRAPTIMING build (build-wsl-bt; ICELAKE build-bt):
@@ -278,7 +283,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
   global modulus-keyed registry; a CI and a std context sharing a prime in one process must not conflict.
 - [x] **6.2** Remove env switches (`CI_BSGS_RATIO`, `CI_BOOT_TIMING`), `std::cerr` prints and `g_CIDbg*` debug
   globals from library code; expose timing through `BOOTSTRAPTIMING`.
-- [ ] **6.3** `EvalBootstrapKeyMapIndices` CI-aware; CI context and bootstrap-key serialization test.
+- [x] **6.3** `EvalBootstrapKeyMapIndices` CI-aware; CI context and bootstrap-key serialization test.
 - [ ] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set
   equality, CI + `BTSlotsEncoding` guard; move the mid-file `#include` in `UnitTestCKKSrnsCI.cpp` to the top;
   clang-format the touched files.

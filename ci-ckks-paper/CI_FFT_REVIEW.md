@@ -227,6 +227,12 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    the library. CI stage times print with `-DBOOTSTRAPTIMING`, like std's, on `OPENFHE_DIAGNOSTIC_ERR`; the per-level
    `[LT]` counters need `-DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT` (serial runs only). Precision unchanged. See
    `PHASE2_LOG.md` 6.2.)
+   (Phase 6.3: `EvalBootstrapKeyMapIndices` now returns the CI bootstrap key set (the real-FFT or dense BSGS Galois
+   elements of `FindCIBootstrapGaloisElements`, shared with `EvalBootstrapKeyGen`, plus M-4 / M-2 for encapsulation;
+   no conjugation key). Before, it returned the complex-FFT rotation set: at 2^12 {3,3} 39 indices against 62
+   generated keys, 18 of them missing. CI context and bootstrap keys now round-trip through serialization in both
+   orderings, with META-BTS and budget {1,1}, and the deserialized context bootstraps bit-exactly as the original
+   (`benchmark/src/ci-boot-serial.cpp`, 2^12-2^14). See `PHASE2_LOG.md` 6.3.)
 Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,
 warm run):
 

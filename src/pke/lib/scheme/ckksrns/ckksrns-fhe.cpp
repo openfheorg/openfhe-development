@@ -874,58 +874,21 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
     auto algo = cc->GetScheme();
     auto M = cc->GetCyclotomicOrder();
 
-    // Native CI bootstrap: slots == N (full real packing); generate Galois keys for the
-    // CI rotation set {5^t mod 4N : t=1..N-1} used by the CI CtS/StC linear transforms.
-    // No conjugation key is needed (conjugation is the identity on the CI ring).
+    // Native CI bootstrap: slots == N (full real packing); Galois keys for the CI CtS/StC linear transforms
+    // (FindCIBootstrapGaloisElements). No conjugation key is needed (conjugation is the identity on the CI ring).
+    // Sparse encapsulation keys use the even indices M-4, M-2, which never collide with odd CI Galois elements.
     if (cryptoParams->GetCKKSDataType() == REAL_CI) {
-        uint32_t N = cc->GetRingDimension();
-        uint64_t mm = 4ULL * N;
-        // Sparse encapsulation keys (even indices M-4, M-2 never collide with odd CI Galois elements).
-        auto addSparseKeys = [&](std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> ek) {
-            if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
-                DCRTPoly::TugType tug;
-                auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
-                skNew->SetPrivateElement(DCRTPoly(tug, cryptoParams->GetElementParams(), Format::EVALUATION,
-                                                  cryptoParams->GetSparseKSHammingWeight()));
-                (*ek)[M - 4] = KeySwitchGenSparse(privateKey, skNew);
-                (*ek)[M - 2] = algo->KeySwitchGen(skNew, privateKey);
-            }
-            return ek;
-        };
-        {
-            auto pit = m_bootPrecomMap.find(N);
-            if (pit != m_bootPrecomMap.end()) {
-                const uint32_t lbE = pit->second->m_paramsEnc.lvlb, lbD = pit->second->m_paramsDec.lvlb;
-                if (lbE > 1 || lbD > 1) {
-                    const auto dg = CIBsgsLevelDigits(*cryptoParams, lbE, lbD,
-                                                      GetModDepthInternal(cryptoParams->GetSecretKeyDist()),
-                                                      pit->second->BTSlotsEncoding);
-                    return addSparseKeys(
-                            algo->EvalAutomorphismKeyGen(privateKey, CIRealFFTGaloisElements(N, lbE, lbD, dg)));
-                }
-            }
+        auto evalKeys = algo->EvalAutomorphismKeyGen(
+            privateKey, FindCIBootstrapGaloisElements(*cryptoParams, cc->GetRingDimension()));
+        if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+            DCRTPoly::TugType tug;
+            auto skNew = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
+            skNew->SetPrivateElement(DCRTPoly(tug, cryptoParams->GetElementParams(), Format::EVALUATION,
+                                              cryptoParams->GetSparseKSHammingWeight()));
+            (*evalKeys)[M - 4] = KeySwitchGenSparse(privateKey, skNew);
+            (*evalKeys)[M - 2] = algo->KeySwitchGen(skNew, privateKey);
         }
-        // Baby-step/giant-step rotation set for the CI linear transform: baby {5^i : i<n1}
-        // and giant {(5^{n1})^j : j<n2}, with n1*n2 = N. ~2 sqrt(N) keys instead of N-1.
-        uint32_t logN = static_cast<uint32_t>(std::round(std::log2(N)));
-        uint32_t n1   = 1u << ((logN + 1) / 2);
-        uint32_t n2   = N / n1;
-        std::set<uint32_t> elts;
-        uint32_t fi = 1;
-        for (uint32_t i = 1; i < n1; ++i) {
-            fi = static_cast<uint32_t>((static_cast<uint64_t>(fi) * 5) % mm);
-            elts.insert(fi);
-        }
-        uint32_t g = 1;
-        for (uint32_t t = 0; t < n1; ++t)
-            g = static_cast<uint32_t>((static_cast<uint64_t>(g) * 5) % mm);  // g = 5^{n1}
-        uint32_t gj = g;
-        for (uint32_t j = 1; j < n2; ++j) {
-            elts.insert(gj);
-            gj = static_cast<uint32_t>((static_cast<uint64_t>(gj) * g) % mm);
-        }
-        std::vector<uint32_t> ciGaloisElts(elts.begin(), elts.end());
-        return addSparseKeys(algo->EvalAutomorphismKeyGen(privateKey, ciGaloisElts));
+        return evalKeys;
     }
 
     slots = (slots == 0) ? M / 4 : slots;
@@ -957,6 +920,19 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
         OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
     auto M = cc->GetCyclotomicOrder();
+
+    // REAL_CI: the same Galois set as EvalBootstrapKeyGen (which ignores slots: CI bootstraps all N real slots),
+    // plus the sparse encapsulation keys; no conjugation key M - 1.
+    if (cryptoParams->GetCKKSDataType() == REAL_CI) {
+        auto ciList = FindCIBootstrapGaloisElements(*cryptoParams, cc->GetRingDimension());
+        if (cryptoParams->GetSecretKeyDist() == SPARSE_ENCAPSULATED) {
+            ciList.push_back(M - 4);
+            ciList.push_back(M - 2);
+        }
+        std::sort(ciList.begin(), ciList.end());
+        return ciList;
+    }
+
     slots = (slots == 0) ? M / 4 : slots;
 
     const auto bootstrapRotationsIndices = FindBootstrapRotationIndices(slots, M);
@@ -2965,6 +2941,43 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 //------------------------------------------------------------------------------
 // Find Rotation Indices
 //------------------------------------------------------------------------------
+
+std::vector<uint32_t> FHECKKSRNS::FindCIBootstrapGaloisElements(const CryptoParametersCKKSRNS& cryptoParams,
+                                                                 uint32_t N) {
+    // Real-FFT levels (level budget > 1): exactly the rotations the sparse BSGS levels perform (EvalBootstrap
+    // checks its rotations against this set), with the per-level key-switching digits of the chain shape.
+    auto pit = m_bootPrecomMap.find(N);
+    if (pit != m_bootPrecomMap.end()) {
+        const uint32_t lbE = pit->second->m_paramsEnc.lvlb, lbD = pit->second->m_paramsDec.lvlb;
+        if (lbE > 1 || lbD > 1) {
+            const auto dg = CIBsgsLevelDigits(cryptoParams, lbE, lbD,
+                                              GetModDepthInternal(cryptoParams.GetSecretKeyDist()),
+                                              pit->second->BTSlotsEncoding);
+            return CIRealFFTGaloisElements(N, lbE, lbD, dg);
+        }
+    }
+    // Dense single-level transform (budget {1,1}): baby {5^i : 0 < i < n1} and giant {(5^{n1})^j : 0 < j < n2},
+    // n1 * n2 = N, so ~2 sqrt(N) keys instead of N - 1.
+    const uint64_t mm   = 4ULL * N;
+    const uint32_t logN = static_cast<uint32_t>(std::round(std::log2(N)));
+    const uint32_t n1   = 1u << ((logN + 1) / 2);
+    const uint32_t n2   = N / n1;
+    std::set<uint32_t> elts;
+    uint32_t fi = 1;
+    for (uint32_t i = 1; i < n1; ++i) {
+        fi = static_cast<uint32_t>((static_cast<uint64_t>(fi) * 5) % mm);
+        elts.insert(fi);
+    }
+    uint32_t g = 1;
+    for (uint32_t t = 0; t < n1; ++t)
+        g = static_cast<uint32_t>((static_cast<uint64_t>(g) * 5) % mm);  // g = 5^{n1}
+    uint32_t gj = g;
+    for (uint32_t j = 1; j < n2; ++j) {
+        elts.insert(gj);
+        gj = static_cast<uint32_t>((static_cast<uint64_t>(gj) * g) % mm);
+    }
+    return std::vector<uint32_t>(elts.begin(), elts.end());
+}
 
 std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots);

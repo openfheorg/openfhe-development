@@ -1037,6 +1037,12 @@ class FHECKKSRNS : public FHERNS {
     std::vector<uint32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
     std::vector<uint32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
 
+    // REAL_CI: the Galois elements of the native CI bootstrap (no conjugation key, no sparse encapsulation keys):
+    // the real-FFT set of the precomputation for N slots when a level budget > 1 was set up, otherwise the dense
+    // baby-step/giant-step set. Shared by EvalBootstrapKeyGen and EvalBootstrapKeyMapIndices so that the keys
+    // generated and the keys (de)serialized by SerializeEvalBootstrapKey/DeserializeEvalBootstrapKey agree.
+    std::vector<uint32_t> FindCIBootstrapGaloisElements(const CryptoParametersCKKSRNS& cryptoParams, uint32_t N);
+
     //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions
     //------------------------------------------------------------------------------

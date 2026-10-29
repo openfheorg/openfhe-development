@@ -3011,3 +3011,111 @@ item 6.1's table (the min of a 2^14 StC-first run moves by up to 0.1 bit between
 Timing is a compile-time option as for std (`BOOTSTRAPTIMING`, plus `BOOTSTRAPTIMING_LT` for per-level op counts).
 Precision is unchanged in both orderings at 2^12-2^16 and with META-BTS. The baseline commands now take the CI stage
 times from `build-wsl-bt` too; the numbers themselves need no rerun (same arithmetic).
+
+## 6.3 CI-aware `EvalBootstrapKeyMapIndices`; CI context and bootstrap-key serialization test -- DONE (WSL, 2026-10-29)
+
+**Host.** The host file said `WSL` before every job; every job ran on WSL through `wsl-guard.sh`. Nothing ran on
+ICELAKE. Jobs: `p63_build0` (rc 2: no CMake target before reconfigure; rerun rc 0), `p63_build0b`, `p63_before`
+(rc 1, the expected CI failures), `p63_build`, `p63_serial`, `p63_16`, `p63_syntax`, `p63_buildbt`, all others rc 0.
+No timing comparison in this item (keygen refactor plus a serialization test); the one 2^16 job checks keys and
+precision only.
+
+**The problem (measured before the change).** `EvalBootstrapKeyMapIndices`, which `SerializeEvalBootstrapKey` and
+`DeserializeEvalBootstrapKey(cc, keyTag, slots)` use to pick the keys, always built the complex-FFT rotation set
+(`FindBootstrapRotationIndices` mapped through `FindAutomorphismIndex2nComplex`) plus the conjugation key M - 1. CI
+keygen generates a different set (the real-FFT BSGS Galois elements, no conjugation key). New driver
+`benchmark/src/ci-boot-serial.cpp` checks the index list against the generated key map first. On the pre-change
+library (`p63_before`, library at HEAD f26d0481, lib change stashed):
+
+| case (2^12) | keys generated | KeyMapIndices | only in indices (missing keys) | only in keygen | result |
+|---|---|---|---|---|---|
+| CI {3,3} uniform, CtS-first | 62 | 39 | 18 | 41 | FAIL |
+| CI {3,3} encap, StC-first | 64 | 41 | 18 | 41 | FAIL |
+| CI {1,1} uniform, CtS-first | 126 | 258 | 225 | 93 | FAIL |
+| std {3,3} uniform, CtS-first | 52 | 52 | 0 | 0 | PASS (round trip bit-exact) |
+
+So CI bootstrap keys could not be serialized by the bootstrap-key API: `GetPartialEvalAutomorphismKeyMapPtr` throws
+`Key is not generated for index [...]` on the first missing index (read from the code; the driver stops at the set
+check before calling it), and the 41 keys only keygen has would never be written.
+
+**Change** (`src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp`, `ckksrns-fhe.h`):
+- New private member `FHECKKSRNS::FindCIBootstrapGaloisElements(cryptoParams, N)`: the real-FFT Galois set
+  (`CIRealFFTGaloisElements` with the `CIBsgsLevelDigits` of the N-slot precomputation, including its
+  `BTSlotsEncoding`) when a level budget > 1 is set up, otherwise the dense {1,1} baby/giant set. The code is the one
+  that was inline in `EvalBootstrapKeyGen`, moved unchanged.
+- `EvalBootstrapKeyGen` (REAL_CI) calls it, then adds the sparse encapsulation keys M-4, M-2 as before (same order of
+  key generation, same key set).
+- `EvalBootstrapKeyMapIndices` (REAL_CI) returns the same set plus M-4, M-2 for `SPARSE_ENCAPSULATED`, sorted; no
+  conjugation key. Like keygen it ignores `slots` (CI bootstraps all N real slots). The std path is unchanged.
+
+**Serialization test.**
+- `benchmark/src/ci-boot-serial.cpp` (args: `save|load dir ci|std logN lbEnc lbDec uniform|encap stcfirst iters`;
+  insecure, FIXEDMANUAL 59/60, 2 levels after). `save`: setup + keygen, checks `EvalBootstrapKeyMapIndices` == the
+  generated key set, bootstraps one ciphertext, writes context, secret key, input and output ciphertexts, EvalMult keys
+  and the bootstrap keys (`SerializeEvalBootstrapKey(cc, tag, slots)`), BINARY. `load` (a fresh process): reads them
+  back, checks REAL_CI and the CI ring type of every tower of the deserialized context, redoes `EvalBootstrapSetup`,
+  loads the bootstrap keys by context and by index list, checks the loaded key set, bootstraps the input and requires
+  the output to equal the saved output bit for bit (elements, level, scale degree) and to decrypt to the input.
+- `ci-ckks-paper/tools/serial-matrix.sh BUILD_DIR "case" ...` runs save then load per case (files in
+  `~/ci-ckks-wsl/serial/`, removed when the case passes).
+- Unit tests `UTCKKSrnsCI.CIBootstrapKeySerialization_CtSFirst` / `_StCFirst` (2^10 {3,3} encap, in-process round
+  trip through stringstreams after `ReleaseAllContexts` and `ClearCIModuli`, same checks). Only compiled
+  `-fsyntax-only` here (unit tests are built and run in 6.5); the serialization headers were added to the top-of-file
+  includes.
+
+**Results after the change** (`p63_serial`, OMP_NUM_THREADS=4, 16 cases, save and load in separate processes):
+
+| case | keys (gen = indices = loaded) | boot keys file | bit-exact | RMS bits save / load |
+|---|---|---|---|---|
+| CI 12 {3,3} uniform CtS-first | 62 | 361 MB | yes | 14.22 / 14.22 |
+| CI 12 {3,3} uniform StC-first | 62 | 361 MB | yes | 17.72 / 17.72 |
+| CI 12 {3,3} encap CtS-first | 64 | 308 MB | yes | 19.43 / 19.43 |
+| CI 12 {3,3} encap StC-first | 64 | 308 MB | yes | 22.29 / 22.29 |
+| CI 12 {1,1} uniform CtS-first (dense) | 126 | 615 MB | yes | 14.84 / 14.84 |
+| CI 12 {1,1} encap StC-first (dense) | 128 | 501 MB | yes | 22.49 / 22.49 |
+| CI 12 {3,3} encap CtS-first, META-BTS | 64 | 320 MB | yes | 31.45 / 31.45 |
+| CI 12 {3,3} encap StC-first, META-BTS | 64 | 320 MB | yes | 34.91 / 34.91 |
+| CI 13 {4,4} encap CtS-first | 74 | 767 MB | yes | 17.74 / 17.74 |
+| CI 13 {4,4} encap StC-first | 74 | 767 MB | yes | 20.52 / 20.52 |
+| CI 14 {5,3} encap CtS-first | 69 | 1429 MB | yes | 16.46 / 16.46 |
+| CI 14 {5,3} encap StC-first | 69 | 1429 MB | yes | 20.30 / 20.30 |
+| std 12 {3,3} uniform CtS-first | 52 | 303 MB | yes | 14.24 / 14.29 |
+| std 12 {3,3} encap StC-first | 54 | 259 MB | yes | 22.34 / 22.34 |
+| std 12 {3,3} encap CtS-first, META-BTS | 54 | 269 MB | yes | 32.18 / 32.15 |
+| std 13 {4,4} encap StC-first | 31 | 316 MB | yes | 20.68 / 20.68 |
+
+`SUMMARY pass=16 fail=0`. The std save/load RMS differs slightly although the ciphertexts are bit-exact because std
+CKKS decoding adds randomized noise (OpenFHE's decode noise estimate from the imaginary part); CI decoding has no
+imaginary part and is deterministic. The CI keygen set is the same as before the change (62 / 64 / 126 keys at 2^12).
+
+**2^16 check** (`p63_16`, `build-wsl`, 128-bit, 1 thread, reps 1; laptop speed not controlled, times not compared):
+
+| ordering | galoisKeys | min / RMS bits | peak RSS |
+|---|---|---|---|
+| CI {5,3} CtS-first (fa 4 encap) | 102 | 18.34 / 21.56 | 13.43 GB |
+| CI {5,3} StC-first (fa 12 encap 1) | 102 | 19.78 / 21.91 | 13.28 GB |
+
+Same keys, precision and RSS as items 4.R / 6.1 / 6.2. The Galois check (keygen set == evaluator rotations) ran in
+both bootstraps (it throws on a mismatch in every build).
+
+**Commands** (WSL, repo root; `G` = `ci-ckks-paper/tools/wsl-guard.sh`, `M` = `ci-ckks-paper/tools/serial-matrix.sh`):
+
+    G p63_build0  12 'cmake build-wsl >/dev/null && cmake --build build-wsl --target ci-boot-serial -j 8'   # lib change stashed
+    G p63_build0b 12 'cmake --build build-wsl --target ci-boot-serial -j 8'                               # driver argc fix
+    G p63_before   6 'OMP_NUM_THREADS=4 M build-wsl "ci 12 3 3 uniform 0 1" "ci 12 3 3 encap 1 1" "ci 12 1 1 uniform 0 1" "std 12 3 3 uniform 0 1"'
+    G p63_build   12 'cmake --build build-wsl --target ci-boot-serial ci-fft-boot ci-ring-conflict -j 8'  # lib change restored; 0 warnings
+    G p63_serial   8 'OMP_NUM_THREADS=4 M build-wsl "ci 12 3 3 uniform 0 1" "ci 12 3 3 uniform 1 1" "ci 12 3 3 encap 0 1"
+        "ci 12 3 3 encap 1 1" "ci 12 1 1 uniform 0 1" "ci 12 1 1 encap 1 1" "ci 12 3 3 encap 0 2" "ci 12 3 3 encap 1 2"
+        "ci 13 4 4 encap 0 1" "ci 13 4 4 encap 1 1" "ci 14 5 3 encap 0 1" "ci 14 5 3 encap 1 1" "std 12 3 3 uniform 0 1"
+        "std 12 3 3 encap 1 1" "std 12 3 3 encap 0 2" "std 13 4 4 encap 1 1"'
+    G p63_16      16 'export OMP_NUM_THREADS=1; B=build-wsl/bin/benchmark/ci-fft-boot;
+        $B ci 16 5 3 59 60 1 1 fa 4 encap && $B ci 16 5 3 59 60 1 1 fa 12 encap 1'
+    G p63_syntax   6 'c++ <pkeobj flags> -I third-party/google-test/googletest/include -fsyntax-only src/pke/unittest/utckksrns/UnitTestCKKSrnsCI.cpp;
+        c++ <pkeobj flags> -DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT -fsyntax-only src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp'  # both OK
+    G p63_buildbt 12 'cmake --build build-wsl-bt --target ci-fft-boot -j 8'                               # 0 warnings
+
+**Conclusions.** The bootstrap-key serialization API now works for CI: `EvalBootstrapKeyMapIndices` and
+`EvalBootstrapKeyGen` share one Galois-set function, so they cannot drift apart. A CI context (with its CI ring tag,
+item 6.1) and its bootstrap keys round-trip through BINARY serialization into a fresh process in both orderings, for
+the real-FFT and the dense {1,1} transform, with encapsulation and with META-BTS, and the deserialized context
+bootstraps bit-exactly as the original. The std path is unchanged. Keygen and 2^16 precision are unchanged.

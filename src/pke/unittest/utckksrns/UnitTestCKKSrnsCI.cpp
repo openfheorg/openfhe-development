@@ -36,6 +36,10 @@
 #include "math/ci-transform.h"
 #include "lattice/lat-hal.h"
 #include "openfhe.h"
+#include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "key/key-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 #include "gtest/gtest.h"
 
 #include <cmath>
@@ -1119,4 +1123,99 @@ TEST(UTCKKSrnsCI, CIRealFFTBootstrap_Uniform) {
 
 TEST(UTCKKSrnsCI, CIRealFFTBootstrap_SparseEncapsulated) {
     EXPECT_GT(CIBootPrecisionBits(10, {3, 3}, FLEXIBLEAUTO, SPARSE_ENCAPSULATED), 16.0);
+}
+
+// Item 6.3: EvalBootstrapKeyMapIndices lists exactly the CI bootstrap keys (real-FFT set, no conjugation key, plus the
+// sparse encapsulation keys), so SerializeEvalBootstrapKey / DeserializeEvalBootstrapKey round-trip them; the
+// deserialized context (ring type CI) bootstraps to the same ciphertext as the original. Both orderings.
+static void CIBootstrapSerialRoundTrip(bool stcFirst) {
+    ClearCIModuli();
+    const uint32_t logN = 10, N = 1u << logN;
+    const std::vector<uint32_t> budget = {3, 3};
+    const SecretKeyDist skd = SPARSE_ENCAPSULATED;
+    const uint32_t depth    = 2 + FHECKKSRNS::GetBootstrapDepth(budget, skd);
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetCKKSDataType(REAL_CI);
+    parameters.SetRingDim(N);
+    parameters.SetSecretKeyDist(skd);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetMultiplicativeDepth(depth);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(FHE);
+    cc->EvalBootstrapSetup(budget, {0, 0}, N, 0, true, stcFirst);
+    auto keys = cc->KeyGen();
+    cc->EvalMultKeyGen(keys.secretKey);
+    cc->EvalBootstrapKeyGen(keys.secretKey, N);
+    const std::string tag = keys.secretKey->GetKeyTag();
+
+    std::set<uint32_t> generated;
+    for (const auto& kv : cc->GetEvalAutomorphismKeyMap(tag))
+        generated.insert(kv.first);
+    const auto idx = cc->GetScheme()->EvalBootstrapKeyMapIndices(cc, N);
+    ASSERT_EQ(std::set<uint32_t>(idx.begin(), idx.end()), generated);
+    EXPECT_EQ(generated.count(cc->GetCyclotomicOrder() - 1), 0u);  // no conjugation key on the CI ring
+
+    std::vector<double> x(N);
+    std::mt19937_64 g(63);
+    std::uniform_real_distribution<double> U(-1.0, 1.0);
+    for (auto& v : x)
+        v = U(g);
+    const uint32_t encLevel = stcFirst ? depth - budget[1] - 1 : depth - 1;
+    auto ct  = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, encLevel, nullptr, N));
+    auto ref = cc->EvalBootstrap(ct);
+
+    std::stringstream sCC, sSK, sCT, sMult, sBoot;
+    Serial::Serialize(cc, sCC, SerType::BINARY);
+    Serial::Serialize(keys.secretKey, sSK, SerType::BINARY);
+    Serial::Serialize(ct, sCT, SerType::BINARY);
+    ASSERT_TRUE(cc->SerializeEvalMultKey(sMult, SerType::BINARY, tag));
+    ASSERT_TRUE(cc->SerializeEvalBootstrapKey(sBoot, SerType::BINARY, cc, tag, N));
+    cc->ClearEvalMultKeys();
+    cc->ClearEvalAutomorphismKeys();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    ClearCIModuli();
+
+    CryptoContext<DCRTPoly> cc2;
+    PrivateKey<DCRTPoly> sk2;
+    Ciphertext<DCRTPoly> ct2;
+    Serial::Deserialize(cc2, sCC, SerType::BINARY);
+    Serial::Deserialize(sk2, sSK, SerType::BINARY);
+    Serial::Deserialize(ct2, sCT, SerType::BINARY);
+    ASSERT_EQ(cc2->GetCKKSDataType(), REAL_CI);
+    for (const auto& p : cc2->GetCryptoParameters()->GetElementParams()->GetParams())
+        EXPECT_TRUE(p->IsConjugateInvariant());
+    cc2->EvalBootstrapSetup(budget, {0, 0}, N, 0, true, stcFirst);
+    ASSERT_TRUE(cc2->DeserializeEvalMultKey(sMult, SerType::BINARY));
+    ASSERT_TRUE(cc2->DeserializeEvalBootstrapKey(sBoot, SerType::BINARY, cc2, sk2->GetKeyTag(), N));
+    std::set<uint32_t> loaded;
+    for (const auto& kv : cc2->GetEvalAutomorphismKeyMap(sk2->GetKeyTag()))
+        loaded.insert(kv.first);
+    EXPECT_EQ(loaded, generated);
+
+    auto out = cc2->EvalBootstrap(ct2);
+    EXPECT_TRUE(out->GetElements() == ref->GetElements());
+    Plaintext res;
+    cc2->Decrypt(sk2, out, &res);
+    res->SetLength(N);
+    double e = 0;
+    for (uint32_t i = 0; i < N; ++i)
+        e = std::max(e, std::abs(res->GetCKKSPackedValue()[i].real() - x[i]));
+    EXPECT_GT(-std::log2(e), 12.0);
+    cc2->ClearStaticMapsAndVectors();
+    ClearCIModuli();
+}
+
+TEST(UTCKKSrnsCI, CIBootstrapKeySerialization_CtSFirst) {
+    CIBootstrapSerialRoundTrip(false);
+}
+
+TEST(UTCKKSrnsCI, CIBootstrapKeySerialization_StCFirst) {
+    CIBootstrapSerialRoundTrip(true);
 }
