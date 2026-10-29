@@ -248,6 +248,43 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [ ] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set
   equality, CI + `BTSlotsEncoding` guard; move the mid-file `#include` in `UnitTestCKKSrnsCI.cpp` to the top;
   clang-format the touched files.
-- [ ] **6.5** Final run on ICELAKE: `pke_tests`, `core_tests`, `binfhe_tests`; final benchmark table (1 and 16
+- [ ] **6.5** Final run on the active host (host file; ICELAKE only if the user set it): `pke_tests`, `core_tests`, `binfhe_tests`; final benchmark table (1 and 16
   threads) in `CI_FFT_REVIEW.md`; remove the `openfhe-ci2026-orig` worktree (WSL) and stale ICELAKE build dirs
   other than `build`.
+
+## Phase 7: StC-first optimization (ON HOLD: record only)
+**Do not start any item of this phase until the user says so.** It is not in the harness queue. An executor or plan
+adapter must not run, schedule, merge or reword these items into earlier phases. Recorded 2026-10-28 from the
+StC-first analysis below.
+
+*Where StC-first stands* (WSL, 2^16 {5,3}, 128-bit, 1 thread, item 2.R): CI 11.62 s (CtS 5.35 / EvalMod 3.95 /
+StC 2.32) against two std StC-first bootstraps 2 x 8.43 = 16.86 s (CtS 3.59 / EvalMod 3.06 / StC 1.53 each):
+**1.45x** (2x is the ceiling). Per stage, one CI against one std: CtS 1.49x (137 vs 75 diagonals, 1.83x), StC 1.52x
+(317 vs 189 diagonals, 1.68x), EvalMod 1.29x per call (K = 28 table about 13%, CI ring per-op cost about 10%,
+partly removed by item 4.1). Per diagonal CI already matches std (same-shape levels 1.00-1.05x), so the linear
+transform gap is the real-FFT diagonal count. Estimate: 7.1-7.3 together bring CI StC-first to about 1.6-1.7x; going
+toward 2x needs 7.4.
+
+- [ ] **7.1** Re-tune the linear transforms for StC-first. The budget sweep (1.3), the per-level BSGS split (2.2)
+  and the layer split (2.3) were tuned for CtS-first. In StC-first, StC runs at the bottom of the chain on the
+  minimum tower count (independent of the levels after), so a deeper StC (more levels, fewer diagonals per level)
+  is cheap there, and the best CtS split also changes with the shorter chain. Sweep budgets for StC-first for CI
+  and std (both at their own best), redo the BSGS and layer-split cost models with the StC-first tower counts.
+  Expected: the largest single gain of this phase. Done when: best StC-first budget and splits for each scheme are
+  found and the CI/2xstd StC-first ratio is reported at those settings.
+- [ ] **7.2** Smaller EvalMod table for CI with a secure key. A weight-24 CI ephemeral key (power-basis L1 about
+  48; item 3.1: 141.5 core-SVP and 166.8 MITM by the item's own estimates) with a new Chebyshev table for K about 20
+  (degree between 36 and 48). Needs: the official lattice-estimator run to certify 128 bits, a failure-probability
+  check of the overflow bound (K = 16 with weight 32 fails about 2^-22 per bootstrap, item 3.R, so it is not an
+  option), and the precision check. Expected: up to about half of the ~1 s the K = 28 table costs.
+- [ ] **7.3** Remaining CI per-op overhead (after items 4.1-4.2): any CI op still above about 1.05x std per op
+  (EvalMult, rotation, rescale, ModUp/ModDown) in the StC-first bootstrap path. Expected: small (item 4.1 took the
+  NTT round trip from 1.19x to 1.04-1.05x).
+- [ ] **7.4** Fewer diagonals in the real FFT (research). The paper's real FFT has up to 7 cyclic diagonals per layer
+  against about 3 for the complex FFT, which gives CI 1.7-1.8x std's diagonals per transform. Look for a
+  factorization or level grouping with fewer diagonals (other butterfly arrangements, merging the phase
+  compensation differently, radix choice, sharing diagonals between levels). This is the only lever that moves
+  CI StC-first toward 2x. Done when: a factorization with fewer diagonals is found and measured, or the reason the
+  count is a lower bound is written down.
+- [ ] **7.R** Phase 7 review: CI/2xstd StC-first ratio at the best settings of both schemes, precision of both
+  orderings, both orderings still supported.
