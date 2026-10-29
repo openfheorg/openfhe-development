@@ -581,15 +581,9 @@ TEST(UTCKKSrnsCI, CIHomomorphicLinearTransform) {
     ClearCIModuli();
 }
 
-namespace lbcrypto {
-void CISetBootDebugKey(const PrivateKey<DCRTPoly>&);
-void CISetBootDebugScale(bool);
-extern std::vector<double> g_CIDbgPostEvalMod;
-}
-// ---- Phase-0 routing (fix plan E0.1+E0.2): does CI coefficient-recovery (post-EvalMod, pre-StC)
-// climb with the level budget like std (Gate C) or stay flat/decline (Gate A/B)? Also dumps the
-// per-stage scale schedule (E0.2). Compares post-EvalMod to 0.5*U^{-1}x via sorted-magnitude match
-// (permutation-invariant; the collapsed CtS permutes the coefficients).
+// ---- Phase-0 routing (fix plan E0.1): final slot precision of the CI bootstrap over the level budgets
+// {1,1}..{8,8}, side by side with std CKKS at the same N and scale. (The post-EvalMod coefficient-recovery probe of
+// Phase 0 read a library debug hook that item 6.2 removed.)
 TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
     const uint32_t N = 1u << 8;  // log2N=8
     uint32_t levelsAfter = 6;
@@ -597,18 +591,6 @@ TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
     std::vector<double> x(N);
     for (uint32_t i = 0; i < N; ++i)
         x[i] = std::sin(0.05 * (i + 1));  // [-1,1]
-    // expected reduced coefficients m_c = U^{-1} x, scaled by 0.5 (the post-EvalMod convention)
-    std::vector<double> halfmc(N);
-    for (uint32_t i = 0; i < N; ++i) {
-        double wi = (i == 0) ? (double)N : (double)(2 * N), acc = 0;
-        for (uint32_t j = 0; j < N; ++j)
-            acc += DenseU(N, j, i) * x[j];
-        halfmc[i] = 0.5 * acc / wi;
-    }
-    std::vector<double> expSorted(N);
-    for (uint32_t i = 0; i < N; ++i)
-        expSorted[i] = std::abs(halfmc[i]);
-    std::sort(expSorted.rbegin(), expSorted.rend());
 
     for (auto lb : std::vector<uint32_t>{1, 2, 4, 8}) {
         ClearCIModuli();
@@ -636,11 +618,7 @@ TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
         auto pt = cc->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, N);
         auto ct = cc->Encrypt(keys.publicKey, pt);
 
-        lbcrypto::CISetBootDebugKey(keys.secretKey);
-        lbcrypto::CISetBootDebugScale(lb == 4);  // dump scale schedule for one collapsed budget
         auto ctA = cc->EvalBootstrap(ct);
-        lbcrypto::CISetBootDebugScale(false);
-        lbcrypto::CISetBootDebugKey(nullptr);
 
         Plaintext res;
         cc->Decrypt(keys.secretKey, ctA, &res);
@@ -648,25 +626,8 @@ TEST(UTCKKSrnsCI, CIPhase0RouteScaleAndRecovery) {
         double slotErr = 0;
         for (uint32_t i = 0; i < N; ++i)
             slotErr = std::max(slotErr, std::abs(res->GetCKKSPackedValue()[i].real() - x[i]));
-        // coefficient-recovery: sorted-magnitude match of post-EvalMod vs 0.5*U^{-1}x (top-32)
-        double coefBits = 0, scaleC = 0;
-        if (lbcrypto::g_CIDbgPostEvalMod.size() == N) {
-            std::vector<double> got(N);
-            for (uint32_t i = 0; i < N; ++i)
-                got[i] = std::abs(lbcrypto::g_CIDbgPostEvalMod[i]);
-            std::sort(got.rbegin(), got.rend());
-            scaleC = got[0] / (expSorted[0] + 1e-300);  // post-EvalMod scale vs 0.5*m_c
-            // scale-invariant shape match: normalize both by their max, compare top-32 dominant coeffs
-            double e = 0;
-            for (uint32_t i = 0; i < 32; ++i)
-                e = std::max(e, std::abs(got[i] / got[0] - expSorted[i] / expSorted[0]));
-            coefBits = (e > 0) ? -std::log2(e) : 60.0;
-        }
-        std::cerr << "[CIroute] lvlb={" << lb << "," << lb << "} depth=" << depth
-                  << " : coeff-shape-recovery(top32, scale+perm-inv) = " << std::fixed << std::setprecision(1)
-                  << coefBits << " bits (post-EvalMod scale/0.5mc = " << std::setprecision(3) << scaleC
-                  << ") | final slot = " << std::setprecision(1) << (slotErr > 0 ? -std::log2(slotErr) : 60.0)
-                  << " bits\n";
+        std::cerr << "[CIroute] lvlb={" << lb << "," << lb << "} depth=" << depth << " : final slot = " << std::fixed
+                  << std::setprecision(1) << (slotErr > 0 ? -std::log2(slotErr) : 60.0) << " bits\n";
     }
 
     // E0.1 side-by-side: does STANDARD CKKS collapse CLIMB at the same N/scale? (COMPLEX, N/2 slots)

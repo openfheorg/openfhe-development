@@ -26,7 +26,7 @@ host when the last baseline for that host is older than the code.
   16-17 GB of the VM's 31 GB, so a job can get about 14-16 GB; the guard refuses a job if free memory < `MEM_GB` + 2. A killed or refused job is answered by a
   smaller N or budget, or by lowering memory in the code, never by raising the slice limit.
 - **Build dirs:** `build-wsl` (Release, benchmarks, no unit tests, no examples) and `build-wsl-bt` (the same with
-  `-DCMAKE_CXX_FLAGS=-DBOOTSTRAPTIMING`, for std stage times). Build only the needed targets, `-j 8`, `MEM_GB` 12. Leave
+  `-DCMAKE_CXX_FLAGS=-DBOOTSTRAPTIMING`, for stage times; since item 6.2 also CI's, `CI_BOOT_TIMING` is gone). Build only the needed targets, `-j 8`, `MEM_GB` 12. Leave
   the old `build` dir alone. Item 6.5 turns on `BUILD_UNITTESTS` in `build-wsl` and builds tests with `-j 4`.
 - **Timing:** `OMP_NUM_THREADS=1` (unless the item is about threads), one timing job at a time, never during a build.
   The i7-12700H laptop CPU has turbo and thermal variation: interleave A/B runs (before/after, CI/std) in one guarded
@@ -90,7 +90,7 @@ Budgets (item 1.3, 59/60): best CI {4,3} 25.97 s (log QP 1601; {4,4} 26.28 s, wi
 log QP <= 1100 (item 1.R): only {2,2} with 55-bit primes (56 for CI) and dnum 9 (P = 2 towers) reaches it (log QP
 1060 / 1076, valid at 128-bit), but CI takes 56.6-59.4 s and std 45.0-46.1 s (2.3x / 2.1x the best sets) at CI RMS
 20.2 bits, and dnum 3 at the same Q (log QP 1300) is faster. log QP is not a time lever in OpenFHE; not adopted.
-Linear transforms (item 2.1): `CI_BOOT_TIMING=1` also prints one `[LT]` line per BSGS level for CI and std (diagonals,
+Linear transforms (item 2.1): `CI_BOOT_TIMING=1` (since 6.2: `-DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT`) also prints one `[LT]` line per BSGS level for CI and std (diagonals,
 towers, baby/giant rotations, ModUps, ModDowns, plaintext mults, adds, and the time of each). Plaintext mults equal the
 diagonal count; CI giant steps now ModDown only element 1 (as std's Horner step) and the BSGS window is aligned so the
 block at offset 0 needs no rotation (CI -8.6% at {4,3}). The remaining gap is 1.88x plaintext mults (inherent) and
@@ -162,15 +162,21 @@ context generation and copied into every derived parameter set; `PolyImpl::Switc
 table cache is keyed by (q, N) and fills itself on first use. A CI and a std context sharing primes work in one process
 (`benchmark/src/ci-ring-conflict.cpp`). Precision unchanged; 2^16 CI time unchanged (11.353 vs 11.352 s in the
 same-speed pair). Baseline commands unchanged.
+Item 6.2 (WSL): `CI_BOOT_TIMING`, `CI_BSGS_RATIO`, `CI_SPLIT_ENC` / `CI_SPLIT_DEC`, the library `std::cerr` prints and
+the `g_CIDbg*` debug globals are gone. CI stage times (`[CI-BT] CtS / EvalMod / StC`) now need a `-DBOOTSTRAPTIMING`
+build (`build-wsl-bt`, ICELAKE `build-bt`), as std's; `-DBOOTSTRAPTIMING_LT` adds the per-level `[LT]` counters and
+BSGS plans (serial only). Precision unchanged. The baseline commands below now run CI from `build-wsl-bt` too.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
-    CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
+    # since item 6.2 both schemes' stage times come from the -DBOOTSTRAPTIMING build (build-wsl-bt; ICELAKE build-bt):
+    # CI "[CI-BT] CtS / EvalMod / StC", std "Encoding / Approximate modular reduction / Decoding time"
+    OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
     OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 5 encap
-    # equal-budget reference for per-stage ratios (CI stages: CI_BOOT_TIMING=1; std stages: build-wsl-bt binary):
-    CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
+    # equal-budget reference for per-stage ratios:
+    OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot ci  16 4 4 59 60 1 3 fa 4 encap
     OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 4 4 59 60 1 3 fa 5 encap
     # StC-first pair (item 2.5; std StC-first is std's fastest real-data bootstrap):
-    CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 12 encap 1
+    OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 12 encap 1
     OMP_NUM_THREADS=1 build-wsl-bt/bin/benchmark/ci-fft-boot std 16 5 3 59 60 1 3 fa 13 encap 1
 
 ## Phase 0: review fixes
@@ -270,7 +276,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 ## Phase 6: engineering (last)
 - [x] **6.1** Ring type as a property of the element parameters (or a (modulus, N)-keyed registry) instead of the
   global modulus-keyed registry; a CI and a std context sharing a prime in one process must not conflict.
-- [ ] **6.2** Remove env switches (`CI_BSGS_RATIO`, `CI_BOOT_TIMING`), `std::cerr` prints and `g_CIDbg*` debug
+- [x] **6.2** Remove env switches (`CI_BSGS_RATIO`, `CI_BOOT_TIMING`), `std::cerr` prints and `g_CIDbg*` debug
   globals from library code; expose timing through `BOOTSTRAPTIMING`.
 - [ ] **6.3** `EvalBootstrapKeyMapIndices` CI-aware; CI context and bootstrap-key serialization test.
 - [ ] **6.4** Unit tests: StC-first CI (required: both orderings, at two budgets), CtS-first CI, encapsulated CI at two budgets, keygen/evaluator key-set

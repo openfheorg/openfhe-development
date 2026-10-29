@@ -2922,3 +2922,92 @@ RMS precision and peak RSS are unchanged. The Galois check held in all 16 CI boo
 - Unit tests were not run (item 6.5). Suggestion for 6.4: add a unit test with a CI and a std context sharing a prime
   (the `ci-ring-conflict` "ci12,std12" case) and one that round-trips `ElemParams` serialization with `ring=CI`
   (item 6.3 covers CI context serialization; the ring type is now in the archive).
+
+## 6.2 Debug switches out of the library; CI timing through BOOTSTRAPTIMING -- DONE (WSL, 2026-10-29)
+
+**Host.** The host file said `WSL` before every job; every job ran on WSL through `wsl-guard.sh`, all rc 0, no laptop
+sleep inside a job (uptime and wall clock advance together). Nothing ran on ICELAKE. Jobs: `p62_build`, `p62_smoke`,
+`p62_16`, `p62_bt`, `p62_final`.
+
+**Change** (`src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp`; no arithmetic changed):
+- Env switches removed: `CI_BOOT_TIMING` (stage times, `[LT]` counters), `CI_BSGS_RATIO` (pre-2.2 BSGS rule; the
+  library always uses `CIPlanBsgsMinCost`, `CIPlanBsgsRatio` stays in `math/ci-realfft.h` for the tools),
+  `CI_SPLIT_ENC` / `CI_SPLIT_DEC` (forced layer split; the library always uses `CIDefaultLayerSplit`). No `getenv`
+  is left in the CKKS library code (`<cstdlib>`, `<numeric>` includes dropped).
+- Debug globals removed: `g_CIDbgSK`, `g_CIDbgScale`, `g_CIDbgPostEvalMod`, `CISetBootDebugKey`,
+  `CISetBootDebugScale`, and the post-EvalMod decryption they drove inside `EvalBootstrap`.
+- No `std::cerr` left in library code. The CI stage times are compiled with `-DBOOTSTRAPTIMING` (as std's) and go to
+  `OPENFHE_DIAGNOSTIC_ERR`, with the old line format (`[CI-BT] CtS / EvalMod / StC <s> s`, `[CI-BT] Galois check`,
+  `[CI-BT] local diagonal encodes`), so `tools/evalmod-per-slot.py` and `tools/thread-scaling.py` read them as before.
+- The per-level `[LT]` op counters (CI and std CtS / StC) and the per-level `[CI-BT] level` BSGS-plan lines need
+  `-DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT` (serial runs only: the counters are not atomic). In every other build
+  `LTRun` is a plain call and `LTLevel` / `LTAdd` are empty, so the production path no longer tests a global per op.
+- `UnitTestCKKSrnsCI.cpp`: `CIPhase0RouteScaleAndRecovery` used the debug hook for its post-EvalMod
+  coefficient-recovery probe; that probe is dropped and the test keeps its per-budget final slot precision (CI and std).
+  The file was compiled `-fsyntax-only` with the library flags (unit tests are not built or run before 6.5).
+- Consequence for measurements: CI stage times now come from the `build-wsl-bt` (ICELAKE `build-bt`) binary, like
+  std's. The plan header's baseline commands were changed to use `build-wsl-bt` for both schemes.
+
+**Commands** (WSL, repo root; scripts in the session scratchpad, content as listed; `B` =
+`build-wsl/bin/benchmark/ci-fft-boot`, `BT` = `build-wsl-bt/bin/benchmark/ci-fft-boot`):
+
+    wsl-guard.sh p62_build 12 'cmake --build build-wsl --target ci-fft-boot ci-ring-conflict ci-op-cost ci-ntt-check -j 8;
+        cmake --build build-wsl-bt --target ci-fft-boot -j 8;
+        g++ <pkeobj flags> -DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT -fsyntax-only src/pke/lib/scheme/ckksrns/ckksrns-fhe.cpp;
+        g++ <pkeobj flags> -fsyntax-only src/pke/unittest/utckksrns/UnitTestCKKSrnsCI.cpp;
+        strings lib/libOPENFHEpke.so | grep -c "CI_BOOT_TIMING|CI_BSGS_RATIO|CI_SPLIT_ENC|CI_SPLIT_DEC|g_CIDbg"  # 0, both dirs'
+    wsl-guard.sh p62_smoke 8 'OMP_NUM_THREADS=4; for N/budget in 12 3 3, 13 4 4, 14 5 3; S in ci std:
+        B and BT: S N lb lb 59 60 0 1 fa 4 encap 0 | fa 12 encap 1;
+        CI_BOOT_TIMING=1 CI_BSGS_RATIO=2 CI_SPLIT_ENC=1,1,10 B ci 12 3 3 59 60 0 1 fa 4 encap 0;
+        CI_BOOT_TIMING=1 CI_BSGS_RATIO=2 CI_SPLIT_DEC=1,1,10 BT ci 12 3 3 59 60 0 1 fa 12 encap 1;
+        BT ci 13 3 3 59 60 0 1 fm 0 uniform 0|1 4 2 2 0 (META-BTS); ci-ring-conflict ci12,std12 1'
+    wsl-guard.sh p62_16 16 'OMP_NUM_THREADS=1; BT ci 16 5 3 59 60 1 3 fa 4 encap; B ci (same); BT std 16 5 3 59 60 1 3 fa 5 encap;
+        BT ci 16 5 3 59 60 1 3 fa 12 encap 1; BT ci 16 5 3 59 60 1 3 fa 4 encap'
+    wsl-guard.sh p62_bt 16 'OMP_NUM_THREADS=1; 2 x (B ci 16 5 3 59 60 1 3 fa 4 encap; BT ci (same))'
+    wsl-guard.sh p62_final 12 'p62_build again (after comment/format-only edits) + B/BT ci 12 3 3 ... fa 4 encap 0 | fa 12 encap 1'
+
+**Small-N smoke** (`p62_smoke`, 4 threads, reps 1, fa encap; min / RMS bits). Identical in both builds and equal to
+item 6.1's table (the min of a 2^14 StC-first run moves by up to 0.1 bit between runs, as in 6.1):
+
+| scheme | N, budget | CtS-first | StC-first |
+|---|---|---|---|
+| CI | 2^12 {3,3} | 17.18 / 18.80 | 21.28 / 22.68 |
+| std | 2^12 {3,3} | 15.95 / 17.69 | 21.28 / 22.69 |
+| CI | 2^13 {4,4} | 18.03 / 19.71 | 21.11 / 22.67 |
+| std | 2^13 {4,4} | 17.15 / 18.81 | 21.28 / 22.68 |
+| CI | 2^14 {5,3} | 18.90-18.93 / 20.71 | 20.49-20.60 / 22.49 |
+| std | 2^14 {5,3} | 17.92 / 19.70 | 21.18 / 22.67 |
+
+- `build-wsl` prints no `[CI-BT]` / `[LT]` line; `build-wsl-bt` prints the CI stage times in both orderings (StC
+  first for StC-first) and std's Encoding / Approximate modular reduction / Decoding times, and the Galois check held
+  in every CI bootstrap (62 / 72 / 67 rotations).
+- With `CI_BOOT_TIMING=1 CI_BSGS_RATIO=2 CI_SPLIT_ENC=1,1,10` (an invalid split that used to throw) the run is unchanged
+  (17.18 / 18.80, no timing lines from `build-wsl`); the env switches are dead.
+- META-BTS at 2^13 {3,3} fm uniform: CtS-first 18.39 / 21.61, StC-first 26.76 / 29.57 bits (6.1's `p61_chk`: 18.41 /
+  21.63 and 26.76 / 29.58). `ci-ring-conflict ci12,std12`: both ok.
+
+**2^16 {5,3}, 128-bit, 1 thread, reps 3** (`p62_16`, `p62_bt`; warm medians; stage medians over the warm bootstraps):
+
+| job, time | binary | scheme, ordering | warm s | CtS / EvalMod / StC s | min / RMS bits | keys | peak RSS |
+|---|---|---|---|---|---|---|---|
+| p62_16 23:52 | BT | CI CtS-first | 13.26 | 5.95 / 4.30 / 2.75 | 18.45 / 21.56 | 102 | 13.43 GB |
+| p62_16 23:54 | B | CI CtS-first | 16.16 | - | 18.34 / 21.57 | 102 | 13.43 GB |
+| p62_16 23:56 | BT | std CtS-first | 16.96 | 5.16 / 8.89 / 2.44 | 18.99 / 22.74 | 61 | 7.66 GB |
+| p62_16 23:58 | BT | CI StC-first | 11.21 | 2.30 / 5.25 / 3.63 (StC / CtS / EvalMod) | 19.83 / 21.91 | 102 | 13.28 GB |
+| p62_16 00:00 | BT | CI CtS-first | 11.95 | 5.20 / 3.82 / 2.68 | 18.33 / 21.56 | 102 | 13.43 GB |
+| p62_bt 00:02 | B | CI CtS-first | 14.96 | - | 18.43 / 21.56 | 102 | 13.43 GB |
+| p62_bt 00:04 | BT | CI CtS-first | 16.53 | 7.19 / 5.36 / 3.60 | 18.43 / 21.56 | 102 | 13.43 GB |
+| p62_bt 00:06 | B | CI CtS-first | 11.83 | - | 18.25 / 21.55 | 102 | 13.43 GB |
+| p62_bt 00:08 | BT | CI CtS-first | 12.68 | 5.51 / 3.60 / 3.24 | 18.52 / 21.56 | 102 | 13.43 GB |
+
+- Precision, keys and RSS are those of items 4.R / 6.1 (CI 21.56 / 21.91-21.92, std 22.74-22.75 bits RMS).
+- Time: the laptop changed speed state between and within runs (the same CI command took 11.8-16.5 s in both builds;
+  std took 17.0 s here against 11.3 s in 4.R's calm pair), so these runs give no CI/std ratio and resolve no build
+  effect. The fastest CtS-first run of each build agrees within 1% (B 11.83 s, BT 11.95 s); `-DBOOTSTRAPTIMING` adds
+  a few clock reads and five diagnostic lines per CI bootstrap. The production build lost one global-pointer test per
+  linear-transform op.
+
+**Conclusions.** The CKKS library code has no env switch, no `std::cerr` and no debug global left from the CI work.
+Timing is a compile-time option as for std (`BOOTSTRAPTIMING`, plus `BOOTSTRAPTIMING_LT` for per-level op counts).
+Precision is unchanged in both orderings at 2^12-2^16 and with META-BTS. The baseline commands now take the CI stage
+times from `build-wsl-bt` too; the numbers themselves need no rerun (same arithmetic).

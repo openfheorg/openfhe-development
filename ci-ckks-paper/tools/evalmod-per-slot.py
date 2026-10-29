@@ -4,7 +4,7 @@
 usage: evalmod-per-slot.py LOG [LOG ...]
 
 Reads guarded-job logs of benchmark/src/ci-fft-boot runs (one "=== ... ci-fft-boot ..." header per run):
-  - CI EvalMod time: the "[CI-BT] EvalMod X s" lines (CI_BOOT_TIMING=1),
+  - CI EvalMod time: the "[CI-BT] EvalMod X s" lines (build with -DBOOTSTRAPTIMING, e.g. build-wsl-bt),
   - std EvalMod time: the "Approximate modular reduction time: X s" lines (build-wsl-bt / build-bt binary,
     -DBOOTSTRAPTIMING; for std CtS-first full packing this one time covers both EvalMod calls).
 The first bootstrap of each run is the driver's "first" (cold) bootstrap and is dropped; the stage time is the

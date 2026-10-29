@@ -39,13 +39,11 @@
 #include <cmath>
 #include <chrono>
 #include <complex>
-#include <cstdlib>
 #include <cstdint>
 #include <functional>
 #include <iostream>
 #include <limits>
 #include <map>
-#include <numeric>
 #include <mutex>
 #include <memory>
 #include <tuple>
@@ -109,22 +107,21 @@ bool UsesLargeSparseKey(SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
     return (skd == SPARSE_ENCAPSULATED) && (sparseKSHammingWeight > 32);
 }
 
-// Linear-transform instrumentation (CI_BOOT_TIMING=1): per BSGS level, the number and the time of
+// Linear-transform instrumentation, compiled only with -DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT: per BSGS level of CtS /
+// StC (CI and std), one "[LT]" line with the number and the time of
 //   modUp   digit decompositions (EvalFastRotationPrecompute / EvalKeySwitchPrecomputeCore),
 //   baby    hoisted rotations (key inner product + automorphism, no ModUp/ModDown; `ext` = the identity),
 //   giant   giant-step key inner products (+ automorphisms) after their own ModUp,
 //   modDown polynomial ModDowns QlP -> Ql (a KeySwitchDown counts 2),
 //   ptMult  extended-basis plaintext multiplications, add = extended-basis additions.
 // Serial runs only (OMP_NUM_THREADS=1): the counters are not atomic; parallel baby loops are timed as a whole.
+// In every other build LTRun is a plain call and LTLevel / LTAdd do nothing.
 struct LTStats {
     uint32_t modUp = 0, baby = 0, ext = 0, giant = 0, modDown = 0, ptMult = 0, add = 0;
     double tModUp = 0, tBaby = 0, tGiant = 0, tModDown = 0, tPtMult = 0, tAdd = 0;
 };
+#if defined(BOOTSTRAPTIMING) && defined(BOOTSTRAPTIMING_LT)
 LTStats* g_lt = nullptr;  // non-null while an instrumented level runs
-bool LTStatsOn() {
-    static const bool on = (std::getenv("CI_BOOT_TIMING") != nullptr);
-    return on;
-}
 // Runs f(); when a level is instrumented, adds n to the counter and the elapsed time to the timer.
 template <class F>
 decltype(auto) LTRun(uint32_t LTStats::*cnt, double LTStats::*acc, uint32_t n, F&& f) {
@@ -141,13 +138,17 @@ decltype(auto) LTRun(uint32_t LTStats::*cnt, double LTStats::*acc, uint32_t n, F
     g_lt->*cnt += n;
     return f();
 }
+// Adds n to a counter of the instrumented level (no timing).
+inline void LTAdd(uint32_t LTStats::*cnt, uint32_t n) {
+    if (g_lt)
+        g_lt->*cnt += n;
+}
 // One instrumented level: counts from construction to Print().
 class LTLevel {
 public:
     LTLevel(const char* tag, int32_t lvl, uint32_t diags, uint32_t towersQl, uint32_t towersP)
         : tag_(tag), lvl_(lvl), diags_(diags), towersQl_(towersQl), towersP_(towersP) {
-        if (LTStatsOn())
-            g_lt = &st_;
+        g_lt = &st_;
     }
     ~LTLevel() {
         if (g_lt == &st_)
@@ -169,7 +170,7 @@ public:
           << " modDown=" << s.modDown << " ptMult=" << s.ptMult << " add=" << s.add << " | t=" << t
           << " modUp=" << s.tModUp << " baby=" << s.tBaby << " giant=" << s.tGiant << " modDown=" << s.tModDown
           << " ptMult=" << s.tPtMult << " add=" << s.tAdd << " other=" << ot << "\n";
-        std::cerr << o.str();
+        OPENFHE_DIAGNOSTIC_ERR << o.str();
     }
 
 private:
@@ -179,6 +180,17 @@ private:
     LTStats st_;
     std::chrono::steady_clock::time_point t0_ = std::chrono::steady_clock::now();
 };
+#else
+template <class F>
+inline decltype(auto) LTRun(uint32_t LTStats::*, double LTStats::*, uint32_t, F&& f) {
+    return f();
+}
+inline void LTAdd(uint32_t LTStats::*, uint32_t) {}
+struct LTLevel {
+    LTLevel(const char*, int32_t, uint32_t, uint32_t, uint32_t) {}
+    void Print() {}
+};
+#endif
 }  // namespace
 
 double FHECKKSRNS::GetModRaiseOverflowBound(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
@@ -266,18 +278,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalHornerGiantRotate(ConstCiphertext<DCRTPoly>
     return rotated;
 }
 
-// DEBUG-ONLY (Phase-0 routing): decrypt CI bootstrap intermediates + log the per-stage scale
-// schedule. All nullptr/false in production.
-PrivateKey<DCRTPoly> g_CIDbgSK = nullptr;
-bool g_CIDbgScale              = false;
-std::vector<double> g_CIDbgPostEvalMod;  // decrypted post-EvalMod (pre-StC) real parts
-void CISetBootDebugKey(const PrivateKey<DCRTPoly>& sk) {
-    g_CIDbgSK = sk;
-}
-void CISetBootDebugScale(bool on) {
-    g_CIDbgScale = on;
-}
-
 //------------------------------------------------------------------------------
 // Bootstrap Wrapper
 //------------------------------------------------------------------------------
@@ -353,28 +353,10 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
         sigma[q] = plan.S[q] * std::sqrt(2.0 * N);
     const uint32_t l = static_cast<uint32_t>(F.size());
     // Layer split of each transform: parts[i] = number of FFT layers in level i, layer order (F_1 first). CtS level s
-    // is part s; StC level s is the transpose of part lb-1-s. Default: CIDefaultLayerSplit (item 2.3 model search);
-    // CI_SPLIT_ENC / CI_SPLIT_DEC = "n0,n1,..." force a split (A/B switch, removed in item 6.2).
+    // is part s; StC level s is the transpose of part lb-1-s, from CIDefaultLayerSplit (item 2.3 model search).
     auto split = [&](uint32_t lb, bool enc) {
-        lb = std::max<uint32_t>(1, std::min(lb, l));
-        std::vector<uint32_t> parts;
-        const char* envName = enc ? "CI_SPLIT_ENC" : "CI_SPLIT_DEC";
-        if (const char* e = std::getenv(envName)) {
-            for (const char* q = e; *q;) {
-                parts.push_back(static_cast<uint32_t>(std::strtoul(q, nullptr, 10)));
-                while (*q && *q != ',')
-                    ++q;
-                if (*q)
-                    ++q;
-            }
-            if (parts.size() != lb || std::accumulate(parts.begin(), parts.end(), 0u) != l ||
-                std::count(parts.begin(), parts.end(), 0u))
-                OPENFHE_THROW(std::string(envName) + ": need " + std::to_string(lb) + " positive parts summing to " +
-                              std::to_string(l));
-        }
-        else {
-            parts = CIDefaultLayerSplit(l, lb, enc);
-        }
+        lb               = std::max<uint32_t>(1, std::min(lb, l));
+        const auto parts = CIDefaultLayerSplit(l, lb, enc);
         std::vector<std::pair<uint32_t, uint32_t>> r;  // [start, end) layer ranges, layer 0 first
         uint32_t k = 0;
         for (auto x : parts) {
@@ -422,11 +404,9 @@ CIRealLevels CIBuildRealLevels(uint32_t N, uint32_t lbEnc, uint32_t lbDec) {
 
 // BSGS plan of one sparse CI level (CIBsgsPlan, math/ci-realfft.h) for an input with `digits` key-switching
 // digits. Item 2.2: n1 minimizes the modelled level cost babies + CIBsgsGiantCost(digits) * giants (exact counts
-// after window alignment) instead of the fixed rule n1 = ceil(2 sqrt(span)). CI_BSGS_RATIO=r forces the fixed rule
-// with ratio r (r = 2 is the pre-2.2 plan; A/B switch, removed in item 6.2).
+// after window alignment) instead of the fixed rule n1 = ceil(2 sqrt(span)) (CIPlanBsgsRatio with ratio 2, the
+// pre-2.2 plan).
 CIBsgsPlan CIPlanBsgs(const CISparse& A, uint32_t N, uint32_t digits) {
-    if (const char* e = std::getenv("CI_BSGS_RATIO"))
-        return CIPlanBsgsRatio(A, N, std::atof(e));
     return CIPlanBsgsMinCost(A, N, CIBsgsGiantCost(digits));
 }
 
@@ -1522,7 +1502,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         // Item 2.4: the diagonal plaintexts are encoded in EvalBootstrapSetup (CIBootstrapPrecompute) and only read
         // here. If a store does not match the level input (EvalBootstrapSetup with precompute = false, or a chain
         // the tower model does not cover), that level is encoded locally for this call; `ciLocalEncodes` counts them.
-        uint32_t ciLocalEncodes = 0;
+        [[maybe_unused]] uint32_t ciLocalEncodes = 0;
 
         // Apply the dense real matrix (budget {1,1}) via the CI homomorphic linear transform
         // M v = sum_k D_k (x) rot_{5^k}(v), D_k[s]=M[s][precomp_k[s]]. Baby-step/giant-step: k = n1*j + i, g = 5^{n1}:
@@ -1672,8 +1652,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                     }
                     return 0;
                 });
-                if (g_lt && babyUsed[0])
-                    g_lt->ext += 1;
+                if (babyUsed[0])
+                    LTAdd(&LTStats::ext, 1);
             }
             for (uint32_t i = 0; i < bp.n1 && nThrBaby <= 1; ++i) {
                 if (!babyUsed[i])
@@ -1749,8 +1729,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                         else
                             EvalAddExtInPlace(inner, pc);
                     }
-                    if (g_lt)
-                        g_lt->add += static_cast<uint32_t>(nd) - nThrAcc;  // in-thread adds (reduction counted)
+                    LTAdd(&LTStats::add, static_cast<uint32_t>(nd) - nThrAcc);  // in-thread adds (reduction counted)
                 }
                 else {
                     for (uint32_t i : blockDiags) {
@@ -1782,41 +1761,51 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             }
             return LTRun(&LTStats::modDown, &LTStats::tModDown, 2, [&] { return cc->KeySwitchDown(outer); });
         };
-        const bool ciTiming  = (std::getenv("CI_BOOT_TIMING") != nullptr);
-        auto ciNow           = [] { return std::chrono::steady_clock::now(); };
-        auto ciSec           = [](std::chrono::steady_clock::time_point t0) {
+#ifdef BOOTSTRAPTIMING
+        // Stage times ("[CI-BT] CtS / EvalMod / StC <s> s", as std's "Encoding / Approximate modular reduction /
+        // Decoding time") on the diagnostic error stream.
+        auto ciNow = [] { return std::chrono::steady_clock::now(); };
+        auto ciSec = [](std::chrono::steady_clock::time_point t0) {
             return std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
         };
+#endif
         // Apply sparse g=5-basis levels (apply order), one rescale per level; `scale` (scaleEnc or scaleDec)
         // is spread evenly over the levels at encode time.
         auto applyReal = [&](Ciphertext<DCRTPoly> in, const std::vector<CISparse>& levels,
                              const std::vector<std::vector<ReadOnlyPlaintext>>& stores, double scale,
                              const char* tag, const std::vector<uint32_t>& digits,
-                             const std::vector<uint32_t>& towersModel) {
+                             [[maybe_unused]] const std::vector<uint32_t>& towersModel) {
             static const std::vector<ReadOnlyPlaintext> noStore;
             const double sc = CIRealLevelScalar(scale, levels.size());
             for (size_t s = 0; s < levels.size(); ++s) {
                 const CISparse& A = levels[s];
-                auto tl           = ciNow();
+#if defined(BOOTSTRAPTIMING) && defined(BOOTSTRAPTIMING_LT)
+                auto tl                 = ciNow();
+                const uint32_t towersIn = in->GetElements()[0].GetNumOfElements();
+#endif
                 LTLevel ltl(tag, static_cast<int32_t>(s), static_cast<uint32_t>(A.size()),
                             in->GetElements()[0].GetNumOfElements(), cryptoParams->GetParamsP()->GetParams().size());
-                const uint32_t towersIn = in->GetElements()[0].GetNumOfElements();
                 in = applyCISparse(in, (s < stores.size()) ? stores[s] : noStore, A, sc, CIDigitsAt(digits, s));
                 ltl.Print();
-                if (ciTiming) {
+#if defined(BOOTSTRAPTIMING) && defined(BOOTSTRAPTIMING_LT)
+                {  // BSGS plan of the level, its runtime and modelled input towers
                     auto bp = CIPlanBsgs(A, Nn, CIDigitsAt(digits, s));
-                    std::cerr << "[CI-BT] level " << s << " diags=" << A.size() << " h=" << bp.h << " span=" << bp.span
-                              << " n1=" << bp.n1 << " n2=" << bp.n2 << " babies=" << bp.babies
-                              << " giants=" << bp.giants << " digits=" << CIDigitsAt(digits, s)
-                              << " towers=" << towersIn << " (model " << CIDigitsAt(towersModel, s) << ")"
-                              << " t=" << ciSec(tl) << "s\n";
+                    OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] level " << s << " diags=" << A.size() << " h=" << bp.h
+                                           << " span=" << bp.span << " n1=" << bp.n1 << " n2=" << bp.n2
+                                           << " babies=" << bp.babies << " giants=" << bp.giants
+                                           << " digits=" << CIDigitsAt(digits, s) << " towers=" << towersIn
+                                           << " (model " << CIDigitsAt(towersModel, s) << ") t=" << ciSec(tl)
+                                           << "s\n";
                 }
+#endif
                 rescale1(in);
             }
             return in;
         };
 
+#ifdef BOOTSTRAPTIMING
         auto tStage = ciNow();
+#endif
         if (ciStcFirst) {
             // StC-first (the paper's ordering): the input holds the message in its slots. Drop it to the StC input
             // level (cd (lbDec + 2) towers, as std's EvalBootstrapStCFirst), apply StC (U: slots -> coefficients),
@@ -1856,9 +1845,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                 dep = applyCILT(dep, p.m_U0Pre, false, scaleDec);
                 rescale1(dep);
             }
-            if (ciTiming)
-                std::cerr << "[CI-BT] StC " << ciSec(tStage) << " s (StC-first)\n";
+#ifdef BOOTSTRAPTIMING
+            OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] StC " << ciSec(tStage) << " s (StC-first)\n";
             tStage = ciNow();
+#endif
             raised = dep;
             raiseInPlace(raised);
             cc->EvalMultInPlace(raised, pre / N);
@@ -1878,9 +1868,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             rescale1(ctxtEnc);
         }
 
-        if (ciTiming)
-            std::cerr << "[CI-BT] CtS " << ciSec(tStage) << " s\n";
+#ifdef BOOTSTRAPTIMING
+        OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] CtS " << ciSec(tStage) << " s\n";
         tStage = ciNow();
+#endif
         // Approximate modular reduction (reused unchanged): single pass, no real/imag split.
         ctxtEnc = algo->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
         if (st != FIXEDMANUAL)
@@ -1890,18 +1881,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
         algo->MultByIntegerInPlace(ctxtEnc, scalar);
         if (st != FIXEDMANUAL && !ciStcFirst)
             algo->ModReduceInternalInPlace(ctxtEnc, compositeDegree);
-        if (g_CIDbgSK) {  // E0.1: capture post-EvalMod (pre-StC) recovered coefficients
-            Plaintext dp;
-            cc->Decrypt(g_CIDbgSK, ctxtEnc, &dp);
-            dp->SetLength(Nn);
-            g_CIDbgPostEvalMod.assign(Nn, 0.0);
-            for (uint32_t i = 0; i < Nn; ++i)
-                g_CIDbgPostEvalMod[i] = dp->GetCKKSPackedValue()[i].real();
-        }
-
-        if (ciTiming)
-            std::cerr << "[CI-BT] EvalMod " << ciSec(tStage) << " s\n";
+#ifdef BOOTSTRAPTIMING
+        OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] EvalMod " << ciSec(tStage) << " s\n";
         tStage = ciNow();
+#endif
         // SlotsToCoeffs (U); StC-first: already applied before the ModRaise.
         Ciphertext<DCRTPoly> ctxtDecCI;
         if (ciStcFirst) {
@@ -1916,8 +1899,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
             rescale1(ctxtDecCI);
         }
 
-        if (ciTiming && !ciStcFirst)
-            std::cerr << "[CI-BT] StC " << ciSec(tStage) << " s\n";
+#ifdef BOOTSTRAPTIMING
+        if (!ciStcFirst)
+            OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] StC " << ciSec(tStage) << " s\n";
+#endif
         if (useRealFFT) {
             // Keygen/evaluator consistency: the real-FFT Galois keys generated by EvalBootstrapKeyGen must be
             // exactly the rotations performed above (a missing key fails the rotation; an extra key is waste).
@@ -1934,11 +1919,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
                               std::to_string(ciGalUsed.size()) + "): " + std::to_string(onlyEval) +
                               " used but not generated, " + std::to_string(onlyKeygen) + " generated but unused.");
             }
-            if (ciTiming)
-                std::cerr << "[CI-BT] Galois check: " << ciGalUsed.size() << " rotations == keygen set\n";
+#ifdef BOOTSTRAPTIMING
+            OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] Galois check: " << ciGalUsed.size() << " rotations == keygen set\n";
+#endif
         }
-        if (ciTiming)
-            std::cerr << "[CI-BT] local diagonal encodes: " << ciLocalEncodes << " levels (0 = all precomputed)\n";
+#ifdef BOOTSTRAPTIMING
+        OPENFHE_DIAGNOSTIC_ERR << "[CI-BT] local diagonal encodes: " << ciLocalEncodes
+                               << " levels (0 = all precomputed)\n";
+#endif
 #if NATIVEINT != 128
         uint64_t corFactor = static_cast<uint64_t>(1) << std::llround(correction);
         algo->MultByIntegerInPlace(ctxtDecCI, corFactor);
@@ -3693,8 +3681,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                                    cc->KeySwitchExt(result, true);
             return 0;
         });
-        if (g_lt)
-            g_lt->ext += 1;
+        LTAdd(&LTStats::ext, 1);
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3748,8 +3735,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                                              cc->KeySwitchExt(result, true);
             return 0;
         });
-        if (g_lt)
-            g_lt->ext += 1;
+        LTAdd(&LTStats::ext, 1);
 
         // Remainder scale is 1 in CtS; Horner giant stride = gRem
         const int32_t tRem = ReduceRotation(p.gRem, reduceMod);
@@ -3833,8 +3819,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                                    cc->KeySwitchExt(result, true);
             return 0;
         });
-        if (g_lt)
-            g_lt->ext += 1;
+        LTAdd(&LTStats::ext, 1);
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3890,8 +3875,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                                    cc->KeySwitchExt(result, true);
             return 0;
         });
-        if (g_lt)
-            g_lt->ext += 1;
+        LTAdd(&LTStats::ext, 1);
 
         // Horner giant stride for remainder: g_rem * scale_rem
         const int32_t tRem = ReduceRotation(scaleRem * p.gRem, reduceMod);

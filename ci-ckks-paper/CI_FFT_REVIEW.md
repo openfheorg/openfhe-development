@@ -166,8 +166,10 @@ behind an option.
 ## 6. Reproduce
 Tools in `ci-ckks-paper/tools/` (sync to ICELAKE, tmux-guarded jobs, result table). Example:
 `OMP_NUM_THREADS=1 build/bin/benchmark/ci-fft-boot ci 16 4 4 55 60 1 2 fa 0 encap`
-(args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret). `CI_BOOT_TIMING=1`
-prints the per-level BSGS plan and stage times.
+(args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret). A build with
+`-DCMAKE_CXX_FLAGS=-DBOOTSTRAPTIMING` prints the stage times of both schemes (CI: `[CI-BT] CtS / EvalMod / StC`);
+adding `-DBOOTSTRAPTIMING_LT` also prints the per-level BSGS plan and `[LT]` op counts (item 6.2; before it,
+`CI_BOOT_TIMING=1`).
 
 ## 7. Review of this work (second pass, 2026-10-27)
 Checked against the paper (Sections 3, 4.2, 5.1-5.2) and the code on the branch.
@@ -220,6 +222,11 @@ Issues found (all addressed in `PLAN_PHASE2.md`, phase 0 unless noted):
    (18.0 of 25.98 s, phase 2) and EvalMod scale bookkeeping (~2.7 s, item 1.2), not the chain length.)
 8. Hygiene: env switches, `std::cerr` and debug globals in library code; `EvalBootstrapKeyMapIndices` not
    CI-aware; a mid-file `#include` in the CI unit tests (phase 6).
+   (Phase 6.2: the env switches `CI_BOOT_TIMING`, `CI_BSGS_RATIO`, `CI_SPLIT_ENC` / `CI_SPLIT_DEC`, the
+   `std::cerr` prints and the `g_CIDbg*` debug globals (`CISetBootDebugKey` / `CISetBootDebugScale`) are gone from
+   the library. CI stage times print with `-DBOOTSTRAPTIMING`, like std's, on `OPENFHE_DIAGNOSTIC_ERR`; the per-level
+   `[LT]` counters need `-DBOOTSTRAPTIMING -DBOOTSTRAPTIMING_LT` (serial runs only). Precision unchanged. See
+   `PHASE2_LOG.md` 6.2.)
 Per-stage comparison at N = 2^16 (128-bit, 1 thread, FLEXIBLEAUTO, encapsulated; std via `-DBOOTSTRAPTIMING`,
 warm run):
 
