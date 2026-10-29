@@ -2350,3 +2350,90 @@ check held and no diagonal was encoded at run time.
 - std arithmetic did not change. Its NTT kernels were only split into helpers. The std NTT timing in the check is
   the same code before and after, but no separate std before/after run was made.
 - The baseline commands do not change. CI baseline times should drop by about 2% at the next phase review.
+
+## 4.2 CI vs std per-op cost (EvalMult, rotation, rescale) at 2^16 -- DONE (WSL)
+
+**Host.** The host file said `WSL` before every job. All jobs ran on WSL through `wsl-guard.sh`, all rc 0. Nothing
+ran on ICELAKE. Jobs: `p42_build` (two tries: the first failed to compile the new driver, rc 2), `p42_smoke`,
+`p42_ops16`, `p42_build2` (two tries, the first rc 2 on a missing include; the library itself rebuilt in that try),
+`p42_smoke2`, `p42_ops16b`. Load average 0.4-1.4 in both 2^16 jobs. Each 2^16 process took 28-51 s, so no laptop
+sleep fell inside a process.
+
+**What changed.**
+- New driver `benchmark/src/ci-op-cost.cpp` (args: scheme logN depth secure reps iters [towers list]). FIXEDMANUAL
+  59/60 chain of the bootstrap depth (depth 20 = 21 Q towers, 7 P towers, dnum 3, the shape of the {5,3} bootstrap
+  chain), relinearization key and one rotation key (Galois element 5) only. It times, at a given tower count: add,
+  ptmult, tensor (EvalMultNoRelin), relin, mult (tensor + relin), rescale, rotate (EvalAutomorphism, full key
+  switch), modup (EvalFastRotationPrecompute), rotext (EvalFastRotationExt), ksdown (KeySwitchDown), ntt (DCRTPoly
+  INTT + NTT round trip), automorph (map + permutation) and automap (PrecomputeAutoMap / PrecomputeAutoMapCI).
+  CI and std run in separate processes (plan item 6.1: one process cannot hold both).
+- **Speed-state calibrator.** The first 2^16 job (`p42_ops16`) gave per-pair CI/std ratios from 0.69 to 1.22 for the
+  same op: the laptop changes speed state within a process. So every op call is now followed by a calibrator call:
+  the std negacyclic NTT round trip, once per tower, on a fixed 58-bit prime outside both chains (called directly
+  through `ChineseRemainderTransformFTT`: the same code and data in both processes). `norm` = op / calibrator per
+  iteration. CI/std of `norm` is what the table below reports. With it, the per-pair ranges shrink to about +-5%.
+- New table tool `ci-ckks-paper/tools/op-cost-table.py LOG`: pairs the k-th CI process with the k-th std process
+  (neighbours in the ABBA order) and prints medians and per-pair ranges.
+- Small fix in `PrecomputeAutoMapCI` (`src/core/lib/math/nbtheory2.cpp`): `% 4N` (a 64-bit division per index)
+  replaced by `& (4N - 1)`. At 2^12 the CI map took 1.57x std's (0.011 vs 0.007 ms, `p42_smoke`); after the fix 0.006
+  vs 0.008 ms (`p42_smoke2`). At 2^16 the map is memory-bound and already equal to std's before the fix (0.182 vs
+  0.182 ms raw at 21 towers in `p42_ops16`). It costs 0.2 ms per rotation call, so it does not move the bootstrap.
+
+**Commands** (WSL, repo root; host file `WSL` before each):
+
+    wsl-guard.sh p42_build 12 'cmake --build build-wsl --target ci-op-cost -j 8'
+    wsl-guard.sh p42_smoke 4 'export OMP_NUM_THREADS=1; for s in ci std: build-wsl/bin/benchmark/ci-op-cost $s 12 8 0 1 3 full,4'
+    wsl-guard.sh p42_ops16 5 'export OMP_NUM_THREADS=1; for s in ci std std ci ci std std ci ci std:
+        ci-op-cost $s 16 20 1 3 5 full,half,4'                                  # no calibrator, superseded
+    wsl-guard.sh p42_build2 12 'cmake --build build-wsl --target ci-op-cost ci-fft-boot -j 8'   # + automap fix
+    wsl-guard.sh p42_smoke2 6 'ci-op-cost {ci,std} 12 8 0 1 3 full,4; ci-fft-boot ci {12 1 1, 12 3 3, 13 4 4, 14 5 3}
+        59 60 0 1 fa {4 encap 0, 12 encap 1}'
+    wsl-guard.sh p42_ops16b 5 'export OMP_NUM_THREADS=1; for s in ci std std ci ci std std ci ci std:
+        /usr/bin/time ci-op-cost $s 16 20 1 3 5 full,half,4'                    # final, calibrated
+    python3 ci-ckks-paper/tools/op-cost-table.py ~/ci-ckks-wsl/logs/p42_ops16b.log
+
+**Results** (`p42_ops16b`, N = 2^16, 128-bit, 1 thread, 5 CI + 5 std processes in ABBA order, 3 reps x 5 iterations
+each; ms = median over processes; ratio = median over the 5 pairs of CI/std of op / calibrator; range = min-max of
+the 5 per-pair normalized ratios). Raw ms ratios are not shown: the std processes happened to run in slower speed
+states (raw CI/std 0.66-1.04).
+
+| op | 21 towers CI / std ms | ratio | range | 11 towers CI / std ms | ratio | range | 4 towers CI / std ms | ratio | range |
+|---|---|---|---|---|---|---|---|---|---|
+| mult (tensor + relin) | 216.2 / 219.4 | **1.030** | 1.014-1.043 | 100.9 / 101.6 | **1.025** | 1.019-1.041 | 39.1 / 48.5 | **1.036** | 1.022-1.045 |
+| relin | 206.6 / 205.9 | 1.034 | 1.017-1.048 | 96.4 / 95.7 | 1.038 | 1.007-1.067 | 37.2 / 48.4 | 1.031 | 1.015-1.050 |
+| tensor | 11.6 / 17.0 | 1.003 | 0.981-1.032 | 6.3 / 6.7 | 0.993 | 0.982-1.073 | 2.2 / 2.3 | 1.003 | 0.982-1.021 |
+| rescale | 36.5 / 36.9 | **1.021** | 0.976-1.048 | 18.6 / 17.9 | **1.039** | 1.019-1.106 | 6.07 / 7.31 | **1.021** | 1.013-1.051 |
+| rotate (full key switch) | 198.9 / 205.7 | **1.025** | 1.017-1.045 | 93.3 / 101.2 | **1.027** | 1.026-1.047 | 38.4 / 51.4 | **1.028** | 1.018-1.054 |
+| modup (hoisted) | 97.8 / 136.9 | 1.045 | 1.019-1.071 | 41.1 / 54.4 | 1.055 | 1.038-1.070 | 11.2 / 16.2 | 1.039 | 0.995-1.054 |
+| rotext (hoisted, ext basis) | 32.2 / 44.0 | 1.026 | 0.986-1.046 | 15.1 / 20.6 | 1.003 | 0.990-1.075 | 5.71 / 8.48 | 1.047 | 0.952-1.058 |
+| ksdown | 67.7 / 96.6 | 1.031 | 1.026-1.045 | 40.8 / 57.9 | 1.048 | 1.041-1.065 | 21.8 / 31.1 | 1.049 | 1.025-1.055 |
+| ntt (round trip) | 26.8 / 28.8 | 1.038 | 1.021-1.046 | 14.2 / 15.5 | 1.047 | 1.035-1.054 | 5.01 / 7.18 | 1.051 | 1.023-1.055 |
+| ptmult | 6.26 / 8.83 | 1.040 | 0.973-1.050 | 3.35 / 3.24 | 1.003 | 0.957-1.020 | 1.20 / 1.29 | 0.986 | 0.956-1.007 |
+| add | 3.79 / 4.75 | 1.076 | 0.906-1.191 | 1.78 / 1.86 | 1.015 | 0.974-1.075 | 0.49 / 0.58 | 0.995 | 0.920-1.127 |
+| automorph (map + permute) | 1.80 / 1.94 | 1.023 | 0.942-1.094 | 0.86 / 1.08 | 1.005 | 0.825-1.117 | 0.34 / 0.51 | 0.969 | 0.896-1.054 |
+| automap | 0.192 / 0.215 | 1.015 | 1.000-1.041 | 0.189 / 0.204 | 1.006 | 1.000-1.024 | 0.179 / 0.268 | 1.004 | 0.997-1.048 |
+
+- Every op is within 1.1x of std at every tower count. The ops with NTTs (relin, mult, rescale, rotate, modup,
+  ksdown) are 1.02-1.06x, which is the CI NTT's 1.04-1.05x (item 4.1) diluted by the NTT-free parts. The ops
+  without NTTs (tensor, ptmult, add, automorph) are 0.97-1.08x, that is equal within noise (add is a 2-4 ms
+  memory-bound op with the widest range).
+- The uncalibrated first job (`p42_ops16`, the same code except the automap fix) has the same medians within noise
+  (mult 1.02-1.10x, rotate 1.02-1.03x, rescale 1.04-1.10x) but per-pair ranges of 0.69-1.22. Its 1.10-1.16x medians
+  (mult and rescale at 21 towers, ntt at 11 towers) do not repeat in the calibrated job and disagree with their own
+  parts (mult 1.104x with relin 1.026x and tensor 0.992x in the same job), so they are speed-state noise.
+- Precision checks: `ci-op-cost` decrypts x*y after rescale at each tower count (CI 33.6-35.3 bits, std 34.5-36.6
+  bits max error at 2^16; CI is about 1 bit worse at the same N, as item 3.R found). The CI bootstrap smoke matrix
+  after the automap fix (`p42_smoke2`) gives the item 4.1 numbers exactly in RMS, both orderings: 2^12 {1,1} and
+  {3,3} 18.80 / 22.68 bits (CtS-first / StC-first), 2^13 {4,4} 19.71 / 22.67, 2^14 {5,3} 20.71 / 22.49; min bits
+  within the seed spread (17.18-21.28).
+
+**Conclusions.**
+- Nothing is above 1.1x, so no per-op fix is needed. After item 4.1 the CI ring costs 1.02-1.06x std per op at
+  equal N and tower count. The CI/std bootstrap stage ratios (CtS 1.44x, StC 1.51x at 2.R) therefore come from op
+  counts (twice the reals per ciphertext, more diagonals), not from per-op cost.
+- Item 3.3 put the CI EvalMod per-call excess (1.26x) at about 1.15x from the K = 28 sine table and about 1.10x from
+  the CI ring per op, measured before item 4.1. The per-op part is now 1.02-1.04x for the EvalMod ops (mult, rescale),
+  so CI EvalMod per call should be about 1.15 x 1.03 = 1.19x std's. Item 4.R measures it.
+- Use the calibrated `norm` ratio for any further CI/std per-op comparison on this laptop: raw ratios from separate
+  processes are off by up to 35% here.
+- Baseline commands and numbers do not change.

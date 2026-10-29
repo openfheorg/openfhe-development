@@ -125,6 +125,9 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    the first CT / last GS stage as raw-word loops in `NumberTheoreticTransformNat`; round trip 1.04-1.05x the
    standard NTT at 2^16 (was 1.19-1.20x), bit-exact; ModUp/ModDown -8%, CI bootstrap about -2%. See
    `PHASE2_LOG.md` 4.1.)
+   (Phase 4.2, WSL 2^16, 21/11/4 towers, `benchmark/src/ci-op-cost.cpp`: CI/std per op is 1.02-1.06x for EvalMult,
+   relinearization, rescale, rotation, ModUp and ModDown, and equal for the NTT-free ops; nothing above 1.1x. The
+   CI/std bootstrap stage ratios come from op counts. See `PHASE2_LOG.md` 4.2.)
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
 5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.

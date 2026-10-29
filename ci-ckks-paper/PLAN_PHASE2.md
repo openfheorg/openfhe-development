@@ -136,6 +136,9 @@ fused into the first CT stage and the unfold + 1/N into the last GS stage (raw-w
 `NumberTheoreticTransformNat`; same output order, bit-exact vs the reference). Round trip 1.04-1.05x std at 2^16 (was
 1.19-1.20x; `ci-ntt-check`, per-rep interleaved); ModUp/ModDown -8%, CI bootstrap about -2% (calm pair 11.82 -> 11.59 s),
 precision unchanged, peak RSS -0.17 GB. Baseline commands unchanged.
+Per-op cost (item 4.2, WSL, `ci-op-cost`, 2^16, 21/11/4 towers, calibrated per iteration against a std NTT): CI/std
+is 1.02-1.06x for mult, relin, rescale, rotate, ModUp, KeySwitchDown and 0.97-1.08x for the NTT-free ops; nothing above
+1.1x, no fix needed. The CI/std stage ratios come from op counts, not per-op cost. Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -227,7 +230,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **4.1** Raw-word Shoup twist loops for the CI NTT (move the twisted NTT next to
   `NumberTheoreticTransformNat` for word access). Target: CI NTT round trip within 1.05x of the standard NTT
   (now 1.19x at 2^16); validate with `benchmark/src/ci-ntt-check.cpp` (bit-exact vs reference).
-- [ ] **4.2** Measure CI vs std per-op cost (EvalMult, rotation, rescale) at 2^16; fix anything above 1.1x.
+- [x] **4.2** Measure CI vs std per-op cost (EvalMult, rotation, rescale) at 2^16; fix anything above 1.1x.
 - [ ] **4.R** Phase 4 review. Done when: CI EvalMod time per real slot <= 0.55x std's.
 
 ## Phase 5: multi-thread scaling
