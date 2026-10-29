@@ -538,7 +538,9 @@ std::shared_ptr<DCRTPoly::Params> CIParamsQlP(const CryptoParametersCKKSRNS& cp,
         moduli.push_back(x->GetModulus());
         roots.push_back(x->GetRootOfUnity());
     }
-    return std::make_shared<DCRTPoly::Params>(cp.GetElementParams()->GetCyclotomicOrder(), moduli, roots);
+    auto params = std::make_shared<DCRTPoly::Params>(cp.GetElementParams()->GetCyclotomicOrder(), moduli, roots);
+    params->SetRingType(cp.GetElementParams()->GetRingType());
+    return params;
 }
 
 inline uint32_t CILevelOf(const CryptoParametersCKKSRNS& cp, uint32_t towers) {
@@ -1416,6 +1418,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly>& cipher
     }
     auto elementParamsRaisedPtr =
             std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+    elementParamsRaisedPtr->SetRingType(paramsQ[0]->GetRingType());
 
     double qDouble = GetBigModulus(cryptoParams);
     double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
@@ -2246,6 +2249,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapStCFirst(ConstCiphertext<DCRTPoly>
     }
     auto elementParamsRaisedPtr =
             std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+    elementParamsRaisedPtr->SetRingType(paramsQ[0]->GetRingType());
 
     double qDouble = GetBigModulus(cryptoParams);
     double powP = std::pow(2, cryptoParams->GetPlaintextModulus());
@@ -2697,6 +2701,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCiphertext<DCRTPoly
     }
     auto elementParamsRaisedPtr =
             std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc->GetCyclotomicOrder(), moduli, roots);
+    elementParamsRaisedPtr->SetRingType(paramsQ[0]->GetRingType());
 
     // The Fourier series argument is the message embedded into half of its [-1/2, 1/2) period (t = mu/2),
     // realized by the exact 2^-deg shrink with deg = 1. Unlike regular bootstrapping, the shrink cannot
@@ -3143,6 +3148,7 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
     }
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    elementParamsPtr->SetRingType(paramsQ[0]->GetRingType());
 
     auto g = GetBootPrecom(slots).m_paramsEnc.g;
 
@@ -3189,6 +3195,7 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
     }
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    elementParamsPtr->SetRingType(paramsQ[0]->GetRingType());
 
     const int32_t slots = static_cast<int32_t>(A.size());
 
@@ -3292,6 +3299,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(p.lvlb - stop);
     for (int32_t s = p.lvlb - 1; s >= stop; --s) {
         paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(M, moduli, roots);
+        paramsVector[s - stop]->SetRingType(elementParams.GetRingType());
         sizeQ -= compositeDegree;
         moduli.erase(moduli.begin() + sizeQ, moduli.begin() + sizeQ + compositeDegree);
         roots.erase(roots.begin() + sizeQ, roots.begin() + sizeQ + compositeDegree);
@@ -3460,6 +3468,7 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(pvlen);
     for (uint32_t s = 0; s < pvlen; ++s) {
         paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(cc.GetCyclotomicOrder(), moduli, roots);
+        paramsVector[s]->SetRingType(elementParams.GetRingType());
         for (uint32_t i = 0; i < compositeDegree; ++i, --sizeQ) {
             moduli.erase(moduli.begin() + sizeQ - 1);
             roots.erase(roots.begin() + sizeQ - 1);
@@ -4831,6 +4840,7 @@ std::shared_ptr<seriesPowers<DCRTPoly>> FHECKKSRNS::EvalMVBPrecomputeInternal(
     auto N = cc->GetRingDimension();
 
     auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    elementParamsRaisedPtr->SetRingType(paramsQ[0]->GetRingType());
 
     // We don't need the type of scaling and correction as in the standard CKKS bootstrapping
     // because the message doesn't have to be scaled down.

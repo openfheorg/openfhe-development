@@ -332,6 +332,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
                 roots[i] = paramsPartQ->GetParams()[i]->GetRootOfUnity();
             }
             auto&& params = std::make_shared<ParmType>(paramsPartQ->GetCyclotomicOrder(), moduli, roots);
+            params->SetRingType(paramsPartQ->GetRingType());
             partsCt = DCRTPoly(params, Format::EVALUATION, false);
         } else {
             partsCt = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, false);

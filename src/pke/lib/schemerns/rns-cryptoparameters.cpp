@@ -71,6 +71,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
     size_t sizeQ = GetElementParams()->GetParams().size();
     size_t n = GetElementParams()->GetRingDimension();
+    // ring structure of the element parameters (CI or cyclotomic); every derived parameter set carries it
+    const RingType ringType = GetElementParams()->GetRingType();
 
     // Construct moduliQ and rootsQ from crypto parameters
     std::vector<NativeInteger> moduliQ(sizeQ);
@@ -132,6 +134,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             }
             m_paramsPartQ[j] =
                     std::make_shared<ILDCRTParams<BigInteger>>(params[0]->GetCyclotomicOrder(), moduli, roots);
+            m_paramsPartQ[j]->SetRingType(ringType);
         }
 
         // Find number and size of individual special primes.
@@ -173,6 +176,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         // thus EvalMult / rotations / bootstrap) operates consistently on CI ring
         // elements across the extended QP basis. (Standard CKKS uses q = 1 mod 2N.)
         const bool isCI = (GetCKKSDataType() == REAL_CI);
+        if (isCI != (ringType == RingType::CONJUGATE_INVARIANT))
+            OPENFHE_THROW("REAL_CI data type and the ring type of the element parameters disagree");
         if (isCI)
             primeStep = 4 * n;
 
@@ -208,6 +213,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Store the created moduli and roots in m_paramsP
         m_paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliP, rootsP);
+        m_paramsP->SetRingType(ringType);
 
         // No-ring-switch invariant (CI): the auxiliary P basis must also stay at rank N.
         if (isCI && m_paramsP->GetRingDimension() != n)
@@ -226,6 +232,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         }
 
         m_paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQP, rootsQP);
+        m_paramsQP->SetRingType(ringType);
 
         // Precompute params for first 1..sizeQ towers of Q for KeySwitchDown (avoids per-call allocation).
         m_paramsQlHybrid.resize(sizeQ);
@@ -236,6 +243,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             moduliQl.push_back(moduliQ[i]);
             rootsQl.push_back(rootsQ[i]);
             m_paramsQlHybrid[i] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQl, rootsQl);
+            m_paramsQlHybrid[i]->SetRingType(ringType);
         }
 
         // Pre-compute CRT::FFT values for P
@@ -327,6 +335,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                     }
                 }
                 m_paramsComplPartQ[l][j] = std::make_shared<ParmType>(cyclOrder, moduli, roots);
+                m_paramsComplPartQ[l][j]->SetRingType(ringType);
 
                 const auto BarrettBase128Bit(BigInteger(1).LShiftEq(128));
                 m_modComplPartqBarrettMu[l][j].resize(moduli.size());

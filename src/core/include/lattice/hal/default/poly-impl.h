@@ -437,7 +437,9 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
     if (m_values != nullptr) {
         m_values->SwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
+        auto rt{m_params->GetRingType()};  // the ring structure survives a modulus switch
         m_params = std::make_shared<PolyImpl::Params>(c, modulus, rootOfUnity, modulusArb, rootOfUnityArb);
+        m_params->SetRingType(rt);
     }
 }
 
@@ -447,7 +449,9 @@ void PolyImpl<VecType>::LazySwitchModulus(const Integer& modulus, const Integer&
     if (m_values != nullptr) {
         m_values->LazySwitchModulus(modulus);
         auto c{m_params->GetCyclotomicOrder()};
+        auto rt{m_params->GetRingType()};
         m_params = std::make_shared<PolyImpl::Params>(c, modulus, rootOfUnity, modulusArb, rootOfUnityArb);
+        m_params->SetRingType(rt);
     }
 }
 
@@ -465,10 +469,10 @@ void PolyImpl<VecType>::SwitchFormat(uint32_t thread_limit) {
     if (!m_values)
         OPENFHE_THROW("Poly switch format to empty values");
 
-    // Native conjugate-invariant (CI) ring towers route to the twisted CI NTT.
-    // Only opted-in native moduli take this path; all other arithmetic is unchanged.
+    // Native conjugate-invariant (CI) ring towers route to the twisted CI NTT. The ring type is a property
+    // of the element parameters (item 6.1), so a prime shared with a standard context is not ambiguous.
     if constexpr (std::is_same_v<VecType, NativeVector>) {
-        if (IsCIModulus((*m_values).GetModulus())) {
+        if (m_params->IsConjugateInvariant()) {
             if (m_format != Format::COEFFICIENT) {
                 m_format = Format::COEFFICIENT;
                 CIInverseTransform(*m_values);

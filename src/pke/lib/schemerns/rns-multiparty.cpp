@@ -67,6 +67,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
         std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
         std::vector<NativeInteger> rootsFirst = {params->GetParams()[0]->GetRootOfUnity()};
         auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
+        paramsFirst->SetRingType(params->GetRingType());
         std::vector<NativeInteger> moduliAllButFirst(sizeQl - 1);
         std::vector<NativeInteger> rootsAllButFirst(sizeQl - 1);
         for (size_t i = 1; i < sizeQl; i++) {
@@ -75,6 +76,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
         }
         auto paramsAllButFirst =
                 std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
+        paramsAllButFirst->SetRingType(params->GetRingType());
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
         e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
@@ -133,6 +135,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
         std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
         std::vector<NativeInteger> rootsFirst = {params->GetParams()[0]->GetRootOfUnity()};
         auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
+        paramsFirst->SetRingType(params->GetRingType());
         e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
                                      cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
                                      cryptoParams->GetMultipartyQHatModq0AtIndex(sizeQl - 2),
@@ -326,6 +329,7 @@ void ExtendBasis(DCRTPoly& dcrtpoly, const std::shared_ptr<DCRTPoly::Params> par
         rootsP[i] = paramsQP->GetParams()[i + sizeQ]->GetRootOfUnity();
     }
     auto paramsP = std::make_shared<typename DCRTPoly::Params>(2 * paramsQ->GetRingDimension(), moduliP, rootsP);
+    paramsP->SetRingType(paramsQP->GetRingType());
 
     // Does all RNS precomputations
     std::vector<NativeInteger> QHatInvModq(sizeQ);

@@ -50,6 +50,16 @@
 namespace lbcrypto {
 
 /**
+ * @brief Ring structure of a tower (or of all towers of a DCRT parameter set).
+ * CYCLOTOMIC: the power-of-two cyclotomic ring Z_q[X]/(X^N + 1) (the default; standard NTT).
+ * CONJUGATE_INVARIANT: the conjugate-invariant subring {a in Z_q[X]/(X^{2N} + 1) : a(X) = a(X^{-1})} of rank N
+ * (CKKS REAL_CI), stored as a length-N coefficient vector; its EVALUATION format is the twisted CI NTT
+ * (math/ci-transform.h). The ring type is a property of the parameters (copied with them), so a CI and a standard
+ * context may share a prime in one process.
+ */
+enum class RingType : uint8_t { CYCLOTOMIC = 0, CONJUGATE_INVARIANT = 1 };
+
+/**
  * @class ElemParams
  * @brief Wrapper class to hold the parameters for Element types and their
  * inheritors.
@@ -162,6 +172,25 @@ class ElemParams : public Serializable {
     }
 
     /**
+     * @brief Ring structure of the element (see RingType).
+     */
+    RingType GetRingType() const {
+        return m_ringType;
+    }
+
+    bool IsConjugateInvariant() const {
+        return m_ringType == RingType::CONJUGATE_INVARIANT;
+    }
+
+    /**
+     * @brief Sets the ring structure. Parameters are shared between elements, so only call this on a parameter
+     * set that was just created (ILDCRTParams::SetRingType replaces its towers with tagged copies).
+     */
+    void SetRingType(RingType rt) {
+        m_ringType = rt;
+    }
+
+    /**
      * @brief Output strem operator.
      * @param out the preceding output stream.
      * @param item what to add to the output stream.
@@ -179,7 +208,8 @@ class ElemParams : public Serializable {
     virtual bool operator==(const ElemParams<IntegerType>& other) const {
         return m_ringDimension == other.m_ringDimension && m_cyclotomicOrder == other.m_cyclotomicOrder &&
                m_ciphertextModulus == other.m_ciphertextModulus && m_rootOfUnity == other.m_rootOfUnity &&
-               m_bigCiphertextModulus == other.m_bigCiphertextModulus && m_bigRootOfUnity == other.m_bigRootOfUnity;
+               m_bigCiphertextModulus == other.m_bigCiphertextModulus && m_bigRootOfUnity == other.m_bigRootOfUnity &&
+               m_ringType == other.m_ringType;
     }
 
     /**
@@ -199,6 +229,8 @@ class ElemParams : public Serializable {
         ar(::cereal::make_nvp("ru", m_rootOfUnity));
         ar(::cereal::make_nvp("bm", m_bigCiphertextModulus));
         ar(::cereal::make_nvp("br", m_bigRootOfUnity));
+        const uint32_t rt = static_cast<uint32_t>(m_ringType);
+        ar(::cereal::make_nvp("rt", rt));
     }
 
     template <class Archive>
@@ -212,13 +244,21 @@ class ElemParams : public Serializable {
         ar(::cereal::make_nvp("ru", m_rootOfUnity));
         ar(::cereal::make_nvp("bm", m_bigCiphertextModulus));
         ar(::cereal::make_nvp("br", m_bigRootOfUnity));
+        m_ringType = RingType::CYCLOTOMIC;
+        if (version >= 2) {  // version 1 had no ring type (cyclotomic only)
+            uint32_t rt = 0;
+            ar(::cereal::make_nvp("rt", rt));
+            if (rt > static_cast<uint32_t>(RingType::CONJUGATE_INVARIANT))
+                OPENFHE_THROW("unknown ring type " + std::to_string(rt));
+            m_ringType = static_cast<RingType>(rt);
+        }
     }
 
     std::string SerializedObjectName() const override {
         return "ElemParams";
     }
     static uint32_t SerializedVersion() {
-        return 1;
+        return 2;
     }
 
   protected:
@@ -228,6 +268,7 @@ class ElemParams : public Serializable {
     IntegerType m_rootOfUnity{0};
     IntegerType m_bigCiphertextModulus{0};  // Used for only some applications.
     IntegerType m_bigRootOfUnity{0};        // Used for only some applications.
+    RingType m_ringType{RingType::CYCLOTOMIC};
 
     /**
      * @brief Pretty print operator for the ElemParams type.
@@ -236,7 +277,8 @@ class ElemParams : public Serializable {
      */
     virtual std::ostream& doprint(std::ostream& out) const {
         out << "[m=" << m_cyclotomicOrder << " n=" << m_ringDimension << " q=" << m_ciphertextModulus
-            << " ru=" << m_rootOfUnity << " bigq=" << m_bigCiphertextModulus << " bigru=" << m_bigRootOfUnity << "]";
+            << " ru=" << m_rootOfUnity << " bigq=" << m_bigCiphertextModulus << " bigru=" << m_bigRootOfUnity
+            << (m_ringType == RingType::CONJUGATE_INVARIANT ? " ring=CI" : "") << "]";
         return out;
     }
 };

@@ -368,6 +368,7 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    elementParamsPtr->SetRingType(paramsQ[0]->GetRingType());
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -432,6 +433,7 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    elementParamsPtr->SetRingType(paramsQ[0]->GetRingType());
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -595,6 +597,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     }
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    elementParamsPtr->SetRingType(paramsQ[0]->GetRingType());
     auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
 // Hoisted automorphisms

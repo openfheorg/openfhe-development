@@ -2788,3 +2788,137 @@ bits in all 120 sweep bootstraps and the warm reps of the 10 processes; the keyg
 - The WSL VM throttles 16 threads at its 14-CPU quota and changes speed state between processes; single-job medians
   at 14-16 threads can show either scheme ahead by 20-50%. A clean 16-core curve needs ICELAKE (5.1-ICE, on hold).
 - Baseline commands do not change (1 thread).
+
+## 6.1 Ring type as a property of the element parameters -- DONE (WSL, 2026-10-28)
+
+**Host.** The host file said `WSL` before every job; every job ran on WSL through `wsl-guard.sh`, all rc 0 (one job,
+`p61_chk`, has rc `killed:success` only because its command ended with `exit`, which skipped the rc write; its log is
+complete and has no failure). Nothing ran on ICELAKE. Jobs: `p61_build0`, `p61_before`, `p61_build_chk`, `p61_chk`,
+`p61_build`, `p61_after`, `p61_build2`, `p61_after2`, `p61_ci14`, `p61_ab16`, `p61_final`.
+
+**The problem (measured before the change).** CI-ness was decided by a global registry keyed by the prime alone
+(`IsCIModulus(q)` in `PolyImpl::SwitchFormat`). CI primes (q = 1 mod 4N) are also std primes (q = 1 mod 2N), and
+OpenFHE's prime search finds them: a CI and a std context at 2^12 share 22 of 31 Q+P primes, CI 2^12 and std 2^13 share
+all 31. New driver `benchmark/src/ci-ring-conflict.cpp` builds several contexts in one process (all contexts and keys
+first, then EvalMult + rescale and one bootstrap per context; insecure, FIXEDMANUAL 59/60, budget {3,3}). On the
+pre-change build (`p61_before`, snapshot of `build-wsl` at HEAD 19bebd28):
+
+| contexts in one process | shared primes | result before 6.1 |
+|---|---|---|
+| ci12 / std12 / ci12s / std12s alone | 0 | all ok |
+| ci12, std12 (either order) | 22 | std12: decryption garbage, "decryption failed" in decode; ci12 ok |
+| ci12, std13 (either order) | 31 | abort: `CIForwardTransform: length mismatch with registered ring dimension` |
+| ci12s, std12s, ci13, std13 | 21-66 | abort (same length mismatch) |
+
+**Change.**
+- `ElemParams` has a `RingType` field (`CYCLOTOMIC` default, `CONJUGATE_INVARIANT`), with `GetRingType()`,
+  `IsConjugateInvariant()`, `SetRingType()`; it is part of `operator==`, printed as `ring=CI`, and serialized
+  (`ElemParams` serialized version 1 -> 2; version-1 archives load as cyclotomic).
+- `ILDCRTParams::SetRingType()` tags the parameter set and its towers (copy-on-write: a shared tower is replaced by a
+  tagged copy); the tower-vector constructor (`GetParamPartition`, `CloneTowers`, `DCRTPoly(towers)`) takes the type of
+  its towers. Copies, `PopLastParam` and partitions keep the tag.
+- `PolyImpl::SwitchFormat` dispatches on `m_params->IsConjugateInvariant()` (no registry lookup on the std path);
+  `PolyImpl::SwitchModulus` / `LazySwitchModulus` keep the ring type of the tower.
+- CI tagging at the source: `ckksrns-parametergeneration.cpp` tags the Q params of a REAL_CI context. Every parameter
+  set built from moduli/roots of an existing one copies its ring type: `rns-cryptoparameters.cpp` (PartQ, P, QP,
+  QlHybrid, ComplPartQ; plus a check that REAL_CI and the ring type agree), `ckksrns-cryptoparameters.cpp` (ModRaise
+  ComplQl, sparse-encapsulated P', Ql, QlP'), `keyswitch-hybrid.cpp`, `DCRTPoly::GetExtendedCRTBasis`, the 9 sites in
+  `ckksrns-fhe.cpp` (raised params, QP params, BSGS plaintext param vectors), and for completeness
+  `ckksrns-multiparty.cpp`, `rns-multiparty.cpp` and `ckksrns-schemeswitching.cpp`.
+- `ci-transform.cpp`: the table cache is keyed by (q, N) (one prime may serve CI rings of several N) and a missing
+  entry is built on first use with wm = RootOfUnity(4N, q), the deterministic minimal root used at context generation
+  (so a tower tagged CI works after `ClearCIModuli()` or deserialization). `RegisterCIModulus` only pre-builds tables;
+  `IsCIModulus(q, N)` added, `IsCIModulus(q)` kept for diagnostics/tests. The length-mismatch throw is gone (the length
+  selects the tables).
+
+**Leak check.** To find a derived parameter set that loses the tag, one build (`p61_build_chk`, `build-wsl` with
+`-DCMAKE_CXX_FLAGS=-DCI_RINGTYPE_CHECK`) made `SwitchFormat` throw whenever a tower's tag disagreed with the (q, N)
+registry (valid in single-scheme processes: a CI process registers all its primes, a std process none). It ran the
+small-N matrix below with both schemes; no tower disagreed. The check block was then removed and `build-wsl` rebuilt
+without the flag (`p61_build`).
+
+**Commands** (WSL, repo root; `O` = `~/ci-ckks-wsl/p61_old` = copy of `build-wsl/lib` and binaries at HEAD 19bebd28,
+run with `LD_LIBRARY_PATH=$O/lib`, RUNPATH allows the override; `B` = `build-wsl/bin/benchmark/ci-fft-boot`,
+`C` = `build-wsl/bin/benchmark/ci-ring-conflict`):
+
+    wsl-guard.sh p61_build0 12 'cmake build-wsl; cmake --build build-wsl --target ci-ring-conflict -j 8'   # old library
+    wsl-guard.sh p61_before 6 'OMP_NUM_THREADS=4 $O/bin/ci-ring-conflict SPEC 1 for SPEC in ci12 std12 ci12s std12s
+        ci12,std12 std12,ci12 ci12,std13 std13,ci12 ci12s,std12s,ci13,std13'
+    wsl-guard.sh p61_build_chk 12 'cmake -DCMAKE_CXX_FLAGS=-DCI_RINGTYPE_CHECK build-wsl;
+        cmake --build build-wsl --target ci-fft-boot ci-ring-conflict ci-ntt-check -j 8'
+    wsl-guard.sh p61_chk 8 'OMP_NUM_THREADS=4; for ci and std: $B S 12 3 3 59 60 0 1 fm 4 uniform 0 | fm 12 uniform 1;
+        13 4 4 (same two); 14 5 3 (same two); 13 3 3 fm 0 encap 0|1; 13 3 3 fa 0 uniform 0|1;
+        13 3 3 fm 0 uniform 0|1 4 2 2 0 (META-BTS); $C ci12|ci12s|std12|ci12,ci13|ci12s,ci13 1; ci-ntt-check 20 1'
+    wsl-guard.sh p61_build 12 'cmake -DCMAKE_CXX_FLAGS= build-wsl; cmake --build build-wsl --target ci-fft-boot
+        ci-ring-conflict ci-ntt-check ci-op-cost -j 8; cmake --build build-wsl-bt --target ci-fft-boot -j 8'
+    wsl-guard.sh p61_after 8 'OMP_NUM_THREADS=4; $C over 12 specs; old $C ci13|std13; smoke A/B old/new:
+        $B S 12 3 3 59 60 0 1 fa 4 encap 0 | fa 12 encap 1; 13 4 4 (same); 14 5 3 (same), S = ci, std; ci-ntt-check 20 1'
+    wsl-guard.sh p61_build2 12 'cmake --build build-wsl --target ci-ring-conflict -j 8'   # driver: StC contexts +1 level
+    wsl-guard.sh p61_after2 8 'OMP_NUM_THREADS=4; $C over 15 specs'
+    wsl-guard.sh p61_ci14 8 'OMP_NUM_THREADS=4; 2x: old $C ci14; new $C ci14; new $C std14,ci14'
+    wsl-guard.sh p61_ab16 16 'OMP_NUM_THREADS=1 CI_BOOT_TIMING=1; old/new ci-fft-boot ci 16 5 3 59 60 1 3 fa 4 encap and
+        std 16 5 3 59 60 1 3 fa 5 encap (both build-wsl, no BOOTSTRAPTIMING), order CI old, CI new, std old, std new,
+        std new, std old, CI new, CI old'
+    wsl-guard.sh p61_final 8 'cmake --build build-wsl --target ci-ring-conflict -j 8 (bootstrap threshold 7 bits);
+        OMP_NUM_THREADS=4 $C over 8 mixed specs, each twice'
+
+**Results after the change** (`p61_after2`, `p61_final`; StC-first contexts, suffix `s`, get one extra level because
+`GenCryptoContext` returns the cached context for equal parameters, which made "ci12" and "ci12s" share one context in
+`p61_after`):
+
+| contexts in one process | shared primes | result after 6.1 |
+|---|---|---|
+| each of ci12, std12, ci13, std13, ci12s, std12s alone | 0 | ok |
+| ci12, std12 (both orders) | 22 | ok: ci12 41.4-41.6 / 12.1-12.4 bits, std12 42.7-43.1 / 12.4-12.6 bits (mult / boot) |
+| ci12s, std12s | 22 | ok: 41.5 / 14.6 and 42.9 / 14.7 bits |
+| ci12, std13 (both orders) | 31 | ok |
+| ci13, std13 / ci14, std14 | 13 / 11 | ok (ci13 boot 9.2 bits, ci14 8.0 bits: see below) |
+| std12, ci12, ci13, std13, ci12s, std12s | up to 105 | ok, all six |
+
+All 15 specs of `p61_after2` and all 8 mixed specs (run twice) of `p61_final` pass. CI bootstraps at 2^13 / 2^14
+{3,3} CtS-first with the default correction factor reach only 9.2 / 7.8-8.3 bits max error in this driver; the same
+holds on the old build alone (`p61_after`: old ci13 9.33 bits; `p61_ci14`: old ci14 alone 8.26 / 7.80, new alone
+8.08 / 7.75, new paired with std14 7.81 / 8.24), so it is a property of that setting, not of sharing. The driver's
+bootstrap threshold is 7 bits for that reason.
+
+**Precision A/B, small N** (`p61_after`, 4 threads, reps 1, fa encap, old vs new binary back to back): identical.
+
+| scheme | N, budget | ordering | old min / RMS bits | new min / RMS bits |
+|---|---|---|---|---|
+| CI | 2^12 {3,3} | CtS / StC | 17.18 / 18.80, 21.28 / 22.68 | 17.18 / 18.80, 21.28 / 22.68 |
+| std | 2^12 {3,3} | CtS / StC | 15.95 / 17.69, 21.28 / 22.69 | 15.95 / 17.69, 21.28 / 22.69 |
+| CI | 2^13 {4,4} | CtS / StC | 18.03 / 19.71, 21.12 / 22.67 | 18.03 / 19.71, 21.14 / 22.67 |
+| std | 2^13 {4,4} | CtS / StC | 17.15 / 18.81, 21.28 / 22.68 | 17.15 / 18.81, 21.28 / 22.68 |
+| CI | 2^14 {5,3} | CtS / StC | 18.90 / 20.71, 20.63 / 22.49 | 18.91 / 20.71, 20.58 / 22.49 |
+| std | 2^14 {5,3} | CtS / StC | 17.92 / 19.70, 21.19 / 22.67 | 17.92 / 19.70, 21.18 / 22.67 |
+
+The `p61_chk` matrix (fm uniform, encap, fa, META-BTS, both orderings, both schemes; 24 runs) also passed in the check
+build, and `ci-ntt-check` reports `all_match=1` (bit-exact against the reference) in `p61_chk` and `p61_after`.
+
+**Timing A/B at 2^16** (`p61_ab16`, {5,3} CtS-first, 128-bit, 1 thread, reps 3, warm medians; laptop speed state
+changed between processes, so pairs are compared only when both ran in the same state):
+
+| order | binary | scheme | warm median s | min / RMS bits | peak RSS GB | state |
+|---|---|---|---|---|---|---|
+| 1 | old | CI | 16.573 | 18.46 / 21.56 | 13.43 | slow |
+| 2 | new | CI | 11.352 | 18.35 / 21.56 | 13.43 | fast |
+| 3 | old | std | 11.717 | 20.19 / 22.75 | 7.66 | fast |
+| 4 | new | std | 12.110 | 19.76 / 22.75 | 7.66 | fast |
+| 5 | new | std | 15.150 | 19.74 / 22.75 | 7.66 | slow |
+| 6 | old | std | 15.926 | 19.30 / 22.74 | 7.66 | slow |
+| 7 | new | CI | 16.986 | 18.22 / 21.56 | 13.43 | slow |
+| 8 | old | CI | 11.353 | 18.45 / 21.56 | 13.43 | fast |
+
+Same-state pairs: CI fast 11.353 (old) vs 11.352 s (new), CI slow 16.57 vs 16.99 s (+2.5%); std fast 11.72 vs 12.11 s
+(+3.3%), std slow 15.93 vs 15.15 s (-4.9%). The differences change sign and are within the laptop's spread; the
+change is a flag test in `SwitchFormat` instead of one (std) or two (CI) map lookups, so no time change is expected.
+RMS precision and peak RSS are unchanged. The Galois check held in all 16 CI bootstraps.
+
+**Conclusions.**
+- The ring type is a property of the element parameters; a CI and a std context sharing primes (11-105 shared towers,
+  same or different N, CtS-first and StC-first, with bootstrapping) now work in one process. Before, the std context
+  gave garbage or the process aborted.
+- Both CI orderings are unchanged and supported; precision and the 2^16 bootstrap time are unchanged.
+- Unit tests were not run (item 6.5). Suggestion for 6.4: add a unit test with a CI and a std context sharing a prime
+  (the `ci-ring-conflict` "ci12,std12" case) and one that round-trips `ElemParams` serialization with `ring=CI`
+  (item 6.3 covers CI context serialization; the ring type is now in the archive).

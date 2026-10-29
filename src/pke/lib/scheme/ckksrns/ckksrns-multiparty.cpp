@@ -234,7 +234,9 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, uint32_t from, ui
 
     uint32_t ringDim = cc->GetCryptoParameters()->GetElementParams()->GetRingDimension();
     rnsExtTables.paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliP, rootsP);
+    rnsExtTables.paramsP->SetRingType(cc->GetCryptoParameters()->GetElementParams()->GetRingType());
     rnsExtTables.paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliQP, rootsQP);
+    rnsExtTables.paramsQP->SetRingType(cc->GetCryptoParameters()->GetElementParams()->GetRingType());
 
     rnsExtTables.QHatInvModq.resize(sizeQ);
     rnsExtTables.QHatInvModqPrecon.resize(sizeQ);

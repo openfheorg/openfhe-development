@@ -186,6 +186,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         std::vector<NativeInteger> rootsComplQl(rootsQ.begin() + sizeQl, rootsQ.end());
         m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(GetElementParams()->GetCyclotomicOrder(),
                                                                              moduliComplQl, rootsComplQl);
+        m_paramsModRaiseComplQl->SetRingType(GetElementParams()->GetRingType());
 
         BigInteger modulusQl(1);
         for (uint32_t i = 0; i < sizeQl; ++i)
@@ -350,6 +351,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         moduliQPSparse.insert(moduliQPSparse.end(), moduliPSparse.begin(), moduliPSparse.end());
         rootsQPSparse.insert(rootsQPSparse.end(), rootsPSparse.begin(), rootsPSparse.end());
         m_sparseKSParamsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQPSparse, rootsQPSparse);
+        m_sparseKSParamsP->SetRingType(GetElementParams()->GetRingType());
+        m_sparseKSParamsQ->SetRingType(GetElementParams()->GetRingType());
+        m_sparseKSParamsQP->SetRingType(GetElementParams()->GetRingType());
 
         // Pre-compute CRT::FFT values for P'
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsPSparse, 2 * n, moduliPSparse);

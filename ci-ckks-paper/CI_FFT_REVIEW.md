@@ -133,6 +133,11 @@ The old fork was 3.5x slower than std per real slot; the new path is ~10x faster
    CtS-first (1.98x). See `PHASE2_LOG.md` 4.R.)
 4. **Modulus registry keyed by prime** (pre-existing design): a CI and a std context in one process
    that share a prime would conflict. Key it by (prime, ring) or attach the flag to the params.
+   (Done in phase 6.1: the ring type is a field of the element parameters (`ElemParams::GetRingType()`,
+   `RingType::CONJUGATE_INVARIANT`, serialized as `ElemParams` version 2) and `PolyImpl::SwitchFormat` dispatches
+   on it; the CI table cache is keyed by (q, N) and fills itself on first use. CI and std contexts at 2^12-2^14
+   sharing 11-105 primes now run side by side in one process (`benchmark/src/ci-ring-conflict.cpp`); before, the std
+   context decrypted garbage or threw. Precision and 2^16 time unchanged. See `PHASE2_LOG.md` 6.1.)
 5. **First bootstrap builds the diagonals lazily** (~70 s at 2^16); move to EvalBootstrapSetup.
    (Done in phase 2.4: `EvalBootstrapSetup` encodes them, in parallel; the first bootstrap is warm.)
 6. **Not done:** the paper's functional bootstrapping (CI-AKP with radial correction, CI-Hermite),

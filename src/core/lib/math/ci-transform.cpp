@@ -6,6 +6,7 @@
 
 #include "math/ci-transform.h"
 #include "math/hal/intnat/transformnat.h"
+#include "math/nbtheory.h"
 #include "utils/exception.h"
 
 #include <atomic>
@@ -23,7 +24,9 @@
 // stage, as raw-word loops in NumberTheoreticTransformNat (CIForwardTransformToBitReverseInPlace,
 // CIInverseTransformFromBitReverseInPlace); the eval vector is in bit-reversed node order (no
 // permutation pass). The registry is published copy-on-write so the per-transform lookups are
-// lock-free.
+// lock-free. It is a table cache keyed by (q, N): whether a tower is CI is decided by its element parameters
+// (ElemParams::GetRingType, item 6.1), never by the registry, so a CI and a standard context may share a prime
+// in one process, and one prime may serve CI rings of several dimensions.
 
 namespace lbcrypto {
 
@@ -45,7 +48,8 @@ struct CITables {
     CINativeInteger detInv;
 };
 
-using Registry = std::map<uint64_t, std::shared_ptr<const CITables>>;
+using Key      = std::pair<uint64_t, uint32_t>;  // (q, N)
+using Registry = std::map<Key, std::shared_ptr<const CITables>>;
 std::atomic<const Registry*> g_reg{nullptr};
 std::mutex g_regMutex;
 std::vector<std::unique_ptr<Registry>>& Retired() {  // keep old snapshots alive (readers may hold refs)
@@ -53,19 +57,22 @@ std::vector<std::unique_ptr<Registry>>& Retired() {  // keep old snapshots alive
     return r;
 }
 
-const CITables* Find(uint64_t q) {
+const CITables* Find(const Key& k) {
     const Registry* r = g_reg.load(std::memory_order_acquire);
     if (r == nullptr)
         return nullptr;
-    auto it = r->find(q);
+    auto it = r->find(k);
     return (it == r->end()) ? nullptr : it->second.get();
 }
 
-const CITables& Lookup(const CINativeInteger& q) {
-    const CITables* t = Find(q.ConvertToInt());
-    if (t == nullptr)
-        OPENFHE_THROW("CI transform requested for an unregistered modulus");
-    return *t;
+// Tables for (q, N); built on first use (wm = the minimal primitive 4N-th root, as at context generation) so a
+// tower whose parameters say CI works even if its modulus was never registered (e.g. after ClearCIModuli).
+const CITables& Lookup(const CINativeInteger& q, uint32_t N) {
+    const Key k{q.ConvertToInt(), N};
+    if (const CITables* t = Find(k))
+        return *t;
+    RegisterCIModulus(q, N, RootOfUnity<CINativeInteger>(4 * N, q));
+    return *Find(k);
 }
 
 inline uint32_t RevBits(uint32_t x, uint32_t bits) {
@@ -79,7 +86,7 @@ inline uint32_t RevBits(uint32_t x, uint32_t bits) {
 
 void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativeInteger& wm) {
     std::lock_guard<std::mutex> lk(g_regMutex);
-    uint64_t key = modulus.ConvertToInt();
+    const Key key{modulus.ConvertToInt(), N};
     if (Find(key) != nullptr)
         return;
     auto t      = std::make_shared<CITables>();
@@ -164,8 +171,16 @@ void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativ
     Retired().push_back(std::move(next));
 }
 
+bool IsCIModulus(const CINativeInteger& modulus, uint32_t N) {
+    return Find(Key{modulus.ConvertToInt(), N}) != nullptr;
+}
+
 bool IsCIModulus(const CINativeInteger& modulus) {
-    return Find(modulus.ConvertToInt()) != nullptr;
+    const Registry* r = g_reg.load(std::memory_order_acquire);
+    if (r == nullptr)
+        return false;
+    auto it = r->lower_bound(Key{modulus.ConvertToInt(), 0});
+    return it != r->end() && it->first.first == modulus.ConvertToInt();
 }
 
 void ClearCIModuli() {
@@ -176,9 +191,7 @@ void ClearCIModuli() {
 }
 
 void CIForwardTransform(CINativeVector& vals) {
-    const CITables& t = Lookup(vals.GetModulus());
-    if (vals.GetLength() != t.N)
-        OPENFHE_THROW("CIForwardTransform: length mismatch with registered ring dimension");
+    const CITables& t = Lookup(vals.GetModulus(), vals.GetLength());
     if (t.N < 4) {
         CIForwardTransformRef(vals);
         return;
@@ -189,9 +202,7 @@ void CIForwardTransform(CINativeVector& vals) {
 }
 
 void CIInverseTransform(CINativeVector& vals) {
-    const CITables& t = Lookup(vals.GetModulus());
-    if (vals.GetLength() != t.N)
-        OPENFHE_THROW("CIInverseTransform: length mismatch with registered ring dimension");
+    const CITables& t = Lookup(vals.GetModulus(), vals.GetLength());
     if (t.N < 4) {
         CIInverseTransformRef(vals);
         return;
@@ -203,7 +214,7 @@ void CIInverseTransform(CINativeVector& vals) {
 
 // ---- reference (original) implementation, kept for validation ----
 void CIForwardTransformRef(CINativeVector& vals) {
-    const CITables& t = Lookup(vals.GetModulus());
+    const CITables& t = Lookup(vals.GetModulus(), vals.GetLength());
     const uint32_t N  = t.N;
     const uint32_t m  = 4 * N;
     const CINativeInteger& q = t.q;
@@ -218,7 +229,7 @@ void CIForwardTransformRef(CINativeVector& vals) {
 }
 
 void CIInverseTransformRef(CINativeVector& vals) {
-    const CITables& t = Lookup(vals.GetModulus());
+    const CITables& t = Lookup(vals.GetModulus(), vals.GetLength());
     const uint32_t N  = t.N;
     const uint32_t m  = 4 * N;
     const CINativeInteger& q = t.q;

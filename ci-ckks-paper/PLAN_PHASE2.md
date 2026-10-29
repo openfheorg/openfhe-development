@@ -157,6 +157,11 @@ CI 11.46 -> 3.85 s (2.98x) and std 11.86 -> 4.57 s (2.60x) at 16 threads, so CI/
 (calm-round medians: CI 2.97x, std 2.24x); before 5.2 CI was 9% behind std (5.1). Criterion met on calm-state estimates;
 WSL throttles 16 threads at its 14-CPU quota and single-job medians swing either way, so 5.1-ICE (on hold) would confirm.
 Baseline commands unchanged.
+Item 6.1 (WSL): the ring type is now a property of the element parameters (`ElemParams::GetRingType()`, set at CI
+context generation and copied into every derived parameter set; `PolyImpl::SwitchFormat` dispatches on it); the CI
+table cache is keyed by (q, N) and fills itself on first use. A CI and a std context sharing primes work in one process
+(`benchmark/src/ci-ring-conflict.cpp`). Precision unchanged; 2^16 CI time unchanged (11.353 vs 11.352 s in the
+same-speed pair). Baseline commands unchanged.
 Driver `benchmark/src/ci-fft-boot.cpp` (args: scheme logN lbEnc lbDec scaleMod firstMod secure reps scaling corr secret [stcfirst] [dnum] [after] [iters] [metaprec]; the RESULT line also has `bootsetup_s`, EvalBootstrapSetup alone, since item 2.4). Baseline commands (run at every phase review; on WSL inside one `wsl-guard.sh` job, MEM_GB 15, CI and std interleaved):
 
     CI_BOOT_TIMING=1 OMP_NUM_THREADS=1 build-wsl/bin/benchmark/ci-fft-boot ci  16 5 3 59 60 1 3 fa 4 encap
@@ -263,7 +268,7 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 - [x] **5.R** Phase 5 review. Done when: CI/std speedup at 16 threads is within 10% of the single-thread one.
 
 ## Phase 6: engineering (last)
-- [ ] **6.1** Ring type as a property of the element parameters (or a (modulus, N)-keyed registry) instead of the
+- [x] **6.1** Ring type as a property of the element parameters (or a (modulus, N)-keyed registry) instead of the
   global modulus-keyed registry; a CI and a std context sharing a prime in one process must not conflict.
 - [ ] **6.2** Remove env switches (`CI_BSGS_RATIO`, `CI_BOOT_TIMING`), `std::cerr` prints and `g_CIDbg*` debug
   globals from library code; expose timing through `BOOTSTRAPTIMING`.

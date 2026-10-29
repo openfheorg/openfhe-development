@@ -206,6 +206,8 @@ class ILDCRTParams final : public ElemParams<IntType> {
     ILDCRTParams(uint32_t corder, const std::vector<std::shared_ptr<ILNativeParams>>& params)
         : ElemParams<IntType>(corder, 0), m_params(params) {
         RecalculateModulus();
+        if (!m_params.empty())  // a partition of tagged towers keeps their ring type
+            ElemParams<IntType>::SetRingType(m_params[0]->GetRingType());
     }
 
     ILDCRTParams(const ILDCRTParams& rhs) : ElemParams<IntType>(rhs), m_params(rhs.m_params) {}
@@ -247,6 +249,23 @@ class ILDCRTParams final : public ElemParams<IntType> {
      * @param end The index of the last tower to include.
      * @return A vector of the component polynomial parameters.
      */
+    /**
+     * @brief Sets the ring type of this parameter set and of all its towers. Towers are shared between parameter
+     * sets, so a tower whose type differs is replaced by a tagged copy (other holders keep the old one).
+     * @return this (for chaining after make_shared).
+     */
+    ILDCRTParams& SetRingType(RingType rt) {
+        ElemParams<IntType>::SetRingType(rt);
+        for (auto& p : m_params) {
+            if (p->GetRingType() != rt) {
+                auto c = std::make_shared<ILNativeParams>(*p);
+                c->SetRingType(rt);
+                p = std::move(c);
+            }
+        }
+        return *this;
+    }
+
     std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(uint32_t start, uint32_t end) const {
         if (end < start || end >= m_params.size())
             OPENFHE_THROW("Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +

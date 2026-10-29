@@ -16,9 +16,11 @@
 //   (raw-word kernels in NumberTheoreticTransformNat; outputs in bit-reversed node order).
 // Hadamard product in EVALUATION format then equals CI ring multiplication.
 //
-// A CI modulus is opted in via RegisterCIModulus(); only registered native moduli take
-// the CI path (everything else is byte-identical standard arithmetic). Validated
-// against reference/ci_ckks/ci_ntt.py (the Phase-0 oracle).
+// Which towers are CI is a property of their element parameters (ElemParams::GetRingType() ==
+// RingType::CONJUGATE_INVARIANT; PolyImpl::SwitchFormat dispatches on it), not of the modulus: a CI and a
+// standard context may share a prime in one process (item 6.1). This file keeps a cache of the CI tables
+// keyed by (q, N); RegisterCIModulus() pre-builds them at context generation, and the transforms build
+// missing ones on first use. Validated against reference/ci_ckks/ci_ntt.py (the Phase-0 oracle).
 //
 
 #ifndef LBCRYPTO_MATH_CI_TRANSFORM_H
@@ -33,17 +35,18 @@ namespace lbcrypto {
 using CINativeInteger = NativeInteger;
 using CINativeVector  = NativeVector;
 
-// Register modulus q (which must satisfy q = 1 mod 4N) as a CI tower of ring dimension
-// N with primitive 4N-th root wm = RootOfUnity(4N, q). Idempotent. Precomputes tables.
+// Pre-build the CI tables of modulus q (q = 1 mod 4N) at ring dimension N with primitive
+// 4N-th root wm = RootOfUnity(4N, q). Idempotent per (q, N); does not by itself make any tower CI.
 void RegisterCIModulus(const CINativeInteger& modulus, uint32_t N, const CINativeInteger& wm);
 
-// True if `modulus` was registered as a CI tower.
+// True if CI tables exist for (modulus, N) / for modulus at some N (diagnostics and tests only).
+bool IsCIModulus(const CINativeInteger& modulus, uint32_t N);
 bool IsCIModulus(const CINativeInteger& modulus);
 
-// Test/teardown helper: drop all registered CI moduli.
+// Test/teardown helper: drop all cached CI tables (later transforms rebuild them).
 void ClearCIModuli();
 
-// In-place CI transforms on a single ring tower (length N, modulus a registered CI q).
+// In-place CI transforms on a single ring tower (length N, modulus q = 1 mod 4N; tables built on first use).
 void CIForwardTransform(CINativeVector& vals);   // COEFFICIENT -> EVALUATION
 void CIInverseTransform(CINativeVector& vals);   // EVALUATION  -> COEFFICIENT
 // Original O(N log N) reference implementation (slow path), kept for validation.

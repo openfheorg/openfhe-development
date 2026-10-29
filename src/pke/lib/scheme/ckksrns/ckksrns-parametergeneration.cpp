@@ -202,6 +202,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNSInternal(std::shared_ptr<Crypto
     }
 
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsForParams);
+    if (isCI)  // the ring type lives in the parameters (item 6.1), not in the modulus registry
+        paramsDCRT->SetRingType(RingType::CONJUGATE_INVARIANT);
 
     // No-ring-switch invariant (CI): the ciphertext ring dimension must stay N (= n).
     // A degree-2N ring would be ILDCRTParams(4N) (totient 4N/2 = 2N); we build

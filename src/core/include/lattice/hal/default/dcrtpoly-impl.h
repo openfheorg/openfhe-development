@@ -911,7 +911,9 @@ std::shared_ptr<typename DCRTPolyImpl<VecType>::Params> DCRTPolyImpl<VecType>::G
         moduliQP[i] = parp[j]->GetModulus();
         rootsQP[i] = parp[j]->GetRootOfUnity();
     }
-    return std::make_shared<Params>(2 * m_params->GetRingDimension(), moduliQP, rootsQP);
+    auto paramsQP = std::make_shared<Params>(2 * m_params->GetRingDimension(), moduliQP, rootsQP);
+    paramsQP->SetRingType(m_params->GetRingType());
+    return paramsQP;
 }
 
 template <typename VecType>
