@@ -243,6 +243,11 @@ and ~sqrt(2)x the rotations of the complex one (~1.5-1.7x), so CtS is near the b
 
 ## Phase 5: multi-thread scaling
 - [x] **5.1** Measure 1/4/8/16 threads for CI and std at 2^16.
+  - [ ] **5.1-ICE** (ON HOLD, user 2026-10-28: rerun 5.1 on ICELAKE later; not in the harness queue; no executor or
+    plan adapter may run or schedule it, and it does not block 5.2 or 5.R.) On WSL only 1-4 threads gave usable numbers
+    (both schemes ~2x at 4 threads; 8-16 threads varied 2-4x between runs, see `PHASE2_LOG.md` 5.1). Rerun the same
+    measurement on ICELAKE (16 free physical cores, stable clocks): 1/4/8/16 threads, CI and std, 2^16 {5,3}, both
+    orderings, using the `CI_THREAD_SWEEP` driver option and `tools/thread-scaling.py`; then re-evaluate 5.2 and 5.R.
 - [ ] **5.2** If CI scales worse: parallelize the sparse BSGS baby-step accumulation (per-thread partial sums in
   the extended basis, reduce once per giant block).
 - [ ] **5.R** Phase 5 review. Done when: CI/std speedup at 16 threads is within 10% of the single-thread one.
