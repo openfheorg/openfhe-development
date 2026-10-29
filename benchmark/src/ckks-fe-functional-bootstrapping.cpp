@@ -434,17 +434,17 @@ SecurityLevel SecurityLevelFor(SecretKeyDist skd) {
 const std::vector<fefbt_config> fefbt_configs = {
     // func,  scalTech, skd, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs   log(QP)
     // 29-bit scaling, one level: N = 2^15
-    {IDENTITY, FA, HT, 29,  1, 1 << 15,  4, {5, 4}, &coeff_identity_1_double_5},   // 848
-    {EXP,      FA, HT, 29,  1, 1 << 15,  4, {5, 4}, &coeff_exp_2_double_5},        // 848
-    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_tanh_4_double_8},       // 819
-    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_sigmoid_8_double_8},    // 819
-    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_gelu_8_double_10},      // 819
+    {IDENTITY, FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_identity_1_double_5},   // 819
+    {EXP,      FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_exp_2_double_5},        // 819
+    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_tanh_4_double_8},       // 848
+    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_sigmoid_8_double_8},    // 848
+    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_gelu_8_double_10},      // 848
     // 29-bit scaling, six levels: N = 2^15 for the degree-5 series, N = 2^16 for the longer ones
     {IDENTITY, FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_identity_1_double_5},   // 817
     {EXP,      FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_exp_2_double_5},        // 817
-    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_tanh_4_double_8},       // 1321
-    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_sigmoid_8_double_8},    // 1321
-    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_gelu_8_double_10},      // 1321
+    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_tanh_4_double_8},       // 1232
+    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_sigmoid_8_double_8},    // 1232
+    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_gelu_8_double_10},      // 1232
     // 59-bit scaling, one level: N = 2^16
     {IDENTITY, FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
     {EXP,      FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
@@ -457,9 +457,10 @@ const std::vector<fefbt_config> fefbt_configs = {
     {TANH,     FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_tanh_4_double_40},      // 1717
     {SIGMOID,  FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_sigmoid_8_double_40},   // 1717
     {GELU,     FM, HT, 59,  1, 1 << 16,  6, {4, 3}, &coeff_gelu_8_double_45},      // 1717
-    // 59-bit scaling, six levels: N = 2^17 (N = 2^16 fits only with 53-55-bit scaling, at about 4 bits less precision)
-    {IDENTITY, FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_identity_1_double_27},  // 2251
-    {EXP,      FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_exp_2_double_27},       // 2251
+    // 59-bit scaling, six levels: N = 2^17, 3 digits for the degree-27 series (N = 2^16 fits only with 53-55-bit
+    // scaling, at about 4 bits less precision)
+    {IDENTITY, FA, HT, 59,  6, 1 << 17,  3, {5, 4}, &coeff_identity_1_double_27},  // 2371
+    {EXP,      FA, HT, 59,  6, 1 << 17,  3, {5, 4}, &coeff_exp_2_double_27},       // 2371
     {TANH,     FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_tanh_4_double_40},      // 2310
     {SIGMOID,  FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_sigmoid_8_double_40},   // 2310
     {GELU,     FA, HT, 59,  6, 1 << 17,  4, {5, 4}, &coeff_gelu_8_double_45},      // 2310
@@ -489,18 +490,18 @@ const std::vector<fefbt_config> fefbt_configs = {
 // selects either table.
 const std::vector<fefbt_config> fefbt_configs_gpu = {
     // func,  scalTech, skd, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs   log(QP)
-    // 29-bit scaling, one level: N = 2^15 (3 digits for the degree-5 series)
+    // 29-bit scaling, one level: N = 2^15 (3 digits {4,3} for the degree-5 series)
     {IDENTITY, FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_identity_1_double_5},   // 850
     {EXP,      FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_exp_2_double_5},        // 850
-    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_tanh_4_double_8},       // 819
-    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_sigmoid_8_double_8},    // 819
-    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {4, 3}, &coeff_gelu_8_double_10},      // 819
+    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_tanh_4_double_8},       // 848
+    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_sigmoid_8_double_8},    // 848
+    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_gelu_8_double_10},      // 848
     // 29-bit scaling, six levels: N = 2^15 for the degree-5 series (as above), N = 2^16 with 2 digits for the longer ones
     {IDENTITY, FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_identity_1_double_5},   // 817
     {EXP,      FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_exp_2_double_5},        // 817
-    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_tanh_4_double_8},       // 1321
-    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_sigmoid_8_double_8},    // 1321
-    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 4}, &coeff_gelu_8_double_10},      // 1321
+    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_tanh_4_double_8},       // 1232
+    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_sigmoid_8_double_8},    // 1232
+    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_gelu_8_double_10},      // 1232
     // 59-bit scaling, one level: N = 2^16 (as above for the degree-27 series, 4 digits for the longer ones)
     {IDENTITY, FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
     {EXP,      FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
