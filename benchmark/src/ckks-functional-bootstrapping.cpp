@@ -32,7 +32,9 @@
 #include <algorithm>
 #include <complex>
 #include <cstdint>
+#include <exception>
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -66,6 +68,8 @@ struct fbt_config {
     std::vector<uint32_t> lvlb;
 };
 
+using fbt_table = std::map<std::pair<uint32_t, ScalingTechnique>, fbt_config>;
+
 [[maybe_unused]] const BigInteger Q1(BigInteger(1) << 1);
 [[maybe_unused]] const BigInteger Q2(BigInteger(1) << 2);
 [[maybe_unused]] const BigInteger Q4(BigInteger(1) << 4);
@@ -75,7 +79,6 @@ struct fbt_config {
 [[maybe_unused]] const BigInteger Q12(BigInteger(1) << 12);
 [[maybe_unused]] const BigInteger Q14(BigInteger(1) << 14);
 [[maybe_unused]] const BigInteger Q16(BigInteger(1) << 16);
-[[maybe_unused]] const BigInteger Q24(BigInteger(1) << 24);
 [[maybe_unused]] const BigInteger Q27(BigInteger(1) << 27);
 [[maybe_unused]] const BigInteger Q31(BigInteger(1) << 31);
 [[maybe_unused]] const BigInteger Q32(BigInteger(1) << 32);
@@ -83,52 +86,87 @@ struct fbt_config {
 [[maybe_unused]] const BigInteger Q34(BigInteger(1) << 34);
 [[maybe_unused]] const BigInteger Q35(BigInteger(1) << 35);
 [[maybe_unused]] const BigInteger Q38(BigInteger(1) << 38);
-[[maybe_unused]] const BigInteger Q40(BigInteger(1) << 40);
-[[maybe_unused]] const BigInteger Q42(BigInteger(1) << 42);
+[[maybe_unused]] const BigInteger Q39(BigInteger(1) << 39);
 [[maybe_unused]] const BigInteger Q44(BigInteger(1) << 44);
 [[maybe_unused]] const BigInteger Q46(BigInteger(1) << 46);
 [[maybe_unused]] const BigInteger Q47(BigInteger(1) << 47);
-[[maybe_unused]] const BigInteger Q49(BigInteger(1) << 49);
+[[maybe_unused]] const BigInteger Q48(BigInteger(1) << 48);
 [[maybe_unused]] const BigInteger Q51(BigInteger(1) << 51);
-[[maybe_unused]] const BigInteger Q55(BigInteger(1) << 55);
+[[maybe_unused]] const BigInteger Q52(BigInteger(1) << 52);
+[[maybe_unused]] const BigInteger Q53(BigInteger(1) << 53);
+[[maybe_unused]] const BigInteger Q56(BigInteger(1) << 56);
 [[maybe_unused]] const BigInteger Q60(BigInteger(1) << 60);
 [[maybe_unused]] const BigInteger Q71(BigInteger(1) << 71);
 [[maybe_unused]] const BigInteger Q80(BigInteger(1) << 80);
 
 // clang-format off
+[[maybe_unused]] constexpr SecretKeyDist    HT = HYBRID_TERNARY;
 [[maybe_unused]] constexpr SecretKeyDist    SE = SPARSE_ENCAPSULATED;
 [[maybe_unused]] constexpr ScalingTechnique FM = FIXEDMANUAL;
 [[maybe_unused]] constexpr ScalingTechnique FA = FLEXIBLEAUTO;
 
-// Keyed by (log p, scaling technique). The order-1 rows (1 to 12 bits for both techniques, 14 and 16 bits for
-// FLEXIBLEAUTO) use, among the ring dimensions, level budgets and dnum values that keep the FBT output error below
-// Q/(2p) with probability 2^-40 per ciphertext (measured over all N coefficients on inputs covering every residue of
-// p), the configuration with the fastest FBT, at the smallest scaling factor (Q) that passes there. Ring dimensions
-// and dnum keep log(Q'_L P') within the 128-bit limits of AKP25 Table 1 for sparse secrets (767 / 1553 / 3104 bits
-// at N = 2^15 / 2^16 / 2^17).
-// The 14- and 16-bit rows rely on the degree-66 exp approximation that SPARSE_ENCAPSULATED uses above 12 bits.
+// the security table that matches the secret key distribution (see CKKS_BOOTSTRAPPING.md)
+SecurityLevel SecurityLevelFor(SecretKeyDist skd) {
+    return (skd == SPARSE_ENCAPSULATED || skd == SPARSE_TERNARY) ? HE_SPARSE_H192_128 : HEORG24_128;
+}
+
+// Keyed by (log p, scaling technique). All rows use HYBRID_TERNARY secrets under HEORG24_128 (the security table of
+// the 2024 guidelines: 868 / 1747 / 3523 bits of log(Q'_L P') at N = 2^15 / 2^16 / 2^17; the library checks the
+// bound at context generation and a non-compliant row is skipped). The order-1 rows (1 to 12 bits for both
+// techniques, 14 and 16 bits for FLEXIBLEAUTO) use, among the level budgets and dnum values at the ring dimension,
+// the configuration with the fastest FBT at 36 threads among those that keep the FBT output error below Q/(2p)
+// with probability 2^-40 per ciphertext (measured over all N coefficients on inputs covering every residue of p),
+// at the smallest scaling factor (Q) that passes there with at least half a bit of margin. Against the
+// SPARSE_ENCAPSULATED rows this benchmark used before, the FLEXIBLEAUTO rows need 3 to 4 more bits of Q for the
+// rescaling noise of the dense secret, while the FIXEDMANUAL rows pass at the same Q.
+// The 14- and 16-bit rows rely on the degree-66 exp approximation that SPARSE_ENCAPSULATED and HYBRID_TERNARY use
+// above 12 bits.
 // No FIXEDMANUAL configuration meets the criterion at 14 or 16 bits within the 59-bit limit on scaling primes.
 // UNIFORM_TERNARY rows are left out until subring secret encapsulation (eprint 2025/1594) is implemented.
-[[maybe_unused]] std::map<std::pair<uint32_t, ScalingTechnique>, fbt_config> arblut_configs = {
+[[maybe_unused]] const fbt_table arblut_configs = {
     // {log p, scalTech}, {skd, scalTech, QBFVInit, PInput, POutput, Q, Bigq, scaleTHI, scaleStepTHI, order,
     //                     numSlots, ringDim, dnum, lvlBudget}
-    {{1, FM},  {SE, FM, Q60,  Q1,  Q1, Q34, Q34,    1.0,  1.0, 1, 1 << 15, 1 << 15, 4, {4, 3}}},
-    {{1, FA},  {SE, FA, Q60,  Q1,  Q1, Q24, Q24,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
-    {{2, FM},  {SE, FM, Q60,  Q2,  Q2, Q33, Q33,   16.0,  1.0, 1, 1 << 15, 1 << 15, 6, {3, 2}}},
-    {{2, FA},  {SE, FA, Q60,  Q2,  Q2, Q24, Q24,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {4, 3}}},
-    {{4, FM},  {SE, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 3, {5, 4}}},
-    {{4, FA},  {SE, FA, Q60,  Q4,  Q4, Q27, Q27,   32.0,  1.0, 1, 1 << 15, 1 << 15, 4, {3, 3}}},
-    {{6, FM},  {SE, FM, Q60,  Q6,  Q6, Q42, Q42,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {5, 4}}},
-    {{6, FA},  {SE, FA, Q60,  Q6,  Q6, Q31, Q31,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 4}}},
-    {{8, FM},  {SE, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
-    {{8, FA},  {SE, FA, Q60,  Q8,  Q8, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 3}}},
-    {{10, FM}, {SE, FM, Q60, Q10, Q10, Q51, Q51,  256.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
-    {{10, FA}, {SE, FA, Q60, Q10, Q10, Q40, Q40,  256.0,  1.0, 1, 1 << 16, 1 << 16, 4, {4, 3}}},
-    {{12, FM}, {SE, FM, Q80, Q12, Q12, Q55, Q55, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
-    {{12, FA}, {SE, FA, Q60, Q12, Q12, Q44, Q44, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 6, {3, 3}}},
-    {{14, FA}, {SE, FA, Q60, Q14, Q14, Q49, Q49, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
-    {{16, FA}, {SE, FA, Q80, Q16, Q16, Q51, Q51, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
-    {{32, FM}, {SE, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
+    {{1, FM},  {HT, FM, Q60,  Q1,  Q1, Q34, Q34,    1.0,  1.0, 1, 1 << 15, 1 << 15, 4, {5, 3}}},
+    {{1, FA},  {HT, FA, Q60,  Q1,  Q1, Q27, Q27,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{2, FM},  {HT, FM, Q60,  Q2,  Q2, Q33, Q33,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {4, 3}}},
+    {{2, FA},  {HT, FA, Q60,  Q2,  Q2, Q27, Q27,   16.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{4, FM},  {HT, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
+    {{4, FA},  {HT, FA, Q60,  Q4,  Q4, Q31, Q31,   32.0,  1.0, 1, 1 << 15, 1 << 15, 3, {3, 3}}},
+    {{6, FM},  {HT, FM, Q60,  Q6,  Q6, Q44, Q44,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
+    {{6, FA},  {HT, FA, Q60,  Q6,  Q6, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 4}}},
+    {{8, FM},  {HT, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {5, 3}}},
+    {{8, FA},  {HT, FA, Q60,  Q8,  Q8, Q39, Q39,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 3}}},
+    {{10, FM}, {HT, FM, Q60, Q10, Q10, Q52, Q52,  256.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{10, FA}, {HT, FA, Q60, Q10, Q10, Q44, Q44,  256.0,  1.0, 1, 1 << 16, 1 << 16, 3, {5, 3}}},
+    {{12, FM}, {HT, FM, Q80, Q12, Q12, Q56, Q56, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{12, FA}, {HT, FA, Q60, Q12, Q12, Q48, Q48, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
+    {{14, FA}, {HT, FA, Q60, Q14, Q14, Q53, Q53, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 3, {5, 2}}},
+    {{16, FA}, {HT, FA, Q80, Q16, Q16, Q56, Q56, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 2, {5, 2}}},
+    {{32, FM}, {HT, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
+};
+
+// GPU-leaning rows, one per row above: the configuration with the fewest key-switching digits (fewer kernel launches
+// per key switch and smaller keys on a GPU) among those within 25% of the row's time that meet the same criterion,
+// or the row itself where there is none. Registered as FBTArbLUT-GPU/FM and FBTArbLUT-GPU/FA so that
+// --benchmark_filter selects either table.
+[[maybe_unused]] const fbt_table arblut_configs_gpu = {
+    {{1, FM},  {HT, FM, Q60,  Q1,  Q1, Q34, Q34,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {3, 3}}},
+    {{1, FA},  {HT, FA, Q60,  Q1,  Q1, Q27, Q27,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{2, FM},  {HT, FM, Q60,  Q2,  Q2, Q33, Q33,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {4, 3}}},
+    {{2, FA},  {HT, FA, Q60,  Q2,  Q2, Q27, Q27,   16.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{4, FM},  {HT, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
+    {{4, FA},  {HT, FA, Q60,  Q4,  Q4, Q31, Q31,   32.0,  1.0, 1, 1 << 15, 1 << 15, 3, {3, 3}}},
+    {{6, FM},  {HT, FM, Q60,  Q6,  Q6, Q44, Q44,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
+    {{6, FA},  {HT, FA, Q60,  Q6,  Q6, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 4}}},
+    {{8, FM},  {HT, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {3, 3}}},
+    {{8, FA},  {HT, FA, Q60,  Q8,  Q8, Q39, Q39,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 3}}},
+    {{10, FM}, {HT, FM, Q60, Q10, Q10, Q52, Q52,  256.0,  1.0, 1, 1 << 17, 1 << 17, 2, {5, 3}}},
+    {{10, FA}, {HT, FA, Q60, Q10, Q10, Q44, Q44,  256.0,  1.0, 1, 1 << 16, 1 << 16, 3, {5, 3}}},
+    {{12, FM}, {HT, FM, Q80, Q12, Q12, Q56, Q56, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 2, {5, 3}}},
+    {{12, FA}, {HT, FA, Q60, Q12, Q12, Q48, Q48, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
+    {{14, FA}, {HT, FA, Q60, Q14, Q14, Q53, Q53, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 2, {5, 3}}},
+    {{16, FA}, {HT, FA, Q80, Q16, Q16, Q56, Q56, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 2, {5, 2}}},
+    {{32, FM}, {HT, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
 };
 // clang-format on
 
@@ -142,8 +180,31 @@ struct fbt_config {
         b->ArgName("bits")->Arg(bits);
 }
 
+// throws when the row does not meet the security bound of its level
+static CryptoContext<DCRTPoly> GenFBTContext(const fbt_config& t, uint32_t numSlotsCKKS, uint32_t depth) {
+    uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecretKeyDist(t.skd);
+    parameters.SetSecurityLevel(SecurityLevelFor(t.skd));
+    parameters.SetScalingModSize(dcrtBits);
+    parameters.SetScalingTechnique(t.scalTech);
+    parameters.SetFirstModSize(dcrtBits);
+    parameters.SetNumLargeDigits(t.dnum);
+    parameters.SetBatchSize(numSlotsCKKS);
+    parameters.SetRingDim(t.ringDim);
+    parameters.SetMultiplicativeDepth(depth);
+
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(FHE);
+    return cc;
+}
+
 [[maybe_unused]] static void FBTSetup(benchmark::State& state) {
-    auto t = arblut_configs[{12, FM}];
+    auto t = arblut_configs.at({12, FM});
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -169,30 +230,20 @@ struct fbt_config {
     else  // divided by 2
         coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
 
-    uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(t.skd);
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(t.scalTech);
-    parameters.SetFirstModSize(dcrtBits);
-    parameters.SetNumLargeDigits(t.dnum);
-    parameters.SetBatchSize(numSlotsCKKS);
-    parameters.SetRingDim(t.ringDim);
-
     uint32_t depth = 0;
     if (binaryLUT)
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
     else
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
-    parameters.SetMultiplicativeDepth(depth);
 
-    auto cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-    cc->Enable(FHE);
+    CryptoContext<DCRTPoly> cc;
+    try {
+        cc = GenFBTContext(t, numSlotsCKKS, depth);
+    } catch (const std::exception& e) {
+        state.SkipWithError(e.what());
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        return;
+    }
 
     auto keyPair = cc->KeyGen();
 
@@ -205,11 +256,11 @@ struct fbt_config {
                              0, t.order, t.numSlots);
     }
 
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
 [[maybe_unused]] static void FBTKeyGen(benchmark::State& state) {
-    auto t = arblut_configs[{12, FM}];
+    auto t = arblut_configs.at({12, FM});
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -235,30 +286,20 @@ struct fbt_config {
     else  // divided by 2
         coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
 
-    uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(t.skd);
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(t.scalTech);
-    parameters.SetFirstModSize(dcrtBits);
-    parameters.SetNumLargeDigits(t.dnum);
-    parameters.SetBatchSize(numSlotsCKKS);
-    parameters.SetRingDim(t.ringDim);
-
     uint32_t depth = 0;
     if (binaryLUT)
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
     else
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
-    parameters.SetMultiplicativeDepth(depth);
 
-    auto cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-    cc->Enable(FHE);
+    CryptoContext<DCRTPoly> cc;
+    try {
+        cc = GenFBTContext(t, numSlotsCKKS, depth);
+    } catch (const std::exception& e) {
+        state.SkipWithError(e.what());
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        return;
+    }
 
     auto keyPair = cc->KeyGen();
 
@@ -278,11 +319,11 @@ struct fbt_config {
         cc->EvalMultKeyGen(keyPair.secretKey);
     }
 
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
-[[maybe_unused]] static void FBTArbLUT(benchmark::State& state, ScalingTechnique scalTech) {
-    auto t = arblut_configs[{static_cast<uint32_t>(state.range(0)), scalTech}];
+[[maybe_unused]] static void FBTArbLUT(benchmark::State& state, ScalingTechnique scalTech, const fbt_table* table) {
+    auto t = table->at({static_cast<uint32_t>(state.range(0)), scalTech});
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -308,30 +349,20 @@ struct fbt_config {
     else  // divided by 2
         coeffcomp = GetHermiteTrigCoefficients(f, t.PInput.ConvertToInt(), t.order, t.scaleTHI);
 
-    uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(t.skd);
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(t.scalTech);
-    parameters.SetFirstModSize(dcrtBits);
-    parameters.SetNumLargeDigits(t.dnum);
-    parameters.SetBatchSize(numSlotsCKKS);
-    parameters.SetRingDim(t.ringDim);
-
     uint32_t depth = 0;
     if (binaryLUT)
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffint, t.PInput, t.order, t.skd);
     else
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcomp, t.PInput, t.order, t.skd);
-    parameters.SetMultiplicativeDepth(depth);
 
-    auto cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-    cc->Enable(FHE);
+    CryptoContext<DCRTPoly> cc;
+    try {
+        cc = GenFBTContext(t, numSlotsCKKS, depth);
+    } catch (const std::exception& e) {
+        state.SkipWithError(e.what());
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        return;
+    }
 
     auto keyPair = cc->KeyGen();
 
@@ -363,11 +394,11 @@ struct fbt_config {
         ctxtAfterFBT.reset();
     }
 
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
 [[maybe_unused]] static void FBTSignDigit32(benchmark::State& state) {
-    auto t = arblut_configs[{32, FM}];
+    auto t = arblut_configs.at({32, FM});
 
     bool flagSP = (t.numSlots <= t.ringDim / 2);  // sparse packing
 
@@ -407,29 +438,21 @@ struct fbt_config {
     }
 
     uint32_t dcrtBits = t.Bigq.GetMSB() - 1;
-    CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetSecretKeyDist(t.skd);
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetScalingModSize(dcrtBits);
-    parameters.SetScalingTechnique(t.scalTech);
-    parameters.SetFirstModSize(dcrtBits);
-    parameters.SetNumLargeDigits(t.dnum);
-    parameters.SetBatchSize(numSlotsCKKS);
-    parameters.SetRingDim(t.ringDim);
 
     uint32_t depth = 0;
     if (binaryLUT)
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffintMod, t.PInput, t.order, t.skd);
     else
         depth += FHECKKSRNS::GetFBTDepth(t.lvlb, coeffcompMod, t.PInput, t.order, t.skd);
-    parameters.SetMultiplicativeDepth(depth);
 
-    auto cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-    cc->Enable(FHE);
+    CryptoContext<DCRTPoly> cc;
+    try {
+        cc = GenFBTContext(t, numSlotsCKKS, depth);
+    } catch (const std::exception& e) {
+        state.SkipWithError(e.what());
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        return;
+    }
 
     auto keyPair = cc->KeyGen();
 
@@ -529,13 +552,30 @@ struct fbt_config {
         }
     }
 
-    cc->ClearStaticMapsAndVectors();
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
 }
 
-BENCHMARK_CAPTURE(FBTArbLUT, FM, FM)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBitsFM);
-BENCHMARK_CAPTURE(FBTArbLUT, FA, FA)->Unit(benchmark::kSecond)->Iterations(4)->Apply(ArbLUTBitsFA);
-BENCHMARK(FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
-BENCHMARK(FBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
-BENCHMARK(FBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);
+int main(int argc, char** argv) {
+    for (const auto& [prefix, table] :
+         {std::pair<const char*, const fbt_table*>{"FBTArbLUT/", &arblut_configs},
+          std::pair<const char*, const fbt_table*>{"FBTArbLUT-GPU/", &arblut_configs_gpu}}) {
+        benchmark::RegisterBenchmark(std::string(prefix) + "FM", FBTArbLUT, FM, table)
+                ->Unit(benchmark::kSecond)
+                ->Iterations(4)
+                ->Apply(ArbLUTBitsFM);
+        benchmark::RegisterBenchmark(std::string(prefix) + "FA", FBTArbLUT, FA, table)
+                ->Unit(benchmark::kSecond)
+                ->Iterations(4)
+                ->Apply(ArbLUTBitsFA);
+    }
+    benchmark::RegisterBenchmark("FBTSignDigit32", FBTSignDigit32)->Unit(benchmark::kSecond)->Iterations(4);
+    benchmark::RegisterBenchmark("FBTSetup", FBTSetup)->Unit(benchmark::kSecond)->Iterations(10);
+    benchmark::RegisterBenchmark("FBTKeyGen", FBTKeyGen)->Unit(benchmark::kSecond)->Iterations(4);
 
-BENCHMARK_MAIN();
+    benchmark::Initialize(&argc, argv);
+    if (benchmark::ReportUnrecognizedArguments(argc, argv))
+        return 1;
+    benchmark::RunSpecifiedBenchmarks();
+    benchmark::Shutdown();
+    return 0;
+}
