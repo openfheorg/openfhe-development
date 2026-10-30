@@ -54,3 +54,9 @@ limbs dropped relative to a full key), or by compressing an existing key with
 smaller and faster to generate. Supported for BGV and CKKS with both BV and HYBRID key
 switching (BFV throws for a nonzero level). For duplicate rotation indices, the
 cryptocontext keeps the key with the most limbs.
+
+CKKS bootstrapping uses this for its own keys: `EvalBootstrapKeyGen` generates the rotation
+keys of CoeffsToSlots (applied at the raised level) full-size, and the keys used only by
+SlotsToCoeffs over the towers of the ciphertext entering it, which is a fixed level in every
+bootstrapping flavor (`CKKSBootstrapPrecom::m_towersStC`). An index shared by both transforms
+keeps its full-size key.

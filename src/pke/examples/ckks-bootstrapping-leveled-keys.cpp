@@ -36,12 +36,14 @@ Example for generating the application's evaluation keys at a reduced level
 bootstrapping workload.
 
 In an iterated computation (bootstrap -> compute -> bootstrap -> ...), the
-bootstrapping keys must be full-size: the CoeffsToSlots rotations run right
-after the modulus raise, at the largest number of RNS limbs. The application's
-own rotation keys, however, only ever touch post-bootstrap ciphertexts, which
-carry far fewer limbs. Generating those keys at the matching level (or
-compressing existing keys with CompressEvalKey) shrinks them substantially at
-no cost in performance or precision.
+CoeffsToSlots rotation keys must be full-size: those rotations run right after
+the modulus raise, at the largest number of RNS limbs (EvalBootstrapKeyGen
+already generates the keys used only by SlotsToCoeffs over the fewer limbs of
+the ciphertext entering it). The application's own rotation keys, however, only
+ever touch post-bootstrap ciphertexts, which carry far fewer limbs. Generating
+those keys at the matching level (or compressing existing keys with
+CompressEvalKey) shrinks them substantially at no cost in performance or
+precision.
 
 */
 
@@ -112,8 +114,9 @@ int main(int argc, char* argv[]) {
 
     // Step 2: Generate the keys that must remain FULL-SIZE.
     // The relinearization key is used inside bootstrapping (EvalMod squarings) at a large
-    // number of limbs, and the CoeffsToSlots rotations run right after the modulus raise,
-    // so EvalBootstrapKeyGen must generate its keys at level 0.
+    // number of limbs, and the CoeffsToSlots rotations run right after the modulus raise.
+    // EvalBootstrapKeyGen generates those full-size, and the keys used only by SlotsToCoeffs
+    // over the limbs of the ciphertext entering SlotsToCoeffs.
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
