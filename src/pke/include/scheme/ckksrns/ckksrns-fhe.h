@@ -95,6 +95,12 @@ class CKKSBootstrapPrecom {
     /// number of slots for which the bootstrapping is performed
     uint32_t m_slots;
 
+    /// number of RNS towers of the ciphertext entering SlotsToCoeffs, lDec + compositeDegree * m_paramsDec.lvlb for
+    /// the lDec of the setup (the Q towers of the first-level SlotsToCoeffs plaintexts). The rotation keys used only
+    /// by SlotsToCoeffs are generated over this many towers (see EvalBootstrapKeyGen); 0 means not recorded, and
+    /// those keys are then generated full-size. Not serialized, for the same reason as m_variant.
+    uint32_t m_towersStC = 0;
+
     /// Linear map U0; used in decoding
     std::vector<ReadOnlyPlaintext> m_U0Pre;
 
@@ -1101,9 +1107,11 @@ class FHECKKSRNS : public FHERNS {
      * Generates the automorphism key for complex conjugation (automorphism index 2N - 1).
      *
      * @param privateKey the private key
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key (0 by default); the
+     * key can only be applied to ciphertexts with at most (full - levels) limbs
      * @return the conjugation key
      */
-    static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey);
+    static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t levels = 0);
 
     /**
      * Conjugates the slot values of a ciphertext (automorphism index 2N - 1).
@@ -1149,12 +1157,30 @@ class FHECKKSRNS : public FHERNS {
     //------------------------------------------------------------------------------
     std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
 
-    // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
+    /**
+     * The bootstrapping rotation indices with the number of RNS towers of the ciphertext each rotation is applied
+     * to, the largest over its uses: the rotations of CoeffsToSlots start at the raised level L0 (the chain without
+     * the extra modulus of FLEXIBLEAUTOEXT) and lose compositeDegree towers per level, those of SlotsToCoeffs start
+     * at m_towersStC (full-size when the setup has not recorded it) and lose compositeDegree towers per level, and
+     * the partial-sum rotations of sparse packing and the correction rotation are applied at the raised level.
+     * EvalBootstrapKeyGen generates the key of each index over that many towers.
+     *
+     * @param cryptoParams crypto parameters
+     * @param slots number of slots
+     * @param M cyclotomic order
+     * @return map from rotation index to the number of towers of its key
+     */
+    std::map<uint32_t, uint32_t> FindBootstrapRotationIndexTowers(
+            const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams, uint32_t slots, uint32_t M);
+
+    // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() and
+    // FindBootstrapRotationIndexTowers() only. Each rotation index comes with the number of levels of its
+    // transform (compositeDegree towers each) consumed before it is applied, 0 for the first level.
     // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
     // These methods completely depend on FindBootstrapRotationIndices() to do that.
-    std::vector<uint32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
-    std::vector<uint32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
-    std::vector<uint32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<std::pair<uint32_t, uint32_t>> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<std::pair<uint32_t, uint32_t>> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<std::pair<uint32_t, uint32_t>> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
 
     //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions

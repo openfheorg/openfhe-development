@@ -414,6 +414,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         } else {
             lDec = L0 - compositeDegree * depthBT;
         }
+        // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+        precom->m_towersStC = lDec + compositeDegree * precom->m_paramsDec.lvlb;
 
         bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -476,8 +478,20 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
 
     slots = (slots == 0) ? M / 4 : slots;
 
-    // computing all indices for baby-step giant-step procedure
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, FindBootstrapRotationIndices(slots, M));
+    // Each rotation key is generated over the towers of the largest ciphertext it is applied to (see
+    // FindBootstrapRotationIndexTowers): a key can be applied to any ciphertext with at most as many towers, at the
+    // same cost and noise (see KeySwitchBase::KeySwitchGen), and the levels of the two linear transforms are fixed
+    // in every bootstrapping flavor. The indices are grouped by their number of towers, one key generation per group.
+    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+    std::map<uint32_t, std::vector<int32_t>> indicesByTowers;
+    for (const auto& [index, towers] : FindBootstrapRotationIndexTowers(cryptoParams, slots, M))
+        indicesByTowers[towers].emplace_back(index);
+
+    auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>();
+    for (const auto& [towers, indices] : indicesByTowers) {
+        auto keys = algo->EvalAtIndexKeyGen(privateKey, indices, sizeQ - towers);
+        evalKeys->insert(keys->begin(), keys->end());
+    }
 
     (*evalKeys)[M - 1] = ConjugateKeyGen(privateKey);
 
@@ -683,6 +697,8 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     } else {
         lDec = L0 - compositeDegree * depthBT;
     }
+    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+    p.m_towersStC = lDec + compositeDegree * p.m_paramsDec.lvlb;
 
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
@@ -1767,6 +1783,8 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     // correction, as the message must reach ModRaise at exactly the scale of the argument of the complex exponential
     uint32_t lDec = compositeDegree;
     scaleDec *= GetStCFirstDecodingScale(cryptoParams, 0);
+    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+    precom->m_towersStC = lDec + compositeDegree * precom->m_paramsDec.lvlb;
 
     bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -2231,19 +2249,62 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 // Find Rotation Indices
 //------------------------------------------------------------------------------
 
+std::map<uint32_t, uint32_t> FHECKKSRNS::FindBootstrapRotationIndexTowers(
+        const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams, uint32_t slots, uint32_t M) {
+    const auto& p = GetBootPrecom(slots);
+    const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+    // CoeffsToSlots starts at the raised level: the chain without the extra modulus of FLEXIBLEAUTOEXT
+    const uint32_t towersCtS = sizeQ - (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT);
+    // SlotsToCoeffs starts at the towers recorded by the setup; full-size keys when they are not recorded
+    const uint32_t towersStC = (p.m_towersStC > 0 && p.m_towersStC < sizeQ) ? p.m_towersStC : sizeQ;
+
+    // a rotation used at several levels, or by both transforms, gets the key of its largest ciphertext
+    std::map<uint32_t, uint32_t> towersByIndex;
+    const auto add = [&towersByIndex](const std::vector<std::pair<uint32_t, uint32_t>>& indices, uint32_t towersFirst,
+                                      uint32_t towersPerLevel) {
+        for (const auto& [index, level] : indices) {
+            const uint32_t dropped = towersPerLevel * level;
+            const uint32_t towers = (dropped < towersFirst) ? towersFirst - dropped : 1;
+            auto it = towersByIndex.find(index);
+            if (it == towersByIndex.end())
+                towersByIndex.emplace(index, towers);
+            else if (it->second < towers)
+                it->second = towers;
+        }
+    };
+
+    if (p.m_paramsEnc.lvlb == 1 && p.m_paramsDec.lvlb == 1) {
+        // the single-level transforms of both directions use the same rotations; CoeffsToSlots is the larger
+        add(FindLinearTransformRotationIndices(slots, M), towersCtS, compositeDegree);
+    } else {
+        add(FindCoeffsToSlotsRotationIndices(slots, M), towersCtS, compositeDegree);
+        add(FindSlotsToCoeffsRotationIndices(slots, M), towersStC, compositeDegree);
+    }
+    // the rotation by slots of the partial sum after SlotsToCoeffs is also a rotation of the fold at the raised level
+    add({{static_cast<uint32_t>(slots), 0}}, towersCtS, compositeDegree);
+
+    // automorphisms corresponding to 0 and M/4 are not rotations
+    towersByIndex.erase(0);
+    towersByIndex.erase(M / 4);
+
+    return towersByIndex;
+}
+
 std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots);
 
     // Remove possible duplicates and remove automorphisms corresponding to 0 and M/4 by using std::set
     std::set<uint32_t> s;
+    const auto add = [&s](const std::vector<std::pair<uint32_t, uint32_t>>& indices) {
+        for (const auto& [index, level] : indices)
+            s.insert(index);
+    };
     if (p.m_paramsEnc.lvlb == 1 && p.m_paramsDec.lvlb == 1) {
-        auto tmp = FindLinearTransformRotationIndices(slots, M);
-        s.insert(tmp.begin(), tmp.end());
+        add(FindLinearTransformRotationIndices(slots, M));
     } else {
-        auto tmp = FindCoeffsToSlotsRotationIndices(slots, M);
-        s.insert(tmp.begin(), tmp.end());
-        tmp = FindSlotsToCoeffsRotationIndices(slots, M);
-        s.insert(tmp.begin(), tmp.end());
+        add(FindCoeffsToSlotsRotationIndices(slots, M));
+        add(FindSlotsToCoeffsRotationIndices(slots, M));
     }
     s.insert(static_cast<uint32_t>(slots));
     s.erase(0);
@@ -2252,19 +2313,20 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
     return std::vector<int32_t>(s.begin(), s.end());
 }
 
-// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() only.
-// so it DOES NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
-// This method completely depends on FindBootstrapRotationIndices() to do that.
-std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slots, uint32_t M) {
+// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and
+// FindBootstrapRotationIndexTowers() only. so it DOES NOT remove possible duplicates and automorphisms
+// corresponding to 0 and M/4. These methods completely depend on the callers to do that.
+std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots);
     const uint32_t g = (p.m_paramsEnc.g == 0) ? std::ceil(std::sqrt(slots)) : p.m_paramsEnc.g;
 
+    // a single level: every rotation is applied at the first level of its transform
     // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices
-    std::vector<uint32_t> indexList;
+    std::vector<std::pair<uint32_t, uint32_t>> indexList;
     indexList.reserve(g + 32);
 
     for (uint32_t i = 1; i <= g; ++i)
-        indexList.emplace_back(i);
+        indexList.emplace_back(i, 0);
 
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
     // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
@@ -2273,74 +2335,83 @@ std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t sl
         const uint32_t size = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
-                indexList.emplace_back(idx);
+                indexList.emplace_back(idx, 0);
     }
 
     return indexList;
 }
 
-// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() only.
-// so it DOES NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
-// This method completely depends on FindBootstrapRotationIndices() to do that.
-std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M) {
+// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and
+// FindBootstrapRotationIndexTowers() only. so it DOES NOT remove possible duplicates and automorphisms
+// corresponding to 0 and M/4. These methods completely depend on the callers to do that.
+std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots).m_paramsEnc;
 
     // lvlb*(g+1)+gRem sizes the per-level baby/giant rotations
     // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices + correction key
-    std::vector<uint32_t> indexList;
+    std::vector<std::pair<uint32_t, uint32_t>> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
-    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}, applied at the
+    // raised level before the transform
     if (uint32_t m = slots * 4; m != M) {
         constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
-                indexList.emplace_back(idx);
+                indexList.emplace_back(idx, 0);
     }
 
     M >>= 2;
     // clamp all indices to [0, 2*slots)
     const uint32_t reduceMod = std::min(M, 2 * slots);
     const int32_t flagRem = (p.remCollapse == 0) ? 0 : 1;
+    // the levels are evaluated from s = lvlb - 1 down (see EvalCoeffsToSlots), the remainder level last
     for (int32_t s = -1 + p.lvlb; s >= flagRem; --s) {
+        const uint32_t level = p.lvlb - 1 - s;
         const uint32_t scalingFactor = 1U << ((s - flagRem) * p.layersCollapse + p.remCollapse);
         for (uint32_t j = 1; j < p.g; ++j)
-            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod));
+            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod), level);
         if (p.b > 1)
-            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod));
+            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod), level);
     }
 
     if (flagRem == 1) {
+        const uint32_t level = p.lvlb - 1;
         for (uint32_t j = 1; j < p.gRem; ++j)
-            indexList.emplace_back(ReduceRotation(j, reduceMod));
+            indexList.emplace_back(ReduceRotation(j, reduceMod), level);
         if (p.bRem > 1)
-            indexList.emplace_back(ReduceRotation(p.gRem, reduceMod));
+            indexList.emplace_back(ReduceRotation(p.gRem, reduceMod), level);
     }
 
-    // StC correction key Aut_{-(slots-1)} (CtS correction is now absorbed into plaintexts)
-    indexList.emplace_back(ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod));
+    // StC correction key Aut_{-(slots-1)} (CtS correction is now absorbed into plaintexts); it is applied at the
+    // end of every level of both transforms, so at the first level of CoeffsToSlots
+    indexList.emplace_back(ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod), 0);
 
     return indexList;
 }
 
-std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M) {
+// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and
+// FindBootstrapRotationIndexTowers() only. so it DOES NOT remove possible duplicates and automorphisms
+// corresponding to 0 and M/4. These methods completely depend on the callers to do that.
+std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots).m_paramsDec;
 
     // lvlb*(g+1)+gRem sizes the per-level baby/giant rotations
     // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices
-    std::vector<uint32_t> indexList;
+    std::vector<std::pair<uint32_t, uint32_t>> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
-    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}, applied after
+    // the transform (they are also applied at the raised level, see FindCoeffsToSlotsRotationIndices)
     if (uint32_t m = slots * 4; m != M) {
         constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
-                indexList.emplace_back(idx);
+                indexList.emplace_back(idx, p.lvlb);
     }
 
     M >>= 2;
@@ -2348,20 +2419,21 @@ std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slot
     const uint32_t reduceMod = std::min(M, 2 * slots);
     const uint32_t flagRem = (p.remCollapse == 0) ? 0 : 1;
     const uint32_t smax = p.lvlb - flagRem;
+    // the levels are evaluated from s = 0 up (see EvalSlotsToCoeffs), the remainder level last
     for (uint32_t s = 0; s < smax; ++s) {
         const uint32_t scalingFactor = 1U << (s * p.layersCollapse);
         for (uint32_t j = 1; j < p.g; ++j)
-            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod));
+            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod), s);
         if (p.b > 1)
-            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod));
+            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod), s);
     }
 
     if (flagRem == 1) {
         const uint32_t scalingFactor = 1U << (smax * p.layersCollapse);
         for (uint32_t j = 1; j < p.gRem; ++j)
-            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod));
+            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod), smax);
         if (p.bRem > 1)
-            indexList.emplace_back(ReduceRotation(p.gRem * scalingFactor, reduceMod));
+            indexList.emplace_back(ReduceRotation(p.gRem * scalingFactor, reduceMod), smax);
     }
 
     return indexList;
@@ -2386,21 +2458,9 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i] = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
-    }
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+            elementParams, static_cast<uint32_t>(elementParams.GetParams().size()), *cryptoParams->GetParamsP(),
+            static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     auto g = GetBootPrecom(slots).m_paramsEnc.g;
 
@@ -2432,21 +2492,9 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i] = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
-    }
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+            elementParams, static_cast<uint32_t>(elementParams.GetParams().size()), *cryptoParams->GetParamsP(),
+            static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     const int32_t slots = static_cast<int32_t>(A.size());
 
@@ -2530,30 +2578,15 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
 
     uint32_t level0 = towersToDrop + compositeDegree * (p.lvlb - 1);
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i] = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
-    }
+    const auto& paramsP = cryptoParams->GetParamsP();
+    uint32_t sizeQ = elementParams.GetParams().size();
+    uint32_t sizeP = paramsP->GetParams().size();
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
     uint32_t M = cc.GetCyclotomicOrder();
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(p.lvlb - stop);
-    for (int32_t s = p.lvlb - 1; s >= stop; --s) {
-        paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(M, moduli, roots);
-        sizeQ -= compositeDegree;
-        moduli.erase(moduli.begin() + sizeQ, moduli.begin() + sizeQ + compositeDegree);
-        roots.erase(roots.begin() + sizeQ, roots.begin() + sizeQ + compositeDegree);
-    }
+    for (int32_t s = p.lvlb - 1; s >= stop; --s, sizeQ -= compositeDegree)
+        paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(elementParams, sizeQ, *paramsP, sizeP);
 
     // zero-based inner indices require shifting the pre-rotation by +offset*scale
     const int32_t offset = static_cast<int32_t>((p.numRotations + 1) / 2) - 1;
@@ -2699,31 +2732,15 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
     for (uint32_t i = 0; i < towersToDrop; ++i)
         elementParams.PopLastParam();
 
-    const auto& paramsQ = elementParams.GetParams();
-    uint32_t sizeQ = paramsQ.size();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
-    uint32_t sizeP = paramsP.size();
-    std::vector<NativeInteger> moduli(sizeQ + sizeP);
-    std::vector<NativeInteger> roots(sizeQ + sizeP);
-    for (uint32_t i = 0; i < sizeQ; ++i) {
-        moduli[i] = paramsQ[i]->GetModulus();
-        roots[i] = paramsQ[i]->GetRootOfUnity();
-    }
-    for (uint32_t i = 0; i < sizeP; ++i) {
-        moduli[sizeQ + i] = paramsP[i]->GetModulus();
-        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
-    }
+    const auto& paramsP = cryptoParams->GetParamsP();
+    uint32_t sizeQ = elementParams.GetParams().size();
+    uint32_t sizeP = paramsP->GetParams().size();
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
     const uint32_t pvlen = p.lvlb + 1 - flagRem;
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(pvlen);
-    for (uint32_t s = 0; s < pvlen; ++s) {
-        paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(cc.GetCyclotomicOrder(), moduli, roots);
-        for (uint32_t i = 0; i < compositeDegree; ++i, --sizeQ) {
-            moduli.erase(moduli.begin() + sizeQ - 1);
-            roots.erase(roots.begin() + sizeQ - 1);
-        }
-    }
+    for (uint32_t s = 0; s < pvlen; ++s, sizeQ -= compositeDegree)
+        paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(elementParams, sizeQ, *paramsP, sizeP);
 
     // zero-based inner indices require shifting the pre-rotation by +offset*shiftScale
     const int32_t offset = static_cast<int32_t>((p.numRotations + 1) / 2) - 1;
@@ -3706,7 +3723,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext
     return result;
 }
 
-EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) {
+EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t levels) {
     uint32_t N = privateKey->GetPrivateElement().GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, 2 * N - 1, &vec);
@@ -3714,7 +3731,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> private
     auto pkPermuted = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
     pkPermuted->SetPrivateElement(privateKey->GetPrivateElement().AutomorphismTransform(2 * N - 1, vec));
     pkPermuted->SetKeyTag(privateKey->GetKeyTag());
-    return cc->GetScheme()->KeySwitchGen(privateKey, pkPermuted);
+    return cc->GetScheme()->KeySwitchGen(privateKey, pkPermuted, levels);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
@@ -3951,6 +3968,8 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     // each level consists of compositeDegree towers; CoeffsToSlots starts right after the modulus raise
     uint32_t lEnc = L0 - compositeDegree * levelBudget[0];
     uint32_t lDec = L0 - compositeDegree * depthBT;
+    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+    precom->m_towersStC = lDec + compositeDegree * levelBudget[1];
 
     bool isLTBootstrap = (levelBudget[0] == 1) && (levelBudget[1] == 1);
     if (isLTBootstrap) {

@@ -43,3 +43,20 @@ graph BT
 - Hybrid key switching method first introduced in https://eprint.iacr.org/2012/099.pdf
 - RNS version was introduced in https://eprint.iacr.org/2019/688.
 - See the Appendix of https://eprint.iacr.org/2021/204 for more detailed description.
+
+## Evaluation keys at a specified level
+
+Key-switching keys can be generated with fewer RNS limbs than the cryptocontext by passing
+the optional `levels` argument to the `Eval*KeyGen`/`KeySwitchGen` methods (the number of
+limbs dropped relative to a full key), or by compressing an existing key with
+`CompressEvalKey`. A reduced key can be applied to any ciphertext with at most
+(full &minus; `levels`) limbs, at identical runtime cost and noise; it is proportionally
+smaller and faster to generate. Supported for BGV and CKKS with both BV and HYBRID key
+switching (BFV throws for a nonzero level). For duplicate rotation indices, the
+cryptocontext keeps the key with the most limbs.
+
+CKKS bootstrapping uses this for its own keys: `EvalBootstrapKeyGen` generates the rotation
+keys of CoeffsToSlots (applied at the raised level) full-size, and the keys used only by
+SlotsToCoeffs over the towers of the ciphertext entering it, which is a fixed level in every
+bootstrapping flavor (`CKKSBootstrapPrecom::m_towersStC`). An index shared by both transforms
+keeps its full-size key.

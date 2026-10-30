@@ -45,6 +45,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -353,21 +354,10 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const auto& paramsQ = elementParams.GetParams();
     const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    size_t sizeQP = paramsQ.size() + paramsP.size();
-    std::vector<NativeInteger> moduli;
-    moduli.reserve(sizeQP);
-    std::vector<NativeInteger> roots;
-    roots.reserve(sizeQP);
-    for (const auto& elem : paramsQ) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-    for (const auto& elem : paramsP) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+            elementParams, static_cast<uint32_t>(paramsQ.size()), *cryptoParamsCKKS->GetParamsP(),
+            static_cast<uint32_t>(paramsP.size()));
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -417,21 +407,10 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     const auto& paramsQ = elementParams.GetParams();
     const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
 
-    size_t sizeQP = paramsQ.size() + paramsP.size();
-    std::vector<NativeInteger> moduli;
-    moduli.reserve(sizeQP);
-    std::vector<NativeInteger> roots;
-    roots.reserve(sizeQP);
-    for (const auto& elem : paramsQ) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-    for (const auto& elem : paramsP) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
+    // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+            elementParams, static_cast<uint32_t>(paramsQ.size()), *cryptoParams->GetParamsP(),
+            static_cast<uint32_t>(paramsP.size()));
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -552,7 +531,6 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
     int32_t gStep = std::ceil(static_cast<double>(n) / bStep);
 
-    uint32_t M = cc.GetCyclotomicOrder();
     uint32_t N = cc.GetRingDimension();
 
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
@@ -580,21 +558,10 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     const auto& paramsQ = elementParams.GetParams();
     const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
-    size_t sizeQP = paramsQ.size() + paramsP.size();
-    std::vector<NativeInteger> moduli;
-    moduli.reserve(sizeQP);
-    std::vector<NativeInteger> roots;
-    roots.reserve(sizeQP);
-    for (const auto& elem : paramsQ) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-    for (const auto& elem : paramsP) {
-        moduli.emplace_back(elem->GetModulus());
-        roots.emplace_back(elem->GetRootOfUnity());
-    }
-
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+    // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+            elementParams, static_cast<uint32_t>(paramsQ.size()), *cryptoParamsCKKS->GetParamsP(),
+            static_cast<uint32_t>(paramsP.size()));
     auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
 // Hoisted automorphisms
@@ -666,7 +633,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
 
     auto ctxtToDecode = ctxt->Clone();
 
-    uint32_t numTowersToKeep = 2;
+    uint32_t numTowersToKeep = S2C_TOWERS;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
@@ -824,10 +791,13 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKSto
     // Compute multiplication key
     algo->EvalMultKeyGen(privateKey);
 
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
+    // the SlotsToCoeffs transform runs on a ciphertext compressed to S2C_TOWERS towers (EvalSlotsToCoeffsSwitch),
+    // so its rotation keys and the conjugation key are generated over those towers only
+    const uint32_t levelsS2C = cryptoParams->GetElementParams()->GetParams().size() - S2C_TOWERS;
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C, levelsS2C);
 
     // Compute conjugation key
-    (*evalKeys)[M - 1] = FHECKKSRNS::ConjugateKeyGen(privateKey);
+    (*evalKeys)[M - 1] = FHECKKSRNS::ConjugateKeyGen(privateKey, levelsS2C);
 
     return evalKeys;
 }
@@ -1248,15 +1218,21 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTRotationIndicesSwitch(m_dim1CF, M, slots);
     indexRotationS2C.emplace_back(static_cast<int32_t>(slots));
+    // these rotations are applied to a ciphertext compressed to S2C_TOWERS towers (EvalSlotsToCoeffsSwitch); the
+    // rotations below are applied to ciphertexts at the level of the computation, so an index they share with the
+    // transform keeps a full-size key
+    const std::set<int32_t> indexRotationS2COnly(indexRotationS2C.begin(), indexRotationS2C.end());
 
     // Compute indices for rotations for sparse packing
+    std::vector<int32_t> indexRotationSparse;
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots));
+        indexRotationSparse.reserve(GetMSB(ringDim) - 2 + GetMSB(slots));
         for (uint32_t i = 1; i < ringDim / 2; i <<= 1) {
-            indexRotationS2C.emplace_back(static_cast<int32_t>(i));
+            indexRotationSparse.emplace_back(static_cast<int32_t>(i));
             if (i <= slots)
-                indexRotationS2C.emplace_back(-static_cast<int32_t>(i));
+                indexRotationSparse.emplace_back(-static_cast<int32_t>(i));
         }
+        indexRotationS2C.insert(indexRotationS2C.end(), indexRotationSparse.begin(), indexRotationSparse.end());
     }
 
     /* FHEW to CKKS */
@@ -1319,10 +1295,30 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     indexRotationS2C.erase(std::remove(indexRotationS2C.begin(), indexRotationS2C.end(), 0), indexRotationS2C.end());
 
     auto algo = ccCKKS->GetScheme();
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
-    // Compute conjugation key
-    auto conjKey = FHECKKSRNS::ConjugateKeyGen(privateKey);
+    // the rotations used only by the SlotsToCoeffs transform are generated over S2C_TOWERS towers, the others
+    // full-size
+    const uint32_t levelsS2C = cryptoParams->GetElementParams()->GetParams().size() - S2C_TOWERS;
+    std::vector<int32_t> indicesS2C;
+    std::vector<int32_t> indicesFull;
+    for (const auto index : indexRotationS2C) {
+        const bool s2cOnly =
+                (indexRotationS2COnly.count(index) != 0) &&
+                (std::find(indexRotationHomDec.begin(), indexRotationHomDec.end(), index) ==
+                 indexRotationHomDec.end()) &&
+                (std::find(indexRotationArgmin.begin(), indexRotationArgmin.end(), index) ==
+                 indexRotationArgmin.end()) &&
+                (std::find(indexRotationSparse.begin(), indexRotationSparse.end(), index) == indexRotationSparse.end());
+        (s2cOnly ? indicesS2C : indicesFull).emplace_back(index);
+    }
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indicesFull);
+    if (!indicesS2C.empty()) {
+        auto evalKeysS2C = algo->EvalAtIndexKeyGen(privateKey, indicesS2C, levelsS2C);
+        evalKeys->insert(evalKeysS2C->begin(), evalKeysS2C->end());
+    }
+
+    // Compute conjugation key (used by the SlotsToCoeffs transform only)
+    auto conjKey = FHECKKSRNS::ConjugateKeyGen(privateKey, levelsS2C);
     (*evalKeys)[M - 1] = conjKey;
 
     // Compute multiplication key
