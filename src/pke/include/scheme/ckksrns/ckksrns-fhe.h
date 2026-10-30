@@ -95,6 +95,12 @@ class CKKSBootstrapPrecom {
     /// number of slots for which the bootstrapping is performed
     uint32_t m_slots;
 
+    /// number of RNS towers of the ciphertext entering SlotsToCoeffs, lDec + compositeDegree * m_paramsDec.lvlb for
+    /// the lDec of the setup (the Q towers of the first-level SlotsToCoeffs plaintexts). The rotation keys used only
+    /// by SlotsToCoeffs are generated over this many towers (see EvalBootstrapKeyGen); 0 means not recorded, and
+    /// those keys are then generated full-size. Not serialized, for the same reason as m_variant.
+    uint32_t m_towersStC = 0;
+
     /// Linear map U0; used in decoding
     std::vector<ReadOnlyPlaintext> m_U0Pre;
 
@@ -1148,6 +1154,19 @@ class FHECKKSRNS : public FHERNS {
     // Find Rotation Indices
     //------------------------------------------------------------------------------
     std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
+
+    /**
+     * Splits the bootstrapping rotation indices by the level they are applied at: the first group holds the
+     * rotations of CoeffsToSlots (with the partial-sum fold of sparse packing and the correction rotation it
+     * shares with SlotsToCoeffs) and the rotation by slots, all applied at the raised level; the second holds the
+     * rotations used by SlotsToCoeffs only, applied to a ciphertext with m_towersStC towers. Together they are
+     * the indices of FindBootstrapRotationIndices.
+     *
+     * @param slots number of slots
+     * @param M cyclotomic order
+     * @return the raised-level indices and the SlotsToCoeffs-only indices
+     */
+    std::pair<std::vector<int32_t>, std::vector<int32_t>> FindBootstrapRotationIndexGroups(uint32_t slots, uint32_t M);
 
     // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
     // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.

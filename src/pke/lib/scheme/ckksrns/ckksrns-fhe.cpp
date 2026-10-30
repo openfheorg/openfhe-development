@@ -414,6 +414,8 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         } else {
             lDec = L0 - compositeDegree * depthBT;
         }
+        // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+        precom->m_towersStC = lDec + compositeDegree * precom->m_paramsDec.lvlb;
 
         bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -476,8 +478,21 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
 
     slots = (slots == 0) ? M / 4 : slots;
 
-    // computing all indices for baby-step giant-step procedure
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, FindBootstrapRotationIndices(slots, M));
+    // The rotation keys of CoeffsToSlots (and the rotations it shares with SlotsToCoeffs) are applied at the raised
+    // level and are generated full-size. The keys used only by SlotsToCoeffs are applied to a ciphertext with
+    // m_towersStC towers (a fixed level in every flavor, see the setups), so they are generated over those towers
+    // only: a key can be applied to any ciphertext with at most as many towers as the key, at the same cost and
+    // noise (see KeySwitchBase::KeySwitchGen).
+    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+    const uint32_t towersStC = GetBootPrecom(slots).m_towersStC;
+    const uint32_t levelsStC = (towersStC > 0 && towersStC < sizeQ) ? sizeQ - towersStC : 0;
+
+    auto [indicesRaised, indicesStC] = FindBootstrapRotationIndexGroups(slots, M);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indicesRaised);
+    if (!indicesStC.empty()) {
+        auto evalKeysStC = algo->EvalAtIndexKeyGen(privateKey, indicesStC, levelsStC);
+        evalKeys->insert(evalKeysStC->begin(), evalKeysStC->end());
+    }
 
     (*evalKeys)[M - 1] = ConjugateKeyGen(privateKey);
 
@@ -683,6 +698,8 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     } else {
         lDec = L0 - compositeDegree * depthBT;
     }
+    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+    p.m_towersStC = lDec + compositeDegree * p.m_paramsDec.lvlb;
 
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
@@ -1767,6 +1784,8 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     // correction, as the message must reach ModRaise at exactly the scale of the argument of the complex exponential
     uint32_t lDec = compositeDegree;
     scaleDec *= GetStCFirstDecodingScale(cryptoParams, 0);
+    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+    precom->m_towersStC = lDec + compositeDegree * precom->m_paramsDec.lvlb;
 
     bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -2231,25 +2250,43 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 // Find Rotation Indices
 //------------------------------------------------------------------------------
 
-std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, uint32_t M) {
+std::pair<std::vector<int32_t>, std::vector<int32_t>> FHECKKSRNS::FindBootstrapRotationIndexGroups(uint32_t slots,
+                                                                                                   uint32_t M) {
     const auto& p = GetBootPrecom(slots);
 
     // Remove possible duplicates and remove automorphisms corresponding to 0 and M/4 by using std::set
-    std::set<uint32_t> s;
+    std::set<uint32_t> raised;
+    std::set<uint32_t> stc;
     if (p.m_paramsEnc.lvlb == 1 && p.m_paramsDec.lvlb == 1) {
+        // the single-level transforms of both directions use the same rotations
         auto tmp = FindLinearTransformRotationIndices(slots, M);
-        s.insert(tmp.begin(), tmp.end());
+        raised.insert(tmp.begin(), tmp.end());
     } else {
         auto tmp = FindCoeffsToSlotsRotationIndices(slots, M);
-        s.insert(tmp.begin(), tmp.end());
+        raised.insert(tmp.begin(), tmp.end());
         tmp = FindSlotsToCoeffsRotationIndices(slots, M);
-        s.insert(tmp.begin(), tmp.end());
+        stc.insert(tmp.begin(), tmp.end());
     }
-    s.insert(static_cast<uint32_t>(slots));
-    s.erase(0);
-    s.erase(M / 4);
+    // the rotation by slots of the partial sum after SlotsToCoeffs is also a rotation of the fold at the raised level
+    raised.insert(static_cast<uint32_t>(slots));
+    raised.erase(0);
+    raised.erase(M / 4);
 
-    return std::vector<int32_t>(s.begin(), s.end());
+    // an index SlotsToCoeffs shares with the raised level keeps its full-size key
+    std::vector<int32_t> stcOnly;
+    stcOnly.reserve(stc.size());
+    for (const auto idx : stc) {
+        if (idx != 0 && idx != M / 4 && raised.count(idx) == 0)
+            stcOnly.emplace_back(idx);
+    }
+
+    return {std::vector<int32_t>(raised.begin(), raised.end()), std::move(stcOnly)};
+}
+
+std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, uint32_t M) {
+    auto [raised, stcOnly] = FindBootstrapRotationIndexGroups(slots, M);
+    raised.insert(raised.end(), stcOnly.begin(), stcOnly.end());
+    return raised;
 }
 
 // ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() only.
@@ -3896,6 +3933,8 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     // each level consists of compositeDegree towers; CoeffsToSlots starts right after the modulus raise
     uint32_t lEnc = L0 - compositeDegree * levelBudget[0];
     uint32_t lDec = L0 - compositeDegree * depthBT;
+    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
+    precom->m_towersStC = lDec + compositeDegree * levelBudget[1];
 
     bool isLTBootstrap = (levelBudget[0] == 1) && (levelBudget[1] == 1);
     if (isLTBootstrap) {
