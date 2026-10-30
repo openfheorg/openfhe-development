@@ -60,12 +60,9 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     uint32_t compositeDegree = m_compositeDegree;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
-    std::vector<NativeInteger> rootsQ(sizeQ);
 
-    for (size_t i = 0; i < sizeQ; i++) {
+    for (size_t i = 0; i < sizeQ; i++)
         moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-        rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
-    }
 
     // Pre-compute values for rescaling
     m_qlInvModq.resize(sizeQ - 1);
@@ -204,14 +201,12 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         }
         m_modRaiseNumAux = numAux;
 
-        std::vector<NativeInteger> moduliRaised(moduliQ.begin(), moduliQ.begin() + sizeQRaised);
-        std::vector<NativeInteger> rootsRaised(rootsQ.begin(), rootsQ.begin() + sizeQRaised);
-        for (uint32_t j = 0; j < numAux; ++j) {
-            moduliRaised.push_back(paramsP[j]->GetModulus());
-            rootsRaised.push_back(paramsP[j]->GetRootOfUnity());
-        }
-        m_paramsModRaise = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliRaised, rootsRaised);
+        m_paramsModRaise =
+                std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQRaised, *GetParamsP(), numAux);
         const uint32_t sizeRaised = sizeQRaised + numAux;
+        std::vector<NativeInteger> moduliRaised(sizeRaised);
+        for (uint32_t i = 0; i < sizeRaised; ++i)
+            moduliRaised[i] = m_paramsModRaise->GetParams()[i]->GetModulus();
 
         // tables of the rescales dropping p_{m-1}, ..., p_0 in turn: [p_j^{-1}]_q for the moduli q that remain
         m_modRaiseAuxInvModq.resize(numAux);
@@ -255,25 +250,15 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             m_modRaiseKSDigitHatModp.clear();
             m_modRaiseKSModpBarrettMu.clear();
             if (sizeP > numAux) {
-                std::vector<NativeInteger> moduliComplP, rootsComplP;
-                for (uint32_t j = numAux; j < sizeP; ++j) {
-                    moduliComplP.push_back(paramsP[j]->GetModulus());
-                    rootsComplP.push_back(paramsP[j]->GetRootOfUnity());
-                }
-                m_paramsModRaiseComplP =
-                        std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliComplP, rootsComplP);
+                m_paramsModRaiseComplP = std::make_shared<ILDCRTParams<BigInteger>>(
+                        cyclOrder, GetParamsP()->GetParamPartition(numAux, sizeP - 1));
+                std::vector<NativeInteger> moduliComplP(sizeP - numAux);
+                for (uint32_t j = numAux; j < sizeP; ++j)
+                    moduliComplP[j - numAux] = paramsP[j]->GetModulus();
 
                 // the extended basis Q' * P the switch back runs over (FHECKKSRNS::KeySwitchRaise)
-                std::vector<NativeInteger> moduliExtQP, rootsExtQP;
-                moduliExtQP.reserve(sizeQRaised + sizeP);
-                rootsExtQP.reserve(sizeQRaised + sizeP);
-                moduliExtQP.assign(moduliQ.begin(), moduliQ.begin() + sizeQRaised);
-                rootsExtQP.assign(rootsQ.begin(), rootsQ.begin() + sizeQRaised);
-                for (uint32_t j = 0; j < sizeP; ++j) {
-                    moduliExtQP.push_back(paramsP[j]->GetModulus());
-                    rootsExtQP.push_back(paramsP[j]->GetRootOfUnity());
-                }
-                m_modRaiseKSParamsExt = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliExtQP, rootsExtQP);
+                m_modRaiseKSParamsExt = std::make_shared<ILDCRTParams<BigInteger>>(*GetElementParams(), sizeQRaised,
+                                                                                   *GetParamsP(), sizeP);
                 m_modRaiseComplPInvModq.resize(sizeRaised);
                 m_modRaiseComplPInvModqPrecon.resize(sizeRaised);
                 for (uint32_t i = 0; i < sizeRaised; ++i) {
@@ -295,12 +280,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
                 // the digits of the switching key of the raise: consecutive limbs of Q' * R (in the order of the
                 // extended basis Q' * P, the primes of R having indices L', ..., L' + m - 1), each digit at most 2^4 P'
-                std::vector<NativeInteger> moduliExt(moduliRaised.begin(), moduliRaised.end());
-                std::vector<NativeInteger> rootsExt(rootsRaised.begin(), rootsRaised.end());
-                for (uint32_t j = numAux; j < sizeP; ++j) {
-                    moduliExt.push_back(paramsP[j]->GetModulus());
-                    rootsExt.push_back(paramsP[j]->GetRootOfUnity());
-                }
+                // Q' * R followed by P \ R is the extended basis Q' * P, whose towers m_modRaiseKSParamsExt holds
+                const auto& towersExt = m_modRaiseKSParamsExt->GetParams();
+                std::vector<NativeInteger> moduliExt(towersExt.size());
+                for (uint32_t m = 0; m < towersExt.size(); ++m)
+                    moduliExt[m] = towersExt[m]->GetModulus();
                 const BigInteger digitBound = modulusComplP << 4;
                 if (compositeDegree == 1 && BigInteger(moduliQ[0]) <= digitBound) {
                     // the switched element is below q_0: a single digit, the exact lift of the bottom limb
@@ -321,18 +305,18 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
                     }
                     m_modRaiseKSDigits.emplace_back(first, last);
                     std::vector<NativeInteger> moduliDigit(moduliExt.begin() + first, moduliExt.begin() + last);
-                    std::vector<NativeInteger> rootsDigit(rootsExt.begin() + first, rootsExt.begin() + last);
-                    std::vector<NativeInteger> moduliCompl, rootsCompl;
+                    std::vector<NativeInteger> moduliCompl;
+                    std::vector<std::shared_ptr<ILNativeParams>> towersCompl;
                     for (uint32_t m = 0; m < moduliExt.size(); ++m) {
                         if (m < first || m >= last) {
                             moduliCompl.push_back(moduliExt[m]);
-                            rootsCompl.push_back(rootsExt[m]);
+                            towersCompl.push_back(towersExt[m]);
                         }
                     }
-                    m_modRaiseKSParamsDigit.push_back(
-                            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliDigit, rootsDigit));
+                    m_modRaiseKSParamsDigit.push_back(std::make_shared<ILDCRTParams<BigInteger>>(
+                            cyclOrder, m_modRaiseKSParamsExt->GetParamPartition(first, last - 1)));
                     m_modRaiseKSParamsCompl.push_back(
-                            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliCompl, rootsCompl));
+                            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, towersCompl));
                     const uint32_t sizeDigit = last - first;
                     std::vector<NativeInteger> hatInv(sizeDigit), hatInvPrecon(sizeDigit);
                     std::vector<std::vector<NativeInteger>> hatModp(sizeDigit,
@@ -371,13 +355,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         uint32_t sizeComplQl = paramsRaised.size() - sizeQl;
 
         std::vector<NativeInteger> moduliComplQl(sizeComplQl);
-        std::vector<NativeInteger> rootsComplQl(sizeComplQl);
-        for (uint32_t j = 0; j < sizeComplQl; ++j) {
+        for (uint32_t j = 0; j < sizeComplQl; ++j)
             moduliComplQl[j] = paramsRaised[sizeQl + j]->GetModulus();
-            rootsComplQl[j] = paramsRaised[sizeQl + j]->GetRootOfUnity();
-        }
-        m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(GetElementParams()->GetCyclotomicOrder(),
-                                                                             moduliComplQl, rootsComplQl);
+        m_paramsModRaiseComplQl = std::make_shared<ILDCRTParams<BigInteger>>(
+                GetElementParams()->GetCyclotomicOrder(),
+                m_paramsModRaise->GetParamPartition(sizeQl, paramsRaised.size() - 1));
 
         BigInteger modulusQl(1);
         for (uint32_t i = 0; i < sizeQl; ++i)
