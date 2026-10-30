@@ -1156,24 +1156,29 @@ class FHECKKSRNS : public FHERNS {
     std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
 
     /**
-     * Splits the bootstrapping rotation indices by the level they are applied at: the first group holds the
-     * rotations of CoeffsToSlots (with the partial-sum fold of sparse packing and the correction rotation it
-     * shares with SlotsToCoeffs) and the rotation by slots, all applied at the raised level; the second holds the
-     * rotations used by SlotsToCoeffs only, applied to a ciphertext with m_towersStC towers. Together they are
-     * the indices of FindBootstrapRotationIndices.
+     * The bootstrapping rotation indices with the number of RNS towers of the ciphertext each rotation is applied
+     * to, the largest over its uses: the rotations of CoeffsToSlots start at the raised level L0 (the chain without
+     * the extra modulus of FLEXIBLEAUTOEXT) and lose compositeDegree towers per level, those of SlotsToCoeffs start
+     * at m_towersStC (full-size when the setup has not recorded it) and lose compositeDegree towers per level, and
+     * the partial-sum rotations of sparse packing and the correction rotation are applied at the raised level.
+     * EvalBootstrapKeyGen generates the key of each index over that many towers.
      *
+     * @param cryptoParams crypto parameters
      * @param slots number of slots
      * @param M cyclotomic order
-     * @return the raised-level indices and the SlotsToCoeffs-only indices
+     * @return map from rotation index to the number of towers of its key
      */
-    std::pair<std::vector<int32_t>, std::vector<int32_t>> FindBootstrapRotationIndexGroups(uint32_t slots, uint32_t M);
+    std::map<uint32_t, uint32_t> FindBootstrapRotationIndexTowers(
+            const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams, uint32_t slots, uint32_t M);
 
-    // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() only.
+    // ATTN: The following 3 functions are helper methods to be called in FindBootstrapRotationIndices() and
+    // FindBootstrapRotationIndexTowers() only. Each rotation index comes with the number of levels of its
+    // transform (compositeDegree towers each) consumed before it is applied, 0 for the first level.
     // so they DO NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
     // These methods completely depend on FindBootstrapRotationIndices() to do that.
-    std::vector<uint32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
-    std::vector<uint32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
-    std::vector<uint32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<std::pair<uint32_t, uint32_t>> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<std::pair<uint32_t, uint32_t>> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<std::pair<uint32_t, uint32_t>> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
 
     //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions

@@ -37,13 +37,16 @@
   - CompressEvalKey reduces the number of RNS limbs of an existing key.
   - The cryptocontext automorphism key map keeps the key with the most towers when keys
     for the same index are inserted repeatedly.
-  - EvalBootstrapKeyGen generates the rotation keys used only by SlotsToCoeffs over the
-    towers of the ciphertext entering SlotsToCoeffs, and every other rotation key full-size
-    (bootstrapping itself with these keys is covered by the bootstrapping tests).
+  - EvalBootstrapKeyGen generates each rotation key over the towers of the largest ciphertext
+    it is applied to: per level of CoeffsToSlots from the raised level down, and per level of
+    SlotsToCoeffs from the towers of the ciphertext entering it down (bootstrapping itself
+    with these keys is covered by the bootstrapping tests).
  */
 
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -587,8 +590,9 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, BFVNotSupported) {
 }
 
 //===========================================================================================================
-// Bootstrapping keys: the rotation keys used only by SlotsToCoeffs are generated over the towers of the
-// ciphertext entering SlotsToCoeffs (lDec + lvlbDec towers, see the setups), every other key full-size.
+// Bootstrapping keys: each rotation key is generated over the towers of the largest ciphertext it is applied to,
+// per level of CoeffsToSlots (from the raised level L0 down) and of SlotsToCoeffs (from lDec + lvlbDec down, see
+// the setups); an index shared by several levels or both transforms gets the larger key.
 // Checked for ModRaise-first and StC-first regular bootstrapping and for FE functional bootstrapping with
 // sparse packing, so that the rotation by slots (shared by the partial sums of both levels) is in the key set.
 namespace {
@@ -628,40 +632,45 @@ CryptoContext<DCRTPoly> MakeBootstrapContext(ScalingTechnique st, uint32_t depth
     return cc;
 }
 
-// every rotation key has either the full number of towers or towersStC, both sizes occur, and the conjugation
-// key and the key of the rotation by slots are full-size
-void CheckBootstrapKeyLevels(const CryptoContext<DCRTPoly>& cc, const KeyPair<DCRTPoly>& kp, uint32_t towersStC,
-                             const std::string& failmsg) {
+// every rotation key has the towers of one level of a transform: towersCtS - k for the k-th level of CoeffsToSlots
+// or towersStC - k for the k-th level of SlotsToCoeffs (composite degree 1), a deeper level of SlotsToCoeffs has
+// keys of its own, and the key of the rotation by slots and the conjugation key are full-size
+void CheckBootstrapKeyLevels(const CryptoContext<DCRTPoly>& cc, const KeyPair<DCRTPoly>& kp, uint32_t towersCtS,
+                             uint32_t towersStC, const std::string& failmsg) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
     const uint32_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
     const uint32_t M = cc->GetCyclotomicOrder();
-    ASSERT_LT(towersStC, sizeQ) << failmsg;
+    ASSERT_LT(towersStC, towersCtS) << failmsg;
+
+    std::set<uint32_t> allowed = {sizeQ};
+    for (uint32_t k = 0; k < BOOT_LEVEL_BUDGET[0]; ++k)
+        allowed.insert(towersCtS - k);
+    for (uint32_t k = 0; k < BOOT_LEVEL_BUDGET[1]; ++k)
+        allowed.insert(towersStC - k);
 
     const auto towersQ = [sizeP](const EvalKey<DCRTPoly>& key) {
         return key->GetAVector()[0].GetNumOfElements() - sizeP;
     };
 
     const auto& keyMap = CryptoContextImpl<DCRTPoly>::GetEvalAutomorphismKeyMap(kp.secretKey->GetKeyTag());
-    uint32_t numFull = 0;
-    uint32_t numReduced = 0;
+    uint32_t minTowers = sizeQ;
     for (const auto& [autoIndex, key] : keyMap) {
-        if (towersQ(key) == sizeQ) {
-            ++numFull;
-        } else {
-            EXPECT_EQ(towersQ(key), towersStC) << failmsg << ", automorphism index " << autoIndex;
-            ++numReduced;
-        }
+        const uint32_t towers = towersQ(key);
+        EXPECT_TRUE(allowed.count(towers))
+                << failmsg << ", automorphism index " << autoIndex << " has " << towers << " towers";
+        minTowers = std::min(minTowers, towers);
     }
-    EXPECT_GT(numFull, 0u) << failmsg;
-    EXPECT_GT(numReduced, 0u) << failmsg << ": the level budget should leave rotations used by SlotsToCoeffs only";
+    // a rotation shared with a higher level takes the larger key, so not every level needs keys of its own, but
+    // the levels below the first one of SlotsToCoeffs are not all shared
+    EXPECT_LT(minTowers, towersStC) << failmsg << ": a deeper level of SlotsToCoeffs should have keys of its own";
 
-    // the conjugation key is applied to the output of CoeffsToSlots, and the rotation by slots also folds the
-    // partial sum at the raised level
-    for (const uint32_t autoIndex : {M - 1, cc->GetScheme()->FindAutomorphismIndex(BOOT_SLOTS, M)}) {
-        ASSERT_TRUE(keyMap.count(autoIndex)) << failmsg << ", automorphism index " << autoIndex;
-        EXPECT_EQ(towersQ(keyMap.at(autoIndex)), sizeQ) << failmsg << ", automorphism index " << autoIndex;
-    }
+    // the conjugation key is applied to the output of CoeffsToSlots; the rotation by slots also folds the partial
+    // sum at the raised level
+    const uint32_t autoSlots = cc->GetScheme()->FindAutomorphismIndex(BOOT_SLOTS, M);
+    ASSERT_TRUE(keyMap.count(M - 1) && keyMap.count(autoSlots)) << failmsg;
+    EXPECT_EQ(towersQ(keyMap.at(M - 1)), sizeQ) << failmsg;
+    EXPECT_EQ(towersQ(keyMap.at(autoSlots)), towersCtS) << failmsg;
 }
 
 }  // namespace
@@ -691,7 +700,7 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, BootstrapKeysAtLevel) {
                 const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
                 const uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size() - (st == FLEXIBLEAUTOEXT);
                 const uint32_t towersStC = (stcFirst ? 1 : L0 - depthBT) + BOOT_LEVEL_BUDGET[1];
-                CheckBootstrapKeyLevels(cc, kp, towersStC, failmsg);
+                CheckBootstrapKeyLevels(cc, kp, L0, towersStC, failmsg);
 
                 CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
             } catch (std::exception& e) {
@@ -711,7 +720,9 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, BootstrapKeysAtLevel) {
         cc->EvalFEFuncBootstrapSetup(BOOT_LEVEL_BUDGET, {0, 0}, BOOT_SLOTS);
         auto kp = cc->KeyGen();
         cc->EvalBootstrapKeyGen(kp.secretKey, BOOT_SLOTS);
-        CheckBootstrapKeyLevels(cc, kp, 1 + BOOT_LEVEL_BUDGET[1], failmsg);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+        const uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+        CheckBootstrapKeyLevels(cc, kp, L0, 1 + BOOT_LEVEL_BUDGET[1], failmsg);
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     } catch (std::exception& e) {
         std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
