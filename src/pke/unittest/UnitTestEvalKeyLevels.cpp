@@ -41,6 +41,8 @@
     it is applied to: per level of CoeffsToSlots from the raised level down, and per level of
     SlotsToCoeffs from the towers of the ciphertext entering it down (bootstrapping itself
     with these keys is covered by the bootstrapping tests).
+  - EvalCKKStoFHEWKeyGen generates the rotation keys and the conjugation key of its SlotsToCoeffs
+    transform over the two towers the ciphertext is compressed to before the transform.
  */
 
 #include <algorithm>
@@ -61,8 +63,10 @@
 #include "scheme/bgvrns/bgvrns-ser.h"
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
+#include "scheme/ckksrns/ckksrns-schemeswitching.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns.h"
+#include "scheme/scheme-swch-params.h"
 
 using namespace lbcrypto;
 
@@ -731,4 +735,60 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, BootstrapKeysAtLevel) {
         UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
     }
 #endif
+}
+
+//===========================================================================================================
+// Scheme switching keys: the SlotsToCoeffs transform of CKKS to FHEW runs on a ciphertext compressed to two
+// towers, so EvalCKKStoFHEWKeyGen generates its rotation keys and the conjugation key over two towers
+// (switching itself with these keys is covered by the scheme switching tests).
+TEST(UTGENERAL_EVAL_KEY_LEVELS, CKKStoFHEWKeysAtLevel) {
+    const std::string failmsg = "CKKStoFHEWKeysAtLevel";
+    try {
+        CCParams<CryptoContextCKKSRNS> parameters;
+        parameters.SetSecretKeyDist(UNIFORM_TERNARY);
+        parameters.SetSecurityLevel(HEStd_NotSet);
+        parameters.SetRingDim(64);
+        parameters.SetMultiplicativeDepth(13);
+#if NATIVEINT == 128
+        parameters.SetScalingModSize(70);
+        parameters.SetFirstModSize(80);
+#else
+        parameters.SetScalingModSize(50);
+        parameters.SetFirstModSize(60);
+#endif
+        parameters.SetScalingTechnique(FIXEDAUTO);
+        parameters.SetKeySwitchTechnique(HYBRID);
+        parameters.SetNumLargeDigits(3);
+        auto cc = GenCryptoContext(parameters);
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
+        cc->Enable(ADVANCEDSHE);
+        cc->Enable(SCHEMESWITCH);
+
+        auto kp = cc->KeyGen();
+        SchSwchParams params;
+        params.SetSecurityLevelCKKS(HEStd_NotSet);
+        params.SetSecurityLevelFHEW(TOY);
+        params.SetCtxtModSizeFHEWLargePrec(25);
+        params.SetNumSlotsCKKS(8);
+        params.SetBStepLTrCKKStoFHEW(16);
+        auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(params);
+        cc->EvalCKKStoFHEWKeyGen(kp, privateKeyFHEW);
+
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+        const uint32_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
+        const auto& keyMap = CryptoContextImpl<DCRTPoly>::GetEvalAutomorphismKeyMap(kp.secretKey->GetKeyTag());
+        EXPECT_FALSE(keyMap.empty()) << failmsg;
+        for (const auto& [autoIndex, key] : keyMap)
+            EXPECT_EQ(key->GetAVector()[0].GetNumOfElements() - sizeP, 2u)
+                    << failmsg << ", automorphism index " << autoIndex;
+
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    } catch (std::exception& e) {
+        std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
+        EXPECT_TRUE(0 == 1) << failmsg;
+    } catch (...) {
+        UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+    }
 }

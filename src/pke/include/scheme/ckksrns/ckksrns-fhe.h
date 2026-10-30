@@ -1107,9 +1107,11 @@ class FHECKKSRNS : public FHERNS {
      * Generates the automorphism key for complex conjugation (automorphism index 2N - 1).
      *
      * @param privateKey the private key
+     * @param levels number of RNS limbs to drop from the generated key relative to a full key (0 by default); the
+     * key can only be applied to ciphertexts with at most (full - levels) limbs
      * @return the conjugation key
      */
-    static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey);
+    static EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t levels = 0);
 
     /**
      * Conjugates the slot values of a ciphertext (automorphism index 2N - 1).

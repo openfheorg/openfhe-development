@@ -3723,7 +3723,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext
     return result;
 }
 
-EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) {
+EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t levels) {
     uint32_t N = privateKey->GetPrivateElement().GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, 2 * N - 1, &vec);
@@ -3731,7 +3731,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> private
     auto pkPermuted = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
     pkPermuted->SetPrivateElement(privateKey->GetPrivateElement().AutomorphismTransform(2 * N - 1, vec));
     pkPermuted->SetKeyTag(privateKey->GetKeyTag());
-    return cc->GetScheme()->KeySwitchGen(privateKey, pkPermuted);
+    return cc->GetScheme()->KeySwitchGen(privateKey, pkPermuted, levels);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
