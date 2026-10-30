@@ -244,6 +244,18 @@ class SWITCHCKKSRNS : public FHERNS {
     }
 
   private:
+    //------------------------------------------------------------------------------
+    // Constants
+    //------------------------------------------------------------------------------
+
+    // number of RNS towers the ciphertext is compressed to before the SlotsToCoeffs transform of CKKS to FHEW
+    // (EvalSlotsToCoeffsSwitch); the rotation keys of that transform are generated over these towers only
+    static constexpr uint32_t S2C_TOWERS = 2;
+
+    //------------------------------------------------------------------------------
+    // Private methods
+    //------------------------------------------------------------------------------
+
     std::vector<ReadOnlyPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
                                                           const std::vector<std::vector<std::complex<double>>>& A,
                                                           uint32_t dim1, uint32_t L, double scale) const;
