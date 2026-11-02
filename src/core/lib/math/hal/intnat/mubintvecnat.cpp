@@ -57,6 +57,17 @@ static inline T topBitMask(T x) {
 }
 
 template <typename T>
+static inline T condSubLane(T v, T q) {
+#if defined(__clang__) && defined(__x86_64__) && !defined(__AVX2__)
+    if constexpr (sizeof(T) == sizeof(uint64_t)) {
+        const T t{static_cast<T>(v - q)};
+        return static_cast<T>(t + (q & topBitMask(t)));
+    }
+#endif
+    return v >= q ? static_cast<T>(v - q) : v;
+}
+
+template <typename T>
 static inline T modAddLane(T a, T b, T m) {
 #if defined(OPENFHE_COMPARE_SELECT_LANES) || defined(__clang__)
     T t = a + b;
@@ -250,9 +261,22 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const N
     if (iv.m_value >= mv.m_value)
         iv.ModEq(mv);
     auto iinv{iv.PrepModMulConst(mv)};
-    const uint32_t ringdm = m_data.size();
-    for (uint32_t i = 0; i < ringdm; ++i)
-        m_data[i].ModAddFastEq(V.m_data[i].ModMulFastConst(iv, mv, iinv), mv);
+    // ModMulFastConst followed by ModAddFastEq, flattened so the constants stay in registers and
+    // both corrections are selects; V may hold unreduced values, as ModMulFastConst allows
+    using NInt = decltype(mv.m_value);
+    const NInt m{mv.m_value};
+    const NInt bv{iv.m_value};
+    const NInt bp{iinv.m_value};
+    IntegerType* acc{m_data.data()};
+    const IntegerType* vd{V.m_data.data()};
+    const size_t size{m_data.size()};
+    for (size_t i = 0; i < size; ++i) {
+        const NInt x{vd[i].m_value};
+        const NInt q{static_cast<NInt>(IntegerType::MultDHi(x, bp) + 1)};
+        const NInt y{static_cast<NInt>(x * bv - q * m)};
+        const NInt r{static_cast<NInt>(y + (m & topBitMask(y)))};
+        acc[i].m_value = condSubLane(static_cast<NInt>(acc[i].m_value + r), m);
+    }
     return *this;
 }
 
@@ -755,12 +779,8 @@ void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const Inte
             IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
             r -= IntegerType::RShiftD(prod, n + 7) * mv;
 #endif
-            if (r >= mv)
-                r -= mv;
-            NInt t{acc[i].m_value + r};
-            if (t >= mv)
-                t -= mv;
-            acc[i].m_value = t;
+            r = condSubLane(r, mv);
+            acc[i].m_value = condSubLane(static_cast<NInt>(acc[i].m_value + r), mv);
         }
     } else {
         const auto mu{modulus.ComputeMu()};
