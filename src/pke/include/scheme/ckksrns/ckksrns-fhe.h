@@ -1168,7 +1168,8 @@ class FHECKKSRNS : public FHERNS {
     //------------------------------------------------------------------------------
     // Find Rotation Indices
     //------------------------------------------------------------------------------
-    std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
+    std::vector<int32_t> FindBootstrapRotationIndices(const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams,
+                                                      uint32_t slots, uint32_t M);
 
     /**
      * The bootstrapping rotation indices with the number of RNS towers of the ciphertext each rotation is applied

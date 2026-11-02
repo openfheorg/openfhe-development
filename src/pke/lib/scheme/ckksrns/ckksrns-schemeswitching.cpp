@@ -1299,16 +1299,13 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     // the rotations used only by the SlotsToCoeffs transform are generated over S2C_TOWERS towers, the others
     // full-size
     const uint32_t levelsS2C = cryptoParams->GetElementParams()->GetParams().size() - S2C_TOWERS;
+    std::set<int32_t> indexRotationFullLevel(indexRotationHomDec.begin(), indexRotationHomDec.end());
+    indexRotationFullLevel.insert(indexRotationArgmin.begin(), indexRotationArgmin.end());
+    indexRotationFullLevel.insert(indexRotationSparse.begin(), indexRotationSparse.end());
     std::vector<int32_t> indicesS2C;
     std::vector<int32_t> indicesFull;
     for (const auto index : indexRotationS2C) {
-        const bool s2cOnly =
-                (indexRotationS2COnly.count(index) != 0) &&
-                (std::find(indexRotationHomDec.begin(), indexRotationHomDec.end(), index) ==
-                 indexRotationHomDec.end()) &&
-                (std::find(indexRotationArgmin.begin(), indexRotationArgmin.end(), index) ==
-                 indexRotationArgmin.end()) &&
-                (std::find(indexRotationSparse.begin(), indexRotationSparse.end(), index) == indexRotationSparse.end());
+        const bool s2cOnly = (indexRotationS2COnly.count(index) != 0) && (indexRotationFullLevel.count(index) == 0);
         (s2cOnly ? indicesS2C : indicesFull).emplace_back(index);
     }
     auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indicesFull);

@@ -255,8 +255,6 @@ class CryptoContextImpl : public Serializable {
 
     SCHEME m_schemeId{SCHEME::INVALID_SCHEME};  ///< identifier of the scheme this crypto context implements
 
-    uint32_t m_keyGenLevel{0};  ///< level at which evaluation keys should be generated (for future use)
-
     /**
      * @brief TypeCheck makes sure that an operation between two ciphertexts is permitted
      *
@@ -588,7 +586,6 @@ class CryptoContextImpl : public Serializable {
                       SCHEME schemeId = SCHEME::INVALID_SCHEME) {
         m_params.reset(params);
         m_scheme.reset(scheme);
-        m_keyGenLevel = 0;
         m_schemeId = schemeId;
     }
 
@@ -603,7 +600,6 @@ class CryptoContextImpl : public Serializable {
                       std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME) {
         m_params = params;
         m_scheme = scheme;
-        m_keyGenLevel = 0;
         m_schemeId = schemeId;
     }
 
@@ -614,7 +610,6 @@ class CryptoContextImpl : public Serializable {
     CryptoContextImpl(const CryptoContextImpl<Element>& other) {
         m_params = other.m_params;
         m_scheme = other.m_scheme;
-        m_keyGenLevel = 0;
         m_schemeId = other.m_schemeId;
     }
 
@@ -626,7 +621,6 @@ class CryptoContextImpl : public Serializable {
     CryptoContextImpl<Element>& operator=(const CryptoContextImpl<Element>& rhs) {
         m_params = rhs.m_params;
         m_scheme = rhs.m_scheme;
-        m_keyGenLevel = rhs.m_keyGenLevel;
         m_schemeId = rhs.m_schemeId;
         return *this;
     }
@@ -1132,24 +1126,24 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-     * @brief Getter for the level at which evaluation keys should be generated
-     * @return level
+     * @brief Deprecated: the level of evaluation keys is the levels argument of the Eval*KeyGen/KeySwitchGen
+     * methods; this getter has no state behind it and returns 0.
+     * @return 0
      * @deprecated Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead.
      */
     size_t GetKeyGenLevel() const
             __attribute__((deprecated("Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead"))) {
-        return m_keyGenLevel;
+        return 0;
     }
 
     /**
-     * @brief Setter for the level at which evaluation keys should be generated
-     * @param level the level at which evaluation keys should be generated
+     * @brief Deprecated: the level of evaluation keys is the levels argument of the Eval*KeyGen/KeySwitchGen
+     * methods; this setter has no effect.
+     * @param level ignored
      * @deprecated Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead.
      */
     void SetKeyGenLevel(size_t level)
-            __attribute__((deprecated("Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead"))) {
-        m_keyGenLevel = level;
-    }
+            __attribute__((deprecated("Use the levels argument of the Eval*KeyGen/KeySwitchGen methods instead"))) {}
 
     /**
      * @brief Getter for element params

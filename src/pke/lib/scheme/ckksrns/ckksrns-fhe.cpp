@@ -545,7 +545,7 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
     auto M = cc->GetCyclotomicOrder();
     slots = (slots == 0) ? M / 4 : slots;
 
-    const auto bootstrapRotationsIndices = FindBootstrapRotationIndices(slots, M);
+    const auto bootstrapRotationsIndices = FindBootstrapRotationIndices(cryptoParams, slots, M);
 
     std::set<uint32_t> indexList;
     for (const auto rotationIndex : bootstrapRotationsIndices)
@@ -2291,26 +2291,14 @@ std::map<uint32_t, uint32_t> FHECKKSRNS::FindBootstrapRotationIndexTowers(
     return towersByIndex;
 }
 
-std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, uint32_t M) {
-    const auto& p = GetBootPrecom(slots);
-
-    // Remove possible duplicates and remove automorphisms corresponding to 0 and M/4 by using std::set
-    std::set<uint32_t> s;
-    const auto add = [&s](const std::vector<std::pair<uint32_t, uint32_t>>& indices) {
-        for (const auto& [index, level] : indices)
-            s.insert(index);
-    };
-    if (p.m_paramsEnc.lvlb == 1 && p.m_paramsDec.lvlb == 1) {
-        add(FindLinearTransformRotationIndices(slots, M));
-    } else {
-        add(FindCoeffsToSlotsRotationIndices(slots, M));
-        add(FindSlotsToCoeffsRotationIndices(slots, M));
-    }
-    s.insert(static_cast<uint32_t>(slots));
-    s.erase(0);
-    s.erase(M / 4);
-
-    return std::vector<int32_t>(s.begin(), s.end());
+std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(
+        const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams, uint32_t slots, uint32_t M) {
+    const auto towersByIndex = FindBootstrapRotationIndexTowers(cryptoParams, slots, M);
+    std::vector<int32_t> indices;
+    indices.reserve(towersByIndex.size());
+    for (const auto& [index, towers] : towersByIndex)
+        indices.emplace_back(index);
+    return indices;
 }
 
 // ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and

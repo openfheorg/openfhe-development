@@ -68,9 +68,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     const uint32_t sizeQ = paramsQ->GetParams().size();
     const uint32_t sizeP = paramsP->GetParams().size();
 
-    if (levels >= sizeQ)
-        OPENFHE_THROW("levels [" + std::to_string(levels) + "] must be smaller than the number of RNS limbs [" +
-                      std::to_string(sizeQ) + "]");
+    ValidateLevels(levels, sizeQ, "the modulus chain");
 
     // the key is generated over the basis Q_l*P, where Q_l is Q with the last `levels` limbs dropped
     const uint32_t sizeKeyQ = sizeQ - levels;
@@ -112,11 +110,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     // the number of digits of a key over Q_l: same formula as for the ciphertext digits
     // in EvalKeySwitchPrecomputeCore
     uint32_t numPartQ = cryptoParams->GetNumPartQ();
-    if (levels > 0) {
-        numPartQ = std::ceil(static_cast<double>(sizeKeyQ) / numPerPartQ);
-        if (numPartQ > cryptoParams->GetNumberOfQPartitions())
-            numPartQ = cryptoParams->GetNumberOfQPartitions();
-    }
+    if (levels > 0)
+        numPartQ = cryptoParams->GetNumPartQl(sizeKeyQ);
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
@@ -169,10 +164,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::CompressEvalKey(const EvalKey<DCRTPoly> evalK
     const uint32_t sizeKeyQP = av[0].GetNumOfElements();
     const uint32_t sizeKeyQ = sizeKeyQP - sizeP;
 
-    if (levels >= sizeKeyQ)
-        OPENFHE_THROW("levels [" + std::to_string(levels) +
-                      "] must be smaller than the number of RNS limbs in the Q basis of the evaluation key [" +
-                      std::to_string(sizeKeyQ) + "]");
+    ValidateLevels(levels, sizeKeyQ, "the Q basis of the evaluation key");
 
     const uint32_t newSizeQ = sizeKeyQ - levels;
 
@@ -181,10 +173,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::CompressEvalKey(const EvalKey<DCRTPoly> evalK
     auto paramsQlP = std::make_shared<ParmType>(*av[0].GetParams(), newSizeQ, *cryptoParams->GetParamsP(), sizeP);
 
     // the number of digits needed for a key over the compressed Q basis
-    const uint32_t numPerPartQ = cryptoParams->GetNumPerPartQ();
-    uint32_t numPartQl = std::ceil(static_cast<double>(newSizeQ) / numPerPartQ);
-    if (numPartQl > cryptoParams->GetNumberOfQPartitions())
-        numPartQl = cryptoParams->GetNumberOfQPartitions();
+    uint32_t numPartQl = cryptoParams->GetNumPartQl(newSizeQ);
     if (numPartQl > av.size())
         numPartQl = static_cast<uint32_t>(av.size());
 
@@ -216,9 +205,7 @@ uint32_t KeySwitchHYBRID::GetNumEvalKeyTowers(const std::shared_ptr<CryptoParame
     const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
 
     const uint32_t sizeQ = cryptoParamsRNS->GetElementParams()->GetParams().size();
-    if (levels >= sizeQ)
-        OPENFHE_THROW("levels [" + std::to_string(levels) + "] must be smaller than the number of RNS limbs [" +
-                      std::to_string(sizeQ) + "]");
+    ValidateLevels(levels, sizeQ, "the modulus chain");
     return sizeQ - levels + cryptoParamsRNS->GetParamsP()->GetParams().size();
 }
 
@@ -468,9 +455,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     const uint32_t ringDim = paramsQl->GetRingDimension();
     const uint32_t alpha = cryptoParams->GetNumPerPartQ();
     // The number of digits of the current ciphertext
-    uint32_t numPartQl = std::ceil(static_cast<double>(sizeQl) / alpha);
-    if (numPartQl > cryptoParams->GetNumberOfQPartitions())
-        numPartQl = cryptoParams->GetNumberOfQPartitions();
+    const uint32_t numPartQl = cryptoParams->GetNumPartQl(sizeQl);
 
     auto result = std::make_shared<std::vector<DCRTPoly>>(numPartQl);
 

@@ -72,9 +72,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     const auto& sOld = oldKey->GetPrivateElement();
     const uint32_t sizeQ = sOld.GetNumOfElements();
 
-    if (levels >= sizeQ)
-        OPENFHE_THROW("levels [" + std::to_string(levels) + "] must be smaller than the number of RNS limbs [" +
-                      std::to_string(sizeQ) + "]");
+    ValidateLevels(levels, sizeQ, "the modulus chain");
 
     // the key is generated over the basis of Q with the last `levels` limbs dropped
     const uint32_t sizeKeyQ = sizeQ - levels;
@@ -134,10 +132,7 @@ EvalKey<DCRTPoly> KeySwitchBV::CompressEvalKey(const EvalKey<DCRTPoly> evalKey, 
     const auto& bv = evalKey->GetBVector();
     const uint32_t sizeQ = av[0].GetNumOfElements();
 
-    if (levels >= sizeQ)
-        OPENFHE_THROW("levels [" + std::to_string(levels) +
-                      "] must be smaller than the number of RNS limbs in the evaluation key [" + std::to_string(sizeQ) +
-                      "]");
+    ValidateLevels(levels, sizeQ, "the evaluation key");
     const uint32_t sizeKeyQ = sizeQ - levels;
 
     // number of digits that correspond to the first sizeKeyQ towers
@@ -168,9 +163,7 @@ EvalKey<DCRTPoly> KeySwitchBV::CompressEvalKey(const EvalKey<DCRTPoly> evalKey, 
 uint32_t KeySwitchBV::GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                           uint32_t levels) const {
     const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-    if (levels >= sizeQ)
-        OPENFHE_THROW("levels [" + std::to_string(levels) + "] must be smaller than the number of RNS limbs [" +
-                      std::to_string(sizeQ) + "]");
+    ValidateLevels(levels, sizeQ, "the modulus chain");
     return sizeQ - levels;
 }
 
