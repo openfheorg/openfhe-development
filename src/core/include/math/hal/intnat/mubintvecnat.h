@@ -800,6 +800,36 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
      */
     static void BarrettMultAccLoop(IntegerType* acc, const IntegerType* a, const IntegerType* b, size_t size,
                                    const IntegerType& modulus);
+
+    /**
+     * Portable form of the 64-bit generalized-Barrett loops, used on every target except x86-64
+     * clang with AVX2: dst[i] = a[i] * b[i] (mod modulus), or dst[i] += a[i] * b[i] (mod modulus)
+     * when kAccumulate. dst may equal a. Computes the same values as the per-element ModMulFast
+     * for every input.
+     *
+     * @param dst is the destination (the accumulator when kAccumulate).
+     * @param a is the array of first operands.
+     * @param b is the array of second operands.
+     * @param size is the number of elements.
+     * @param modulus is the modulus to perform operations with.
+     */
+    template <bool kAccumulate>
+    static void BarrettPortableLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
+                                    const IntegerType& modulus);
+
+    /**
+     * Lanes of BarrettPortableLoop. The quotient estimate floor(floor(a * b / 2^n) * mu / 2^(n+7))
+     * of ModMulFast is taken as the high word of floor(a * b / 2^n) * muHi, with
+     * muHi = mu << (W - n - 7) for word width W: mu <= 2^(n+6) for a modulus of MSB n + 2, so
+     * muHi fits in a word and no second variable-count shift is needed. A modulus of MSB W - 4
+     * or more (60 bits or more on 64-bit words) has n + 7 > W, so there muHi = mu and the high
+     * word is shifted right by hiShift = n + 7 - W. kHiShift fixes that shift at compile time
+     * when it is 0 or 1, and is -1 for the runtime case. Under gcc the accumulating form adds
+     * the products in a separate pass per chunk of OPENFHE_BARRETT_MAC_CHUNK elements.
+     */
+    template <int kHiShift, bool kAccumulate>
+    static void BarrettLanes(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size, BasicInt mv,
+                             int64_t n, BasicInt muHi, int64_t hiShift);
 };
 
 }  // namespace intnat
