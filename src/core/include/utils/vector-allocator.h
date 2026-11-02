@@ -39,8 +39,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
+#include <type_traits>
+#include <utility>
 
 namespace lbcrypto {
+
+/**
+ * @brief Tag for constructing an element whose value is written before it is read.
+ */
+struct UninitializedTag {};
 
 // Smallest buffer (bytes) that NativeVectorAllocator spreads over page offsets; 0 disables spreading.
 #ifndef OPENFHE_VECTOR_SPREAD_MIN_BYTES
@@ -80,6 +87,24 @@ struct NativeVectorAllocator {
         char* data{raw + shift};
         reinterpret_cast<void**>(data)[-1] = raw;
         return reinterpret_cast<T*>(data);
+    }
+
+    /**
+     * Element construction without arguments: types constructible from UninitializedTag are left
+     * unset, others are value-initialized. Containers that promise zeroed elements construct
+     * them from a value instead.
+     */
+    template <typename U>
+    void construct(U* p) noexcept(std::is_nothrow_default_constructible_v<U>) {
+        if constexpr (std::is_constructible_v<U, UninitializedTag>)
+            ::new (static_cast<void*>(p)) U(UninitializedTag{});
+        else
+            ::new (static_cast<void*>(p)) U();
+    }
+
+    template <typename U, typename... Args>
+    void construct(U* p, Args&&... args) {
+        ::new (static_cast<void*>(p)) U(std::forward<Args>(args)...);
     }
 
     void deallocate(T* p, size_t n) noexcept {

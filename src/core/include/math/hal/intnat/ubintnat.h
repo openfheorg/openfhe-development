@@ -51,6 +51,7 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
+#include "utils/vector-allocator.h"
 
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
@@ -168,7 +169,7 @@ struct MaxModulusBits<uint128_t> {
 template <typename NativeInt>
 class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT<NativeInt>> {
   private:
-    NativeInt m_value{0};
+    NativeInt m_value;
 
     // bit width of the integral data type
     static constexpr uint32_t m_uintBitLength{std::numeric_limits<NativeInt>::digits};
@@ -233,7 +234,9 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return m_value != 0;
     }
 
-    constexpr NativeIntegerT() = default;
+    constexpr NativeIntegerT() noexcept : m_value{0} {}
+
+    explicit NativeIntegerT(lbcrypto::UninitializedTag) noexcept {}
     constexpr NativeIntegerT(const NativeIntegerT& val) noexcept : m_value{val.m_value} {}
     constexpr NativeIntegerT(NativeIntegerT&& val) noexcept : m_value{std::move(val.m_value)} {}
 

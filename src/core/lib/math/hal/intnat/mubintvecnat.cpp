@@ -151,7 +151,7 @@ void NativeVectorT<IntegerType>::GeneralShrinkLoop(IntegerType* dst, const Integ
 template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<std::string> rhs) noexcept
-    : m_modulus{modulus}, m_data(length) {
+    : m_modulus{modulus}, m_data(length, 0) {
     const uint32_t vlen = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (uint32_t i = 0; i < vlen; ++i)
         m_data[i] = *(rhs.begin() + i) % m_modulus;
@@ -160,7 +160,7 @@ NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& mo
 template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<uint64_t> rhs) noexcept
-    : m_modulus{modulus}, m_data(length) {
+    : m_modulus{modulus}, m_data(length, 0) {
     const uint32_t vlen = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (uint32_t i = 0; i < vlen; ++i)
         m_data[i].m_value = BasicInt(*(rhs.begin() + i)) % m_modulus.m_value;
@@ -355,7 +355,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const IntegerType&
     if (bv.m_value >= mv)
         bv.ModEq(m_modulus);
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modAddLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
@@ -399,7 +399,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVector
 #else
     const auto mv{m_modulus.m_value};
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modAddLane(m_data[i].m_value, b.m_data[i].m_value, mv);
     return ans;
@@ -424,7 +424,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const IntegerType&
     if (bv.m_value >= mv)
         bv.ModEq(m_modulus);
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modSubLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
@@ -453,7 +453,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVector
 #else
     const auto mv{m_modulus.m_value};
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modSubLane(m_data[i].m_value, b.m_data[i].m_value, mv);
     return ans;
@@ -485,7 +485,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType&
     return ans;
 #else
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i] = m_data[i].ModMulFastConst(bv, mv, bconst);
     return ans;
@@ -509,7 +509,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVector
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     BarrettModMulLoop(ans.m_data.data(), m_data.data(), b.m_data.data(), size, m_modulus);
     return ans;
 }
@@ -526,7 +526,7 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModByTwo() const {
     auto halfQ{m_modulus.m_value >> 1};
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = 0x1 & (m_data[i].m_value ^ (m_data[i].m_value > halfQ));
     return ans;
@@ -564,7 +564,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const Nati
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = m_data[i].m_value * b.m_data[i].m_value;
     return ans;
@@ -699,7 +699,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(ui
         return NativeVectorT(m_data.size(), m_modulus);
     const auto mask = static_cast<BasicInt>((uint64_t{1} << digitLen) - 1);
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = (m_data[i].m_value >> shift) & mask;
     return ans;

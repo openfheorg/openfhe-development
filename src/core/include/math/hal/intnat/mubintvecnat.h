@@ -105,7 +105,7 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
      * @param length is the length of the native vector, in terms of the number of
      * entries.
      */
-    explicit constexpr NativeVectorT(uint32_t length) noexcept : m_data(length) {}
+    explicit NativeVectorT(uint32_t length) noexcept : m_data(length, 0) {}
 
     /**
      * Basic constructor for specifying the length of the vector and the modulus.
@@ -114,7 +114,17 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
      * entries.
      * @param modulus is the modulus of the ring.
      */
-    constexpr NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept
+    NativeVectorT(uint32_t length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length, 0) {}
+
+    /**
+     * Constructor for specifying the length and the modulus with the entries left unset; every
+     * entry must be written before it is read.
+     *
+     * @param length is the length of the native vector, in terms of the number of
+     * entries.
+     * @param modulus is the modulus of the ring.
+     */
+    NativeVectorT(uint32_t length, const IntegerType& modulus, lbcrypto::UninitializedTag) noexcept
         : m_modulus{modulus}, m_data(length) {}
 
     /**
