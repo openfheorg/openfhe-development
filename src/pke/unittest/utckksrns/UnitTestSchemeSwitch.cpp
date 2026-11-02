@@ -33,6 +33,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -52,6 +53,31 @@
 #include "schemeswitching-data-serializer.h"
 
 using namespace lbcrypto;
+
+namespace {
+
+class ScopedTestDataDirectory {
+  public:
+    explicit ScopedTestDataDirectory(const std::string& testName)
+        : path_(std::filesystem::path("demoData") / "scheme-switching-tests" / testName) {
+        std::filesystem::remove_all(path_);
+        std::filesystem::create_directories(path_);
+    }
+
+    ~ScopedTestDataDirectory() {
+        std::error_code ec;
+        std::filesystem::remove_all(path_, ec);
+    }
+
+    std::string GetPath() const {
+        return path_.string();
+    }
+
+  private:
+    std::filesystem::path path_;
+};
+
+}  // namespace
 
 //===========================================================================================================
 enum TEST_CASE_TYPE : int {
@@ -672,6 +698,8 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
     void UnitTest_SchemeSwitch_Serialize(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
                                          const std::string& failmsg = std::string()) {
         try {
+            ScopedTestDataDirectory dataDirectory(testData.buildTestName());
+
             CryptoContextImpl<Element>::ClearEvalMultKeys();
             CryptoContextImpl<Element>::ClearEvalSumKeys();
             CryptoContextImpl<Element>::ClearEvalAutomorphismKeys();
@@ -707,6 +735,7 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
 
             // Serialize all necessary objects
             SchemeSwitchingDataSerializer serializer(ccInit, keyPairInit.publicKey, c1);
+            serializer.SetDataDirectory(dataDirectory.GetPath());
             serializer.Serialize();
 
             // Serialize secret key to verify correctness
@@ -722,6 +751,7 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
             //====================================================================================================
             // Deserialize all necessary objects
             SchemeSwitchingDataDeserializer deserializer;
+            deserializer.SetDataDirectory(dataDirectory.GetPath());
             deserializer.Deserialize();
 
             CryptoContext<DCRTPoly> cc{deserializer.getCryptoContext()};

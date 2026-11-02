@@ -284,6 +284,30 @@ Build library files + unit tests + run all tests (available if BUILD_UNITTESTS=O
 
     make testall
 
+The ``testall`` target runs the unit tests as GoogleTest shards through CTest.
+The following CMake cache variables control the run:
+
+* ``TESTALL_JOBS`` is the maximum number of shards run concurrently. It
+  defaults to the processor count.
+* ``TESTALL_SHARDS`` is the number of shards registered for each of the core,
+  PKE, and BinFHE test binaries. It defaults to 8.
+* ``TESTALL_OMP_THREADS`` is the number of OpenMP threads available to each
+  shard. It defaults to 1 to prevent nested oversubscription.
+* ``TESTALL_TRACK_MEMORY`` enables a peak-resident-memory line for each shard
+  when GNU ``time`` is available. It defaults to ``ON``.
+
+For example, a machine intended to run 16 shards concurrently can be
+configured with::
+
+    cmake .. -DTESTALL_JOBS=16 -DTESTALL_SHARDS=16
+
+On CMake 3.17 and newer, CTest stops scheduling new shards after the first
+failure. Shards that are already running are allowed to finish. A failed or
+OOM-killed shard causes ``testall`` to return a nonzero status; its output and
+peak memory line are retained in ``testall.log`` in the build directory. Peak
+memory lines for all shards, including successful ones, are available in
+``Testing/Temporary/LastTest.log``.
+
 Build only benchmarks and their dependencies (available if BUILD_BENCHMARKS=ON)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

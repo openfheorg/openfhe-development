@@ -97,6 +97,28 @@ option(WITH_NUMA_INTERLEAVE "Interleave memory across NUMA nodes at library load
 option(USE_MACPORTS "Use MacPorts installed packages"                                  OFF )
 option(WITH_DEFAULT_DIAGNOSTIC_SINK "Build the built-in diagnostic output sink"        ON  )
 
+if(BUILD_UNITTESTS)
+    include(ProcessorCount)
+    ProcessorCount(TESTALL_DETECTED_JOBS)
+    if(NOT TESTALL_DETECTED_JOBS)
+        set(TESTALL_DETECTED_JOBS 1)
+    endif()
+
+    set(TESTALL_JOBS "${TESTALL_DETECTED_JOBS}" CACHE STRING
+        "Maximum number of unit-test shards that CTest runs concurrently")
+    set(TESTALL_SHARDS 8 CACHE STRING
+        "Number of GoogleTest shards registered for each unit-test binary")
+    set(TESTALL_OMP_THREADS 1 CACHE STRING
+        "OpenMP threads available to each unit-test shard")
+    option(TESTALL_TRACK_MEMORY "Report peak resident memory for each unit-test shard" ON)
+
+    foreach(TESTALL_POSITIVE_INTEGER TESTALL_JOBS TESTALL_SHARDS TESTALL_OMP_THREADS)
+        if(NOT "${${TESTALL_POSITIVE_INTEGER}}" MATCHES "^[1-9][0-9]*$")
+            message(FATAL_ERROR "${TESTALL_POSITIVE_INTEGER} must be a positive integer")
+        endif()
+    endforeach()
+endif()
+
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
 if(NOT NATIVE_SIZE)
     set(NATIVE_SIZE 64)
@@ -156,6 +178,12 @@ message(STATUS "WITH_NOISE_DEBUG:             ${WITH_NOISE_DEBUG}")
 message(STATUS "WITH_REDUCED_NOISE:           ${WITH_REDUCED_NOISE}")
 message(STATUS "WITH_DEFAULT_DIAGNOSTIC_SINK: ${WITH_DEFAULT_DIAGNOSTIC_SINK}")
 message(STATUS "USE_MACPORTS:                 ${USE_MACPORTS}")
+if(BUILD_UNITTESTS)
+    message(STATUS "TESTALL_JOBS:                  ${TESTALL_JOBS}")
+    message(STATUS "TESTALL_SHARDS:                ${TESTALL_SHARDS}")
+    message(STATUS "TESTALL_OMP_THREADS:           ${TESTALL_OMP_THREADS}")
+    message(STATUS "TESTALL_TRACK_MEMORY:          ${TESTALL_TRACK_MEMORY}")
+endif()
 
 #--------------------------------------------------------------------
 # Compiler logic
@@ -871,6 +899,7 @@ LIST(APPEND ADDITIONAL_CLEAN_FILES ${BINDEMODATAPATH})
 LIST(APPEND ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt)
 
 if(BUILD_UNITTESTS)
+    enable_testing()
     set(UNITTESTMAIN ${PROJECT_SOURCE_DIR}/test/Main_TestAll.cpp)
 endif()
 
@@ -909,11 +938,80 @@ if(BUILD_BENCHMARKS)
 endif()
 
 if(BUILD_UNITTESTS)
+    set(TESTALL_GNU_TIME_EXECUTABLE "")
+    if(TESTALL_TRACK_MEMORY)
+        # GNU time reports the peak resident set after the child exits, including
+        # when the child is killed by the OOM killer. macOS/BSD time uses a
+        # different command line, so only enable the wrapper after identifying it.
+        find_program(TESTALL_TIME_EXECUTABLE NAMES gtime time)
+        if(TESTALL_TIME_EXECUTABLE)
+            execute_process(
+                COMMAND "${TESTALL_TIME_EXECUTABLE}" --version
+                RESULT_VARIABLE TESTALL_TIME_RESULT
+                OUTPUT_VARIABLE TESTALL_TIME_STDOUT
+                ERROR_VARIABLE TESTALL_TIME_STDERR)
+            if(TESTALL_TIME_RESULT EQUAL 0 AND
+               "${TESTALL_TIME_STDOUT}${TESTALL_TIME_STDERR}" MATCHES "[Gg][Nn][Uu] [Tt][Ii][Mm][Ee]")
+                set(TESTALL_GNU_TIME_EXECUTABLE "${TESTALL_TIME_EXECUTABLE}")
+                message(STATUS "testall peak-memory reporting: ${TESTALL_GNU_TIME_EXECUTABLE}")
+            else()
+                message(WARNING
+                    "TESTALL_TRACK_MEMORY is ON, but ${TESTALL_TIME_EXECUTABLE} is not GNU time; "
+                    "peak-memory reporting is disabled")
+            endif()
+        else()
+            message(WARNING
+                "TESTALL_TRACK_MEMORY is ON, but GNU time was not found; "
+                "peak-memory reporting is disabled")
+        endif()
+    endif()
+
+    function(add_openfhe_sharded_tests TEST_TARGET TEST_LABEL SHARD_COUNT)
+        math(EXPR TESTALL_LAST_SHARD "${SHARD_COUNT} - 1")
+        foreach(TESTALL_SHARD_INDEX RANGE 0 ${TESTALL_LAST_SHARD})
+            set(TESTALL_TEST_NAME "${TEST_LABEL}.shard.${TESTALL_SHARD_INDEX}")
+            if(TESTALL_GNU_TIME_EXECUTABLE)
+                add_test(
+                    NAME "${TESTALL_TEST_NAME}"
+                    COMMAND "${TESTALL_GNU_TIME_EXECUTABLE}"
+                        "--format=[resource] test=${TESTALL_TEST_NAME} max_rss_kib=%M elapsed=%E cpu=%P"
+                        "$<TARGET_FILE:${TEST_TARGET}>" -t)
+            else()
+                add_test(
+                    NAME "${TESTALL_TEST_NAME}"
+                    COMMAND "$<TARGET_FILE:${TEST_TARGET}>" -t)
+            endif()
+            set_tests_properties("${TESTALL_TEST_NAME}" PROPERTIES
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+                LABELS "${TEST_LABEL}"
+                ENVIRONMENT
+                    "GTEST_TOTAL_SHARDS=${SHARD_COUNT};GTEST_SHARD_INDEX=${TESTALL_SHARD_INDEX};OMP_NUM_THREADS=${TESTALL_OMP_THREADS};OMP_DYNAMIC=FALSE")
+        endforeach()
+    endfunction()
+
+    # Register the longest-running binary first. CTest will refine scheduling
+    # with recorded test costs after the first run.
+    add_openfhe_sharded_tests(pke_tests pke ${TESTALL_SHARDS})
+    add_openfhe_sharded_tests(core_tests core ${TESTALL_SHARDS})
+    add_openfhe_sharded_tests(binfhe_tests binfhe ${TESTALL_SHARDS})
+
+    set(TESTALL_CTEST_ARGUMENTS
+        --output-on-failure
+        --parallel "${TESTALL_JOBS}"
+        --output-log "${CMAKE_BINARY_DIR}/testall.log")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
+        list(APPEND TESTALL_CTEST_ARGUMENTS --stop-on-failure)
+    else()
+        message(WARNING
+            "CTest ${CMAKE_VERSION} does not support --stop-on-failure; "
+            "testall will still return a nonzero status when a test fails")
+    endif()
+
     add_custom_target(testall
-        DEPENDS core_tests pke_tests  binfhe_tests
-        COMMAND echo core: && unittest/core_tests -t || true
-        COMMAND echo pke: && unittest/pke_tests -t || true
-        COMMAND echo binfhe: && unittest/binfhe_tests -t)
+        DEPENDS core_tests pke_tests binfhe_tests
+        COMMAND "${CMAKE_CTEST_COMMAND}" ${TESTALL_CTEST_ARGUMENTS}
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        USES_TERMINAL)
 endif()
 
 if(BUILD_EXAMPLES)
