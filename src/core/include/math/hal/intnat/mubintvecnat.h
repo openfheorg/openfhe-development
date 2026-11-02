@@ -51,6 +51,7 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
+#include "utils/vector-allocator.h"
 
 /**
  * @namespace intnat
@@ -75,7 +76,7 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
                             public lbcrypto::Serializable {
   private:
     IntegerType m_modulus{0};
-    std::vector<IntegerType> m_data{};
+    std::vector<IntegerType, lbcrypto::NativeVectorAllocator<IntegerType>> m_data{};
 
     bool IndexCheck(size_t length) const {
         return length < m_data.size();
