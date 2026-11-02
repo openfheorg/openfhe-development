@@ -146,7 +146,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<DC
     const auto dggValues = dgg.GenerateIntVector(rdim);
     m_vectors.reserve(m_params->GetParams().size());
     for (auto& p : m_params->GetParams()) {
-        NativeVector ildv(rdim, p->GetModulus());
+        NativeVector ildv(rdim, p->GetModulus(), lbcrypto::UninitializedTag{});
         if (dgg.GetStd() > p->GetModulus().ConvertToDouble()) {
             auto modulus = (p->GetModulus()).template ConvertToInt<int64_t>();
             for (uint32_t j = 0; j < rdim; ++j) {
@@ -197,7 +197,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Pa
     const auto tugValues = tug.GenerateIntVector(rdim, h);
     m_vectors.reserve(m_params->GetParams().size());
     for (auto& p : m_params->GetParams()) {
-        NativeVector iltvs(rdim, p->GetModulus());
+        NativeVector iltvs(rdim, p->GetModulus(), lbcrypto::UninitializedTag{});
         for (uint32_t j = 0; j < rdim; ++j)
             iltvs[j] = (tugValues[j] < 0) ? p->GetModulus() - static_cast<NativeInteger>(-tugValues[j]) :
                                             static_cast<NativeInteger>(tugValues[j]);
@@ -922,7 +922,12 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
         const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
         const std::vector<std::vector<NativeInteger>>& QHatModp,
         const std::vector<DoubleNativeInt>& modpBarrettMu) const {
+#if defined(HAVE_INT128) && (NATIVEINT == 64) && !defined(WITH_REDUCED_NOISE) && \
+        (defined(WITH_OPENMP) || (defined(__clang__) && !defined(WITH_NATIVEOPT)))
+    DCRTPolyImpl<VecType> ans(paramsP, m_format, lbcrypto::UninitializedTag{});
+#else
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
+#endif
     uint32_t sizeQ = (m_vectors.size() > paramsQ->GetParams().size()) ? paramsQ->GetParams().size() : m_vectors.size();
     uint32_t sizeP = ans.m_vectors.size();
 #if defined(HAVE_INT128) && (NATIVEINT == 64) && !defined(WITH_REDUCED_NOISE) && \
@@ -1138,7 +1143,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
     for (const auto& p : paramsP->GetParams())
         mu.push_back(p->GetModulus().ComputeMu());
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    DCRTPolyImpl<VecType> ans(paramsP, m_format, lbcrypto::UninitializedTag{});
+#else
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
+#endif
     uint32_t ringDim = m_params->GetRingDimension();
 
 #pragma omp parallel for firstprivate(xQHatInvModq) \
@@ -1607,7 +1616,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     if constexpr (NATIVEINT == 32)
         OPENFHE_THROW("Use of ScaleAndRound with NATIVEINT == 32 may lead to overflow");
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    DCRTPolyImpl<VecType> ans(paramsOutput, m_format, lbcrypto::UninitializedTag{});
+#else
     DCRTPolyImpl<VecType> ans(paramsOutput, m_format, true);
+#endif
     uint32_t ringDim = m_params->GetRingDimension();
     uint32_t sizeQP = m_vectors.size();
     uint32_t sizeO = ans.m_vectors.size();

@@ -376,7 +376,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k) const {
     if (k % 2 == 0)
         OPENFHE_THROW("Automorphism index not odd\n");
 
-    PolyImpl<VecType> result(m_params, m_format, true);
+    PolyImpl<VecType> result(m_params, m_format, lbcrypto::UninitializedTag{});
     uint32_t logm{lbcrypto::GetMSB(m) - 1};
     uint32_t logn{logm - 1};
     uint32_t mask{(uint32_t(1) << logn) - 1};
@@ -402,7 +402,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(uint32_t k, const std
         OPENFHE_THROW("Automorphism Poly Format not EVALUATION or not power-of-two");
     if (k % 2 == 0)
         OPENFHE_THROW("Automorphism index not odd\n");
-    PolyImpl<VecType> tmp(m_params, m_format, true);
+    PolyImpl<VecType> tmp(m_params, m_format, lbcrypto::UninitializedTag{});
     uint32_t n = m_params->GetRingDimension();
     for (uint32_t j = 0; j < n; ++j)
         (*tmp.m_values)[j] = (*m_values)[precomp[j]];

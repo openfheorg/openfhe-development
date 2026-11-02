@@ -39,6 +39,7 @@
 
 #include <cstdint>
 #include <random>
+#include <type_traits>
 
 #include "math/discreteuniformgenerator.h"
 #include "math/distributiongenerator.h"
@@ -97,7 +98,12 @@ template <typename VecType>
 VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const uint32_t size) const {
     if (m_modulus == typename VecType::Integer(0))
         OPENFHE_THROW("0 modulus?");
-    VecType v(size, m_modulus);
+    VecType v = [&] {
+        if constexpr (std::is_same_v<VecType, intnat::NativeVectorT<typename VecType::Integer>>)
+            return VecType(size, m_modulus, UninitializedTag{});
+        else
+            return VecType(size, m_modulus);
+    }();
     auto& prng = PseudoRandomNumberGenerator::GetPRNG();
     std::uniform_int_distribution<uint32_t> dist(DUG_CHUNK_MIN, DUG_CHUNK_MAX);
     for (uint32_t i = 0; i < size; ++i)

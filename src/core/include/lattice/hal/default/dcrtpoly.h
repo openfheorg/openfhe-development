@@ -162,6 +162,20 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
     }
 
     /**
+     * @brief Constructs an element with one tower per modulus of params whose values are allocated but left unset;
+     * every value must be written before it is read.
+     *
+     * @param params the double-CRT parameters defining the towers.
+     * @param format the format of the element (COEFFICIENT or EVALUATION).
+     */
+    DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format, lbcrypto::UninitializedTag) noexcept
+        : m_params{params}, m_format{format} {
+        m_vectors.reserve(m_params->GetParams().size());
+        for (const auto& p : m_params->GetParams())
+            m_vectors.emplace_back(p, m_format, lbcrypto::UninitializedTag{});
+    }
+
+    /**
      * @brief Constructs an element with coefficients sampled from a discrete Gaussian distribution: one integer vector
      * is sampled and reduced modulo each tower modulus, then the towers are converted to the requested format.
      *
