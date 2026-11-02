@@ -43,6 +43,9 @@
     with these keys is covered by the bootstrapping tests).
   - EvalCKKStoFHEWKeyGen generates the rotation keys and the conjugation key of its SlotsToCoeffs
     transform over the two towers the ciphertext is compressed to before the transform.
+  - Threshold FHE: the joined rotation and relinearization keys are generated over the basis of
+    the prior key, so keys generated at a level by the first party stay at that level and work
+    on ciphertexts at that level.
  */
 
 #include <algorithm>
@@ -790,5 +793,108 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, CKKStoFHEWKeysAtLevel) {
         EXPECT_TRUE(0 == 1) << failmsg;
     } catch (...) {
         UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+    }
+}
+
+//===========================================================================================================
+// Threshold FHE: the joined keys follow the level of the prior key. Two parties generate a rotation key and a
+// relinearization key with the first party's key at a level, check the joined keys have the same size, and
+// rotate and multiply a ciphertext at that level under the joint public key.
+namespace {
+
+Plaintext MultipartyDecrypt(const CryptoContext<DCRTPoly>& cc, const Ciphertext<DCRTPoly>& ciphertext,
+                            const PrivateKey<DCRTPoly>& sk1, const PrivateKey<DCRTPoly>& sk2) {
+    auto partial1 = cc->MultipartyDecryptLead({ciphertext}, sk1);
+    auto partial2 = cc->MultipartyDecryptMain({ciphertext}, sk2);
+    Plaintext result;
+    cc->MultipartyDecryptFusion({partial1[0], partial2[0]}, &result);
+    result->SetLength(VEC_SIZE);
+    return result;
+}
+
+void CheckValues(TestScheme scheme, const Plaintext& result, const std::vector<double>& expected,
+                 const std::string& failmsg) {
+    for (size_t i = 0; i < VEC_SIZE; ++i) {
+        if (scheme == TestScheme::CKKS)
+            EXPECT_TRUE(checkEquality(result->GetRealPackedValue()[i], expected[i], EPSILON_HIGH))
+                    << failmsg << " at slot " << i;
+        else
+            EXPECT_EQ(result->GetPackedValue()[i], static_cast<int64_t>(expected[i])) << failmsg << " at slot " << i;
+    }
+}
+
+}  // namespace
+
+TEST(UTGENERAL_EVAL_KEY_LEVELS, ThresholdKeysAtLevel) {
+    constexpr uint32_t levels = 2;
+    for (const auto& [scheme, ksTech] : TEST_CASES) {
+        const std::string failmsg = "ThresholdKeysAtLevel " + TestLabel(scheme, ksTech);
+        try {
+            auto cc = MakeContext(scheme, ksTech);
+            cc->Enable(MULTIPARTY);
+            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+            const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+            const uint32_t sizeP = (ksTech == HYBRID) ? cryptoParams->GetParamsP()->GetParams().size() : 0;
+            const uint32_t keyTowers = sizeQ - levels + sizeP;
+
+            auto kp1 = cc->KeyGen();
+            auto kp2 = cc->MultipartyKeyGen(kp1.publicKey);
+            const std::string& keyTag = kp2.publicKey->GetKeyTag();
+
+            // rotation key: the first party generates it at a level, the second extends it
+            const std::vector<int32_t> indices = {1};
+            auto rotKeys1 = cc->GetScheme()->EvalAtIndexKeyGen(kp1.secretKey, indices, levels);
+            auto rotKeys2 = cc->MultiEvalAtIndexKeyGen(kp2.secretKey, rotKeys1, indices, keyTag);
+            auto rotKeys = cc->MultiAddEvalAutomorphismKeys(rotKeys1, rotKeys2, keyTag);
+            for (const auto& [index, key] : *rotKeys)
+                EXPECT_EQ(key->GetAVector()[0].GetNumOfElements(), keyTowers) << failmsg;
+            cc->InsertEvalAutomorphismKey(rotKeys, keyTag);
+
+            // relinearization key, as in the threshold-fhe example
+            auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey, levels);
+            auto evalMultKey2 = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
+            auto evalMultAB = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, keyTag);
+            auto evalMultBAB = cc->MultiMultEvalKey(kp2.secretKey, evalMultAB, keyTag);
+            auto evalMultAAB = cc->MultiMultEvalKey(kp1.secretKey, evalMultAB, keyTag);
+            auto evalMultFinal = cc->MultiAddEvalMultKeys(evalMultAAB, evalMultBAB, keyTag);
+            EXPECT_EQ(evalMultFinal->GetAVector()[0].GetNumOfElements(), keyTowers) << failmsg;
+            cc->InsertEvalMultKey({evalMultFinal});
+
+            // a prior key at a level fixes the level of the joined key
+            EXPECT_THROW(cc->GetScheme()->KeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey, levels + 1),
+                         OpenFHEException)
+                    << failmsg;
+
+            auto ptxt = MakeTestPlaintext(scheme, cc);
+            auto ct = cc->Encrypt(kp2.publicKey, ptxt);
+            auto ctReduced = DropCiphertextLevels(scheme, cc, ct, levels);
+
+            std::vector<double> values(VEC_SIZE);
+            std::vector<double> rotated(VEC_SIZE, 0.0);
+            std::vector<double> squared(VEC_SIZE);
+            for (size_t i = 0; i < VEC_SIZE; ++i) {
+                values[i] = (scheme == TestScheme::CKKS) ? ptxt->GetRealPackedValue()[i] :
+                                                           static_cast<double>(ptxt->GetPackedValue()[i]);
+                squared[i] = values[i] * values[i];
+            }
+            for (size_t i = 0; i + 1 < VEC_SIZE; ++i)
+                rotated[i] = values[i + 1];
+
+            auto ctRot = cc->EvalRotate(ctReduced, 1);
+            CheckValues(scheme, MultipartyDecrypt(cc, ctRot, kp1.secretKey, kp2.secretKey), rotated,
+                        failmsg + " rotation");
+            auto ctMult = cc->EvalMult(ctReduced, ctReduced);
+            CheckValues(scheme, MultipartyDecrypt(cc, ctMult, kp1.secretKey, kp2.secretKey), squared,
+                        failmsg + " multiplication");
+
+            CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << failmsg << ": " << e.what() << std::endl;
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
     }
 }

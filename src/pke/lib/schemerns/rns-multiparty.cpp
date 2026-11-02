@@ -172,19 +172,24 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
     std::vector<DCRTPoly> b;
     b.reserve(size);
 
+    // the key may be generated at a level (fewer RNS limbs than the crypto context, see KeySwitchGen): the
+    // secret share is multiplied in over the basis of the key
     if (cryptoParams->GetKeySwitchTechnique() == BV) {
-        const DCRTPoly& s = privateKey->GetPrivateElement();
+        const DCRTPoly& sFull = privateKey->GetPrivateElement();
+        const uint32_t sizeKeyQ = a0[0].GetNumOfElements();
+        const DCRTPoly sClone =
+                (sizeKeyQ == sFull.GetNumOfElements()) ? DCRTPoly() : sFull.CloneTowers(0, sizeKeyQ - 1);
+        const DCRTPoly& s = (sizeKeyQ == sFull.GetNumOfElements()) ? sFull : sClone;
         const auto& elementParams = s.GetParams();
         for (size_t i = 0; i < size; ++i) {
             a.push_back(a0[i] * s + ns * DCRTPoly(dgg, elementParams, Format::EVALUATION));
             b.push_back(b0[i] * s + ns * DCRTPoly(dgg, elementParams, Format::EVALUATION));
         }
     } else {
-        const auto& paramsQ = cryptoParams->GetElementParams();
-        const auto& paramsQP = cryptoParams->GetParamsQP();
-
-        uint32_t sizeQ = paramsQ->GetParams().size();
-        uint32_t sizeQP = paramsQP->GetParams().size();
+        // the basis Q_l*P of the key: its leading towers are a prefix of Q, the trailing ones are P
+        const auto& paramsQP = a0[0].GetParams();
+        const uint32_t sizeQP = paramsQP->GetParams().size();
+        const uint32_t sizeQ = sizeQP - cryptoParams->GetParamsP()->GetParams().size();
 
         DCRTPoly s = privateKey->GetPrivateElement().Clone();
 

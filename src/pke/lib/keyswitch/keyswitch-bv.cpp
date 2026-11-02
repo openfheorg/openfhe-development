@@ -72,6 +72,20 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     const auto& sOld = oldKey->GetPrivateElement();
     const uint32_t sizeQ = sOld.GetNumOfElements();
 
+    // a joint key (threshold FHE) is generated over the basis of the prior key: its level is taken from the prior
+    // key when none is requested, and must agree with the prior key otherwise
+    if (ek != nullptr) {
+        const uint32_t sizePrevQ = ek->GetAVector()[0].GetNumOfElements();
+        if (sizePrevQ == 0 || sizePrevQ > sizeQ)
+            OPENFHE_THROW("the input evaluation key has " + std::to_string(sizePrevQ) +
+                          " RNS limbs, which does not match the modulus chain of the crypto context");
+        const uint32_t levelsPrev = sizeQ - sizePrevQ;
+        if (levels == 0)
+            levels = levelsPrev;
+        else if (levels != levelsPrev)
+            OPENFHE_THROW("the number of RNS limbs in the input evaluation key does not match the requested levels");
+    }
+
     ValidateLevels(levels, sizeQ, "the modulus chain");
 
     // the key is generated over the basis of Q with the last `levels` limbs dropped
@@ -79,9 +93,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     const DCRTPoly sNewClone = (levels == 0) ? DCRTPoly() : sNew.CloneTowers(0, sizeKeyQ - 1);
     const DCRTPoly& sNewKey = (levels == 0) ? sNew : sNewClone;
     const auto& ep = sNewKey.GetParams();
-
-    if (ek != nullptr && ek->GetAVector()[0].GetNumOfElements() != sizeKeyQ)
-        OPENFHE_THROW("the number of RNS limbs in the input evaluation key does not match the requested levels");
 
     std::vector<DCRTPoly> av, bv;
     if (auto digitSize = cryptoParams->GetDigitSize(); digitSize > 0) {

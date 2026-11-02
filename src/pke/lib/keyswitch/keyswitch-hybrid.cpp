@@ -68,6 +68,20 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     const uint32_t sizeQ = paramsQ->GetParams().size();
     const uint32_t sizeP = paramsP->GetParams().size();
 
+    // a joint key (threshold FHE) is generated over the basis of the prior key: its level is taken from the prior
+    // key when none is requested, and must agree with the prior key otherwise
+    if (ekPrev != nullptr) {
+        const uint32_t sizePrevQP = ekPrev->GetAVector()[0].GetNumOfElements();
+        if (sizePrevQP <= sizeP || sizePrevQP > sizeQ + sizeP)
+            OPENFHE_THROW("the input evaluation key has " + std::to_string(sizePrevQP) +
+                          " RNS limbs, which does not match the basis Q*P of the crypto context");
+        const uint32_t levelsPrev = sizeQ + sizeP - sizePrevQP;
+        if (levels == 0)
+            levels = levelsPrev;
+        else if (levels != levelsPrev)
+            OPENFHE_THROW("the number of RNS limbs in the input evaluation key does not match the requested levels");
+    }
+
     ValidateLevels(levels, sizeQ, "the modulus chain");
 
     // the key is generated over the basis Q_l*P, where Q_l is Q with the last `levels` limbs dropped
@@ -78,9 +92,6 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     if (levels > 0)
         paramsQP = std::make_shared<ParmType>(*paramsQ, sizeKeyQ, *paramsP, sizeP);
     const auto& pparamsQP = paramsQP->GetParams();
-
-    if (ekPrev != nullptr && ekPrev->GetAVector()[0].GetNumOfElements() != sizeKeyQP)
-        OPENFHE_THROW("the number of RNS limbs in the input evaluation key does not match the requested levels");
 
     // skNew is currently in basis Q. This extends it to basis (Q_l)P.
 

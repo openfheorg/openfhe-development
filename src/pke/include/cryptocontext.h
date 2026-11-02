@@ -3444,6 +3444,8 @@ class CryptoContextImpl : public Serializable {
 
     /**
      * @brief Generates a new joined evaluation key from a prior key and secret key shares (Threshold FHE).
+     * The joined key is generated over the basis of the prior key, so a prior key generated at a level
+     * (see the levels argument of KeySwitchGen) yields a joined key at that level.
      *
      * @param originalPrivateKey  Original private key.
      * @param newPrivateKey       New private key.
@@ -3485,6 +3487,8 @@ class CryptoContextImpl : public Serializable {
 
     /**
      * @brief Generates joined rotation keys from the current secret share and prior keys (Threshold FHE).
+     * Each joined key is generated over the basis of its prior key, so prior keys generated at a level
+     * (see the levels argument of EvalRotateKeyGen) yield joined keys at that level.
      *
      * @param privateKey   Secret key share.
      * @param evalKeyMap   Prior joined rotation keys.
@@ -3542,6 +3546,8 @@ class CryptoContextImpl : public Serializable {
 
     /**
      * @brief Generates a joined partial evaluation key for homomorphic multiplication from a partial key and current secret share (Threshold FHE).
+     * The joined key is generated over the basis of the partial key, so a partial key generated at a level
+     * (see the levels argument of KeySwitchGen) yields a joined key at that level.
      *
      * @param privateKey  Current secret share.
      * @param evalKey     Prior partial evaluation key.

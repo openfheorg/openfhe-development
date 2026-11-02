@@ -53,7 +53,9 @@ limbs dropped relative to a full key), or by compressing an existing key with
 (full &minus; `levels`) limbs, at identical runtime cost and noise; it is proportionally
 smaller and faster to generate. Supported for BGV and CKKS with both BV and HYBRID key
 switching (BFV throws for a nonzero level). For duplicate rotation indices, the
-cryptocontext keeps the key with the most limbs.
+cryptocontext keeps the key with the most limbs. In threshold FHE, the joined keys
+(`MultiKeySwitchGen`, `MultiEvalAtIndexKeyGen`, `MultiMultEvalKey`, ...) are generated over
+the basis of the prior key, so the level is chosen once, by the party generating the first key.
 
 CKKS bootstrapping uses this for its own keys: `EvalBootstrapKeyGen` generates the rotation
 keys of CoeffsToSlots (applied at the raised level) full-size, and the keys used only by
