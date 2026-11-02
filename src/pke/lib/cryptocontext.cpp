@@ -102,7 +102,6 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
 template <typename Element>
 void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key, uint32_t levels) {
     ValidateKey(key);
-    ValidateEvalKeyGenLevels(levels);
     auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
     // the key is generated if it is not found in the map or if the existing key has fewer
     // towers than the requested key
@@ -116,7 +115,6 @@ void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key, 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key, uint32_t levels) {
     ValidateKey(key);
-    ValidateEvalKeyGenLevels(levels);
     auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
     // the keys are generated if they are not found in the map or if the existing keys have
     // fewer towers than the requested keys
@@ -169,7 +167,6 @@ void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Ele
 template <typename Element>
 void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey, uint32_t levels) {
     ValidateKey(privateKey);
-    ValidateEvalKeyGenLevels(levels);
     auto&& evalKeys = m_scheme->EvalSumKeyGen(privateKey, levels);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
@@ -178,7 +175,6 @@ template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
         const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, uint32_t levels) {
     ValidateKey(privateKey);
-    ValidateEvalKeyGenLevels(levels);
     std::vector<uint32_t> indices;
     auto&& evalKeys = m_scheme->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices, levels);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
@@ -197,7 +193,6 @@ template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
         const PrivateKey<Element> privateKey, uint32_t levels) {
     ValidateKey(privateKey);
-    ValidateEvalKeyGenLevels(levels);
     std::vector<uint32_t> indices;
     auto&& evalKeys = m_scheme->EvalSumColsKeyGen(privateKey, indices, levels);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
@@ -298,7 +293,6 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> privateKey,
                                                    const std::vector<int32_t>& indexList, uint32_t levels) {
     ValidateKey(privateKey);
-    ValidateEvalKeyGenLevels(levels);
     auto&& evalKeys = m_scheme->EvalAtIndexKeyGen(privateKey, indexList, levels);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }

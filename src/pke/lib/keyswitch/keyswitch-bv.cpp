@@ -281,10 +281,14 @@ std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<s
 
     // the key may have fewer towers than the cryptocontext (see the levels argument of
     // KeySwitchGen and CompressEvalKey)
-    if (sizeQl > aref[0].GetNumOfElements() || limit > aref.size())
+    if (sizeQl > aref[0].GetNumOfElements())
         OPENFHE_THROW("The ciphertext requires an evaluation key with at least " + std::to_string(sizeQl) +
                       " RNS limbs, but the key has only " + std::to_string(aref[0].GetNumOfElements()) +
                       "; use a key generated at a smaller level");
+    if (limit > aref.size())
+        OPENFHE_THROW("The ciphertext decomposes into " + std::to_string(limit) +
+                      " digits, but the evaluation key has only " + std::to_string(aref.size()) +
+                      "; the key was generated with a different digit size");
 
     const uint64_t work = static_cast<uint64_t>(paramsQl->GetRingDimension()) * sizeQl * limit;
     const uint32_t team = std::min<uint32_t>(OpenFHEParallelControls.GetThreadLimit(sizeQl * limit),

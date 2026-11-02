@@ -584,6 +584,11 @@ TEST(UTGENERAL_EVAL_KEY_LEVELS, BFVNotSupported) {
         auto kp2 = cc->KeyGen();
         auto evalKey = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
         EXPECT_THROW(cc->CompressEvalKey(evalKey, 1), OpenFHEException) << failmsg;
+        // the restriction is enforced by the scheme, not only by the cryptocontext
+        EXPECT_THROW(cc->GetScheme()->KeySwitchGen(kp.secretKey, kp2.secretKey, 1), OpenFHEException) << failmsg;
+        EXPECT_THROW(cc->GetScheme()->KeySwitchGen(kp.secretKey, kp2.secretKey, evalKey, 1), OpenFHEException)
+                << failmsg;
+        EXPECT_THROW(cc->GetScheme()->CompressEvalKey(evalKey, 1), OpenFHEException) << failmsg;
 
         // level 0 keeps working for BFV
         cc->EvalMultKeyGen(kp.secretKey);

@@ -345,22 +345,6 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
-     * @brief Throws if levels is nonzero for BFV, which does not support evaluation keys generated or compressed
-     * at a reduced level.
-     *
-     * @param levels number of RNS limbs to drop from the key
-     */
-    void ValidateEvalKeyGenLevels(uint32_t levels, CALLER_INFO_ARGS_HDR) const {
-        if (levels > 0 && getSchemeId() == SCHEME::BFVRNS_SCHEME) {
-            std::string errorMsg(
-                    std::string(
-                            "Generating or compressing evaluation keys at a nonzero level is not supported for BFV") +
-                    CALLER_INFO);
-            OPENFHE_THROW(errorMsg);
-        }
-    }
-
-    /**
      * @brief Throws if a ciphertext is null or was not generated with this crypto context.
      *
      * @param ciphertext the ciphertext to validate
@@ -1500,7 +1484,6 @@ class CryptoContextImpl : public Serializable {
                                   uint32_t levels = 0) const {
         ValidateKey(oldPrivateKey);
         ValidateKey(newPrivateKey);
-        ValidateEvalKeyGenLevels(levels);
         return m_scheme->KeySwitchGen(oldPrivateKey, newPrivateKey, levels);
     }
 
@@ -1517,7 +1500,6 @@ class CryptoContextImpl : public Serializable {
      */
     EvalKey<Element> CompressEvalKey(const EvalKey<Element>& evalKey, uint32_t levels) const {
         ValidateKey(evalKey);
-        ValidateEvalKeyGenLevels(levels);
         return m_scheme->CompressEvalKey(evalKey, levels);
     }
 
@@ -2461,7 +2443,6 @@ class CryptoContextImpl : public Serializable {
         ValidateKey(privateKey);
         if (indexList.empty())
             OPENFHE_THROW("Input index vector is empty");
-        ValidateEvalKeyGenLevels(levels);
         auto evalKeys = m_scheme->EvalAutomorphismKeyGen(privateKey, indexList, levels);
         CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
         return evalKeys;
