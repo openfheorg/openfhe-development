@@ -43,6 +43,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -816,6 +817,108 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
     const uint32_t t(m_vectors.size());
     const uint32_t r{m_params->GetRingDimension()};
     const Integer qt{m_params->GetModulus()};
+
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    {
+        // V[j] = Sigma_i y(i,j) * qt/qi - v(j) * qt, where y(i,j) = M(i,j) * [(qt/qi)^(-1) mod qi] mod qi
+        // and v(j) = floor(Sigma_i y(i,j) / qi). The sum is assembled in 64-bit limbs; the
+        // floating-point estimate of v(j) is corrected exactly, so V[j] ends in [0, qt).
+        const std::vector<uint64_t> qtLimbs{qt.GetLimbs()};
+        const size_t L{qtLimbs.size()};
+        std::vector<uint64_t> qHat(L * t, 0);
+        std::vector<NativeInteger> qHatInv(t), qHatInvPrecon(t);
+        std::vector<double> qInv(t);
+        std::vector<const NativeVector*> M(t);
+        for (uint32_t i = 0; i < t; ++i) {
+            const NativeInteger& qi{m_vectors[i].GetModulus()};
+            const Integer qiBig{qi.ConvertToInt()};
+            const Integer h{qt / qiBig};
+            qHatInv[i] = NativeInteger(h.Mod(qiBig).template ConvertToInt<uint64_t>()).ModInverse(qi);
+            qHatInvPrecon[i] = qHatInv[i].PrepModMulConst(qi);
+            qInv[i] = 1.0 / qi.ConvertToDouble();
+            const std::vector<uint64_t> hLimbs{h.GetLimbs()};
+            for (size_t k = 0; k < hLimbs.size(); ++k)
+                qHat[k * t + i] = hLimbs[k];
+            M[i] = &m_vectors[i].GetValues();
+        }
+        const uint64_t* const qtl{qtLimbs.data()};
+
+        VecType V(r, qt);
+    #pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
+        {
+            std::vector<uint64_t> accv(L + 1), yv(t);
+            uint64_t* const acc{accv.data()};
+            uint64_t* const y{yv.data()};
+    #pragma omp for
+            for (uint32_t j = 0; j < r; ++j) {
+                double f{0.0};
+                for (uint32_t i = 0; i < t; ++i) {
+                    const NativeInteger& qi{M[i]->GetModulus()};
+                    y[i] = (*M[i])[j].ModMulFastConst(qHatInv[i], qi, qHatInvPrecon[i]).ConvertToInt();
+                    f += static_cast<double>(static_cast<int64_t>(y[i])) * qInv[i];
+                }
+                uint128_t col{0};
+                for (size_t k = 0; k < L; ++k) {
+                    const uint64_t* const h{&qHat[k * t]};
+                    uint64_t top{0};
+                    for (uint32_t i = 0; i < t; ++i)
+                        top += __builtin_add_overflow(col, static_cast<uint128_t>(y[i]) * h[i], &col);
+                    acc[k] = static_cast<uint64_t>(col);
+                    col = (col >> 64) | (static_cast<uint128_t>(top) << 64);
+                }
+                acc[L] = static_cast<uint64_t>(col);
+                // acc -= v * qt; the top limb holds the sign afterwards
+                const uint64_t v{static_cast<uint64_t>(f)};
+                uint64_t carry{0}, borrow{0};
+                for (size_t k = 0; k < L; ++k) {
+                    const uint128_t p{static_cast<uint128_t>(v) * qtl[k] + carry};
+                    carry = static_cast<uint64_t>(p >> 64);
+                    const uint64_t s{static_cast<uint64_t>(p)};
+                    const uint64_t d{acc[k] - s};
+                    const uint64_t nb{static_cast<uint64_t>(acc[k] < s) | static_cast<uint64_t>(d < borrow)};
+                    acc[k] = d - borrow;
+                    borrow = nb;
+                }
+                acc[L] -= carry + borrow;
+                while (static_cast<int64_t>(acc[L]) < 0) {
+                    uint64_t c{0};
+                    for (size_t k = 0; k < L; ++k) {
+                        const uint128_t s{static_cast<uint128_t>(acc[k]) + qtl[k] + c};
+                        acc[k] = static_cast<uint64_t>(s);
+                        c = static_cast<uint64_t>(s >> 64);
+                    }
+                    acc[L] += c;
+                }
+                while (true) {
+                    bool ge{acc[L] != 0};
+                    if (!ge) {
+                        size_t k{L};
+                        while (k > 0 && acc[k - 1] == qtl[k - 1])
+                            --k;
+                        ge = (k == 0) || acc[k - 1] > qtl[k - 1];
+                    }
+                    if (!ge)
+                        break;
+                    uint64_t b{0};
+                    for (size_t k = 0; k < L; ++k) {
+                        const uint64_t d{acc[k] - qtl[k]};
+                        const uint64_t nb{static_cast<uint64_t>(acc[k] < qtl[k]) | static_cast<uint64_t>(d < b)};
+                        acc[k] = d - b;
+                        b = nb;
+                    }
+                    acc[L] -= b;
+                }
+                V[j].SetLimbs(acc, L);
+            }
+        }
+
+        // Setting the root of unity to ONE as the calculation is expensive and not required.
+        DCRTPolyImpl<VecType>::PolyLargeType poly(std::make_shared<ILParamsImpl<Integer>>(2 * r, qt, 1));
+        poly.SetValues(std::move(V), Format::COEFFICIENT);
+        return poly;
+    }
+#endif
+
     Integer tmp1, tmp2;
 
     std::vector<Integer> multiplier;

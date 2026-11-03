@@ -56,6 +56,7 @@
     #include <string>
     #include <type_traits>
     #include <typeinfo>
+    #include <vector>
 
     #include "math/hal/basicint.h"
     #include "math/hal/integer.h"
@@ -787,12 +788,12 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
 
     BigIntegerFixedT ModMulFastConst(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
                                      const BigIntegerFixedT& bInv) const {
-        OPENFHE_THROW("ModMulFastConst is not implemented for backend 2");
+        OPENFHE_THROW("Not implemented for backend 2");
     }
 
     BigIntegerFixedT& ModMulFastConstEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
                                         const BigIntegerFixedT& bInv) {
-        OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 2");
+        OPENFHE_THROW("Not implemented for backend 2");
     }
 
     /**
@@ -908,6 +909,38 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
      * @return double representation of the value.
      */
     double ConvertToDouble() const;
+
+    /**
+     * Sets the value from 64-bit limbs.
+     *
+     * @param limbs the limbs, least significant first.
+     * @param n the number of limbs.
+     */
+    void SetLimbs(const uint64_t* limbs, size_t n) {
+        constexpr uint32_t b{8 * sizeof(uint_type)};
+        constexpr uint32_t r{64 / b};
+        for (size_t k = 0; k < m_nSize; ++k)
+            m_value[m_nSize - 1 - k] = (k / r < n) ? static_cast<uint_type>(limbs[k / r] >> (b * (k % r))) : 0;
+        for (size_t k = m_nSize; k < r * n; ++k) {
+            if (static_cast<uint_type>(limbs[k / r] >> (b * (k % r))) != 0)
+                OPENFHE_THROW("Value exceeds the BigIntegerFixedT bit length");
+        }
+        SetMSB();
+    }
+
+    /**
+     * Converts the value to 64-bit limbs.
+     *
+     * @return the limbs, least significant first, without leading zero limbs.
+     */
+    std::vector<uint64_t> GetLimbs() const {
+        constexpr uint32_t b{8 * sizeof(uint_type)};
+        constexpr uint32_t r{64 / b};
+        std::vector<uint64_t> limbs((m_MSB + 63) / 64, 0);
+        for (size_t k = 0; k < m_nSize && k / r < limbs.size(); ++k)
+            limbs[k / r] |= static_cast<uint64_t>(m_value[m_nSize - 1 - k]) << (b * (k % r));
+        return limbs;
+    }
 
     /**
      * Convert a value from an int to a BigIntegerFixedT.

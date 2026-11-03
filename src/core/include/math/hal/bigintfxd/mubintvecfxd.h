@@ -241,10 +241,10 @@ class BigVectorFixedT final : public lbcrypto::BigVectorInterface<BigVectorFixed
     void LazySwitchModulus(const IntegerType& value);
 
     BigVectorFixedT& MultAccEqNoCheck(const BigVectorFixedT& a, const BigVectorFixedT& b) {
-        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecfxd");
+        OPENFHE_THROW("Not implemented for backend 2");
     }
     BigVectorFixedT& MultAccEqNoCheck(const BigVectorFixedT& v, const IntegerType& i) {
-        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecfxd");
+        OPENFHE_THROW("Not implemented for backend 2");
     }
 
     /**

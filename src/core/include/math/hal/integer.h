@@ -38,6 +38,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "utils/inttypes.h"
 
@@ -601,6 +602,21 @@ class BigIntegerInterface {
      * @return the int representation of the value.
      */
     uint64_t ConvertToInt() const;
+
+    /**
+     * Sets the value from 64-bit limbs.
+     *
+     * @param limbs the limbs, least significant first.
+     * @param n the number of limbs.
+     */
+    void SetLimbs(const uint64_t* limbs, size_t n);
+
+    /**
+     * Converts the value to 64-bit limbs.
+     *
+     * @return the limbs, least significant first, without leading zero limbs.
+     */
+    std::vector<uint64_t> GetLimbs() const;
 
     // OTHER FUNCTIONS
 

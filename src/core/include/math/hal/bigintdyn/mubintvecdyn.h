@@ -320,10 +320,10 @@ class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t
     void LazySwitchModulus(const ubint_el_t& value);
 
     mubintvec& MultAccEqNoCheck(const mubintvec& a, const mubintvec& b) {
-        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecdyn");
+        OPENFHE_THROW("Not implemented for backend 4");
     }
     mubintvec& MultAccEqNoCheck(const mubintvec& v, const ubint_el_t& i) {
-        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecdyn");
+        OPENFHE_THROW("Not implemented for backend 4");
     }
 
     /**

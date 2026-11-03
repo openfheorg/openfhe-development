@@ -1435,6 +1435,14 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
         return static_cast<double>(m_value);
     }
 
+    void SetLimbs(const uint64_t* limbs, size_t n) {
+        OPENFHE_THROW("Not supported for NativeIntegerT");
+    }
+
+    std::vector<uint64_t> GetLimbs() const {
+        OPENFHE_THROW("Not supported for NativeIntegerT");
+    }
+
     /**
      * Convert a string representation of a binary number to a NativeIntegerT.
      *
