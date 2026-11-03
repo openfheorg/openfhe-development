@@ -813,10 +813,9 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
                                    const IntegerType& modulus);
 
     /**
-     * Portable form of the 64-bit generalized-Barrett loops, used on every target except x86-64
-     * clang with AVX2: dst[i] = a[i] * b[i] (mod modulus), or dst[i] += a[i] * b[i] (mod modulus)
-     * when kAccumulate. dst may equal a. Computes the same values as the per-element ModMulFast
-     * for every input.
+     * Portable form of the 64-bit generalized-Barrett loops: dst[i] = a[i] * b[i] (mod modulus), or
+     * dst[i] += a[i] * b[i] (mod modulus) when kAccumulate. dst may equal a. Computes the same values
+     * as the per-element ModMulFast for every input.
      *
      * @param dst is the destination (the accumulator when kAccumulate).
      * @param a is the array of first operands.
@@ -836,7 +835,8 @@ class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<In
      * or more (60 bits or more on 64-bit words) has n + 7 > W, so there muHi = mu and the high
      * word is shifted right by hiShift = n + 7 - W. kHiShift fixes that shift at compile time
      * when it is 0 or 1, and is -1 for the runtime case. Under gcc the accumulating form adds
-     * the products in a separate pass per chunk of OPENFHE_BARRETT_MAC_CHUNK elements.
+     * the products in a separate pass per chunk of OPENFHE_BARRETT_MAC_CHUNK elements; under clang
+     * the loop is kept scalar.
      */
     template <int kHiShift, bool kAccumulate>
     static void BarrettLanes(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size, BasicInt mv,

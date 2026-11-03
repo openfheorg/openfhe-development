@@ -59,7 +59,7 @@ static inline T topBitMask(T x) {
 
 template <typename T>
 static inline T condSubLane(T v, T q) {
-#if defined(__clang__) && defined(__x86_64__) && !defined(__AVX2__)
+#if defined(__clang__) && defined(__x86_64__)
     if constexpr (sizeof(T) == sizeof(uint64_t)) {
         const T t{static_cast<T>(v - q)};
         return static_cast<T>(t + (q & topBitMask(t)));
@@ -67,12 +67,6 @@ static inline T condSubLane(T v, T q) {
 #endif
     return v >= q ? static_cast<T>(v - q) : v;
 }
-
-#if defined(__clang__) && defined(__x86_64__) && defined(__AVX2__)
-constexpr bool kPortableBarrett64{false};
-#else
-constexpr bool kPortableBarrett64{true};
-#endif
 
 #if defined(__GNUC__) && !defined(__clang__)
     #define OPENFHE_BARRETT_MAC_CHUNK 128
@@ -710,7 +704,7 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const Integer
                                                    const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
-    if constexpr (kPortableBarrett64 && sizeof(NInt) == sizeof(uint64_t)) {
+    if constexpr (sizeof(NInt) == sizeof(uint64_t)) {
         BarrettPortableLoop<false>(a, a, b, size, modulus);
     } else if constexpr (sizeof(DInt) > sizeof(NInt)) {
         const NInt mv{modulus.m_value};
@@ -744,7 +738,7 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const Integ
                                                    size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
-    if constexpr (kPortableBarrett64 && sizeof(NInt) == sizeof(uint64_t)) {
+    if constexpr (sizeof(NInt) == sizeof(uint64_t)) {
         BarrettPortableLoop<false>(dst, a, b, size, modulus);
     } else if constexpr (sizeof(DInt) > sizeof(NInt)) {
         const NInt mv{modulus.m_value};
@@ -778,7 +772,7 @@ void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const Inte
                                                     size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
-    if constexpr (kPortableBarrett64 && sizeof(NInt) == sizeof(uint64_t)) {
+    if constexpr (sizeof(NInt) == sizeof(uint64_t)) {
         BarrettPortableLoop<true>(acc, a, b, size, modulus);
     } else if constexpr (sizeof(DInt) > sizeof(NInt)) {
         const NInt mv{modulus.m_value};
@@ -840,6 +834,9 @@ void NativeVectorT<IntegerType>::BarrettLanes(IntegerType* dst, const IntegerTyp
         }
         return;
     }
+#endif
+#if defined(__clang__)
+    #pragma clang loop vectorize(disable)
 #endif
     for (size_t i = 0; i < size; ++i) {
         typename IntegerType::typeD prod;
