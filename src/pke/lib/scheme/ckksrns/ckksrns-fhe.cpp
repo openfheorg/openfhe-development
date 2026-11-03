@@ -481,17 +481,16 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
     // Each rotation key is generated over the towers of the largest ciphertext it is applied to (see
     // FindBootstrapRotationIndexTowers): a key can be applied to any ciphertext with at most as many towers, at the
     // same cost and noise (see KeySwitchBase::KeySwitchGen), and the levels of the two linear transforms are fixed
-    // in every bootstrapping flavor. The indices are grouped by their number of towers, one key generation per group.
+    // in every bootstrapping flavor.
     const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-    std::map<uint32_t, std::vector<int32_t>> indicesByTowers;
-    for (const auto& [index, towers] : FindBootstrapRotationIndexTowers(cryptoParams, slots, M))
-        indicesByTowers[towers].emplace_back(index);
-
-    auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<DCRTPoly>>>();
-    for (const auto& [towers, indices] : indicesByTowers) {
-        auto keys = algo->EvalAtIndexKeyGen(privateKey, indices, sizeQ - towers);
-        evalKeys->insert(keys->begin(), keys->end());
+    std::map<uint32_t, uint32_t> levelsByIndex;
+    for (const auto& [index, towers] : FindBootstrapRotationIndexTowers(cryptoParams, slots, M)) {
+        auto [it, inserted] = levelsByIndex.emplace(algo->FindAutomorphismIndex(index, M), sizeQ - towers);
+        if (!inserted && it->second > sizeQ - towers)
+            it->second = sizeQ - towers;
     }
+
+    auto evalKeys = algo->EvalAutomorphismKeyGenAtLevels(privateKey, levelsByIndex);
 
     (*evalKeys)[M - 1] = ConjugateKeyGen(privateKey);
 

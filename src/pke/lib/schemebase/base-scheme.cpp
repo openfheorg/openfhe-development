@@ -331,6 +331,16 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalA
     return evalKeyMap;
 }
 
+template <typename Element>
+std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGenAtLevels(
+        const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const {
+    VerifyLeveledSHEEnabled(__func__);
+    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGenAtLevels(privateKey, levelsByIndex);
+    for (auto& key : *evalKeyMap)
+        key.second->SetKeyTag(privateKey->GetKeyTag());
+    return evalKeyMap;
+}
+
 template class SchemeBase<DCRTPoly>;
 
 }  // namespace lbcrypto

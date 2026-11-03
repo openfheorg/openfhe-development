@@ -336,15 +336,29 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels) const {
+    std::map<uint32_t, uint32_t> levelsByIndex;
+    for (auto index : indexList)
+        levelsByIndex.emplace(index, levels);
+    return EvalAutomorphismKeyGenAtLevels(privateKey, levelsByIndex);
+}
+
+template <class Element>
+std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGenAtLevels(
+        const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const {
     const auto cc = privateKey->GetCryptoContext();
 
     // Do not generate duplicate keys that have been already generated and added to the static storage (map).
     // An existing key is reused only if it has at least as many towers as the requested key.
-    const uint32_t numTowers = cc->GetScheme()->GetNumEvalKeyTowers(privateKey->GetCryptoParameters(), levels);
-    std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
-    std::set<uint32_t> indicesToGenerate{CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(
-            privateKey->GetKeyTag(), allIndices, numTowers)};
-    std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
+    std::map<uint32_t, std::set<uint32_t>> indicesByLevels;
+    for (const auto& [index, levels] : levelsByIndex)
+        indicesByLevels[levels].insert(index);
+    std::vector<std::pair<uint32_t, uint32_t>> newIndices;
+    for (const auto& [levels, indices] : indicesByLevels) {
+        const uint32_t numTowers = cc->GetScheme()->GetNumEvalKeyTowers(privateKey->GetCryptoParameters(), levels);
+        for (auto index :
+             CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), indices, numTowers))
+            newIndices.emplace_back(index, levels);
+    }
 
     // we already have checks on higher level?
     //  auto it = std::find(newIndices.begin(), newIndices.end(), 2 * n - 1);
@@ -364,19 +378,20 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
     // have already been created
     auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-    for (auto indx : newIndices)
-        (*evalKeys)[indx];
+    for (const auto& entry : newIndices)
+        (*evalKeys)[entry.first];
 
     const uint32_t sz = newIndices.size();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
     for (uint32_t i = 0; i < sz; ++i) {
-        auto index = NativeInteger(newIndices[i]).ModInverse(M).ConvertToInt<uint32_t>();
+        const auto [autoIndex, levels] = newIndices[i];
+        auto index = NativeInteger(autoIndex).ModInverse(M).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-        (*evalKeys)[newIndices[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted, levels);
+        (*evalKeys)[autoIndex] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted, levels);
     }
 
     return evalKeys;

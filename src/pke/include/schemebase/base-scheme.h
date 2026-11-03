@@ -797,6 +797,18 @@ class SchemeBase {
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
             const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels = 0) const;
 
+    /**
+     * Generates automorphism keys of several sizes via m_LeveledSHE, in a single parallel region, and tags each of
+     * them with the key tag of privateKey.
+     *
+     * @param privateKey the secret key
+     * @param levelsByIndex map from each automorphism index to generate a key for to the number of RNS limbs to
+     * drop from its key relative to full keys
+     * @return map from automorphism index to key
+     */
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGenAtLevels(
+            const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const;
+
     virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                                  const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
                                                  CALLER_INFO_ARGS_HDR) const {

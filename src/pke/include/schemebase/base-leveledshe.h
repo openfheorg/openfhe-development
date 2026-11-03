@@ -781,6 +781,17 @@ class LeveledSHEBase {
             const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels = 0) const;
 
     /**
+     * Generates automorphism keys of several sizes in a single parallel region
+     *
+     * @param privateKey private key.
+     * @param levelsByIndex map from each automorphism index to be computed to the number of RNS limbs to drop
+     * from its key relative to full keys
+     * @return returns the evaluation keys
+     */
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGenAtLevels(
+            const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const;
+
+    /**
      * Virtual function for evaluating automorphism of ciphertext at index i
      *
      * @param ciphertext the input ciphertext.
