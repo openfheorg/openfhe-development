@@ -141,7 +141,9 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pr
     NativeInteger ns = cryptoParams->GetNoiseScale();
 
     // {b = ns * e - a * s, a}
-    Element b(std::move((e *= ns) -= (a * privateKey->GetPrivateElement())));
+    if (ns != NativeInteger(1))
+        e *= ns;
+    Element b(std::move(e -= (a * privateKey->GetPrivateElement())));
 
     auto result = std::make_shared<std::vector<Element>>();
     result->reserve(2);
@@ -179,10 +181,14 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pu
     Element e0(dgg, elementParams, Format::EVALUATION);
     Element e1(dgg, elementParams, Format::EVALUATION);
 
+    if (ns != 1) {
+        e0 *= NativeInteger(ns);
+        e1 *= NativeInteger(ns);
+    }
     auto result = std::make_shared<std::vector<Element>>();
     result->reserve(2);
-    result->push_back(p0 * v + ns * e0);
-    result->push_back(p1 * v + ns * e1);
+    result->push_back(p0 * v + e0);
+    result->push_back(p1 * v + e1);
     return result;
 }
 

@@ -49,6 +49,24 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
+namespace {
+
+// Adds the scaled plaintext (coefficient form over Q*r) to the first component and rounds both components from
+// Q*r down to Q, returning them in evaluation form.
+void ScaleQrToQ(std::vector<DCRTPoly>& ba, const DCRTPoly& ptxt, const CryptoParametersBFVRNS& params) {
+    const auto& paramsQ = params.GetElementParams();
+    const auto& rInvModq = params.GetrInvModq();
+    ba[0].SetFormat(Format::COEFFICIENT);
+    ba[0] += ptxt;
+    ba[0].ScaleAndRoundPOverQ(paramsQ, rInvModq);
+    ba[0].SetFormat(Format::EVALUATION);
+    ba[1].SetFormat(Format::COEFFICIENT);
+    ba[1].ScaleAndRoundPOverQ(paramsQ, rInvModq);
+    ba[1].SetFormat(Format::EVALUATION);
+}
+
+}  // namespace
+
 KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) const {
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
@@ -144,19 +162,12 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
     const NativeInteger t = cryptoParams->GetPlaintextModulus();
 
     ptxt.TimesQovert(encParams, tInvModq, t, NegQModt, NegQModtPrecon);
-    ptxt.SetFormat(Format::EVALUATION);
-    (*ba)[0] += ptxt;
-
-    (*ba)[0].SetFormat(Format::COEFFICIENT);
-    (*ba)[1].SetFormat(Format::COEFFICIENT);
-
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
-        (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
-        (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
+        ScaleQrToQ(*ba, ptxt, *cryptoParams);
+    } else {
+        ptxt.SetFormat(Format::EVALUATION);
+        (*ba)[0] += ptxt;
     }
-
-    (*ba)[0].SetFormat(Format::EVALUATION);
-    (*ba)[1].SetFormat(Format::EVALUATION);
 
     ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
@@ -202,19 +213,12 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     const NativeInteger t = cryptoParams->GetPlaintextModulus();
 
     ptxt.TimesQovert(encParams, tInvModq, t, NegQModt, NegQModtPrecon);
-    ptxt.SetFormat(Format::EVALUATION);
-    (*ba)[0] += ptxt;
-
-    (*ba)[0].SetFormat(Format::COEFFICIENT);
-    (*ba)[1].SetFormat(Format::COEFFICIENT);
-
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
-        (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
-        (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
+        ScaleQrToQ(*ba, ptxt, *cryptoParams);
+    } else {
+        ptxt.SetFormat(Format::EVALUATION);
+        (*ba)[0] += ptxt;
     }
-
-    (*ba)[0].SetFormat(Format::EVALUATION);
-    (*ba)[1].SetFormat(Format::EVALUATION);
 
     ciphertext->SetElements(std::move(*ba));
     ciphertext->SetNoiseScaleDeg(1);
