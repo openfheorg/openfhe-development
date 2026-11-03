@@ -2855,22 +2855,45 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
 namespace {
 // Multiplication by the plaintext rotated by the automorphism autoIndex (a permutation of its evaluation-format
 // coefficients), in the extended basis, as FHECKKSRNS::EvalMultExt
+DCRTPoly RotatedPlaintextElement(ConstPlaintext plaintext, uint32_t autoIndex, const std::vector<uint32_t>& map) {
+    const auto& stored = plaintext->GetElement<DCRTPoly>();
+    if (stored.GetFormat() == Format::EVALUATION)
+        return stored.AutomorphismTransform(autoIndex, map);
+    auto evaluation = stored;
+    evaluation.SetFormat(Format::EVALUATION);
+    return evaluation.AutomorphismTransform(autoIndex, map);
+}
+
 Ciphertext<DCRTPoly> EvalMultExtRotated(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext,
                                         uint32_t autoIndex, const std::vector<uint32_t>& map) {
-    const auto& stored = plaintext->GetElement<DCRTPoly>();
-    auto pt = [&] {
-        if (stored.GetFormat() == Format::EVALUATION)
-            return stored.AutomorphismTransform(autoIndex, map);
-        auto evaluation = stored;
-        evaluation.SetFormat(Format::EVALUATION);
-        return evaluation.AutomorphismTransform(autoIndex, map);
-    }();
-    auto result = ciphertext->Clone();
-    for (auto& c : result->GetElements())
-        c *= pt;
-    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
-    result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
+    auto pt = RotatedPlaintextElement(plaintext, autoIndex, map);
+    const auto& cv = ciphertext->GetElements();
+    std::vector<DCRTPoly> prods;
+    prods.reserve(cv.size());
+    for (const auto& c : cv)
+        prods.push_back(c * pt);
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements(std::move(prods));
+    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
+    result->SetScalingFactor(ciphertext->GetScalingFactor() * plaintext->GetScalingFactor());
     return result;
+}
+
+// Fused multiply-accumulate by a rotated plaintext: acc += ciphertext * Aut(plaintext), tower by tower,
+// as FHECKKSRNS::EvalMultExtAccInPlace
+void EvalMultExtRotatedAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
+                                  ConstPlaintext plaintext, uint32_t autoIndex, const std::vector<uint32_t>& map) {
+    auto pt = RotatedPlaintextElement(plaintext, autoIndex, map);
+    auto& av = acc->GetElements();
+    const auto& cv = ciphertext->GetElements();
+    const uint32_t sizeCv = cv.size();
+    const uint32_t numTowers = pt.GetNumOfElements();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTowers))
+    for (uint32_t i = 0; i < numTowers; ++i) {
+        const auto& pti = pt.GetAllElements()[i];
+        for (uint32_t k = 0; k < sizeCv; ++k)
+            av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pti);
+    }
 }
 
 // The automorphism (index and coefficient permutation) of the rotation of the plaintexts by -slots used by the
@@ -2917,6 +2940,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyP
     auto mult = [&](const Ciphertext<DCRTPoly>& c, const ReadOnlyPlaintext& pt, bool shifted) {
         return (shifted) ? EvalMultExtRotated(c, pt, shiftAutoIndex, shiftMap) : EvalMultExt(c, pt);
     };
+    auto multAcc = [&](Ciphertext<DCRTPoly>& acc, const Ciphertext<DCRTPoly>& c, const ReadOnlyPlaintext& pt,
+                       bool shifted) {
+        if (shifted)
+            EvalMultExtRotatedAccInPlace(acc, c, pt, shiftAutoIndex, shiftMap);
+        else
+            EvalMultExtAccInPlace(acc, c, pt);
+    };
 
     // Horner backward accumulation with a single giant stride t = bStep.
     auto accumulate = [&](bool shifted) {
@@ -2924,15 +2954,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyP
         Ciphertext<DCRTPoly> outer = mult(ctExt, A[Gtop], shifted);
         for (int32_t i = 1; i < bStep; ++i)
             if (Gtop + i < slots)
-                EvalAddExtInPlace(outer, mult(fastRotation[i - 1], A[Gtop + i], shifted));
+                multAcc(outer, fastRotation[i - 1], A[Gtop + i], shifted);
 
         for (int32_t j = gStep - 2; j >= 0; --j) {
             outer = EvalHornerGiantRotate(outer, autoIndex, map, giantKey);
             const int32_t G = j * bStep;
-            auto inner = mult(ctExt, A[G], shifted);
+            multAcc(outer, ctExt, A[G], shifted);
             for (int32_t i = 1; i < bStep; ++i)
-                EvalAddExtInPlace(inner, mult(fastRotation[i - 1], A[G + i], shifted));
-            EvalAddExtInPlace(outer, inner);
+                multAcc(outer, fastRotation[i - 1], A[G + i], shifted);
         }
         return outer;
     };
@@ -3009,21 +3038,26 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         auto mult = [&](const Ciphertext<DCRTPoly>& c, const ReadOnlyPlaintext& pt, bool shifted) {
             return (shifted) ? EvalMultExtRotated(c, pt, shiftAutoIndex, shiftMap) : EvalMultExt(c, pt);
         };
+        auto multAcc = [&](Ciphertext<DCRTPoly>& acc, const Ciphertext<DCRTPoly>& c, const ReadOnlyPlaintext& pt,
+                           bool shifted) {
+            if (shifted)
+                EvalMultExtRotatedAccInPlace(acc, c, pt, shiftAutoIndex, shiftMap);
+            else
+                EvalMultExtAccInPlace(acc, c, pt);
+        };
         auto accumulate = [&](bool shifted) {
             const uint32_t Gtop = p.g * bLast;
             Ciphertext<DCRTPoly> outer = mult(fastRotation[0], A[s][Gtop], shifted);
             for (uint32_t j = 1; j < p.g; ++j)
                 if ((Gtop + j) != p.numRotations)
-                    EvalAddExtInPlace(outer, mult(fastRotation[j], A[s][Gtop + j], shifted));
+                    multAcc(outer, fastRotation[j], A[s][Gtop + j], shifted);
 
             for (int32_t i = bLast - 1; i >= 0; --i) {
                 if (t != 0)
                     outer = EvalHornerGiantRotate(outer, giantAutoIndex, giantMap, giantKey);
                 const uint32_t G = p.g * i;
-                auto inner = mult(fastRotation[0], A[s][G], shifted);
-                for (uint32_t j = 1; j < p.g; ++j)
-                    EvalAddExtInPlace(inner, mult(fastRotation[j], A[s][G + j], shifted));
-                EvalAddExtInPlace(outer, inner);
+                for (uint32_t j = 0; j < p.g; ++j)
+                    multAcc(outer, fastRotation[j], A[s][G + j], shifted);
             }
             return outer;
         };
@@ -3069,16 +3103,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         Ciphertext<DCRTPoly> outer = EvalMultExt(fastRotationRem[0], A[stop][GtopRem]);
         for (uint32_t j = 1; j < p.gRem; ++j)
             if ((GtopRem + j) != p.numRotationsRem)
-                EvalAddExtInPlace(outer, EvalMultExt(fastRotationRem[j], A[stop][GtopRem + j]));
+                EvalMultExtAccInPlace(outer, fastRotationRem[j], A[stop][GtopRem + j]);
 
         for (int32_t i = bLast - 1; i >= 0; --i) {
             if (tRem != 0)
                 outer = EvalHornerGiantRotate(outer, giantAutoIndex, giantMap, giantKey);
             const uint32_t GRem = p.gRem * i;
-            auto inner = EvalMultExt(fastRotationRem[0], A[stop][GRem]);
-            for (uint32_t j = 1; j < p.gRem; ++j)
-                EvalAddExtInPlace(inner, EvalMultExt(fastRotationRem[j], A[stop][GRem + j]));
-            EvalAddExtInPlace(outer, inner);
+            for (uint32_t j = 0; j < p.gRem; ++j)
+                EvalMultExtAccInPlace(outer, fastRotationRem[j], A[stop][GRem + j]);
         }
         if (CtSDelta != 0) {
             uint32_t deltaAutoIndex = 0;
@@ -3143,16 +3175,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         Ciphertext<DCRTPoly> outer = EvalMultExt(fastRotation[0], A[s][Gtop]);
         for (uint32_t j = 1; j < p.g; ++j)
             if ((Gtop + j) != p.numRotations)
-                EvalAddExtInPlace(outer, EvalMultExt(fastRotation[j], A[s][Gtop + j]));
+                EvalMultExtAccInPlace(outer, fastRotation[j], A[s][Gtop + j]);
 
         for (int32_t i = bLast - 1; i >= 0; --i) {
             if (t != 0)
                 outer = EvalHornerGiantRotate(outer, giantAutoIndex, giantMap, giantKey);
             const uint32_t G = p.g * i;
-            auto inner = EvalMultExt(fastRotation[0], A[s][G]);
-            for (uint32_t j = 1; j < p.g; ++j)
-                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[j], A[s][G + j]));
-            EvalAddExtInPlace(outer, inner);
+            for (uint32_t j = 0; j < p.g; ++j)
+                EvalMultExtAccInPlace(outer, fastRotation[j], A[s][G + j]);
         }
         if (s == smax - 1 && flagRem == 0 && StCDelta != 0) {
             uint32_t deltaAutoIndex = 0;
@@ -3194,16 +3224,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         Ciphertext<DCRTPoly> outer = EvalMultExt(fastRotationRem[0], A[smax][GtopRem]);
         for (uint32_t j = 1; j < p.gRem; ++j)
             if ((GtopRem + j) != p.numRotationsRem)
-                EvalAddExtInPlace(outer, EvalMultExt(fastRotationRem[j], A[smax][GtopRem + j]));
+                EvalMultExtAccInPlace(outer, fastRotationRem[j], A[smax][GtopRem + j]);
 
         for (int32_t i = bLast - 1; i >= 0; --i) {
             if (tRem != 0)
                 outer = EvalHornerGiantRotate(outer, giantAutoIndex, giantMap, giantKey);
             const uint32_t GRem = p.gRem * i;
-            auto inner = EvalMultExt(fastRotationRem[0], A[smax][GRem]);
-            for (uint32_t j = 1; j < p.gRem; ++j)
-                EvalAddExtInPlace(inner, EvalMultExt(fastRotationRem[j], A[smax][GRem + j]));
-            EvalAddExtInPlace(outer, inner);
+            for (uint32_t j = 0; j < p.gRem; ++j)
+                EvalMultExtAccInPlace(outer, fastRotationRem[j], A[smax][GRem + j]);
         }
         if (StCDelta != 0) {
             uint32_t deltaAutoIndex = 0;
@@ -3681,14 +3709,43 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 #endif
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) {
-    auto pt = plaintext->GetElement<DCRTPoly>();
-    pt.SetFormat(Format::EVALUATION);
-    auto result = ciphertext->Clone();
-    for (auto& c : result->GetElements())
-        c *= pt;
-    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
-    result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
+    const auto& stored = plaintext->GetElement<DCRTPoly>();
+    const auto& cv = ciphertext->GetElements();
+
+    std::vector<DCRTPoly> prods;
+    prods.reserve(cv.size());
+    // the aux plaintexts are stored in EVALUATION format, so the product is formed directly from the stored
+    // element; the conversion branch copies only when a caller passes a COEFFICIENT-format plaintext
+    if (stored.GetFormat() == Format::EVALUATION) {
+        for (const auto& c : cv)
+            prods.push_back(c * stored);
+    } else {
+        auto pt = stored;
+        pt.SetFormat(Format::EVALUATION);
+        for (const auto& c : cv)
+            prods.push_back(c * pt);
+    }
+
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements(std::move(prods));
+    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
+    result->SetScalingFactor(ciphertext->GetScalingFactor() * plaintext->GetScalingFactor());
     return result;
+}
+
+void FHECKKSRNS::EvalMultExtAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
+                                       ConstPlaintext plaintext) {
+    const auto& pt = plaintext->GetElement<DCRTPoly>();
+    auto& av = acc->GetElements();
+    const auto& cv = ciphertext->GetElements();
+    const uint32_t sizeCv = cv.size();
+    const uint32_t numTowers = pt.GetNumOfElements();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTowers))
+    for (uint32_t i = 0; i < numTowers; ++i) {
+        const auto& pti = pt.GetAllElements()[i];
+        for (uint32_t k = 0; k < sizeCv; ++k)
+            av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pti);
+    }
 }
 
 void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {

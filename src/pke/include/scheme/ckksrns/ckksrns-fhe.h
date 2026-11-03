@@ -1051,6 +1051,19 @@ class FHECKKSRNS : public FHERNS {
     static Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext);
 
     /**
+     * Fused multiply-accumulate in the extended basis Ql*P: acc += ciphertext * plaintext, tower by tower,
+     * without allocating an intermediate product ciphertext. The plaintext must be encoded over the same
+     * extended basis (MakeAuxPlaintext) and stored in EVALUATION format. The metadata of acc is left
+     * unchanged, matching EvalAddExtInPlace(acc, EvalMultExt(ciphertext, plaintext)).
+     *
+     * @param acc the accumulator in the extended basis
+     * @param ciphertext the input ciphertext in the extended basis
+     * @param plaintext the plaintext encoded over the extended basis
+     */
+    static void EvalMultExtAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
+                                      ConstPlaintext plaintext);
+
+    /**
      * Adds two ciphertexts in the extended basis Ql*P element-wise, without any level or scaling factor checks.
      *
      * @param ciphertext1 the first addend, replaced by the sum
