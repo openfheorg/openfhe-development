@@ -43,6 +43,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <set>
 #include <sstream>
 #include <string>
@@ -2900,6 +2901,96 @@ void EvalMultExtRotatedAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCR
     }
 }
 
+// The hoisted rotations of ct by each of indices in the extended basis, as LeveledSHECKKSRNS::EvalFastRotationExt
+// with addFirst (KeySwitchExt(ct, true) for an index of 0), in one parallel region over the rotations and towers
+std::vector<Ciphertext<DCRTPoly>> EvalFastRotationsExt(ConstCiphertext<DCRTPoly> ct,
+                                                       const std::vector<uint32_t>& indices,
+                                                       const std::shared_ptr<std::vector<DCRTPoly>>& digits) {
+    const auto cc = ct->GetCryptoContext();
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
+    const auto& cv = ct->GetElements();
+    const auto& PModq = cryptoParams->GetPModq();
+    const auto paramsQlP = (*digits)[0].GetParams();
+    const uint32_t sizeQlP = paramsQlP->GetParams().size();
+    const uint32_t sizeQl = cv[0].GetNumOfElements();
+    const uint32_t sizeP = sizeQlP - sizeQl;
+    const uint32_t numDigits = digits->size();
+    const uint32_t numRotations = indices.size();
+    const uint32_t M = cc->GetCyclotomicOrder();
+    const uint32_t N = cc->GetRingDimension();
+
+    const auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
+    std::vector<uint32_t> autoIndices(numRotations);
+    std::vector<EvalKey<DCRTPoly>> evalKeys(numRotations);
+    std::vector<uint32_t> deltas(numRotations);
+    std::vector<std::vector<uint32_t>> maps(numRotations);
+    for (uint32_t j = 0; j < numRotations; ++j) {
+        if (indices[j] == 0)
+            continue;
+        autoIndices[j] = FindAutomorphismIndex2nComplex(indices[j], M);
+        auto evalKeyIt = evalKeyMap.find(autoIndices[j]);
+        if (evalKeyIt == evalKeyMap.end())
+            OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndices[j]) + "] is not found.");
+        evalKeys[j] = evalKeyIt->second;
+        const uint32_t sizeKeyQ = evalKeys[j]->GetAVector()[0].GetNumOfElements() - sizeP;
+        if (sizeQl > sizeKeyQ)
+            OPENFHE_THROW("The ciphertext requires an evaluation key with at least " + std::to_string(sizeQl) +
+                          " RNS limbs in its Q basis, but the key has only " + std::to_string(sizeKeyQ) +
+                          "; use a key generated at a smaller level");
+        deltas[j] = sizeKeyQ - sizeQl;
+        maps[j].resize(N);
+        PrecomputeAutoMap(N, autoIndices[j], &maps[j]);
+    }
+
+    std::vector<std::vector<DCRTPoly>> elements(numRotations);
+    for (auto& e : elements) {
+        e.reserve(2);
+        e.emplace_back(paramsQlP, Format::EVALUATION, false);
+        e.emplace_back(paramsQlP, Format::EVALUATION, false);
+    }
+
+    const uint32_t numTasks = numRotations * sizeQlP;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTasks))
+    for (uint32_t task = 0; task < numTasks; ++task) {
+        const uint32_t j = task / sizeQlP;
+        const uint32_t i = task % sizeQlP;
+        auto& r0 = elements[j][0].GetAllElements()[i];
+        auto& r1 = elements[j][1].GetAllElements()[i];
+        const auto& towerParams = paramsQlP->GetParams()[i];
+        if (indices[j] == 0) {
+            if (i < sizeQl) {
+                r0 = cv[0].GetElementAtIndex(i).Times(PModq[i]);
+                r1 = cv[1].GetElementAtIndex(i).Times(PModq[i]);
+            } else {
+                r0 = DCRTPoly::PolyType(towerParams, Format::EVALUATION, true);
+                r1 = DCRTPoly::PolyType(towerParams, Format::EVALUATION, true);
+            }
+            continue;
+        }
+        const auto& av = evalKeys[j]->GetAVector();
+        const auto& bv = evalKeys[j]->GetBVector();
+        const uint32_t idx = (i >= sizeQl) ? i + deltas[j] : i;
+        DCRTPoly::PolyType t0(towerParams, Format::EVALUATION, true);
+        DCRTPoly::PolyType t1(towerParams, Format::EVALUATION, true);
+        for (uint32_t d = 0; d < numDigits; ++d) {
+            const auto& cdi = (*digits)[d].GetElementAtIndex(i);
+            t0.MultAccEqNoCheck(cdi, bv[d].GetElementAtIndex(idx));
+            t1.MultAccEqNoCheck(cdi, av[d].GetElementAtIndex(idx));
+        }
+        if (i < sizeQl)
+            t0 += cv[0].GetElementAtIndex(i).Times(PModq[i]);
+        r0 = t0.AutomorphismTransform(autoIndices[j], maps[j]);
+        r1 = t1.AutomorphismTransform(autoIndices[j], maps[j]);
+    }
+
+    std::vector<Ciphertext<DCRTPoly>> result(numRotations);
+    for (uint32_t j = 0; j < numRotations; ++j) {
+        result[j] = ct->CloneEmpty();
+        result[j]->SetElements(std::move(elements[j]));
+    }
+    return result;
+}
+
 // The automorphism (index and coefficient permutation) of the rotation of the plaintexts by -slots used by the
 // partial sum folded into the first layer of the homomorphic encoding (see FHECKKSRNS::ModRaiseForEncoding)
 void PlaintextShiftAutomorphism(const CryptoContextImpl<DCRTPoly>& cc, uint32_t slots, uint32_t& autoIndex,
@@ -2923,12 +3014,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyP
     auto cc = ct->GetCryptoContext();
     auto digits = cc->EvalFastRotationPrecompute(ct);
 
-    std::vector<Ciphertext<DCRTPoly>> fastRotation(bStep - 1);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(bStep - 1))
-    for (int32_t j = 1; j < bStep; ++j)
-        fastRotation[j - 1] = cc->EvalFastRotationExt(ct, j, digits, true);
-
-    auto ctExt = cc->KeySwitchExt(ct, true);
+    std::vector<uint32_t> indices(bStep);
+    std::iota(indices.begin(), indices.end(), 0);
+    auto fastRotation = EvalFastRotationsExt(ct, indices, digits);
+    const auto& ctExt = fastRotation[0];
 
     uint32_t autoIndex = 0;
     std::vector<uint32_t> map;
@@ -2958,14 +3047,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyP
         Ciphertext<DCRTPoly> outer = mult(ctExt, A[Gtop], shifted);
         for (int32_t i = 1; i < bStep; ++i)
             if (Gtop + i < slots)
-                multAcc(outer, fastRotation[i - 1], A[Gtop + i], shifted);
+                multAcc(outer, fastRotation[i], A[Gtop + i], shifted);
 
         for (int32_t j = gStep - 2; j >= 0; --j) {
             outer = EvalHornerGiantRotate(outer, autoIndex, map, giantKey);
             const int32_t G = j * bStep;
             multAcc(outer, ctExt, A[G], shifted);
             for (int32_t i = 1; i < bStep; ++i)
-                multAcc(outer, fastRotation[i - 1], A[G + i], shifted);
+                multAcc(outer, fastRotation[i], A[G + i], shifted);
         }
         return outer;
     };
@@ -3020,13 +3109,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         const int32_t scale = 1 << ((s - flagRem) * p.layersCollapse + p.remCollapse);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<Ciphertext<DCRTPoly>> fastRotation(p.g);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.g))
-        for (uint32_t j = 0; j < p.g; ++j) {
-            const uint32_t index = ReduceRotation(scale * j, reduceMod);
-            fastRotation[j] =
-                    (j != 0) ? cc->EvalFastRotationExt(result, index, digits, true) : cc->KeySwitchExt(result, true);
-        }
+        std::vector<uint32_t> indices(p.g);
+        for (uint32_t j = 0; j < p.g; ++j)
+            indices[j] = ReduceRotation(scale * j, reduceMod);
+        auto fastRotation = EvalFastRotationsExt(result, indices, digits);
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3085,12 +3171,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
             algo->ModReduceInternalInPlace(result, compositeDegree);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<Ciphertext<DCRTPoly>> fastRotationRem(p.gRem);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
+        std::vector<uint32_t> indices(p.gRem);
         for (uint32_t j = 0; j < p.gRem; ++j)
-            fastRotationRem[j] = (j != 0) ?
-                                         cc->EvalFastRotationExt(result, ReduceRotation(j, reduceMod), digits, true) :
-                                         cc->KeySwitchExt(result, true);
+            indices[j] = ReduceRotation(j, reduceMod);
+        auto fastRotationRem = EvalFastRotationsExt(result, indices, digits);
 
         // Remainder scale is 1 in CtS; Horner giant stride = gRem
         const int32_t tRem = ReduceRotation(p.gRem, reduceMod);
@@ -3157,12 +3241,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         const int32_t scale = 1 << (s * p.layersCollapse);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<Ciphertext<DCRTPoly>> fastRotation(p.g);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.g))
+        std::vector<uint32_t> indices(p.g);
         for (uint32_t j = 0; j < p.g; ++j)
-            fastRotation[j] =
-                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scale * j, reduceMod), digits, true) :
-                               cc->KeySwitchExt(result, true);
+            indices[j] = ReduceRotation(scale * j, reduceMod);
+        auto fastRotation = EvalFastRotationsExt(result, indices, digits);
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3206,12 +3288,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         const int32_t scaleRem = 1 << (smax * p.layersCollapse);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<Ciphertext<DCRTPoly>> fastRotationRem(p.gRem);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
+        std::vector<uint32_t> indices(p.gRem);
         for (uint32_t j = 0; j < p.gRem; ++j)
-            fastRotationRem[j] =
-                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scaleRem * j, reduceMod), digits, true) :
-                               cc->KeySwitchExt(result, true);
+            indices[j] = ReduceRotation(scaleRem * j, reduceMod);
+        auto fastRotationRem = EvalFastRotationsExt(result, indices, digits);
 
         // Horner giant stride for remainder: g_rem * scale_rem
         const int32_t tRem = ReduceRotation(scaleRem * p.gRem, reduceMod);
