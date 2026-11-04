@@ -484,28 +484,37 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         const uint32_t sizePartQl = partsCt.GetNumOfElements();
         const uint32_t startPartIdx = alpha * part;
-        for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; ++i, ++idx)
-            partsCt.SetElementAtIndex(i, c.GetElementAtIndex(idx));
-
         const uint32_t threads = DCRTPoly::ApproxSwitchCRTBasisThreads(ringDim, sizePartQl, sizeQlP - sizePartQl);
-        partsCt.SetFormat(Format::COEFFICIENT, threads);
+
+        auto& partTowers = partsCt.GetAllElements();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(threads))
+        for (uint32_t i = 0; i < sizePartQl; ++i) {
+            partTowers[i] = c.GetElementAtIndex(startPartIdx + i);
+            partTowers[i].SetFormat(Format::COEFFICIENT);
+        }
+        partsCt.OverrideFormat(Format::COEFFICIENT);
+
         auto partsCtCompl = partsCt.ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(part),
                                                          cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
                                                          cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
                                                          cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
-        partsCtCompl.SetFormat(Format::EVALUATION, threads);
 
         (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
 
         const uint32_t endPartIdx = startPartIdx + sizePartQl;
-        for (uint32_t i = 0; i < startPartIdx; ++i)
-            (*result)[part].SetElementAtIndex(i, std::move(partsCtCompl.GetElementAtIndex(i)));
-        for (uint32_t i = startPartIdx; i < endPartIdx; ++i)
-            (*result)[part].SetElementAtIndex(i, c.GetElementAtIndex(i));
-        for (uint32_t i = endPartIdx; i < sizeQlP; ++i)
-            (*result)[part].SetElementAtIndex(i, std::move(partsCtCompl.GetElementAtIndex(i - sizePartQl)));
+        auto& digitTowers = (*result)[part].GetAllElements();
+        auto& complTowers = partsCtCompl.GetAllElements();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(threads))
+        for (uint32_t i = 0; i < sizeQlP; ++i) {
+            if (i >= startPartIdx && i < endPartIdx) {
+                digitTowers[i] = c.GetElementAtIndex(i);
+            } else {
+                digitTowers[i] = std::move(complTowers[(i < startPartIdx) ? i : i - sizePartQl]);
+                digitTowers[i].SetFormat(Format::EVALUATION);
+            }
+        }
     }
     return result;
 }
