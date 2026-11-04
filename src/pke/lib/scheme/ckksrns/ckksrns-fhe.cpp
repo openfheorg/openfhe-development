@@ -2884,21 +2884,28 @@ Ciphertext<DCRTPoly> EvalMultExtRotated(ConstCiphertext<DCRTPoly> ciphertext, Co
     return result;
 }
 
+// av += cv * pt tower by tower in the extended basis, in one parallel region over the elements and towers: one
+// thread per tower of every element while that leaves part of the team idle, otherwise one thread per tower
+void MultAccExtInPlace(std::vector<DCRTPoly>& av, const std::vector<DCRTPoly>& cv, const DCRTPoly& pt) {
+    const uint32_t sizeCv = cv.size();
+    const uint32_t numTowers = pt.GetNumOfElements();
+    const uint32_t numTasks = sizeCv * numTowers;
+    const uint32_t width =
+            (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : numTowers;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
+    for (uint32_t task = 0; task < numTasks; ++task) {
+        const uint32_t k = task / numTowers;
+        const uint32_t i = task % numTowers;
+        av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pt.GetAllElements()[i]);
+    }
+}
+
 // Fused multiply-accumulate by a rotated plaintext: acc += ciphertext * Aut(plaintext), tower by tower,
 // as FHECKKSRNS::EvalMultExtAccInPlace
 void EvalMultExtRotatedAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
                                   ConstPlaintext plaintext, uint32_t autoIndex, const std::vector<uint32_t>& map) {
-    auto pt = RotatedPlaintextElement(plaintext, autoIndex, map);
-    auto& av = acc->GetElements();
-    const auto& cv = ciphertext->GetElements();
-    const uint32_t sizeCv = cv.size();
-    const uint32_t numTowers = pt.GetNumOfElements();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTowers))
-    for (uint32_t i = 0; i < numTowers; ++i) {
-        const auto& pti = pt.GetAllElements()[i];
-        for (uint32_t k = 0; k < sizeCv; ++k)
-            av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pti);
-    }
+    MultAccExtInPlace(acc->GetElements(), ciphertext->GetElements(),
+                      RotatedPlaintextElement(plaintext, autoIndex, map));
 }
 
 // The hoisted rotations of ct by each of indices in the extended basis, as LeveledSHECKKSRNS::EvalFastRotationExt
@@ -3819,17 +3826,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
 
 void FHECKKSRNS::EvalMultExtAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
                                        ConstPlaintext plaintext) {
-    const auto& pt = plaintext->GetElement<DCRTPoly>();
-    auto& av = acc->GetElements();
-    const auto& cv = ciphertext->GetElements();
-    const uint32_t sizeCv = cv.size();
-    const uint32_t numTowers = pt.GetNumOfElements();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTowers))
-    for (uint32_t i = 0; i < numTowers; ++i) {
-        const auto& pti = pt.GetAllElements()[i];
-        for (uint32_t k = 0; k < sizeCv; ++k)
-            av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pti);
-    }
+    MultAccExtInPlace(acc->GetElements(), ciphertext->GetElements(), plaintext->GetElement<DCRTPoly>());
 }
 
 void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
