@@ -141,7 +141,7 @@ jobs:
         echo "cmake_args:  ${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -165,7 +165,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -189,7 +189,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }}  ${{ needs.init.outputs.openmp_flag }}"
@@ -213,7 +213,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -237,7 +237,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -261,7 +261,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -285,7 +285,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -309,7 +309,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -333,7 +333,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
@@ -357,7 +357,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: ${{ github.job }}
-      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@1386-run-unit-tests-in-parallel-github-ci
+      uses: openfheorg/openfhe-development/.github/actions/generic_workflow_builder@github-ci
       with:
         module_name: ${{ github.job }}
         cmake_args: "${{ needs.init.outputs.compiler }} ${{ fromJson(inputs.cmake_args_map)[github.job] }} -DNATIVE_SIZE=${{ matrix.integer_size }} ${{ needs.init.outputs.openmp_flag }}"
