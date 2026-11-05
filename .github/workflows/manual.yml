@@ -71,39 +71,42 @@ on:
         description: 'MATHBACKEND2 jobs'
         type: choice
         options:
+        - 'none'
+        - 'all_but_debug'
+        - 'all'
         - 'mb2'
         - 'mb2_tcm'
         - 'mb2_debug'
-        - 'all'
-        - 'none'
         required: true
         default: 'none'
       mb4_jobs:
         description: 'MATHBACKEND4 jobs'
         type: choice
         options:
+        - 'none'
+        - 'all_but_debug'
+        - 'all'
         - 'mb4'
         - 'mb4_tcm'
         - 'mb4_debug'
-        - 'all'
-        - 'none'
         required: true
         default: 'none'
       mb6_jobs:
         description: 'MATHBACKEND6 jobs'
         type: choice
         options:
+        - 'none'
+        - 'all_but_debug'
+        - 'all'
         - 'mb6_ntl'
         - 'mb6_ntl_tcm'
         - 'mb6_ntl_debug_tcm'
-        - 'all'
-        - 'none'
         required: true
         default: 'none'
 
 jobs:
   call:
-    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/generic_workflow.yml@1386-run-unit-tests-in-parallel-github-ci
     with:
       runner: ${{ vars.RUNNER }}
       compiler: "${{ inputs.compiler }}"
