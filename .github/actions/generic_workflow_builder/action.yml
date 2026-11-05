@@ -63,7 +63,8 @@ runs:
         echo "${{ inputs.module_name }}_test_binfhe"
         pwd
         echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
-        build/unittest/binfhe_tests --gtest_output=xml
+        bash "${{ github.action_path }}/run-test-with-memory.sh" "${{ inputs.module_name }}_binfhe" \
+            build/unittest/binfhe_tests --gtest_output=xml
 
     - name: '${{ inputs.module_name }}_test_core'
       shell: bash
@@ -71,7 +72,8 @@ runs:
         echo "${{ inputs.module_name }}_test_core"
         pwd
         echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
-        build/unittest/core_tests --gtest_output=xml
+        bash "${{ github.action_path }}/run-test-with-memory.sh" "${{ inputs.module_name }}_core" \
+            build/unittest/core_tests --gtest_output=xml
 
     - name: '${{ inputs.module_name }}_test_pke'
       shell: bash
@@ -79,7 +81,8 @@ runs:
         echo "${{ inputs.module_name }}_test_pke"
         pwd
         echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
-        build/unittest/pke_tests --gtest_output=xml
+        bash "${{ github.action_path }}/run-test-with-memory.sh" "${{ inputs.module_name }}_pke" \
+            build/unittest/pke_tests --gtest_output=xml
 
     # -- benchmark
     - name: ${{ inputs.module_name }}_benchmark
