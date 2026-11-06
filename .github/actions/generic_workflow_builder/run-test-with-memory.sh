@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Runs one unit-test binary under GNU time and reports memory usage:
 #   - the test process's own peak RSS
-#   - the machine-wide memory high-water mark while the test ran, which also
-#     covers anything else active on a shared runner
+#   - the highest sampled machine-wide memory use while the test ran, which
+#     also covers anything else active on a shared runner. Sampling every
+#     5 seconds makes this a lower bound on the true high-water mark.
 # Both are printed to the step log and appended as a table row to the job
 # summary shown on the workflow run page. If GNU time is not installed on the
 # runner, the test runs exactly as before and only a notice is printed.
@@ -20,9 +21,24 @@ if ! /usr/bin/time --version 2>&1 | grep -qi "GNU time"; then
 fi
 
 workdir="$(mktemp -d)"
-trap 'rm -rf "$workdir"' EXIT
+sampler=""
 
-# Sample MemAvailable every 5 seconds for the machine-wide high-water mark.
+stop_sampler() {
+    if [[ -n "$sampler" ]]; then
+        kill "$sampler" 2>/dev/null || true
+        wait "$sampler" 2>/dev/null || true
+        sampler=""
+    fi
+}
+
+cleanup() {
+    stop_sampler
+    rm -rf -- "$workdir"
+}
+
+trap cleanup EXIT
+
+# Sample MemAvailable every 5 seconds for the sampled machine-wide high.
 (
     while :; do
         awk '/^MemAvailable:/{print $2}' /proc/meminfo
@@ -35,8 +51,7 @@ sampler=$!
     --output="$workdir/time" "$@"
 status=$?
 
-kill "$sampler" 2>/dev/null
-wait "$sampler" 2>/dev/null
+stop_sampler
 
 # On an OOM kill this also prints GNU time's "Command terminated by ..." line.
 cat "$workdir/time"
@@ -47,15 +62,13 @@ peak_rss_kib=$(grep -o 'peak_rss_kib=[0-9]*' "$workdir/time" | cut -d= -f2)
 elapsed=$(grep -o 'elapsed=[^ ]*' "$workdir/time" | cut -d= -f2)
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" && -n "$peak_rss_kib" && -n "$min_available_kib" ]]; then
-    if ! grep -q "Unit-test memory usage" "$GITHUB_STEP_SUMMARY" 2>/dev/null; then
-        {
-            echo ""
-            echo "### Unit-test memory usage"
-            echo ""
-            echo "| Test | Result | Peak RSS | System peak | Elapsed |"
-            echo "|------|--------|---------:|------------:|--------:|"
-        } >> "$GITHUB_STEP_SUMMARY"
-    fi
+    {
+        echo ""
+        echo "### Unit-test memory usage"
+        echo ""
+        echo "| Test | Result | Peak RSS | System high (sampled) | Elapsed |"
+        echo "|------|--------|---------:|----------------------:|--------:|"
+    } >> "$GITHUB_STEP_SUMMARY"
     result="passed"
     [[ "$status" -ne 0 ]] && result="failed ($status)"
     echo "| $label | $result | $((peak_rss_kib / 1024)) MiB | $(((total_kib - min_available_kib) / 1024)) MiB | $elapsed |" \
