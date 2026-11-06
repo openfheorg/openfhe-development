@@ -70,6 +70,7 @@ class PlaintextImpl {
     enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
 
     bool isEncoded{false};          ///< whether the values have been encoded into the polynomial
+    bool towersFromFirst{false};    ///< the DCRT towers are the first tower switched to each modulus, as encoded
     PtxtPolyType typeFlag;          ///< which of the three polynomial members is in use
     EncodingParams encodingParams;  ///< encoding parameters (plaintext modulus, batch size, ...)
 
@@ -313,6 +314,17 @@ class PlaintextImpl {
     template <typename Element>
     const Element& GetElement() const {
         OPENFHE_THROW("Not implemented");
+    }
+
+    /**
+     * GetCoefficientElement
+     * @return a copy of the encoded polynomial in COEFFICIENT format
+     */
+    template <typename Element>
+    Element GetCoefficientElement() const {
+        Element element{GetElement<Element>()};
+        element.SetFormat(Format::COEFFICIENT);
+        return element;
     }
 
     /**
@@ -602,7 +614,33 @@ inline const DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() const {
  */
 template <>
 inline DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() {
+    towersFromFirst = false;
     return encodedVectorDCRT;
+}
+
+/**
+ * GetCoefficientElement
+ * @return a copy of the encoded DCRTPolynomial in COEFFICIENT format; when the encoding built every tower from the
+ * first, only the first is transformed and the others are rebuilt from it
+ */
+template <>
+inline DCRTPoly PlaintextImpl::GetCoefficientElement<DCRTPoly>() const {
+    if (!towersFromFirst || encodedVectorDCRT.GetFormat() != Format::EVALUATION) {
+        DCRTPoly element{encodedVectorDCRT};
+        element.SetFormat(Format::COEFFICIENT);
+        return element;
+    }
+    NativePoly first{encodedVectorDCRT.GetElementAtIndex(0)};
+    first.SetFormat(Format::COEFFICIENT);
+    const auto& towers = encodedVectorDCRT.GetParams()->GetParams();
+    DCRTPoly element(encodedVectorDCRT.GetParams(), Format::COEFFICIENT);
+    for (size_t i = 1; i < towers.size(); ++i) {
+        NativePoly tower(towers[i], Format::COEFFICIENT);
+        tower.SetValues(NativeVector(first.GetValues(), towers[i]->GetModulus()), Format::COEFFICIENT);
+        element.SetElementAtIndex(i, std::move(tower));
+    }
+    element.SetElementAtIndex(0, std::move(first));
+    return element;
 }
 
 }  // namespace lbcrypto

@@ -56,8 +56,7 @@ namespace lbcrypto {
 void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
-    auto pt = plaintext->GetElement<DCRTPoly>();
-    pt.SetFormat(COEFFICIENT);
+    auto pt = plaintext->GetCoefficientElement<DCRTPoly>();
 
     // enables encoding of plaintexts using a smaller number of RNS limbs
     auto sizeQ = cryptoParams->GetElementParams()->GetParams().size();
@@ -77,8 +76,7 @@ void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
 void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
-    auto pt = plaintext->GetElement<DCRTPoly>();
-    pt.SetFormat(COEFFICIENT);
+    auto pt = plaintext->GetCoefficientElement<DCRTPoly>();
 
     // enables encoding of plaintexts using a smaller number of RNS limbs
     auto sizeQ = cryptoParams->GetElementParams()->GetParams().size();

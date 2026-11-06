@@ -133,6 +133,7 @@ bool PackedEncoding::Encode() {
             // Setting the first limb at the end make sure firstElement is available during the main loop
             this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
             this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+            this->towersFromFirst = true;
         }
     } else {
         BigVector temp(this->GetElementRingDimension(), BigInteger(this->GetElementModulus()));
