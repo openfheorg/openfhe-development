@@ -155,9 +155,13 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<DC
                 ildv[j] = (k < 0) ? p->GetModulus() - static_cast<NativeInteger>(-k) : static_cast<NativeInteger>(k);
             }
         } else {
-            for (uint32_t j = 0; j < rdim; ++j)
-                ildv[j] = (dggValues[j] < 0) ? p->GetModulus() - static_cast<NativeInteger>(-dggValues[j]) :
-                                               static_cast<NativeInteger>(dggValues[j]);
+            using NInt = typename NativeInteger::Integer;
+            const NInt modv{p->GetModulus().template ConvertToInt<NInt>()};
+            for (uint32_t j = 0; j < rdim; ++j) {
+                const NInt x{static_cast<NInt>(dggValues[j])};
+                const NInt negMask{NInt(0) - NInt(dggValues[j] < 0)};
+                ildv[j] = NativeInteger(x + (modv & negMask));
+            }
         }
         m_vectors.emplace_back(p);
         m_vectors.back().SetValues(std::move(ildv), Format::COEFFICIENT);

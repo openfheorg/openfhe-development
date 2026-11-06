@@ -70,11 +70,14 @@
 
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 #include "math/distributiongenerator.h"
+#include "math/math-hal.h"
 
 namespace lbcrypto {
 
@@ -220,7 +223,47 @@ class DiscreteGaussianGeneratorImpl {
     std::vector<double> m_vals;
     bool m_peikert{false};
 
-    static int64_t FindInVector(const std::vector<double>& S, double search);
+    static constexpr size_t HEAD_SIZE{16};
+    static constexpr double LARGEST_BELOW_ONE{1.0 - std::numeric_limits<double>::epsilon() / 2};
+    static constexpr bool NATIVE_VECTOR{std::is_same_v<VecType, intnat::NativeVectorT<typename VecType::Integer>>};
+
+    /**
+     * @brief Inversion sampling at the uniform value in [0, 1) built from two PRNG words, as
+     * std::uniform_real_distribution builds it in libstdc++; the first HEAD_SIZE entries of m_vals are compared
+     * without branches.
+     *
+     * @param w0 the first PRNG word.
+     * @param w1 the second PRNG word.
+     * @return A random value within this Discrete Gaussian Distribution.
+     */
+    int64_t InversionSample(uint32_t w0, uint32_t w1) const;
+
+    /**
+     * @brief Draws size samples from the PRNG of this thread and passes each to store with its index.
+     *
+     * @param size the number of samples.
+     * @param store called as store(i, sample) for i = 0, ..., size - 1.
+     */
+    template <typename Store>
+    void ForEachSample(uint32_t size, Store&& store) const;
+
+    /**
+     * @brief Maps a sample to its residue modulo modulus, without a branch on the sample for native vectors.
+     *
+     * @param val the sample, with |val| < modulus.
+     * @param modulus the modulus.
+     * @return val mod modulus.
+     */
+    static typename VecType::Integer Residue(int64_t val, const typename VecType::Integer& modulus) {
+        if constexpr (NATIVE_VECTOR) {
+            using NInt = typename VecType::Integer::Integer;
+            const NInt x{static_cast<NInt>(val)};
+            const NInt negMask{NInt(0) - NInt(val < 0)};
+            return typename VecType::Integer(x + (modulus.template ConvertToInt<NInt>() & negMask));
+        } else {
+            return (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
+        }
+    }
 
     static double UnnormalizedGaussianPDF(const double& mean, const double& sigma, int32_t x) {
         return std::pow(M_E, -std::pow(x - mean, 2) / (2. * sigma * sigma));
