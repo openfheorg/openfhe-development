@@ -120,7 +120,7 @@ jobs:
     
   ###############################################
   #
-  #    default jobs starts here
+  #    default jobs
   #
   ###############################################
   default:
@@ -149,11 +149,11 @@ jobs:
 
   ###############################################
   #
-  #    mb2 jobs starts here
+  #    mb2 jobs
   #
   ###############################################
   mb2:
-    if: ${{ (inputs.mb2_jobs == 'mb2') || (inputs.mb2_jobs == 'all') }}
+    if: ${{ (inputs.mb2_jobs == 'mb2') || (inputs.mb2_jobs == 'all') || (inputs.mb2_jobs == 'all_but_debug') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -173,7 +173,7 @@ jobs:
 
   ###############################################
   #
-  #    mb2_debug jobs starts here
+  #    mb2_debug jobs
   #
   ###############################################
   mb2_debug:
@@ -197,11 +197,11 @@ jobs:
 
   ###############################################
   #
-  #    mb2_tcm jobs starts here
+  #    mb2_tcm jobs
   #
   ###############################################
   mb2_tcm:
-    if: ${{ (inputs.mb2_jobs == 'mb2_tcm') || (inputs.mb2_jobs == 'all') }}
+    if: ${{ (inputs.mb2_jobs == 'mb2_tcm') || (inputs.mb2_jobs == 'all') || (inputs.mb2_jobs == 'all_but_debug') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -221,11 +221,11 @@ jobs:
 
   ###############################################
   #
-  #    mb4 jobs starts here
+  #    mb4 jobs
   #
   ###############################################
   mb4:
-    if: ${{ (inputs.mb4_jobs == 'mb4') || (inputs.mb4_jobs == 'all') }}
+    if: ${{ (inputs.mb4_jobs == 'mb4') || (inputs.mb4_jobs == 'all') || (inputs.mb4_jobs == 'all_but_debug') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -245,7 +245,7 @@ jobs:
 
   ###############################################
   #
-  #    mb4_debug jobs starts here
+  #    mb4_debug jobs
   #
   ###############################################
   mb4_debug:
@@ -269,11 +269,11 @@ jobs:
 
   ###############################################
   #
-  #    mb4_tcm jobs starts here
+  #    mb4_tcm jobs
   #
   ###############################################
   mb4_tcm:
-    if: ${{ (inputs.mb4_jobs == 'mb4_tcm') || (inputs.mb4_jobs == 'all') }}
+    if: ${{ (inputs.mb4_jobs == 'mb4_tcm') || (inputs.mb4_jobs == 'all') || (inputs.mb4_jobs == 'all_but_debug') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -293,11 +293,11 @@ jobs:
 
   ###############################################
   #
-  #    mb6_ntl jobs starts here
+  #    mb6_ntl jobs
   #
   ###############################################
   mb6_ntl:
-    if: ${{ (inputs.mb6_jobs == 'mb6_ntl') || (inputs.mb6_jobs == 'all') }}
+    if: ${{ (inputs.mb6_jobs == 'mb6_ntl') || (inputs.mb6_jobs == 'all') || (inputs.mb6_jobs == 'all_but_debug') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -317,11 +317,11 @@ jobs:
 
   ###############################################
   #
-  #    mb6_ntl_tcm jobs starts here
+  #    mb6_ntl_tcm jobs
   #
   ###############################################
   mb6_ntl_tcm:
-    if: ${{ (inputs.mb6_jobs == 'mb6_ntl_tcm') || (inputs.mb6_jobs == 'all') }}
+    if: ${{ (inputs.mb6_jobs == 'mb6_ntl_tcm') || (inputs.mb6_jobs == 'all') || (inputs.mb6_jobs == 'all_but_debug') }}
     strategy:
       matrix:
         integer_size: ${{ fromJson(needs.init.outputs.integer_size) }}
@@ -341,7 +341,7 @@ jobs:
 
   ###############################################
   #
-  #    mb6_ntl_debug_tcm jobs starts here
+  #    mb6_ntl_debug_tcm jobs
   #
   ###############################################
   mb6_ntl_debug_tcm:
