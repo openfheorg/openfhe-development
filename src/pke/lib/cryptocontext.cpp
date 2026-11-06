@@ -122,12 +122,23 @@ void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key,
     ValidateKey(key);
     auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
     // the keys are generated if they are not found in the map, if fewer keys than requested
-    // are in the map, or if the existing keys have fewer towers than the requested keys
-    if (it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty() ||
-        it->second.size() + 1 < GetCryptoParameters()->GetMaxRelinSkDeg() ||
-        it->second[0]->GetAVector()[0].GetNumOfElements() <
-                m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels)) {
-        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = m_scheme->EvalMultKeysGen(key, levels);
+    // are in the map, or if any existing key has fewer towers than the requested keys; an
+    // existing key with more towers than the requested ones is kept
+    const auto numTowers = m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels);
+    bool generate = it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty() ||
+                    it->second.size() + 1 < GetCryptoParameters()->GetMaxRelinSkDeg();
+    for (size_t i = 0; !generate && i < it->second.size(); ++i)
+        generate = it->second[i]->GetAVector()[0].GetNumOfElements() < numTowers;
+    if (generate) {
+        auto evalKeys = m_scheme->EvalMultKeysGen(key, levels);
+        if (it != CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+            const size_t numKept = (it->second.size() < evalKeys.size()) ? it->second.size() : evalKeys.size();
+            for (size_t i = 0; i < numKept; ++i) {
+                if (it->second[i]->GetAVector()[0].GetNumOfElements() > numTowers)
+                    evalKeys[i] = it->second[i];
+            }
+        }
+        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = std::move(evalKeys);
     }
 }
 
