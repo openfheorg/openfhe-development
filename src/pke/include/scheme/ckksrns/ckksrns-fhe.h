@@ -1459,6 +1459,11 @@ class FHECKKSRNS : public FHERNS {
     static const uint32_t R_func_28_double_48 = 3;
     // for SPARSE_ENCAPSULATED and HYBRID_TERNARY secret key distributions
     static const uint32_t R_func_16_double_23 = 4;
+    // for SPARSE_ENCAPSULATED and HYBRID_TERNARY with small scaling factors (first modulus at most 35 bits):
+    // one double-angle iteration is traded for a wider series argument at the same Paterson-Stockmeyer depth,
+    // saving one level; the degree-27 tail (~2^-21 after the squarings) is far below the noise floor of
+    // those scaling factors but too coarse for larger ones
+    static const uint32_t R_func_16_double_27 = 3;
     // for UNIFORM_TERNARY secret key distribution (K_UNIFORM_FEFBT)
     static const uint32_t R_func_696_double_27 = 9;
 
@@ -1750,6 +1755,25 @@ class FHECKKSRNS : public FHERNS {
             std::complex<double>(-1.6396846620747584922e-07, 0), std::complex<double>(0, -2.7852909912067652654e-08),
             std::complex<double>(4.4828133381284258415e-09, 0),  std::complex<double>(0, 6.8557357458132878181e-10),
             std::complex<double>(-9.9853771085012255071e-11, 0), std::complex<double>(0, -1.4132101422613974449e-11)};
+
+    // Coefficients for the function std::exp(1i * Pi/4.0 * x) in [-16, 16] of degree 27 (closed form
+    // 2*i^n*J_n(4*Pi)): the same Paterson-Stockmeyer depth as the degree-23 series with one double-angle
+    // iteration fewer, at a truncation error of ~2^-21 after the squarings (small scaling factors only)
+    static const inline std::vector<std::complex<double>> coeff_exp_16_double_27{
+            std::complex<double>(0.31501478496427687750, 0),     std::complex<double>(0, -0.30906163116838690992),
+            std::complex<double>(0.36420347128476984192, 0),     std::complex<double>(0, -0.19313206567599034744),
+            std::complex<double>(0.45641724005041715064, 0),     std::complex<double>(0, 0.097432173789545949605),
+            std::complex<double>(0.37888317967644294099, 0),     std::complex<double>(0, 0.45923895918882973998),
+            std::complex<double>(-0.13274787323051315200, 0),    std::complex<double>(0, 0.29021911751225008437),
+            std::complex<double>(-0.54845613741709337707, 0),    std::complex<double>(0, -0.58267593587793216119),
+            std::complex<double>(0.47163717215526726022, 0),     std::complex<double>(0, 0.31808471165479588976),
+            std::complex<double>(-0.18648463220840543937, 0),    std::complex<double>(0, -0.097434602718189306273),
+            std::complex<double>(0.046123347553517305161, 0),    std::complex<double>(0, 0.020017537363214800328),
+            std::complex<double>(-0.0080367827844824775628, 0),  std::complex<double>(0, -0.0030061493574973910349),
+            std::complex<double>(0.0010536442839639873875, 0),   std::complex<double>(0, 0.00034770456357039340447),
+            std::complex<double>(-0.00010847261662061620677, 0), std::complex<double>(0, -0.000032102405185835951387),
+            std::complex<double>(9.0402822000715839700e-6, 0),   std::complex<double>(0, 2.4289291922536640746e-6),
+            std::complex<double>(-6.2411998411279630558e-7, 0),  std::complex<double>(0, -1.5369710214999056955e-7)};
 
     // Coefficients for the function std::exp(1i * Pi/256.0 * x) in [-696, 696] of degree 27
     // Need nine double-angle iterations to get std::exp(1i * 2Pi * x); the approximation error is about 2^-30

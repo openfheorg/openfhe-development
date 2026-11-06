@@ -1936,10 +1936,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
     // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED/HYBRID_TERNARY with the denser sparse secret
     // (Hamming weight 64)
     const bool smallSparseKey = IsSparseEncapsulated(skd) && (cryptoParams->GetSparseKSHammingWeight() == 32);
+    // with a small scaling factor the noise floor is far above the ~2^-21 truncation error of the wider
+    // degree-27 series, so one double-angle iteration is traded for it at the same Paterson-Stockmeyer
+    // depth, saving a level (deg == 1 is enforced below, so the first modulus is GetPlaintextModulus() + 1)
+    const bool lowPrecision = smallSparseKey && (cryptoParams->GetPlaintextModulus() + 1 <= 35);
     const auto& coeffExp = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
+                           lowPrecision             ? coeff_exp_16_double_27 :
                            smallSparseKey           ? coeff_exp_16_double_23 :
                                                       coeff_exp_28_double_48;
     const uint32_t rFunc = (skd == UNIFORM_TERNARY) ? R_func_696_double_27 :
+                           lowPrecision             ? R_func_16_double_27 :
                            smallSparseKey           ? R_func_16_double_23 :
                                                       R_func_28_double_48;
 
@@ -4964,12 +4970,17 @@ uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
     // above 60 bits) uses the K = 28 exponential table of SPARSE_TERNARY (see EvalFEFuncBootstrapSetup)
     const bool sparseTable = (skd == SPARSE_TERNARY) ||
                              UsesLargeSparseKey(skd, CryptoParametersCKKSRNS::SparseKSHammingWeight(firstModSize));
+    // must mirror the table selection of EvalFEFuncBootstrapExp: small scaling factors trade one
+    // double-angle iteration for the wider degree-27 series at the same Paterson-Stockmeyer depth
+    const bool lowPrecision = (skd != UNIFORM_TERNARY) && !sparseTable && (firstModSize <= 35);
     const auto& coeff_exp = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
                             sparseTable              ? coeff_exp_28_double_48 :
+                            lowPrecision             ? coeff_exp_16_double_27 :
                                                        coeff_exp_16_double_23;
     const uint32_t expDepth = GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
     const uint32_t rFunc = (skd == UNIFORM_TERNARY) ? R_func_696_double_27 :
                            sparseTable              ? R_func_28_double_48 :
+                           lowPrecision             ? R_func_16_double_27 :
                                                       R_func_16_double_23;
     // the normalization after the modulus raise does not consume a level of the chain (see ModRaiseInPlace)
     return levelBudget[0] + levelBudget[1] + expDepth + rFunc +
