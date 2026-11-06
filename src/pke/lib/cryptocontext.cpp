@@ -104,11 +104,16 @@ void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key, 
     ValidateKey(key);
     auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
     // the key is generated if it is not found in the map or if the existing key has fewer
-    // towers than the requested key
-    if (it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty() ||
-        it->second[0]->GetAVector()[0].GetNumOfElements() <
-                m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels)) {
+    // towers than the requested key; an existing vector of keys for higher powers of the
+    // secret key is regenerated as a whole
+    if (it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty()) {
         CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = {m_scheme->EvalMultKeyGen(key, levels)};
+    } else if (it->second[0]->GetAVector()[0].GetNumOfElements() <
+               m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels)) {
+        if (it->second.size() > 1)
+            it->second = m_scheme->EvalMultKeysGen(key, levels);
+        else
+            it->second = {m_scheme->EvalMultKeyGen(key, levels)};
     }
 }
 
@@ -116,9 +121,10 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key, uint32_t levels) {
     ValidateKey(key);
     auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
-    // the keys are generated if they are not found in the map or if the existing keys have
-    // fewer towers than the requested keys
+    // the keys are generated if they are not found in the map, if fewer keys than requested
+    // are in the map, or if the existing keys have fewer towers than the requested keys
     if (it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty() ||
+        it->second.size() + 1 < GetCryptoParameters()->GetMaxRelinSkDeg() ||
         it->second[0]->GetAVector()[0].GetNumOfElements() <
                 m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels)) {
         CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = m_scheme->EvalMultKeysGen(key, levels);

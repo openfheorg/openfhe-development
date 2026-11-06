@@ -1487,8 +1487,8 @@ class CryptoContextImpl : public Serializable {
      * @brief Creates a copy of an evaluation key with a reduced number of RNS limbs.
      *
      * The compressed key can only be applied to ciphertexts with at most as many limbs as the
-     * compressed key, but takes less memory and makes the corresponding homomorphic operations
-     * faster. Not supported for BFV.
+     * compressed key and takes less memory; key switching with it costs the same as with the
+     * full key. Not supported for BFV.
      *
      * @param evalKey  Evaluation key to compress.
      * @param levels   Number of RNS limbs to drop from the Q basis of the key.
