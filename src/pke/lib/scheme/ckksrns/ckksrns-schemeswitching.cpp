@@ -342,22 +342,14 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
         const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale = 1.0) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    auto elementParams = *(cryptoParamsCKKS->GetElementParams());
-
-    uint32_t towersToDrop = 0;
-    if (L != 0) {
-        towersToDrop = elementParams.GetParams().size() - L - 1;
-        for (uint32_t i = 0; i < towersToDrop; ++i)
-            elementParams.PopLastParam();
-    }
-
-    const auto& paramsQ = elementParams.GetParams();
-    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+    const auto& elementParams = *(cryptoParamsCKKS->GetElementParams());
+    const uint32_t sizeQ = elementParams.GetParams().size();
+    const uint32_t towersToDrop = (L != 0) ? sizeQ - L - 1 : 0;
 
     // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, static_cast<uint32_t>(paramsQ.size()), *cryptoParamsCKKS->GetParamsP(),
-            static_cast<uint32_t>(paramsP.size()));
+            elementParams, sizeQ - towersToDrop, *cryptoParamsCKKS->GetParamsP(),
+            static_cast<uint32_t>(cryptoParamsCKKS->GetParamsP()->GetParams().size()));
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -395,22 +387,14 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     // Make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    auto elementParams = *(cryptoParams->GetElementParams());
-
-    uint32_t towersToDrop = 0;
-    if (L != 0) {
-        towersToDrop = elementParams.GetParams().size() - L - 1;
-        for (uint32_t i = 0; i < towersToDrop; i++)
-            elementParams.PopLastParam();
-    }
-
-    const auto& paramsQ = elementParams.GetParams();
-    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    const auto& elementParams = *(cryptoParams->GetElementParams());
+    const uint32_t sizeQ = elementParams.GetParams().size();
+    const uint32_t towersToDrop = (L != 0) ? sizeQ - L - 1 : 0;
 
     // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, static_cast<uint32_t>(paramsQ.size()), *cryptoParams->GetParamsP(),
-            static_cast<uint32_t>(paramsP.size()));
+            elementParams, sizeQ - towersToDrop, *cryptoParams->GetParamsP(),
+            static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -541,27 +525,18 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     // Make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
 
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
-    uint32_t towersToDrop = 0;
+    const auto& elementParams = *(cryptoParamsCKKS->GetElementParams());
+    const uint32_t sizeQ = elementParams.GetParams().size();
+    uint32_t towersToDrop = (L != 0) ? sizeQ - L - 1 : 0;
 
     // For FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-    if (L != 0) {
-        towersToDrop = elementParams.GetParams().size() - L - 1;
-        for (uint32_t i = 0; i < towersToDrop; i++)
-            elementParams.PopLastParam();
-    }
-    if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         towersToDrop += 1;
-        elementParams.PopLastParam();
-    }
-
-    const auto& paramsQ = elementParams.GetParams();
-    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
 
     // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, static_cast<uint32_t>(paramsQ.size()), *cryptoParamsCKKS->GetParamsP(),
-            static_cast<uint32_t>(paramsP.size()));
+            elementParams, sizeQ - towersToDrop, *cryptoParamsCKKS->GetParamsP(),
+            static_cast<uint32_t>(cryptoParamsCKKS->GetParamsP()->GetParams().size()));
     auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
 // Hoisted automorphisms
@@ -1111,11 +1086,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     std::vector<std::complex<double>> postScaleVec(numValues, std::complex<double>(postScale, 0));
     std::vector<std::complex<double>> postBiasVec(numValues, std::complex<double>(postBias, 0));
 
-    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
-
     uint32_t towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
-    for (uint32_t i = 0; i < towersToDrop; i++)
-        elementParams.PopLastParam();
 
     // Use full packing here to clear up the junk in the slots after numValues
     auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);

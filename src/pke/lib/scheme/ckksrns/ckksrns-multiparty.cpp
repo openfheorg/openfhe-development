@@ -279,8 +279,7 @@ DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const
 // Generate random mask
 DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
     // only the parameters of the first maskBoundNumTowers towers are needed here, not their contents
-    auto params = std::make_shared<DCRTPoly::Params>(c1.GetParams()->GetCyclotomicOrder(),
-                                                     c1.GetParams()->GetParamPartition(0, maskBoundNumTowers - 1));
+    auto params = std::make_shared<DCRTPoly::Params>(*c1.GetParams(), maskBoundNumTowers);
 
     typename DCRTPoly::DugType dug;
     return DCRTPoly(dug, params, Format::EVALUATION);

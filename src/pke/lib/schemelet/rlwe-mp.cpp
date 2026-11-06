@@ -140,11 +140,9 @@ std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> SchemeletRLWEMP::GetElementPara
             ++level;
     }
 
-    auto ep = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(*(cryptoParams->GetElementParams()));
-    for (uint32_t i = 0; i < level; ++i)
-        ep->PopLastParam();
-
-    return ep;
+    const auto& elementParams = *(cryptoParams->GetElementParams());
+    return std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+            elementParams, static_cast<uint32_t>(elementParams.GetParams().size()) - level);
 }
 
 std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, const BigInteger& Q, const BigInteger& p,

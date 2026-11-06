@@ -116,15 +116,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
         }
         DugType dug;
         auto params = cv[0].GetParams();
-        ILDCRTParams<BigInteger> paramsCopy = *params;
-        paramsCopy.PopFirstParam();
-        auto paramsAllButFirst = std::make_shared<ILDCRTParams<BigInteger>>(paramsCopy);
+        auto cyclOrder = params->GetCyclotomicOrder();
+        auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(*params, 1);
+        auto paramsAllButFirst = std::make_shared<ILDCRTParams<BigInteger>>(
+                cyclOrder, params->GetParamPartition(1, static_cast<uint32_t>(sizeQl) - 1));
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
-        auto cyclOrder = params->GetCyclotomicOrder();
-        std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
-        std::vector<NativeInteger> rootsFirst = {params->GetParams()[0]->GetRootOfUnity()};
-        auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
         e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
                                      cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
                                      cryptoParams->GetMultipartyQHatModq0AtIndex(sizeQl - 2),

@@ -712,9 +712,7 @@ void DCRTPolyImpl<VecType>::DropLastElement() {
     if (m_vectors.size() == 1)
         OPENFHE_THROW("Removing last element of DCRTPoly renders it invalid.");
     m_vectors.resize(m_vectors.size() - 1);
-    DCRTPolyImpl::Params* newP = new DCRTPolyImpl::Params(*m_params);
-    newP->PopLastParam();
-    m_params.reset(newP);
+    m_params = std::make_shared<Params>(*m_params, static_cast<uint32_t>(m_params->GetParams().size()) - 1);
 }
 
 template <typename VecType>
@@ -722,10 +720,7 @@ void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
     if (m_vectors.size() <= i)
         OPENFHE_THROW("Too few towers in input.");
     m_vectors.resize(m_vectors.size() - i);
-    DCRTPolyImpl::Params* newP = new DCRTPolyImpl::Params(*m_params);
-    for (size_t j = 0; j < i; ++j)
-        newP->PopLastParam();
-    m_params.reset(newP);
+    m_params = std::make_shared<Params>(*m_params, static_cast<uint32_t>(m_params->GetParams().size() - i));
 }
 
 // used for CKKS rescaling

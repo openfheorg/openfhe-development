@@ -183,11 +183,9 @@ class CryptoContextImpl : public Serializable {
         // uses a parameter set with a reduced number of RNS limbs corresponding to the level
         std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
         if (level != 0) {
-            ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
-            for (uint32_t i = 0; i < level; i++) {
-                elemParams.PopLastParam();
-            }
-            elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+            const auto& elemParams = *(cryptoParams->GetElementParams());
+            elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+                    elemParams, static_cast<uint32_t>(elemParams.GetParams().size()) - level);
         } else {
             elemParamsPtr = cryptoParams->GetElementParams();
         }
@@ -449,11 +447,9 @@ class CryptoContextImpl : public Serializable {
         if (params == nullptr) {
             std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
             if (level != 0) {
-                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
-                for (uint32_t i = 0; i < level; i++) {
-                    elemParams.PopLastParam();
-                }
-                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+                const auto& elemParams = *(cryptoParams->GetElementParams());
+                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
+                        elemParams, static_cast<uint32_t>(elemParams.GetParams().size()) - level);
             } else {
                 elemParamsPtr = cryptoParams->GetElementParams();
             }

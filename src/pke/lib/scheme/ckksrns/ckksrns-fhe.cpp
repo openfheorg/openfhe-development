@@ -2441,13 +2441,12 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     // make sure the plaintext is created only with the necessary amount of moduli
     auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     auto compositeDegree = cryptoParams->GetCompositeDegree();
-    auto elementParams = *(cryptoParams->GetElementParams());
-    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
-    for (uint32_t i = 0; i < towersToDrop; ++i)
-        elementParams.PopLastParam();
+    const auto& elementParams = *(cryptoParams->GetElementParams());
+    const uint32_t sizeQ = elementParams.GetParams().size();
+    uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree);
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, static_cast<uint32_t>(elementParams.GetParams().size()), *cryptoParams->GetParamsP(),
+            elementParams, sizeQ - towersToDrop, *cryptoParams->GetParamsP(),
             static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     auto g = GetBootPrecom(slots).m_paramsEnc.g;
@@ -2474,14 +2473,13 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     // make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-    auto elementParams = *(cryptoParams->GetElementParams());
+    const auto& elementParams = *(cryptoParams->GetElementParams());
+    const uint32_t sizeQ = elementParams.GetParams().size();
 
-    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
-    for (uint32_t i = 0; i < towersToDrop; ++i)
-        elementParams.PopLastParam();
+    uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree);
 
     auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, static_cast<uint32_t>(elementParams.GetParams().size()), *cryptoParams->GetParamsP(),
+            elementParams, sizeQ - towersToDrop, *cryptoParams->GetParamsP(),
             static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
 
     const int32_t slots = static_cast<int32_t>(A.size());
@@ -2558,16 +2556,15 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
-    auto elementParams = *(cryptoParams->GetElementParams());
+    const auto& elementParams = *(cryptoParams->GetElementParams());
+    uint32_t sizeQ = elementParams.GetParams().size();
 
-    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
-    for (uint32_t i = 0; i < towersToDrop; ++i)
-        elementParams.PopLastParam();
+    uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree * p.lvlb);
+    sizeQ -= towersToDrop;
 
     uint32_t level0 = towersToDrop + compositeDegree * (p.lvlb - 1);
 
     const auto& paramsP = cryptoParams->GetParamsP();
-    uint32_t sizeQ = elementParams.GetParams().size();
     uint32_t sizeP = paramsP->GetParams().size();
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
@@ -2713,15 +2710,13 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-    auto elementParams = *(cryptoParams->GetElementParams());
+    const auto& elementParams = *(cryptoParams->GetElementParams());
+    uint32_t sizeQ = elementParams.GetParams().size();
 
-    const uint32_t towersToDrop =
-            LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
-    for (uint32_t i = 0; i < towersToDrop; ++i)
-        elementParams.PopLastParam();
+    const uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree * p.lvlb);
+    sizeQ -= towersToDrop;
 
     const auto& paramsP = cryptoParams->GetParamsP();
-    uint32_t sizeQ = elementParams.GetParams().size();
     uint32_t sizeP = paramsP->GetParams().size();
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
