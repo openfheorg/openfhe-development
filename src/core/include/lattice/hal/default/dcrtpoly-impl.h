@@ -199,9 +199,13 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Pa
     m_vectors.reserve(m_params->GetParams().size());
     for (auto& p : m_params->GetParams()) {
         NativeVector iltvs(rdim, p->GetModulus(), lbcrypto::UninitializedTag{});
-        for (uint32_t j = 0; j < rdim; ++j)
-            iltvs[j] = (tugValues[j] < 0) ? p->GetModulus() - static_cast<NativeInteger>(-tugValues[j]) :
-                                            static_cast<NativeInteger>(tugValues[j]);
+        using NInt = typename NativeInteger::Integer;
+        const NInt modv{p->GetModulus().template ConvertToInt<NInt>()};
+        for (uint32_t j = 0; j < rdim; ++j) {
+            const NInt x{static_cast<NInt>(static_cast<int64_t>(tugValues[j]))};
+            const NInt negMask{NInt(0) - NInt(tugValues[j] < 0)};
+            iltvs[j] = NativeInteger(x + (modv & negMask));
+        }
         m_vectors.emplace_back(p);
         m_vectors.back().SetValues(std::move(iltvs), Format::COEFFICIENT);
         m_vectors.back().SetFormat(m_format);
