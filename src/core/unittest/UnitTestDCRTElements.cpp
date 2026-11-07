@@ -663,6 +663,48 @@ TEST(UTDCRTPoly, DCRT_mod_ops_on_two_elements) {
     RUN_BIG_DCRTPOLYS(DCRT_mod_ops_on_two_elements, "DCRT DCRT_mod_ops_on_two_elements");
 }
 
+template <typename Element>
+void DCRT_drop_last_elements_and_scale(const std::string& msg) {
+    constexpr uint32_t order = 64;
+    constexpr uint32_t nBits = 50;
+    constexpr uint32_t sizeQ = 6;
+
+    auto params = std::make_shared<ILDCRTParams<typename Element::Integer>>(order, sizeQ, nBits);
+    std::vector<NativeInteger> moduli;
+    for (const auto& p : params->GetParams())
+        moduli.push_back(p->GetModulus());
+    std::vector<std::vector<NativeInteger>> qlInvModq(sizeQ - 1);
+    for (uint32_t k = 0; k < sizeQ - 1; ++k) {
+        const auto& ql = moduli[sizeQ - 1 - k];
+        for (uint32_t i = 0; i < sizeQ - 1 - k; ++i)
+            qlInvModq[k].push_back(ql.Mod(moduli[i]).ModInverse(moduli[i]));
+    }
+
+    typename Element::DugType dug;
+    for (Format format : {Format::EVALUATION, Format::COEFFICIENT}) {
+        Element full(dug, params, format);
+        for (uint32_t firstDropIdx = 0; firstDropIdx < sizeQ - 1; ++firstDropIdx) {
+            Element input(full);
+            input.DropLastElements(firstDropIdx);
+            for (uint32_t levels = 0; levels < sizeQ - firstDropIdx; ++levels) {
+                Element expected(input);
+                for (uint32_t k = 0; k < levels; ++k)
+                    expected.DropLastElementAndScale(qlInvModq[firstDropIdx + k]);
+                Element actual(input);
+                actual.DropLastElementsAndScale(qlInvModq, firstDropIdx, levels);
+                EXPECT_EQ(actual.GetFormat(), expected.GetFormat())
+                        << msg << " format " << format << " first " << firstDropIdx << " levels " << levels;
+                EXPECT_EQ(actual, expected)
+                        << msg << " format " << format << " first " << firstDropIdx << " levels " << levels;
+            }
+        }
+    }
+}
+
+TEST(UTDCRTPoly, DCRT_drop_last_elements_and_scale) {
+    RUN_BIG_DCRTPOLYS(DCRT_drop_last_elements_and_scale, "DCRT_drop_last_elements_and_scale");
+}
+
 // only need to try this with one
 void testDCRTPolyConstructorNegative(std::vector<NativePoly>& towers) {
     DCRTPoly expectException(towers);

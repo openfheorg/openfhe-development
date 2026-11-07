@@ -916,11 +916,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly>& ciphe
     size_t diffQl = sizeQ - sizeQl;
     size_t levels = sizeQl - towersLeft;
 
-    for (size_t l = 0; l < levels; ++l) {
-        for (size_t i = 0; i < cv.size(); ++i) {
-            cv[i].DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + l));
-        }
-    }
+    for (auto& c : cv)
+        c.DropLastElementsAndScale(cryptoParams->GetqlInvModq(), diffQl, levels);
 
     return result;
 }

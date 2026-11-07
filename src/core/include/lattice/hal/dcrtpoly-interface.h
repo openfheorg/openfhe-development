@@ -925,6 +925,28 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     virtual void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) = 0;
 
     /**
+     * @brief Drops the last `levels` towers and scales down by their moduli; the result is identical (bit for
+     * bit) to `levels` calls of DropLastElementAndScale with the rows qlInvModq[firstDropIdx],
+     * qlInvModq[firstDropIdx + 1], ..., and like it is always in EVALUATION format. The modulus switchings are
+     * assembled in COEFFICIENT format and transformed once per kept tower.
+     *
+     * Brief algorithm, with the towers dropped in the order q_l, q_{l-1}, ... (k = 0, 1, ...); every tower
+     * keeps a numerator n_i, initially 0, and a scalar s_i, initially 1:
+     * 1) for the `levels` last towers: compute INTT(x_i)
+     * 2) for the k-th dropped tower: its value after the previous switches is d = (INTT(x) - n) * s mod q;
+     *    its centered lift is multiply-accumulated into every lower tower, n_i += [d]_{q_i} * c_{k,i} with
+     *    c_{0,i} = 1 and c_{k,i} = c_{k-1,i} * q_{l-k+1} mod q_i, and s_i *= [q_{l-k}^{-1}]_{q_i}
+     * 3) for every kept tower: result_i = (x_i - NTT(n_i)) * s_i
+     *
+     * @param qlInvModq table of the modulus switching constants; qlInvModq[firstDropIdx + k] holds [q^{-1}]_{q_i}
+     * for the k-th dropped tower q (the rows DropLastElementAndScale takes)
+     * @param firstDropIdx index in qlInvModq of the row for the last tower q_l
+     * @param levels number of towers to drop
+     */
+    virtual void DropLastElementsAndScale(const std::vector<std::vector<NativeInteger>>& qlInvModq,
+                                          uint32_t firstDropIdx, uint32_t levels) = 0;
+
+    /**
      * @brief ModReduces reduces the DCRTPoly element's composite modulus by
      * dropping the last modulus from the chain of moduli as well as dropping the
      * last tower.

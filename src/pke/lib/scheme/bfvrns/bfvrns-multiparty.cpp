@@ -188,9 +188,7 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Cipher
         // for the case when compress was called, we automatically reduce the polynomial to 1 RNS limb
         size_t diffQl = sizeQ - sizeQl;
         size_t levels = sizeQl - 1;
-        for (size_t l = 0; l < levels; ++l) {
-            b.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + l));
-        }
+        b.DropLastElementsAndScale(cryptoParams->GetqlInvModq(), diffQl, levels);
 
         b.SetFormat(Format::COEFFICIENT);
 

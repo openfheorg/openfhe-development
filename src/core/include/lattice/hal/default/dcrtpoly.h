@@ -541,6 +541,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
     void DropLastElement() override;
     void DropLastElements(size_t i) override;
     void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) override;
+    void DropLastElementsAndScale(const std::vector<std::vector<NativeInteger>>& qlInvModq, uint32_t firstDropIdx,
+                                  uint32_t levels) override;
 
     void ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
                    const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,

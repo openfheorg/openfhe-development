@@ -758,6 +758,90 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
     this->OverrideFormat(Format::EVALUATION);
 }
 
+template <typename VecType>
+void DCRTPolyImpl<VecType>::DropLastElementsAndScale(const std::vector<std::vector<NativeInteger>>& qlInvModq,
+                                                     uint32_t firstDropIdx, uint32_t levels) {
+    if (levels == 0)
+        return;
+    if (levels == 1) {
+        DropLastElementAndScale(qlInvModq.at(firstDropIdx));
+        return;
+    }
+    const uint32_t sizeQl = m_vectors.size();
+    if (levels >= sizeQl)
+        OPENFHE_THROW("the number of towers to drop must be smaller than the number of towers.");
+    if (qlInvModq.size() < firstDropIdx + levels)
+        OPENFHE_THROW("too few modulus switching rows.");
+    const uint32_t sizeQr = sizeQl - levels;
+
+    // the k-th dropped tower is t = sizeQl - 1 - k; for every tower i below it, mul[k][i] = q_{t+1} ... q_{sizeQl-1}
+    // mod q_i; scal[i] is the product of [q_t^{-1}]_{q_i} over the dropped towers above i
+    std::vector<NativeInteger> moduli(sizeQl);
+    for (uint32_t i = 0; i < sizeQl; ++i)
+        moduli[i] = m_vectors[i].GetModulus();
+    std::vector<NativeInteger> mul(levels * sizeQl);
+    std::vector<NativeInteger> scal(sizeQl, NativeInteger(1));
+    for (uint32_t k = 0; k < levels; ++k) {
+        const uint32_t t = sizeQl - 1 - k;
+        const auto& qlInv = qlInvModq[firstDropIdx + k];
+        for (uint32_t i = 0; i < t; ++i) {
+            const auto& qi = moduli[i];
+            mul[k * sizeQl + i] =
+                    (k == 0) ? NativeInteger(1) : mul[(k - 1) * sizeQl + i].ModMul(moduli[t + 1].Mod(qi), qi);
+            scal[i].ModMulEq(qlInv[i], qi);
+        }
+    }
+
+    std::vector<PolyType> xDropped(levels);
+    for (uint32_t k = 0; k < levels; ++k)
+        xDropped[k] = std::move(m_vectors[sizeQl - 1 - k]);
+    this->DropLastElements(levels);
+    std::vector<PolyType> num(sizeQl - 1);
+
+#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQl - 1))
+    {
+#pragma omp for
+        for (uint32_t k = 0; k < levels; ++k)
+            xDropped[k].SetFormat(Format::COEFFICIENT);
+
+        // the value of the k-th dropped tower is d = (x - n) * s mod q; its centered lift times mul[k][i] is
+        // accumulated into the numerators of the towers below it
+        for (uint32_t k = 0; k < levels; ++k) {
+            const uint32_t t = sizeQl - 1 - k;
+            PolyType& d = xDropped[k];
+            if (k > 0) {
+#pragma omp single
+                {
+                    d -= num[t];
+                    d *= scal[t];
+                }
+            }
+#pragma omp for
+            for (uint32_t i = 0; i < t; ++i) {
+                const auto& params = (i < sizeQr) ? m_vectors[i].GetParams() : xDropped[sizeQl - 1 - i].GetParams();
+                PolyType lift(params, Format::COEFFICIENT);
+                lift.SetValues(NativeVector(d.GetValues(), moduli[i]), Format::COEFFICIENT);
+                if (k == 0)
+                    num[i] = std::move(lift);
+                else
+                    num[i].MultAccEqNoCheck(lift, mul[k * sizeQl + i]);
+            }
+        }
+
+        // one NTT per kept tower; (x_i - n_i) * s_i is computed as (n_i - x_i) * (q_i - s_i)
+#pragma omp for
+        for (uint32_t i = 0; i < sizeQr; ++i) {
+            PolyType& n = num[i];
+            n.SetFormat(Format::EVALUATION);
+            m_vectors[i].SetFormat(Format::EVALUATION);
+            n -= m_vectors[i];
+            n *= (moduli[i] - scal[i]);
+            m_vectors[i] = std::move(n);
+        }
+    }
+    m_format = Format::EVALUATION;
+}
+
 /**
 * Used for BGVrns modulus switching
 * This function performs ModReduce on ciphertext element and private key
