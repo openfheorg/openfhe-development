@@ -185,6 +185,47 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstP
 // Mod Reduce
 /////////////////////////////////////
 
+namespace {
+// DCRTPoly::DropLastElementAndScale of every element of cv, with the dropped towers of all elements switched to
+// coefficient format in one parallel region and the remaining towers of all elements scaled in another of the
+// same width: one thread per tower of every element while that leaves part of the team idle, otherwise one thread
+// per tower
+void DropLastElementAndScaleAll(std::vector<DCRTPoly>& cv, const std::vector<NativeInteger>& qlInvModq) {
+    const uint32_t sizeCv = cv.size();
+    if (cv[0].GetNumOfElements() < 2)
+        OPENFHE_THROW("Removing last element of DCRTPoly renders it invalid.");
+    const uint32_t size = cv[0].GetNumOfElements() - 1;
+    const uint32_t numTasks = sizeCv * size;
+    const uint32_t width =
+            (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : size;
+
+    std::vector<DCRTPoly::PolyType> lastPolys(sizeCv);
+    std::vector<Format> formats(sizeCv);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
+    for (uint32_t k = 0; k < sizeCv; ++k) {
+        formats[k] = cv[k].GetFormat();
+        lastPolys[k] = std::move(cv[k].GetAllElements().back());
+        cv[k].DropLastElement();
+        cv[k].OverrideFormat(Format::EVALUATION);
+        lastPolys[k].SetFormat(Format::COEFFICIENT);
+    }
+
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
+    for (uint32_t task = 0; task < numTasks; ++task) {
+        const uint32_t k = task / size;
+        const uint32_t i = task % size;
+        auto& tower = cv[k].GetAllElements()[i];
+        DCRTPoly::PolyType tmp(tower.GetParams(), Format::COEFFICIENT);
+        tmp.SetValues(NativeVector(lastPolys[k].GetValues(), tower.GetModulus()), Format::COEFFICIENT);
+        if (formats[k] == Format::EVALUATION)
+            tmp.SetFormat(Format::EVALUATION);
+        tower -= tmp;
+        tower *= qlInvModq[i];
+        tower.SetFormat(Format::EVALUATION);
+    }
+}
+}  // namespace
+
 void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
@@ -195,8 +236,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     size_t diffQl = sizeQ - sizeQl;
 
     for (size_t i = 0; i < levels; ++i)
-        for (auto& dcrtpoly : cv)
-            dcrtpoly.DropLastElementAndScale(cryptoParams->GetqlInvModq(diffQl + i));
+        DropLastElementAndScaleAll(cv, cryptoParams->GetqlInvModq(diffQl + i));
 
     ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
 }

@@ -59,6 +59,21 @@ class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
      */
     virtual ~KeySwitchRNS() = default;
 
+  protected:
+    /**
+     * Throws if the number of RNS limbs to drop from an evaluation key is not smaller than the number available.
+     *
+     * @param levels number of limbs to drop
+     * @param sizeQ number of limbs available
+     * @param what what the limbs belong to, for the message (e.g., "the modulus chain")
+     */
+    static void ValidateLevels(uint32_t levels, uint32_t sizeQ, const char* what) {
+        if (levels >= sizeQ)
+            OPENFHE_THROW("levels [" + std::to_string(levels) + "] must be smaller than the number of RNS limbs of " +
+                          what + " [" + std::to_string(sizeQ) + "]");
+    }
+
+  public:
     /////////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////////

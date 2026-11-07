@@ -34,6 +34,7 @@
 #include "ciphertext.h"
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "utils/parallel.h"
 
 namespace lbcrypto {
 
@@ -53,6 +54,36 @@ void CiphertextImpl<DCRTPoly>::SetLevel(size_t level) {
                           "] is insufficient; increase it.");
         }
     }
+}
+
+template <>
+Ciphertext<DCRTPoly> CiphertextImpl<DCRTPoly>::Clone() const {
+    auto ct = this->CloneEmpty();
+    const uint32_t sizeCv = m_elements.size();
+    const uint32_t numTowers = (sizeCv > 0) ? m_elements[0].GetNumOfElements() : 0;
+    const uint32_t numTasks = sizeCv * numTowers;
+    bool sameTowers = true;
+    for (const auto& element : m_elements)
+        sameTowers = sameTowers && (element.GetNumOfElements() == numTowers);
+    if (!sameTowers || numTasks < 2 || ParallelControls::InParallelRegion() ||
+        static_cast<uint64_t>(numTasks) * m_elements[0].GetRingDimension() < (uint64_t{1} << 16)) {
+        ct->m_elements = m_elements;
+        return ct;
+    }
+
+    auto& elements = ct->m_elements;
+    elements.reserve(sizeCv);
+    for (const auto& element : m_elements)
+        elements.emplace_back(element.GetParams(), element.GetFormat(), false);
+    const uint32_t width =
+            (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : numTowers;
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
+    for (uint32_t task = 0; task < numTasks; ++task) {
+        const uint32_t k = task / numTowers;
+        const uint32_t i = task % numTowers;
+        elements[k].GetAllElements()[i] = m_elements[k].GetElementAtIndex(i);
+    }
+    return ct;
 }
 
 template class CiphertextImpl<Poly>;

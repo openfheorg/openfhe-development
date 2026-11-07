@@ -638,10 +638,11 @@ class AdvancedSHEBase {
      * only for packed encoding
      *
      * @param privateKey private key.
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
-    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
-            const PrivateKey<Element> privateKey) const;
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(const PrivateKey<Element> privateKey,
+                                                                                uint32_t levels = 0) const;
 
     /**
      * Virtual function to generate the automorphism keys for EvalSumRows; works
@@ -652,11 +653,12 @@ class AdvancedSHEBase {
      * @param subringDim subring dimension (set to cyclotomic order if set to 0)
      * @param indices automorphism indices to generate keys for; the indices needed for
      * EvalSumRows are appended to it
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
-            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
-            std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices,
+            uint32_t levels = 0) const;
 
     /**
      * Virtual function to generate the automorphism keys for EvalSumCols; works
@@ -665,10 +667,11 @@ class AdvancedSHEBase {
      * @param privateKey private key.
      * @param indices automorphism indices to generate keys for; the indices needed for
      * EvalSumCols and EvalSum are appended to it
+     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return returns the evaluation keys
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
-            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
+            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices, uint32_t levels = 0) const;
 
     /**
      * @brief Sums all elements in log (batch size) time - works only with packed encoding
