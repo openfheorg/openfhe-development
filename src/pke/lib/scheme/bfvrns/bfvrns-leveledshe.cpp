@@ -270,8 +270,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
         l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
 
         for (uint32_t i = 0; i < cv1Size; ++i) {
-            cv1[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
             if (l < sizeQ - 1) {
+                cv1[i].SetFormat(Format::COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
                 // Drop from basis Q to Q_l.
                 cv1[i] = cv1[i].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                                               cryptoParams->GetQlQHatInvModqDivqFrac(l),
@@ -859,7 +859,7 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
 
     size_t sizeQ = cv[0].GetNumOfElements();
     size_t sizeQM = elementParams->GetParams().size();
-    uint32_t l = 0;
+    uint32_t l = sizeQ - 1;
     if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQM == sizeQ)) {
         uint32_t levels = ciphertext->GetNoiseScaleDeg() - 1;
         uint32_t dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
@@ -867,15 +867,19 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
         // how many levels to drop
         l = sizeQ - 1 - FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
 
-        cv[sel].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
-        cv[sel] = cv[sel].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
-                                        cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+        if (l < sizeQ - 1) {
+            cv[sel].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
+            cv[sel] =
+                    cv[sel].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+                                          cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+        }
     }
 
-    cv[sel].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
+    if (cryptoParams->GetKeySwitchTechnique() != BV)
+        cv[sel].SetFormat(Format::EVALUATION, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
     auto ab = algo->KeySwitchCore(cv[sel], evalKey);
 
-    if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQM == sizeQ)) {
+    if (l < sizeQ - 1) {
         ab[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
                                   cryptoParams->GetQlHatModqPrecon(l), sizeQ);
         ab[1].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
