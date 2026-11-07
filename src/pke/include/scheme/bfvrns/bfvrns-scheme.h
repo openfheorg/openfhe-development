@@ -83,40 +83,6 @@ class SchemeBFVRNS : public SchemeRNS {
     void Enable(PKESchemeFeature feature) override;
 
     /////////////////////////////////////
-    // KEY SWITCH
-    // BFV does not support evaluation keys generated or compressed at a reduced level: every key
-    // generation path (relinearization, automorphism, summation, multiparty) ends in one of these
-    // methods, which reject a nonzero levels argument and otherwise defer to the base class.
-    // GetNumEvalKeyTowers is queried before the parallel loop of EvalAutomorphismKeyGen, so the
-    // rejection happens outside the OpenMP region.
-    /////////////////////////////////////
-
-    using SchemeRNS::KeySwitchGen;
-
-    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey, const PrivateKey<DCRTPoly> newPrivateKey,
-                                   uint32_t levels = 0) const override {
-        ValidateEvalKeyLevels(levels);
-        return SchemeRNS::KeySwitchGen(oldPrivateKey, newPrivateKey, levels);
-    }
-
-    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey, const PrivateKey<DCRTPoly> newPrivateKey,
-                                   const EvalKey<DCRTPoly> evalKey, uint32_t levels = 0) const override {
-        ValidateEvalKeyLevels(levels);
-        return SchemeRNS::KeySwitchGen(oldPrivateKey, newPrivateKey, evalKey, levels);
-    }
-
-    EvalKey<DCRTPoly> CompressEvalKey(const EvalKey<DCRTPoly> evalKey, uint32_t levels) const override {
-        ValidateEvalKeyLevels(levels);
-        return SchemeRNS::CompressEvalKey(evalKey, levels);
-    }
-
-    uint32_t GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                 uint32_t levels) const override {
-        ValidateEvalKeyLevels(levels);
-        return SchemeRNS::GetNumEvalKeyTowers(cryptoParams, levels);
-    }
-
-    /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////
 
@@ -132,12 +98,6 @@ class SchemeBFVRNS : public SchemeRNS {
 
     std::string SerializedObjectName() const override {
         return "SchemeBFVRNS";
-    }
-
-  private:
-    static void ValidateEvalKeyLevels(uint32_t levels) {
-        if (levels > 0)
-            OPENFHE_THROW("Generating or compressing evaluation keys at a nonzero level is not supported for BFV");
     }
 };
 }  // namespace lbcrypto

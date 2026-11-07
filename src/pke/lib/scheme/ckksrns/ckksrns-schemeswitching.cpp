@@ -45,7 +45,6 @@
 #include <map>
 #include <memory>
 #include <numeric>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -342,14 +341,33 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
         const std::vector<std::vector<std::complex<double>>>& B, uint32_t dim1, uint32_t L, double scale = 1.0) const {
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    const auto& elementParams = *(cryptoParamsCKKS->GetElementParams());
-    const uint32_t sizeQ = elementParams.GetParams().size();
-    const uint32_t towersToDrop = (L != 0) ? sizeQ - L - 1 : 0;
+    auto elementParams = *(cryptoParamsCKKS->GetElementParams());
 
-    // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, sizeQ - towersToDrop, *cryptoParamsCKKS->GetParamsP(),
-            static_cast<uint32_t>(cryptoParamsCKKS->GetParamsP()->GetParams().size()));
+    uint32_t towersToDrop = 0;
+    if (L != 0) {
+        towersToDrop = elementParams.GetParams().size() - L - 1;
+        for (uint32_t i = 0; i < towersToDrop; ++i)
+            elementParams.PopLastParam();
+    }
+
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
+    }
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
+    }
+
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -387,14 +405,33 @@ std::vector<ReadOnlyPlaintext> SWITCHCKKSRNS::EvalLTPrecomputeSwitch(
     // Make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    const auto& elementParams = *(cryptoParams->GetElementParams());
-    const uint32_t sizeQ = elementParams.GetParams().size();
-    const uint32_t towersToDrop = (L != 0) ? sizeQ - L - 1 : 0;
+    auto elementParams = *(cryptoParams->GetElementParams());
 
-    // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, sizeQ - towersToDrop, *cryptoParams->GetParamsP(),
-            static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
+    uint32_t towersToDrop = 0;
+    if (L != 0) {
+        towersToDrop = elementParams.GetParams().size() - L - 1;
+        for (uint32_t i = 0; i < towersToDrop; i++)
+            elementParams.PopLastParam();
+    }
+
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
+    }
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
+    }
+
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
 
     int32_t slots = A.size();
     int32_t step = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
@@ -515,6 +552,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(n) : dim1;
     int32_t gStep = std::ceil(static_cast<double>(n) / bStep);
 
+    uint32_t M = cc.GetCyclotomicOrder();
     uint32_t N = cc.GetRingDimension();
 
     // Computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
@@ -525,18 +563,38 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalLTRectWithPrecomputeSwitch(
     // Make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
 
-    const auto& elementParams = *(cryptoParamsCKKS->GetElementParams());
-    const uint32_t sizeQ = elementParams.GetParams().size();
-    uint32_t towersToDrop = (L != 0) ? sizeQ - L - 1 : 0;
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+    uint32_t towersToDrop = 0;
 
     // For FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-    if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+    if (L != 0) {
+        towersToDrop = elementParams.GetParams().size() - L - 1;
+        for (uint32_t i = 0; i < towersToDrop; i++)
+            elementParams.PopLastParam();
+    }
+    if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         towersToDrop += 1;
+        elementParams.PopLastParam();
+    }
 
-    // the basis Q_l * P of the hoisted rotations, sharing the component parameters of Q and P
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, sizeQ - towersToDrop, *cryptoParamsCKKS->GetParamsP(),
-            static_cast<uint32_t>(cryptoParamsCKKS->GetParamsP()->GetParams().size()));
+    const auto& paramsQ = elementParams.GetParams();
+    const auto& paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+
+    size_t sizeQP = paramsQ.size() + paramsP.size();
+    std::vector<NativeInteger> moduli;
+    moduli.reserve(sizeQP);
+    std::vector<NativeInteger> roots;
+    roots.reserve(sizeQP);
+    for (const auto& elem : paramsQ) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
+    }
+    for (const auto& elem : paramsP) {
+        moduli.emplace_back(elem->GetModulus());
+        roots.emplace_back(elem->GetRootOfUnity());
+    }
+
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
     auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
 // Hoisted automorphisms
@@ -608,7 +666,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
 
     auto ctxtToDecode = ctxt->Clone();
 
-    uint32_t numTowersToKeep = S2C_TOWERS;
+    uint32_t numTowersToKeep = 2;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
@@ -766,13 +824,10 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKSto
     // Compute multiplication key
     algo->EvalMultKeyGen(privateKey);
 
-    // the SlotsToCoeffs transform runs on a ciphertext compressed to S2C_TOWERS towers (EvalSlotsToCoeffsSwitch),
-    // so its rotation keys and the conjugation key are generated over those towers only
-    const uint32_t levelsS2C = cryptoParams->GetElementParams()->GetParams().size() - S2C_TOWERS;
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C, levelsS2C);
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
     // Compute conjugation key
-    (*evalKeys)[M - 1] = FHECKKSRNS::ConjugateKeyGen(privateKey, levelsS2C);
+    (*evalKeys)[M - 1] = FHECKKSRNS::ConjugateKeyGen(privateKey);
 
     return evalKeys;
 }
@@ -1086,7 +1141,11 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<L
     std::vector<std::complex<double>> postScaleVec(numValues, std::complex<double>(postScale, 0));
     std::vector<std::complex<double>> postBiasVec(numValues, std::complex<double>(postBias, 0));
 
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+
     uint32_t towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
+    for (uint32_t i = 0; i < towersToDrop; i++)
+        elementParams.PopLastParam();
 
     // Use full packing here to clear up the junk in the slots after numValues
     auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, nullptr, N / 2);
@@ -1189,21 +1248,15 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     // Compute indices for rotations for slotToCoeff transform
     std::vector<int32_t> indexRotationS2C = FindLTRotationIndicesSwitch(m_dim1CF, M, slots);
     indexRotationS2C.emplace_back(static_cast<int32_t>(slots));
-    // these rotations are applied to a ciphertext compressed to S2C_TOWERS towers (EvalSlotsToCoeffsSwitch); the
-    // rotations below are applied to ciphertexts at the level of the computation, so an index they share with the
-    // transform keeps a full-size key
-    const std::set<int32_t> indexRotationS2COnly(indexRotationS2C.begin(), indexRotationS2C.end());
 
     // Compute indices for rotations for sparse packing
-    std::vector<int32_t> indexRotationSparse;
     if (ringDim > 2 * slots) {  // if the encoding is full, this does not execute
-        indexRotationSparse.reserve(GetMSB(ringDim) - 2 + GetMSB(slots));
+        indexRotationS2C.reserve(indexRotationS2C.size() + GetMSB(ringDim) - 2 + GetMSB(slots));
         for (uint32_t i = 1; i < ringDim / 2; i <<= 1) {
-            indexRotationSparse.emplace_back(static_cast<int32_t>(i));
+            indexRotationS2C.emplace_back(static_cast<int32_t>(i));
             if (i <= slots)
-                indexRotationSparse.emplace_back(-static_cast<int32_t>(i));
+                indexRotationS2C.emplace_back(-static_cast<int32_t>(i));
         }
-        indexRotationS2C.insert(indexRotationS2C.end(), indexRotationSparse.begin(), indexRotationSparse.end());
     }
 
     /* FHEW to CKKS */
@@ -1266,27 +1319,10 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     indexRotationS2C.erase(std::remove(indexRotationS2C.begin(), indexRotationS2C.end(), 0), indexRotationS2C.end());
 
     auto algo = ccCKKS->GetScheme();
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indexRotationS2C);
 
-    // the rotations used only by the SlotsToCoeffs transform are generated over S2C_TOWERS towers, the others
-    // full-size
-    const uint32_t levelsS2C = cryptoParams->GetElementParams()->GetParams().size() - S2C_TOWERS;
-    std::set<int32_t> indexRotationFullLevel(indexRotationHomDec.begin(), indexRotationHomDec.end());
-    indexRotationFullLevel.insert(indexRotationArgmin.begin(), indexRotationArgmin.end());
-    indexRotationFullLevel.insert(indexRotationSparse.begin(), indexRotationSparse.end());
-    std::vector<int32_t> indicesS2C;
-    std::vector<int32_t> indicesFull;
-    for (const auto index : indexRotationS2C) {
-        const bool s2cOnly = (indexRotationS2COnly.count(index) != 0) && (indexRotationFullLevel.count(index) == 0);
-        (s2cOnly ? indicesS2C : indicesFull).emplace_back(index);
-    }
-    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, indicesFull);
-    if (!indicesS2C.empty()) {
-        auto evalKeysS2C = algo->EvalAtIndexKeyGen(privateKey, indicesS2C, levelsS2C);
-        evalKeys->insert(evalKeysS2C->begin(), evalKeysS2C->end());
-    }
-
-    // Compute conjugation key (used by the SlotsToCoeffs transform only)
-    auto conjKey = FHECKKSRNS::ConjugateKeyGen(privateKey, levelsS2C);
+    // Compute conjugation key
+    auto conjKey = FHECKKSRNS::ConjugateKeyGen(privateKey);
     (*evalKeys)[M - 1] = conjKey;
 
     // Compute multiplication key

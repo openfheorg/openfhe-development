@@ -809,13 +809,17 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
     // We remove all auxiliary moduli P_i in the case of hybrid key switching
-    const auto& digitParams = *((*digits)[0].GetParams());
-    uint32_t sizeQl = digitParams.GetParams().size();
-    if (cryptoParams->GetKeySwitchTechnique() == HYBRID)
-        sizeQl -= cryptoParams->GetParamsP()->GetParams().size();
+    // ATTN: elemParams should not be a shared_ptr because it would modify digits.
+    // TODO (dsuponit): wrap the lines below in a function to return elemParams as an object
+    auto elemParams = *((*digits)[0].GetParams());
+    if (cryptoParams->GetKeySwitchTechnique() == HYBRID) {
+        size_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
+        for (size_t i = 0; i < sizeP; ++i) {
+            elemParams.PopLastParam();
+        }
+    }
 
-    auto ba = cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey,
-                                                     std::make_shared<DCRTPoly::Params>(digitParams, sizeQl));
+    auto ba = cc->GetScheme()->EvalFastKeySwitchCore(digits, evalKey, std::make_shared<DCRTPoly::Params>(elemParams));
 
     const auto elementParams = cryptoParams->GetElementParams();
 
@@ -825,7 +829,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     size_t sizeQM = elementParams->GetParams().size();
     if ((cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) && (sizeQ == sizeQM)) {
         // l is index corresponding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED, after the level dropping
-        uint32_t l = sizeQl - 1;
+        uint32_t l = elemParams.GetParams().size() - 1;
         ba[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
                                   cryptoParams->GetQlHatModqPrecon(l), sizeQ);
         ba[1].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),

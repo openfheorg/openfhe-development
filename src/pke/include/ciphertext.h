@@ -619,17 +619,6 @@ template <>
 void CiphertextImpl<DCRTPoly>::SetLevel(size_t level);
 
 /**
- * DCRTPoly specialization of Clone(): copies the towers of all elements in one parallel region, one thread per
- * tower of every element while that leaves part of the team idle and one thread per tower otherwise; small
- * ciphertexts, elements with different numbers of towers and calls from inside a parallel region are copied
- * serially.
- *
- * @return a new ciphertext equal to this one
- */
-template <>
-Ciphertext<DCRTPoly> CiphertextImpl<DCRTPoly>::Clone() const;
-
-/**
  * operator+ overload for Ciphertexts.  Performs EvalAdd.
  *
  * @tparam Element a ring element.

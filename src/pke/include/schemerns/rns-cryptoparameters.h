@@ -484,19 +484,6 @@ class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
     }
 
     /**
-     * Gets the number of digits of HYBRID key switching for a ciphertext or an evaluation key over the first
-     * sizeQl towers of Q: ceil(sizeQl / alpha), at most the number of partitions of Q.
-     *
-     * @param sizeQl number of towers of Q
-     * @return the number of digits
-     */
-    uint32_t GetNumPartQl(uint32_t sizeQl) const {
-        const uint32_t numPartQl = (sizeQl + m_numPerPartQ - 1) / m_numPerPartQ;
-        const uint32_t numPartitions = m_paramsPartQ.size();
-        return (numPartQl > numPartitions) ? numPartitions : numPartQl;
-    }
-
-    /**
      * Method that returns the number of partitions.
      * Used in Hybrid key switching
      *

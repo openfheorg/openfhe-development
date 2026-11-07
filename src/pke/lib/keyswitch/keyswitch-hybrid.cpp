@@ -54,46 +54,19 @@
 namespace lbcrypto {
 
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
-                                                        const PrivateKey<DCRTPoly> newKey, uint32_t levels) const {
-    return KeySwitchHYBRID::KeySwitchGenInternal(oldKey, newKey, nullptr, levels);
+                                                        const PrivateKey<DCRTPoly> newKey) const {
+    return KeySwitchHYBRID::KeySwitchGenInternal(oldKey, newKey, nullptr);
 }
 
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
                                                         const PrivateKey<DCRTPoly> newKey,
-                                                        const EvalKey<DCRTPoly> ekPrev, uint32_t levels) const {
+                                                        const EvalKey<DCRTPoly> ekPrev) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
     const auto& paramsQ = cryptoParams->GetElementParams();
-    const auto& paramsP = cryptoParams->GetParamsP();
-
-    const uint32_t sizeQ = paramsQ->GetParams().size();
-    const uint32_t sizeP = paramsP->GetParams().size();
-
-    // a joint key (threshold FHE) is generated over the basis of the prior key: its level is taken from the prior
-    // key when none is requested, and must agree with the prior key otherwise
-    if (ekPrev != nullptr) {
-        const uint32_t sizePrevQP = ekPrev->GetAVector()[0].GetNumOfElements();
-        if (sizePrevQP <= sizeP || sizePrevQP > sizeQ + sizeP)
-            OPENFHE_THROW("the input evaluation key has " + std::to_string(sizePrevQP) +
-                          " RNS limbs, which does not match the basis Q*P of the crypto context");
-        const uint32_t levelsPrev = sizeQ + sizeP - sizePrevQP;
-        if (levels == 0)
-            levels = levelsPrev;
-        else if (levels != levelsPrev)
-            OPENFHE_THROW("the number of RNS limbs in the input evaluation key does not match the requested levels");
-    }
-
-    ValidateLevels(levels, sizeQ, "the modulus chain");
-
-    // the key is generated over the basis Q_l*P, where Q_l is Q with the last `levels` limbs dropped
-    const uint32_t sizeKeyQ = sizeQ - levels;
-    const uint32_t sizeKeyQP = sizeKeyQ + sizeP;
-
-    auto paramsQP = cryptoParams->GetParamsQP();
-    if (levels > 0)
-        paramsQP = std::make_shared<ParmType>(*paramsQ, sizeKeyQ, *paramsP, sizeP);
+    const auto& paramsQP = cryptoParams->GetParamsQP();
     const auto& pparamsQP = paramsQP->GetParams();
 
-    // skNew is currently in basis Q. This extends it to basis (Q_l)P.
+    // skNew is currently in basis Q. This extends it to basis QP.
 
     DCRTPoly sNewExt(paramsQP, Format::EVALUATION, false);
     const auto& sNew = newKey->GetPrivateElement();
@@ -101,9 +74,12 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     auto sNew0 = sNew.GetElementAtIndex(0);
     sNew0.SetFormat(Format::COEFFICIENT);
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeKeyQP))
-    for (uint32_t i = 0; i < sizeKeyQP; ++i) {
-        if (i < sizeKeyQ) {
+    const uint32_t sizeQ = paramsQ->GetParams().size();
+    const uint32_t sizeQP = paramsQP->GetParams().size();
+
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQP))
+    for (uint32_t i = 0; i < sizeQP; ++i) {
+        if (i < sizeQ) {
             auto tmp = sNew.GetElementAtIndex(i);
             tmp.SetFormat(Format::EVALUATION);
             sNewExt.SetElementAtIndex(i, std::move(tmp));
@@ -118,11 +94,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     const auto ns = cryptoParams->GetNoiseScale();
 
     const uint32_t numPerPartQ = cryptoParams->GetNumPerPartQ();
-    // the number of digits of a key over Q_l: same formula as for the ciphertext digits
-    // in EvalKeySwitchPrecomputeCore
-    uint32_t numPartQ = cryptoParams->GetNumPartQ();
-    if (levels > 0)
-        numPartQ = cryptoParams->GetNumPartQl(sizeKeyQ);
+    const uint32_t numPartQ = cryptoParams->GetNumPartQ();
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
@@ -140,9 +112,9 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
         DCRTPoly b(paramsQP, Format::EVALUATION, false);
 
         const uint32_t startPartIdx = numPerPartQ * part;
-        const uint32_t endPartIdx = (sizeKeyQ > (startPartIdx + numPerPartQ)) ? (startPartIdx + numPerPartQ) : sizeKeyQ;
+        const uint32_t endPartIdx = (sizeQ > (startPartIdx + numPerPartQ)) ? (startPartIdx + numPerPartQ) : sizeQ;
 
-        for (uint32_t i = 0; i < sizeKeyQP; ++i) {
+        for (uint32_t i = 0; i < sizeQP; ++i) {
             const auto& ai = a.GetElementAtIndex(i);
             const auto& ei = e.GetElementAtIndex(i);
             const auto& sni = sNewExt.GetElementAtIndex(i);
@@ -163,61 +135,6 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     ek->SetBVector(std::move(bv));
     ek->SetKeyTag(newKey->GetKeyTag());
     return ek;
-}
-
-EvalKey<DCRTPoly> KeySwitchHYBRID::CompressEvalKey(const EvalKey<DCRTPoly> evalKey, uint32_t levels) const {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
-
-    const auto& av = evalKey->GetAVector();
-    const auto& bv = evalKey->GetBVector();
-
-    const uint32_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
-    const uint32_t sizeKeyQP = av[0].GetNumOfElements();
-    const uint32_t sizeKeyQ = sizeKeyQP - sizeP;
-
-    ValidateLevels(levels, sizeKeyQ, "the Q basis of the evaluation key");
-
-    const uint32_t newSizeQ = sizeKeyQ - levels;
-
-    // the compressed basis Q_l*P: the leading newSizeQ towers of the key's Q basis (a
-    // prefix of the context's Q) followed by the full auxiliary basis P
-    auto paramsQlP = std::make_shared<ParmType>(*av[0].GetParams(), newSizeQ, *cryptoParams->GetParamsP(), sizeP);
-
-    // the number of digits needed for a key over the compressed Q basis
-    uint32_t numPartQl = cryptoParams->GetNumPartQl(newSizeQ);
-    if (numPartQl > av.size())
-        numPartQl = static_cast<uint32_t>(av.size());
-
-    std::vector<DCRTPoly> avNew(numPartQl);
-    std::vector<DCRTPoly> bvNew(numPartQl);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQl))
-    for (uint32_t part = 0; part < numPartQl; ++part) {
-        avNew[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
-        bvNew[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
-        for (uint32_t i = 0; i < newSizeQ; ++i) {
-            avNew[part].SetElementAtIndex(i, av[part].GetElementAtIndex(i));
-            bvNew[part].SetElementAtIndex(i, bv[part].GetElementAtIndex(i));
-        }
-        for (uint32_t i = 0; i < sizeP; ++i) {
-            avNew[part].SetElementAtIndex(newSizeQ + i, av[part].GetElementAtIndex(sizeKeyQ + i));
-            bvNew[part].SetElementAtIndex(newSizeQ + i, bv[part].GetElementAtIndex(sizeKeyQ + i));
-        }
-    }
-
-    auto ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(evalKey->GetCryptoContext());
-    ek->SetAVector(std::move(avNew));
-    ek->SetBVector(std::move(bvNew));
-    ek->SetKeyTag(evalKey->GetKeyTag());
-    return ek;
-}
-
-uint32_t KeySwitchHYBRID::GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                              uint32_t levels) const {
-    const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
-
-    const uint32_t sizeQ = cryptoParamsRNS->GetElementParams()->GetParams().size();
-    ValidateLevels(levels, sizeQ, "the modulus chain");
-    return sizeQ - levels + cryptoParamsRNS->GetParamsP()->GetParams().size();
 }
 
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
@@ -466,7 +383,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     const uint32_t ringDim = paramsQl->GetRingDimension();
     const uint32_t alpha = cryptoParams->GetNumPerPartQ();
     // The number of digits of the current ciphertext
-    const uint32_t numPartQl = cryptoParams->GetNumPartQl(sizeQl);
+    uint32_t numPartQl = std::ceil(static_cast<double>(sizeQl) / alpha);
+    if (numPartQl > cryptoParams->GetNumberOfQPartitions())
+        numPartQl = cryptoParams->GetNumberOfQPartitions();
 
     auto result = std::make_shared<std::vector<DCRTPoly>>(numPartQl);
 
@@ -475,8 +394,16 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
     for (uint32_t part = 0; part < numPartQl; ++part) {
         DCRTPoly partsCt;
         if (part == numPartQl - 1) {
+            const auto& paramsPartQ = cryptoParams->GetParamsPartQ(part);
+
             uint32_t sizePartQl = sizeQl - alpha * part;
-            auto&& params = std::make_shared<ParmType>(*cryptoParams->GetParamsPartQ(part), sizePartQl);
+            std::vector<NativeInteger> moduli(sizePartQl);
+            std::vector<NativeInteger> roots(sizePartQl);
+            for (uint32_t i = 0; i < sizePartQl; ++i) {
+                moduli[i] = paramsPartQ->GetParams()[i]->GetModulus();
+                roots[i] = paramsPartQ->GetParams()[i]->GetRootOfUnity();
+            }
+            auto&& params = std::make_shared<ParmType>(paramsPartQ->GetCyclotomicOrder(), moduli, roots);
             partsCt = DCRTPoly(params, Format::EVALUATION, false);
         } else {
             partsCt = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, false);
@@ -484,37 +411,28 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         const uint32_t sizePartQl = partsCt.GetNumOfElements();
         const uint32_t startPartIdx = alpha * part;
+        for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; ++i, ++idx)
+            partsCt.SetElementAtIndex(i, c.GetElementAtIndex(idx));
+
         const uint32_t threads = DCRTPoly::ApproxSwitchCRTBasisThreads(ringDim, sizePartQl, sizeQlP - sizePartQl);
-
-        auto& partTowers = partsCt.GetAllElements();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(threads))
-        for (uint32_t i = 0; i < sizePartQl; ++i) {
-            partTowers[i] = c.GetElementAtIndex(startPartIdx + i);
-            partTowers[i].SetFormat(Format::COEFFICIENT);
-        }
-        partsCt.OverrideFormat(Format::COEFFICIENT);
-
+        partsCt.SetFormat(Format::COEFFICIENT, threads);
         auto partsCtCompl = partsCt.ApproxSwitchCRTBasis(cryptoParams->GetParamsPartQ(part),
                                                          cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
                                                          cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
                                                          cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
                                                          cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+        partsCtCompl.SetFormat(Format::EVALUATION, threads);
 
         (*result)[part] = DCRTPoly(paramsQlP, Format::EVALUATION, false);
 
         const uint32_t endPartIdx = startPartIdx + sizePartQl;
-        auto& digitTowers = (*result)[part].GetAllElements();
-        auto& complTowers = partsCtCompl.GetAllElements();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(threads))
-        for (uint32_t i = 0; i < sizeQlP; ++i) {
-            if (i >= startPartIdx && i < endPartIdx) {
-                digitTowers[i] = c.GetElementAtIndex(i);
-            } else {
-                digitTowers[i] = std::move(complTowers[(i < startPartIdx) ? i : i - sizePartQl]);
-                digitTowers[i].SetFormat(Format::EVALUATION);
-            }
-        }
+        for (uint32_t i = 0; i < startPartIdx; ++i)
+            (*result)[part].SetElementAtIndex(i, std::move(partsCtCompl.GetElementAtIndex(i)));
+        for (uint32_t i = startPartIdx; i < endPartIdx; ++i)
+            (*result)[part].SetElementAtIndex(i, c.GetElementAtIndex(i));
+        for (uint32_t i = endPartIdx; i < sizeQlP; ++i)
+            (*result)[part].SetElementAtIndex(i, std::move(partsCtCompl.GetElementAtIndex(i - sizePartQl)));
     }
     return result;
 }
@@ -549,19 +467,10 @@ std::vector<DCRTPoly> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(const std::share
     const uint32_t limit = digits->size();
     const uint32_t sizeQl = paramsQl->GetParams().size();
     auto&& cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
+    const uint32_t delta = cryptoParams->GetElementParams()->GetParams().size() - sizeQl;
 
     const auto& av = evalKey->GetAVector();
     const auto& bv = evalKey->GetBVector();
-
-    // key may have fewer towers in its Q basis than the cryptocontext, so towers indexed relative
-    // to key's own basis
-    const uint32_t sizeP = cryptoParams->GetParamsP()->GetParams().size();
-    const uint32_t sizeKeyQ = av[0].GetNumOfElements() - sizeP;
-    if (sizeQl > sizeKeyQ)
-        OPENFHE_THROW("The ciphertext requires an evaluation key with at least " + std::to_string(sizeQl) +
-                      " RNS limbs in its Q basis, but the key has only " + std::to_string(sizeKeyQ) +
-                      "; use a key generated at a smaller level");
-    const uint32_t delta = sizeKeyQ - sizeQl;
 
     std::vector<DCRTPoly> result;
     result.reserve(2);

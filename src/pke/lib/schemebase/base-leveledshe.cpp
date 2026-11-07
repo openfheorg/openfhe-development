@@ -144,19 +144,18 @@ void LeveledSHEBase<Element>::EvalSubInPlace(Ciphertext<Element>& ciphertext, Co
 /////////////////////////////////////////
 
 template <class Element>
-EvalKey<Element> LeveledSHEBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels) const {
+EvalKey<Element> LeveledSHEBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey) const {
     const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
     auto privateKeySquared = std::make_shared<PrivateKeyImpl<Element>>(cc);
     privateKeySquared->SetPrivateElement(s * s);
 
-    return cc->GetScheme()->KeySwitchGen(privateKeySquared, privateKey, levels);
+    return cc->GetScheme()->KeySwitchGen(privateKeySquared, privateKey);
 }
 
 template <class Element>
-std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey,
-                                                                       uint32_t levels) const {
+std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey) const {
     const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
@@ -168,7 +167,7 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(const Pri
     evalKeyVec.reserve(maxRelinSkDeg);
     for (uint32_t i = 0; i < maxRelinSkDeg; ++i) {
         privateKeyPower->SetPrivateElement(s * privateKeyPower->GetPrivateElement());
-        evalKeyVec.emplace_back(cc->GetScheme()->KeySwitchGen(privateKeyPower, privateKey, levels));
+        evalKeyVec.emplace_back(cc->GetScheme()->KeySwitchGen(privateKeyPower, privateKey));
     }
 
     return evalKeyVec;
@@ -335,36 +334,19 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(Ciphertext<Element>& ciphertext
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels) const {
-    std::map<uint32_t, uint32_t> levelsByIndex;
-    for (auto index : indexList)
-        levelsByIndex.emplace(index, levels);
-    return EvalAutomorphismKeyGenAtLevels(privateKey, levelsByIndex);
-}
-
-template <class Element>
-std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAutomorphismKeyGenAtLevels(
-        const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const {
-    const auto cc = privateKey->GetCryptoContext();
-
-    // Do not generate duplicate keys that have been already generated and added to the static storage (map).
-    // An existing key is reused only if it has at least as many towers as the requested key.
-    std::map<uint32_t, std::set<uint32_t>> indicesByLevels;
-    for (const auto& [index, levels] : levelsByIndex)
-        indicesByLevels[levels].insert(index);
-    std::vector<std::pair<uint32_t, uint32_t>> newIndices;
-    for (const auto& [levels, indices] : indicesByLevels) {
-        const uint32_t numTowers = cc->GetScheme()->GetNumEvalKeyTowers(privateKey->GetCryptoParameters(), levels);
-        for (auto index :
-             CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), indices, numTowers))
-            newIndices.emplace_back(index, levels);
-    }
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
+    // Do not generate duplicate keys that have been already generated and added to the static storage (map)
+    std::set<uint32_t> allIndices(indexList.begin(), indexList.end());
+    std::set<uint32_t> indicesToGenerate{
+            CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(privateKey->GetKeyTag(), allIndices)};
+    std::vector<uint32_t> newIndices(indicesToGenerate.begin(), indicesToGenerate.end());
 
     // we already have checks on higher level?
     //  auto it = std::find(newIndices.begin(), newIndices.end(), 2 * n - 1);
     //  if (it != newIndices.end())
     //    OPENFHE_THROW("conjugation is disabled");
 
+    const auto cc = privateKey->GetCryptoContext();
     const auto& s = privateKey->GetPrivateElement();
 
     const uint32_t N = s.GetRingDimension();
@@ -378,20 +360,19 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     // we should be able to assign values to the map without using "omp critical" as all evalKeys' elements would
     // have already been created
     auto evalKeys = std::make_shared<std::map<uint32_t, EvalKey<Element>>>();
-    for (const auto& entry : newIndices)
-        (*evalKeys)[entry.first];
+    for (auto indx : newIndices)
+        (*evalKeys)[indx];
 
     const uint32_t sz = newIndices.size();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
     for (uint32_t i = 0; i < sz; ++i) {
-        const auto [autoIndex, levels] = newIndices[i];
-        auto index = NativeInteger(autoIndex).ModInverse(M).ConvertToInt<uint32_t>();
+        auto index = NativeInteger(newIndices[i]).ModInverse(M).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
 
         auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
-        (*evalKeys)[autoIndex] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted, levels);
+        (*evalKeys)[newIndices[i]] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted);
     }
 
     return evalKeys;
@@ -496,12 +477,12 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
 template <class Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::EvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList, uint32_t levels) const {
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     uint32_t M = privateKey->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++)
         autoIndices[i] = FindAutomorphismIndex(indexList[i], M);
-    return EvalAutomorphismKeyGen(privateKey, autoIndices, levels);
+    return EvalAutomorphismKeyGen(privateKey, autoIndices);
 }
 
 template <class Element>

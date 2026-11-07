@@ -192,18 +192,24 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen(std::shared_pt
 // Calculating RNS parameters
 void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, uint32_t from, uint32_t to,
                                   RNSExtensionTables& rnsExtTables) {
-    const auto elemParams = cc->GetCryptoParameters()->GetElementParams();
-
     std::vector<NativeInteger> moduliQ;
     moduliQ.reserve(from);
+    std::vector<NativeInteger> rootsQ;
+    rootsQ.reserve(from);
     std::vector<NativeInteger> moduliP;
     moduliP.reserve(to - from);
+    std::vector<NativeInteger> rootsP;
+    rootsP.reserve(to - from);
 
-    for (size_t i = 0; i < from; i++)
-        moduliQ.push_back(elemParams->GetParams()[i]->GetModulus());
+    for (size_t i = 0; i < from; i++) {
+        moduliQ.push_back(cc->GetCryptoParameters()->GetElementParams()->GetParams()[i]->GetModulus());
+        rootsQ.push_back(cc->GetCryptoParameters()->GetElementParams()->GetParams()[i]->GetRootOfUnity());
+    }
 
-    for (size_t i = from; i < to; i++)
-        moduliP.push_back(elemParams->GetParams()[i]->GetModulus());
+    for (size_t i = from; i < to; i++) {
+        moduliP.push_back(cc->GetCryptoParameters()->GetElementParams()->GetParams()[i]->GetModulus());
+        rootsP.push_back(cc->GetCryptoParameters()->GetElementParams()->GetParams()[i]->GetRootOfUnity());
+    }
 
     size_t sizeQ = moduliQ.size();
     size_t sizeP = moduliP.size();
@@ -211,12 +217,24 @@ void PrecomputeRNSExtensionTables(CryptoContext<DCRTPoly>& cc, uint32_t from, ui
     for (auto& it : moduliQ)
         modulusQ *= it;
 
-    // CRT basis P: towers [from, to) of the element params (may be empty when no
-    // extension is needed); QP: towers [0, to)
-    auto towersP = (to > from) ? elemParams->GetParamPartition(from, to - 1) :
-                                 std::vector<std::shared_ptr<ILDCRTParams<BigInteger>::ILNativeParams>>{};
-    rnsExtTables.paramsP = std::make_shared<ILDCRTParams<BigInteger>>(elemParams->GetCyclotomicOrder(), towersP);
-    rnsExtTables.paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(*elemParams, to);
+    std::vector<NativeInteger> moduliQP(sizeQ + sizeP);
+    std::vector<NativeInteger> rootsQP(sizeQ + sizeP);
+
+    // populate moduli for CRT basis Q
+    for (size_t i = 0; i < sizeQ; i++) {
+        moduliQP[i] = moduliQ[i];
+        rootsQP[i] = rootsQ[i];
+    }
+
+    // populate moduli for CRT basis P
+    for (size_t j = 0; j < sizeP; j++) {
+        moduliQP[sizeQ + j] = moduliP[j];
+        rootsQP[sizeQ + j] = rootsP[j];
+    }
+
+    uint32_t ringDim = cc->GetCryptoParameters()->GetElementParams()->GetRingDimension();
+    rnsExtTables.paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliP, rootsP);
+    rnsExtTables.paramsQP = std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliQP, rootsQP);
 
     rnsExtTables.QHatInvModq.resize(sizeQ);
     rnsExtTables.QHatInvModqPrecon.resize(sizeQ);
@@ -279,7 +297,8 @@ DCRTPoly ComputeNoisyMult(CryptoContext<DCRTPoly>& cc, const DCRTPoly& sk, const
 // Generate random mask
 DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
     // only the parameters of the first maskBoundNumTowers towers are needed here, not their contents
-    auto params = std::make_shared<DCRTPoly::Params>(*c1.GetParams(), maskBoundNumTowers);
+    auto params = std::make_shared<DCRTPoly::Params>(c1.GetParams()->GetCyclotomicOrder(),
+                                                     c1.GetParams()->GetParamPartition(0, maskBoundNumTowers - 1));
 
     typename DCRTPoly::DugType dug;
     return DCRTPoly(dug, params, Format::EVALUATION);

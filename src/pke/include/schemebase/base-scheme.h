@@ -336,33 +336,22 @@ class SchemeBase {
     /////////////////////////////////////////
 
     virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey, uint32_t levels = 0) const {
+                                          const PrivateKey<Element> newPrivateKey) const {
         VerifyKeySwitchEnabled(__func__);
-        return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey, levels);
+        return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey);
     }
 
     virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey, const EvalKey<Element> evalKey,
-                                          uint32_t levels = 0) const {
+                                          const PrivateKey<Element> newPrivateKey,
+                                          const EvalKey<Element> evalKey) const {
         VerifyKeySwitchEnabled(__func__);
-        return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey, evalKey, levels);
+        return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey, evalKey);
     }
 
     virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
                                           const PublicKey<Element> newPublicKey) const {
         VerifyKeySwitchEnabled(__func__);
         return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPublicKey);
-    }
-
-    virtual EvalKey<Element> CompressEvalKey(const EvalKey<Element> evalKey, uint32_t levels) const {
-        VerifyKeySwitchEnabled(__func__);
-        return m_KeySwitch->CompressEvalKey(evalKey, levels);
-    }
-
-    virtual uint32_t GetNumEvalKeyTowers(const std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-                                         uint32_t levels) const {
-        VerifyKeySwitchEnabled(__func__);
-        return m_KeySwitch->GetNumEvalKeyTowers(cryptoParams, levels);
     }
 
     virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
@@ -617,21 +606,18 @@ class SchemeBase {
      * Generates the relinearization key (from s^2 to s) via m_LeveledSHE and tags it with the key tag of privateKey.
      *
      * @param privateKey the secret key
-     * @param levels number of RNS limbs to drop from the generated key relative to a full key
      * @return the relinearization key
      */
-    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels = 0) const;
+    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey) const;
 
     /**
      * Generates the relinearization keys for s^2, s^3, ... (used for ciphertexts of more than two elements) via
      * m_LeveledSHE and tags each of them with the key tag of privateKey.
      *
      * @param privateKey the secret key
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return the vector of relinearization keys
      */
-    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey,
-                                                          uint32_t levels = 0) const;
+    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const;
 
     virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element>& ciphertext1,
                                          ConstCiphertext<Element>& ciphertext2) const {
@@ -791,23 +777,10 @@ class SchemeBase {
      *
      * @param privateKey the secret key
      * @param indexList automorphism indices (elements of the Galois group) to generate keys for
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGen(
-            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels = 0) const;
-
-    /**
-     * Generates automorphism keys of several sizes via m_LeveledSHE, in a single parallel region, and tags each of
-     * them with the key tag of privateKey.
-     *
-     * @param privateKey the secret key
-     * @param levelsByIndex map from each automorphism index to generate a key for to the number of RNS limbs to
-     * drop from its key relative to full keys
-     * @return map from automorphism index to key
-     */
-    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAutomorphismKeyGenAtLevels(
-            const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const;
+            const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const;
 
     virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                                  const std::map<uint32_t, EvalKey<Element>>& evalKeyMap,
@@ -894,11 +867,10 @@ class SchemeBase {
      *
      * @param privateKey the secret key
      * @param indexList rotation indices (positive for left, negative for right rotations)
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalAtIndexKeyGen(
-            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList, uint32_t levels = 0) const;
+            const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const;
 
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element>& ciphertext, uint32_t i,
                                             const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {
@@ -1154,11 +1126,10 @@ class SchemeBase {
      * privateKey.
      *
      * @param privateKey the secret key
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
-    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(const PrivateKey<Element> privateKey,
-                                                                                uint32_t levels = 0) const;
+    virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumKeyGen(
+            const PrivateKey<Element> privateKey) const;
 
     /**
      * Generates the rotation keys needed by EvalSumRows via m_AdvancedSHE and tags each of them with the key tag
@@ -1168,12 +1139,11 @@ class SchemeBase {
      * @param rowSize number of slots per row of the packed matrix
      * @param subringDim subring dimension (0 selects the cyclotomic order)
      * @param indices receives the automorphism indices the keys were generated for
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumRowsKeyGen(
-            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices,
-            uint32_t levels = 0) const;
+            const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+            std::vector<uint32_t>& indices) const;
 
     /**
      * Generates the rotation keys needed by EvalSumCols via m_AdvancedSHE and tags each of them with the key tag
@@ -1181,11 +1151,10 @@ class SchemeBase {
      *
      * @param privateKey the secret key
      * @param indices receives the automorphism indices the keys were generated for
-     * @param levels number of RNS limbs to drop from the generated keys relative to full keys
      * @return map from automorphism index to key
      */
     virtual std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> EvalSumColsKeyGen(
-            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices, uint32_t levels = 0) const;
+            const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const;
 
     virtual Ciphertext<Element> EvalSum(ConstCiphertext<Element> ciphertext, uint32_t batchSize,
                                         const std::map<uint32_t, EvalKey<Element>>& evalKeyMap) const {

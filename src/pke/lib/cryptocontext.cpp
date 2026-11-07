@@ -100,45 +100,22 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
 // SHE MULTIPLICATION
 /////////////////////////////////////////
 template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key, uint32_t levels) {
+void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element>& key) {
     ValidateKey(key);
-    auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
-    // the key is generated if it is not found in the map or if the existing key has fewer
-    // towers than the requested key; an existing vector of keys for higher powers of the
-    // secret key is regenerated as a whole
-    if (it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty()) {
-        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = {m_scheme->EvalMultKeyGen(key, levels)};
-    } else if (it->second[0]->GetAVector()[0].GetNumOfElements() <
-               m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels)) {
-        if (it->second.size() > 1)
-            it->second = m_scheme->EvalMultKeysGen(key, levels);
-        else
-            it->second = {m_scheme->EvalMultKeyGen(key, levels)};
+    if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
+        CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        // the key is not found in the map, so the key has to be generated
+        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = {m_scheme->EvalMultKeyGen(key)};
     }
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key, uint32_t levels) {
+void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element>& key) {
     ValidateKey(key);
-    auto it = CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag());
-    // the keys are generated if they are not found in the map, if fewer keys than requested
-    // are in the map, or if any existing key has fewer towers than the requested keys; an
-    // existing key with more towers than the requested ones is kept
-    const auto numTowers = m_scheme->GetNumEvalKeyTowers(GetCryptoParameters(), levels);
-    bool generate = it == CryptoContextImpl<Element>::s_evalMultKeyMap.end() || it->second.empty() ||
-                    it->second.size() + 1 < GetCryptoParameters()->GetMaxRelinSkDeg();
-    for (size_t i = 0; !generate && i < it->second.size(); ++i)
-        generate = it->second[i]->GetAVector()[0].GetNumOfElements() < numTowers;
-    if (generate) {
-        auto evalKeys = m_scheme->EvalMultKeysGen(key, levels);
-        if (it != CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
-            const size_t numKept = (it->second.size() < evalKeys.size()) ? it->second.size() : evalKeys.size();
-            for (size_t i = 0; i < numKept; ++i) {
-                if (it->second[i]->GetAVector()[0].GetNumOfElements() > numTowers)
-                    evalKeys[i] = it->second[i];
-            }
-        }
-        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = std::move(evalKeys);
+    if (CryptoContextImpl<Element>::s_evalMultKeyMap.find(key->GetKeyTag()) ==
+        CryptoContextImpl<Element>::s_evalMultKeyMap.end()) {
+        // the key is not found in the map, so the key has to be generated
+        CryptoContextImpl<Element>::s_evalMultKeyMap[key->GetKeyTag()] = m_scheme->EvalMultKeysGen(key);
     }
 }
 
@@ -182,18 +159,18 @@ void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Ele
 /////////////////////////////////////////
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey, uint32_t levels) {
+void CryptoContextImpl<Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey) {
     ValidateKey(privateKey);
-    auto&& evalKeys = m_scheme->EvalSumKeyGen(privateKey, levels);
+    auto&& evalKeys = m_scheme->EvalSumKeyGen(privateKey);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumRowsKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, uint32_t levels) {
+        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim) {
     ValidateKey(privateKey);
     std::vector<uint32_t> indices;
-    auto&& evalKeys = m_scheme->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices, levels);
+    auto&& evalKeys = m_scheme->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
     return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
@@ -208,10 +185,10 @@ inline std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<E
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> CryptoContextImpl<Element>::EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t levels) {
+        const PrivateKey<Element> privateKey) {
     ValidateKey(privateKey);
     std::vector<uint32_t> indices;
-    auto&& evalKeys = m_scheme->EvalSumColsKeyGen(privateKey, indices, levels);
+    auto&& evalKeys = m_scheme->EvalSumColsKeyGen(privateKey, indices);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
     return CryptoContextImpl<Element>::GetPartialEvalAutomorphismKeyMapPtr(privateKey->GetKeyTag(), indices);
 }
@@ -308,9 +285,9 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys(const CryptoContext<Element> c
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalAtIndexKeyGen(const PrivateKey<Element> privateKey,
-                                                   const std::vector<int32_t>& indexList, uint32_t levels) {
+                                                   const std::vector<int32_t>& indexList) {
     ValidateKey(privateKey);
-    auto&& evalKeys = m_scheme->EvalAtIndexKeyGen(privateKey, indexList, levels);
+    auto&& evalKeys = m_scheme->EvalAtIndexKeyGen(privateKey, indexList);
     CryptoContextImpl<Element>::InsertEvalAutomorphismKey(evalKeys, privateKey->GetKeyTag());
 }
 
@@ -365,26 +342,6 @@ std::set<uint32_t> CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyInd
 }
 
 template <typename Element>
-std::set<uint32_t> CryptoContextImpl<Element>::GetEvalAutomorphismNoKeyIndices(const std::string& keyTag,
-                                                                               const std::set<uint32_t>& indices,
-                                                                               uint32_t minNumTowers) {
-    auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(keyTag);
-    // if no key found for the given keyTag, then the entire set "indices" is returned
-    if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end())
-        return indices;
-
-    // keys that exist but have fewer towers than minNumTowers must be regenerated
-    const auto& keyMap = *(keyMapIt->second);
-    std::set<uint32_t> indicesToGenerate;
-    for (uint32_t indx : indices) {
-        auto it = keyMap.find(indx);
-        if (it == keyMap.end() || it->second->GetAVector()[0].GetNumOfElements() < minNumTowers)
-            indicesToGenerate.insert(indx);
-    }
-    return indicesToGenerate;
-}
-
-template <typename Element>
 std::set<uint32_t> CryptoContextImpl<Element>::GetUniqueValues(const std::set<uint32_t>& oldValues,
                                                                const std::set<uint32_t>& newValues) {
     std::set<uint32_t> newUniqueValues;
@@ -403,20 +360,24 @@ void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
 
     auto mapToInsertIt = mapToInsert->begin();
     const std::string& id = (keyTag.empty()) ? mapToInsertIt->second->GetKeyTag() : keyTag;
-    auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(id);
-    if (keyMapIt == CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.end()) {
+    std::set<uint32_t> existingIndices{CryptoContextImpl<Element>::GetExistingEvalAutomorphismKeyIndices(id)};
+    if (existingIndices.empty()) {
         // there is no keys for the given id, so we insert full mapToInsert
         CryptoContextImpl<Element>::s_evalAutomorphismKeyMap[id] = mapToInsert;
     } else {
-        // insert all new indices; for an index that already has a key, keep the key with
-        // the most towers (the more capable of the two keys)
+        // get all indices from mapToInsert
+        std::set<uint32_t> newIndices;
+        for (const auto& [key, _] : *mapToInsert) {
+            newIndices.insert(key);
+        }
+
+        // find all indices in mapToInsert that are not in the exising map and
+        // insert those new indices and their corresponding keys to the existing map
+        std::set<uint32_t> indicesToInsert{CryptoContextImpl<Element>::GetUniqueValues(existingIndices, newIndices)};
+        auto keyMapIt = CryptoContextImpl<Element>::s_evalAutomorphismKeyMap.find(id);
         auto& keyMap = *(keyMapIt->second);
-        for (const auto& [indx, key] : *mapToInsert) {
-            auto it = keyMap.find(indx);
-            if (it == keyMap.end() ||
-                key->GetAVector()[0].GetNumOfElements() > it->second->GetAVector()[0].GetNumOfElements()) {
-                keyMap[indx] = key;
-            }
+        for (uint32_t indx : indicesToInsert) {
+            keyMap[indx] = (*mapToInsert)[indx];
         }
     }
 }

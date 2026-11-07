@@ -43,7 +43,6 @@
 #include <limits>
 #include <map>
 #include <memory>
-#include <numeric>
 #include <set>
 #include <sstream>
 #include <string>
@@ -415,8 +414,6 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
         } else {
             lDec = L0 - compositeDegree * depthBT;
         }
-        // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
-        precom->m_towersStC = lDec + compositeDegree * precom->m_paramsDec.lvlb;
 
         bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -479,19 +476,8 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrap
 
     slots = (slots == 0) ? M / 4 : slots;
 
-    // Each rotation key is generated over the towers of the largest ciphertext it is applied to (see
-    // FindBootstrapRotationIndexTowers): a key can be applied to any ciphertext with at most as many towers, at the
-    // same cost and noise (see KeySwitchBase::KeySwitchGen), and the levels of the two linear transforms are fixed
-    // in every bootstrapping flavor.
-    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-    std::map<uint32_t, uint32_t> levelsByIndex;
-    for (const auto& [index, towers] : FindBootstrapRotationIndexTowers(cryptoParams, slots, M)) {
-        auto [it, inserted] = levelsByIndex.emplace(algo->FindAutomorphismIndex(index, M), sizeQ - towers);
-        if (!inserted && it->second > sizeQ - towers)
-            it->second = sizeQ - towers;
-    }
-
-    auto evalKeys = algo->EvalAutomorphismKeyGenAtLevels(privateKey, levelsByIndex);
+    // computing all indices for baby-step giant-step procedure
+    auto evalKeys = algo->EvalAtIndexKeyGen(privateKey, FindBootstrapRotationIndices(slots, M));
 
     (*evalKeys)[M - 1] = ConjugateKeyGen(privateKey);
 
@@ -545,7 +531,7 @@ std::vector<uint32_t> FHECKKSRNS::EvalBootstrapKeyMapIndices(const CryptoContext
     auto M = cc->GetCyclotomicOrder();
     slots = (slots == 0) ? M / 4 : slots;
 
-    const auto bootstrapRotationsIndices = FindBootstrapRotationIndices(cryptoParams, slots, M);
+    const auto bootstrapRotationsIndices = FindBootstrapRotationIndices(slots, M);
 
     std::set<uint32_t> indexList;
     for (const auto rotationIndex : bootstrapRotationsIndices)
@@ -697,8 +683,6 @@ void FHECKKSRNS::EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly>& cc, 
     } else {
         lDec = L0 - compositeDegree * depthBT;
     }
-    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
-    p.m_towersStC = lDec + compositeDegree * p.m_paramsDec.lvlb;
 
     bool isLTBootstrap = (p.m_paramsEnc.lvlb == 1) && (p.m_paramsDec.lvlb == 1);
 
@@ -1783,8 +1767,6 @@ void FHECKKSRNS::EvalFEFuncBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
     // correction, as the message must reach ModRaise at exactly the scale of the argument of the complex exponential
     uint32_t lDec = compositeDegree;
     scaleDec *= GetStCFirstDecodingScale(cryptoParams, 0);
-    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
-    precom->m_towersStC = lDec + compositeDegree * precom->m_paramsDec.lvlb;
 
     bool isLTBootstrap = (precom->m_paramsEnc.lvlb == 1) && (precom->m_paramsDec.lvlb == 1);
 
@@ -2249,72 +2231,40 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFEFuncBootstrapWithPrecomp(
 // Find Rotation Indices
 //------------------------------------------------------------------------------
 
-std::map<uint32_t, uint32_t> FHECKKSRNS::FindBootstrapRotationIndexTowers(
-        const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams, uint32_t slots, uint32_t M) {
+std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots);
-    const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-    // CoeffsToSlots starts at the raised level: the chain without the extra modulus of FLEXIBLEAUTOEXT
-    const uint32_t towersCtS = sizeQ - (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT);
-    // SlotsToCoeffs starts at the towers recorded by the setup; full-size keys when they are not recorded
-    const uint32_t towersStC = (p.m_towersStC > 0 && p.m_towersStC < sizeQ) ? p.m_towersStC : sizeQ;
 
-    // a rotation used at several levels, or by both transforms, gets the key of its largest ciphertext
-    std::map<uint32_t, uint32_t> towersByIndex;
-    const auto add = [&towersByIndex](const std::vector<std::pair<uint32_t, uint32_t>>& indices, uint32_t towersFirst,
-                                      uint32_t towersPerLevel) {
-        for (const auto& [index, level] : indices) {
-            const uint32_t dropped = towersPerLevel * level;
-            const uint32_t towers = (dropped < towersFirst) ? towersFirst - dropped : 1;
-            auto it = towersByIndex.find(index);
-            if (it == towersByIndex.end())
-                towersByIndex.emplace(index, towers);
-            else if (it->second < towers)
-                it->second = towers;
-        }
-    };
-
+    // Remove possible duplicates and remove automorphisms corresponding to 0 and M/4 by using std::set
+    std::set<uint32_t> s;
     if (p.m_paramsEnc.lvlb == 1 && p.m_paramsDec.lvlb == 1) {
-        // the single-level transforms of both directions use the same rotations; CoeffsToSlots is the larger
-        add(FindLinearTransformRotationIndices(slots, M), towersCtS, compositeDegree);
+        auto tmp = FindLinearTransformRotationIndices(slots, M);
+        s.insert(tmp.begin(), tmp.end());
     } else {
-        add(FindCoeffsToSlotsRotationIndices(slots, M), towersCtS, compositeDegree);
-        add(FindSlotsToCoeffsRotationIndices(slots, M), towersStC, compositeDegree);
+        auto tmp = FindCoeffsToSlotsRotationIndices(slots, M);
+        s.insert(tmp.begin(), tmp.end());
+        tmp = FindSlotsToCoeffsRotationIndices(slots, M);
+        s.insert(tmp.begin(), tmp.end());
     }
-    // the rotation by slots of the partial sum after SlotsToCoeffs is also a rotation of the fold at the raised level
-    add({{static_cast<uint32_t>(slots), 0}}, towersCtS, compositeDegree);
+    s.insert(static_cast<uint32_t>(slots));
+    s.erase(0);
+    s.erase(M / 4);
 
-    // automorphisms corresponding to 0 and M/4 are not rotations
-    towersByIndex.erase(0);
-    towersByIndex.erase(M / 4);
-
-    return towersByIndex;
+    return std::vector<int32_t>(s.begin(), s.end());
 }
 
-std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(
-        const std::shared_ptr<CryptoParametersCKKSRNS>& cryptoParams, uint32_t slots, uint32_t M) {
-    const auto towersByIndex = FindBootstrapRotationIndexTowers(cryptoParams, slots, M);
-    std::vector<int32_t> indices;
-    indices.reserve(towersByIndex.size());
-    for (const auto& [index, towers] : towersByIndex)
-        indices.emplace_back(index);
-    return indices;
-}
-
-// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and
-// FindBootstrapRotationIndexTowers() only. so it DOES NOT remove possible duplicates and automorphisms
-// corresponding to 0 and M/4. These methods completely depend on the callers to do that.
-std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slots, uint32_t M) {
+// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() only.
+// so it DOES NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
+// This method completely depends on FindBootstrapRotationIndices() to do that.
+std::vector<uint32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots);
     const uint32_t g = (p.m_paramsEnc.g == 0) ? std::ceil(std::sqrt(slots)) : p.m_paramsEnc.g;
 
-    // a single level: every rotation is applied at the first level of its transform
     // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices
-    std::vector<std::pair<uint32_t, uint32_t>> indexList;
+    std::vector<uint32_t> indexList;
     indexList.reserve(g + 32);
 
     for (uint32_t i = 1; i <= g; ++i)
-        indexList.emplace_back(i, 0);
+        indexList.emplace_back(i);
 
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
     // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
@@ -2323,83 +2273,74 @@ std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindLinearTransformRotati
         const uint32_t size = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
-                indexList.emplace_back(idx, 0);
+                indexList.emplace_back(idx);
     }
 
     return indexList;
 }
 
-// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and
-// FindBootstrapRotationIndexTowers() only. so it DOES NOT remove possible duplicates and automorphisms
-// corresponding to 0 and M/4. These methods completely depend on the callers to do that.
-std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M) {
+// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() only.
+// so it DOES NOT remove possible duplicates and automorphisms corresponding to 0 and M/4.
+// This method completely depends on FindBootstrapRotationIndices() to do that.
+std::vector<uint32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots).m_paramsEnc;
 
     // lvlb*(g+1)+gRem sizes the per-level baby/giant rotations
     // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices + correction key
-    std::vector<std::pair<uint32_t, uint32_t>> indexList;
+    std::vector<uint32_t> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
-    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}, applied at the
-    // raised level before the transform
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
         constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
-                indexList.emplace_back(idx, 0);
+                indexList.emplace_back(idx);
     }
 
     M >>= 2;
     // clamp all indices to [0, 2*slots)
     const uint32_t reduceMod = std::min(M, 2 * slots);
     const int32_t flagRem = (p.remCollapse == 0) ? 0 : 1;
-    // the levels are evaluated from s = lvlb - 1 down (see EvalCoeffsToSlots), the remainder level last
     for (int32_t s = -1 + p.lvlb; s >= flagRem; --s) {
-        const uint32_t level = p.lvlb - 1 - s;
         const uint32_t scalingFactor = 1U << ((s - flagRem) * p.layersCollapse + p.remCollapse);
         for (uint32_t j = 1; j < p.g; ++j)
-            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod), level);
+            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod));
         if (p.b > 1)
-            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod), level);
+            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod));
     }
 
     if (flagRem == 1) {
-        const uint32_t level = p.lvlb - 1;
         for (uint32_t j = 1; j < p.gRem; ++j)
-            indexList.emplace_back(ReduceRotation(j, reduceMod), level);
+            indexList.emplace_back(ReduceRotation(j, reduceMod));
         if (p.bRem > 1)
-            indexList.emplace_back(ReduceRotation(p.gRem, reduceMod), level);
+            indexList.emplace_back(ReduceRotation(p.gRem, reduceMod));
     }
 
-    // StC correction key Aut_{-(slots-1)} (CtS correction is now absorbed into plaintexts); it is applied at the
-    // end of every level of both transforms, so at the first level of CoeffsToSlots
-    indexList.emplace_back(ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod), 0);
+    // StC correction key Aut_{-(slots-1)} (CtS correction is now absorbed into plaintexts)
+    indexList.emplace_back(ReduceRotation(-static_cast<int32_t>(slots - 1), reduceMod));
 
     return indexList;
 }
 
-// ATTN: This function is a helper methods to be called in FindBootstrapRotationIndices() and
-// FindBootstrapRotationIndexTowers() only. so it DOES NOT remove possible duplicates and automorphisms
-// corresponding to 0 and M/4. These methods completely depend on the callers to do that.
-std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M) {
+std::vector<uint32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M) {
     const auto& p = GetBootPrecom(slots).m_paramsDec;
 
     // lvlb*(g+1)+gRem sizes the per-level baby/giant rotations
     // +32 is fixed upper bound for the log2((M/4)/slots) sparse-packing indices
-    std::vector<std::pair<uint32_t, uint32_t>> indexList;
+    std::vector<uint32_t> indexList;
     indexList.reserve(p.lvlb * (p.g + 1) + p.gRem + 32);
 
     // additional automorphisms are needed for sparse bootstrapping: the rotation indices of
-    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}, applied after
-    // the transform (they are also applied at the raised level, see FindCoeffsToSlotsRotationIndices)
+    // the radix-configured EvalPartialSumInPlace fold, {i*slots*radix^level : i in [1, radix)}
     if (uint32_t m = slots * 4; m != M) {
         constexpr uint32_t radix = PARTIAL_SUM_RADIX;
         const uint32_t size = M / m;
         for (uint32_t s = 1; s < size; s *= radix)
             for (uint32_t idx = slots * s; idx < slots * size && idx < radix * slots * s; idx += slots * s)
-                indexList.emplace_back(idx, p.lvlb);
+                indexList.emplace_back(idx);
     }
 
     M >>= 2;
@@ -2407,21 +2348,20 @@ std::vector<std::pair<uint32_t, uint32_t>> FHECKKSRNS::FindSlotsToCoeffsRotation
     const uint32_t reduceMod = std::min(M, 2 * slots);
     const uint32_t flagRem = (p.remCollapse == 0) ? 0 : 1;
     const uint32_t smax = p.lvlb - flagRem;
-    // the levels are evaluated from s = 0 up (see EvalSlotsToCoeffs), the remainder level last
     for (uint32_t s = 0; s < smax; ++s) {
         const uint32_t scalingFactor = 1U << (s * p.layersCollapse);
         for (uint32_t j = 1; j < p.g; ++j)
-            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod), s);
+            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod));
         if (p.b > 1)
-            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod), s);
+            indexList.emplace_back(ReduceRotation(p.g * scalingFactor, reduceMod));
     }
 
     if (flagRem == 1) {
         const uint32_t scalingFactor = 1U << (smax * p.layersCollapse);
         for (uint32_t j = 1; j < p.gRem; ++j)
-            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod), smax);
+            indexList.emplace_back(ReduceRotation(j * scalingFactor, reduceMod));
         if (p.bRem > 1)
-            indexList.emplace_back(ReduceRotation(p.gRem * scalingFactor, reduceMod), smax);
+            indexList.emplace_back(ReduceRotation(p.gRem * scalingFactor, reduceMod));
     }
 
     return indexList;
@@ -2441,13 +2381,26 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     // make sure the plaintext is created only with the necessary amount of moduli
     auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     auto compositeDegree = cryptoParams->GetCompositeDegree();
-    const auto& elementParams = *(cryptoParams->GetElementParams());
-    const uint32_t sizeQ = elementParams.GetParams().size();
-    uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree);
+    auto elementParams = *(cryptoParams->GetElementParams());
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
+    for (uint32_t i = 0; i < towersToDrop; ++i)
+        elementParams.PopLastParam();
 
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, sizeQ - towersToDrop, *cryptoParams->GetParamsP(),
-            static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
+    const auto& paramsQ = elementParams.GetParams();
+    uint32_t sizeQ = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    uint32_t sizeP = paramsP.size();
+    std::vector<NativeInteger> moduli(sizeQ + sizeP);
+    std::vector<NativeInteger> roots(sizeQ + sizeP);
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i] = paramsQ[i]->GetRootOfUnity();
+    }
+    for (uint32_t i = 0; i < sizeP; ++i) {
+        moduli[sizeQ + i] = paramsP[i]->GetModulus();
+        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
+    }
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
 
     auto g = GetBootPrecom(slots).m_paramsEnc.g;
 
@@ -2473,14 +2426,27 @@ std::vector<ReadOnlyPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     // make sure the plaintext is created only with the necessary amount of moduli
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-    const auto& elementParams = *(cryptoParams->GetElementParams());
-    const uint32_t sizeQ = elementParams.GetParams().size();
+    auto elementParams = *(cryptoParams->GetElementParams());
 
-    uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree);
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree);
+    for (uint32_t i = 0; i < towersToDrop; ++i)
+        elementParams.PopLastParam();
 
-    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(
-            elementParams, sizeQ - towersToDrop, *cryptoParams->GetParamsP(),
-            static_cast<uint32_t>(cryptoParams->GetParamsP()->GetParams().size()));
+    const auto& paramsQ = elementParams.GetParams();
+    uint32_t sizeQ = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    uint32_t sizeP = paramsP.size();
+    std::vector<NativeInteger> moduli(sizeQ + sizeP);
+    std::vector<NativeInteger> roots(sizeQ + sizeP);
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i] = paramsQ[i]->GetRootOfUnity();
+    }
+    for (uint32_t i = 0; i < sizeP; ++i) {
+        moduli[sizeQ + i] = paramsP[i]->GetModulus();
+        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
+    }
+    auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(cc.GetCyclotomicOrder(), moduli, roots);
 
     const int32_t slots = static_cast<int32_t>(A.size());
 
@@ -2556,22 +2522,38 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecomp
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
 
-    const auto& elementParams = *(cryptoParams->GetElementParams());
-    uint32_t sizeQ = elementParams.GetParams().size();
+    auto elementParams = *(cryptoParams->GetElementParams());
 
-    uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree * p.lvlb);
-    sizeQ -= towersToDrop;
+    uint32_t towersToDrop = LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
+    for (uint32_t i = 0; i < towersToDrop; ++i)
+        elementParams.PopLastParam();
 
     uint32_t level0 = towersToDrop + compositeDegree * (p.lvlb - 1);
 
-    const auto& paramsP = cryptoParams->GetParamsP();
-    uint32_t sizeP = paramsP->GetParams().size();
+    const auto& paramsQ = elementParams.GetParams();
+    uint32_t sizeQ = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    uint32_t sizeP = paramsP.size();
+    std::vector<NativeInteger> moduli(sizeQ + sizeP);
+    std::vector<NativeInteger> roots(sizeQ + sizeP);
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i] = paramsQ[i]->GetRootOfUnity();
+    }
+    for (uint32_t i = 0; i < sizeP; ++i) {
+        moduli[sizeQ + i] = paramsP[i]->GetModulus();
+        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
+    }
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
     uint32_t M = cc.GetCyclotomicOrder();
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(p.lvlb - stop);
-    for (int32_t s = p.lvlb - 1; s >= stop; --s, sizeQ -= compositeDegree)
-        paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(elementParams, sizeQ, *paramsP, sizeP);
+    for (int32_t s = p.lvlb - 1; s >= stop; --s) {
+        paramsVector[s - stop] = std::make_shared<ILDCRTParams<BigInteger>>(M, moduli, roots);
+        sizeQ -= compositeDegree;
+        moduli.erase(moduli.begin() + sizeQ, moduli.begin() + sizeQ + compositeDegree);
+        roots.erase(roots.begin() + sizeQ, roots.begin() + sizeQ + compositeDegree);
+    }
 
     // zero-based inner indices require shifting the pre-rotation by +offset*scale
     const int32_t offset = static_cast<int32_t>((p.numRotations + 1) / 2) - 1;
@@ -2710,20 +2692,38 @@ std::vector<std::vector<ReadOnlyPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecomp
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-    const auto& elementParams = *(cryptoParams->GetElementParams());
-    uint32_t sizeQ = elementParams.GetParams().size();
+    auto elementParams = *(cryptoParams->GetElementParams());
 
-    const uint32_t towersToDrop = LinearTransformTowersToDrop(sizeQ, L, compositeDegree * p.lvlb);
-    sizeQ -= towersToDrop;
+    const uint32_t towersToDrop =
+            LinearTransformTowersToDrop(elementParams.GetParams().size(), L, compositeDegree * p.lvlb);
+    for (uint32_t i = 0; i < towersToDrop; ++i)
+        elementParams.PopLastParam();
 
-    const auto& paramsP = cryptoParams->GetParamsP();
-    uint32_t sizeP = paramsP->GetParams().size();
+    const auto& paramsQ = elementParams.GetParams();
+    uint32_t sizeQ = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    uint32_t sizeP = paramsP.size();
+    std::vector<NativeInteger> moduli(sizeQ + sizeP);
+    std::vector<NativeInteger> roots(sizeQ + sizeP);
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        moduli[i] = paramsQ[i]->GetModulus();
+        roots[i] = paramsQ[i]->GetRootOfUnity();
+    }
+    for (uint32_t i = 0; i < sizeP; ++i) {
+        moduli[sizeQ + i] = paramsP[i]->GetModulus();
+        roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
+    }
 
     // we need to pre-compute the plaintexts in the extended basis P*Q
     const uint32_t pvlen = p.lvlb + 1 - flagRem;
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> paramsVector(pvlen);
-    for (uint32_t s = 0; s < pvlen; ++s, sizeQ -= compositeDegree)
-        paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(elementParams, sizeQ, *paramsP, sizeP);
+    for (uint32_t s = 0; s < pvlen; ++s) {
+        paramsVector[s] = std::make_shared<ILDCRTParams<BigInteger>>(cc.GetCyclotomicOrder(), moduli, roots);
+        for (uint32_t i = 0; i < compositeDegree; ++i, --sizeQ) {
+            moduli.erase(moduli.begin() + sizeQ - 1);
+            roots.erase(roots.begin() + sizeQ - 1);
+        }
+    }
 
     // zero-based inner indices require shifting the pre-rotation by +offset*shiftScale
     const int32_t offset = static_cast<int32_t>((p.numRotations + 1) / 2) - 1;
@@ -2879,118 +2879,21 @@ Ciphertext<DCRTPoly> EvalMultExtRotated(ConstCiphertext<DCRTPoly> ciphertext, Co
     return result;
 }
 
-// av += cv * pt tower by tower in the extended basis, in one parallel region over the elements and towers: one
-// thread per tower of every element while that leaves part of the team idle, otherwise one thread per tower
-void MultAccExtInPlace(std::vector<DCRTPoly>& av, const std::vector<DCRTPoly>& cv, const DCRTPoly& pt) {
-    const uint32_t sizeCv = cv.size();
-    const uint32_t numTowers = pt.GetNumOfElements();
-    const uint32_t numTasks = sizeCv * numTowers;
-    const uint32_t width =
-            (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : numTowers;
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
-    for (uint32_t task = 0; task < numTasks; ++task) {
-        const uint32_t k = task / numTowers;
-        const uint32_t i = task % numTowers;
-        av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pt.GetAllElements()[i]);
-    }
-}
-
 // Fused multiply-accumulate by a rotated plaintext: acc += ciphertext * Aut(plaintext), tower by tower,
 // as FHECKKSRNS::EvalMultExtAccInPlace
 void EvalMultExtRotatedAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
                                   ConstPlaintext plaintext, uint32_t autoIndex, const std::vector<uint32_t>& map) {
-    MultAccExtInPlace(acc->GetElements(), ciphertext->GetElements(),
-                      RotatedPlaintextElement(plaintext, autoIndex, map));
-}
-
-// The hoisted rotations of ct by each of indices in the extended basis, as LeveledSHECKKSRNS::EvalFastRotationExt
-// with addFirst (KeySwitchExt(ct, true) for an index of 0), in one parallel region over the rotations and towers
-std::vector<Ciphertext<DCRTPoly>> EvalFastRotationsExt(ConstCiphertext<DCRTPoly> ct,
-                                                       const std::vector<uint32_t>& indices,
-                                                       const std::shared_ptr<std::vector<DCRTPoly>>& digits) {
-    const auto cc = ct->GetCryptoContext();
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ct->GetCryptoParameters());
-    const auto& cv = ct->GetElements();
-    const auto& PModq = cryptoParams->GetPModq();
-    const auto paramsQlP = (*digits)[0].GetParams();
-    const uint32_t sizeQlP = paramsQlP->GetParams().size();
-    const uint32_t sizeQl = cv[0].GetNumOfElements();
-    const uint32_t sizeP = sizeQlP - sizeQl;
-    const uint32_t numDigits = digits->size();
-    const uint32_t numRotations = indices.size();
-    const uint32_t M = cc->GetCyclotomicOrder();
-    const uint32_t N = cc->GetRingDimension();
-
-    const auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ct->GetKeyTag());
-    std::vector<uint32_t> autoIndices(numRotations);
-    std::vector<EvalKey<DCRTPoly>> evalKeys(numRotations);
-    std::vector<uint32_t> deltas(numRotations);
-    std::vector<std::vector<uint32_t>> maps(numRotations);
-    for (uint32_t j = 0; j < numRotations; ++j) {
-        if (indices[j] == 0)
-            continue;
-        autoIndices[j] = FindAutomorphismIndex2nComplex(indices[j], M);
-        auto evalKeyIt = evalKeyMap.find(autoIndices[j]);
-        if (evalKeyIt == evalKeyMap.end())
-            OPENFHE_THROW("EvalKey for index [" + std::to_string(autoIndices[j]) + "] is not found.");
-        evalKeys[j] = evalKeyIt->second;
-        const uint32_t sizeKeyQ = evalKeys[j]->GetAVector()[0].GetNumOfElements() - sizeP;
-        if (sizeQl > sizeKeyQ)
-            OPENFHE_THROW("The ciphertext requires an evaluation key with at least " + std::to_string(sizeQl) +
-                          " RNS limbs in its Q basis, but the key has only " + std::to_string(sizeKeyQ) +
-                          "; use a key generated at a smaller level");
-        deltas[j] = sizeKeyQ - sizeQl;
-        maps[j].resize(N);
-        PrecomputeAutoMap(N, autoIndices[j], &maps[j]);
+    auto pt = RotatedPlaintextElement(plaintext, autoIndex, map);
+    auto& av = acc->GetElements();
+    const auto& cv = ciphertext->GetElements();
+    const uint32_t sizeCv = cv.size();
+    const uint32_t numTowers = pt.GetNumOfElements();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTowers))
+    for (uint32_t i = 0; i < numTowers; ++i) {
+        const auto& pti = pt.GetAllElements()[i];
+        for (uint32_t k = 0; k < sizeCv; ++k)
+            av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pti);
     }
-
-    std::vector<std::vector<DCRTPoly>> elements(numRotations);
-    for (auto& e : elements) {
-        e.reserve(2);
-        e.emplace_back(paramsQlP, Format::EVALUATION, false);
-        e.emplace_back(paramsQlP, Format::EVALUATION, false);
-    }
-
-    const uint32_t numTasks = numRotations * sizeQlP;
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTasks))
-    for (uint32_t task = 0; task < numTasks; ++task) {
-        const uint32_t j = task / sizeQlP;
-        const uint32_t i = task % sizeQlP;
-        auto& r0 = elements[j][0].GetAllElements()[i];
-        auto& r1 = elements[j][1].GetAllElements()[i];
-        const auto& towerParams = paramsQlP->GetParams()[i];
-        if (indices[j] == 0) {
-            if (i < sizeQl) {
-                r0 = cv[0].GetElementAtIndex(i).Times(PModq[i]);
-                r1 = cv[1].GetElementAtIndex(i).Times(PModq[i]);
-            } else {
-                r0 = DCRTPoly::PolyType(towerParams, Format::EVALUATION, true);
-                r1 = DCRTPoly::PolyType(towerParams, Format::EVALUATION, true);
-            }
-            continue;
-        }
-        const auto& av = evalKeys[j]->GetAVector();
-        const auto& bv = evalKeys[j]->GetBVector();
-        const uint32_t idx = (i >= sizeQl) ? i + deltas[j] : i;
-        DCRTPoly::PolyType t0(towerParams, Format::EVALUATION, true);
-        DCRTPoly::PolyType t1(towerParams, Format::EVALUATION, true);
-        for (uint32_t d = 0; d < numDigits; ++d) {
-            const auto& cdi = (*digits)[d].GetElementAtIndex(i);
-            t0.MultAccEqNoCheck(cdi, bv[d].GetElementAtIndex(idx));
-            t1.MultAccEqNoCheck(cdi, av[d].GetElementAtIndex(idx));
-        }
-        if (i < sizeQl)
-            t0 += cv[0].GetElementAtIndex(i).Times(PModq[i]);
-        r0 = t0.AutomorphismTransform(autoIndices[j], maps[j]);
-        r1 = t1.AutomorphismTransform(autoIndices[j], maps[j]);
-    }
-
-    std::vector<Ciphertext<DCRTPoly>> result(numRotations);
-    for (uint32_t j = 0; j < numRotations; ++j) {
-        result[j] = ct->CloneEmpty();
-        result[j]->SetElements(std::move(elements[j]));
-    }
-    return result;
 }
 
 // The automorphism (index and coefficient permutation) of the rotation of the plaintexts by -slots used by the
@@ -3016,10 +2919,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyP
     auto cc = ct->GetCryptoContext();
     auto digits = cc->EvalFastRotationPrecompute(ct);
 
-    std::vector<uint32_t> indices(bStep);
-    std::iota(indices.begin(), indices.end(), 0);
-    auto fastRotation = EvalFastRotationsExt(ct, indices, digits);
-    const auto& ctExt = fastRotation[0];
+    std::vector<Ciphertext<DCRTPoly>> fastRotation(bStep - 1);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(bStep - 1))
+    for (int32_t j = 1; j < bStep; ++j)
+        fastRotation[j - 1] = cc->EvalFastRotationExt(ct, j, digits, true);
+
+    auto ctExt = cc->KeySwitchExt(ct, true);
 
     uint32_t autoIndex = 0;
     std::vector<uint32_t> map;
@@ -3049,14 +2954,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ReadOnlyP
         Ciphertext<DCRTPoly> outer = mult(ctExt, A[Gtop], shifted);
         for (int32_t i = 1; i < bStep; ++i)
             if (Gtop + i < slots)
-                multAcc(outer, fastRotation[i], A[Gtop + i], shifted);
+                multAcc(outer, fastRotation[i - 1], A[Gtop + i], shifted);
 
         for (int32_t j = gStep - 2; j >= 0; --j) {
             outer = EvalHornerGiantRotate(outer, autoIndex, map, giantKey);
             const int32_t G = j * bStep;
             multAcc(outer, ctExt, A[G], shifted);
             for (int32_t i = 1; i < bStep; ++i)
-                multAcc(outer, fastRotation[i], A[G + i], shifted);
+                multAcc(outer, fastRotation[i - 1], A[G + i], shifted);
         }
         return outer;
     };
@@ -3111,10 +3016,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
         const int32_t scale = 1 << ((s - flagRem) * p.layersCollapse + p.remCollapse);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<uint32_t> indices(p.g);
-        for (uint32_t j = 0; j < p.g; ++j)
-            indices[j] = ReduceRotation(scale * j, reduceMod);
-        auto fastRotation = EvalFastRotationsExt(result, indices, digits);
+        std::vector<Ciphertext<DCRTPoly>> fastRotation(p.g);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.g))
+        for (uint32_t j = 0; j < p.g; ++j) {
+            const uint32_t index = ReduceRotation(scale * j, reduceMod);
+            fastRotation[j] =
+                    (j != 0) ? cc->EvalFastRotationExt(result, index, digits, true) : cc->KeySwitchExt(result, true);
+        }
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3173,10 +3081,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
             algo->ModReduceInternalInPlace(result, compositeDegree);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<uint32_t> indices(p.gRem);
+        std::vector<Ciphertext<DCRTPoly>> fastRotationRem(p.gRem);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
         for (uint32_t j = 0; j < p.gRem; ++j)
-            indices[j] = ReduceRotation(j, reduceMod);
-        auto fastRotationRem = EvalFastRotationsExt(result, indices, digits);
+            fastRotationRem[j] = (j != 0) ?
+                                         cc->EvalFastRotationExt(result, ReduceRotation(j, reduceMod), digits, true) :
+                                         cc->KeySwitchExt(result, true);
 
         // Remainder scale is 1 in CtS; Horner giant stride = gRem
         const int32_t tRem = ReduceRotation(p.gRem, reduceMod);
@@ -3243,10 +3153,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         const int32_t scale = 1 << (s * p.layersCollapse);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<uint32_t> indices(p.g);
+        std::vector<Ciphertext<DCRTPoly>> fastRotation(p.g);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.g))
         for (uint32_t j = 0; j < p.g; ++j)
-            indices[j] = ReduceRotation(scale * j, reduceMod);
-        auto fastRotation = EvalFastRotationsExt(result, indices, digits);
+            fastRotation[j] =
+                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scale * j, reduceMod), digits, true) :
+                               cc->KeySwitchExt(result, true);
 
         // Horner backward accumulation with single giant stride t = g * scale
         const int32_t t = ReduceRotation(scale * p.g, reduceMod);
@@ -3290,10 +3202,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
         const int32_t scaleRem = 1 << (smax * p.layersCollapse);
 
         auto digits = cc->EvalFastRotationPrecompute(result);
-        std::vector<uint32_t> indices(p.gRem);
+        std::vector<Ciphertext<DCRTPoly>> fastRotationRem(p.gRem);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(p.gRem))
         for (uint32_t j = 0; j < p.gRem; ++j)
-            indices[j] = ReduceRotation(scaleRem * j, reduceMod);
-        auto fastRotationRem = EvalFastRotationsExt(result, indices, digits);
+            fastRotationRem[j] =
+                    (j != 0) ? cc->EvalFastRotationExt(result, ReduceRotation(scaleRem * j, reduceMod), digits, true) :
+                               cc->KeySwitchExt(result, true);
 
         // Horner giant stride for remainder: g_rem * scale_rem
         const int32_t tRem = ReduceRotation(scaleRem * p.gRem, reduceMod);
@@ -3821,7 +3735,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
 
 void FHECKKSRNS::EvalMultExtAccInPlace(Ciphertext<DCRTPoly>& acc, ConstCiphertext<DCRTPoly> ciphertext,
                                        ConstPlaintext plaintext) {
-    MultAccExtInPlace(acc->GetElements(), ciphertext->GetElements(), plaintext->GetElement<DCRTPoly>());
+    const auto& pt = plaintext->GetElement<DCRTPoly>();
+    auto& av = acc->GetElements();
+    const auto& cv = ciphertext->GetElements();
+    const uint32_t sizeCv = cv.size();
+    const uint32_t numTowers = pt.GetNumOfElements();
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTowers))
+    for (uint32_t i = 0; i < numTowers; ++i) {
+        const auto& pti = pt.GetAllElements()[i];
+        for (uint32_t k = 0; k < sizeCv; ++k)
+            av[k].GetAllElements()[i].MultAccEqNoCheck(cv[k].GetAllElements()[i], pti);
+    }
 }
 
 void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) {
@@ -3839,7 +3763,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext
     return result;
 }
 
-EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t levels) {
+EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) {
     uint32_t N = privateKey->GetPrivateElement().GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, 2 * N - 1, &vec);
@@ -3847,7 +3771,7 @@ EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(const PrivateKey<DCRTPoly> private
     auto pkPermuted = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
     pkPermuted->SetPrivateElement(privateKey->GetPrivateElement().AutomorphismTransform(2 * N - 1, vec));
     pkPermuted->SetKeyTag(privateKey->GetKeyTag());
-    return cc->GetScheme()->KeySwitchGen(privateKey, pkPermuted, levels);
+    return cc->GetScheme()->KeySwitchGen(privateKey, pkPermuted);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
@@ -4084,8 +4008,6 @@ void FHECKKSRNS::EvalFBTSetupInternal(const CryptoContextImpl<DCRTPoly>& cc, con
     // each level consists of compositeDegree towers; CoeffsToSlots starts right after the modulus raise
     uint32_t lEnc = L0 - compositeDegree * levelBudget[0];
     uint32_t lDec = L0 - compositeDegree * depthBT;
-    // the towers of the ciphertext entering SlotsToCoeffs, for the level of its rotation keys
-    precom->m_towersStC = lDec + compositeDegree * levelBudget[1];
 
     bool isLTBootstrap = (levelBudget[0] == 1) && (levelBudget[1] == 1);
     if (isLTBootstrap) {

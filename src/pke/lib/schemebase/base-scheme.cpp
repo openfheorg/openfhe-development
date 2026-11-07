@@ -62,18 +62,17 @@ Ciphertext<Element> SchemeBase<Element>::ReEncrypt(ConstCiphertext<Element>& cip
 }
 
 template <typename Element>
-EvalKey<Element> SchemeBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey, uint32_t levels) const {
+EvalKey<Element> SchemeBase<Element>::EvalMultKeyGen(const PrivateKey<Element> privateKey) const {
     VerifyLeveledSHEEnabled(__func__);
-    auto evalKey = m_LeveledSHE->EvalMultKeyGen(privateKey, levels);
+    auto evalKey = m_LeveledSHE->EvalMultKeyGen(privateKey);
     evalKey->SetKeyTag(privateKey->GetKeyTag());
     return evalKey;
 }
 
 template <typename Element>
-std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey,
-                                                                   uint32_t levels) const {
+std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const PrivateKey<Element> privateKey) const {
     VerifyLeveledSHEEnabled(__func__);
-    auto evalKeyVec = m_LeveledSHE->EvalMultKeysGen(privateKey, levels);
+    auto evalKeyVec = m_LeveledSHE->EvalMultKeysGen(privateKey);
     for (auto& evalKey : evalKeyVec)
         evalKey->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyVec;
@@ -81,9 +80,9 @@ std::vector<EvalKey<Element>> SchemeBase<Element>::EvalMultKeysGen(const Private
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAtIndexKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList, uint32_t levels) const {
+        const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
-    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList, levels);
+    auto evalKeyMap = m_LeveledSHE->EvalAtIndexKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -109,9 +108,9 @@ Ciphertext<Element> SchemeBase<Element>::ModReduce(ConstCiphertext<Element>& cip
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t levels) const {
+        const PrivateKey<Element> privateKey) const {
     VerifyAdvancedSHEEnabled(__func__);
-    auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey, levels);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumKeyGen(privateKey);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -119,10 +118,10 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumRowsKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim, std::vector<uint32_t>& indices,
-        uint32_t levels) const {
+        const PrivateKey<Element> privateKey, uint32_t rowSize, uint32_t subringDim,
+        std::vector<uint32_t>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
-    auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices, levels);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumRowsKeyGen(privateKey, rowSize, subringDim, indices);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -130,9 +129,9 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalS
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalSumColsKeyGen(
-        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices, uint32_t levels) const {
+        const PrivateKey<Element> privateKey, std::vector<uint32_t>& indices) const {
     VerifyAdvancedSHEEnabled(__func__);
-    auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, indices, levels);
+    auto evalKeyMap = m_AdvancedSHE->EvalSumColsKeyGen(privateKey, indices);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
@@ -323,19 +322,9 @@ EvalKey<Element> SchemeBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> eval
 
 template <typename Element>
 std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGen(
-        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList, uint32_t levels) const {
+        const PrivateKey<Element> privateKey, const std::vector<uint32_t>& indexList) const {
     VerifyLeveledSHEEnabled(__func__);
-    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList, levels);
-    for (auto& key : *evalKeyMap)
-        key.second->SetKeyTag(privateKey->GetKeyTag());
-    return evalKeyMap;
-}
-
-template <typename Element>
-std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> SchemeBase<Element>::EvalAutomorphismKeyGenAtLevels(
-        const PrivateKey<Element> privateKey, const std::map<uint32_t, uint32_t>& levelsByIndex) const {
-    VerifyLeveledSHEEnabled(__func__);
-    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGenAtLevels(privateKey, levelsByIndex);
+    auto evalKeyMap = m_LeveledSHE->EvalAutomorphismKeyGen(privateKey, indexList);
     for (auto& key : *evalKeyMap)
         key.second->SetKeyTag(privateKey->GetKeyTag());
     return evalKeyMap;
