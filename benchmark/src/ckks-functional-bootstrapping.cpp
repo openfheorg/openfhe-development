@@ -79,13 +79,14 @@ using fbt_table = std::map<std::pair<uint32_t, ScalingTechnique>, fbt_config>;
 [[maybe_unused]] const BigInteger Q12(BigInteger(1) << 12);
 [[maybe_unused]] const BigInteger Q14(BigInteger(1) << 14);
 [[maybe_unused]] const BigInteger Q16(BigInteger(1) << 16);
+[[maybe_unused]] const BigInteger Q26(BigInteger(1) << 26);
 [[maybe_unused]] const BigInteger Q27(BigInteger(1) << 27);
 [[maybe_unused]] const BigInteger Q31(BigInteger(1) << 31);
 [[maybe_unused]] const BigInteger Q32(BigInteger(1) << 32);
 [[maybe_unused]] const BigInteger Q33(BigInteger(1) << 33);
 [[maybe_unused]] const BigInteger Q34(BigInteger(1) << 34);
 [[maybe_unused]] const BigInteger Q35(BigInteger(1) << 35);
-[[maybe_unused]] const BigInteger Q38(BigInteger(1) << 38);
+[[maybe_unused]] const BigInteger Q37(BigInteger(1) << 37);
 [[maybe_unused]] const BigInteger Q39(BigInteger(1) << 39);
 [[maybe_unused]] const BigInteger Q44(BigInteger(1) << 44);
 [[maybe_unused]] const BigInteger Q46(BigInteger(1) << 46);
@@ -94,7 +95,9 @@ using fbt_table = std::map<std::pair<uint32_t, ScalingTechnique>, fbt_config>;
 [[maybe_unused]] const BigInteger Q51(BigInteger(1) << 51);
 [[maybe_unused]] const BigInteger Q52(BigInteger(1) << 52);
 [[maybe_unused]] const BigInteger Q53(BigInteger(1) << 53);
-[[maybe_unused]] const BigInteger Q56(BigInteger(1) << 56);
+[[maybe_unused]] const BigInteger Q54(BigInteger(1) << 54);
+[[maybe_unused]] const BigInteger Q55(BigInteger(1) << 55);
+[[maybe_unused]] const BigInteger Q57(BigInteger(1) << 57);
 [[maybe_unused]] const BigInteger Q60(BigInteger(1) << 60);
 [[maybe_unused]] const BigInteger Q71(BigInteger(1) << 71);
 [[maybe_unused]] const BigInteger Q80(BigInteger(1) << 80);
@@ -113,12 +116,16 @@ SecurityLevel SecurityLevelFor(SecretKeyDist skd) {
 // Keyed by (log p, scaling technique). All rows use HYBRID_TERNARY secrets under HEORG24_128 (the security table of
 // the 2024 guidelines: 868 / 1747 / 3523 bits of log(Q'_L P') at N = 2^15 / 2^16 / 2^17; the library checks the
 // bound at context generation and a non-compliant row is skipped). The order-1 rows (1 to 12 bits for both
-// techniques, 14 and 16 bits for FLEXIBLEAUTO) use, among the level budgets and dnum values at the ring dimension,
+// techniques, 14 and 16 bits for FLEXIBLEAUTO) use, among the ring dimensions, level budgets and dnum values,
 // the configuration with the fastest FBT at 36 threads among those that keep the FBT output error below Q/(2p)
 // with probability 2^-40 per ciphertext (measured over all N coefficients on inputs covering every residue of p),
 // at the smallest scaling factor (Q) that passes there with at least half a bit of margin. Against the
 // SPARSE_ENCAPSULATED rows this benchmark used before, the FLEXIBLEAUTO rows need 3 to 4 more bits of Q for the
 // rescaling noise of the dense secret, while the FIXEDMANUAL rows pass at the same Q.
+// Six rows sit at the smallest ring dimension that meets the bound: there the digit count is the one that keeps
+// every digit within one or two auxiliary primes (two or three towers per digit), since the auxiliary modulus is
+// what decides whether log(Q'_L P') fits, and Q is one bit smaller than at the next ring (halving N buys about a
+// bit of margin).
 // The 14- and 16-bit rows rely on the degree-66 exp approximation that SPARSE_ENCAPSULATED and HYBRID_TERNARY use
 // above 12 bits.
 // No FIXEDMANUAL configuration meets the criterion at 14 or 16 bits within the 59-bit limit on scaling primes.
@@ -127,45 +134,46 @@ SecurityLevel SecurityLevelFor(SecretKeyDist skd) {
     // {log p, scalTech}, {skd, scalTech, QBFVInit, PInput, POutput, Q, Bigq, scaleTHI, scaleStepTHI, order,
     //                     numSlots, ringDim, dnum, lvlBudget}
     {{1, FM},  {HT, FM, Q60,  Q1,  Q1, Q34, Q34,    1.0,  1.0, 1, 1 << 15, 1 << 15, 4, {5, 3}}},
-    {{1, FA},  {HT, FA, Q60,  Q1,  Q1, Q27, Q27,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{1, FA},  {HT, FA, Q60,  Q1,  Q1, Q26, Q26,    1.0,  1.0, 1, 1 << 14, 1 << 14, 7, {3, 2}}},
     {{2, FM},  {HT, FM, Q60,  Q2,  Q2, Q33, Q33,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {4, 3}}},
     {{2, FA},  {HT, FA, Q60,  Q2,  Q2, Q27, Q27,   16.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
-    {{4, FM},  {HT, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
+    {{4, FM},  {HT, FM, Q60,  Q4,  Q4, Q37, Q37,   32.0,  1.0, 1, 1 << 15, 1 << 15, 7, {3, 3}}},
     {{4, FA},  {HT, FA, Q60,  Q4,  Q4, Q31, Q31,   32.0,  1.0, 1, 1 << 15, 1 << 15, 3, {3, 3}}},
     {{6, FM},  {HT, FM, Q60,  Q6,  Q6, Q44, Q44,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
-    {{6, FA},  {HT, FA, Q60,  Q6,  Q6, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 4}}},
+    {{6, FA},  {HT, FA, Q60,  Q6,  Q6, Q35, Q35,   32.0,  1.0, 1, 1 << 15, 1 << 15, 7, {3, 2}}},
     {{8, FM},  {HT, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 4, {5, 3}}},
     {{8, FA},  {HT, FA, Q60,  Q8,  Q8, Q39, Q39,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 3}}},
-    {{10, FM}, {HT, FM, Q60, Q10, Q10, Q52, Q52,  256.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{10, FM}, {HT, FM, Q60, Q10, Q10, Q51, Q51,  256.0,  1.0, 1, 1 << 16, 1 << 16, 5, {4, 3}}},
     {{10, FA}, {HT, FA, Q60, Q10, Q10, Q44, Q44,  256.0,  1.0, 1, 1 << 16, 1 << 16, 3, {5, 3}}},
-    {{12, FM}, {HT, FM, Q80, Q12, Q12, Q56, Q56, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 3, {4, 3}}},
+    {{12, FM}, {HT, FM, Q80, Q12, Q12, Q54, Q54, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 7, {3, 2}}},
     {{12, FA}, {HT, FA, Q60, Q12, Q12, Q48, Q48, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
-    {{14, FA}, {HT, FA, Q60, Q14, Q14, Q53, Q53, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 3, {5, 2}}},
-    {{16, FA}, {HT, FA, Q80, Q16, Q16, Q56, Q56, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 2, {5, 2}}},
+    {{14, FA}, {HT, FA, Q60, Q14, Q14, Q52, Q52, 4096.0,  1.0, 1, 1 << 16, 1 << 16, 10, {3, 2}}},
+    {{16, FA}, {HT, FA, Q80, Q16, Q16, Q57, Q57, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 2, {5, 2}}},
     {{32, FM}, {HT, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
 };
 
 // GPU-leaning rows, one per row above: the configuration with the fewest key-switching digits (fewer kernel launches
-// per key switch and smaller keys on a GPU) among those within 25% of the row's time that meet the same criterion,
-// or the row itself where there is none. Registered as FBTArbLUT-GPU/FM and FBTArbLUT-GPU/FA so that
-// --benchmark_filter selects either table.
+// per key switch and smaller keys on a GPU) among those with at most 8 digits within 25% of the row's time that
+// meet the same criterion, or the row itself where there is none; where the row has more than 8 digits (the
+// 14-bit row), the fastest configuration with at most 8 digits. Registered as FBTArbLUT-GPU/FM and FBTArbLUT-GPU/FA
+// so that --benchmark_filter selects either table.
 [[maybe_unused]] const fbt_table arblut_configs_gpu = {
     {{1, FM},  {HT, FM, Q60,  Q1,  Q1, Q34, Q34,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {3, 3}}},
-    {{1, FA},  {HT, FA, Q60,  Q1,  Q1, Q27, Q27,    1.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
+    {{1, FA},  {HT, FA, Q60,  Q1,  Q1, Q26, Q26,    1.0,  1.0, 1, 1 << 14, 1 << 14, 7, {3, 2}}},
     {{2, FM},  {HT, FM, Q60,  Q2,  Q2, Q33, Q33,   16.0,  1.0, 1, 1 << 15, 1 << 15, 3, {4, 3}}},
     {{2, FA},  {HT, FA, Q60,  Q2,  Q2, Q27, Q27,   16.0,  1.0, 1, 1 << 15, 1 << 15, 2, {4, 3}}},
-    {{4, FM},  {HT, FM, Q60,  Q4,  Q4, Q38, Q38,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
+    {{4, FM},  {HT, FM, Q60,  Q4,  Q4, Q37, Q37,   32.0,  1.0, 1, 1 << 15, 1 << 15, 7, {3, 3}}},
     {{4, FA},  {HT, FA, Q60,  Q4,  Q4, Q31, Q31,   32.0,  1.0, 1, 1 << 15, 1 << 15, 3, {3, 3}}},
     {{6, FM},  {HT, FM, Q60,  Q6,  Q6, Q44, Q44,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 3}}},
-    {{6, FA},  {HT, FA, Q60,  Q6,  Q6, Q35, Q35,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {5, 4}}},
+    {{6, FA},  {HT, FA, Q60,  Q6,  Q6, Q35, Q35,   32.0,  1.0, 1, 1 << 15, 1 << 15, 7, {3, 2}}},
     {{8, FM},  {HT, FM, Q60,  Q8,  Q8, Q46, Q46,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {3, 3}}},
     {{8, FA},  {HT, FA, Q60,  Q8,  Q8, Q39, Q39,   32.0,  1.0, 1, 1 << 16, 1 << 16, 2, {4, 3}}},
-    {{10, FM}, {HT, FM, Q60, Q10, Q10, Q52, Q52,  256.0,  1.0, 1, 1 << 17, 1 << 17, 2, {5, 3}}},
+    {{10, FM}, {HT, FM, Q60, Q10, Q10, Q51, Q51,  256.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
     {{10, FA}, {HT, FA, Q60, Q10, Q10, Q44, Q44,  256.0,  1.0, 1, 1 << 16, 1 << 16, 3, {5, 3}}},
-    {{12, FM}, {HT, FM, Q80, Q12, Q12, Q56, Q56, 2000.0,  1.0, 1, 1 << 17, 1 << 17, 2, {5, 3}}},
+    {{12, FM}, {HT, FM, Q80, Q12, Q12, Q55, Q55, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 6, {2, 2}}},
     {{12, FA}, {HT, FA, Q60, Q12, Q12, Q48, Q48, 2000.0,  1.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}},
     {{14, FA}, {HT, FA, Q60, Q14, Q14, Q53, Q53, 4096.0,  1.0, 1, 1 << 17, 1 << 17, 2, {5, 3}}},
-    {{16, FA}, {HT, FA, Q80, Q16, Q16, Q56, Q56, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 2, {5, 2}}},
+    {{16, FA}, {HT, FA, Q80, Q16, Q16, Q57, Q57, 16384.0, 1.0, 1, 1 << 17, 1 << 17, 2, {5, 2}}},
     {{32, FM}, {HT, FM, Q80, Q32,  Q4, Q71, Q47,  256.0, 16.0, 1, 1 << 16, 1 << 16, 4, {3, 3}}}
 };
 // clang-format on
