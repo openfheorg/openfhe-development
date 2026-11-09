@@ -4565,6 +4565,25 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                                                                               uint32_t index,
                                                                               const std::string& shareType) const;
 /// @endcond
+
+/**
+ * @brief Rescales a CKKS ciphertext to noise scaling degree 1 before decryption when decryption
+ * noise flooding is active.
+ *
+ * The flooding distribution in NOISE_FLOODING_DECRYPT mode is calibrated for a ciphertext that is
+ * decoded by dividing by a single scaling factor. A ciphertext with a pending rescale (noise
+ * scaling degree > 1) is decoded by dividing by the squared scaling factor, which shrinks the
+ * added flooding noise by another factor of the scaling factor and leaves the decryption
+ * effectively unflooded. Rescaling to noise scaling degree 1 before the flooding noise is added
+ * restores the calibrated flooding magnitude.
+ *
+ * Returns the input ciphertext unchanged unless it is a CKKS ciphertext with noise scaling
+ * degree > 1 in NOISE_FLOODING_DECRYPT/EXEC_EVALUATION mode; in that case, returns a rescaled copy.
+ *
+ * @param ciphertext ciphertext to be decrypted.
+ * @return the ciphertext to decrypt and to take the decoding metadata from.
+ */
+ConstCiphertext<DCRTPoly> NormalizeCiphertextForFloodingDecrypt(ConstCiphertext<DCRTPoly> ciphertext);
 }  // namespace lbcrypto
 
 #endif  // SRC_PKE_INCLUDE_CRYPTOCONTEXT_H_

@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
 #include <complex>
 #include <cstdint>
 #include <iostream>
@@ -45,7 +46,7 @@
 using namespace lbcrypto;
 
 //===========================================================================================================
-enum TEST_CASE_TYPE : int { NOISE_ESTIMATION, FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING };
+enum TEST_CASE_TYPE : int { NOISE_ESTIMATION, FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING, FLOODING_VARIANCE };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
@@ -58,6 +59,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case MULTIPARTY_NOISE_FLOODING:
             typeName = "MULTIPARTY_NOISE_FLOODING";
+            break;
+        case FLOODING_VARIANCE:
+            typeName = "FLOODING_VARIANCE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -142,6 +146,13 @@ static std::vector<TEST_CASE_UTCKKSRNS_NOISE_FLOODING> testCases = {
     { MULTIPARTY_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE_FLEX_AUTO_EXT}},
     { MULTIPARTY_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE_FLEX_AUTO_EXT}},
 
+#endif
+    // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode,    ExecutionMode,
+    { FLOODING_VARIANCE,    "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FLOODING_VARIANCE,    "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+#if NATIVEINT != 128
+    { FLOODING_VARIANCE,    "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FLOODING_VARIANCE,    "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE_FLEX_AUTO_EXT}},
 #endif
 };
 // clang-format on
@@ -259,6 +270,68 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
         checkEquality(result->GetCKKSPackedValue(), expectedResult, eps, failmsg + " Noise flooding computation fails");
     }
 
+    void UnitTest_FloodingVariance(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
+                                   const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
+            cc->Enable(PKE);
+            cc->Enable(LEVELEDSHE);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            // a circuit whose output carries a pending rescale (noise scaling degree 2) under every
+            // scaling technique; the flooding noise of such an output is suppressed during decoding
+            // unless the ciphertext is rescaled before the noise is added
+            std::vector<double> vec1 = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+            std::vector<double> vec2 = {1, 1, 0, 0, 1, 0, 0, 1};
+            Ciphertext<DCRTPoly> ciph1 = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(vec1));
+            Ciphertext<DCRTPoly> ciph2 = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(vec2));
+            Ciphertext<DCRTPoly> ciphMult = cc->EvalMult(ciph1, ciph2);
+            cc->ModReduceInPlace(ciphMult);  // rescales under FIXEDMANUAL only
+            Ciphertext<DCRTPoly> ciphertext = cc->EvalMult(ciphMult, ciph1);
+            EXPECT_EQ(ciphertext->GetNoiseScaleDeg(), 2u) << failmsg + " ciphertext does not carry a pending rescale";
+
+            // sample mean and standard deviation of slot 0 over repeated decryptions of the same ciphertext
+            const size_t reps = 100;
+            std::vector<double> samples;
+            samples.reserve(reps);
+            for (size_t i = 0; i < reps; ++i) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+                result->SetLength(vec1.size());
+                samples.push_back(result->GetCKKSPackedValue()[0].real());
+            }
+            double mean = 0;
+            for (double s : samples)
+                mean += s;
+            mean /= reps;
+            double var = 0;
+            for (double s : samples)
+                var += (s - mean) * (s - mean);
+            double stddev = std::sqrt(var / (reps - 1));
+
+            // predicted deviation of a decrypted slot: the flooding noise of floodingStd per coefficient
+            // spreads over the ring dimension in the slot domain and is divided by one scaling factor
+            // during decoding (the flooding-off deviation is several orders of magnitude below this)
+            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+            double floodingStd = cryptoParams->GetFloodingDistributionParameter();
+            double scalingFactor = std::pow(2.0, static_cast<double>(cc->GetEncodingParams()->GetPlaintextModulus()));
+            double expectedStd = floodingStd * std::sqrt(static_cast<double>(cc->GetRingDimension())) / scalingFactor;
+
+            EXPECT_GT(stddev, expectedStd / 8) << failmsg + " flooding noise is missing from repeated decryptions";
+            EXPECT_LT(stddev, expectedStd * 8) << failmsg + " flooding noise is much larger than calibrated";
+            // slot 0 of the computation is 0.1 * 1 * 0.1; the flooding noise must not destroy accuracy
+            EXPECT_NEAR(mean, 0.01, 0.0001) << failmsg + " decrypted value is inaccurate";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_MultipartyNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
                                           const std::string& failmsg = std::string()) {
         CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
@@ -301,6 +374,9 @@ TEST_P(UTCKKSRNS_NOISE_FLOODING, CKKSRNS) {
             break;
         case MULTIPARTY_NOISE_FLOODING:
             UnitTest_MultipartyNoiseFlooding(test, test.buildTestName());
+            break;
+        case FLOODING_VARIANCE:
+            UnitTest_FloodingVariance(test, test.buildTestName());
             break;
         default:
             break;

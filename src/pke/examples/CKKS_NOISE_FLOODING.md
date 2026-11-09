@@ -69,4 +69,17 @@ in OpenFHE.
 For leveled computations, the code allows for the user to run the
 static estimation using 64-bit CKKS and the actual computation in 128-bit CKKS.
 
+# Ciphertexts with a Pending Rescale
+The flooding noise $z$ is added to the ciphertext polynomial before decoding, and
+its standard deviation $\sigma$ is calibrated for a ciphertext that is decoded by
+dividing by a single scaling factor $\Delta$. A ciphertext that carries a pending
+rescale (noise scaling degree 2), such as the direct output of a multiplication,
+is decoded by dividing by $\Delta^2$, which would shrink the flooding noise by
+another factor of $\Delta$ and leave the decryption effectively unflooded. For this
+reason, decryption in $\mathsf{NOISE}\textunderscore\mathsf{FLOODING}\textunderscore\mathsf{DECRYPT}$
+mode internally rescales such a ciphertext to noise scaling degree 1 before the
+flooding noise is added. This consumes one level (one RNS limb, or several for
+composite scaling), so a computation whose result still carries a pending rescale
+must leave at least one level available for decryption.
+
 [^1]:The formula for $\sigma$ in Corollary 2 of [the state of the art in noise flooding security](https://link.springer.com/chapter/10.1007/978-3-031-15802-5_20) has an incorrect $\sqrt{2n}$ factor since the indistinguishablility game is played over the coefficient embedding.
