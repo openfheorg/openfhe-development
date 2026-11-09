@@ -195,6 +195,11 @@ uint32_t FindLevelsToDrop(uint32_t multiplicativeDepth, std::shared_ptr<CryptoPa
     return levels;
 };
 
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext,
+                                                ConstPlaintext& plaintext) const {
+    return EvalMultCore(ciphertext, plaintext->GetElement<DCRTPoly>());
+}
+
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
                                                 ConstCiphertext<DCRTPoly>& ciphertext2) const {
     if (ciphertext1->GetCryptoParameters() != ciphertext2->GetCryptoParameters())

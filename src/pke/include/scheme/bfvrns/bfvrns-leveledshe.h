@@ -80,6 +80,15 @@ class LeveledSHEBFVRNS : public LeveledSHERNS {
     using LeveledSHERNS::EvalMult;
     using LeveledSHERNS::EvalMultInPlace;
 
+    /**
+     * Multiplies a ciphertext by a plaintext.
+     *
+     * @param ciphertext the input ciphertext.
+     * @param plaintext the input plaintext.
+     * @return the new ciphertext.
+     */
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const override;
+
     using LeveledSHERNS::EvalSquare;
     using LeveledSHERNS::EvalSquareInPlace;
 

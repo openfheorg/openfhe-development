@@ -759,8 +759,14 @@ void LeveledSHEBase<Element>::EvalSubCoreInPlace(Ciphertext<Element>& ciphertext
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Element>& ciphertext,
                                                           const Element& pt) const {
-    auto result = ciphertext->Clone();
-    EvalMultCoreInPlace(result, pt);
+    VerifyNumOfTowers(ciphertext, pt);
+    const auto& cv = ciphertext->GetElements();
+    std::vector<Element> cvMult;
+    cvMult.reserve(cv.size());
+    for (const auto& c : cv)
+        cvMult.push_back(c * pt);
+    auto result = ciphertext->CloneEmpty();
+    result->SetElements(std::move(cvMult));
     return result;
 }
 

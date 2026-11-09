@@ -447,10 +447,9 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
             OPENFHE_THROW("Modulus mismatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
             OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
-        auto tmp(*this);
-        tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
-        return tmp;
+        return TimesNoCheck(rhs);
     }
+
     /**
      * @brief Multiplies by rhs entry-wise (EVALUATION format) without checking the parameters.
      *
@@ -458,10 +457,11 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
      * @return the result of the multiplication.
      */
     PolyImpl TimesNoCheck(const PolyImpl& rhs) const {
-        auto tmp(*this);
-        tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
+        PolyImpl tmp(m_params, m_format);
+        tmp.m_values = std::make_unique<VecType>(m_values->ModMul(*rhs.m_values));
         return tmp;
     }
+
     /**
      * @brief Multiplies by rhs entry-wise (EVALUATION format) in place without checking the parameters.
      *
