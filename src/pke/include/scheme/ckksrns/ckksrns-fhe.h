@@ -882,10 +882,19 @@ class FHECKKSRNS : public FHERNS {
                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
                                 SecretKeyDist skd, uint32_t firstModSize = 60);
 
+    // Largest first modulus, in bits, for which FE functional bootstrapping with the Hamming-weight-32 sparse secrets
+    // (SPARSE_ENCAPSULATED and HYBRID_TERNARY) uses the degree-27 exponential series with three double-angle
+    // iterations instead of the degree-23 series with four: same Paterson-Stockmeyer depth, one level saved. The wider
+    // series' truncation error after the squarings (about 2^-21) is far below the noise floor of these scaling factors
+    // (the first modulus is the scaling factor plus one bit) but too coarse for larger ones. See FEFBTExpCoefficients.
+    static constexpr uint32_t FEFBT_LOW_PRECISION_FIRST_MOD_SIZE = 35;
+
     /**
      * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
      * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
-     * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize as in GetFBTDepth), and the
+     * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize: the K = 28
+     * table above 60 bits as in GetFBTDepth, and up to FEFBT_LOW_PRECISION_FIRST_MOD_SIZE bits the wider series with
+     * one double-angle iteration fewer, which saves a level), and the
      * evaluation of the Fourier series, minus the one level the normalization after the modulus raise no longer
      * consumes (see ModRaiseInPlace). SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels
      * and the output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
@@ -894,7 +903,8 @@ class FHECKKSRNS : public FHERNS {
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param coefficients Fourier coefficients of the function to be evaluated
      * @param skd secret key distribution of the cryptocontext
-     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY)
+     * @param firstModSize size of the first modulus in bits, the scaling factor plus one in FE functional
+     * bootstrapping (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY)
      * @return the multiplicative depth consumed by EvalFEFuncBootstrap
      */
     template <typename VectorDataType>
@@ -1475,6 +1485,33 @@ class FHECKKSRNS : public FHERNS {
     static const std::vector<std::complex<double>>& FBTExpCoefficients(SecretKeyDist skd, uint32_t digitBitSize);
 
     /**
+     * Returns the Chebyshev coefficients of the complex exponential evaluated by FE functional bootstrapping before
+     * its double-angle iterations: the K = 696 table for UNIFORM_TERNARY, the K = 28 table of SPARSE_TERNARY (also
+     * for the denser sparse secret of SPARSE_ENCAPSULATED and HYBRID_TERNARY, a first modulus above 60 bits) and
+     * otherwise the K = 16 tables of SPARSE_ENCAPSULATED and HYBRID_TERNARY: the degree-27 series with one
+     * double-angle iteration fewer for a first modulus of at most FEFBT_LOW_PRECISION_FIRST_MOD_SIZE bits, the
+     * degree-23 series above. EvalFEFuncBootstrap and GetFEFBTDepth both select through this method, so the table
+     * evaluated and the depth estimated always agree.
+     *
+     * @param skd secret key distribution
+     * @param firstModSize size of the first modulus in bits (the scaling factor plus one in FE functional
+     * bootstrapping)
+     * @return the coefficients of exp(i * 2Pi * x / 2^R) on [-K, K], for the R double-angle iterations of
+     * FEFBTExpDoubleAngleIterations and the overflow bound K of the secret key distribution
+     */
+    static const std::vector<std::complex<double>>& FEFBTExpCoefficients(SecretKeyDist skd, uint32_t firstModSize);
+
+    /**
+     * Returns the number R of double-angle iterations that turn the series of FEFBTExpCoefficients into
+     * exp(i * 2Pi * x): the R_func_* constant of the table that method selects for the same arguments.
+     *
+     * @param skd secret key distribution
+     * @param firstModSize size of the first modulus in bits
+     * @return the number of double-angle iterations
+     */
+    static uint32_t FEFBTExpDoubleAngleIterations(SecretKeyDist skd, uint32_t firstModSize);
+
+    /**
      * Returns the Chebyshev coefficients of the cos approximation evaluated by the FBT of 1-bit look-up tables
      * (order 1) before its double-angle iterations.
      *
@@ -1499,7 +1536,8 @@ class FHECKKSRNS : public FHERNS {
     static const uint32_t R_func_28_double_48 = 3;
     // for SPARSE_ENCAPSULATED and HYBRID_TERNARY secret key distributions
     static const uint32_t R_func_16_double_23 = 4;
-    // for SPARSE_ENCAPSULATED and HYBRID_TERNARY with small scaling factors (first modulus at most 35 bits):
+    // for SPARSE_ENCAPSULATED and HYBRID_TERNARY with small scaling factors (first modulus of at most
+    // FEFBT_LOW_PRECISION_FIRST_MOD_SIZE bits):
     // one double-angle iteration is traded for a wider series argument at the same Paterson-Stockmeyer depth,
     // saving one level; the degree-27 tail (~2^-21 after the squarings) is far below the noise floor of
     // those scaling factors but too coarse for larger ones

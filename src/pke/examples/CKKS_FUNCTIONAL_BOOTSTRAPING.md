@@ -254,7 +254,12 @@ used for each of them (for full packing):
 - SPARSE_ENCAPSULATED: K = 16, probability of failure below 2^-128, with a sparse main secret of Hamming weight 192 (lower
 security than HYBRID_TERNARY, which has the same K, probability of failure and depth). For a first modulus larger than 60 bits
 (which requires composite scaling in the 64-bit build), the Hamming weight of the sparse key is 64 and K = 28 is used, which
-keeps the probability of failure negligible.
+keeps the probability of failure negligible. For a first modulus of at most 35 bits (a scaling factor of at most 34 bits), one
+level is saved by approximating the complex exponential with a degree-27 Chebyshev series followed by three double-angle
+iterations, instead of a degree-23 series followed by four. Both series have the same multiplicative depth, so dropping an
+iteration saves a level outright. The wider series has a larger truncation error (about 2^-21 after the squarings), but at such
+scaling factors this is still far below the noise floor; for larger scaling factors the degree-23 series is kept. `GetFEFBTDepth`
+accounts for this choice; the threshold is `FHECKKSRNS::FEFBT_LOW_PRECISION_FIRST_MOD_SIZE`.
 - HYBRID_TERNARY (recommended): the same K, probability of failure and depth as SPARSE_ENCAPSULATED, with a uniform ternary secret for
 all operations other than the modulus raise (security of uniform ternary secrets).
 - UNIFORM_TERNARY: K = 696, probability of failure below 2^-79 for N = 2^16 and 2^-33 for N = 2^17. It can be used when uniform

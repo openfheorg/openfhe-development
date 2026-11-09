@@ -1950,22 +1950,12 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNS::EvalFEFuncBootstrapExp(ConstCipher
     // For composite scaling the shrink is folded into the CoeffsToSlots matrix (see EvalFEFuncBootstrapSetup)
     double pre = (compositeDegree > 1) ? 1.0 : std::pow(2, -deg);
 
-    // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup; the K = 28
-    // table of SPARSE_TERNARY is also used for SPARSE_ENCAPSULATED/HYBRID_TERNARY with the denser sparse secret
-    // (Hamming weight 64)
-    const bool smallSparseKey = IsSparseEncapsulated(skd) && (cryptoParams->GetSparseKSHammingWeight() == 32);
-    // with a small scaling factor the noise floor is far above the ~2^-21 truncation error of the wider
-    // degree-27 series, so one double-angle iteration is traded for it at the same Paterson-Stockmeyer
-    // depth, saving a level (deg == 1 is enforced below, so the first modulus is GetPlaintextModulus() + 1)
-    const bool lowPrecision = smallSparseKey && (cryptoParams->GetPlaintextModulus() + 1 <= 35);
-    const auto& coeffExp = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
-                           lowPrecision             ? coeff_exp_16_double_27 :
-                           smallSparseKey           ? coeff_exp_16_double_23 :
-                                                      coeff_exp_28_double_48;
-    const uint32_t rFunc = (skd == UNIFORM_TERNARY) ? R_func_696_double_27 :
-                           lowPrecision             ? R_func_16_double_27 :
-                           smallSparseKey           ? R_func_16_double_23 :
-                                                      R_func_28_double_48;
+    // complex-exponential Chebyshev table matching the K folded into the CoeffsToSlots matrix at setup, with its
+    // double-angle iterations (see FEFBTExpCoefficients): deg == 1 is enforced above, so the first modulus has
+    // GetPlaintextModulus() + 1 bits, the size the sparse Hamming weight and GetFEFBTDepth are keyed by
+    const uint32_t firstModSize = cryptoParams->GetPlaintextModulus() + 1;
+    const auto& coeffExp = FEFBTExpCoefficients(skd, firstModSize);
+    const uint32_t rFunc = FEFBTExpDoubleAngleIterations(skd, firstModSize);
 
     //------------------------------------------------------------------------------
     // Dropping Unnecessary Towers
@@ -4688,6 +4678,28 @@ const std::vector<double>& FHECKKSRNS::FBTCosCoefficients(SecretKeyDist skd) {
     return coeff_cos_28_double_68;
 }
 
+const std::vector<std::complex<double>>& FHECKKSRNS::FEFBTExpCoefficients(SecretKeyDist skd, uint32_t firstModSize) {
+    if (skd == UNIFORM_TERNARY)
+        return coeff_exp_696_double_27;
+    // the denser sparse secret of SPARSE_ENCAPSULATED and HYBRID_TERNARY (Hamming weight 64: first modulus above
+    // 60 bits) is raised under the K = 28 bound of SPARSE_TERNARY (see GetModRaiseOverflowBound) and uses its table
+    if (skd == SPARSE_TERNARY || UsesLargeSparseKey(skd, CryptoParametersCKKSRNS::SparseKSHammingWeight(firstModSize)))
+        return coeff_exp_28_double_48;
+    // K = 16: with a small scaling factor the noise floor is far above the ~2^-21 truncation error of the wider
+    // degree-27 series, so one double-angle iteration is traded for it at the same Paterson-Stockmeyer depth
+    return (firstModSize <= FEFBT_LOW_PRECISION_FIRST_MOD_SIZE) ? coeff_exp_16_double_27 : coeff_exp_16_double_23;
+}
+
+uint32_t FHECKKSRNS::FEFBTExpDoubleAngleIterations(SecretKeyDist skd, uint32_t firstModSize) {
+    // read off the table FEFBTExpCoefficients selects, so that the two cannot disagree
+    const auto* coefficients = &FEFBTExpCoefficients(skd, firstModSize);
+    if (coefficients == &coeff_exp_696_double_27)
+        return R_func_696_double_27;
+    if (coefficients == &coeff_exp_28_double_48)
+        return R_func_28_double_48;
+    return (coefficients == &coeff_exp_16_double_27) ? R_func_16_double_27 : R_func_16_double_23;
+}
+
 template <typename VectorDataType>
 uint32_t FHECKKSRNS::AdjustDepthFBTInternal(const std::vector<VectorDataType>& coefficients, const BigInteger& PInput,
                                             size_t order, SecretKeyDist skd, uint32_t sparseKSHammingWeight) {
@@ -5101,22 +5113,9 @@ template <typename VectorDataType>
 uint32_t FHECKKSRNS::GetFEFBTDepth(const std::vector<uint32_t>& levelBudget,
                                    const std::vector<VectorDataType>& coefficients, SecretKeyDist skd,
                                    uint32_t firstModSize) {
-    // the denser sparse secret of SPARSE_ENCAPSULATED (Hamming weight 64: first modulus
-    // above 60 bits) uses the K = 28 exponential table of SPARSE_TERNARY (see EvalFEFuncBootstrapSetup)
-    const bool sparseTable = (skd == SPARSE_TERNARY) ||
-                             UsesLargeSparseKey(skd, CryptoParametersCKKSRNS::SparseKSHammingWeight(firstModSize));
-    // must mirror the table selection of EvalFEFuncBootstrapExp: small scaling factors trade one
-    // double-angle iteration for the wider degree-27 series at the same Paterson-Stockmeyer depth
-    const bool lowPrecision = (skd != UNIFORM_TERNARY) && !sparseTable && (firstModSize <= 35);
-    const auto& coeff_exp = (skd == UNIFORM_TERNARY) ? coeff_exp_696_double_27 :
-                            sparseTable              ? coeff_exp_28_double_48 :
-                            lowPrecision             ? coeff_exp_16_double_27 :
-                                                       coeff_exp_16_double_23;
-    const uint32_t expDepth = GetMultiplicativeDepthByCoeffVector(coeff_exp, false);
-    const uint32_t rFunc = (skd == UNIFORM_TERNARY) ? R_func_696_double_27 :
-                           sparseTable              ? R_func_28_double_48 :
-                           lowPrecision             ? R_func_16_double_27 :
-                                                      R_func_16_double_23;
+    // the table and the double-angle iterations are the ones EvalFEFuncBootstrap evaluates (see FEFBTExpCoefficients)
+    const uint32_t expDepth = GetMultiplicativeDepthByCoeffVector(FEFBTExpCoefficients(skd, firstModSize), false);
+    const uint32_t rFunc = FEFBTExpDoubleAngleIterations(skd, firstModSize);
     // the normalization after the modulus raise does not consume a level of the chain (see ModRaiseInPlace)
     return levelBudget[0] + levelBudget[1] + expDepth + rFunc +
            GetMultiplicativeDepthByCoeffVector(coefficients, true) - 1;
