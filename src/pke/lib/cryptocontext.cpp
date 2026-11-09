@@ -605,6 +605,28 @@ Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings
     }
 }
 
+ConstCiphertext<DCRTPoly> NormalizeCiphertextForFloodingDecrypt(ConstCiphertext<DCRTPoly> ciphertext) {
+    if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING || ciphertext->GetNoiseScaleDeg() <= 1)
+        return ciphertext;
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+    if (!cryptoParams || cryptoParams->GetDecryptionNoiseMode() != NOISE_FLOODING_DECRYPT ||
+        cryptoParams->GetExecutionMode() != EXEC_EVALUATION)
+        return ciphertext;
+
+    const size_t compositeDegree = cryptoParams->GetCompositeDegree();
+    auto rescaled = ciphertext->Clone();
+    auto scheme = ciphertext->GetCryptoContext()->GetScheme();
+    while (rescaled->GetNoiseScaleDeg() > 1) {
+        if (rescaled->GetElements()[0].GetNumOfElements() <= compositeDegree)
+            OPENFHE_THROW(
+                    "Decryption in NOISE_FLOODING_DECRYPT mode requires rescaling a ciphertext with noise scaling "
+                    "degree > 1, but not enough RNS limbs remain. Increase the multiplicative depth by 1.");
+        scheme->ModReduceInternalInPlace(rescaled, compositeDegree);
+    }
+    return rescaled;
+}
+
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const PrivateKey<DCRTPoly>& privateKey, Plaintext* plaintext) {
@@ -615,42 +637,47 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ci
     if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
         OPENFHE_THROW("Information was not generated with this crypto context");
 
+    // with decryption noise flooding, a ciphertext with a pending rescale must be rescaled first so the
+    // flooding noise is added at the scaling factor it was calibrated for; ct is the ciphertext to decrypt
+    // and to take the decoding metadata from
+    ConstCiphertext<DCRTPoly> ct = NormalizeCiphertextForFloodingDecrypt(ciphertext);
+
     // determine which type of plaintext that you need to decrypt into
     // Plaintext decrypted =
     // CryptoContextImpl<Element>::GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
     // this->GetElementParams(), this->GetEncodingParams());
-    Plaintext decrypted = CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
-            ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(), this->GetEncodingParams(),
-            this->GetCKKSDataType());
+    Plaintext decrypted =
+            CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(ct->GetEncodingType(), ct->GetElements()[0].GetParams(),
+                                                                this->GetEncodingParams(), this->GetCKKSDataType());
 
     DecryptResult result;
 
-    if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) &&
-        (ciphertext->GetElements()[0].GetParams()->GetParams().size() > 1))  // more than one tower in DCRTPoly
-        result = m_scheme->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
+    if ((ct->GetEncodingType() == CKKS_PACKED_ENCODING) &&
+        (ct->GetElements()[0].GetParams()->GetParams().size() > 1))  // more than one tower in DCRTPoly
+        result = m_scheme->Decrypt(ct, privateKey, &decrypted->GetElement<Poly>());
     else
-        result = m_scheme->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
+        result = m_scheme->Decrypt(ct, privateKey, &decrypted->GetElement<NativePoly>());
 
     if (result.isValid == false)
         return result;
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
 
-    if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
+    if (ct->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         if (!decryptedCKKS)
             OPENFHE_THROW("Invalid plaintext encoding type: expected CKKSPackedEncoding");
-        decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
-        decryptedCKKS->SetLevel(ciphertext->GetLevel());
-        decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
-        decryptedCKKS->SetSlots(ciphertext->GetSlots());
+        decryptedCKKS->SetNoiseScaleDeg(ct->GetNoiseScaleDeg());
+        decryptedCKKS->SetLevel(ct->GetLevel());
+        decryptedCKKS->SetScalingFactor(ct->GetScalingFactor());
+        decryptedCKKS->SetSlots(ct->GetSlots());
 
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_params);
         if (!cryptoParamsCKKS)
             OPENFHE_THROW("Invalid crypto parameters: expected CryptoParametersCKKSRNS");
 
-        decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
+        decryptedCKKS->Decode(ct->GetNoiseScaleDeg(), ct->GetScalingFactor(), cryptoParamsCKKS->GetScalingTechnique(),
+                              cryptoParamsCKKS->GetExecutionMode());
     } else {
         decrypted->Decode();
     }

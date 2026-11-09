@@ -51,6 +51,13 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
     DCRTPoly b = DecryptCore(cv, privateKey);
     if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        // the flooding distribution is calibrated for a ciphertext decoded at noise scaling degree 1;
+        // decoding at a higher degree divides by a larger scaling factor and suppresses the flooding noise
+        // below the decryption noise (callers must rescale first, see NormalizeCiphertextForFloodingDecrypt)
+        if (ciphertext->GetNoiseScaleDeg() > 1)
+            OPENFHE_THROW(
+                    "Decryption in NOISE_FLOODING_DECRYPT mode requires a ciphertext with noise scaling degree 1. "
+                    "Rescale the ciphertext before decryption.");
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
@@ -77,6 +84,13 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
     DCRTPoly b = DecryptCore(cv, privateKey);
     if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        // the flooding distribution is calibrated for a ciphertext decoded at noise scaling degree 1;
+        // decoding at a higher degree divides by a larger scaling factor and suppresses the flooding noise
+        // below the decryption noise (callers must rescale first, see NormalizeCiphertextForFloodingDecrypt)
+        if (ciphertext->GetNoiseScaleDeg() > 1)
+            OPENFHE_THROW(
+                    "Decryption in NOISE_FLOODING_DECRYPT mode requires a ciphertext with noise scaling degree 1. "
+                    "Rescale the ciphertext before decryption.");
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
