@@ -55,9 +55,18 @@ using namespace lbcrypto;
 
 namespace {
 
-// The Fourier extensions below were generated with https://github.com/openfheorg/fefbt-python. The degree of each one
-// is the lowest at which the precision of FE functional bootstrapping reaches the noise floor set by the scaling
-// factor, or the highest one that costs no more depth: degrees 6-13, 14-27 and 28-59 use 3, 4 and 5 levels.
+// The Fourier extensions below were generated with https://github.com/openfheorg/fefbt-python, except the degree-4
+// ones, which are least-squares fits at Chebyshev nodes on [-0.6, 0.6] (the closest reproduction of the degree-5
+// tables; to be regenerated with fefbt-python). The degree of each one is the lowest at which the precision of FE
+// functional bootstrapping reaches the noise floor set by the scaling factor, or the highest one that costs no more
+// depth (GetFEFBTDepth): degree 4 costs 2 levels, degree 5 costs 3, and degrees 6-13, 14-27 and 28-59 cost 4, 5 and 6.
+// Fourier extension of x in [-0.5, 0.5] of degree 4: 10.5 bits (mean error relative to the range)
+const std::vector<std::complex<double>> coeff_identity_1_double_4{
+        std::complex<double>(0.000000000000e+00, 0.000000000000e+00),
+        std::complex<double>(0.000000000000e+00, -2.819524678539e-01),
+        std::complex<double>(0.000000000000e+00, 9.641016298412e-02),
+        std::complex<double>(0.000000000000e+00, -3.189585622278e-02),
+        std::complex<double>(0.000000000000e+00, 7.125418138117e-03)};
 // Fourier extension of x in [-0.5, 0.5] of degree 5: 11.8 bits (mean error relative to the range)
 const std::vector<std::complex<double>> coeff_identity_1_double_5{
         std::complex<double>(-2.285817111521e-15, 0.000000000000e+00),
@@ -97,6 +106,14 @@ const std::vector<std::complex<double>> coeff_identity_1_double_27{
         std::complex<double>(7.715989305823e-13, -1.755544234289e-11),
         std::complex<double>(2.046010930123e-12, -2.229859873137e-11),
         std::complex<double>(-1.504484904713e-12, 8.942316071653e-12)};
+
+// Fourier extension of std::exp(x) in [-2, 2] of degree 4: 8.9 bits (mean error relative to the range)
+const std::vector<std::complex<double>> coeff_exp_2_double_4{
+        std::complex<double>(2.777074225633e+00, 0.000000000000e+00),
+        std::complex<double>(-3.015417556364e+00, -2.424665719678e+00),
+        std::complex<double>(9.342054294308e-01, 1.547158710817e+00),
+        std::complex<double>(-2.320347500511e-01, -6.101272993083e-01),
+        std::complex<double>(3.737872120527e-02, 1.463979152346e-01)};
 
 // Fourier extension of std::exp(x) in [-2, 2] of degree 5: 10.0 bits (mean error relative to the range)
 const std::vector<std::complex<double>> coeff_exp_2_double_5{
@@ -433,18 +450,22 @@ SecurityLevel SecurityLevelFor(SecretKeyDist skd) {
 // clang-format off
 const std::vector<fefbt_config> fefbt_configs = {
     // func,  scalTech, skd, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs   log(QP)
-    // 29-bit scaling, one level: N = 2^15
-    {IDENTITY, FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_identity_1_double_5},   // 819
-    {EXP,      FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_exp_2_double_5},        // 819
-    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_tanh_4_double_8},       // 848
-    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_sigmoid_8_double_8},    // 848
-    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_gelu_8_double_10},      // 848
-    // 29-bit scaling, six levels: N = 2^15 for the degree-5 series, N = 2^16 for the longer ones
-    {IDENTITY, FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_identity_1_double_5},   // 817
-    {EXP,      FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_exp_2_double_5},        // 817
-    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_tanh_4_double_8},       // 1232
-    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_sigmoid_8_double_8},    // 1232
-    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_gelu_8_double_10},      // 1232
+    // 29-bit scaling, one level: N = 2^15, 3 digits (the level saved by the degree-27 exponential series and, for the
+    // degree-4 series, the one saved by their lower degree fit the 3-digit auxiliary modulus under the 868-bit bound);
+    // a 36-thread choice: at 8 threads the 4-digit {5,3} rows of the GPU table below are 2-14% faster
+    {IDENTITY, FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_identity_1_double_4},   // 792
+    {EXP,      FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_exp_2_double_4},        // 792
+    {TANH,     FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_tanh_4_double_8},       // 850
+    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_sigmoid_8_double_8},    // 850
+    {GELU,     FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_gelu_8_double_10},      // 850
+    // 29-bit scaling, six levels: N = 2^15 for every series, 4 digits (the saved level fits the 4-digit auxiliary modulus
+    // under the 868-bit bound, where the longer series needed N = 2^16 with 2 digits before); the degree-4 series take
+    // a {3,3} budget and the longer ones {2,2}, whose chain is one level shorter than any feasible {3,2}
+    {IDENTITY, FA, HT, 29,  6, 1 << 15,  4, {3, 3}, &coeff_identity_1_double_4},   // 848
+    {EXP,      FA, HT, 29,  6, 1 << 15,  4, {3, 3}, &coeff_exp_2_double_4},        // 848
+    {TANH,     FA, HT, 29,  6, 1 << 15,  4, {2, 2}, &coeff_tanh_4_double_8},       // 848
+    {SIGMOID,  FA, HT, 29,  6, 1 << 15,  4, {2, 2}, &coeff_sigmoid_8_double_8},    // 848
+    {GELU,     FA, HT, 29,  6, 1 << 15,  4, {2, 2}, &coeff_gelu_8_double_10},      // 848
     // 59-bit scaling, one level: N = 2^16
     {IDENTITY, FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
     {EXP,      FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
@@ -486,22 +507,25 @@ const std::vector<fefbt_config> fefbt_configs = {
 
 // GPU-leaning rows, one per row above: the configuration with the fewest key-switching digits (fewer kernel launches
 // per key switch and smaller keys on a GPU) among those within 25% of the CPU row's time and within 0.3 bits of its
-// precision, or the CPU row itself where there is none. Registered as FEFBT-GPU/... so that --benchmark_filter
-// selects either table.
+// precision, or the CPU row itself where there is none. Where a group has been measured on a GPU (the 29-bit groups,
+// FIDESlib on an RTX PRO 6000), the configuration measured fastest there is used instead. Registered as FEFBT-GPU/...
+// so that --benchmark_filter selects either table.
 const std::vector<fefbt_config> fefbt_configs_gpu = {
     // func,  scalTech, skd, scalingModSize, levelsAfter, ringDim, dnum, lvlb, coeffs   log(QP)
-    // 29-bit scaling, one level: N = 2^15 (3 digits {4,3} for the degree-5 series)
-    {IDENTITY, FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_identity_1_double_5},   // 850
-    {EXP,      FA, HT, 29,  1, 1 << 15,  3, {4, 3}, &coeff_exp_2_double_5},        // 850
-    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_tanh_4_double_8},       // 848
-    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_sigmoid_8_double_8},    // 848
-    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_gelu_8_double_10},      // 848
-    // 29-bit scaling, six levels: N = 2^15 for the degree-5 series (as above), N = 2^16 with 2 digits for the longer ones
-    {IDENTITY, FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_identity_1_double_5},   // 817
-    {EXP,      FA, HT, 29,  6, 1 << 15,  8, {3, 2}, &coeff_exp_2_double_5},        // 817
-    {TANH,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_tanh_4_double_8},       // 1232
-    {SIGMOID,  FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_sigmoid_8_double_8},    // 1232
-    {GELU,     FA, HT, 29,  6, 1 << 16,  2, {5, 3}, &coeff_gelu_8_double_10},      // 1232
+    // 29-bit scaling, one level: N = 2^15, 4 digits with a {5,3} budget, the fastest configuration on the GPU, which
+    // prefers the larger CoeffsToSlots budget (the 3-digit {4,3} rows above run 3-7% slower there)
+    {IDENTITY, FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_identity_1_double_4},   // 761
+    {EXP,      FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_exp_2_double_4},        // 761
+    {TANH,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_tanh_4_double_8},       // 819
+    {SIGMOID,  FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_sigmoid_8_double_8},    // 819
+    {GELU,     FA, HT, 29,  1, 1 << 15,  4, {5, 3}, &coeff_gelu_8_double_10},      // 819
+    // 29-bit scaling, six levels: N = 2^15 (as above: 4 digits is the fewest that fit at this ring dimension, and
+    // N = 2^16 with 2 digits is more than 25% slower)
+    {IDENTITY, FA, HT, 29,  6, 1 << 15,  4, {3, 3}, &coeff_identity_1_double_4},   // 848
+    {EXP,      FA, HT, 29,  6, 1 << 15,  4, {3, 3}, &coeff_exp_2_double_4},        // 848
+    {TANH,     FA, HT, 29,  6, 1 << 15,  4, {2, 2}, &coeff_tanh_4_double_8},       // 848
+    {SIGMOID,  FA, HT, 29,  6, 1 << 15,  4, {2, 2}, &coeff_sigmoid_8_double_8},    // 848
+    {GELU,     FA, HT, 29,  6, 1 << 15,  4, {2, 2}, &coeff_gelu_8_double_10},      // 848
     // 59-bit scaling, one level: N = 2^16 (as above for the degree-27 series, 4 digits for the longer ones)
     {IDENTITY, FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_identity_1_double_27},  // 1718
     {EXP,      FA, HT, 59,  1, 1 << 16,  4, {4, 3}, &coeff_exp_2_double_27},       // 1718
