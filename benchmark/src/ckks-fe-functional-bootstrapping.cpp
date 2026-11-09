@@ -55,18 +55,17 @@ using namespace lbcrypto;
 
 namespace {
 
-// The Fourier extensions below were generated with https://github.com/openfheorg/fefbt-python, except the degree-4
-// ones, which are least-squares fits at Chebyshev nodes on [-0.6, 0.6] (the closest reproduction of the degree-5
-// tables; to be regenerated with fefbt-python). The degree of each one is the lowest at which the precision of FE
-// functional bootstrapping reaches the noise floor set by the scaling factor, or the highest one that costs no more
-// depth (GetFEFBTDepth): degree 4 costs 2 levels, degree 5 costs 3, and degrees 6-13, 14-27 and 28-59 cost 4, 5 and 6.
-// Fourier extension of x in [-0.5, 0.5] of degree 4: 10.5 bits (mean error relative to the range)
+// The Fourier extensions below were generated with https://github.com/openfheorg/fefbt-python. The degree of each one
+// is the lowest at which the precision of FE functional bootstrapping reaches the noise floor set by the scaling
+// factor, or the highest one that costs no more depth (GetFEFBTDepth): degree 4 costs 2 levels, degree 5 costs 3, and
+// degrees 6-13, 14-27 and 28-59 cost 4, 5 and 6.
+// Fourier extension of x in [-0.5, 0.5] of degree 4: 9.7 bits (mean error relative to the range)
 const std::vector<std::complex<double>> coeff_identity_1_double_4{
-        std::complex<double>(0.000000000000e+00, 0.000000000000e+00),
-        std::complex<double>(0.000000000000e+00, -2.819524678539e-01),
-        std::complex<double>(0.000000000000e+00, 9.641016298412e-02),
-        std::complex<double>(0.000000000000e+00, -3.189585622278e-02),
-        std::complex<double>(0.000000000000e+00, 7.125418138117e-03)};
+        std::complex<double>(2.789193988667e-17, 0.000000000000e+00),
+        std::complex<double>(-1.508909723989e-17, -2.770476556999e-01),
+        std::complex<double>(-3.503047666441e-17, 8.917868187953e-02),
+        std::complex<double>(1.873509701578e-17, -2.552662623951e-02),
+        std::complex<double>(5.510021888319e-17, 3.324172592979e-03)};
 // Fourier extension of x in [-0.5, 0.5] of degree 5: 11.8 bits (mean error relative to the range)
 const std::vector<std::complex<double>> coeff_identity_1_double_5{
         std::complex<double>(-2.285817111521e-15, 0.000000000000e+00),
@@ -107,13 +106,13 @@ const std::vector<std::complex<double>> coeff_identity_1_double_27{
         std::complex<double>(2.046010930123e-12, -2.229859873137e-11),
         std::complex<double>(-1.504484904713e-12, 8.942316071653e-12)};
 
-// Fourier extension of std::exp(x) in [-2, 2] of degree 4: 8.9 bits (mean error relative to the range)
+// Fourier extension of std::exp(x) in [-2, 2] of degree 4: 8.2 bits (mean error relative to the range)
 const std::vector<std::complex<double>> coeff_exp_2_double_4{
-        std::complex<double>(2.777074225633e+00, 0.000000000000e+00),
-        std::complex<double>(-3.015417556364e+00, -2.424665719678e+00),
-        std::complex<double>(9.342054294308e-01, 1.547158710817e+00),
-        std::complex<double>(-2.320347500511e-01, -6.101272993083e-01),
-        std::complex<double>(3.737872120527e-02, 1.463979152346e-01)};
+        std::complex<double>(2.598478465384e+00, 0.000000000000e+00),
+        std::complex<double>(-2.695048907275e+00, -2.327776158672e+00),
+        std::complex<double>(7.053587031053e-01, 1.404785872002e+00),
+        std::complex<double>(-1.064708041709e-01, -4.854555736055e-01),
+        std::complex<double>(-1.083597263579e-02, 7.255156280669e-02)};
 
 // Fourier extension of std::exp(x) in [-2, 2] of degree 5: 10.0 bits (mean error relative to the range)
 const std::vector<std::complex<double>> coeff_exp_2_double_5{
