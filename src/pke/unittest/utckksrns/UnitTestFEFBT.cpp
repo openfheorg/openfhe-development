@@ -133,6 +133,9 @@ struct TEST_CASE_UTCKKSRNS_FEFBT {
     FEFBT_FUNCTION functionType;
     // FEFBT_CS_VS_FA only: COMPOSITESCALINGAUTO may lag FLEXIBLEAUTO by at most this many precision bits
     double gapTolBits = 0.0;
+    // FEFBT_ACCURACY and FEFBT_CHAINED: largest slot error accepted, 1e-4 (about 13.3 bits) for the 59-bit scaling
+    // factor of most cases; the small-scaling cases set the floor of theirs
+    double maxError = 1e-4;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -199,7 +202,8 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::
                                         SecretKeyDist skd, uint32_t slots, FEFBT_FUNCTION functionType,
                                         std::vector<uint32_t> levelBudget = {3, 2},
                                         ScalingTechnique scalingTechnique = FIXEDMANUAL,
-                                        uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE) {
+                                        uint32_t scalingModSize = SMODSIZE, uint32_t firstModSize = FMODSIZE,
+                                        double maxError = 1e-4) {
     TEST_CASE_UTCKKSRNS_FEFBT testCase;
     testCase.testCaseType = testCaseType;
     testCase.description = description;
@@ -208,6 +212,7 @@ TEST_CASE_UTCKKSRNS_FEFBT MakeFEFBTCase(TEST_CASE_TYPE testCaseType, const std::
     testCase.dim1 = {0, 0};
     testCase.slots = slots;
     testCase.functionType = functionType;
+    testCase.maxError = maxError;
 
     return testCase;
 }
@@ -324,6 +329,30 @@ static std::vector<TEST_CASE_UTCKKSRNS_FEFBT> testCases = {
                   {1, 1}, COMPOSITESCALINGMANUAL, SMODSIZED3, FMODSIZED3),
     MakeFEFBTCase(FEFBT_CHAINED,       "38", SPARSE_SLOTS, SPARSE_TERNARY,     SPARSE_SLOTS, FEFBT_SIGMOID,
                   {1, 1}, FLEXIBLEAUTO),
+    // 29-bit scaling factor (first modulus 30 bits, as the small-scaling benchmark rows): the K = 16 degree-27
+    // exponential series with three double-angle iterations saves a level over the degree-23 series of the cases
+    // above (FEFBT_ACCURACY pins GetFEFBTDepth to the levels consumed, FEFBT_CHAINED to the second bootstrapping).
+    // The precision is the noise floor of the scaling factor: over four runs the largest slot error was 2^-7.0 to
+    // 2^-7.4 under FLEXIBLEAUTO (both distributions), 2^-6.1 to 2^-6.5 under FIXEDMANUAL and 2^-6.0 to 2^-6.6 for
+    // the second bootstrapping of the chained case, so the shared 2^-5.1 tolerance leaves about a bit of margin
+    MakeFEFBTCase(FEFBT_ACCURACY,      "39", RDIM / 2,    HYBRID_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTO, 29, 30, 0.03),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "40", RDIM / 2,    SPARSE_ENCAPSULATED, RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTO, 29, 30, 0.03),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "41", RDIM / 2,    HYBRID_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FIXEDMANUAL, 29, 30, 0.03),
+    MakeFEFBTCase(FEFBT_CHAINED,       "42", RDIM / 2,    HYBRID_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTO, 29, 30, 0.03),
+    // either side of the FEFBT_LOW_PRECISION_FIRST_MOD_SIZE threshold: the last scaling factor on the degree-27 series
+    // and the first one back on the degree-23 series, with the same depth difference of one level. The largest slot
+    // error was 2^-12.1 to 2^-12.3 on the degree-27 side and 2^-13.0 to 2^-13.4 on the degree-23 side over four runs
+    // (the one-bit scaling factor step accounts for the gap), so the 2^-11 tolerance leaves about a bit of margin
+    MakeFEFBTCase(FEFBT_ACCURACY,      "43", RDIM / 2,    HYBRID_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTO, FHECKKSRNS::FEFBT_LOW_PRECISION_FIRST_MOD_SIZE - 1,
+                  FHECKKSRNS::FEFBT_LOW_PRECISION_FIRST_MOD_SIZE, 0.0005),
+    MakeFEFBTCase(FEFBT_ACCURACY,      "44", RDIM / 2,    HYBRID_TERNARY,      RDIM / 2,   FEFBT_SIGMOID,
+                  {3, 2}, FLEXIBLEAUTO, FHECKKSRNS::FEFBT_LOW_PRECISION_FIRST_MOD_SIZE,
+                  FHECKKSRNS::FEFBT_LOW_PRECISION_FIRST_MOD_SIZE + 1, 0.0005),
 };
 // clang-format on
 #else
@@ -454,6 +483,17 @@ static uint32_t FEFBTEncodeLevel(const CryptoContext<DCRTPoly>& cc, const TEST_C
     return compositeDegree * (MULT_DEPTH - testData.levelBudget[1]);
 }
 
+// levels left for computation on a ciphertext: the towers of the chain beyond the first level, less the towers
+// dropped and the rescalings pending, in levels of compositeDegree towers (the extra modulus of FLEXIBLEAUTOEXT
+// counts as the pending rescaling of a fresh ciphertext)
+static uint32_t LevelsRemaining(const CryptoContext<DCRTPoly>& cc, const Ciphertext<DCRTPoly>& ciphertext) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+    const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
+    const uint32_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
+    return (sizeQ - compositeDegree - ciphertext->GetLevel() - compositeDegree * (ciphertext->GetNoiseScaleDeg() - 1)) /
+           compositeDegree;
+}
+
 class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFBT> {
     using Element = DCRTPoly;
 
@@ -567,9 +607,19 @@ class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFB
             cc->Decrypt(keyPair.secretKey, resultCt, &result);
             result->SetLength(expected.size());
 
-            checkEquality(result->GetRealPackedValue(), expected, eps,
+            checkEquality(result->GetRealPackedValue(), expected, testData.maxError,
                           failmsg + " FE functional bootstrapping failed for " +
                                   GetFunctionName(testData.functionType) + ".");
+
+            // GetFEFBTDepth must match the levels the evaluation consumes exactly: the output keeps the levelBudget[1]
+            // levels the next SlotsToCoeffs needs on top of the levels of the context beyond the depth (an estimate
+            // too small fails the second bootstrapping of FEFBT_CHAINED; one too large is caught here)
+            const uint32_t depth =
+                    FHECKKSRNS::GetFEFBTDepth(testData.levelBudget, GetCoefficients(testData.functionType),
+                                              static_cast<SecretKeyDist>(testData.params.secretKeyDist),
+                                              static_cast<uint32_t>(testData.params.firstModSize));
+            EXPECT_EQ(LevelsRemaining(cc, resultCt), MULT_DEPTH - depth + testData.levelBudget[1])
+                    << failmsg << " the levels left after FE functional bootstrapping do not match GetFEFBTDepth.";
         } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -865,7 +915,7 @@ class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFB
             Plaintext result;
             cc->Decrypt(keyPair.secretKey, first, &result);
             result->SetLength(expected.size());
-            checkEquality(result->GetRealPackedValue(), expected, eps,
+            checkEquality(result->GetRealPackedValue(), expected, testData.maxError,
                           failmsg + " the first FE functional bootstrapping failed for " +
                                   GetFunctionName(testData.functionType) + ".");
 
@@ -882,7 +932,7 @@ class UTCKKSRNS_FEFBT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_FEFB
             auto second = cc->EvalFEFuncBootstrap(squared, coefficients);
             cc->Decrypt(keyPair.secretKey, second, &result);
             result->SetLength(expectedSecond.size());
-            checkEquality(result->GetRealPackedValue(), expectedSecond, eps,
+            checkEquality(result->GetRealPackedValue(), expectedSecond, testData.maxError,
                           failmsg + " the second FE functional bootstrapping failed for " +
                                   GetFunctionName(testData.functionType) + ".");
         } catch (std::exception& e) {
@@ -969,5 +1019,22 @@ TEST_P(UTCKKSRNS_FEFBT, CKKSRNS) {
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(UTCKKSRNS_FEFBT);
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_FEFBT, ::testing::ValuesIn(testCases), testName);
+
+// the small-scaling exponential series saves its level exactly at the threshold, for the two distributions with the
+// K = 16 tables and for no other
+TEST(UTCKKSRNS_FEFBT_DEPTH, SmallFirstModulusSavesOneLevel) {
+    constexpr uint32_t threshold = FHECKKSRNS::FEFBT_LOW_PRECISION_FIRST_MOD_SIZE;
+    const std::vector<uint32_t> levelBudget{3, 2};
+    const auto depth = [&levelBudget](SecretKeyDist skd, uint32_t firstModSize) {
+        return FHECKKSRNS::GetFEFBTDepth(levelBudget, coeff_sigmoid_8_double_34, skd, firstModSize);
+    };
+    for (const auto skd : {SPARSE_ENCAPSULATED, HYBRID_TERNARY}) {
+        EXPECT_EQ(depth(skd, threshold) + 1, depth(skd, threshold + 1)) << "secret key distribution " << int(skd);
+        EXPECT_EQ(depth(skd, 30), depth(skd, threshold)) << "secret key distribution " << int(skd);
+        EXPECT_EQ(depth(skd, 60), depth(skd, threshold + 1)) << "secret key distribution " << int(skd);
+    }
+    for (const auto skd : {SPARSE_TERNARY, UNIFORM_TERNARY})
+        EXPECT_EQ(depth(skd, threshold), depth(skd, threshold + 1)) << "secret key distribution " << int(skd);
+}
 
 }  // namespace

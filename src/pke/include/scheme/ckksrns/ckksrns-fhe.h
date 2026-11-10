@@ -882,10 +882,19 @@ class FHECKKSRNS : public FHERNS {
                                 const std::vector<VectorDataType>& coefficients, const BigInteger& PInput, size_t order,
                                 SecretKeyDist skd, uint32_t firstModSize = 60);
 
+    // Largest first modulus, in bits, for which FE functional bootstrapping with the Hamming-weight-32 sparse secrets
+    // (SPARSE_ENCAPSULATED and HYBRID_TERNARY) uses the degree-27 exponential series with three double-angle
+    // iterations instead of the degree-23 series with four: same Paterson-Stockmeyer depth, one level saved. The wider
+    // series' truncation error after the squarings (about 2^-21) is far below the noise floor of these scaling factors
+    // (the first modulus is the scaling factor plus one bit) but too coarse for larger ones. See FEFBTExpCoefficients.
+    static constexpr uint32_t FEFBT_LOW_PRECISION_FIRST_MOD_SIZE = 35;
+
     /**
      * Multiplicative depth consumed by FE functional bootstrapping (EvalFEFuncBootstrap): the CoeffsToSlots and
      * SlotsToCoeffs level budgets, the complex exponential approximation and its double-angle iterations (selected
-     * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize as in GetFBTDepth), and the
+     * by the secret key distribution and, for SPARSE_ENCAPSULATED and HYBRID_TERNARY, by firstModSize: the K = 28
+     * table above 60 bits as in GetFBTDepth, and up to FEFBT_LOW_PRECISION_FIRST_MOD_SIZE bits the wider series with
+     * one double-angle iteration fewer, which saves a level), and the
      * evaluation of the Fourier series, minus the one level the normalization after the modulus raise no longer
      * consumes (see ModRaiseInPlace). SlotsToCoeffs is performed first, so the input needs levelBudget[1] levels
      * and the output keeps that many for the next bootstrapping: the levels added on top of this depth are the ones
@@ -894,7 +903,8 @@ class FHECKKSRNS : public FHERNS {
      * @param levelBudget levels spent on CoeffsToSlots and SlotsToCoeffs, respectively
      * @param coefficients Fourier coefficients of the function to be evaluated
      * @param skd secret key distribution of the cryptocontext
-     * @param firstModSize size of the first modulus in bits (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY)
+     * @param firstModSize size of the first modulus in bits, the scaling factor plus one in FE functional
+     * bootstrapping (only used for SPARSE_ENCAPSULATED and HYBRID_TERNARY)
      * @return the multiplicative depth consumed by EvalFEFuncBootstrap
      */
     template <typename VectorDataType>
@@ -1475,6 +1485,33 @@ class FHECKKSRNS : public FHERNS {
     static const std::vector<std::complex<double>>& FBTExpCoefficients(SecretKeyDist skd, uint32_t digitBitSize);
 
     /**
+     * Returns the Chebyshev coefficients of the complex exponential evaluated by FE functional bootstrapping before
+     * its double-angle iterations: the K = 696 table for UNIFORM_TERNARY, the K = 28 table of SPARSE_TERNARY (also
+     * for the denser sparse secret of SPARSE_ENCAPSULATED and HYBRID_TERNARY, a first modulus above 60 bits) and
+     * otherwise the K = 16 tables of SPARSE_ENCAPSULATED and HYBRID_TERNARY: the degree-27 series with one
+     * double-angle iteration fewer for a first modulus of at most FEFBT_LOW_PRECISION_FIRST_MOD_SIZE bits, the
+     * degree-23 series above. EvalFEFuncBootstrap and GetFEFBTDepth both select through this method, so the table
+     * evaluated and the depth estimated always agree.
+     *
+     * @param skd secret key distribution
+     * @param firstModSize size of the first modulus in bits (the scaling factor plus one in FE functional
+     * bootstrapping)
+     * @return the coefficients of exp(i * 2Pi * x / 2^R) on [-K, K], for the R double-angle iterations of
+     * FEFBTExpDoubleAngleIterations and the overflow bound K of the secret key distribution
+     */
+    static const std::vector<std::complex<double>>& FEFBTExpCoefficients(SecretKeyDist skd, uint32_t firstModSize);
+
+    /**
+     * Returns the number R of double-angle iterations that turn the series of FEFBTExpCoefficients into
+     * exp(i * 2Pi * x): the R_func_* constant of the table that method selects for the same arguments.
+     *
+     * @param skd secret key distribution
+     * @param firstModSize size of the first modulus in bits
+     * @return the number of double-angle iterations
+     */
+    static uint32_t FEFBTExpDoubleAngleIterations(SecretKeyDist skd, uint32_t firstModSize);
+
+    /**
      * Returns the Chebyshev coefficients of the cos approximation evaluated by the FBT of 1-bit look-up tables
      * (order 1) before its double-angle iterations.
      *
@@ -1499,6 +1536,12 @@ class FHECKKSRNS : public FHERNS {
     static const uint32_t R_func_28_double_48 = 3;
     // for SPARSE_ENCAPSULATED and HYBRID_TERNARY secret key distributions
     static const uint32_t R_func_16_double_23 = 4;
+    // for SPARSE_ENCAPSULATED and HYBRID_TERNARY with small scaling factors (first modulus of at most
+    // FEFBT_LOW_PRECISION_FIRST_MOD_SIZE bits):
+    // one double-angle iteration is traded for a wider series argument at the same Paterson-Stockmeyer depth,
+    // saving one level; the degree-27 tail (~2^-21 after the squarings) is far below the noise floor of
+    // those scaling factors but too coarse for larger ones
+    static const uint32_t R_func_16_double_27 = 3;
     // for UNIFORM_TERNARY secret key distribution (K_UNIFORM_FEFBT)
     static const uint32_t R_func_696_double_27 = 9;
 
@@ -1790,6 +1833,25 @@ class FHECKKSRNS : public FHERNS {
             std::complex<double>(-1.6396846620747584922e-07, 0), std::complex<double>(0, -2.7852909912067652654e-08),
             std::complex<double>(4.4828133381284258415e-09, 0),  std::complex<double>(0, 6.8557357458132878181e-10),
             std::complex<double>(-9.9853771085012255071e-11, 0), std::complex<double>(0, -1.4132101422613974449e-11)};
+
+    // Coefficients for the function std::exp(1i * Pi/4.0 * x) in [-16, 16] of degree 27 (closed form
+    // 2*i^n*J_n(4*Pi)): the same Paterson-Stockmeyer depth as the degree-23 series with one double-angle
+    // iteration fewer, at a truncation error of ~2^-21 after the squarings (small scaling factors only)
+    static const inline std::vector<std::complex<double>> coeff_exp_16_double_27{
+            std::complex<double>(0.31501478496427687750, 0),     std::complex<double>(0, -0.30906163116838690992),
+            std::complex<double>(0.36420347128476984192, 0),     std::complex<double>(0, -0.19313206567599034744),
+            std::complex<double>(0.45641724005041715064, 0),     std::complex<double>(0, 0.097432173789545949605),
+            std::complex<double>(0.37888317967644294099, 0),     std::complex<double>(0, 0.45923895918882973998),
+            std::complex<double>(-0.13274787323051315200, 0),    std::complex<double>(0, 0.29021911751225008437),
+            std::complex<double>(-0.54845613741709337707, 0),    std::complex<double>(0, -0.58267593587793216119),
+            std::complex<double>(0.47163717215526726022, 0),     std::complex<double>(0, 0.31808471165479588976),
+            std::complex<double>(-0.18648463220840543937, 0),    std::complex<double>(0, -0.097434602718189306273),
+            std::complex<double>(0.046123347553517305161, 0),    std::complex<double>(0, 0.020017537363214800328),
+            std::complex<double>(-0.0080367827844824775628, 0),  std::complex<double>(0, -0.0030061493574973910349),
+            std::complex<double>(0.0010536442839639873875, 0),   std::complex<double>(0, 0.00034770456357039340447),
+            std::complex<double>(-0.00010847261662061620677, 0), std::complex<double>(0, -0.000032102405185835951387),
+            std::complex<double>(9.0402822000715839700e-6, 0),   std::complex<double>(0, 2.4289291922536640746e-6),
+            std::complex<double>(-6.2411998411279630558e-7, 0),  std::complex<double>(0, -1.5369710214999056955e-7)};
 
     // Coefficients for the function std::exp(1i * Pi/256.0 * x) in [-696, 696] of degree 27
     // Need nine double-angle iterations to get std::exp(1i * 2Pi * x); the approximation error is about 2^-30
