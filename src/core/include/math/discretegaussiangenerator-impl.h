@@ -40,13 +40,16 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <random>
 #include <string>
+#include <typeinfo>
 #include <vector>
 
 #include "math/discretegaussiangenerator.h"
 #include "utils/exception.h"
+#include "utils/prng/blake2engine.h"
 
 namespace lbcrypto {
 
@@ -91,53 +94,77 @@ void DiscreteGaussianGeneratorImpl<VecType>::Initialize() {
 }
 
 template <typename VecType>
-int64_t DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<double>& S, double search) {
-    // STL binary search implementation
-    auto lower = std::lower_bound(S.begin(), S.end(), search);
-    if (lower != S.end())
-        return lower - S.begin() + 1;
-    OPENFHE_THROW("DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
-}
-
-template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
     return GenerateInt(PseudoRandomNumberGenerator::GetPRNG());
 }
 
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt(PRNG& g) const {
+    const uint32_t w0{g()};
+    const uint32_t w1{g()};
+    return InversionSample(w0, w1);
+}
+
+template <typename VecType>
+int64_t DiscreteGaussianGeneratorImpl<VecType>::InversionSample(uint32_t w0, uint32_t w1) const {
+    static_assert(PRNG::min() == 0 && PRNG::max() == std::numeric_limits<uint32_t>::max(),
+                  "PRNG words must be uniform over all 32-bit values");
     // we need to use the binary uniform generator rather than regular continuous
     // distribution; see DG14 for details
-    double seed = std::uniform_real_distribution<double>(0.0, 1.0)(g) - 0.5;
-    double tmp = std::abs(seed) - m_a / 2;
-    return (tmp <= 0.0) ? 0 : FindInVector(m_vals, tmp) * (seed > 0.0 ? 1 : -1);
+    const double u{(static_cast<double>(w1) * 0x1p32 + static_cast<double>(w0)) * 0x1p-64};
+    const double seed{std::min(u, LARGEST_BELOW_ONE) - 0.5};
+    const double tmp{std::abs(seed) - m_a / 2};
+    const size_t head{std::min(m_vals.size(), HEAD_SIZE)};
+    size_t below{0};
+    for (size_t i = 0; i < head; ++i)
+        below += static_cast<size_t>(m_vals[i] < tmp);
+    if (below == head)
+        below += std::lower_bound(m_vals.begin() + head, m_vals.end(), tmp) - (m_vals.begin() + head);
+    if (below == m_vals.size() && tmp > 0.0)
+        OPENFHE_THROW("DGG Inversion Sampling. Value not found: " + std::to_string(tmp));
+    const int64_t mag{(tmp <= 0.0) ? 0 : static_cast<int64_t>(below) + 1};
+    return (seed > 0.0) ? mag : -mag;
+}
+
+template <typename VecType>
+template <typename Store>
+void DiscreteGaussianGeneratorImpl<VecType>::ForEachSample(uint32_t size, Store&& store) const {
+    auto& g = PseudoRandomNumberGenerator::GetPRNG();
+    if (!m_peikert) {
+        for (uint32_t i = 0; i < size; ++i)
+            store(i, GenerateIntegerKarney(0, m_std, g));
+    } else if (typeid(g) == typeid(default_prng::Blake2Engine)) {
+        auto& blake = static_cast<default_prng::Blake2Engine&>(g);
+        for (uint32_t i = 0; i < size; ++i) {
+            const uint32_t w0{blake.default_prng::Blake2Engine::operator()()};
+            const uint32_t w1{blake.default_prng::Blake2Engine::operator()()};
+            store(i, InversionSample(w0, w1));
+        }
+    } else {
+        for (uint32_t i = 0; i < size; ++i)
+            store(i, GenerateInt(g));
+    }
 }
 
 template <typename VecType>
 std::vector<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(uint32_t size) const {
     std::vector<int64_t> ans(size);
-    auto& g = PseudoRandomNumberGenerator::GetPRNG();
-    for (uint32_t i = 0; i < size; ++i)
-        ans[i] = m_peikert ? GenerateInt(g) : GenerateIntegerKarney(0, m_std, g);
+    ForEachSample(size, [&ans](uint32_t i, int64_t val) { ans[i] = val; });
     return ans;
 }
 
 template <typename VecType>
 typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
         const typename VecType::Integer& modulus) const {
-    auto val = m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std);
-    return (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
+    return Residue(m_peikert ? GenerateInt() : GenerateIntegerKarney(0, m_std), modulus);
 }
 
 template <typename VecType>
 VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(uint32_t size,
                                                                const typename VecType::Integer& modulus) const {
     VecType ans(size, modulus);
-    auto& g = PseudoRandomNumberGenerator::GetPRNG();
-    for (uint32_t i = 0; i < size; ++i) {
-        auto val = m_peikert ? GenerateInt(g) : GenerateIntegerKarney(0, m_std, g);
-        ans[i] = (val < 0) ? modulus - typename VecType::Integer(-val) : typename VecType::Integer(val);
-    }
+    const typename VecType::Integer q{modulus};
+    ForEachSample(size, [&ans, &q](uint32_t i, int64_t val) { ans[i] = Residue(val, q); });
     return ans;
 }
 

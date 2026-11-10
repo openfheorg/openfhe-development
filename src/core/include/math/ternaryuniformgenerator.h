@@ -39,6 +39,7 @@
 #include <cstdint>
 #include <memory>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 #include "math/distributiongenerator.h"
@@ -86,7 +87,50 @@ class TernaryUniformGeneratorImpl {
     std::vector<int32_t> GenerateIntVector(uint32_t size, uint32_t h = 0) const;
 
   private:
-    static std::uniform_int_distribution<int32_t> m_distribution;
+    /**
+     * @brief Uniform draws from {0, 1, 2}: the base-3 digits of uniform 32-bit words below 3^20, 20 draws per word;
+     * words at or above 3^20 are rejected.
+     */
+    class Draws {
+      public:
+        explicit Draws(PRNG& prng) : m_prng{prng} {}
+
+        uint32_t operator()() {
+            if (m_digitsLeft == 0) {
+                do {
+                    m_word = m_prng();
+                } while (m_word >= WORD_BOUND);
+                m_digitsLeft = DIGITS_PER_WORD;
+            }
+            --m_digitsLeft;
+            const uint32_t digit{m_word % 3};
+            m_word /= 3;
+            return digit;
+        }
+
+      private:
+        static constexpr uint32_t DIGITS_PER_WORD{20};
+        static constexpr uint32_t WORD_BOUND{3486784401u};  // 3^DIGITS_PER_WORD
+        PRNG& m_prng;
+        uint32_t m_word{0};
+        uint32_t m_digitsLeft{0};
+    };
+
+    static constexpr bool NATIVE_VECTOR{std::is_same_v<VecType, intnat::NativeVectorT<typename VecType::Integer>>};
+
+    /**
+     * @brief Maps a draw from Draws to the residue of draw - 1 modulo modulus without a branch on the draw.
+     *
+     * @param draw a value in {0, 1, 2}.
+     * @param modulus the modulus, as a native word.
+     * @return modulus - 1, 0 or 1.
+     */
+    template <typename NInt>
+    static NInt MaskedResidue(uint32_t draw, NInt modulus) {
+        const NInt s{draw};
+        const NInt zeroMask{NInt(0) - NInt(s == 0)};
+        return s - 1 + (modulus & zeroMask);
+    }
 };
 
 }  // namespace lbcrypto

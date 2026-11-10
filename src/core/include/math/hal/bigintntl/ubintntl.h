@@ -732,11 +732,11 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
 
     myZZ ModMulFastConst(const myZZ& b, const myZZ& modulus, const myZZ& bInv) const {
-        OPENFHE_THROW("ModMulFastConst is not implemented for backend 6");
+        OPENFHE_THROW("Not implemented for backend 6");
     }
 
     myZZ& ModMulFastConstEq(const myZZ& b, const myZZ& modulus, const myZZ& bInv) {
-        OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 6");
+        OPENFHE_THROW("Not implemented for backend 6");
     }
 
     /**
@@ -885,6 +885,41 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
     }
     uint64_t ConvertToUint64() const;
     double ConvertToDouble() const;
+
+    /**
+     * Sets the value from 64-bit limbs.
+     *
+     * @param limbs the limbs, least significant first.
+     * @param n the number of limbs.
+     */
+    void SetLimbs(const uint64_t* limbs, size_t n) {
+        if constexpr (NTL_ZZ_NBITS == 64) {
+            ZZ_limbs_set(*this, reinterpret_cast<const ZZ_limb_t*>(limbs), static_cast<long>(n));  // NOLINT
+        } else {
+            constexpr uint32_t r{64 / NTL_ZZ_NBITS};
+            std::vector<ZZ_limb_t> v(r * n);
+            for (size_t k = 0; k < v.size(); ++k)
+                v[k] = static_cast<ZZ_limb_t>(limbs[k / r] >> (NTL_ZZ_NBITS * (k % r)));
+            ZZ_limbs_set(*this, v.data(), static_cast<long>(v.size()));  // NOLINT
+        }
+        SetMSB();
+    }
+
+    /**
+     * Converts the value to 64-bit limbs.
+     *
+     * @return the limbs, least significant first, without leading zero limbs.
+     */
+    std::vector<uint64_t> GetLimbs() const {
+        const ZZ_limb_t* p{ZZ_limbs_get(*this)};
+        if constexpr (NTL_ZZ_NBITS == 64)
+            return std::vector<uint64_t>(p, p + size());
+        constexpr uint32_t r{64 / NTL_ZZ_NBITS};
+        std::vector<uint64_t> limbs((GetMSB() + 63) / 64, 0);
+        for (size_t k = 0; k < static_cast<size_t>(size()); ++k)
+            limbs[k / r] |= static_cast<uint64_t>(p[k]) << (NTL_ZZ_NBITS * (k % r));
+        return limbs;
+    }
 
     /**
      * Convert a string representation of a binary number to a myZZ.

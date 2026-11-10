@@ -1376,7 +1376,9 @@ class CryptoContextImpl : public Serializable {
             OPENFHE_THROW("Input plaintext is nullptr");
         ValidateKey(publicKey);
 
-        Ciphertext<Element> ciphertext = m_scheme->Encrypt(plaintext->GetElement<Element>(), publicKey);
+        Ciphertext<Element> ciphertext = m_scheme->Encrypt(
+                isBFVRNS(m_schemeId) ? plaintext->GetCoefficientElement<Element>() : plaintext->GetElement<Element>(),
+                publicKey);
 
         if (ciphertext) {
             ciphertext->SetSlots(plaintext->GetSlots());
@@ -1413,7 +1415,9 @@ class CryptoContextImpl : public Serializable {
         //      OPENFHE_THROW( "Input plaintext is nullptr");
         ValidateKey(privateKey);
 
-        Ciphertext<Element> ciphertext = m_scheme->Encrypt(plaintext->GetElement<Element>(), privateKey);
+        Ciphertext<Element> ciphertext = m_scheme->Encrypt(
+                isBFVRNS(m_schemeId) ? plaintext->GetCoefficientElement<Element>() : plaintext->GetElement<Element>(),
+                privateKey);
 
         if (ciphertext) {
             ciphertext->SetSlots(plaintext->GetSlots());

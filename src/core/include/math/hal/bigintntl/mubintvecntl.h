@@ -185,10 +185,10 @@ class myVecP : public NTL::Vec<myT>,
     void LazySwitchModulus(const myT& newModulus);
 
     myVecP& MultAccEqNoCheck(const myVecP& a, const myVecP& b) {
-        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
+        OPENFHE_THROW("Not implemented for backend 6");
     }
     myT& MultAccEqNoCheck(const myVecP& v, const myT& i) {
-        OPENFHE_THROW("MultAccEqNoCheck() not implemented for mubintvecntl");
+        OPENFHE_THROW("Not implemented for backend 6");
     }
 
     // public modulus accessors

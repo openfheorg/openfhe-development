@@ -35,6 +35,7 @@
 
 #include "math/hal/intnat/mubintvecnat.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <initializer_list>
 #include <string>
@@ -55,6 +56,21 @@ template <typename T>
 static inline T topBitMask(T x) {
     return static_cast<T>(0) - static_cast<T>(x >> (sizeof(T) * 8 - 1));
 }
+
+template <typename T>
+static inline T condSubLane(T v, T q) {
+#if defined(__clang__) && defined(__x86_64__)
+    if constexpr (sizeof(T) == sizeof(uint64_t)) {
+        const T t{static_cast<T>(v - q)};
+        return static_cast<T>(t + (q & topBitMask(t)));
+    }
+#endif
+    return v >= q ? static_cast<T>(v - q) : v;
+}
+
+#if defined(__GNUC__) && !defined(__clang__)
+    #define OPENFHE_BARRETT_MAC_CHUNK 128
+#endif
 
 template <typename T>
 static inline T modAddLane(T a, T b, T m) {
@@ -129,7 +145,7 @@ void NativeVectorT<IntegerType>::GeneralShrinkLoop(IntegerType* dst, const Integ
 template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<std::string> rhs) noexcept
-    : m_modulus{modulus}, m_data(length) {
+    : m_modulus{modulus}, m_data(length, 0) {
     const uint32_t vlen = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (uint32_t i = 0; i < vlen; ++i)
         m_data[i] = *(rhs.begin() + i) % m_modulus;
@@ -138,7 +154,7 @@ NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& mo
 template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(uint32_t length, const IntegerType& modulus,
                                           std::initializer_list<uint64_t> rhs) noexcept
-    : m_modulus{modulus}, m_data(length) {
+    : m_modulus{modulus}, m_data(length, 0) {
     const uint32_t vlen = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (uint32_t i = 0; i < vlen; ++i)
         m_data[i].m_value = BasicInt(*(rhs.begin() + i)) % m_modulus.m_value;
@@ -250,9 +266,22 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultAccEqNoCheck(const N
     if (iv.m_value >= mv.m_value)
         iv.ModEq(mv);
     auto iinv{iv.PrepModMulConst(mv)};
-    const uint32_t ringdm = m_data.size();
-    for (uint32_t i = 0; i < ringdm; ++i)
-        m_data[i].ModAddFastEq(V.m_data[i].ModMulFastConst(iv, mv, iinv), mv);
+    // ModMulFastConst followed by ModAddFastEq, flattened so the constants stay in registers and
+    // both corrections are selects; V may hold unreduced values, as ModMulFastConst allows
+    using NInt = decltype(mv.m_value);
+    const NInt m{mv.m_value};
+    const NInt bv{iv.m_value};
+    const NInt bp{iinv.m_value};
+    IntegerType* acc{m_data.data()};
+    const IntegerType* vd{V.m_data.data()};
+    const size_t size{m_data.size()};
+    for (size_t i = 0; i < size; ++i) {
+        const NInt x{vd[i].m_value};
+        const NInt q{static_cast<NInt>(IntegerType::MultDHi(x, bp) + 1)};
+        const NInt y{static_cast<NInt>(x * bv - q * m)};
+        const NInt r{static_cast<NInt>(y + (m & topBitMask(y)))};
+        acc[i].m_value = condSubLane(static_cast<NInt>(acc[i].m_value + r), m);
+    }
     return *this;
 }
 
@@ -320,7 +349,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const IntegerType&
     if (bv.m_value >= mv)
         bv.ModEq(m_modulus);
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modAddLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
@@ -364,7 +393,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVector
 #else
     const auto mv{m_modulus.m_value};
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modAddLane(m_data[i].m_value, b.m_data[i].m_value, mv);
     return ans;
@@ -389,7 +418,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const IntegerType&
     if (bv.m_value >= mv)
         bv.ModEq(m_modulus);
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modSubLane(m_data[i].m_value, bv.m_value, mv);
     return ans;
@@ -418,7 +447,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVector
 #else
     const auto mv{m_modulus.m_value};
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = modSubLane(m_data[i].m_value, b.m_data[i].m_value, mv);
     return ans;
@@ -450,7 +479,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType&
     return ans;
 #else
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i] = m_data[i].ModMulFastConst(bv, mv, bconst);
     return ans;
@@ -474,7 +503,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVector
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     BarrettModMulLoop(ans.m_data.data(), m_data.data(), b.m_data.data(), size, m_modulus);
     return ans;
 }
@@ -491,7 +520,7 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModByTwo() const {
     auto halfQ{m_modulus.m_value >> 1};
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = 0x1 & (m_data[i].m_value ^ (m_data[i].m_value > halfQ));
     return ans;
@@ -529,7 +558,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const Nati
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW("Called on NativeVectorT's with different parameters.");
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = m_data[i].m_value * b.m_data[i].m_value;
     return ans;
@@ -664,7 +693,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(ui
         return NativeVectorT(m_data.size(), m_modulus);
     const auto mask = static_cast<BasicInt>((uint64_t{1} << digitLen) - 1);
     const size_t size{m_data.size()};
-    NativeVectorT ans(size, m_modulus);
+    NativeVectorT ans(size, m_modulus, lbcrypto::UninitializedTag{});
     for (size_t i = 0; i < size; ++i)
         ans.m_data[i].m_value = (m_data[i].m_value >> shift) & mask;
     return ans;
@@ -675,7 +704,9 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* a, const Integer
                                                    const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
-    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+    if constexpr (sizeof(NInt) == sizeof(uint64_t)) {
+        BarrettPortableLoop<false>(a, a, b, size, modulus);
+    } else if constexpr (sizeof(DInt) > sizeof(NInt)) {
         const NInt mv{modulus.m_value};
         const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
         const NInt mu{modulus.ComputeMu().m_value};
@@ -707,7 +738,9 @@ void NativeVectorT<IntegerType>::BarrettModMulLoop(IntegerType* dst, const Integ
                                                    size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
-    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+    if constexpr (sizeof(NInt) == sizeof(uint64_t)) {
+        BarrettPortableLoop<false>(dst, a, b, size, modulus);
+    } else if constexpr (sizeof(DInt) > sizeof(NInt)) {
         const NInt mv{modulus.m_value};
         const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
         const NInt mu{modulus.ComputeMu().m_value};
@@ -739,7 +772,9 @@ void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const Inte
                                                     size_t size, const IntegerType& modulus) {
     using NInt = decltype(modulus.m_value);
     using DInt = typename IntegerType::DNativeInt;
-    if constexpr (sizeof(DInt) > sizeof(NInt)) {
+    if constexpr (sizeof(NInt) == sizeof(uint64_t)) {
+        BarrettPortableLoop<true>(acc, a, b, size, modulus);
+    } else if constexpr (sizeof(DInt) > sizeof(NInt)) {
         const NInt mv{modulus.m_value};
         const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
         const NInt mu{modulus.ComputeMu().m_value};
@@ -755,17 +790,67 @@ void NativeVectorT<IntegerType>::BarrettMultAccLoop(IntegerType* acc, const Inte
             IntegerType::MultD(IntegerType::RShiftD(prod, n), mu, prod);
             r -= IntegerType::RShiftD(prod, n + 7) * mv;
 #endif
-            if (r >= mv)
-                r -= mv;
-            NInt t{acc[i].m_value + r};
-            if (t >= mv)
-                t -= mv;
-            acc[i].m_value = t;
+            r = condSubLane(r, mv);
+            acc[i].m_value = condSubLane(static_cast<NInt>(acc[i].m_value + r), mv);
         }
     } else {
         const auto mu{modulus.ComputeMu()};
         for (size_t i = 0; i < size; ++i)
             acc[i].ModAddFastEq(a[i].ModMulFast(b[i], modulus, mu), modulus);
+    }
+}
+
+template <class IntegerType>
+template <bool kAccumulate>
+void NativeVectorT<IntegerType>::BarrettPortableLoop(IntegerType* dst, const IntegerType* a, const IntegerType* b,
+                                                     size_t size, const IntegerType& modulus) {
+    constexpr int64_t W{IntegerType::MaxBits()};
+    const BasicInt mv{modulus.m_value};
+    const int64_t n{static_cast<int64_t>(modulus.GetMSB()) - 2};
+    const BasicInt mu{modulus.ComputeMu().m_value};
+    const int64_t hiShift{n + 7 > W ? n + 7 - W : 0};
+    const BasicInt muHi{static_cast<BasicInt>(mu << (W - 7 - n + hiShift))};
+    if (hiShift == 0)
+        BarrettLanes<0, kAccumulate>(dst, a, b, size, mv, n, muHi, hiShift);
+    else if (hiShift == 1)
+        BarrettLanes<1, kAccumulate>(dst, a, b, size, mv, n, muHi, hiShift);
+    else
+        BarrettLanes<-1, kAccumulate>(dst, a, b, size, mv, n, muHi, hiShift);
+}
+
+template <class IntegerType>
+template <int kHiShift, bool kAccumulate>
+void NativeVectorT<IntegerType>::BarrettLanes(IntegerType* dst, const IntegerType* a, const IntegerType* b, size_t size,
+                                              BasicInt mv, int64_t n, BasicInt muHi, int64_t hiShift) {
+#ifdef OPENFHE_BARRETT_MAC_CHUNK
+    if constexpr (kAccumulate) {
+        IntegerType prod[OPENFHE_BARRETT_MAC_CHUNK];
+        for (size_t base = 0; base < size; base += OPENFHE_BARRETT_MAC_CHUNK) {
+            const size_t len{std::min<size_t>(OPENFHE_BARRETT_MAC_CHUNK, size - base)};
+            BarrettLanes<kHiShift, false>(prod, a + base, b + base, len, mv, n, muHi, hiShift);
+            IntegerType* acc{dst + base};
+            for (size_t i = 0; i < len; ++i)
+                acc[i].m_value = modAddLane(acc[i].m_value, prod[i].m_value, mv);
+        }
+        return;
+    }
+#endif
+#if defined(__clang__)
+    #pragma clang loop vectorize(disable)
+#endif
+    for (size_t i = 0; i < size; ++i) {
+        typename IntegerType::typeD prod;
+        IntegerType::MultD(a[i].m_value, b[i].m_value, prod);
+        BasicInt q{IntegerType::MultDHi(IntegerType::RShiftD(prod, n), muHi)};
+        if constexpr (kHiShift > 0)
+            q >>= kHiShift;
+        else if constexpr (kHiShift < 0)
+            q >>= hiShift;
+        const BasicInt r{condSubLane(static_cast<BasicInt>(prod.lo - q * mv), mv)};
+        if constexpr (kAccumulate)
+            dst[i].m_value = condSubLane(static_cast<BasicInt>(dst[i].m_value + r), mv);
+        else
+            dst[i].m_value = r;
     }
 }
 

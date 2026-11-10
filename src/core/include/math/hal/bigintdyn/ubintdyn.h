@@ -645,10 +645,10 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
     }
 
     ubint ModMulFastConst(const ubint& b, const ubint& modulus, const ubint& bInv) const {
-        OPENFHE_THROW("ModMulFastConst is not implemented for backend 4");
+        OPENFHE_THROW("Not implemented for backend 4");
     }
     ubint& ModMulFastConstEq(const ubint& b, const ubint& modulus, const ubint& bInv) {
-        OPENFHE_THROW("ModMulFastConstEq is not implemented for backend 4");
+        OPENFHE_THROW("Not implemented for backend 4");
     }
 
     /**
@@ -736,6 +736,34 @@ class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
      */
     float ConvertToFloat() const;
     double ConvertToDouble() const;
+
+    /**
+     * Sets the value from 64-bit limbs.
+     *
+     * @param limbs the limbs, least significant first.
+     * @param n the number of limbs.
+     */
+    void SetLimbs(const uint64_t* limbs, size_t n) {
+        constexpr uint32_t r{64 / m_limbBitLength};
+        m_value.resize(n > 0 ? r * n : 1);
+        m_value[0] = 0;
+        for (size_t k = 0; k < r * n; ++k)
+            m_value[k] = static_cast<limb_t>(limbs[k / r] >> (m_limbBitLength * (k % r)));
+        NormalizeLimbs();
+    }
+
+    /**
+     * Converts the value to 64-bit limbs.
+     *
+     * @return the limbs, least significant first, without leading zero limbs.
+     */
+    std::vector<uint64_t> GetLimbs() const {
+        constexpr uint32_t r{64 / m_limbBitLength};
+        std::vector<uint64_t> limbs((m_MSB + 63) / 64, 0);
+        for (size_t k = 0; k < m_value.size() && k / r < limbs.size(); ++k)
+            limbs[k / r] |= static_cast<uint64_t>(m_value[k]) << (m_limbBitLength * (k % r));
+        return limbs;
+    }
 
     /**
      * Convert a string representation of a binary number to a ubint.

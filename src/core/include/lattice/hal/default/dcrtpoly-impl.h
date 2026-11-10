@@ -43,6 +43,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -146,7 +147,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<DC
     const auto dggValues = dgg.GenerateIntVector(rdim);
     m_vectors.reserve(m_params->GetParams().size());
     for (auto& p : m_params->GetParams()) {
-        NativeVector ildv(rdim, p->GetModulus());
+        NativeVector ildv(rdim, p->GetModulus(), lbcrypto::UninitializedTag{});
         if (dgg.GetStd() > p->GetModulus().ConvertToDouble()) {
             auto modulus = (p->GetModulus()).template ConvertToInt<int64_t>();
             for (uint32_t j = 0; j < rdim; ++j) {
@@ -154,9 +155,13 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<DC
                 ildv[j] = (k < 0) ? p->GetModulus() - static_cast<NativeInteger>(-k) : static_cast<NativeInteger>(k);
             }
         } else {
-            for (uint32_t j = 0; j < rdim; ++j)
-                ildv[j] = (dggValues[j] < 0) ? p->GetModulus() - static_cast<NativeInteger>(-dggValues[j]) :
-                                               static_cast<NativeInteger>(dggValues[j]);
+            using NInt = typename NativeInteger::Integer;
+            const NInt modv{p->GetModulus().template ConvertToInt<NInt>()};
+            for (uint32_t j = 0; j < rdim; ++j) {
+                const NInt x{static_cast<NInt>(dggValues[j])};
+                const NInt negMask{NInt(0) - NInt(dggValues[j] < 0)};
+                ildv[j] = NativeInteger(x + (modv & negMask));
+            }
         }
         m_vectors.emplace_back(p);
         m_vectors.back().SetValues(std::move(ildv), Format::COEFFICIENT);
@@ -197,10 +202,14 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Pa
     const auto tugValues = tug.GenerateIntVector(rdim, h);
     m_vectors.reserve(m_params->GetParams().size());
     for (auto& p : m_params->GetParams()) {
-        NativeVector iltvs(rdim, p->GetModulus());
-        for (uint32_t j = 0; j < rdim; ++j)
-            iltvs[j] = (tugValues[j] < 0) ? p->GetModulus() - static_cast<NativeInteger>(-tugValues[j]) :
-                                            static_cast<NativeInteger>(tugValues[j]);
+        NativeVector iltvs(rdim, p->GetModulus(), lbcrypto::UninitializedTag{});
+        using NInt = typename NativeInteger::Integer;
+        const NInt modv{p->GetModulus().template ConvertToInt<NInt>()};
+        for (uint32_t j = 0; j < rdim; ++j) {
+            const NInt x{static_cast<NInt>(static_cast<int64_t>(tugValues[j]))};
+            const NInt negMask{NInt(0) - NInt(tugValues[j] < 0)};
+            iltvs[j] = NativeInteger(x + (modv & negMask));
+        }
         m_vectors.emplace_back(p);
         m_vectors.back().SetValues(std::move(iltvs), Format::COEFFICIENT);
         m_vectors.back().SetFormat(m_format);
@@ -749,6 +758,90 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
     this->OverrideFormat(Format::EVALUATION);
 }
 
+template <typename VecType>
+void DCRTPolyImpl<VecType>::DropLastElementsAndScale(const std::vector<std::vector<NativeInteger>>& qlInvModq,
+                                                     uint32_t firstDropIdx, uint32_t levels) {
+    if (levels == 0)
+        return;
+    if (levels == 1) {
+        DropLastElementAndScale(qlInvModq.at(firstDropIdx));
+        return;
+    }
+    const uint32_t sizeQl = m_vectors.size();
+    if (levels >= sizeQl)
+        OPENFHE_THROW("the number of towers to drop must be smaller than the number of towers.");
+    if (qlInvModq.size() < firstDropIdx + levels)
+        OPENFHE_THROW("too few modulus switching rows.");
+    const uint32_t sizeQr = sizeQl - levels;
+
+    // the k-th dropped tower is t = sizeQl - 1 - k; for every tower i below it, mul[k][i] = q_{t+1} ... q_{sizeQl-1}
+    // mod q_i; scal[i] is the product of [q_t^{-1}]_{q_i} over the dropped towers above i
+    std::vector<NativeInteger> moduli(sizeQl);
+    for (uint32_t i = 0; i < sizeQl; ++i)
+        moduli[i] = m_vectors[i].GetModulus();
+    std::vector<NativeInteger> mul(levels * sizeQl);
+    std::vector<NativeInteger> scal(sizeQl, NativeInteger(1));
+    for (uint32_t k = 0; k < levels; ++k) {
+        const uint32_t t = sizeQl - 1 - k;
+        const auto& qlInv = qlInvModq[firstDropIdx + k];
+        for (uint32_t i = 0; i < t; ++i) {
+            const auto& qi = moduli[i];
+            mul[k * sizeQl + i] =
+                    (k == 0) ? NativeInteger(1) : mul[(k - 1) * sizeQl + i].ModMul(moduli[t + 1].Mod(qi), qi);
+            scal[i].ModMulEq(qlInv[i], qi);
+        }
+    }
+
+    std::vector<PolyType> xDropped(levels);
+    for (uint32_t k = 0; k < levels; ++k)
+        xDropped[k] = std::move(m_vectors[sizeQl - 1 - k]);
+    this->DropLastElements(levels);
+    std::vector<PolyType> num(sizeQl - 1);
+
+#pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(sizeQl - 1))
+    {
+#pragma omp for
+        for (uint32_t k = 0; k < levels; ++k)
+            xDropped[k].SetFormat(Format::COEFFICIENT);
+
+        // the value of the k-th dropped tower is d = (x - n) * s mod q; its centered lift times mul[k][i] is
+        // accumulated into the numerators of the towers below it
+        for (uint32_t k = 0; k < levels; ++k) {
+            const uint32_t t = sizeQl - 1 - k;
+            PolyType& d = xDropped[k];
+            if (k > 0) {
+#pragma omp single
+                {
+                    d -= num[t];
+                    d *= scal[t];
+                }
+            }
+#pragma omp for
+            for (uint32_t i = 0; i < t; ++i) {
+                const auto& params = (i < sizeQr) ? m_vectors[i].GetParams() : xDropped[sizeQl - 1 - i].GetParams();
+                PolyType lift(params, Format::COEFFICIENT);
+                lift.SetValues(NativeVector(d.GetValues(), moduli[i]), Format::COEFFICIENT);
+                if (k == 0)
+                    num[i] = std::move(lift);
+                else
+                    num[i].MultAccEqNoCheck(lift, mul[k * sizeQl + i]);
+            }
+        }
+
+        // one NTT per kept tower; (x_i - n_i) * s_i is computed as (n_i - x_i) * (q_i - s_i)
+#pragma omp for
+        for (uint32_t i = 0; i < sizeQr; ++i) {
+            PolyType& n = num[i];
+            n.SetFormat(Format::EVALUATION);
+            m_vectors[i].SetFormat(Format::EVALUATION);
+            n -= m_vectors[i];
+            n *= (moduli[i] - scal[i]);
+            m_vectors[i] = std::move(n);
+        }
+    }
+    m_format = Format::EVALUATION;
+}
+
 /**
 * Used for BGVrns modulus switching
 * This function performs ModReduce on ciphertext element and private key
@@ -816,6 +909,108 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
     const uint32_t t(m_vectors.size());
     const uint32_t r{m_params->GetRingDimension()};
     const Integer qt{m_params->GetModulus()};
+
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    {
+        // V[j] = Sigma_i y(i,j) * qt/qi - v(j) * qt, where y(i,j) = M(i,j) * [(qt/qi)^(-1) mod qi] mod qi
+        // and v(j) = floor(Sigma_i y(i,j) / qi). The sum is assembled in 64-bit limbs; the
+        // floating-point estimate of v(j) is corrected exactly, so V[j] ends in [0, qt).
+        const std::vector<uint64_t> qtLimbs{qt.GetLimbs()};
+        const size_t L{qtLimbs.size()};
+        std::vector<uint64_t> qHat(L * t, 0);
+        std::vector<NativeInteger> qHatInv(t), qHatInvPrecon(t);
+        std::vector<double> qInv(t);
+        std::vector<const NativeVector*> M(t);
+        for (uint32_t i = 0; i < t; ++i) {
+            const NativeInteger& qi{m_vectors[i].GetModulus()};
+            const Integer qiBig{qi.ConvertToInt()};
+            const Integer h{qt / qiBig};
+            qHatInv[i] = NativeInteger(h.Mod(qiBig).template ConvertToInt<uint64_t>()).ModInverse(qi);
+            qHatInvPrecon[i] = qHatInv[i].PrepModMulConst(qi);
+            qInv[i] = 1.0 / qi.ConvertToDouble();
+            const std::vector<uint64_t> hLimbs{h.GetLimbs()};
+            for (size_t k = 0; k < hLimbs.size(); ++k)
+                qHat[k * t + i] = hLimbs[k];
+            M[i] = &m_vectors[i].GetValues();
+        }
+        const uint64_t* const qtl{qtLimbs.data()};
+
+        VecType V(r, qt);
+    #pragma omp parallel num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
+        {
+            std::vector<uint64_t> accv(L + 1), yv(t);
+            uint64_t* const acc{accv.data()};
+            uint64_t* const y{yv.data()};
+    #pragma omp for
+            for (uint32_t j = 0; j < r; ++j) {
+                double f{0.0};
+                for (uint32_t i = 0; i < t; ++i) {
+                    const NativeInteger& qi{M[i]->GetModulus()};
+                    y[i] = (*M[i])[j].ModMulFastConst(qHatInv[i], qi, qHatInvPrecon[i]).ConvertToInt();
+                    f += static_cast<double>(static_cast<int64_t>(y[i])) * qInv[i];
+                }
+                uint128_t col{0};
+                for (size_t k = 0; k < L; ++k) {
+                    const uint64_t* const h{&qHat[k * t]};
+                    uint64_t top{0};
+                    for (uint32_t i = 0; i < t; ++i)
+                        top += __builtin_add_overflow(col, static_cast<uint128_t>(y[i]) * h[i], &col);
+                    acc[k] = static_cast<uint64_t>(col);
+                    col = (col >> 64) | (static_cast<uint128_t>(top) << 64);
+                }
+                acc[L] = static_cast<uint64_t>(col);
+                // acc -= v * qt; the top limb holds the sign afterwards
+                const uint64_t v{static_cast<uint64_t>(f)};
+                uint64_t carry{0}, borrow{0};
+                for (size_t k = 0; k < L; ++k) {
+                    const uint128_t p{static_cast<uint128_t>(v) * qtl[k] + carry};
+                    carry = static_cast<uint64_t>(p >> 64);
+                    const uint64_t s{static_cast<uint64_t>(p)};
+                    const uint64_t d{acc[k] - s};
+                    const uint64_t nb{static_cast<uint64_t>(acc[k] < s) | static_cast<uint64_t>(d < borrow)};
+                    acc[k] = d - borrow;
+                    borrow = nb;
+                }
+                acc[L] -= carry + borrow;
+                while (static_cast<int64_t>(acc[L]) < 0) {
+                    uint64_t c{0};
+                    for (size_t k = 0; k < L; ++k) {
+                        const uint128_t s{static_cast<uint128_t>(acc[k]) + qtl[k] + c};
+                        acc[k] = static_cast<uint64_t>(s);
+                        c = static_cast<uint64_t>(s >> 64);
+                    }
+                    acc[L] += c;
+                }
+                while (true) {
+                    bool ge{acc[L] != 0};
+                    if (!ge) {
+                        size_t k{L};
+                        while (k > 0 && acc[k - 1] == qtl[k - 1])
+                            --k;
+                        ge = (k == 0) || acc[k - 1] > qtl[k - 1];
+                    }
+                    if (!ge)
+                        break;
+                    uint64_t b{0};
+                    for (size_t k = 0; k < L; ++k) {
+                        const uint64_t d{acc[k] - qtl[k]};
+                        const uint64_t nb{static_cast<uint64_t>(acc[k] < qtl[k]) | static_cast<uint64_t>(d < b)};
+                        acc[k] = d - b;
+                        b = nb;
+                    }
+                    acc[L] -= b;
+                }
+                V[j].SetLimbs(acc, L);
+            }
+        }
+
+        // Setting the root of unity to ONE as the calculation is expensive and not required.
+        DCRTPolyImpl<VecType>::PolyLargeType poly(std::make_shared<ILParamsImpl<Integer>>(2 * r, qt, 1));
+        poly.SetValues(std::move(V), Format::COEFFICIENT);
+        return poly;
+    }
+#endif
+
     Integer tmp1, tmp2;
 
     std::vector<Integer> multiplier;
@@ -922,7 +1117,12 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
         const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
         const std::vector<std::vector<NativeInteger>>& QHatModp,
         const std::vector<DoubleNativeInt>& modpBarrettMu) const {
+#if defined(HAVE_INT128) && (NATIVEINT == 64) && !defined(WITH_REDUCED_NOISE) && \
+        (defined(WITH_OPENMP) || (defined(__clang__) && !defined(WITH_NATIVEOPT)))
+    DCRTPolyImpl<VecType> ans(paramsP, m_format, lbcrypto::UninitializedTag{});
+#else
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
+#endif
     uint32_t sizeQ = (m_vectors.size() > paramsQ->GetParams().size()) ? paramsQ->GetParams().size() : m_vectors.size();
     uint32_t sizeP = ans.m_vectors.size();
 #if defined(HAVE_INT128) && (NATIVEINT == 64) && !defined(WITH_REDUCED_NOISE) && \
@@ -1138,7 +1338,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
     for (const auto& p : paramsP->GetParams())
         mu.push_back(p->GetModulus().ComputeMu());
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    DCRTPolyImpl<VecType> ans(paramsP, m_format, lbcrypto::UninitializedTag{});
+#else
     DCRTPolyImpl<VecType> ans(paramsP, m_format, true);
+#endif
     uint32_t ringDim = m_params->GetRingDimension();
 
 #pragma omp parallel for firstprivate(xQHatInvModq) \
@@ -1607,7 +1811,11 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     if constexpr (NATIVEINT == 32)
         OPENFHE_THROW("Use of ScaleAndRound with NATIVEINT == 32 may lead to overflow");
 
+#if defined(HAVE_INT128) && NATIVEINT == 64
+    DCRTPolyImpl<VecType> ans(paramsOutput, m_format, lbcrypto::UninitializedTag{});
+#else
     DCRTPolyImpl<VecType> ans(paramsOutput, m_format, true);
+#endif
     uint32_t ringDim = m_params->GetRingDimension();
     uint32_t sizeQP = m_vectors.size();
     uint32_t sizeO = ans.m_vectors.size();

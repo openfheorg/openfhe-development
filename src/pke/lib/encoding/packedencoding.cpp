@@ -133,6 +133,7 @@ bool PackedEncoding::Encode() {
             // Setting the first limb at the end make sure firstElement is available during the main loop
             this->encodedVectorDCRT.SetElementAtIndex(0, std::move(firstElement));
             this->encodedVectorDCRT.SetFormat(Format::EVALUATION);
+            this->towersFromFirst = true;
         }
     } else {
         BigVector temp(this->GetElementRingDimension(), BigInteger(this->GetElementModulus()));
@@ -400,12 +401,26 @@ void PackedEncoding::PackNativeVector(const PlaintextModulus& modulus, uint32_t 
 
     // Transform Eval to Coeff
     if (IsPowerOfTwo(m)) {
-        if (m_toCRTPerm[m].size() > 0) {
+        const std::vector<uint32_t>& perm = m_toCRTPerm[m];
+        if (modulusNI.GetMSB() <= MAX_MODULUS_SIZE32) {
+            NativeVector32 slots32(phim, NativeInteger32(static_cast<uint32_t>(modulus)));
+            if (perm.size() > 0) {
+                for (uint32_t i = 0; i < phim; i++)
+                    slots32[i] = NativeInteger32(slotValues[perm[i]].ConvertToInt<uint32_t>());
+            } else {
+                for (uint32_t i = 0; i < phim; i++)
+                    slots32[i] = NativeInteger32(slotValues[i].ConvertToInt<uint32_t>());
+            }
+            ChineseRemainderTransformFTT<NativeVector32>().InverseTransformFromBitReverseInPlace(
+                    NativeInteger32(m_initRoot[modulusM].ConvertToInt<uint32_t>()), m, &slots32);
+            for (uint32_t i = 0; i < phim; i++)
+                slotValues[i] = NativeInteger(slots32[i].ConvertToInt());
+        } else if (perm.size() > 0) {
             // Permute to CRT Order
             NativeVector permutedSlots(phim, modulusNI);
 
             for (uint32_t i = 0; i < phim; i++) {
-                permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
+                permutedSlots[i] = slotValues[perm[i]];
             }
             ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
                     permutedSlots, m_initRoot[modulusM], m, &slotValues);

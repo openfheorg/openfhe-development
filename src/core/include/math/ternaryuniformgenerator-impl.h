@@ -48,14 +48,16 @@
 namespace lbcrypto {
 
 template <typename VecType>
-std::uniform_int_distribution<int32_t> TernaryUniformGeneratorImpl<VecType>::m_distribution =
-        std::uniform_int_distribution<int32_t>(-1, 1);
-
-template <typename VecType>
 typename VecType::Integer TernaryUniformGeneratorImpl<VecType>::GenerateInteger(
         const typename VecType::Integer& modulus) const {
-    auto rn = m_distribution(PseudoRandomNumberGenerator::GetPRNG());
-    return rn >= 0 ? typename VecType::Integer(rn) : modulus - typename VecType::Integer(1);
+    Draws draw(PseudoRandomNumberGenerator::GetPRNG());
+    const uint32_t s{draw()};
+    if constexpr (NATIVE_VECTOR) {
+        using NInt = typename VecType::Integer::Integer;
+        return typename VecType::Integer(MaskedResidue<NInt>(s, modulus.template ConvertToInt<NInt>()));
+    } else {
+        return (s == 0) ? modulus - typename VecType::Integer(1) : typename VecType::Integer(s - 1);
+    }
 }
 
 template <typename VecType>
@@ -63,11 +65,19 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(uint32_t size, cons
                                                              uint32_t h) const {
     if (h == 0) {
         // regular ternary distribution
-        VecType v(size, modulus, modulus - typename VecType::Integer(1));
-        auto& prng = PseudoRandomNumberGenerator::GetPRNG();
-        for (uint32_t i = 0; i < size; ++i) {
-            if (auto rn = m_distribution(prng); rn >= 0)
-                v[i] = typename VecType::Integer(rn);
+        VecType v(size, modulus);
+        Draws draw(PseudoRandomNumberGenerator::GetPRNG());
+        if constexpr (NATIVE_VECTOR) {
+            using NInt = typename VecType::Integer::Integer;
+            const NInt modv{modulus.template ConvertToInt<NInt>()};
+            for (uint32_t i = 0; i < size; ++i)
+                v[i] = typename VecType::Integer(MaskedResidue<NInt>(draw(), modv));
+        } else {
+            const typename VecType::Integer minusOne{modulus - typename VecType::Integer(1)};
+            for (uint32_t i = 0; i < size; ++i) {
+                const uint32_t s{draw()};
+                v[i] = (s == 0) ? minusOne : typename VecType::Integer(s - 1);
+            }
         }
         return v;
     }
@@ -111,8 +121,9 @@ template <typename VecType>
 std::vector<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector(uint32_t size, uint32_t h) const {
     if (h == 0) {
         std::vector<int32_t> v(size);
+        Draws draw(PseudoRandomNumberGenerator::GetPRNG());
         for (uint32_t i = 0; i < size; ++i)
-            v[i] = m_distribution(PseudoRandomNumberGenerator::GetPRNG());
+            v[i] = static_cast<int32_t>(draw()) - 1;
         return v;
     }
 

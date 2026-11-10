@@ -95,6 +95,22 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
         if (initializeElementToZero)
             PolyImpl::SetValuesToZero();
     }
+
+    /**
+     * @brief Constructs an element with the given parameters and format whose values are allocated but left unset
+     * (zeroed for vector types other than NativeVectorT); every value must be written before it is read.
+     *
+     * @param params the element parameters (cyclotomic order, modulus, root of unity).
+     * @param format the format of the element (COEFFICIENT or EVALUATION).
+     */
+    PolyImpl(const std::shared_ptr<Params>& params, Format format, lbcrypto::UninitializedTag)
+        : m_format{format}, m_params{params} {
+        if constexpr (std::is_same_v<VecType, intnat::NativeVectorT<Integer>>)
+            m_values = std::make_unique<VecType>(params->GetRingDimension(), params->GetModulus(),
+                                                 lbcrypto::UninitializedTag{});
+        else
+            PolyImpl::SetValuesToZero();
+    }
     /**
      * @brief Constructs an element from double-CRT parameters: a single-modulus parameter set with the same cyclotomic
      * order, the composite modulus and a root of unity of 1 is created; the values are set to zero if requested and
@@ -431,10 +447,9 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
             OPENFHE_THROW("Modulus mismatch");
         if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
             OPENFHE_THROW("operator* for PolyImpl supported only in Format::EVALUATION");
-        auto tmp(*this);
-        tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
-        return tmp;
+        return TimesNoCheck(rhs);
     }
+
     /**
      * @brief Multiplies by rhs entry-wise (EVALUATION format) without checking the parameters.
      *
@@ -442,10 +457,11 @@ class PolyImpl final : public PolyInterface<PolyImpl<VecType>, VecType, PolyImpl
      * @return the result of the multiplication.
      */
     PolyImpl TimesNoCheck(const PolyImpl& rhs) const {
-        auto tmp(*this);
-        tmp.m_values->ModMulNoCheckEq(*rhs.m_values);
+        PolyImpl tmp(m_params, m_format);
+        tmp.m_values = std::make_unique<VecType>(m_values->ModMul(*rhs.m_values));
         return tmp;
     }
+
     /**
      * @brief Multiplies by rhs entry-wise (EVALUATION format) in place without checking the parameters.
      *

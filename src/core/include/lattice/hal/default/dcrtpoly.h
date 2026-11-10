@@ -83,11 +83,15 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
 
     DCRTPolyImpl() = default;
 
-    DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}
+    DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format} {
+        CopyTowers(e);
+    }
     DCRTPolyType& operator=(const DCRTPolyType& rhs) noexcept override {
-        m_params = rhs.m_params;
-        m_format = rhs.m_format;
-        m_vectors = rhs.m_vectors;
+        if (this != &rhs) {
+            m_params = rhs.m_params;
+            m_format = rhs.m_format;
+            CopyTowers(rhs);
+        }
         return *this;
     }
 
@@ -159,6 +163,20 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
         m_vectors.reserve(m_params->GetParams().size());
         for (const auto& p : m_params->GetParams())
             m_vectors.emplace_back(p, m_format, initializeElementToZero);
+    }
+
+    /**
+     * @brief Constructs an element with one tower per modulus of params whose values are allocated but left unset;
+     * every value must be written before it is read.
+     *
+     * @param params the double-CRT parameters defining the towers.
+     * @param format the format of the element (COEFFICIENT or EVALUATION).
+     */
+    DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format, lbcrypto::UninitializedTag) noexcept
+        : m_params{params}, m_format{format} {
+        m_vectors.reserve(m_params->GetParams().size());
+        for (const auto& p : m_params->GetParams())
+            m_vectors.emplace_back(p, m_format, lbcrypto::UninitializedTag{});
     }
 
     /**
@@ -527,6 +545,8 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
     void DropLastElement() override;
     void DropLastElements(size_t i) override;
     void DropLastElementAndScale(const std::vector<NativeInteger>& qlInvModq) override;
+    void DropLastElementsAndScale(const std::vector<std::vector<NativeInteger>>& qlInvModq, uint32_t firstDropIdx,
+                                  uint32_t levels) override;
 
     void ModReduce(const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon,
                    const NativeInteger& negtInvModq, const NativeInteger& negtInvModqPrecon,
@@ -914,6 +934,19 @@ class DCRTPolyImpl final : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecTy
     std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>()};
     Format m_format{Format::EVALUATION};
     std::vector<PolyType> m_vectors;
+
+    void CopyTowers(const DCRTPolyType& rhs) noexcept {
+        const uint32_t size = rhs.m_vectors.size();
+        if (size < 2 || !rhs.m_params || ParallelControls::InParallelRegion() ||
+            static_cast<uint64_t>(size) * rhs.m_params->GetRingDimension() < (uint64_t{1} << 16)) {
+            m_vectors = rhs.m_vectors;
+            return;
+        }
+        m_vectors.resize(size);
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
+        for (uint32_t i = 0; i < size; ++i)
+            m_vectors[i] = rhs.m_vectors[i];
+    }
 };
 
 }  // namespace lbcrypto
