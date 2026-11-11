@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -47,27 +47,31 @@ namespace lbcrypto {
 /**
  * @brief Runtime control of the number of OpenMP threads OpenFHE uses. Holds the thread count reported by the
  * system at construction (machine threads) and a current thread limit in [1, machine threads] that the library's
- * parallel regions consult through GetThreadLimit(). Without the PARALLEL build option every query returns 1 and
- * the setters are no-ops. A single global instance, OpenFHEParallelControls, is used throughout the library.
+ * parallel regions consult through GetThreadLimit(). The limit starts at the default thread count: half the
+ * processors available to the process when the system reports simultaneous multithreading as active (Linux), and
+ * the number of machine threads otherwise or when OMP_NUM_THREADS is set. Without the PARALLEL build option every
+ * query returns 1 and the setters are no-ops. A single global instance, OpenFHEParallelControls, is used throughout
+ * the library.
  */
 class ParallelControls {
   public:
     /**
      * @brief Constructor; latches the number of machine threads the system reports (can be overridden by the
-     * OpenMP environment variables) and allows all of them by default.
+     * OpenMP environment variables) and sets the thread limit to the default thread count.
      */
     ParallelControls() {
 #ifdef PARALLEL
         machineThreads = omp_get_max_threads();
-        threadLimit.store(machineThreads, std::memory_order_relaxed);
+        defaultThreads = DefaultThreads(machineThreads);
+        threadLimit.store(defaultThreads, std::memory_order_relaxed);
 #endif
     }
 
     /**
-     * @brief Enables parallel operation by setting the thread limit to the number of machine threads.
+     * @brief Enables parallel operation by setting the thread limit to the default thread count.
      */
     void Enable() {
-        SetNumThreads(machineThreads);
+        SetNumThreads(defaultThreads);
     }
 
     /**
@@ -98,6 +102,14 @@ class ParallelControls {
     }
 
     /**
+     * @brief Returns the default thread count the thread limit starts at and Enable() restores.
+     * @return the default thread count (1 without PARALLEL)
+     */
+    int GetDefaultThreads() const {
+        return defaultThreads;
+    }
+
+    /**
      * @brief Returns the current thread limit.
      * @return number of threads the library may currently use (1 without PARALLEL)
      */
@@ -123,12 +135,35 @@ class ParallelControls {
     }
 
     /**
-     * @brief Clamps a requested thread count to [1, current thread limit]; used as the num_threads value of the
-     * library's parallel regions.
+     * @brief Team width for a parallel region that requests n threads; used as the num_threads value of the
+     * library's parallel regions. The request is clamped to [1, current thread limit]. With libgomp, a top-level
+     * region that requests fewer threads than the calling thread's current team keeps that team's width until
+     * TEAM_SHRINK_REGIONS consecutive such regions have been requested; the team then shrinks to the widest of
+     * those requests. Threads without work wait at the region's closing barrier.
      * @param n requested number of threads (typically the amount of independent work available)
-     * @return n clamped to [1, current thread limit] (1 without PARALLEL)
+     * @return the team width (1 without PARALLEL)
      */
     int GetThreadLimit(int n) const {
+#ifdef PARALLEL
+        int lim = threadLimit.load(std::memory_order_relaxed);
+        int width = n > lim ? lim : (n < 1 ? 1 : n);
+    #ifdef _LIBGOMP_OMP_LOCK_DEFINED
+        if (width > 1 && omp_get_level() == 0)
+            width = TeamWidth(width, lim);
+    #endif
+        return width;
+#else
+        return 1;
+#endif
+    }
+
+    /**
+     * @brief Clamps a requested thread count to [1, current thread limit]; used where the thread count sizes the
+     * work split or selects an algorithm, and as the width of regions that must run with exactly that count.
+     * @param n requested number of threads
+     * @return n clamped to [1, current thread limit] (1 without PARALLEL)
+     */
+    int ClampToThreadLimit(int n) const {
 #ifdef PARALLEL
         int lim = threadLimit.load(std::memory_order_relaxed);
         return n > lim ? lim : (n < 1 ? 1 : n);
@@ -174,10 +209,27 @@ class ParallelControls {
 
   private:
 #ifdef PARALLEL
+    /** consecutive narrower top-level regions after which a libgomp team shrinks */
+    static constexpr int TEAM_SHRINK_REGIONS{256};
+
+    /**
+     * @brief Width of the calling thread's next top-level team for a request of `requested` threads, following the
+     * rule described in GetThreadLimit().
+     */
+    static int TeamWidth(int requested, int lim);
+
+    /**
+     * @brief Default thread count for a machine thread count of `machineThreads`: half the processors available to
+     * the process when the system reports simultaneous multithreading as active, that is fewer than
+     * `machineThreads` and OMP_NUM_THREADS is not set; otherwise `machineThreads`.
+     */
+    static int DefaultThreads(int machineThreads);
+
     std::atomic<int> threadLimit{1};
     int savedLimit{1};
 #endif
     int machineThreads{1};
+    int defaultThreads{1};
 };
 
 /** the global instance consulted by all parallel regions in the library */

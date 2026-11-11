@@ -374,7 +374,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
     NativeVector a(n, Q);
     NativeInteger bAcc(0);
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(std::min<uint32_t>((N * digitCount) / 128, 32));
+    int nthreads = OpenFHEParallelControls.ClampToThreadLimit(std::min<uint32_t>((N * digitCount) / 128, 32));
     if (nthreads < 2) {
         for (uint32_t i = 0; i < N; ++i)
             accumulateRow(i, a, bAcc);
@@ -563,7 +563,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
     std::vector<uint64_t> acc(n, 0);
     uint64_t bAcc{0};
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(std::min<uint32_t>((N * digitCount) / 128, 32));
+    int nthreads = OpenFHEParallelControls.ClampToThreadLimit(std::min<uint32_t>((N * digitCount) / 128, 32));
     if (nthreads < 2) {
         for (uint32_t i = 0; i < N; ++i)
             accumulateRow(i, acc, bAcc);

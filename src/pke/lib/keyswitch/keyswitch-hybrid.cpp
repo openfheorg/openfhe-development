@@ -132,7 +132,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     const auto& sOld = oldKey->GetPrivateElement();
     const auto& PModq = cryptoParams->GetPModq();
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(dug, dgg)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(dug) firstprivate(dgg)
     for (uint32_t part = 0; part < numPartQ; ++part) {
         auto a = (ekPrev == nullptr) ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
                                        ekPrev->GetAVector()[part];                    // threshold HE
@@ -244,7 +244,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
     const auto& newp1 = newKey->GetPublicElements().at(1);
     const auto& PModq = cryptoParams->GetPModq();
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(dgg, tug)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numPartQ)) private(tug) firstprivate(dgg)
     for (uint32_t part = 0; part < numPartQ; ++part) {
         auto u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, paramsQP, Format::EVALUATION) :
                                                                   DCRTPoly(tug, paramsQP, Format::EVALUATION);

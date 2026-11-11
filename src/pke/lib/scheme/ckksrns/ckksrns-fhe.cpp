@@ -2879,15 +2879,12 @@ Ciphertext<DCRTPoly> EvalMultExtRotated(ConstCiphertext<DCRTPoly> ciphertext, Co
     return result;
 }
 
-// av += cv * pt tower by tower in the extended basis, in one parallel region over the elements and towers: one
-// thread per tower of every element while that leaves part of the team idle, otherwise one thread per tower
+// av += cv * pt tower by tower in the extended basis, in one parallel region over the elements and towers
 void MultAccExtInPlace(std::vector<DCRTPoly>& av, const std::vector<DCRTPoly>& cv, const DCRTPoly& pt) {
     const uint32_t sizeCv = cv.size();
     const uint32_t numTowers = pt.GetNumOfElements();
     const uint32_t numTasks = sizeCv * numTowers;
-    const uint32_t width =
-            (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : numTowers;
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTasks))
     for (uint32_t task = 0; task < numTasks; ++task) {
         const uint32_t k = task / numTowers;
         const uint32_t i = task % numTowers;

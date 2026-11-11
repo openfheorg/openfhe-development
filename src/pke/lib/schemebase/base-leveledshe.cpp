@@ -381,9 +381,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
     for (const auto& entry : newIndices)
         (*evalKeys)[entry.first];
 
-    const uint32_t sz = newIndices.size();
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
-    for (uint32_t i = 0; i < sz; ++i) {
+    auto keyGen = [&](uint32_t i) {
         const auto [autoIndex, levels] = newIndices[i];
         auto index = NativeInteger(autoIndex).ModInverse(M).ConvertToInt<uint32_t>();
         std::vector<uint32_t> vec(N);
@@ -392,6 +390,15 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> LeveledSHEBase<Element>::E
         auto privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
         (*evalKeys)[autoIndex] = cc->GetScheme()->KeySwitchGen(privateKey, privateKeyPermuted, levels);
+    };
+
+    const uint32_t sz = newIndices.size();
+    if (sz == 1) {
+        keyGen(0);
+    } else {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
+        for (uint32_t i = 0; i < sz; ++i)
+            keyGen(i);
     }
 
     return evalKeys;

@@ -99,7 +99,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
     // measured team widths for the loops over the ring dimension
     /** OpenMP team width for the ring-dimension loops of the ScaleAndRound overloads that output a native polynomial */
-    static constexpr uint32_t THREADS_SCALE_TO_POLY{8};
+    static constexpr uint32_t THREADS_SCALE_TO_POLY{16};
     /** OpenMP team width for the ring-dimension loops of CRTInterpolate, SwitchCRTBasis, the scale-and-round
      *  methods over a CRT basis and the format switches beside them */
     static constexpr uint32_t THREADS_CRT_BASIS_SWITCH{16};
@@ -108,7 +108,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     /** smallest OpenMP team width used by ApproxSwitchCRTBasis */
     static constexpr uint32_t THREADS_APPROX_CRT_BASIS_SWITCH_MIN{8};
     /** inner-loop iterations (ring dimension x sizeQ x sizeP) per thread used to size the ApproxSwitchCRTBasis team */
-    static constexpr uint64_t APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD{1u << 17};
+    static constexpr uint64_t APPROX_CRT_BASIS_SWITCH_WORK_PER_THREAD{1u << 16};
 
     /**
      * @brief Computes the OpenMP team width for ApproxSwitchCRTBasis and the format switches beside it from the
