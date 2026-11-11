@@ -74,7 +74,7 @@ class BinaryUniformGeneratorImpl {
     VecType GenerateVector(const uint32_t size, const typename VecType::Integer& modulus) const;
 
   private:
-    static std::bernoulli_distribution m_distribution;
+    static inline std::bernoulli_distribution m_distribution{0.5};
 };
 
 }  // namespace lbcrypto

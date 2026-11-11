@@ -1178,7 +1178,7 @@ class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<u
     static constexpr uint8_t m_logUintBitLength{LogDtype<uint_type>::value};
 
     // variable to store the size of the data array.
-    static constexpr uint32_t m_nSize{(BITLENGTH + m_uintBitLength - 1) / m_uintBitLength};
+    static constexpr uint32_t m_nSize{BITLENGTH / m_uintBitLength + (BITLENGTH % m_uintBitLength != 0)};
 
     // The maximum number of digits in BigIntegerFixedT. It is used by the cout(ostream)
     // function for printing the bigbinarynumber.

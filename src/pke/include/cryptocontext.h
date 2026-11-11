@@ -243,8 +243,7 @@ class CryptoContextImpl : public Serializable {
     // cached evalmult keys, by secret key UID
     static inline std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
     // cached evalautomorphism keys, by secret key UID
-    static inline std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>>
-            s_evalAutomorphismKeyMap;
+    static inline std::map<std::string, std::shared_ptr<std::map<uint32_t, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
 
   protected:
     /// crypto parameters

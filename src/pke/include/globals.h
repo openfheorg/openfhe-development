@@ -59,17 +59,6 @@ void EnablePrecomputeCRTTablesAfterDeserializaton();
  */
 void DisablePrecomputeCRTTablesAfterDeserializaton();
 
-/**
- * Holds the library-wide settings; they are accessible only through the friend functions.
- */
-class GLOBALS {
-    static inline bool precomputeCRTTables{true};
-
-    friend bool PrecomputeCRTTablesAfterDeserializaton();
-    friend void EnablePrecomputeCRTTablesAfterDeserializaton();
-    friend void DisablePrecomputeCRTTablesAfterDeserializaton();
-};
-
 }  // namespace lbcrypto
 
 #endif  // SRC_PKE_INCLUDE_GLOBALS_H_

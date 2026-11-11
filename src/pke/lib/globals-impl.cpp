@@ -33,17 +33,23 @@
 
 namespace lbcrypto {
 
+namespace {
+
+bool precomputeCRTTables{true};
+
+}  // namespace
+
 //=============================================================================
 void EnablePrecomputeCRTTablesAfterDeserializaton() {
-    GLOBALS::precomputeCRTTables = true;
+    precomputeCRTTables = true;
 }
 //=============================================================================
 void DisablePrecomputeCRTTablesAfterDeserializaton() {
-    GLOBALS::precomputeCRTTables = false;
+    precomputeCRTTables = false;
 }
 //=============================================================================
 bool PrecomputeCRTTablesAfterDeserializaton() {
-    return GLOBALS::precomputeCRTTables;
+    return precomputeCRTTables;
 }
 //=============================================================================
 

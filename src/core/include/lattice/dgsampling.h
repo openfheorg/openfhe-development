@@ -50,24 +50,24 @@ namespace lbcrypto {
 
 // Statistical error in Gaussian sampling
 // corresponds to statistical error of 2^(-80)
-const double DG_ERROR = 8.27181e-25;
+constexpr double DG_ERROR = 8.27181e-25;
 
 // Maximum ring dimension to be supported - up to 560 bits in the modulus
-const int32_t N_MAX = 16384;
+constexpr int32_t N_MAX = 16384;
 
 // Smoothing parameter also used as a "standard deviation" for generating error
 // polynomials
 const double SIGMA = std::sqrt(std::log(2 * N_MAX / DG_ERROR) / M_PI);
 
 // Spectral norm for preimage samples
-const double SPECTRAL_CONSTANT = 1.8;
-const auto SPECTRAL_BOUND = [](uint64_t n, uint64_t k, uint64_t base) -> double {
+constexpr double SPECTRAL_CONSTANT = 1.8;
+constexpr auto SPECTRAL_BOUND = [](uint64_t n, uint64_t k, uint64_t base) -> double {
     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(n * k) + std::sqrt(2 * n) + 4.7);
 };
 
 // Spectral norm for preimage samples - for the case of matrices of ring
 // elements
-const auto SPECTRAL_BOUND_D = [](uint64_t n, uint64_t k, uint64_t base, uint64_t d) -> double {
+constexpr auto SPECTRAL_BOUND_D = [](uint64_t n, uint64_t k, uint64_t base, uint64_t d) -> double {
     return SPECTRAL_CONSTANT * (base + 1) * SIGMA * SIGMA * (std::sqrt(d * n * k) + std::sqrt(2 * n) + 4.7);
 };
 

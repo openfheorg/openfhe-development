@@ -245,7 +245,6 @@ class PackedEncoding : public PlaintextImpl {
     }
 
   private:
-    // TODO (dsuponit): we should not have globals!
     // initial root of unity for plaintext space
     static inline std::map<ModulusM, NativeInteger> m_initRoot;
     // modulus and root of unity to be used for Arbitrary CRT

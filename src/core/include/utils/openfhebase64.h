@@ -44,14 +44,14 @@
 namespace lbcrypto {
 
 /** the 64-character base64 alphabet "A-Za-z0-9+/", indexed by 6-bit value */
-extern const char to_base64_char[];
+inline constexpr char to_base64_char[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /**
  * @brief Encodes a 6-bit value as its base64 character.
  * @param c value in [0, 63]
  * @return the base64 character for c
  */
-inline unsigned char value_to_base64(int c) {
+inline constexpr unsigned char value_to_base64(int c) {
     return to_base64_char[c];
 }
 
@@ -81,7 +81,7 @@ inline unsigned char base64_to_value(unsigned char b64) {
  * @return the extracted 6-bit value
  */
 inline unsigned char get_6bits_atoffset(uint64_t m_value, uint32_t index) {
-    static unsigned char smallmask[] = {0, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f};
+    static constexpr unsigned char smallmask[] = {0, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f};
     if (index == 0)
         OPENFHE_THROW("Zero index in GetBitAtIndex");
     if (index <= 6)
