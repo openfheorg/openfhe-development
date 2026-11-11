@@ -300,7 +300,7 @@ class LeveledSHEBFVRNS : public LeveledSHERNS {
      * @param digits the digit decomposition created by EvalFastRotationPrecompute at the precomputation step.
      * @return the rotated ciphertext.
      */
-    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const uint32_t index, const uint32_t m,
+    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly>& ciphertext, const int32_t index, const uint32_t m,
                                           const std::shared_ptr<std::vector<DCRTPoly>> digits) const override;
 
     /**
@@ -321,7 +321,7 @@ class LeveledSHEBFVRNS : public LeveledSHERNS {
      * @param m the cyclotomic order.
      * @return the automorphism index.
      */
-    uint32_t FindAutomorphismIndex(uint32_t index, uint32_t m) const override;
+    uint32_t FindAutomorphismIndex(int32_t index, uint32_t m) const override;
 
     /**
      * Compresses a BFV ciphertext by dropping towers (with the exact RNS rescaling by the dropped moduli) until
