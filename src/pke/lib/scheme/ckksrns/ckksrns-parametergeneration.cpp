@@ -221,9 +221,9 @@ NativeInteger SmallestUnusedPrimeAbove(double minBits, double maxBits, uint32_t 
                                        const std::unordered_set<uint64_t>& moduliQRecord) {
     const NativeInteger bound(static_cast<uint64_t>(std::llround(std::exp2(minBits))));
     NativeInteger q = bound - (bound - NativeInteger(1)).Mod(cyclOrder);
-    double qBits    = 0.0;
+    double qBits = 0.0;
     do {
-        q     = NextPrime<NativeInteger>(q, cyclOrder);
+        q = NextPrime<NativeInteger>(q, cyclOrder);
         qBits = std::log2(q.ConvertToDouble());
     } while (qBits <= maxBits && moduliQRecord.find(q.ConvertToInt()) != moduliQRecord.end());
     return (qBits <= maxBits) ? q : NativeInteger(0);
@@ -446,7 +446,7 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         const double targetBits = std::min(remBits / (compositeDegree - d), static_cast<double>(maxPrimeBitSize));
         try {
             NativeInteger q = LargestUnusedPrime(targetBits, cyclOrder, moduliQRecord);
-            qBits[d]        = std::log2(q.ConvertToDouble());
+            qBits[d] = std::log2(q.ConvertToDouble());
 
             // A prime more than a bit short of its share means the primes of that size have run out.
             // Reach above the share then, for the prime closest to it from above, as long as that one
@@ -455,11 +455,11 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
             // SPARSE_ENCAPSULATED key encapsulation rely on.
             if ((targetBits - qBits[d]) > 1.0) {
                 const NativeInteger qAbove = SmallestUnusedPrimeAbove(
-                    targetBits, std::min(remBits, static_cast<double>(maxPrimeBitSize)), cyclOrder, moduliQRecord);
+                        targetBits, std::min(remBits, static_cast<double>(maxPrimeBitSize)), cyclOrder, moduliQRecord);
                 if (qAbove > NativeInteger(0)) {
                     const double qAboveBits = std::log2(qAbove.ConvertToDouble());
                     if ((qAboveBits - targetBits) < (targetBits - qBits[d])) {
-                        q        = qAbove;
+                        q = qAbove;
                         qBits[d] = qAboveBits;
                     }
                 }
@@ -467,12 +467,11 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
 
             // Store prime
             moduliQ[d] = q;
-            rootsQ[d]  = RootOfUnity(cyclOrder, moduliQ[d]);
+            rootsQ[d] = RootOfUnity(cyclOrder, moduliQ[d]);
             // Keep track of existing primes
             moduliQRecord.emplace(q.ConvertToInt());
             remBits -= qBits[d];
-        }
-        catch (const OpenFHEException& ex) {
+        } catch (const OpenFHEException& ex) {
             OPENFHE_THROW(compositeScalingErrMsg);
         }
     }
@@ -486,19 +485,18 @@ void ParameterGenerationCKKSRNS::CompositePrimeModuliGen(std::vector<NativeInteg
         if (budget <= qBits[d])
             continue;
         try {
-            const NativeInteger q   = LargestUnusedPrime(budget, cyclOrder, moduliQRecord);
+            const NativeInteger q = LargestUnusedPrime(budget, cyclOrder, moduliQRecord);
             const double grownQBits = std::log2(q.ConvertToDouble());
             if (grownQBits <= qBits[d])
                 continue;
 
             moduliQRecord.erase(moduliQ[d].ConvertToInt());
             moduliQ[d] = q;
-            rootsQ[d]  = RootOfUnity(cyclOrder, moduliQ[d]);
+            rootsQ[d] = RootOfUnity(cyclOrder, moduliQ[d]);
             moduliQRecord.emplace(q.ConvertToInt());
             remBits -= grownQBits - qBits[d];
             qBits[d] = grownQBits;
-        }
-        catch (const OpenFHEException& ex) {
+        } catch (const OpenFHEException& ex) {
             // no prime left to grow this one into; the one sampled above stands
             continue;
         }
