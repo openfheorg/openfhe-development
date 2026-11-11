@@ -118,7 +118,7 @@ using BigInteger = BigIntegerFixedT<integral_dtype, BigIntegerBitLength>;
  */
 template <uint32_t N>
 struct Log2 {
-    static const uint32_t value = 1 + Log2<N / 2>::value;
+    static constexpr uint32_t value = 1 + Log2<N / 2>::value;
 };
 
 /**
@@ -128,7 +128,7 @@ struct Log2 {
  */
 template <>
 struct Log2<2> {
-    static const uint32_t value = 1;
+    static constexpr uint32_t value = 1;
 };
 
 /**
@@ -139,7 +139,7 @@ struct Log2<2> {
  */
 template <typename U>
 struct LogDtype {
-    static const uint32_t value = Log2<8 * sizeof(U)>::value;
+    static constexpr uint32_t value = Log2<8 * sizeof(U)>::value;
 };
 
 /**
@@ -150,7 +150,7 @@ struct LogDtype {
  */
 template <typename Dtype>
 struct DataTypeChecker {
-    static const bool value = false;
+    static constexpr bool value = false;
 };
 
 /**
@@ -159,7 +159,7 @@ struct DataTypeChecker {
  */
 template <>
 struct DataTypeChecker<uint8_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -168,7 +168,7 @@ struct DataTypeChecker<uint8_t> {
  */
 template <>
 struct DataTypeChecker<uint16_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -177,7 +177,7 @@ struct DataTypeChecker<uint16_t> {
  */
 template <>
 struct DataTypeChecker<uint32_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -186,7 +186,7 @@ struct DataTypeChecker<uint32_t> {
  */
 template <>
 struct DataTypeChecker<uint64_t> {
-    static const bool value = true;
+    static constexpr bool value = true;
 };
 
 /**
@@ -197,7 +197,7 @@ struct DataTypeChecker<uint64_t> {
  */
 template <typename uint_type>
 struct UIntBitWidth {
-    static const int value = 8 * sizeof(uint_type);
+    static constexpr int value = 8 * sizeof(uint_type);
 };
 
 /**

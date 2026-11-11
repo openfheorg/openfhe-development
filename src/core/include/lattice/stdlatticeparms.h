@@ -152,6 +152,8 @@ class StdLatticeParm {
     static inline std::map<TableKey, Table> byRing;
     static inline std::map<TableKey, Table> byLogQ;
 
+    // builds the table of all parameter sets; defined in the .cpp so that the table is compiled only once
+    static std::vector<StdLatticeParm> MakeStandardLatticeParmSets();
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
     static inline bool initialized{false};
 
@@ -236,6 +238,9 @@ class StdLatticeParm {
         return maxLogQ;
     }
 };
+
+// defined here and not in the class because StdLatticeParm is incomplete there
+inline std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets = MakeStandardLatticeParmSets();
 
 } /* namespace lbcrypto */
 
