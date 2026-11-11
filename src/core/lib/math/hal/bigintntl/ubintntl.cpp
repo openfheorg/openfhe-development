@@ -55,9 +55,6 @@
 
 namespace NTL {
 
-// constant log2 of limb bitlength
-const uint32_t myZZ::m_log2LimbBitLength = Log2<NTL_ZZ_NBITS>::value;
-
 // CONSTRUCTORS
 
 myZZ::myZZ() : ZZ() {

@@ -149,11 +149,11 @@ class StdLatticeParm {
 
     using TableKey = std::pair<DistributionType, SecurityLevel>;
     using Table = std::map<uint32_t, StdLatticeParm*>;
-    static std::map<TableKey, Table> byRing;
-    static std::map<TableKey, Table> byLogQ;
+    static inline std::map<TableKey, Table> byRing;
+    static inline std::map<TableKey, Table> byLogQ;
 
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
-    static bool initialized;
+    static inline bool initialized{false};
 
   public:
     /**

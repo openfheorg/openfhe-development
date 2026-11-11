@@ -137,11 +137,6 @@ std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     return s;
 }
 
-std::map<StdLatticeParm::TableKey, StdLatticeParm::Table> StdLatticeParm::byRing;
-std::map<StdLatticeParm::TableKey, StdLatticeParm::Table> StdLatticeParm::byLogQ;
-
-bool StdLatticeParm::initialized = false;
-
 uint32_t StdLatticeParm::FindRingDim(DistributionType distType, SecurityLevel minSecLev, uint32_t curLogQ) {
     if (!initialized)
         initializeLookups();

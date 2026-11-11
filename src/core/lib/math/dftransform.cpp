@@ -50,9 +50,6 @@
 
 namespace lbcrypto {
 
-std::complex<double>* DiscreteFourierTransform::rootOfUnityTable = nullptr;
-std::unordered_map<uint32_t, DiscreteFourierTransform::PrecomputedValues> DiscreteFourierTransform::precomputedValues;
-
 DiscreteFourierTransform::PrecomputedValues::PrecomputedValues(uint32_t m, uint32_t nh) {
     m_M = m;
     m_Nh = nh;
