@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,8 +35,60 @@
 
 #include "utils/parallel.h"
 
+#ifdef PARALLEL
+    #include <cstdio>
+    #include <cstdlib>
+#endif
+
 namespace lbcrypto {
 
 ParallelControls OpenFHEParallelControls;
 
+#ifdef PARALLEL
+namespace {
+// width of the calling thread's current top-level team and the narrower requests made since it was set
+struct TeamState {
+    int width{1};
+    int narrower{0};
+    int widestNarrower{1};
+};
+thread_local TeamState team;
+
+bool SmtActive() {
+    #if defined(__linux__)
+    std::FILE* file = std::fopen("/sys/devices/system/cpu/smt/active", "r");
+    if (file == nullptr)
+        return false;
+    const int c = std::fgetc(file);
+    std::fclose(file);
+    return c == '1';
+    #else
+    return false;
+    #endif
 }
+}  // namespace
+
+int ParallelControls::TeamWidth(int requested, int lim) {
+    if (team.width > lim)
+        team.width = lim;
+    if (requested >= team.width) {
+        team = TeamState{requested, 0, 1};
+        return requested;
+    }
+    if (requested > team.widestNarrower)
+        team.widestNarrower = requested;
+    if (++team.narrower < TEAM_SHRINK_REGIONS)
+        return team.width;
+    team = TeamState{team.widestNarrower, 0, 1};
+    return team.width;
+}
+
+int ParallelControls::DefaultThreads(int machineThreads) {
+    if (std::getenv("OMP_NUM_THREADS") != nullptr || !SmtActive())
+        return machineThreads;
+    const int half = omp_get_num_procs() / 2;
+    return half > 0 && half < machineThreads ? half : machineThreads;
+}
+#endif
+
+}  // namespace lbcrypto
