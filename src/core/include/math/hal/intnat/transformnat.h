@@ -425,7 +425,7 @@ class ChineseRemainderTransformFTTNat final : public lbcrypto::ChineseRemainderT
                                                    const IntType& modulus);
 
   private:
-    static std::map<IntType, std::shared_ptr<const Tables>> m_tablesByModulus;
+    static inline std::map<IntType, std::shared_ptr<const Tables>> m_tablesByModulus;
 
     static std::shared_mutex& TablesMutex() {
         static std::shared_mutex m;
@@ -440,6 +440,9 @@ using ModulusRoot = std::pair<IntType, IntType>;
 /// ((modulus, root), (NTT modulus, NTT root)) pair used as a key in the Bluestein transform caches
 template <typename IntType>
 using ModulusRootPair = std::pair<ModulusRoot<IntType>, ModulusRoot<IntType>>;
+
+template <typename VecType>
+class ChineseRemainderTransformArbNat;
 
 /**
  * @brief Bluestein Fast Fourier Transform implementation
@@ -531,25 +534,6 @@ class BluesteinFFTNat {
      */
     void Reset();
 
-    /// map to store the root of unity table with modulus as key.
-    static std::map<ModulusRoot<IntType>, VecType> m_rootOfUnityTableByModulusRoot;
-
-    /// map to store the root of unity inverse table with modulus as key.
-    static std::map<ModulusRoot<IntType>, VecType> m_rootOfUnityInverseTableByModulusRoot;
-
-    /// map to store the power of roots as a table with modulus + root of unity as
-    /// key.
-    static std::map<ModulusRoot<IntType>, VecType> m_powersTableByModulusRoot;
-
-    /// map to store the forward transform of power table with modulus + root of
-    /// unity as key.
-    static std::map<ModulusRootPair<IntType>, VecType> m_RBTableByModulusRootPair;
-
-    /// Shoup precomputations matching m_rootOfUnityTableByModulusRoot.
-    static std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityTableByModulusRoot;
-    /// Shoup precomputations matching m_rootOfUnityInverseTableByModulusRoot.
-    static std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityInverseTableByModulusRoot;
-
     /**
      * Mutex guarding every Bluestein/arbitrary-cyclotomic static cache: fills are lazy and the
      * tower loops run in parallel, so lookups must lock as well (references into a std::map
@@ -563,8 +547,29 @@ class BluesteinFFTNat {
     }
 
   private:
+    friend class ChineseRemainderTransformArbNat<VecType>;
+
+    /// map to store the root of unity table with modulus as key.
+    static inline std::map<ModulusRoot<IntType>, VecType> m_rootOfUnityTableByModulusRoot;
+
+    /// map to store the root of unity inverse table with modulus as key.
+    static inline std::map<ModulusRoot<IntType>, VecType> m_rootOfUnityInverseTableByModulusRoot;
+
+    /// map to store the power of roots as a table with modulus + root of unity as
+    /// key.
+    static inline std::map<ModulusRoot<IntType>, VecType> m_powersTableByModulusRoot;
+
+    /// map to store the forward transform of power table with modulus + root of
+    /// unity as key.
+    static inline std::map<ModulusRootPair<IntType>, VecType> m_RBTableByModulusRootPair;
+
+    /// Shoup precomputations matching m_rootOfUnityTableByModulusRoot.
+    static inline std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityTableByModulusRoot;
+    /// Shoup precomputations matching m_rootOfUnityInverseTableByModulusRoot.
+    static inline std::map<ModulusRoot<IntType>, VecType> m_preconRootOfUnityInverseTableByModulusRoot;
+
     // map to store the precomputed NTT modulus with modulus as key.
-    static std::map<IntType, ModulusRoot<IntType>> m_defaultNTTModulusRoot;
+    static inline std::map<IntType, ModulusRoot<IntType>> m_defaultNTTModulusRoot;
 };
 
 /**
@@ -687,35 +692,35 @@ class ChineseRemainderTransformArbNat final : public lbcrypto::ChineseRemainderT
 
     // map to store the cyclotomic polynomial with polynomial ring's modulus as
     // key.
-    static std::map<IntType, VecType> m_cyclotomicPolyMap;
+    static inline std::map<IntType, VecType> m_cyclotomicPolyMap;
 
     // map to store the forward NTT transform of the inverse of cyclotomic
     // polynomial with polynomial ring's modulus as key.
-    static std::map<IntType, VecType> m_cyclotomicPolyReverseNTTMap;
+    static inline std::map<IntType, VecType> m_cyclotomicPolyReverseNTTMap;
 
     // map to store the forward NTT transform of the cyclotomic polynomial with
     // polynomial ring's modulus as key.
-    static std::map<IntType, VecType> m_cyclotomicPolyNTTMap;
+    static inline std::map<IntType, VecType> m_cyclotomicPolyNTTMap;
 
     // map to store the root of unity table used in NTT based polynomial division.
-    static std::map<IntType, VecType> m_rootOfUnityDivisionTableByModulus;
+    static inline std::map<IntType, VecType> m_rootOfUnityDivisionTableByModulus;
 
     // map to store the root of unity table for computing forward NTT of inverse
     // cyclotomic polynomial used in NTT based polynomial division.
-    static std::map<IntType, VecType> m_rootOfUnityDivisionInverseTableByModulus;
+    static inline std::map<IntType, VecType> m_rootOfUnityDivisionInverseTableByModulus;
 
     // Shoup precomputations matching the two division tables above.
-    static std::map<IntType, VecType> m_rootOfUnityDivisionPreconTableByModulus;
-    static std::map<IntType, VecType> m_rootOfUnityDivisionInversePreconTableByModulus;
+    static inline std::map<IntType, VecType> m_rootOfUnityDivisionPreconTableByModulus;
+    static inline std::map<IntType, VecType> m_rootOfUnityDivisionInversePreconTableByModulus;
 
     // modulus used in NTT based polynomial division.
-    static std::map<IntType, IntType> m_DivisionNTTModulus;
+    static inline std::map<IntType, IntType> m_DivisionNTTModulus;
 
     // root of unity used in NTT based polynomial division.
-    static std::map<IntType, IntType> m_DivisionNTTRootOfUnity;
+    static inline std::map<IntType, IntType> m_DivisionNTTRootOfUnity;
 
     // dimension of the NTT transform in NTT based polynomial division.
-    static std::map<uint32_t, uint32_t> m_nttDivisionDim;
+    static inline std::map<uint32_t, uint32_t> m_nttDivisionDim;
 };
 
 }  // namespace intnat

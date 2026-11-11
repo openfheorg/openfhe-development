@@ -81,7 +81,7 @@ class PseudoRandomNumberGenerator {
     #endif
 #endif
     // pointer to the function generating PRNG
-    static GenPRNGEngineFuncPtr genPRNGEngine;
+    static inline GenPRNGEngineFuncPtr genPRNGEngine{nullptr};
 };
 
 }  // namespace lbcrypto

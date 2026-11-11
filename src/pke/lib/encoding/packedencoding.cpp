@@ -48,15 +48,6 @@
 
 namespace lbcrypto {
 
-// TODO (dsuponit): we should not have globals!
-std::map<ModulusM, NativeInteger> PackedEncoding::m_initRoot;
-std::map<ModulusM, NativeInteger> PackedEncoding::m_bigModulus;
-std::map<ModulusM, NativeInteger> PackedEncoding::m_bigRoot;
-
-std::map<uint32_t, uint32_t> PackedEncoding::m_automorphismGenerator;
-std::map<uint32_t, std::vector<uint32_t>> PackedEncoding::m_toCRTPerm;
-std::map<uint32_t, std::vector<uint32_t>> PackedEncoding::m_fromCRTPerm;
-
 bool PackedEncoding::Encode() {
     if (this->isEncoded)
         return true;

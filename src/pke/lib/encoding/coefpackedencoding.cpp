@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 template <typename P>
-inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, int64_t ub,
+static inline void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, int64_t ub,
                              const std::vector<int64_t>& value, SCHEME schemeID) {
     if (ub > INT32_MAX || lb < INT32_MIN)
         OPENFHE_THROW("Cannot encode a coefficient larger than 32 bits");
@@ -97,7 +97,7 @@ bool CoefPackedEncoding::Encode() {
 }
 
 template <typename P>
-inline static void fillVec(const P& poly, const PlaintextModulus& mod, std::vector<int64_t>& value) {
+static inline void fillVec(const P& poly, const PlaintextModulus& mod, std::vector<int64_t>& value) {
     value.clear();
     value.reserve(poly.GetLength());
 

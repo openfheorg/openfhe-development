@@ -104,7 +104,7 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
      * @param format - EVALUATION or COEFFICIENT
      * @return a lambda that creates a zero-initialized element with the given parameters and format.
      */
-    inline static std::function<DerivedType()> Allocator(const std::shared_ptr<Params>& params, Format format) {
+    static inline std::function<DerivedType()> Allocator(const std::shared_ptr<Params>& params, Format format) {
         return [=]() {
             return DerivedType(params, format, true);
         };
@@ -118,7 +118,7 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
      * @param stddev standard deviation for the discrete gaussian generator.
      * @return a lambda that generates a discrete Gaussian element.
      */
-    inline static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(
+    static inline std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(
             const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
@@ -133,7 +133,7 @@ class PolyInterface : public ILElement<DerivedType, VecType> {
      * @param format format for the polynomials generated.
      * @return a lambda that generates a discrete uniform element.
      */
-    inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
+    static inline std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
                                                                             Format format) {
         return [=]() {
             DugType dug;
