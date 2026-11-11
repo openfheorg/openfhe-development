@@ -212,9 +212,9 @@ uint32_t FindAutomorphismIndex2n(int32_t i, uint32_t m) {
     magnitude %= n;
     // Indices in the upper half additionally swap the two rows, i.e. pick up the factor f2.
     // ModExp keeps this logarithmic in the index instead of one step per rotation.
-    bool secondRow    = magnitude >= n / 2;
+    bool secondRow = magnitude >= n / 2;
     uint32_t exponent = secondRow ? magnitude - n / 2 : magnitude;
-    auto g            = NativeInteger(f1).ModExp(exponent, m);
+    auto g = NativeInteger(f1).ModExp(exponent, m);
     if (secondRow)
         g = g.ModMul(f2, m);
 

@@ -655,8 +655,8 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 #endif
 
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
-    ConstCiphertext<DCRTPoly>& ciphertext, int32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
-    bool addFirst, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const {
+        ConstCiphertext<DCRTPoly>& ciphertext, int32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
+        bool addFirst, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const {
     //  if (index == 0) {
     //    Ciphertext<DCRTPoly> result = ciphertext->Clone();
     //    return result;

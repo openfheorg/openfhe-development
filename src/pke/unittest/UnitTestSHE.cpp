@@ -33,17 +33,20 @@
   unit tests for the SHE capabilities
  */
 
-#include "gtest/gtest.h"
-#include "openfhe.h"
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
-
-#include <iostream>
-#include <limits>
-#include <type_traits>
-#include <vector>
+#include "gtest/gtest.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 
@@ -1546,7 +1549,7 @@ TEST(UnitTestSHE, GetMetadataByKeyClonesDynamicType) {
 // ~2^31-iteration loop (issue #1254). They must terminate and, since an index is equivalent to
 // itself modulo the number of slots, rotate by the same amount as their in-range equivalent.
 class UTEXTREME_ROTATION_INDEX : public ::testing::Test {
-protected:
+  protected:
     void SetUp() {
         OpenFHEParallelControls.UnitTestStart();
     }
@@ -1560,7 +1563,7 @@ protected:
 
     template <typename Context>
     void CheckExtremeRotationIndex() {
-        constexpr bool isCKKS  = std::is_same_v<Context, CryptoContextCKKSRNS>;
+        constexpr bool isCKKS = std::is_same_v<Context, CryptoContextCKKSRNS>;
         constexpr int32_t SLOT = isCKKS ? RING_DIM / 2 : RING_DIM;
 
         CCParams<Context> parameters;
@@ -1604,8 +1607,7 @@ protected:
             result->SetLength(SLOT);
             if constexpr (isCKKS) {
                 return result->GetRealPackedValue();
-            }
-            else {
+            } else {
                 const auto& packed = result->GetPackedValue();
                 return std::vector<double>(packed.begin(), packed.end());
             }
@@ -1649,7 +1651,7 @@ TEST_F(UTEXTREME_ROTATION_INDEX, RotationIndexApiCallForms) {
     cc->Enable(LEVELEDSHE);
 
     const uint32_t unsignedIndex = 1;
-    const int32_t signedIndex    = -1;
+    const int32_t signedIndex = -1;
     EXPECT_EQ(cc->FindAutomorphismIndex(unsignedIndex), cc->FindAutomorphismIndex(1));
     EXPECT_NE(cc->FindAutomorphismIndex(signedIndex), cc->FindAutomorphismIndex(1));
 
@@ -1671,8 +1673,8 @@ TEST_F(UTEXTREME_ROTATION_INDEX, RotationIndexApiCallForms) {
     auto keys = cc->KeyGen();
     cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
     std::vector<int64_t> values(RING_DIM, 1);
-    auto ciphertext  = cc->Encrypt(keys.publicKey, cc->MakePackedPlaintext(values));
-    auto digits      = cc->EvalFastRotationPrecompute(ciphertext);
+    auto ciphertext = cc->Encrypt(keys.publicKey, cc->MakePackedPlaintext(values));
+    auto digits = cc->EvalFastRotationPrecompute(ciphertext);
     const uint32_t m = 2 * cc->GetRingDimension();
     EXPECT_NO_THROW(cc->EvalFastRotation(ciphertext, unsignedIndex, m, digits));
     EXPECT_NO_THROW(cc->EvalFastRotation(ciphertext, signedIndex, m, digits));
@@ -1695,10 +1697,10 @@ TEST_F(UTEXTREME_ROTATION_INDEX, FastRotationExtCallForms) {
     cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
     std::vector<double> values(RING_DIM / 2, 1.0);
     auto ciphertext = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(values));
-    auto digits     = cc->EvalFastRotationPrecompute(ciphertext);
+    auto digits = cc->EvalFastRotationPrecompute(ciphertext);
 
     const uint32_t unsignedIndex = 1;
-    const int32_t signedIndex    = -1;
+    const int32_t signedIndex = -1;
     EXPECT_NO_THROW(cc->EvalFastRotationExt(ciphertext, unsignedIndex, digits, true));
     EXPECT_NO_THROW(cc->EvalFastRotationExt(ciphertext, signedIndex, digits, true));
 }
