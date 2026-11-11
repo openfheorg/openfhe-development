@@ -178,6 +178,9 @@ constexpr uint32_t RING_DIM = 512;
 constexpr uint32_t RING_DIM_HALF = 256;
 constexpr uint32_t DSIZE = 10;
 constexpr uint32_t BATCH = 8;
+// Primes congruent to 1 mod 2*RING_DIM get scarce as the ring dimension grows, which is what makes the
+// first modulus hard to assemble out of primes of the requested size.
+constexpr uint32_t RING_DIM_LARGE = 16384;
 // #if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
 // constexpr uint32_t RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 // #endif
