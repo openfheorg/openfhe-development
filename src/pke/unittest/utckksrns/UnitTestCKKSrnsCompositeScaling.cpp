@@ -44,18 +44,7 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
-<<<<<<< HEAD
 #include "gtest/gtest.h"
-=======
-
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <string>
-#include <vector>
->>>>>>> ad820d86 (Fix CKKS composite scaling first modulus falling short of firstModSize)
 
 using namespace lbcrypto;
 
@@ -187,16 +176,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_CS& 
  */
 constexpr uint32_t RING_DIM = 512;
 constexpr uint32_t RING_DIM_HALF = 256;
-<<<<<<< HEAD
 constexpr uint32_t DSIZE = 10;
 constexpr uint32_t BATCH = 8;
-=======
-constexpr uint32_t DSIZE         = 10;
-constexpr uint32_t BATCH         = 8;
-// primes congruent to 1 mod 2*RING_DIM get scarce as the ring dimension grows, which is what makes the
-// first modulus hard to assemble out of primes of the requested size
-constexpr uint32_t RING_DIM_LARGE = 16384;
->>>>>>> ad820d86 (Fix CKKS composite scaling first modulus falling short of firstModSize)
 // #if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
 // constexpr uint32_t RING_DIM_PREC = 2048;  // for test cases with approximation error comparison only
 // #endif
@@ -1931,7 +1912,7 @@ class UTCKKSRNSCS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_CS> {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
             const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
             const uint32_t compositeDegree = cryptoParams->GetCompositeDegree();
-            const auto& towers             = cryptoParams->GetElementParams()->GetParams();
+            const auto& towers = cryptoParams->GetElementParams()->GetParams();
 
             // the first modulus is the product of the first compositeDegree primes of the chain
             double firstModBits = 0.0;
@@ -1949,13 +1930,11 @@ class UTCKKSRNSCS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_CS> {
             // a prime is always smaller than the power of two it is sampled from, so firstModSize can only be
             // approached, never met; primes taken above a share make up for the ones that come out short
             EXPECT_GE(firstModBits, firstModSize - 2.0) << failmsg;
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
+        } catch (...) {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
