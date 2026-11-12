@@ -11,7 +11,7 @@ General Style Guidelines
 -  Configure your editor to use 4 spaces per indentation level, and
    **never to use tabs**.
 -  Avoid introducing trailing whitespace
--  Limit line lengths to 80 characters when possible
+-  Limit line lengths to 120 characters
 -  Give meaningful variable names to all variables.
 -  Every reused discrete block of code has its own method
 -  Every discrete line of code, or discrete group of code lines for each task has its own comment.

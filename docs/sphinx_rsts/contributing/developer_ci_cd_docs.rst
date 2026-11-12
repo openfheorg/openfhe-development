@@ -32,7 +32,7 @@ branch.
    │   ├── workflows                     <-- GitHub workflows(pipelines)
    │       ├── main.yml                  <-- Runs when a branch is merged to main, uses generic_workflow
    │       ├── manual.yml                <-- Runs on-demand with parameters, uses generic_workflow
-   │       ├── pull-request.yml          <-- Runs when a pull-request to main is created, uses generic_workflow
+   │       ├── pull-request.yml          <-- Runs when a pull-request to main or dev is created, uses generic_workflow
 
 Actions
 -------
@@ -201,7 +201,7 @@ The
 `pull-request.yml <https://github.com/openfheorg/openfhe-development/actions/workflows/pull-request.yml>`__
 defines the Pull-Request Workflow, which runs when a pull request is
 opened or reopened or when the head branch of the pull request is updated.
-Currently it is setup to run on the main branch only. This is defined by the following code snippet.
+Currently it is setup to run for pull requests against the main and dev branches. This is defined by the following code snippet.
 
 .. code:: yaml
 
@@ -209,6 +209,7 @@ Currently it is setup to run on the main branch only. This is defined by the fol
      pull_request:
        branches:
          - main
+         - dev
 
 The Pull-Request Workflow calls `Generic/Reuseable Workflow <#generic-reuseable-workflow>`__ and
 runs all jobs with ``NATIVE_SIZE=128`` and ``GCC`` only.

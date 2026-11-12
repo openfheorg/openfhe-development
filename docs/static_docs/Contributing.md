@@ -1,6 +1,6 @@
 # Contributing to OpenFHE
 
-We are using git for version management and control. We use gitlab for issue and milestone tracking.
+We are using git for version management and control. We use GitHub for issue and milestone tracking.
 
 We classify contributions as *Major* or *Minor*.
 
@@ -21,7 +21,7 @@ enhancements should be discussed with the OpenFHE team ahead of time before unde
 # Workflow for Minor Contributions
 
 Our workflow for Minor contributions is that developers work in feature branches they create and then submit merge
-requests. All contributions -- be they bug fixes or enhancements -- must be documented in a gitlab issue, before the
+requests. All contributions -- be they bug fixes or enhancements -- must be documented in a GitHub issue, before the
 merge request.
 
 We require that the code work correctly in all environments before it will be accepted for merging. We are working on
@@ -66,8 +66,8 @@ pre-commit run --all-files
 
 We request that you conform to the following workflow:
 
-1. Start in main, or whichever branch you want to start from using the following command: ```git checkout main```
-2. Pull down the latest in this branch from the git repo: ```git pull origin main```
+1. Start in dev, or whichever branch you want to start from using the following command: ```git checkout dev```
+2. Pull down the latest in this branch from the git repo: ```git pull origin dev```
 3. Create a new branch with the a unique name: ```git checkout -b <your new branch name>```.
 
 * Note that we recommend naming feature branches by appending your name with an issue number. If your last name is
@@ -90,12 +90,12 @@ We request that you conform to the following workflow:
 7. After you finished inserting your new code you wanted to address, make sure the code builds and runs correctly and
    that you have not introduced any additional bugs.
 8. Make sure all unit tests pass and add additional unit tests as needed for features you've added.
-9. Before creating merge requests, developers should rebase their branch from main and test that their code works
-   properly.  [This page describes a workflow to rebase a branch from a main branch.](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/rebasing_off_main.html)
+9. Before creating merge requests, developers should rebase their branch from dev and test that their code works
+   properly.  [This page describes a workflow to rebase a branch from the dev branch.](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/rebasing_off_main.html)
 10. Submit a merge request so project owners can review your commits here. You should include the text
      ```Fixes #issue``` in your merge request.
 11. You may get feedback on your merge request, especially if there are problems or issues.
-12. When your merge request is accepted, your changes will be merged into main and your branch will be deleted.
+12. When your merge request is accepted, your changes will be merged into dev and your branch will be deleted.
 
 * All additions to the released versions of ~ are subject to approval by the OpenFHE governance team as outlined in
   the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/misc/governance.html)
@@ -111,9 +111,9 @@ development library.
 
 In addition to the workflow for Minor contributions the following is the requested procedure or a Major change.
 
-* Fork the `openfhe-development` repository on GitLab
+* Fork the `openfhe-development` repository on GitHub
 * Clone your new repository or add it as a remote to an existing repository
-* Check out the existing `main` branch, then start a new feature branch for your work
+* Check out the existing `dev` branch, then start a new feature branch for your work
 * When making changes, write code that is consistent with the surrounding code
   (see the [style guidelines](#style-guidelines) below)
 * Add tests for any new features that you are implementing to either the GoogleTest-based test suite or the Python test
@@ -129,16 +129,16 @@ In addition to the workflow for Minor contributions the following is the request
   * Use Git's history-rewriting features (i.e., `git rebase -i`; see
     https://help.github.com/articles/about-git-rebase/) to organize your commits and squash "fixup" commits and
     reversions.
-  * Do not merge your branch with `main`. If needed, you should occasionally rebase your branch onto the most
-    recent `HEAD` commit of `main`.
+  * Do not merge your branch with `dev`. If needed, you should occasionally rebase your branch onto the most
+    recent `HEAD` commit of `dev`.
   * Periodically run the test suite (`make testall`) to make sure that your changes are not causing any test failures.
 * Major additions may require changes to the OpenFHE CMAKE files. Refer to the wiki
   page [Use-of-CMake-in-OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/cmake_in_openfhe.html)
   for details.
 
-* Submit a Pull Request on GitLab. Check the results of the continuous- integration tests pipelines and resolve any
+* Submit a Pull Request on GitHub. Check the results of the continuous- integration tests pipelines and resolve any
   issues that arise.
-* Additional discussion of good Git & GitLab workflow is provided at
+* Additional discussion of good Git & GitHub workflow is provided at
   http://matplotlib.org/devel/gitwash/development_workflow.html and
   https://docs.scipy.org/doc/numpy-1.15.0/dev/gitwash/development_workflow.html
 * OpenFHE is licensed under a [BSD license](https://github.com/openfheorg/openfhe-development/blob/main/LICENSE)
@@ -156,7 +156,7 @@ In addition to the workflow for Minor contributions the following is the request
   indentation and spacing.
 * Configure your editor to use 4 spaces per indentation level, and **never to use tabs**.
 * Avoid introducing trailing whitespace
-* Limit line lengths to 80 characters when possible
+* Limit line lengths to 120 characters
 * Write comments to explain non-obvious operations within the code, both in header or source files.
 * Write Doxygen style comments to define all Classes, Templates, and methods (both public, private and protected. Please
   document all input and output data characterisitcs (required lengths of vectors, restrictions on combinations of

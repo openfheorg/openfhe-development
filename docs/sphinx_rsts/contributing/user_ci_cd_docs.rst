@@ -14,7 +14,7 @@ Repository: https://github.com/openfheorg/openfhe-development
    │   ├── workflows                     <-- GitHub workflows(pipelines)
    │       ├── main.yml                  <-- Runs when a branch is merged to main, uses generic_workflow
    │       ├── manual.yml                <-- Runs on-demand with parameters, uses generic_workflow
-   │       ├── pull-request.yml          <-- Runs when a pull-request to main is created, uses generic_workflow
+   │       ├── pull-request.yml          <-- Runs when a pull-request to main or dev is created, uses generic_workflow
 
 OpenFHE Workflows
 -----------------
@@ -45,7 +45,7 @@ Features
 Pull request Workflow
 ---------------------
 
-This workflow will run whenever a pull request is created against the main branch. The pull request will run
+This workflow will run whenever a pull request is created against the main or dev branch. The pull request will run
 the default job as well as all build jobs.
 
 The test configurations for all job are shown in the table below:

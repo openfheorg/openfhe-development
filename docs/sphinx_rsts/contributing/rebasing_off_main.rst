@@ -3,27 +3,27 @@
 Rebasing
 ====================================
 
-When working on the library one should be working on a feature branch, and submit merge requests to move one's code onto the main branch.
+When working on the library one should be working on a feature branch, and submit merge requests to move one's code onto the dev branch.
 
-Periodically the main branch will evolve and improve before a feature branch, and the feature branch should updated with changes in the main to test that this code works well together before a merge request is submitted.
+Periodically the dev branch will evolve and improve before a feature branch, and the feature branch should updated with changes in dev to test that this code works well together before a merge request is submitted.
 
-There are multiple ways to move code updates from a main to a feature, but I'm going to describe the method that works for me.
-As an example, suppose one is working on the branch ``issue-123``, and there have been improvements to the main branch. Generally one can rebase by doing the following:
+There are multiple ways to move code updates from dev to a feature branch, but I'm going to describe the method that works for me.
+As an example, suppose one is working on the branch ``issue-123``, and there have been improvements to the dev branch. Generally one can rebase by doing the following:
 
-1) Pull the latest code from both the ``issue-123`` and ``main`` branches with the following commands:
+1) Pull the latest code from both the ``issue-123`` and ``dev`` branches with the following commands:
 
 ::
 
-    git checkout main
+    git checkout dev
 
-    git pull origin main
+    git pull origin dev
     git checkout issue-123
 
     git pull origin issue-123
 
-Make sure both of branches build properly before going any further.  Correct any bugs on the feature branch and commit that branch.  Also check the main branch and notify the OpenFHE team if there is an error in the main branch.
+Make sure both of branches build properly before going any further.  Correct any bugs on the feature branch and commit that branch.  Also check the dev branch and notify the OpenFHE team if there is an error in the dev branch.
 
-2) Run the following rebase operation: ``git rebase main issue-123``
+2) Run the following rebase operation: ``git rebase dev issue-123``
 
 - The changes are rebased into the feature branch one-by-one.  Often there are conflicts.  Suppose there is a conflict in `nbtheory.h`.  In this example, manually inspect `nbtheory.h` and resolve the conflict.
 

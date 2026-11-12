@@ -43,7 +43,7 @@ Workflow for Minor Contributions
 
 Our workflow for Minor contributions is that developers work in feature
 branches they create and then submit merge requests. All contributions –
-be they bug fixes or enhancements – must be documented in a gitlab
+be they bug fixes or enhancements – must be documented in a GitHub
 issue, before the merge request.
 
 We require that the code work correctly in all environments before it
@@ -99,10 +99,10 @@ Making the code changes and checking in the result
 
 We request that you conform to the following workflow:
 
-1. Start in main, or whichever branch you want to start from using the
-   following command: ``git checkout main``
+1. Start in dev, or whichever branch you want to start from using the
+   following command: ``git checkout dev``
 2. Pull down the latest in this branch from the git repo:
-   ``git pull origin main``
+   ``git pull origin dev``
 3. Create a new branch with the a unique name:
    ``git checkout -b <your new branch name>``.
 
@@ -142,8 +142,8 @@ We request that you conform to the following workflow:
     needed for features you’ve added.
 
 9.  Before creating merge requests, developers should rebase their
-    branch from main and test that their code works properly. :ref:`This page
-    describes a workflow to rebase a branch from a main
+    branch from dev and test that their code works properly. :ref:`This page
+    describes a workflow to rebase a branch from the dev
     branch. <rebasing>`
 
 10. Submit a merge request so project owners can review your commits
@@ -154,7 +154,7 @@ We request that you conform to the following workflow:
     problems or issues.
 
 12. When your merge request is accepted, your changes will be merged
-    into main and your branch will be deleted.
+    into dev and your branch will be deleted.
 
   -  All additions to the released versions of OpenFHE are subject to approval
      by the OpenFHE governance team as outlined in the :ref:`OpenFHE Governance
@@ -176,12 +176,12 @@ development library.
 In addition to the workflow for Minor contributions the following is the
 requested procedure or a Major change.
 
--  Fork the ``openfhe-development`` repository on GitLab
+-  Fork the ``openfhe-development`` repository on GitHub
 
 -  Clone your new repository or add it as a remote to an existing
    repository
 
--  Check out the existing ``main`` branch, then start a new feature
+-  Check out the existing ``dev`` branch, then start a new feature
    branch for your work
 
 -  When making changes, write code that is consistent with the
@@ -209,9 +209,9 @@ requested procedure or a Major change.
    -  Use Git’s history-rewriting features (i.e., ``git rebase -i``; see
       https://help.github.com/articles/about-git-rebase/) to organize
       your commits and squash “fixup” commits and reversions.
-   -  Do not merge your branch with ``main``. If needed, you should
+   -  Do not merge your branch with ``dev``. If needed, you should
       occasionally rebase your branch onto the most recent ``HEAD``
-      commit of ``main``.
+      commit of ``dev``.
    -  Periodically run the test suite (``make testall``) to make sure
       that your changes are not causing any test failures.
 
@@ -220,10 +220,10 @@ requested procedure or a Major change.
    :ref:`Use-of-CMake-in-OpenFHE <cmake_in_openfhe>`
    page for details.
 
--  Submit a Pull Request on GitLab. Check the results of the continuous-
+-  Submit a Pull Request on GitHub. Check the results of the continuous-
    integration tests pipelines and resolve any issues that arise.
 
--  Additional discussion of good Git & GitLab workflow is provided at
+-  Additional discussion of good Git & GitHub workflow is provided at
    `matplotlib <http://matplotlib.org/devel/gitwash/development_workflow.html>`_
    `scipy <https://docs.scipy.org/doc/numpy-1.15.0/dev/gitwash/development_workflow.html>`_
 
