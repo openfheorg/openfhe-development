@@ -965,3 +965,7 @@ install(FILES
 # Install the export set for use with the install-tree
 install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 # install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" NAMESPACE OpenFHE:: COMPONENT dev)
+
+# Install the guide for AI coding agents that write applications with OpenFHE (see agents/README.md)
+install(DIRECTORY agents/ DESTINATION "${CMAKE_INSTALL_DATADIR}/openfhe/agents"
+        COMPONENT dev)

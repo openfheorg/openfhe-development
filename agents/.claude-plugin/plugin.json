@@ -1,0 +1,11 @@
+{
+  "name": "openfhe",
+  "description": "Teaches a coding agent how to choose a scheme, set parameters and write a correct OpenFHE application",
+  "author": {
+    "name": "OpenFHE"
+  },
+  "homepage": "https://openfhe.org",
+  "repository": "https://github.com/openfheorg/openfhe-development",
+  "license": "BSD-2-Clause",
+  "keywords": ["fhe", "homomorphic-encryption", "openfhe", "ckks", "bfv", "bgv", "tfhe"]
+}

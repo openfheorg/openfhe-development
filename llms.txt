@@ -1,0 +1,31 @@
+# OpenFHE
+
+> OpenFHE is an open-source C++17 library for fully homomorphic encryption. It implements BFV and BGV for exact integer
+> arithmetic, CKKS for approximate arithmetic on real numbers, FHEW/TFHE-style Boolean circuits, threshold FHE, proxy
+> re-encryption and scheme switching.
+
+To write an application with OpenFHE, read the application guide first, then the reference for the scheme in use.
+Several mistakes produce wrong results with no error, so do not write OpenFHE code from memory.
+
+## Application guide
+
+- [Building applications with OpenFHE](https://github.com/openfheorg/openfhe-development/blob/main/agents/README.md): workflow, scheme choice, rules that prevent most failures
+- [Choosing a scheme](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/choosing-a-scheme.md): borderline cases, comparisons, depth
+- [CKKS](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/ckks.md): parameters, depth, function evaluation, bootstrapping
+- [BFV and BGV](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/bfv-bgv.md): plaintext modulus, packing, rotations
+- [binfhe](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/binfhe.md): Boolean gates, lookup tables, sign evaluation
+- [Threshold FHE and proxy re-encryption](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/multiparty.md): joint keys, partial decryption, re-encryption
+- [Serialization](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/serialization.md): client and server split
+- [Troubleshooting](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/troubleshooting.md): exceptions, wrong results, performance
+- [Examples index](https://github.com/openfheorg/openfhe-development/blob/main/agents/reference/examples-index.md): which example program shows which task
+- [Application template](https://github.com/openfheorg/openfhe-development/tree/main/agents/template): CMake project and starting program
+
+## Documentation
+
+- [Read the Docs](https://openfhe-development.readthedocs.io/en/latest/): installation, API reference
+- [Examples for BFV, BGV and CKKS](https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples)
+- [Examples for binfhe](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples)
+
+## Optional
+
+- [Contributing to the library](https://github.com/openfheorg/openfhe-development/blob/main/AGENTS.md): build, test and style rules for changes to OpenFHE itself
