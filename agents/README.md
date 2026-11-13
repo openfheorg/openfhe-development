@@ -115,8 +115,32 @@ ln -s <guide> ~/.agents/skills/openfhe
 
 The path must be absolute; a relative one makes a broken link.
 
-Use `.agents/skills/openfhe` inside a project instead to share it with everyone who works on that project. Claude
-Code also accepts the directory as a skill, at `~/.claude/skills/openfhe`.
+To check that the skill was found, run `/skills` in Codex or `/skills list` in Gemini CLI; `openfhe` should be listed.
+Codex normally picks up a new skill by itself; restart it if `openfhe` does not appear. In a Gemini CLI session that
+was already running, `/skills reload` rescans.
+
+Claude Code also accepts the directory as a skill, linked the same way at `~/.claude/skills/openfhe`.
+
+To share the guide with everyone who works on a project, copy it into that project and commit the copy. Do not commit
+the link: it points at a path on your machine.
+
+```bash
+mkdir -p .agents/skills
+cp -R <guide> .agents/skills/openfhe
+git add .agents/skills/openfhe
+```
+
+Gemini CLI reads skills from a project only after the project folder has been marked as trusted.
+
+When you upgrade OpenFHE, replace the copy so that the guide matches the library. Remove the old one first; copying
+over it would put the new guide in a subdirectory and leave the old one in use.
+
+```bash
+git rm -r .agents/skills/openfhe
+mkdir -p .agents/skills
+cp -R <guide> .agents/skills/openfhe
+git add .agents/skills/openfhe
+```
 
 Any other agent: add one line to the instruction file it reads, such as `AGENTS.md`:
 

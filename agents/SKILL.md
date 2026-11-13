@@ -1,6 +1,6 @@
 ---
 name: openfhe
-description: Build C++ applications with the OpenFHE homomorphic encryption library. Use when writing, debugging or reviewing code that computes on encrypted data with OpenFHE (BFV, BGV, CKKS, FHEW/TFHE binfhe, threshold FHE, proxy re-encryption), or when choosing an FHE scheme or its parameters.
+description: Build C++ applications with the OpenFHE homomorphic encryption library. Use when writing, debugging or reviewing code that computes on encrypted data with OpenFHE (BFV, BGV, CKKS, FHEW/TFHE binfhe, threshold FHE, proxy re-encryption), or when choosing an FHE scheme or its parameters. Not for changing the OpenFHE library itself; follow the AGENTS.md in its repository for that.
 ---
 
 # OpenFHE applications
