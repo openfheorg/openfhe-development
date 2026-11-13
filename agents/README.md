@@ -68,8 +68,9 @@ multiplications. Going past it fails differently per scheme:
 - BGV throws at the operation that runs out of levels ("Too few towers to support ModReduce").
 - CKKS normally throws at `Decrypt` with "approximation error is too high".
 
-BFV and BGV compute modulo the plaintext modulus. A result outside that range wraps around with no error. Pick a
-modulus larger than every intermediate value.
+BFV and BGV compute modulo the plaintext modulus `t`, on signed values from `-(t-1)/2` to `(t-1)/2`. A result outside
+that range wraps around with no error. Pick a modulus larger than twice the largest absolute value of any intermediate
+result.
 
 CKKS is approximate. Compare results with a tolerance, and call `SetLength` on the decrypted plaintext before reading
 it.
@@ -93,18 +94,31 @@ maps tasks to them.
 
 ## Using this guide with a coding agent
 
-Claude Code: install it as a plugin. The agent then loads the guide when a task involves OpenFHE.
+This directory is a skill in the `SKILL.md` format that Claude Code, Codex and Gemini CLI all load. Once it is
+installed, the agent reads the guide whenever a task involves OpenFHE. `<guide>` below is the absolute path of this
+directory: `<install prefix>/share/openfhe/agents` after `make install`, or `<checkout>/agents` in the source tree.
+
+Claude Code, as a plugin:
 
 ```
 /plugin marketplace add openfheorg/openfhe-development
 /plugin install openfhe@openfhe
 ```
 
-Other agents, such as Codex or Gemini CLI: add one line to the `AGENTS.md` or `GEMINI.md` of your project, with the
-path where this directory is on your machine:
+Codex and Gemini CLI, as a skill for your user account:
+
+```bash
+mkdir -p ~/.agents/skills
+ln -s <guide> ~/.agents/skills/openfhe
+```
+
+The path must be absolute; a relative one makes a broken link.
+
+Use `.agents/skills/openfhe` inside a project instead to share it with everyone who works on that project. Claude
+Code also accepts the directory as a skill, at `~/.claude/skills/openfhe`.
+
+Any other agent: add one line to the instruction file it reads, such as `AGENTS.md`:
 
 ```
-For any work with OpenFHE, read <path to>/agents/README.md first and follow it.
+For any work with OpenFHE, read <guide>/README.md first and follow it.
 ```
-
-Agents that load `SKILL.md` skills can also use `skills/openfhe` from this directory.

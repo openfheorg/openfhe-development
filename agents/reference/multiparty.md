@@ -70,9 +70,11 @@ result->SetLength(n);
 ## Proxy re-encryption
 
 A proxy converts a ciphertext encrypted for Alice into one encrypted for Bob, without seeing the plaintext. It needs
-`Enable(PRE)`.
+a PRE mode in the parameters and `Enable(PRE)`.
 
 ```cpp
+parameters.SetPREMode(INDCPA);          // before GenCryptoContext
+auto cc = GenCryptoContext(parameters);
 cc->Enable(PKE);
 cc->Enable(KEYSWITCH);
 cc->Enable(LEVELEDSHE);
@@ -89,8 +91,34 @@ Plaintext result;
 cc->Decrypt(bob.secretKey, ctForBob, &result);
 ```
 
-The security mode is set with `parameters.SetPREMode(...)`: `INDCPA`, `FIXED_NOISE_HRA` or `NOISE_FLOODING_HRA`. Choose
-it deliberately; `pre-hra-secure.cpp` explains the difference.
+Without `SetPREMode`, `ReKeyGen` throws "PRE is disabled (default = NOT_SET)" in CKKS and BGV. BFV accepts the
+default, but set the mode there too.
+
+| Mode | Supported in |
+|---|---|
+| `INDCPA` | BFV, BGV, CKKS |
+| `FIXED_NOISE_HRA` | BGV |
+| `NOISE_FLOODING_HRA` | BGV, with the extra settings below |
+
+An unsupported combination throws in `GenCryptoContext`. The HRA modes protect against a stronger attacker than
+`INDCPA`; `pre-hra-secure.cpp` explains the difference. Choose the mode deliberately.
+
+`NOISE_FLOODING_HRA` needs all of these, and throws without any one of them:
+
+```cpp
+CCParams<CryptoContextBGVRNS> parameters;
+parameters.SetPlaintextModulus(2);
+parameters.SetPREMode(NOISE_FLOODING_HRA);
+parameters.SetScalingTechnique(FIXEDMANUAL);
+parameters.SetPRENumHops(numHops);          // number of re-encryptions to support, at least 1
+parameters.SetMultiplicativeDepth(0);
+parameters.SetRingDim(32768);               // must be set by hand
+// do not call SetFirstModSize or SetScalingModSize
+```
+
+This was tested with plaintext modulus 2 and `MakeCoefPackedPlaintext`, as `pre-hra-secure.cpp` uses. The same setup
+with plaintext modulus 65537 threw in `GenCryptoContext`. Start from that example, which also sets the statistical
+security and the number of adversarial queries.
 
 ## Further topics
 

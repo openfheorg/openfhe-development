@@ -78,3 +78,6 @@ Observed on the same build.
   gave correct results in the same test. If large moduli are unsupported, `GenCryptoContext` could reject them.
 - `EvalSum(ct, n)` with `n` not a power of two sums the next power of two: `EvalSum(ct, 5)` returned the sum of eight
   slots.
+- BGV proxy re-encryption in `NOISE_FLOODING_HRA` mode, set up as in `pre-hra-secure.cpp` but with plaintext modulus
+  65537 instead of 2 (ring dimension 32768, 13 hops), throws `LastPrime(): overflow shrinking candidate` from
+  `GenCryptoContext`. The message does not say which parameter to change.

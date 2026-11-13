@@ -26,8 +26,9 @@ cmake ..
 make -j
 ```
 
-Useful options: `-DCMAKE_BUILD_TYPE=Debug`, `-DBUILD_UNITTESTS`, `-DBUILD_EXAMPLES`, `-DBUILD_BENCHMARKS`,
-`-DBUILD_EXTRAS`, `-DWITH_OPENMP`. The full list is at the top of `CMakeLists.txt`.
+Useful switches, each `ON` or `OFF`: `-DBUILD_UNITTESTS=ON`, `-DBUILD_EXAMPLES=ON`, `-DBUILD_BENCHMARKS=ON`,
+`-DBUILD_EXTRAS=ON`, `-DWITH_OPENMP=ON`. The build type is set with `-DCMAKE_BUILD_TYPE=Release` or `Debug`. The full
+list is at the top of `CMakeLists.txt`.
 
 Warnings are errors (`-Wall -Werror`). The code must build with both GCC and Clang.
 
@@ -65,6 +66,28 @@ pre-commit run --files <changed files>
   `utils/diagnostic_output.h`. A pre-commit hook enforces this.
 - An exception thrown inside an OpenMP region must be caught in that region; see `ThreadException` in `exception.h`.
 - No manual `new`/`delete`.
+
+## Keeping agents/ current
+
+`agents/` is a guide that teaches coding agents to write applications with OpenFHE. It names API functions, defaults,
+exception messages and examples, so a library change can make it wrong. Update it in the same change when you:
+
+- rename, remove or add a public function, parameter, enum value or feature;
+- change a default, a parameter rule or which ring dimension is chosen;
+- change the text of an exception or turn a silent failure into an error;
+- add, rename or remove an example.
+
+How:
+
+1. Run `agents/maint/update-agents-guide.sh`. It runs the checker and lists the guide files your changes may affect.
+2. Edit those files. Keep them short and within 120 columns. Verify each statement you add or change by building and
+   running a small program against the library; do not write from memory.
+3. Behaviour the guide states is pinned by `src/pke/unittest/UnitTestAgentGuide.cpp` and
+   `src/binfhe/unittest/UnitTestAgentGuide.cpp`. If one of those tests fails, the failure names the guide file to
+   update; change the guide and the test together.
+4. `agents/maint/check-agents-guide.sh` must pass. It runs as a pre-commit hook and in CI.
+5. A pull request that changes `src/*/include` or `src/*/examples` without touching `agents/` gets a warning from the
+   `guide-reminder` check. It does not block the merge; decide whether the guide needs an update.
 
 ## Contributing
 

@@ -96,6 +96,9 @@ LWEPlaintext result;
 cc.Decrypt(sk, out, &result, p);
 ```
 
+Lookup tables and the large-precision functions below are not available in a build with `NATIVE_SIZE=32`; context
+generation throws there. Boolean gates work in every build.
+
 The plaintext space is small: 8 values here. Pass the same `p` to `Encrypt` and `Decrypt`. Larger integers have to be
 split into digits by the application.
 

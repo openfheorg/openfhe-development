@@ -32,3 +32,14 @@ repos:
           entry: scripts/maint/check-diagnostic-output.py
           language: script
           files: ^src/[^/]+/(lib|include)/.*\.(c|cpp|h|hpp)$
+        - id: check-agents-guide
+          name: application guide in agents/ matches the code
+          description: >
+            The guide for coding agents names examples, API functions and
+            exception messages. This fails when one of them no longer exists,
+            so the guide is updated in the change that renames or removes it.
+            agents/maint/update-agents-guide.sh lists what to review.
+          entry: agents/maint/check-agents-guide.sh
+          language: script
+          pass_filenames: false
+          files: ^(agents/|src/|docs/|CMakeLists\.txt$)

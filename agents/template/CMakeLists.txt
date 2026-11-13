@@ -30,4 +30,5 @@ if(UNIX AND NOT APPLE)
 endif()
 
 add_executable(app main.cpp)
-target_link_libraries(app ${OpenFHE_SHARED_LIBRARIES})
+# OpenFHE_LIBRARIES holds the libraries of the installation, shared or static
+target_link_libraries(app ${OpenFHE_LIBRARIES})

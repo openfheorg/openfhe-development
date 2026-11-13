@@ -1,0 +1,56 @@
+name: Agents guide
+
+# Keeps the application guide in agents/ usable and current.
+#   template         builds OpenFHE, installs it, then builds and runs agents/template from the
+#                    installed copy, which is the first thing the guide tells a user to do.
+#   guide-reminder   warns on a pull request that changes the public headers or the examples
+#                    without touching agents/. It is a reminder only and does not fail.
+# The guide's consistency check (agents/maint/check-agents-guide.sh) runs in the Lint workflow, and
+# the behaviour the guide states is covered by the UTAgentGuide unit tests.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+      - dev
+
+concurrency:
+  group: agents-guide-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guide-reminder:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # full history, so the pull request can be compared with its base branch
+          fetch-depth: 0
+
+      - name: Remind to update the guide when the public API changed
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: agents/maint/check-agents-guide.sh --pr-base "origin/${BASE_REF}"
+
+  template:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build and install OpenFHE
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${PWD}/install" \
+                -DBUILD_UNITTESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_BENCHMARKS=OFF
+          cmake --build build -j "$(nproc)"
+          cmake --install build
+
+      - name: Build and run the application template from the installed guide
+        run: |
+          cmake -S install/share/openfhe/agents/template -B template-build -DCMAKE_PREFIX_PATH="${PWD}/install"
+          cmake --build template-build
+          ./template-build/app

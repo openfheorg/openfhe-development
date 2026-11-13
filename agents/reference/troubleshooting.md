@@ -33,6 +33,9 @@ An `OpenFHEException` derives from `std::exception`. Its message starts with the
 : The plaintext modulus does not suit packed encoding. Use a prime `t` with `t - 1` divisible by twice the ring
   dimension; see `bfv-bgv.md`.
 
+`PRE is disabled (default = NOT_SET)`
+: Proxy re-encryption needs `parameters.SetPREMode(...)` before `GenCryptoContext`; see `multiparty.md`.
+
 `Input ciphertexts should be independant`
 : A binfhe gate was called with the same ciphertext object for both inputs.
 
