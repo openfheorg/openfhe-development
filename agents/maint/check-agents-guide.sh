@@ -10,7 +10,8 @@
 #   * a Markdown link in the guide points at a file or directory that is not there;
 #   * an API name the guide uses in code no longer appears in the public headers;
 #   * an exception message the guide quotes no longer appears in the sources;
-#   * the OpenFHE version the guide says it describes differs from CMakeLists.txt.
+#   * the OpenFHE version the guide says it describes, or the version of the plugin in
+#     agents/.claude-plugin/plugin.json, differs from CMakeLists.txt.
 #
 # It cannot tell that a default changed; the unit tests in UnitTestAgentGuide.cpp
 # cover the behaviour the guide states. Nor can it tell that a new feature
@@ -297,6 +298,14 @@ awk -v current="$major.$minor" '
         }
     }
 ' $guide_md >> "$problems"
+
+# the plugin is released with the library and carries its full version
+patch=$(sed -n 's/^set(OPENFHE_VERSION_PATCH \([0-9][0-9]*\)).*/\1/p' CMakeLists.txt)
+manifest=agents/.claude-plugin/plugin.json
+plugin_version=$(sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$manifest")
+if [ "$plugin_version" != "$major.$minor.$patch" ]; then
+    echo "$manifest: version is \"$plugin_version\", CMakeLists.txt says $major.$minor.$patch" >> "$problems"
+fi
 
 # --- reminder: the public API changed and the guide did not ---------------------------------------
 if [ -n "$pr_base" ]; then

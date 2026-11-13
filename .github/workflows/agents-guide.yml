@@ -1,8 +1,9 @@
 name: Agents guide
 
 # Keeps the application guide in agents/ usable and current.
-#   template         builds OpenFHE, installs it, then builds and runs agents/template from the
-#                    installed copy, which is the first thing the guide tells a user to do.
+#   template         builds OpenFHE, installs it, then builds agents/template from the installed
+#                    copy and runs its programs, which is the first thing the guide tells a user
+#                    to do.
 #   guide-reminder   warns on a pull request that changes the public headers or the examples
 #                    without touching agents/. It is a reminder only and does not fail.
 # The guide's consistency check (agents/maint/check-agents-guide.sh) runs in the Lint workflow, and
@@ -49,8 +50,10 @@ jobs:
           cmake --build build -j "$(nproc)"
           cmake --install build
 
-      - name: Build and run the application template from the installed guide
+      - name: Build and run the application templates from the installed guide
         run: |
           cmake -S install/share/openfhe/agents/template -B template-build -DCMAKE_PREFIX_PATH="${PWD}/install"
           cmake --build template-build
-          ./template-build/app
+          ./template-build/ckks
+          ./template-build/bfv
+          ./template-build/binfhe

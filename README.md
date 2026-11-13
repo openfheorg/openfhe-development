@@ -90,6 +90,20 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        1. [n-party Interactive Bootstrapping after Chebyshev Approximation](src/pke/examples/tckks-interactive-mp-bootstrapping-Chebyshev.cpp)
        1. [Code Example for BFV with 5 parties](src/pke/examples/threshold-fhe-5p.cpp)
 
+## Using OpenFHE with AI Coding Agents
+
+The [agents](agents) directory is a guide that teaches coding agents such as Claude Code, Codex and Gemini CLI to write
+applications with OpenFHE: how to choose a scheme, set parameters, avoid the mistakes that produce wrong results
+silently, and start from a tested [application template](agents/template). It is installed with the library, under
+`share/openfhe/agents`.
+
+- Claude Code: `/plugin marketplace add openfheorg/openfhe-development`, then `/plugin install openfhe@openfhe`
+- Codex and Gemini CLI: link the directory as a skill, `ln -s <absolute path to agents> ~/.agents/skills/openfhe`
+- Any other agent: tell it to read [agents/README.md](agents/README.md) first
+
+See [agents/README.md](agents/README.md#using-this-guide-with-a-coding-agent) for details. Contributors to the library
+itself will find the build, test and style rules for agents in [AGENTS.md](AGENTS.md).
+
 ## Main API
 
 - [PKE CryptoContext API (BGV/BFV/CKKS)](https://openfhe-development.readthedocs.io/en/latest/api/classlbcrypto_1_1CryptoContextImpl.html)

@@ -10,14 +10,15 @@ Read this file first, then the reference file for the scheme you pick.
 1. Choose a scheme from the table below.
 2. Write the computation in the clear first. From it, read off the multiplicative depth, the rotation indices and the
    range of the values.
-3. Copy `template/` and check that it builds and runs before changing it. Its `CMakeLists.txt` works unchanged for
-   every scheme, including binfhe. Its `main.cpp` is a CKKS program; for another scheme keep the structure and take
-   the code from that scheme's reference file.
+3. Copy `template/` and check that it builds and runs before changing it. It holds one starting program per scheme:
+   `ckks.cpp`, `bfv.cpp` (BGV has the same interface) and `binfhe.cpp`. Each checks its result against the same
+   computation in the clear and exits with a non-zero code on a mismatch. Keep the one you need and remove the
+   others from the list in `CMakeLists.txt`.
 
    ```bash
    mkdir build && cd build
    cmake -DCMAKE_PREFIX_PATH=<OpenFHE install prefix> ..
-   make && ./app
+   make && ./ckks        # or ./bfv, ./binfhe
    ```
 4. Set the parameters, enable the features and generate the keys the computation needs.
 5. Run on small inputs and compare the decrypted result with the cleartext result. Keep this check as a test.

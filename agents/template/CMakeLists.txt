@@ -29,6 +29,12 @@ if(UNIX AND NOT APPLE)
     add_link_options(-Wl,--no-as-needed)
 endif()
 
-add_executable(app main.cpp)
-# OpenFHE_LIBRARIES holds the libraries of the installation, shared or static
-target_link_libraries(app ${OpenFHE_LIBRARIES})
+# One starting program per scheme. Keep the one you need and remove the others from this list.
+#   ckks    approximate arithmetic on real numbers
+#   bfv     exact arithmetic on integers (BGV has the same interface)
+#   binfhe  Boolean circuits
+foreach(program ckks bfv binfhe)
+    add_executable(${program} ${program}.cpp)
+    # OpenFHE_LIBRARIES holds the libraries of the installation, shared or static
+    target_link_libraries(${program} ${OpenFHE_LIBRARIES})
+endforeach()

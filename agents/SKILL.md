@@ -15,7 +15,7 @@ Read the guide in this directory first, then the reference file for the scheme i
    [binfhe.md](reference/binfhe.md), [multiparty.md](reference/multiparty.md),
    [serialization.md](reference/serialization.md), [choosing-a-scheme.md](reference/choosing-a-scheme.md),
    [troubleshooting.md](reference/troubleshooting.md), [examples-index.md](reference/examples-index.md)
-3. [template/](template/) – a CMake project and `main.cpp` to copy as the starting point
+3. [template/](template/) – a CMake project with a starting program for CKKS, BFV and binfhe
 
 Always finish by running the program on small inputs and comparing the decrypted result with the same computation in
 the clear.

@@ -75,7 +75,9 @@ exception messages and examples, so a library change can make it wrong. Update i
 - rename, remove or add a public function, parameter, enum value or feature;
 - change a default, a parameter rule or which ring dimension is chosen;
 - change the text of an exception or turn a silent failure into an error;
-- add, rename or remove an example.
+- add, rename or remove an example;
+- change the OpenFHE version in `CMakeLists.txt`: set the same version in `agents/.claude-plugin/plugin.json`, and
+  the major and minor version where `agents/README.md` names it.
 
 How:
 

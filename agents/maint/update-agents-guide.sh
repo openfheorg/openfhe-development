@@ -199,18 +199,18 @@ fi
 listing=${listing%
 }
 
-prompt="The application guide in agents/ teaches coding agents how to write programs with OpenFHE. Bring it up to date with
-the code changes on this branch. Follow the section \"Keeping agents/ current\" in AGENTS.md.
+prompt="The application guide in agents/ teaches coding agents how to write programs with OpenFHE. Bring it up to date
+with the code changes on this branch. Follow the section \"Keeping agents/ current\" in AGENTS.md.
 
 $checker_report
 
 Changed files that the guide may describe, and the guide files to review for each:
 $listing
 
-For each one, read the change (git diff $short_base -- <file>) and decide whether the guide says anything that is no longer
-true or leaves out something a user of the library now needs: a renamed or removed function, a new parameter or
-default, a different exception message, a new or removed example, a changed failure mode. Edit only what the change
-makes necessary. Keep the guide short, keep lines within 120 columns, and do not describe internals.
+For each one, read the change (git diff $short_base -- <file>) and decide whether the guide says anything that is no
+longer true or leaves out something a user of the library now needs: a renamed or removed function, a new parameter
+or default, a different exception message, a new or removed example, a changed failure mode. Edit only what the
+change makes necessary. Keep the guide short, keep lines within 120 columns, and do not describe internals.
 
 Verify every statement you add or change against the library itself, by building and running a small program, as the
 existing guide was. If a statement is checked by src/pke/unittest/UnitTestAgentGuide.cpp or
