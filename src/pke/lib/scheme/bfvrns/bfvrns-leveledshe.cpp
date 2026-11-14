@@ -202,6 +202,16 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
                                                 ConstCiphertext<DCRTPoly>& ciphertext2) const {
+    // the product is returned in EVALUATION format, like any other ciphertext, so that it can be added to fresh
+    // ciphertexts and plaintexts before relinearization
+    auto ciphertextMult = EvalMultCoefficient(ciphertext1, ciphertext2);
+    for (auto& c : ciphertextMult->GetElements())
+        c.SetFormat(Format::EVALUATION);
+    return ciphertextMult;
+}
+
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMultCoefficient(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                                           ConstCiphertext<DCRTPoly>& ciphertext2) const {
     if (ciphertext1->GetCryptoParameters() != ciphertext2->GetCryptoParameters())
         OPENFHE_THROW("crypto parameters are not the same");
 
@@ -436,6 +446,14 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& ciphertext) const {
+    // the square is returned in EVALUATION format, like any other ciphertext
+    auto ciphertextSq = EvalSquareCoefficient(ciphertext);
+    for (auto& c : ciphertextSq->GetElements())
+        c.SetFormat(Format::EVALUATION);
+    return ciphertextSq;
+}
+
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquareCoefficient(ConstCiphertext<DCRTPoly>& ciphertext) const {
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoContext()->GetCryptoParameters());
 
@@ -715,26 +733,26 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& cip
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphertext1,
                                                 ConstCiphertext<DCRTPoly>& ciphertext2,
                                                 const EvalKey<DCRTPoly> evalKey) const {
-    auto ciphertext = EvalMult(ciphertext1, ciphertext2);
+    auto ciphertext = EvalMultCoefficient(ciphertext1, ciphertext2);
     RelinearizeCore(ciphertext, evalKey);
     return ciphertext;
 }
 
 void LeveledSHEBFVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly>& ciphertext2,
                                        const EvalKey<DCRTPoly> evalKey) const {
-    ciphertext1 = EvalMult(ciphertext1, ciphertext2);
+    ciphertext1 = EvalMultCoefficient(ciphertext1, ciphertext2);
     RelinearizeCore(ciphertext1, evalKey);
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& ciphertext,
                                                   const EvalKey<DCRTPoly> evalKey) const {
-    auto csquare = EvalSquare(ciphertext);
+    auto csquare = EvalSquareCoefficient(ciphertext);
     RelinearizeCore(csquare, evalKey);
     return csquare;
 }
 
 void LeveledSHEBFVRNS::EvalSquareInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const {
-    ciphertext = EvalSquare(ciphertext);
+    ciphertext = EvalSquareCoefficient(ciphertext);
     RelinearizeCore(ciphertext, evalKey);
 }
 

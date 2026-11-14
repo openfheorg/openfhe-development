@@ -39,7 +39,9 @@
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "UnitTestUtils.h"
+#include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
 
 using namespace lbcrypto;
 
@@ -347,3 +349,51 @@ TEST_P(UTBFVRNS, BFVRNS) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBFVRNS, ::testing::ValuesIn(testCases), testName);
+
+// The output of EvalMultNoRelin must be usable as any other ciphertext: adding it to (or subtracting it from) a fresh
+// ciphertext or a plaintext, before relinearization, must give the correct result for all multiplication techniques.
+TEST(UTBFVRNS_NORELIN, EvalAddSubOfNonRelinearizedProduct) {
+    for (auto multTech : {HPS, HPSPOVERQ, HPSPOVERQLEVELED, BEHZ}) {
+        CCParams<CryptoContextBFVRNS> parameters;
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetMultiplicativeDepth(2);
+        parameters.SetMultiplicationTechnique(multTech);
+
+        CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
+
+        auto keyPair = cc->KeyGen();
+        cc->EvalMultKeyGen(keyPair.secretKey);
+
+        std::vector<int64_t> a{1, 2, 3, 4, 5, 6, 7, 8};
+        std::vector<int64_t> b{3, 1, 4, 1, 5, 9, 2, 6};
+        std::vector<int64_t> c{10, 20, 30, 40, 50, 60, 70, 80};
+        std::vector<int64_t> sum(a.size());
+        std::vector<int64_t> diff(a.size());
+        for (size_t i = 0; i < a.size(); ++i) {
+            sum[i] = a[i] * b[i] + c[i];
+            diff[i] = c[i] - a[i] * b[i];
+        }
+
+        auto ptC = cc->MakePackedPlaintext(c);
+        auto ctA = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(a));
+        auto ctB = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(b));
+        auto ctC = cc->Encrypt(keyPair.publicKey, ptC);
+        auto ctAB = cc->EvalMultNoRelin(ctA, ctB);
+
+        auto check = [&](const std::vector<int64_t>& expected, ConstCiphertext<DCRTPoly>& ct, const std::string& what) {
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, ct, &result);
+            result->SetLength(expected.size());
+            EXPECT_EQ(expected, result->GetPackedValue()) << what << ", multiplication technique " << multTech;
+        };
+
+        check(sum, cc->EvalAdd(ctAB, ctC), "EvalAdd(ciphertext, ciphertext)");
+        check(sum, cc->EvalAdd(ctC, ctAB), "EvalAdd(ciphertext, ciphertext), swapped");
+        check(diff, cc->EvalSub(ctC, ctAB), "EvalSub(ciphertext, ciphertext)");
+        check(sum, cc->EvalAdd(ctAB, ptC), "EvalAdd(ciphertext, plaintext)");
+        check(sum, cc->Relinearize(cc->EvalAdd(ctAB, ctC)), "Relinearize(EvalAdd(ciphertext, ciphertext))");
+    }
+}
