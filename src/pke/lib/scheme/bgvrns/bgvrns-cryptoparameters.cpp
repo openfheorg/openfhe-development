@@ -38,6 +38,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 namespace lbcrypto {
@@ -147,9 +148,9 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
 uint64_t CryptoParametersBGVRNS::FindAuxPrimeStep() const {
     size_t n = GetElementParams()->GetRingDimension();
-    uint32_t plaintextModulus = GetPlaintextModulus();
+    PlaintextModulus plaintextModulus = GetPlaintextModulus();
     uint32_t cyclOrder = 2 * n;
-    uint32_t pow2ptm = 1;
+    uint64_t pow2ptm = 1;
 
     // The largest power of 2 dividing ptm
     // Check whether it is larger than cyclOrder or not
@@ -161,7 +162,9 @@ uint64_t CryptoParametersBGVRNS::FindAuxPrimeStep() const {
     if (pow2ptm < cyclOrder)
         pow2ptm = cyclOrder;
 
-    return static_cast<uint64_t>(pow2ptm) * plaintextModulus;
+    if (plaintextModulus > std::numeric_limits<uint64_t>::max() / pow2ptm)
+        OPENFHE_THROW("The plaintext modulus is too large: lcm(2n, t) does not fit in 64 bits");
+    return pow2ptm * plaintextModulus;
 }
 
 }  // namespace lbcrypto

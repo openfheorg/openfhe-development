@@ -164,7 +164,7 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
      * @param scalTech the scaling technique.
      * @return the modulus for the prime search.
      */
-    uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
+    uint64_t getCyclicOrder(const uint32_t ringDimension, const PlaintextModulus plainModulus,
                             const ScalingTechnique scalTech) const;
 
     /**
