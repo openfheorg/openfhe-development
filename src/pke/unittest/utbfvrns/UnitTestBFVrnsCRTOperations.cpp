@@ -694,3 +694,93 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     // EXPECT_TRUE((result >= 1) && (result <= 3)) <<  "Results of multiprecision
     // and CRT multiplication after scaling + rounding do not match";
 }
+
+// HPSPOVERQLEVELED with BV key switching: the number of levels dropped before relinearizing a product must account
+// for the key switching noise at the lower level. With two 60-bit moduli (HEStd_NotSet, small ring dimension),
+// dropping to a single modulus before the second relinearization destroyed the ciphertext.
+TEST(UTBFVRNS_LEVELED, RelinearizationAfterLevelDropBV) {
+    for (uint32_t ringDim : {1024, 2048}) {
+        CCParams<CryptoContextBFVRNS> parameters;
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetMultiplicativeDepth(2);
+        parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
+        parameters.SetKeySwitchTechnique(BV);
+        parameters.SetSecurityLevel(HEStd_NotSet);
+        parameters.SetRingDim(ringDim);
+
+        CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
+
+        auto keyPair = cc->KeyGen();
+        cc->EvalMultKeyGen(keyPair.secretKey);
+
+        const int64_t t = 65537;
+        std::vector<int64_t> x(ringDim);
+        std::vector<int64_t> y(ringDim);
+        std::vector<int64_t> expected(ringDim);
+        for (uint32_t i = 0; i < ringDim; ++i) {
+            x[i] = static_cast<int64_t>(i * 7 % 200) - 100;
+            y[i] = static_cast<int64_t>(i * 13 % 150) - 75;
+            int64_t xy = x[i] * y[i];
+            int64_t xySq = (xy * xy) % t;
+            expected[i] = xySq > t / 2 ? xySq - t : xySq;
+        }
+
+        auto ctX = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(x));
+        auto ctY = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(y));
+        auto ctXY = cc->EvalMult(ctX, ctY);
+        auto ctXYSq = cc->EvalMult(ctXY, ctXY);
+
+        Plaintext result;
+        cc->Decrypt(keyPair.secretKey, ctXYSq, &result);
+        result->SetLength(ringDim);
+        EXPECT_EQ(expected, result->GetPackedValue()) << "ring dimension " << ringDim;
+    }
+}
+
+// The same at the default security level: with t = 786433 and depth 6, the drops chosen with the multiplication
+// criterion left too much key switching noise, and the last squaring decrypted to wrong values.
+TEST(UTBFVRNS_LEVELED, RelinearizationAfterLevelDropBVDefaultSecurity) {
+    const uint32_t depth = 6;
+    const int64_t t = 786433;
+
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(t);
+    parameters.SetMultiplicativeDepth(depth);
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
+    parameters.SetKeySwitchTechnique(BV);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    auto keyPair = cc->KeyGen();
+    cc->EvalMultKeyGen(keyPair.secretKey);
+
+    const uint32_t n = cc->GetRingDimension();
+    std::vector<int64_t> x(n);
+    std::vector<int64_t> expected(n);
+    for (uint32_t i = 0; i < n; ++i) {
+        x[i] = static_cast<int64_t>(i % 1000) - 500;
+        expected[i] = (x[i] % t + t) % t;
+    }
+
+    auto ct = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(x));
+    for (uint32_t k = 1; k <= depth; ++k) {
+        ct = cc->EvalMult(ct, ct);
+        for (auto& e : expected)
+            e = e * e % t;
+
+        Plaintext result;
+        cc->Decrypt(keyPair.secretKey, ct, &result);
+        result->SetLength(n);
+        auto values = result->GetPackedValue();
+        uint32_t wrong = 0;
+        for (uint32_t i = 0; i < n; ++i)
+            wrong += ((values[i] % t + t) % t) != expected[i];
+        EXPECT_EQ(0u, wrong) << "squaring " << k;
+    }
+}
