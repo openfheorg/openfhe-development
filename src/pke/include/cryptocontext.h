@@ -360,6 +360,22 @@ class CryptoContextImpl : public Serializable {
     }
 
     /**
+     * @brief Throws if a ciphertext has more than two elements. The relinearizing multiplications (EvalMult,
+     * EvalSquare and their variants) use the relinearization key for s^2 only, so a ciphertext that has not been
+     * relinearized (e.g., the output of EvalMultNoRelin) must go through Relinearize or EvalMultAndRelinearize.
+     *
+     * @param ciphertext the ciphertext to validate
+     */
+    void ValidateRelinearized(ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
+        if (ciphertext->NumberCiphertextElements() > 2) {
+            std::string errorMsg(std::string("Ciphertext should be relinearized before. Use Relinearize() or "
+                                             "EvalMultAndRelinearize() for ciphertexts with more than 2 elements") +
+                                 CALLER_INFO);
+            OPENFHE_THROW(errorMsg);
+        }
+    }
+
+    /**
      * @brief Throws if proxy re-encryption is disabled for this crypto context, i.e., HYBRID key switching is
      * used and the PRE mode is NOT_SET.
      */
@@ -2065,6 +2081,9 @@ class CryptoContextImpl : public Serializable {
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
 
+        ValidateRelinearized(ciphertext1);
+        ValidateRelinearized(ciphertext2);
+
         return m_scheme->EvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
 
@@ -2082,6 +2101,9 @@ class CryptoContextImpl : public Serializable {
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutable");
 
+        ValidateRelinearized(ciphertext1);
+        ValidateRelinearized(ciphertext2);
+
         return m_scheme->EvalMultMutable(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
 
@@ -2097,6 +2119,9 @@ class CryptoContextImpl : public Serializable {
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMultMutableInPlace");
+
+        ValidateRelinearized(ciphertext1);
+        ValidateRelinearized(ciphertext2);
 
         m_scheme->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKeyVec[0]);
     }
@@ -2114,6 +2139,8 @@ class CryptoContextImpl : public Serializable {
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquare");
 
+        ValidateRelinearized(ciphertext);
+
         return m_scheme->EvalSquare(ciphertext, evalKeyVec[0]);
     }
 
@@ -2130,6 +2157,8 @@ class CryptoContextImpl : public Serializable {
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquareMutable");
 
+        ValidateRelinearized(ciphertext);
+
         return m_scheme->EvalSquareMutable(ciphertext, evalKeyVec[0]);
     }
 
@@ -2144,6 +2173,8 @@ class CryptoContextImpl : public Serializable {
         const auto& evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext->GetKeyTag());
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalSquareInPlace");
+
+        ValidateRelinearized(ciphertext);
 
         m_scheme->EvalSquareInPlace(ciphertext, evalKeyVec[0]);
     }
@@ -2725,6 +2756,9 @@ class CryptoContextImpl : public Serializable {
         auto evalKeyVec = CryptoContextImpl<Element>::GetEvalMultKeyVector(ciphertext1->GetKeyTag());
         if (evalKeyVec.empty())
             OPENFHE_THROW("Evaluation key has not been generated for EvalMult");
+
+        ValidateRelinearized(ciphertext1);
+        ValidateRelinearized(ciphertext2);
 
         return m_scheme->ComposedEvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
     }

@@ -46,8 +46,11 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
+#include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "key/evalkeyrelin.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
 using namespace lbcrypto;
 
@@ -1544,4 +1547,82 @@ TEST(UnitTestSHE, GetMetadataByKeyClonesDynamicType) {
     ASSERT_NE(nullptr, cloned);
     EXPECT_NE(stored.get(), cloned.get());
     EXPECT_EQ("derived metadata", cloned->GetMetadata());
+}
+
+// EvalMult and EvalSquare relinearize with the key for s^2 only. Given a ciphertext with more than 2 elements
+// (the output of EvalMultNoRelin), they must throw instead of returning a ciphertext that decrypts to wrong values.
+template <typename T>
+static void EvalMultRejectsNonRelinearizedInput(bool testMutable) {
+    CCParams<T> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetMultiplicativeDepth(3);
+    parameters.SetMaxRelinSkDeg(3);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    auto keyPair = cc->KeyGen();
+    cc->EvalMultKeysGen(keyPair.secretKey);
+    cc->EvalRotateKeyGen(keyPair.secretKey, {1});
+
+    std::vector<int64_t> a{1, 2, 3, 4, 5, 6, 7, 8};
+    std::vector<int64_t> b{3, 1, 4, 1, 5, 9, 2, 6};
+    std::vector<int64_t> c{2, 7, 1, 8, 2, 8, 1, 8};
+    auto ctA = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(a));
+    auto ctB = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(b));
+    auto ctC = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(c));
+
+    auto ct3 = cc->EvalMultNoRelin(ctA, ctB);
+    ASSERT_EQ(3u, ct3->NumberCiphertextElements());
+
+    EXPECT_THROW(cc->EvalMult(ct3, ctC), OpenFHEException);
+    EXPECT_THROW(cc->EvalMult(ctC, ct3), OpenFHEException);
+    EXPECT_THROW(cc->ComposedEvalMult(ct3, ctC), OpenFHEException);
+    EXPECT_THROW(cc->EvalSquare(ct3), OpenFHEException);
+    auto ct3Copy = ct3->Clone();
+    EXPECT_THROW(cc->EvalSquareInPlace(ct3Copy), OpenFHEException);
+    // rotations key switch with the automorphism key and need a relinearized input as well
+    EXPECT_THROW(cc->EvalRotate(ct3, 1), OpenFHEException);
+    EXPECT_THROW(cc->EvalAtIndex(ct3, 1), OpenFHEException);
+    auto digits = cc->EvalFastRotationPrecompute(ct3);
+    EXPECT_THROW(cc->EvalFastRotation(ct3, 1, 2 * cc->GetRingDimension(), digits), OpenFHEException);
+    if (testMutable) {
+        auto ct3Mutable = ct3->Clone();
+        auto ctCMutable = ctC->Clone();
+        EXPECT_THROW(cc->EvalMultMutable(ct3Mutable, ctCMutable), OpenFHEException);
+        EXPECT_THROW(cc->EvalMultMutableInPlace(ct3Mutable, ctCMutable), OpenFHEException);
+        EXPECT_THROW(cc->EvalSquareMutable(ct3Mutable), OpenFHEException);
+    }
+
+    // the supported ways to multiply a ciphertext with more than 2 elements
+    std::vector<int64_t> expected(a.size());
+    for (size_t i = 0; i < a.size(); ++i)
+        expected[i] = a[i] * b[i] * c[i];
+    for (const auto& ct : {cc->EvalMultAndRelinearize(ct3, ctC), cc->EvalMult(cc->Relinearize(ct3), ctC)}) {
+        Plaintext result;
+        cc->Decrypt(keyPair.secretKey, ct, &result);
+        result->SetLength(expected.size());
+        EXPECT_EQ(expected, result->GetPackedValue());
+    }
+
+    // a relinearized ciphertext can still be rotated (the first 7 slots, which do not depend on the slots that
+    // wrap around)
+    std::vector<int64_t> rotated(a.size() - 1);
+    for (size_t i = 0; i < rotated.size(); ++i)
+        rotated[i] = a[i + 1] * b[i + 1];
+    Plaintext result;
+    cc->Decrypt(keyPair.secretKey, cc->EvalRotate(cc->Relinearize(ct3), 1), &result);
+    result->SetLength(rotated.size());
+    EXPECT_EQ(rotated, result->GetPackedValue());
+}
+
+TEST(UnitTestSHE, EvalMultRejectsNonRelinearizedInputBGVrns) {
+    EvalMultRejectsNonRelinearizedInput<CryptoContextBGVRNS>(true);
+}
+
+TEST(UnitTestSHE, EvalMultRejectsNonRelinearizedInputBFVrns) {
+    // the mutable variants are not supported in BFV
+    EvalMultRejectsNonRelinearizedInput<CryptoContextBFVRNS>(false);
 }
