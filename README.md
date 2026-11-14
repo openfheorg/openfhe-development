@@ -98,7 +98,8 @@ silently, and start from a tested [application template](agents/template). It is
 `share/openfhe/agents`.
 
 - Claude Code: `/plugin marketplace add openfheorg/openfhe-development`, then `/plugin install openfhe@openfhe`
-- Codex and Gemini CLI: link the directory as a skill, `ln -s <absolute path to agents> ~/.agents/skills/openfhe`
+- Codex: `codex plugin marketplace add openfheorg/openfhe-development`, then `codex plugin add openfhe@openfhe`
+- Gemini CLI: `gemini skills install <path to agents>`
 - Any other agent: tell it to read [agents/README.md](agents/README.md) first
 
 See [agents/README.md](agents/README.md#using-this-guide-with-a-coding-agent) for details. Contributors to the library

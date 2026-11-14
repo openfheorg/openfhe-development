@@ -106,7 +106,21 @@ Claude Code, as a plugin:
 /plugin install openfhe@openfhe
 ```
 
-Codex and Gemini CLI, as a skill for your user account:
+Codex, as a plugin from the same marketplace:
+
+```bash
+codex plugin marketplace add openfheorg/openfhe-development
+codex plugin add openfhe@openfhe
+```
+
+Gemini CLI, as a skill for your user account:
+
+```bash
+gemini skills install <guide>
+```
+
+Codex and Gemini CLI also read a skill that is linked into `~/.agents/skills`, which follows the guide as it
+changes:
 
 ```bash
 mkdir -p ~/.agents/skills

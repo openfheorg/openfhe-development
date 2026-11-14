@@ -11,7 +11,8 @@
 #   * an API name the guide uses in code no longer appears in the public headers;
 #   * an exception message the guide quotes no longer appears in the sources;
 #   * the OpenFHE version the guide says it describes, or the version of the plugin in
-#     agents/.claude-plugin/plugin.json, differs from CMakeLists.txt.
+#     agents/.claude-plugin/plugin.json or agents/.codex-plugin/plugin.json, differs from CMakeLists.txt;
+#   * the skill that Codex loads from the plugin has a different name or description from agents/SKILL.md.
 #
 # It cannot tell that a default changed; the unit tests in UnitTestAgentGuide.cpp
 # cover the behaviour the guide states. Nor can it tell that a new feature
@@ -190,7 +191,10 @@ done
 find src/core/include src/pke/include src/binfhe/include -name '*.h' | LC_ALL=C sort | xargs cat |
     grep -oE '[A-Za-z_][A-Za-z0-9_]*' | LC_ALL=C sort -u > "$tmp/declared"
 
-cat "$tmp/fragments" "$tmp/template" | awk -F '\t' -v declared="$tmp/declared" -v ignored="$NOT_OPENFHE" '
+# agents/maint is for maintainers of the library, not part of the application guide: its files and links are
+# checked above, but it may use build options and other names that are not API.
+grep -v '^agents/maint/' "$tmp/fragments" | cat - "$tmp/template" |
+    awk -F '\t' -v declared="$tmp/declared" -v ignored="$NOT_OPENFHE" '
     function strip_cpp_noise(code) {
         # comments and string literals hold prose, not API
         sub(/\/\/.*/, "", code)
@@ -301,10 +305,18 @@ awk -v current="$major.$minor" '
 
 # the plugin is released with the library and carries its full version
 patch=$(sed -n 's/^set(OPENFHE_VERSION_PATCH \([0-9][0-9]*\)).*/\1/p' CMakeLists.txt)
-manifest=agents/.claude-plugin/plugin.json
-plugin_version=$(sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$manifest")
-if [ "$plugin_version" != "$major.$minor.$patch" ]; then
-    echo "$manifest: version is \"$plugin_version\", CMakeLists.txt says $major.$minor.$patch" >> "$problems"
+for manifest in agents/.claude-plugin/plugin.json agents/.codex-plugin/plugin.json; do
+    plugin_version=$(sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$manifest")
+    if [ "$plugin_version" != "$major.$minor.$patch" ]; then
+        echo "$manifest: version is \"$plugin_version\", CMakeLists.txt says $major.$minor.$patch" >> "$problems"
+    fi
+done
+
+# Codex finds the skills of a plugin only in a subdirectory, so the plugin carries a second SKILL.md that points at
+# the real one. Its front matter, the name and the description, must be the same.
+codex_skill=agents/.codex-plugin/skills/openfhe/SKILL.md
+if [ "$(sed -n '1,/^---$/{1!p;}' "$codex_skill")" != "$(sed -n '1,/^---$/{1!p;}' agents/SKILL.md)" ]; then
+    echo "$codex_skill: name or description differs from agents/SKILL.md" >> "$problems"
 fi
 
 # --- reminder: the public API changed and the guide did not ---------------------------------------
