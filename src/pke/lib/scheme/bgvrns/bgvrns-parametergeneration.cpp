@@ -116,9 +116,10 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         uint32_t numWindows = (modSizeEstimate / digitSize) + 1;
         keySwitchingNoise = numWindows * numPrimes * expansionFactor * relinBase * Berr / 2.0;
     } else {
-        double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
-        double numDigits = cryptoParamsBGVRNS->GetNumPartQ();
-        keySwitchingNoise = numTowersPerDigit * numDigits * expansionFactor * Berr;
+        // GetNumPerPartQ() and GetNumPartQ() are still 0 here: they are set by PrecomputeCRTTables after the moduli
+        // are selected. We use numPrimes as an approximation of numDigits * [towers per digit], as in
+        // InitializeFloodingDgg.
+        keySwitchingNoise = numPrimes * expansionFactor * Berr;
         keySwitchingNoise += auxTowers * (1. + expansionFactorMS * Bkey);
 #if defined(WITH_REDUCED_NOISE)
         keySwitchingNoise /= 2.0;

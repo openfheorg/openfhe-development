@@ -40,7 +40,9 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
+#include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
+#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
 using namespace lbcrypto;
 
@@ -1204,3 +1206,33 @@ TEST_P(UTBGVRNS, BGVRNS) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS, ::testing::ValuesIn(testCasesUTBGVRNS), testName);
+
+// The HYBRID key-switching term of the noise estimate must use the number of digits and of towers per digit of the
+// parameters being generated. Running the parameter generation again on the generated parameters, where
+// GetNumPartQ() and GetNumPerPartQ() are already set, must therefore select the same moduli.
+TEST(UTBGVRNS_PARAMGEN, HybridKeySwitchingDigitTerm) {
+    for (auto scalTech : {FIXEDAUTO, FLEXIBLEAUTO, FLEXIBLEAUTOEXT}) {
+        CCParams<CryptoContextBGVRNS> parameters;
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetMultiplicativeDepth(2);
+        parameters.SetScalingTechnique(scalTech);
+
+        CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cc->GetCryptoParameters());
+
+        auto getModuli = [&cryptoParams]() {
+            std::vector<NativeInteger> moduli;
+            for (const auto& p : cryptoParams->GetElementParams()->GetParams())
+                moduli.push_back(p->GetModulus());
+            return moduli;
+        };
+        const auto moduli = getModuli();
+
+        cc->GetScheme()->ParamsGenBGVRNS(cryptoParams, parameters.GetEvalAddCount(), parameters.GetKeySwitchCount(),
+                                         2 * parameters.GetRingDim(), parameters.GetMultiplicativeDepth() + 1,
+                                         parameters.GetFirstModSize(), parameters.GetScalingModSize(),
+                                         cryptoParams->GetNumPartQ(), parameters.GetPRENumHops());
+
+        EXPECT_EQ(moduli, getModuli()) << "scaling technique: " << scalTech;
+    }
+}
