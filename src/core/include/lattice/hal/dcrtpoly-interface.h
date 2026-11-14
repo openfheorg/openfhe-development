@@ -1405,12 +1405,12 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
      * [Floor{t*QHatInv_i/q_i}]_t
      * @param tQHatInvModqDivqModtPrecon NTL-specific precomputations
      * @param tQHatInvModqBDivqModt precomputed values for
-     * [Floor{t*QHatInv_i*B/q_i}]_t used when CRT moduli are 45..60 bits long
+     * [Floor{t*QHatInv_i*B/q_i}]_t used when CRT moduli are more than 30 bits long
      * @param tQHatInvModqBDivqModtPrecon NTL-specific precomputations
-     * used when CRT moduli are 45..60 bits long
+     * used when CRT moduli are more than 30 bits long
      * @param tQHatInvModqDivqFrac precomputed values for Frac{t*QHatInv_i/q_i}
      * @param tQHatInvModqBDivqFrac precomputed values for Frac{t*QHatInv_i*B/q_i}
-     * used when CRT moduli are 45..60 bits long
+     * used when CRT moduli are more than 30 bits long
      * @return the result of computation as a polynomial with native 64-bit
      * coefficients
      */
