@@ -250,6 +250,11 @@ static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {
     { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "01", {BGVRNS_SCHEME, 3,        MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, 60,             SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     NORESCALE,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#if NATIVEINT == 64
+    // FIXEDAUTO: moduli = 1 mod 2n*t; for t = 2^32 - 2^20 + 1 and n = 2^17 only 32 such primes lie in [2^59, 2^60)
+    // (64-bit native integers only: the limit is 60 bits there, 121 bits with NATIVEINT == 128)
+    { CRYPTOPARAMS_VALIDATION_UTBGVRNS, "04", {BGVRNS_SCHEME, DFLT,     33,         DFLT,       DFLT,     DFLT,    DFLT,       DFLT,          DFLT,           DFLT,    HYBRID, FIXEDAUTO,       DFLT,    4293918721, DFLT, 1,      0,    DFLT,     DFLT,    DFLT}, },
+#endif
     // ==========================================
     // TestType,                        Descr,  Scheme,        RDim,     MultDepth,  SModSize,   DSize,    BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
