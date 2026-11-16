@@ -11,20 +11,37 @@ An `OpenFHEException` derives from `std::exception`. Its message starts with the
   the keys. In threshold FHE, encrypt with the joint public key.
 
 `EvalAutomorphismKeys are not generated`
-: No rotation keys exist. Call `EvalRotateKeyGen` with every index the computation uses.
+: No rotation or summation keys exist. Call `EvalRotateKeyGen` with every index the computation uses, and
+  `EvalSumKeyGen` before `EvalSum` or `EvalInnerProduct`.
 
-`EvalKey for index [...] is not found` (CKKS), or just `map::at` (BFV)
-: Rotation keys exist, but not for this index. Add the index to `EvalRotateKeyGen`. The number in the message is an
-  internal automorphism index, not the rotation index.
+`EvalKey for index [...] is not found`, or just `map::at` from a BFV rotation
+: Keys exist, but not for this index. For a rotation, add the index to `EvalRotateKeyGen`. For `EvalSum` or
+  `EvalInnerProduct`, call `EvalSumKeyGen`. The number in the message is an internal automorphism index, not the
+  rotation index.
 
 `... operation has not been enabled. Enable(ADVANCEDSHE) must be called`
 : Call `cc->Enable(...)` with the feature named in the message.
 
 `The decryption failed because the approximation error is too high`
-: CKKS only. The multiplicative depth was exceeded, or the ciphertext was decrypted with the wrong key.
+: CKKS only. The multiplicative depth was exceeded by one multiplication, an input of a Chebyshev evaluation was
+  outside its interval, or the ciphertext was decrypted with the wrong key.
+
+`The current multiplicative depth [...] is insufficient; increase it`
+: CKKS only. The multiplicative depth was exceeded by two or more multiplications.
+
+`Removing last element of DCRTPoly renders it invalid`
+: CKKS only. The same, when the failing multiplication is by a scalar.
 
 `Too few towers to support ModReduce`
-: BGV only. The multiplicative depth was exceeded.
+: BGV only. The multiplicative depth was exceeded by two or more multiplications. One multiplication too many gives
+  wrong values with no error.
+
+`We do not support moduli greater than ... bits`
+: BGV could not build its moduli. The usual cause is a plaintext modulus above 31 bits; use a smaller one, or BFV.
+
+`Precomputations for ... slots not found`
+: CKKS bootstrapping. The ciphertext was not encoded with the number of slots given to `EvalBootstrapSetup`; see
+  `ckks.md`.
 
 `PlaintextModulus is not set`
 : BFV and BGV need `SetPlaintextModulus`.
@@ -39,10 +56,13 @@ An `OpenFHEException` derives from `std::exception`. Its message starts with the
 `Input ciphertexts should be independant`
 : A binfhe gate was called with the same ciphertext object for both inputs.
 
+`Bootstrapping keys have not been generated`
+: A binfhe gate was called before `BTKeyGen`.
+
 ## Wrong results with no error
 
-- **BFV values are garbage.** The multiplicative depth was exceeded, or the wrong secret key was used. BFV reports
-  neither.
+- **BFV or BGV values are garbage.** The multiplicative depth was exceeded, or the wrong secret key was used. Neither
+  is reported.
 - **BFV or BGV values are off by a multiple of the plaintext modulus.** A value left the range
   `-(t-1)/2 ... (t-1)/2` and wrapped.
 - **A CKKS function result is far off.** An input was outside the `[a, b]` interval given to the Chebyshev

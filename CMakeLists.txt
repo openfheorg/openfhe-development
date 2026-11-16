@@ -967,7 +967,9 @@ install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 # install(EXPORT OpenFHETargets DESTINATION "${INSTALL_CMAKE_DIR}" NAMESPACE OpenFHE:: COMPONENT dev)
 
 # Install the guide for AI coding agents that write applications with OpenFHE (see agents/README.md)
-# agents/maint holds scripts that keep the guide current; they need the source tree, so they are not installed
+# agents/maint holds scripts that keep the guide current; they need the source tree, so they are not installed.
+# Nor is a build directory that someone made inside agents/template.
 install(DIRECTORY agents/ DESTINATION "${CMAKE_INSTALL_DATADIR}/openfhe/agents"
         COMPONENT dev
-        PATTERN "maint" EXCLUDE)
+        PATTERN "maint" EXCLUDE
+        PATTERN "build*" EXCLUDE)

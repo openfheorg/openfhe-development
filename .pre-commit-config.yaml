@@ -42,4 +42,4 @@ repos:
           entry: agents/maint/check-agents-guide.sh
           language: script
           pass_filenames: false
-          files: ^(agents/|src/|docs/|CMakeLists\.txt$)
+          files: ^(agents/|src/|docs/|CMakeLists\.txt$|llms\.txt$)

@@ -63,11 +63,13 @@ Generate keys before using them. Multiplying two ciphertexts needs `EvalMultKeyG
 from `EvalRotateKeyGen`. A missing key throws.
 
 Set the multiplicative depth to the deepest chain of multiplications in the computation, not the number of
-multiplications. Going past it fails differently per scheme:
+multiplications. Going past it fails differently per scheme, and not always with an error:
 
 - BFV decrypts to wrong values with no error.
-- BGV throws at the operation that runs out of levels ("Too few towers to support ModReduce").
-- CKKS normally throws at `Decrypt` with "approximation error is too high".
+- BGV decrypts to wrong values with no error one multiplication past the depth. The multiplication after that throws
+  "Too few towers to support ModReduce".
+- CKKS throws: one multiplication past the depth at `Decrypt`, with "approximation error is too high", and beyond that
+  at the multiplication itself.
 
 BFV and BGV compute modulo the plaintext modulus `t`, on signed values from `-(t-1)/2` to `(t-1)/2`. A result outside
 that range wraps around with no error. Pick a modulus larger than twice the largest absolute value of any intermediate

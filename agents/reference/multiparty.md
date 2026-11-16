@@ -38,12 +38,13 @@ auto multAAB = cc->MultiMultEvalKey(kpA.secretKey, multAB, kpB.publicKey->GetKey
 cc->InsertEvalMultKey({cc->MultiAddEvalMultKeys(multAAB, multBAB, multAB->GetKeyTag())});
 ```
 
-Rotation and summation keys are built the same way with `MultiEvalAtIndexKeyGen`, `MultiEvalSumKeyGen`,
-`MultiAddEvalAutomorphismKeys` and `MultiAddEvalSumKeys`; see `threshold-fhe.cpp`.
+Summation keys are built the same way with `MultiEvalSumKeyGen` and `MultiAddEvalSumKeys`; see `threshold-fhe.cpp`.
+Rotation keys follow the same pattern with `MultiEvalAtIndexKeyGen` and `MultiAddEvalAutomorphismKeys`; no example
+shows them.
 
 ### Decryption
 
-Each party produces a partial decryption, and the parts are fused. Exactly one party uses the `Lead` call.
+Each party produces a partial decryption, and the parts are fused. Exactly one party uses `MultipartyDecryptLead`.
 
 ```cpp
 auto partA = cc->MultipartyDecryptLead({ct}, kpA.secretKey);
@@ -122,7 +123,7 @@ security and the number of adversarial queries.
 
 ## Further topics
 
-Examples in `src/pke/examples` of the source tree:
+Examples in `src/pke/examples` of the source tree, and documents:
 
 | Topic | Read |
 |---|---|

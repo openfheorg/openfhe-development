@@ -33,6 +33,8 @@ branch.
    │       ├── main.yml                  <-- Runs when a branch is merged to main, uses generic_workflow
    │       ├── manual.yml                <-- Runs on-demand with parameters, uses generic_workflow
    │       ├── pull-request.yml          <-- Runs when a pull-request to main or dev is created, uses generic_workflow
+   │       ├── lint.yml                  <-- Runs the pre-commit hooks on pull requests and pushes to main or dev
+   │       ├── agents-guide.yml          <-- Builds the application templates in agents/ on pull requests and pushes
 
 Actions
 -------
@@ -212,7 +214,7 @@ Currently it is setup to run for pull requests against the main and dev branches
          - dev
 
 The Pull-Request Workflow calls `Generic/Reuseable Workflow <#generic-reuseable-workflow>`__ and
-runs all jobs with ``NATIVE_SIZE=128`` and ``GCC`` only.
+runs the ``mb2``, ``mb4_tcm`` and ``mb6_ntl`` jobs with ``GCC`` only. The other jobs run in the Main Workflow.
 
 .. _main-workflow-1:
 

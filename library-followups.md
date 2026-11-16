@@ -15,7 +15,7 @@ Observed on OpenFHE 1.6.1 (dev, 64-bit native size, math backend 4) with `Crypto
 
 For comparison, CKKS with depth 2 on a depth-1 context threw at `Decrypt` ("approximation error is too high"), and
 BGV (default `FLEXIBLEAUTOEXT`) with four chained squarings on a depth-2 context threw in `EvalMult` ("Too few towers
-to support ModReduce").
+to support ModReduce"). BGV is not safe either; see the next section.
 
 ### Exceeding the depth
 
@@ -43,6 +43,23 @@ Options:
 This cannot be detected. Wrapping modulo the plaintext modulus is the defined arithmetic of BFV. The evaluator sees
 only ciphertexts, and the decrypted value is a valid residue. The application has to bound its values in the clear and
 choose a large enough modulus.
+
+## BGV fails silently one multiplication past the depth
+
+Observed on the same build with `CryptoContextBGVRNS`, the default scaling technique, `HEORG24_128` and plaintext
+modulus 65537, squaring a ciphertext repeatedly.
+
+| Depth set | Multiplications | Observed |
+|---|---|---|
+| 1 | 2 | no exception; decrypts to wrong values |
+| 1 | 3 | `EvalMult` throws "Too few towers to support ModReduce" |
+| 2 | 3 | no exception; decrypts to wrong values |
+| 2 | 4 | `EvalMult` throws |
+| 3 | 4 | no exception; decrypts to wrong values |
+| 3 | 5 | `EvalMult` throws |
+
+So the exception comes one multiplication too late to protect the result. The multiplication that first exceeds the
+depth could throw, since the level count is exact in BGV, unlike the noise estimate in BFV.
 
 ## An invalid plaintext modulus aborts the process
 

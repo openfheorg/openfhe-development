@@ -14,9 +14,9 @@
 
 ## BFV or BGV
 
-They offer the same operations on the same data, so start with BFV. BGV throws when the depth is exceeded, where BFV
-returns wrong values silently, which can make BGV easier to debug. Compare run times on your own computation before
-committing to one.
+They offer the same operations on the same data, so start with BFV. Both can return wrong values with no error when
+the depth is exceeded, and BGV does not accept plaintext moduli as large as BFV does; see `bfv-bgv.md`. Compare run
+times on your own computation before committing to one.
 
 ## Exact integers that do not fit the plaintext modulus
 

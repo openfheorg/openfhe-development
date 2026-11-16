@@ -92,9 +92,10 @@ auto y = cc->EvalLogistic(ct, a, b, degree);
 auto z = cc->EvalChebyshevFunction([](double v) { return std::sqrt(v); }, ct, a, b, degree);
 ```
 
-These functions need `Enable(ADVANCEDSHE)`. An input outside `[a, b]` gives a wrong result with no error. In a test, an
-input of 4 on the interval `[-1, 1]` returned 82.4 where 2.45 was correct. Bound the inputs in the clear before choosing
-the interval.
+These functions need `Enable(ADVANCEDSHE)`. An input outside `[a, b]` gives a wrong result with no error, or at a
+higher degree throws "approximation error is too high" at `Decrypt`. In a test, `sqrt(v + 2)` at degree 13 on the
+interval `[-1, 1]` returned 82.4 for an input of 4, where 2.45 was correct. Bound the inputs in the clear before
+choosing the interval.
 
 Depth used, by polynomial degree. On the interval `[-1, 1]` it is one less.
 
@@ -154,6 +155,8 @@ auto keys = cc->KeyGen();
 cc->EvalMultKeyGen(keys.secretKey);
 cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
 
+auto pt = cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, numSlots);     // the last argument sets the slots
+auto ct = cc->Encrypt(keys.publicKey, pt);
 auto refreshed = cc->EvalBootstrap(ct);
 ```
 
@@ -161,7 +164,9 @@ auto refreshed = cc->EvalBootstrap(ct);
   `simple-ckks-bootstrapping.cpp`.
 - With these settings and `HEORG24_128` the ring dimension is 131072.
 - Scale the values into `[-1, 1]` before bootstrapping.
-- Use the same `numSlots` in the setup, the key generation and the encoding. Fewer slots is faster.
+- Use the same `numSlots` in the setup, the key generation and the encoding. For the encoding, pass it to
+  `MakeCKKSPackedPlaintext` as above or call `parameters.SetBatchSize(numSlots)`; otherwise `EvalBootstrap` throws
+  "Precomputations for ... slots not found". Fewer slots is faster.
 - With few slots the library lowers a level budget that is too large and prints a warning such as "level budget for
   encoding too large. Setting it to 3". The result is still correct. Pass the smaller budget to silence it.
 - One of the levels left after bootstrapping is used by the next bootstrapping call.

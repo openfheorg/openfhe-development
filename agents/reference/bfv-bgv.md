@@ -2,8 +2,8 @@
 
 BFV and BGV compute exactly on vectors of integers modulo a plaintext modulus `t`. Read `../README.md` first.
 
-Both schemes have the same interface. Start with BFV. The only difference to plan for is what happens when the depth
-is exceeded: BFV returns wrong values silently, BGV throws.
+Both schemes have the same interface. Start with BFV. BGV differs in two ways that are described below: it rejects
+the largest plaintext moduli that BFV accepts, and it fails differently when the depth is exceeded.
 
 ## Parameters
 
@@ -22,9 +22,10 @@ cc->Enable(LEVELEDSHE);
 The plaintext modulus has no default and must be set. The default depth is 1 and the default security level is
 `HEStd_128_classic`; use `HEORG24_128` in new code. `SetBatchSize` is not needed.
 
-The library picks the ring dimension `N`, mainly from the depth. With `HEORG24_128`, BFV gave 8192 at depths 1 and 2
-and 16384 at depths 4 and 8, for plaintext moduli from 17 to 50 bits, and BGV gave 16384 at depth 2. Read it back with
-`cc->GetRingDimension()`.
+The library picks the ring dimension `N` from the depth and the plaintext modulus. With `HEORG24_128` and
+`t = 65537`, BFV gave 8192 at depths 1 and 2 and 16384 at depths 4 and 8; BGV gave 8192 at depth 1, 16384 at depths 2
+and 4, and 32768 at depth 8. A larger `t` can raise it: BFV with the 31-bit modulus below gave 32768 at depth 8. Read
+it back with `cc->GetRingDimension()`.
 
 ## Choosing the plaintext modulus
 
@@ -41,9 +42,10 @@ so choose a prime of the form `k * 2^18 + 1`, which suits every ring dimension u
 | 1099512938497 | 41 bits | about 5.5e11 |
 | 1125899915231233 | 51 bits | about 5.6e14 |
 
-All of these were tested at depth 1. A 59-bit modulus, 576460752315482113, was accepted and then returned wrong
-results with no error, so stay at or below the 51-bit entry. For another size, search upwards from the bound for the
-first prime `k * 2^18 + 1`.
+All of these were tested at depth 1 in BFV. BGV accepted the entries up to 31 bits; with the 41-bit and the 51-bit
+entry its `GenCryptoContext` throws "We do not support moduli greater than 60 bits". A 60-bit modulus,
+576460752315482113, was accepted by BFV and then returned wrong results with no error, so stay at or below the 51-bit
+entry. For another size, search upwards from the bound for the first prime `k * 2^18 + 1`.
 
 An unsuitable `t` is not rejected by `GenCryptoContext`. The first `MakePackedPlaintext` call then ends the process
 with an uncaught `OpenFHEException` (`RootOfUnity(): ... (q-1)/m is an integer` or `The modulus value ... must be
@@ -113,8 +115,11 @@ towards it: one multiplication followed by three rotations and an `EvalSum` over
 
 Past the configured depth:
 
-- BFV raises no error and decrypts to wrong values. Always test against the cleartext result.
-- BGV throws from the failing operation: `ModReduceInternalInPlace(): Too few towers to support ModReduce`.
+- BFV raises no error and decrypts to wrong values.
+- BGV raises no error one multiplication past the depth and decrypts to wrong values. The multiplication after that
+  throws `ModReduceInternalInPlace(): Too few towers to support ModReduce`.
+
+Always test against the cleartext result.
 
 ## Further topics
 
@@ -126,4 +131,4 @@ Examples in `src/pke/examples` of the source tree:
 | BGV basics | `simple-integers-bgvrns.cpp` |
 | Deeper circuits | `depth-bfvrns.cpp`, `depth-bgvrns.cpp` |
 | Inner product | `inner-product.cpp` |
-| Rotations in each scheme | `rotation.cpp` |
+| Rotations in BFV and CKKS | `rotation.cpp` |

@@ -15,6 +15,8 @@ Repository: https://github.com/openfheorg/openfhe-development
    │       ├── main.yml                  <-- Runs when a branch is merged to main, uses generic_workflow
    │       ├── manual.yml                <-- Runs on-demand with parameters, uses generic_workflow
    │       ├── pull-request.yml          <-- Runs when a pull-request to main or dev is created, uses generic_workflow
+   │       ├── lint.yml                  <-- Runs the pre-commit hooks on pull requests and pushes to main or dev
+   │       ├── agents-guide.yml          <-- Builds the application templates in agents/ on pull requests and pushes
 
 OpenFHE Workflows
 -----------------
@@ -46,9 +48,9 @@ Pull request Workflow
 ---------------------
 
 This workflow will run whenever a pull request is created against the main or dev branch. The pull request will run
-the default job as well as all build jobs.
+the ``mb2``, ``mb4_tcm`` and ``mb6_ntl`` build jobs; the other jobs run in the main workflow.
 
-The test configurations for all job are shown in the table below:
+The test configurations for all jobs are shown in the table below:
 
 +-------------------+---------+---------------+-----------+
 | Build name        | Backend | NativeInteger | Compiler  |

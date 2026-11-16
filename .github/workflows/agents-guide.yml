@@ -5,7 +5,8 @@ name: Agents guide
 #                    copy and runs its programs, which is the first thing the guide tells a user
 #                    to do.
 #   guide-reminder   warns on a pull request that changes the public headers or the examples
-#                    without touching agents/. It is a reminder only and does not fail.
+#                    without touching agents/. The warning does not fail the job; the job fails
+#                    only when the guide check itself fails, as it does in the Lint workflow.
 # The guide's consistency check (agents/maint/check-agents-guide.sh) runs in the Lint workflow, and
 # the behaviour the guide states is covered by the UTAgentGuide unit tests.
 

@@ -87,18 +87,29 @@ TEST(UTAgentGuideBinFHE, PublicKeyEncryption) {
     auto pk = cc.GetPublicKey();
 
     LWEPlaintext result;
-    cc.Decrypt(sk, cc.EvalBinGate(AND, cc.Encrypt(pk, 1), cc.Encrypt(pk, 1)), &result);
-    EXPECT_EQ(result, 1) << BINFHE_MD;
+    for (LWEPlaintext x : {0, 1}) {
+        for (LWEPlaintext y : {0, 1}) {
+            cc.Decrypt(sk, cc.EvalBinGate(AND, cc.Encrypt(pk, x), cc.Encrypt(pk, y)), &result);
+            EXPECT_EQ(result, x & y) << BINFHE_MD;
+        }
+    }
 }
 
 // Lookup tables and large-precision sign evaluation need a native integer wider than 32 bits.
+//
+// The plaintext spaces the guide states are checked on STD128 contexts, which is cheap without bootstrapping keys.
+// The evaluation runs on TOY, which has the same plaintext spaces: STD128 bootstrapping keys for these settings take
+// about 5 GB of memory.
 #if NATIVEINT != 32
 TEST(UTAgentGuideBinFHE, LookupTable) {
+    auto secure = BinFHEContext();
+    secure.GenerateBinFHEContext(STD128, true, 12);
+    ASSERT_EQ(secure.GetMaxPlaintextSpace().ConvertToInt(), 8U) << BINFHE_MD;
+
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(STD128, true, 12);
+    cc.GenerateBinFHEContext(TOY, true, 12);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
-
     int p = cc.GetMaxPlaintextSpace().ConvertToInt();
     ASSERT_EQ(p, 8) << BINFHE_MD;
 
@@ -115,8 +126,12 @@ TEST(UTAgentGuideBinFHE, LookupTable) {
 
 TEST(UTAgentGuideBinFHE, LargePrecisionSign) {
     uint32_t logQ = 17;
+    auto secure = BinFHEContext();
+    secure.GenerateBinFHEContext(STD128, false, logQ, 0, GINX, false);
+    ASSERT_EQ(secure.GetMaxPlaintextSpace().ConvertToInt() * (1 << (logQ - 12)), 512U) << BINFHE_MD;
+
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(STD128, false, logQ, 0, GINX, false);
+    cc.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, false);
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
     uint32_t Q = 1 << logQ;
@@ -128,5 +143,22 @@ TEST(UTAgentGuideBinFHE, LargePrecisionSign) {
     EXPECT_EQ(result, 1) << BINFHE_MD;
     cc.Decrypt(sk, cc.EvalSign(cc.Encrypt(sk, p / 2 - 5, LARGE_DIM, p, Q)), &result, 2);
     EXPECT_EQ(result, 0) << BINFHE_MD;
+}
+#else
+TEST(UTAgentGuideBinFHE, NeedsWiderInteger) {
+    auto fails = [](bool arbitraryFunction) {
+        try {
+            auto cc = BinFHEContext();
+            if (arbitraryFunction)
+                cc.GenerateBinFHEContext(STD128, true, 12);
+            else
+                cc.GenerateBinFHEContext(STD128, false, 17, 0, GINX, false);
+        } catch (const std::exception&) {
+            return true;
+        }
+        return false;
+    };
+    EXPECT_TRUE(fails(true)) << BINFHE_MD;
+    EXPECT_TRUE(fails(false)) << BINFHE_MD;
 }
 #endif  // NATIVEINT != 32

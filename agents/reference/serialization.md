@@ -30,8 +30,16 @@ std::ofstream rotKeys("rot.key", std::ios::out | std::ios::binary);
 cc->SerializeEvalAutomorphismKey(rotKeys, SerType::BINARY);
 ```
 
-All of these functions, and the `Deserialize` ones below, return `false` on failure; check the result.
+Check both the return value and for exceptions:
+
+- `SerializeToFile` and `DeserializeFromFile` return `false` when the file cannot be opened.
+- The key functions take a stream, so check `is_open()` on it first. `SerializeEvalMultKey` and
+  `SerializeEvalAutomorphismKey` return `false` when the context or the key tag passed to them has no keys.
+- Bad data throws, such as a truncated file or a stream that is not open. Wrap deserialization in `try`.
+
 `Serial::Serialize(object, stream, SerType::BINARY)` writes to any `std::ostream`, for sending over a network.
+
+The keys made by `EvalSumKeyGen` are stored with the rotation keys, so `SerializeEvalAutomorphismKey` writes them too.
 
 `SerializeEvalMultKey(stream, type)` and `SerializeEvalAutomorphismKey(stream, type)` are static functions that write
 the keys of every context in the process. To write the keys of one context or one key pair, pass the context or the

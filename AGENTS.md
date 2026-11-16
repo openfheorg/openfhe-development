@@ -39,8 +39,9 @@ make testall                                        # core, pke and binfhe suite
 unittest/pke_tests --gtest_filter='UTCKKSRNS*'      # one suite
 ```
 
-A change to math or lattice code can behave differently per configuration. CI runs these, and a change that could be
-affected should be checked against them locally:
+A change to math or lattice code can behave differently per configuration. CI builds all of these on a push to
+`main`, but a pull request only gets math backends 2, 4 (with `WITH_TCM`) and 6, and no `Debug` build. Check a change
+that could be affected against the rest locally:
 
 - `-DNATIVE_SIZE=64` (default), `32`, `128`
 - `-DMATHBACKEND=4` (default), `2`, `6` (`6` also needs `-DWITH_NTL=ON` and is not available with `NATIVE_SIZE=128`)

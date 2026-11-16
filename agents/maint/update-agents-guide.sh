@@ -79,7 +79,8 @@ if ! git rev-parse --verify --quiet "$base^{commit}" > /dev/null; then
     echo "error: '$base' is not a git commit to compare with" >&2
     exit 2
 fi
-short_base=$(printf '%s' "$base" | cut -c1-12)
+# a commit id, so that the commands in the prompt work whatever the ref was called
+short_base=$(git rev-parse --short=12 "$base^{commit}")
 
 # Which guide files describe which part of the tree. Prints the guide files for one changed path,
 # one per line; nothing if the guide does not describe that path.
@@ -127,7 +128,7 @@ guide_files_for() {
             echo "reference/troubleshooting.md"
             ;;
         src/pke/examples*)
-            printf '%s\n' "reference/examples-index.md" "the \"Further topics\" tables in reference/"
+            printf '%s\n' "reference/examples-index.md" "reference/ (the \"Further topics\" tables)"
             ;;
         src/binfhe/examples*)
             printf '%s\n' "reference/examples-index.md" "reference/binfhe.md"
@@ -149,6 +150,12 @@ guide_files_for() {
             ;;
         src/pke/include*)
             echo "reference/ (the file for the scheme or feature the header belongs to)"
+            ;;
+        src/core/examples*)
+            echo "reference/examples-index.md"
+            ;;
+        src/core/include*)
+            echo "reference/ (if an application uses what the header declares)"
             ;;
         src/pke/lib*)
             echo "reference/troubleshooting.md (if an exception message changed)"

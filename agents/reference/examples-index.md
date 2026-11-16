@@ -32,7 +32,7 @@ the task next to it. Paths are relative to the repository root.
 | Add, multiply and rotate integer vectors, BFV | `simple-integers.cpp` |
 | The same in BGV | `simple-integers-bgvrns.cpp` |
 | Deeper multiplication chains | `depth-bfvrns.cpp`, `depth-bgvrns.cpp` |
-| Rotations in every scheme | `rotation.cpp` |
+| Rotations in BFV and CKKS | `rotation.cpp` |
 | Inner product | `inner-product.cpp` |
 
 ## binfhe, in `src/binfhe/examples`

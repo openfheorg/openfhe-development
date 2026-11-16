@@ -117,6 +117,7 @@ int p      = cc.GetMaxPlaintextSpace().ConvertToInt() * (1 << (logQ - 12));   //
 
 auto ct   = cc.Encrypt(sk, value, LARGE_DIM, p, Q);
 auto sign = cc.EvalSign(ct);            // 1 if value >= p/2, else 0
+LWEPlaintext result;
 cc.Decrypt(sk, sign, &result, 2);
 ```
 

@@ -37,12 +37,18 @@
 
 #include <cmath>
 #include <cstdint>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
 #include "gtest/gtest.h"
+#include "key/key-ser.h"
 #include "openfhe.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 
 using namespace lbcrypto;
 
@@ -53,6 +59,7 @@ const char BFV_MD[] = "update agents/reference/bfv-bgv.md";
 const char README_MD[] = "update agents/README.md";
 const char TROUBLE_MD[] = "update agents/reference/troubleshooting.md";
 const char MULTIPARTY_MD[] = "update agents/reference/multiparty.md";
+const char SERIAL_MD[] = "update agents/reference/serialization.md";
 
 // The guide documents the default build, which uses 64-bit native integers.
 class UTAgentGuide : public ::testing::Test {
@@ -137,7 +144,8 @@ TEST_F(UTAgentGuide, CKKS_LevelsRotationsAndSums) {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(6);
     parameters.SetScalingModSize(50);
-    parameters.SetBatchSize(8);
+    // twice the length of the input, so that wrapping at the batch size differs from wrapping at the input length
+    parameters.SetBatchSize(16);
     auto cc = MakeContext(parameters);
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
@@ -161,11 +169,13 @@ TEST_F(UTAgentGuide, CKKS_LevelsRotationsAndSums) {
     EXPECT_EQ(cc->EvalLogistic(ct, -2, 2, 13)->GetLevel(), 5U) << CKKS_MD;
 
     // a positive index moves values towards slot 0, and the rotation wraps at the batch size
-    auto left = DecryptReal(cc, keys.secretKey, cc->EvalRotate(ct, 1), 8);
-    auto right = DecryptReal(cc, keys.secretKey, cc->EvalRotate(ct, -1), 8);
+    auto left = DecryptReal(cc, keys.secretKey, cc->EvalRotate(ct, 1), 16);
+    auto right = DecryptReal(cc, keys.secretKey, cc->EvalRotate(ct, -1), 16);
     EXPECT_NEAR(left[0], x[1], 1e-6) << CKKS_MD;
-    EXPECT_NEAR(left[7], x[0], 1e-6) << CKKS_MD;
-    EXPECT_NEAR(right[0], x[7], 1e-6) << CKKS_MD;
+    EXPECT_NEAR(left[7], 0.0, 1e-6) << CKKS_MD;
+    EXPECT_NEAR(left[15], x[0], 1e-6) << CKKS_MD;
+    EXPECT_NEAR(right[0], 0.0, 1e-6) << CKKS_MD;
+    EXPECT_NEAR(right[1], x[0], 1e-6) << CKKS_MD;
 
     // operands at different levels combine directly
     auto x4 = cc->EvalMult(cc->EvalMult(ct, ct), cc->EvalMult(ct, ct));
@@ -175,7 +185,10 @@ TEST_F(UTAgentGuide, CKKS_LevelsRotationsAndSums) {
     double sum = 0;
     for (double v : x)
         sum += v;
-    EXPECT_NEAR(DecryptReal(cc, keys.secretKey, cc->EvalSum(ct, 8), 8)[0], sum, 1e-6) << CKKS_MD;
+    // summing over the batch size puts the total in every slot
+    auto total = DecryptReal(cc, keys.secretKey, cc->EvalSum(ct, 16), 16);
+    EXPECT_NEAR(total[0], sum, 1e-6) << CKKS_MD;
+    EXPECT_NEAR(total[9], sum, 1e-6) << CKKS_MD;
 }
 
 TEST_F(UTAgentGuide, CKKS_BootstrappingParameters) {
@@ -212,7 +225,7 @@ TEST_F(UTAgentGuide, CKKS_ErrorMessages) {
     EXPECT_TRUE(contains(MessageOf([&] { cc->EvalRotate(ct, 1); }), "EvalAutomorphismKeys are not generated"))
             << TROUBLE_MD;
     cc->EvalRotateKeyGen(keys.secretKey, {1});
-    EXPECT_TRUE(contains(MessageOf([&] { cc->EvalRotate(ct, 3); }), "is not found")) << TROUBLE_MD;
+    EXPECT_TRUE(contains(MessageOf([&] { cc->EvalRotate(ct, 3); }), "EvalKey for index [")) << TROUBLE_MD;
 
     EXPECT_TRUE(contains(MessageOf([&] { cc->EvalPoly(ct, {1.0, 2.0, 3.0}); }), "Enable(ADVANCEDSHE) must be called"))
             << TROUBLE_MD;
@@ -225,6 +238,87 @@ TEST_F(UTAgentGuide, CKKS_ErrorMessages) {
                          }),
                          "approximation error is too high"))
             << README_MD << " and " << TROUBLE_MD;
+
+    // a second multiplication past the depth throws at the multiplication
+    EXPECT_TRUE(contains(MessageOf([&] { cc->EvalMult(tooDeep, ct); }), "is insufficient; increase it"))
+            << README_MD << " and " << TROUBLE_MD;
+    auto scaledTwice = cc->EvalMult(cc->EvalMult(ct, 2.0), 2.0);
+    EXPECT_TRUE(contains(MessageOf([&] { cc->EvalMult(scaledTwice, 2.0); }),
+                         "Removing last element of DCRTPoly renders it invalid"))
+            << TROUBLE_MD;
+
+    // EvalSum needs its own keys; rotation keys are not enough
+    cc->Enable(ADVANCEDSHE);
+    EXPECT_TRUE(contains(MessageOf([&] { cc->EvalSum(ct, 4); }), "EvalKey for index [")) << TROUBLE_MD;
+}
+
+TEST_F(UTAgentGuide, CKKS_BootstrappingSlots) {
+    // the toy parameters of the guide; the ciphertext must be encoded with the slots given to the setup
+    uint32_t numSlots = 8;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecretKeyDist(HYBRID_TERNARY);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1 << 12);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetScalingTechnique(FLEXIBLEAUTO);
+    std::vector<uint32_t> levelBudget = {3, 3};
+    parameters.SetMultiplicativeDepth(10 + FHECKKSRNS::GetBootstrapDepth(levelBudget, HYBRID_TERNARY));
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(FHE);
+    cc->EvalBootstrapSetup(levelBudget, {0, 0}, numSlots);
+    auto keys = cc->KeyGen();
+    cc->EvalMultKeyGen(keys.secretKey);
+    cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
+
+    std::vector<double> x = {0.25, 0.5, 0.75, 1.0, -0.9, 0.1, 0.3, -0.4};
+    auto ct = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x, 1, 0, nullptr, numSlots));
+    auto refreshed = DecryptReal(cc, keys.secretKey, cc->EvalBootstrap(ct), numSlots);
+    for (size_t i = 0; i < x.size(); ++i)
+        EXPECT_NEAR(refreshed[i], x[i], 1e-3) << CKKS_MD;
+
+    auto fullyPacked = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(x));
+    std::string message = MessageOf([&] { cc->EvalBootstrap(fullyPacked); });
+    EXPECT_NE(message.find("Precomputations for"), std::string::npos) << CKKS_MD << " and " << TROUBLE_MD;
+    EXPECT_NE(message.find("slots not found"), std::string::npos) << CKKS_MD << " and " << TROUBLE_MD;
+}
+
+TEST_F(UTAgentGuide, Serialization_Failures) {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetScalingModSize(50);
+    auto cc = MakeContext(parameters);
+    auto keys = cc->KeyGen();
+    auto ct = cc->Encrypt(keys.publicKey, cc->MakeCKKSPackedPlaintext(std::vector<double>{0.5, 1}));
+
+    // a file that cannot be opened is reported by the return value
+    Ciphertext<DCRTPoly> fromFile;
+    EXPECT_FALSE(Serial::DeserializeFromFile("no-such-directory/ct.bin", fromFile, SerType::BINARY)) << SERIAL_MD;
+    EXPECT_FALSE(Serial::SerializeToFile("no-such-directory/ct.bin", ct, SerType::BINARY)) << SERIAL_MD;
+
+    // truncated data throws
+    std::stringstream whole;
+    Serial::Serialize(ct, whole, SerType::BINARY);
+    std::string bytes = whole.str();
+    std::stringstream truncated(bytes.substr(0, bytes.size() / 2));
+    Ciphertext<DCRTPoly> fromStream;
+    EXPECT_NE(MessageOf([&] { Serial::Deserialize(fromStream, truncated, SerType::BINARY); }), "") << SERIAL_MD;
+
+    // the key serializers return false when the context or the key tag has no keys
+    std::stringstream keyStream;
+    EXPECT_FALSE(cc->SerializeEvalMultKey(keyStream, SerType::BINARY, cc)) << SERIAL_MD;
+    EXPECT_FALSE(cc->SerializeEvalAutomorphismKey(keyStream, SerType::BINARY, cc)) << SERIAL_MD;
+    EXPECT_FALSE(cc->SerializeEvalMultKey(keyStream, SerType::BINARY, std::string("no such tag"))) << SERIAL_MD;
+    cc->EvalMultKeyGen(keys.secretKey);
+    EXPECT_TRUE(cc->SerializeEvalMultKey(keyStream, SerType::BINARY, cc)) << SERIAL_MD;
+
+    // a key stream that is not open throws
+    std::ifstream missing("no-such-directory/mult.key", std::ios::in | std::ios::binary);
+    EXPECT_NE(MessageOf([&] { cc->DeserializeEvalMultKey(missing, SerType::BINARY); }), "") << SERIAL_MD;
 }
 
 TEST_F(UTAgentGuide, BFV_BGV_DefaultsAndRingDimension) {
@@ -248,10 +342,19 @@ TEST_F(UTAgentGuide, BFV_BGV_DefaultsAndRingDimension) {
         EXPECT_EQ(MakeContext(parameters)->GetRingDimension(), ringDim) << "depth " << depth << ": " << BFV_MD;
     }
 
-    CCParams<CryptoContextBGVRNS> bgv;
-    bgv.SetPlaintextModulus(65537);
-    bgv.SetMultiplicativeDepth(2);
-    EXPECT_EQ(MakeContext(bgv)->GetRingDimension(), 16384U) << BFV_MD;
+    // a larger plaintext modulus can raise it
+    CCParams<CryptoContextBFVRNS> larger;
+    larger.SetPlaintextModulus(1074266113);
+    larger.SetMultiplicativeDepth(8);
+    EXPECT_EQ(MakeContext(larger)->GetRingDimension(), 32768U) << BFV_MD;
+
+    const std::vector<std::pair<uint32_t, uint32_t>> tableBGV = {{1, 8192}, {2, 16384}, {4, 16384}, {8, 32768}};
+    for (const auto& [depth, ringDim] : tableBGV) {
+        CCParams<CryptoContextBGVRNS> parameters;
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetMultiplicativeDepth(depth);
+        EXPECT_EQ(MakeContext(parameters)->GetRingDimension(), ringDim) << "BGV depth " << depth << ": " << BFV_MD;
+    }
 }
 
 TEST_F(UTAgentGuide, BFV_PlaintextModulusTable) {
@@ -271,6 +374,34 @@ TEST_F(UTAgentGuide, BFV_PlaintextModulusTable) {
         EXPECT_EQ(square[0], big * big) << "t = " << t << ": " << BFV_MD;
         EXPECT_EQ(square[1], big * big) << "t = " << t << ": " << BFV_MD;
         EXPECT_EQ(square[2], 9) << "t = " << t << ": " << BFV_MD;
+    }
+}
+
+TEST_F(UTAgentGuide, BGV_PlaintextModulusLimit) {
+    // BGV accepts the table up to the 31-bit entry
+    {
+        uint64_t t = 1074266113ULL;
+        CCParams<CryptoContextBGVRNS> parameters;
+        parameters.SetPlaintextModulus(t);
+        parameters.SetMultiplicativeDepth(1);
+        auto cc = MakeContext(parameters);
+        ASSERT_EQ((t - 1) % (2 * cc->GetRingDimension()), 0U) << BFV_MD;
+        auto keys = cc->KeyGen();
+        cc->EvalMultKeyGen(keys.secretKey);
+        int64_t big = static_cast<int64_t>(std::sqrt(static_cast<double>((t - 1) / 2))) - 1;
+        auto ct = cc->Encrypt(keys.publicKey, cc->MakePackedPlaintext({big, -big, 3}));
+        auto square = DecryptPacked(cc, keys.secretKey, cc->EvalMult(ct, ct), 3);
+        EXPECT_EQ(square[0], big * big) << BFV_MD;
+        EXPECT_EQ(square[2], 9) << BFV_MD;
+    }
+    // and rejects the two largest entries
+    for (uint64_t t : {1099512938497ULL, 1125899915231233ULL}) {
+        CCParams<CryptoContextBGVRNS> parameters;
+        parameters.SetPlaintextModulus(t);
+        parameters.SetMultiplicativeDepth(1);
+        EXPECT_NE(MessageOf([&] { MakeContext(parameters); }).find("We do not support moduli greater than"),
+                  std::string::npos)
+                << "t = " << t << ": " << BFV_MD << " and " << TROUBLE_MD;
     }
 }
 
@@ -300,6 +431,8 @@ TEST_F(UTAgentGuide, BFV_WrapRotationAndSum) {
     EXPECT_EQ(left[7], 0) << BFV_MD;
     EXPECT_EQ(left[ringDim / 2 - 1], 1) << BFV_MD;
     EXPECT_EQ(left[ringDim - 1], 0) << BFV_MD;
+    // a rotation index without a key is reported as a bare map::at
+    EXPECT_EQ(MessageOf([&] { cc->EvalRotate(ct, 5); }), "map::at") << TROUBLE_MD;
     auto right = DecryptPacked(cc, keys.secretKey, cc->EvalRotate(ct, -1), 9);
     EXPECT_EQ(right[0], 0) << BFV_MD;
     EXPECT_EQ(right[1], 1) << BFV_MD;
@@ -322,7 +455,7 @@ TEST_F(UTAgentGuide, BFV_WrapRotationAndSum) {
     EXPECT_EQ(DecryptPacked(cc, keys.secretKey, cc->EvalSum(window, 64), 1)[0], 16620) << BFV_MD;
 }
 
-TEST_F(UTAgentGuide, BGV_DepthExceededThrows) {
+TEST_F(UTAgentGuide, BGV_DepthExceeded) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetMultiplicativeDepth(2);
@@ -330,13 +463,22 @@ TEST_F(UTAgentGuide, BGV_DepthExceededThrows) {
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     auto ct = cc->Encrypt(keys.publicKey, cc->MakePackedPlaintext({2}));
+    const char guide[] = "update agents/README.md, agents/reference/bfv-bgv.md and agents/reference/troubleshooting.md";
 
-    std::string message = MessageOf([&] {
-        for (int i = 0; i < 4; ++i)
-            ct = cc->EvalMult(ct, ct);
-    });
-    EXPECT_NE(message.find("Too few towers to support ModReduce"), std::string::npos)
-            << README_MD << ", agents/reference/bfv-bgv.md and agents/reference/troubleshooting.md";
+    // within the depth the result is exact
+    ct = cc->EvalMult(ct, ct);
+    EXPECT_EQ(DecryptPacked(cc, keys.secretKey, ct, 1)[0], 4) << guide;
+    ct = cc->EvalMult(ct, ct);
+    EXPECT_EQ(DecryptPacked(cc, keys.secretKey, ct, 1)[0], 16) << guide;
+
+    // one multiplication past the depth raises no error and decrypts to a wrong value
+    EXPECT_EQ(MessageOf([&] { ct = cc->EvalMult(ct, ct); }), "") << guide;
+    EXPECT_NE(DecryptPacked(cc, keys.secretKey, ct, 1)[0], 256) << guide;
+
+    // the next one throws
+    EXPECT_NE(MessageOf([&] { ct = cc->EvalMult(ct, ct); }).find("Too few towers to support ModReduce"),
+              std::string::npos)
+            << guide;
 }
 
 TEST_F(UTAgentGuide, PRE_NeedsMode) {
@@ -363,10 +505,13 @@ TEST_F(UTAgentGuide, PRE_NeedsMode) {
     EXPECT_EQ(reEncrypts(bgv, true), "") << MULTIPARTY_MD;
     EXPECT_EQ(reEncrypts(ckks, true), "") << MULTIPARTY_MD;
     EXPECT_EQ(reEncrypts(bfv, true), "") << MULTIPARTY_MD;
+    // BFV also accepts the default mode
+    EXPECT_EQ(reEncrypts(bfv, false), "") << MULTIPARTY_MD;
 
     // FIXED_NOISE_HRA is a BGV mode
     bfv.SetPREMode(FIXED_NOISE_HRA);
-    EXPECT_NE(MessageOf([&] { MakeContext(bfv, false); }).find("not supported"), std::string::npos) << MULTIPARTY_MD;
+    EXPECT_NE(MessageOf([&] { MakeContext(bfv, false); }).find("is not supported for BFVRNS"), std::string::npos)
+            << MULTIPARTY_MD;
     bgv.SetPREMode(FIXED_NOISE_HRA);
     EXPECT_EQ(MessageOf([&] { MakeContext(bgv, false); }), "") << MULTIPARTY_MD;
 }
@@ -390,8 +535,11 @@ TEST_F(UTAgentGuide, PRE_NoiseFloodingSetup) {
         return std::make_pair(cc, message);
     };
 
+    // each omission is rejected with a message that names the setting
+    const std::vector<std::string> named = {"FIXEDMANUAL", "PRENumHops", "multiplicativeDepth", "ringDim"};
     for (int omit = 1; omit <= 4; ++omit)
-        EXPECT_NE(generate(omit).second, "") << "setting " << omit << " is no longer required: " << MULTIPARTY_MD;
+        EXPECT_NE(generate(omit).second.find(named[omit - 1]), std::string::npos)
+                << "setting " << omit << " is no longer required: " << MULTIPARTY_MD;
 
     auto [cc, message] = generate(0);
     ASSERT_EQ(message, "") << MULTIPARTY_MD;

@@ -8,8 +8,10 @@
 #
 #   * a file the guide names (an example, a header, a note) no longer exists;
 #   * a Markdown link in the guide points at a file or directory that is not there;
-#   * an API name the guide uses in code no longer appears in the public headers;
-#   * an exception message the guide quotes no longer appears in the sources;
+#   * an API name the guide uses in code no longer appears in the public headers (the check is by name: it does
+#     not look at the class or the signature, and it skips code blocks that are not marked as C++);
+#   * an exception message the guide quotes no longer appears in the library sources;
+#   * llms.txt links to a file or directory that is not in the tree;
 #   * the OpenFHE version the guide says it describes, or the version of the plugin in
 #     agents/.claude-plugin/plugin.json or agents/.codex-plugin/plugin.json, differs from CMakeLists.txt;
 #   * the skill that Codex loads from the plugin has a different name or description from agents/SKILL.md.
@@ -24,36 +26,53 @@
 # See "Keeping agents/ current" in AGENTS.md.
 #
 # Usage: check-agents-guide.sh [--pr-base REF]        (run from anywhere)
+# Exit status: 0 the guide matches, 1 it does not, 2 the script was called wrongly.
 
 set -eu
 
 cd "$(dirname "$0")/../.."
 
 pr_base=""
+pr_base_given=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --pr-base)
-            pr_base="${2:?--pr-base needs a git ref}"
+            if [ $# -lt 2 ]; then
+                echo "error: --pr-base needs a git ref" >&2
+                exit 2
+            fi
+            pr_base=$2
+            pr_base_given=1
             shift 2
             ;;
         --pr-base=*)
             pr_base="${1#--pr-base=}"
+            pr_base_given=1
             shift
             ;;
         -h | --help)
             sed -n '3,/^$/p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
+        -*)
+            echo "error: unknown option '$1' (see --help)" >&2
+            exit 2
+            ;;
         *) shift ;; # pre-commit may pass file names; they are not needed
     esac
 done
+
+if [ "$pr_base_given" = 1 ] && ! git rev-parse --verify --quiet "$pr_base^{commit}" > /dev/null 2>&1; then
+    echo "error: --pr-base '$pr_base' is not a git commit to compare with" >&2
+    exit 2
+fi
 
 # File names the guide uses for files an application creates, not files of this repository.
 APPLICATION_FILES="cc.bin ct.bin result.bin public.key secret.key mult.key rot.key"
 
 # Capitalised identifiers in the guide's code that are not OpenFHE API: CMake and the environment,
 # instruction files of coding agents, and notation inside code spans.
-NOT_OPENFHE="CMAKE_PREFIX_PATH CMAKE_BUILD_TYPE LD_LIBRARY_PATH OMP_NUM_THREADS
+NOT_OPENFHE="CMAKE_PREFIX_PATH CMAKE_BUILD_TYPE NATIVE_SIZE LD_LIBRARY_PATH OMP_NUM_THREADS
 OpenFHE_CXX_FLAGS OpenFHE CMakeLists Release Debug
 AGENTS GEMINI CLAUDE SKILL README
 N Q B A P"
@@ -63,8 +82,9 @@ trap 'rm -rf "$tmp"' EXIT
 problems="$tmp/problems"
 : > "$problems"
 
-guide_md=$(find agents -name '*.md' | LC_ALL=C sort)
-template_cpp=$(find agents/template -name '*.cpp' | LC_ALL=C sort)
+# A build directory made inside agents/template is ignored by git; it is not part of the guide either.
+guide_md=$(find agents -name 'build*' -prune -o -name '*.md' -print | LC_ALL=C sort)
+template_cpp=$(find agents/template -name 'build*' -prune -o -name '*.cpp' -print | LC_ALL=C sort)
 
 # Everything a name in the guide may refer to: files and directories of the tree, relative to the root.
 {
@@ -74,6 +94,7 @@ template_cpp=$(find agents/template -name '*.cpp' | LC_ALL=C sort)
 
 # Split the guide into fragments, one per line: file, line number, kind and text, separated by tabs.
 #   I  an inline code span          B  a line of a C++ code block
+#   M  an exception message: an inline code span on a line of troubleshooting.md that starts with one
 #   T  a line outside code blocks, with its inline code spans removed
 # shellcheck disable=SC2086
 awk '
@@ -95,8 +116,9 @@ awk '
     }
     {
         rest = $0
+        kind = (FILENAME ~ /troubleshooting[.]md$/ && $0 ~ /^`/) ? "M" : "I"
         while (match(rest, /`[^`]+`/)) {
-            print FILENAME "\t" FNR "\tI\t" substr(rest, RSTART + 1, RLENGTH - 2)
+            print FILENAME "\t" FNR "\t" kind "\t" substr(rest, RSTART + 1, RLENGTH - 2)
             rest = substr(rest, RSTART + RLENGTH)
         }
         plain = $0
@@ -188,7 +210,9 @@ awk -F '\t' '
 done
 
 # --- API names used in code -----------------------------------------------------------------------
-find src/core/include src/pke/include src/binfhe/include -name '*.h' | LC_ALL=C sort | xargs cat |
+# Comments are dropped first, so that a name which survives only in a comment does not count as declared.
+find src/core/include src/pke/include src/binfhe/include -name '*.h' -exec cat {} + |
+    sed -e 's|//.*||' -e '/^[[:space:]]*\/\{0,1\}\*/d' |
     grep -oE '[A-Za-z_][A-Za-z0-9_]*' | LC_ALL=C sort -u > "$tmp/declared"
 
 # agents/maint is for maintainers of the library, not part of the application guide: its files and links are
@@ -211,7 +235,7 @@ grep -v '^agents/maint/' "$tmp/fragments" | cat - "$tmp/template" |
         string_literal = "\"([^\"\\\\]|\\\\.)*\""
         file_name = "^[A-Za-z0-9_./-]*[A-Za-z0-9_-]+[.](cpp|h|md|txt|json|py|sh)$"
     }
-    $3 == "T" { next }
+    $3 == "T" || $3 == "M" { next }
     {
         text = $4
         if ($3 == "I") {
@@ -256,7 +280,8 @@ grep -v '^agents/maint/' "$tmp/fragments" | cat - "$tmp/template" |
 troubleshooting=agents/reference/troubleshooting.md
 # adjacent string literals form one message: "... is " "too high" -> "... is too high"
 {
-    find src \( -name '*.h' -o -name '*.cpp' -o -name '*.c' \) | LC_ALL=C sort | xargs cat | tr '\n' ' '
+    # the library only: the unit tests quote the same messages and would hide a message that was removed
+    find src/*/lib src/*/include \( -name '*.h' -o -name '*.cpp' -o -name '*.c' \) -exec cat {} + | tr '\n' ' '
     echo
 } | sed -E 's/"[[:space:]]+"//g' > "$tmp/sources"
 
@@ -306,6 +331,10 @@ awk -v current="$major.$minor" '
 # the plugin is released with the library and carries its full version
 patch=$(sed -n 's/^set(OPENFHE_VERSION_PATCH \([0-9][0-9]*\)).*/\1/p' CMakeLists.txt)
 for manifest in agents/.claude-plugin/plugin.json agents/.codex-plugin/plugin.json; do
+    if [ ! -f "$manifest" ]; then
+        echo "$manifest: file is missing" >> "$problems"
+        continue
+    fi
     plugin_version=$(sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$manifest")
     if [ "$plugin_version" != "$major.$minor.$patch" ]; then
         echo "$manifest: version is \"$plugin_version\", CMakeLists.txt says $major.$minor.$patch" >> "$problems"
@@ -315,8 +344,20 @@ done
 # Codex finds the skills of a plugin only in a subdirectory, so the plugin carries a second SKILL.md that points at
 # the real one. Its front matter, the name and the description, must be the same.
 codex_skill=agents/.codex-plugin/skills/openfhe/SKILL.md
-if [ "$(sed -n '1,/^---$/{1!p;}' "$codex_skill")" != "$(sed -n '1,/^---$/{1!p;}' agents/SKILL.md)" ]; then
+if [ ! -f "$codex_skill" ]; then
+    echo "$codex_skill: file is missing" >> "$problems"
+elif [ "$(sed -n '1,/^---$/{1!p;}' "$codex_skill")" != "$(sed -n '1,/^---$/{1!p;}' agents/SKILL.md)" ]; then
     echo "$codex_skill: name or description differs from agents/SKILL.md" >> "$problems"
+fi
+
+# --- llms.txt links to files and directories on GitHub -------------------------------------------
+if [ -f llms.txt ]; then
+    grep -n -oE 'openfhe-development/(blob|tree)/[^/]+/[^) ]+' llms.txt | while IFS=: read -r line link; do
+        target=$(printf '%s' "$link" | sed -E 's,^openfhe-development/(blob|tree)/[^/]+/,,; s,#.*,,')
+        if [ ! -e "$target" ]; then
+            echo "llms.txt:$line: link target \`$target\` does not exist" >> "$problems"
+        fi
+    done
 fi
 
 # --- reminder: the public API changed and the guide did not ---------------------------------------
