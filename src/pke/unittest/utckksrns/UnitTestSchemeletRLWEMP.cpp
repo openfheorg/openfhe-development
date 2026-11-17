@@ -152,4 +152,43 @@ TEST_F(UTRLWEMP, ConvertRLWEToCKKSSlots) {
     for (uint32_t slots : {4u, 8u, 512u})
         EXPECT_EQ(SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ciphertext, keys.publicKey, Q, slots)->GetSlots(), slots);
 }
+
+// A slot count or a length that addresses coefficients outside the polynomial is rejected.
+TEST_F(UTRLWEMP, DecryptCoeffRejectsInvalidSlotsAndLength) {
+    const uint32_t ringDim = 1024;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(ringDim);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetBatchSize(8);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    auto keys = cc->KeyGen();
+    auto elementParams = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
+    const BigInteger Q = BigInteger(1) << 33;
+    const BigInteger p = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
+
+    const std::vector<int64_t> input{1, -2, 3, -4, 5, -6, 7, -8};
+    const uint32_t numSlots = input.size();
+    auto ciphertext = SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams);
+    auto decrypt = [&](uint32_t slots, uint32_t length) {
+        return SchemeletRLWEMP::DecryptCoeff(ciphertext, Q, p, keys.secretKey, elementParams, slots, length);
+    };
+
+    EXPECT_THROW(decrypt(ringDim, 0), OpenFHEException) << "numSlots above half the ring dimension";
+    EXPECT_THROW(decrypt(numSlots, 2 * numSlots + 1), OpenFHEException) << "length past the last coefficient";
+    EXPECT_THROW(decrypt(0, 0), OpenFHEException) << "numSlots of zero";
+
+    // the largest length for the sparse layout returns the values and their copy in the upper half
+    std::vector<int64_t> output;
+    ASSERT_NO_THROW(output = decrypt(numSlots, 2 * numSlots));
+    ASSERT_EQ(output.size(), 2 * input.size());
+    for (size_t i = 0; i < output.size(); ++i)
+        EXPECT_EQ(output[i], input[i % input.size()]) << "coefficient " << i;
+}
 }  // namespace

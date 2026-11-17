@@ -214,6 +214,15 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
                                                    const BigInteger& p, const PrivateKey<DCRTPoly>& privateKey,
                                                    const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
                                                    uint32_t numSlots, uint32_t length, bool bitReverse) {
+    const uint32_t ringDim = ep->GetRingDimension();
+    if (numSlots == 0 || numSlots > ringDim / 2)
+        OPENFHE_THROW("numSlots should be between 1 and half the ring dimension");
+
+    const uint32_t gap = ringDim / (2 * numSlots);
+    length = (length == 0) ? numSlots : length;
+    if (static_cast<uint64_t>(length - 1) * gap >= ringDim)
+        OPENFHE_THROW("length cannot exceed " + std::to_string((ringDim - 1) / gap + 1) + " for the given numSlots");
+
     const auto& bigQPrime = ep->GetModulus();
 
     auto ba = (Q < bigQPrime) ? ModSwitchUp(input, Q, bigQPrime, ep) : ModSwitchDown(input, Q, bigQPrime, ep);
@@ -225,7 +234,6 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
     m.SetFormat(Format::COEFFICIENT);
 
     auto mPoly = m.CRTInterpolate();
-    uint32_t gap = mPoly.GetLength() / (2 * numSlots);
 
     if (Q < bigQPrime) {
         mPoly = mPoly.MultiplyAndRound(Q, bigQPrime);
@@ -239,8 +247,6 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
     mPoly.SwitchModulus(p, 1, 0, 0);
 
     BigInteger half = p >> 1;
-
-    length = (length == 0) ? numSlots : length;
 
     std::vector<int64_t> output(length);
     for (uint32_t i = 0, idx = 0; i < length; ++i, idx += gap)
