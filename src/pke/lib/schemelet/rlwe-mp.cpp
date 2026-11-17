@@ -280,8 +280,7 @@ Ciphertext<DCRTPoly> SchemeletRLWEMP::ConvertRLWEToCKKS(const CryptoContextImpl<
     }
 
     std::vector<std::complex<double>> y(1);
-    auto ptxt = cc.MakeCKKSPackedPlaintext(y, 1, level);
-    ptxt->SetLength(slots);
+    auto ptxt = cc.MakeCKKSPackedPlaintext(y, 1, level, nullptr, slots);
 
     auto ctxt = cc.Encrypt(pubKey, ptxt);
 

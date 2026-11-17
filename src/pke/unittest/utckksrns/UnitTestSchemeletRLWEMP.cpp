@@ -126,4 +126,30 @@ TEST_F(UTRLWEMP, OutOfRangeCoefficientsAreReduced) {
     for (size_t i = 0; i < expected.size(); ++i)
         EXPECT_EQ(output[i], expected[i]) << "coefficient " << i << " (input " << input[i] << ")";
 }
+
+// The CKKS ciphertext carries the requested number of slots, whatever the batch size of the crypto context.
+TEST_F(UTRLWEMP, ConvertRLWEToCKKSSlots) {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1024);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetBatchSize(8);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    auto keys = cc->KeyGen();
+    auto elementParams = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
+    const BigInteger Q = BigInteger(1) << 33;
+    const BigInteger p = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
+
+    const std::vector<int64_t> input{1, 2, 3, 4};
+    auto ciphertext = SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams);
+
+    for (uint32_t slots : {4u, 8u, 512u})
+        EXPECT_EQ(SchemeletRLWEMP::ConvertRLWEToCKKS(*cc, ciphertext, keys.publicKey, Q, slots)->GetSlots(), slots);
+}
 }  // namespace
