@@ -106,5 +106,7 @@ The same instructions are packaged as an agent named `openfhe-reviewer` for Clau
 - Branch from `dev` and open the pull request against `dev`.
 - Each change needs a GitHub issue.
 - Changes that break the existing public API are held for a major release; raise them with the maintainers first.
+- Do not edit `docs/static_docs/Release_Notes.md` as part of a change. The maintainers update it when a version is
+  released.
 
 More detail: `docs/sphinx_rsts/contributing/`.

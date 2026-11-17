@@ -86,6 +86,8 @@ hand. `NATIVE_SIZE` can be 32, 64 or 128.
 - Doxygen comments describe what the code does now: input constraints, what throws, and what is returned. Check them
   against the implementation, not against the intent.
 - `agents/` is updated when the change calls for it; see "Keeping agents/ current" in `AGENTS.md`.
+- `docs/static_docs/Release_Notes.md` is updated only for a version release. Do not ask for an entry there, and flag
+  a change that adds one.
 
 ### Parameters and security
 
