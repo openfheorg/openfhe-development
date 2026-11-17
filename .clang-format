@@ -11,7 +11,7 @@
 BasedOnStyle: Google
 #######################################################################
 Language: Cpp
-Standard: c++17
+Standard: Latest
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: Consecutive

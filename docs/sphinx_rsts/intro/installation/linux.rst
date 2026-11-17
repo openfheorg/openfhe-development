@@ -3,62 +3,68 @@ Installing OpenFHE on Linux
 
 .. note:: CentOS Installation
 
-    The installation process is the same as in Ubuntu except for using ``yum`` instead of ``apt-get`` in Step 1. Here we provide additional notes specific to CentOS.
+    The installation process is the same as in Ubuntu except for using ``dnf`` instead of ``apt-get`` in Step 1. Here we provide additional notes specific to CentOS.
 
-    You may need to install cmake v3.x using the following commands:
+    On CentOS Stream 10, the default GCC 14 compiler meets the minimum requirement:
 
     ::
 
-        sudo yum install cmake3
-        ln -s /usr/bin/cmake3 ~/bin/cmake
+        sudo dnf install cmake gcc-c++
 
-    If you need to install a specific version of gcc, do the following (this example is for g++ v10):
-    ``sudo yum install devtoolset-10-gcc-c++``
+    On CentOS Stream 8 or 9, install GCC Toolset 13 and enable it in the shell where you will build OpenFHE:
+
+    ::
+
+        sudo dnf install cmake gcc-toolset-13
+        scl enable gcc-toolset-13 bash
+
+    .. important::
+
+        CentOS GCC Toolsets must be activated before CMake can detect them. Run CMake and the build from the shell started by ``scl enable gcc-toolset-13 bash``.
 
 1. Install pre-requisites (if not already installed) and set the default compiler.
 
 .. topic:: g++
 
-    Note that ``sudo apt-get install g++-<version>`` can be used to install a specific version of the compiler. You can use "g++ --version" to check the version of g++ that is found by the system.
+    OpenFHE requires g++ 13 or later. You can use ``g++ --version`` to check the version found by the system.
 
-
-    Install ``g++``, ``cmake`` and ``make``. Sample commands using apt-get are listed below. It is possible that these are already installed
+    On Ubuntu 24.04, install the minimum supported version of ``g++``, along with ``cmake`` and ``make``:
 
     ::
 
-        sudo apt-get install build-essential #this already includes g++
-        sudo apt-get install cmake
+        sudo apt-get update
+        sudo apt-get install g++-13 cmake make
+
+    Then configure GCC 13 as the C and C++ compilers:
+
+    ::
+
+        export CC=/usr/bin/gcc-13
+        export CXX=/usr/bin/g++-13
 
 .. topic:: clang
 
-    Typically g++ is the default compiler for Linux but clang++ can also be installed.
+    Typically g++ is the default compiler for Linux, but clang++ 18 or later can also be used.
 
-    First install clang++, e.g., ``sudo apt-get install clang-11`` to install clang 11.
-
-    If installing an older version of clang, you may also need to install OpenMP. The commands for this case are
+    On Ubuntu 24.04, install the minimum supported version of clang/clang++, along with ``cmake`` and ``make``:
 
     ::
 
-        sudo apt-get install clang
-        sudo apt-get install libomp5
-        sudo apt-get install libomp-dev
+        sudo apt-get update
+        sudo apt-get install clang-18 cmake make
 
-
-    Then run the following two commands to configure clang/clang++ as the default compiler for C and C++ (default paths are used here). For clang 11:
+    You may also need to install OpenMP:
 
     ::
 
-        export CC=/usr/bin/clang-11
-        export CXX=/usr/bin/clang++-11
+        sudo apt-get install libomp-18-dev
 
-
-    For a default version of clang, e.g., v6 in Ubuntu 20.04:
+    Then configure Clang 18 as the C and C++ compilers:
 
     ::
 
-        export CC=/usr/bin/clang
-        export CXX=/usr/bin/clang++
-
+        export CC=/usr/bin/clang-18
+        export CXX=/usr/bin/clang++-18
 
 2. Clone the repo.
 

@@ -64,7 +64,7 @@ OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve h
 Components
 -------------
 
-OpenFHE is a cross-platform C++17 library supporting Linux, Windows, and macOS. The supported compilers are g++ v9 or later and clang++ v10 or later.
+OpenFHE is a cross-platform C++23 library supporting Linux, Windows, and macOS. The supported compilers are g++ v13 or later and clang++ v18 or later.
 
 The library also includes unit tests and sample application demos.
 

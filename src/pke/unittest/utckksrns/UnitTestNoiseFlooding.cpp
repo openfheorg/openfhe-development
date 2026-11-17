@@ -228,7 +228,8 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
             cc->Decrypt(keyPair.secretKey, noiseCiphertext, &noisePlaintext);
             double noise = noisePlaintext->GetLogError();
             double expectedNoise =
-                    testData.params.scalTech == FLEXIBLEAUTOEXT ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
+                    testData.params.scalTech == static_cast<double>(FLEXIBLEAUTOEXT) ? NOISE_ESTIMATE_FLEX_AUTO_EXT :
+                                                                                       NOISE_ESTIMATE;
             EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
         } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
