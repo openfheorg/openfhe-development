@@ -47,11 +47,11 @@ namespace lbcrypto {
 /**
  * @brief Runtime control of the number of OpenMP threads OpenFHE uses. Holds the thread count reported by the
  * system at construction (machine threads) and a current thread limit in [1, machine threads] that the library's
- * parallel regions consult through GetThreadLimit(). The limit starts at the default thread count: half the
- * processors available to the process when the system reports simultaneous multithreading as active (Linux), and
- * the number of machine threads otherwise or when OMP_NUM_THREADS is set. Without the PARALLEL build option every
- * query returns 1 and the setters are no-ops. A single global instance, OpenFHEParallelControls, is used throughout
- * the library.
+ * parallel regions consult through GetThreadLimit(). The limit starts at the default thread count: on Linux the
+ * number of distinct cores among the processors the process may run on, read from the CPU topology, when that is
+ * below the machine thread count and OMP_NUM_THREADS is not set; the number of machine threads otherwise. Without
+ * the PARALLEL build option every query returns 1 and the setters are no-ops. A single global instance,
+ * OpenFHEParallelControls, is used throughout the library.
  */
 class ParallelControls {
   public:
@@ -68,10 +68,14 @@ class ParallelControls {
     }
 
     /**
-     * @brief Enables parallel operation by setting the thread limit to the default thread count.
+     * @brief Enables parallel operation: the thread limit returns to the default thread count and OpenMP's thread
+     * count to the number of machine threads, the state at construction.
      */
     void Enable() {
-        SetNumThreads(defaultThreads);
+#ifdef PARALLEL
+        threadLimit.store(defaultThreads, std::memory_order_relaxed);
+        omp_set_num_threads(machineThreads);
+#endif
     }
 
     /**
@@ -109,6 +113,17 @@ class ParallelControls {
         return defaultThreads;
     }
 
+#ifdef PARALLEL
+    /**
+     * @brief Default thread count for a machine thread count of `machineThreads`: on Linux the number of distinct
+     * cores among the processors the process may run on, read from the CPU topology, when that is below
+     * `machineThreads` and OMP_NUM_THREADS is not set; otherwise `machineThreads`.
+     * @param machineThreads the number of machine threads
+     * @return the default thread count
+     */
+    static int DefaultThreads(int machineThreads);
+#endif
+
     /**
      * @brief Returns the current thread limit.
      * @return number of threads the library may currently use (1 without PARALLEL)
@@ -139,7 +154,9 @@ class ParallelControls {
      * library's parallel regions. The request is clamped to [1, current thread limit]. With libgomp, a top-level
      * region that requests fewer threads than the calling thread's current team keeps that team's width until
      * TEAM_SHRINK_REGIONS consecutive such regions have been requested; the team then shrinks to the widest of
-     * those requests. Threads without work wait at the region's closing barrier.
+     * those requests. A narrower region runs on the kept team: a loop with more iterations than it requested is
+     * split across the whole team, so under libgomp a request is the team's minimum width while a wider team is
+     * kept, and only threads without an iteration wait at the region's closing barrier.
      * @param n requested number of threads (typically the amount of independent work available)
      * @return the team width (1 without PARALLEL)
      */
@@ -217,13 +234,6 @@ class ParallelControls {
      * rule described in GetThreadLimit().
      */
     static int TeamWidth(int requested, int lim);
-
-    /**
-     * @brief Default thread count for a machine thread count of `machineThreads`: half the processors available to
-     * the process when the system reports simultaneous multithreading as active, that is fewer than
-     * `machineThreads` and OMP_NUM_THREADS is not set; otherwise `machineThreads`.
-     */
-    static int DefaultThreads(int machineThreads);
 
     std::atomic<int> threadLimit{1};
     int savedLimit{1};

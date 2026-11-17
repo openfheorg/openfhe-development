@@ -97,7 +97,6 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
     using TugType = TernaryUniformGeneratorImpl<LilVecType>;
     using BugType = BinaryUniformGeneratorImpl<LilVecType>;
 
-    // measured team widths for the loops over the ring dimension
     /** OpenMP team width for the ring-dimension loops of the ScaleAndRound overloads that output a native polynomial */
     static constexpr uint32_t THREADS_SCALE_TO_POLY{16};
     /** OpenMP team width for the ring-dimension loops of CRTInterpolate, SwitchCRTBasis, the scale-and-round

@@ -38,6 +38,13 @@
 #ifdef PARALLEL
     #include <cstdio>
     #include <cstdlib>
+    #if defined(__linux__)
+        #include <sched.h>
+
+        #include <set>
+        #include <string>
+        #include <utility>
+    #endif
 #endif
 
 namespace lbcrypto {
@@ -54,23 +61,45 @@ struct TeamState {
 };
 thread_local TeamState team;
 
-bool SmtActive() {
     #if defined(__linux__)
-    std::FILE* file = std::fopen("/sys/devices/system/cpu/smt/active", "r");
+int ReadTopology(int cpu, const char* leaf) {
+    const std::string path = "/sys/devices/system/cpu/cpu" + std::to_string(cpu) + "/topology/" + leaf;
+    std::FILE* file = std::fopen(path.c_str(), "r");
     if (file == nullptr)
-        return false;
-    const int c = std::fgetc(file);
+        return -1;
+    int value = -1;
+    if (std::fscanf(file, "%d", &value) != 1)
+        value = -1;
     std::fclose(file);
-    return c == '1';
+    return value;
+}
+    #endif
+
+// number of distinct cores among the processors the process may run on, from the CPU topology; 0 when unknown
+int AvailableCores() {
+    #if defined(__linux__)
+    cpu_set_t set;
+    if (sched_getaffinity(0, sizeof(set), &set) != 0)
+        return 0;
+    std::set<std::pair<int, int>> cores;
+    for (int cpu = 0; cpu < CPU_SETSIZE; ++cpu) {
+        if (!CPU_ISSET(cpu, &set))
+            continue;
+        const int core = ReadTopology(cpu, "core_id");
+        if (core < 0)
+            return 0;
+        cores.emplace(ReadTopology(cpu, "physical_package_id"), core);
+    }
+    return static_cast<int>(cores.size());
     #else
-    return false;
+    return 0;
     #endif
 }
 }  // namespace
 
 int ParallelControls::TeamWidth(int requested, int lim) {
     if (team.width > lim)
-        team.width = lim;
+        team = TeamState{lim, 0, 1};
     if (requested >= team.width) {
         team = TeamState{requested, 0, 1};
         return requested;
@@ -84,10 +113,10 @@ int ParallelControls::TeamWidth(int requested, int lim) {
 }
 
 int ParallelControls::DefaultThreads(int machineThreads) {
-    if (std::getenv("OMP_NUM_THREADS") != nullptr || !SmtActive())
+    if (std::getenv("OMP_NUM_THREADS") != nullptr)
         return machineThreads;
-    const int half = omp_get_num_procs() / 2;
-    return half > 0 && half < machineThreads ? half : machineThreads;
+    const int cores = AvailableCores();
+    return cores > 0 && cores < machineThreads ? cores : machineThreads;
 }
 #endif
 
