@@ -184,6 +184,8 @@ struct TEST_CASE_FBT {
     ScalingTechnique scalTech = FIXEDMANUAL;
     // register word size for the COMPOSITESCALING* techniques; 32 by default
     uint32_t registerWordSize = 32;
+    // batch size of the CKKS cryptocontext in the FBT_ARBLUT tests; 0 selects the number of CKKS slots
+    uint32_t batchSize = 0;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -379,6 +381,9 @@ static std::vector<TEST_CASE_FBT> testCases = {
     { FBT_MVB_REUSE, "704",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY},
     { FBT_MVB_REUSE, "705",      Q60,      4,       4, Q36, Q36,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
     {   FBT_INVALID, "801",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1,   SLOTFULL,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FLEXIBLEAUTO},
+    // Batch size of the cryptocontext different from the number of CKKS slots
+    // TestCaseType, Desc, QBFVInit, PInput, POutput,  Q, Bigq, scaleTHI, scaleStepTHI, order,   numSlots, ringDim, lvlsAfterBoot, lvlsBeforeBoot, dnum, lvlsComp, lvlBudget, SecretKeyDist, ScalingTechnique, registerWordSize, batchSize
+    {    FBT_ARBLUT, "802",      Q60,      2,       2, Q33, Q33,        1, SCALESTEPTHI,     1, SLOTSPARSE,  RINGDM,     AFTERBOOT,     BEFOREBOOT,    3, LVLSCOMP,  LVLBDFLT, SPARSE_TERNARY, FIXEDMANUAL, 32, SLOTHALF},
     // UNIFORM_TERNARY: the uniform secret distribution uses six double-angle iterations instead of two
     // and a degree-104 Chebyshev interpolation instead of degree 64/46 (the mod-raise overflow bound is
     // K_UNIFORM_FBT = 672 vs 28/16 for the sparse distributions), which adds 5 levels of multiplicative
@@ -707,7 +712,7 @@ class UTCKKSRNS_FBT : public ::testing::TestWithParam<TEST_CASE_FBT> {
             SetScalingTechniqueParams(parameters, t.scalTech, dcrtBits, t.registerWordSize);
             parameters.SetFirstModSize(FirstModSize(dcrtBits, t.scalTech));
             parameters.SetNumLargeDigits(t.dnum);
-            parameters.SetBatchSize(numSlotsCKKS);
+            parameters.SetBatchSize(t.batchSize == 0 ? numSlotsCKKS : t.batchSize);
             parameters.SetRingDim(t.ringDim);
             uint32_t depth = t.levelsAvailableAfterBootstrap;
 
