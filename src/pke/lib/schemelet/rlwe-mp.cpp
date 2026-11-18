@@ -149,6 +149,16 @@ std::vector<Poly> SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t> input, cons
                                                 const PrivateKey<DCRTPoly>& privateKey,
                                                 const std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>& ep,
                                                 bool bitReverse) {
+    if (input.empty())
+        OPENFHE_THROW("Cannot encrypt an empty input vector");
+    // The bit-reversal permutation spans the input (or each of its halves when it has more than N/2 entries), so its
+    // size must be a power of two, and at most N so that every permuted entry is encoded.
+    if (bitReverse) {
+        const size_t size = input.size();
+        if ((size & (size - 1)) != 0 || size > ep->GetRingDimension())
+            OPENFHE_THROW("The input size should be a power of two not exceeding the ring dimension with bitReverse");
+    }
+
     const auto cryptoParams =
             std::dynamic_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(privateKey->GetCryptoParameters());
 
@@ -222,6 +232,11 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
     length = (length == 0) ? numSlots : length;
     if (static_cast<uint64_t>(length - 1) * gap >= ringDim)
         OPENFHE_THROW("length cannot exceed " + std::to_string((ringDim - 1) / gap + 1) + " for the given numSlots");
+    // The bit-reversal permutation is undone over a block of numSlots or 2*numSlots values, which requires numSlots
+    // to be a power of two. Then gap = ringDim / (2*numSlots) exactly, and the check above gives length <= 2*numSlots,
+    // so the block covers the requested length.
+    if (bitReverse && (numSlots & (numSlots - 1)) != 0)
+        OPENFHE_THROW("numSlots should be a power of two when bitReverse is set");
 
     const auto& bigQPrime = ep->GetModulus();
 
@@ -248,19 +263,25 @@ std::vector<int64_t> SchemeletRLWEMP::DecryptCoeff(const std::vector<Poly>& inpu
 
     BigInteger half = p >> 1;
 
-    std::vector<int64_t> output(length);
-    for (uint32_t i = 0, idx = 0; i < length; ++i, idx += gap)
+    // With bitReverse, decode the whole block that holds the message, numSlots values or 2*numSlots values (the two
+    // halves), so that the permutation applied at encryption can be undone over it, then trim to length. The block
+    // lies within the polynomial (2*numSlots*gap <= ringDim) and covers length by the checks above.
+    const uint32_t count = bitReverse ? ((length > numSlots) ? 2 * numSlots : numSlots) : length;
+
+    std::vector<int64_t> output(count);
+    for (uint32_t i = 0, idx = 0; i < count; ++i, idx += gap)
         output[i] =
                 (mPoly[idx] > half) ? -(p - mPoly[idx]).ConvertToInt<int64_t>() : mPoly[idx].ConvertToInt<int64_t>();
 
     if (bitReverse) {
-        if (numSlots < length) {
+        if (numSlots < count) {
             BitReverseTwoHalves(output);
         } else {
             BitReverse(output);
         }
     }
 
+    output.resize(length);
     return output;
 }
 

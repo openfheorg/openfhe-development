@@ -183,6 +183,9 @@ TEST_F(UTRLWEMP, DecryptCoeffRejectsInvalidSlotsAndLength) {
     EXPECT_THROW(decrypt(ringDim, 0), OpenFHEException) << "numSlots above half the ring dimension";
     EXPECT_THROW(decrypt(numSlots, 2 * numSlots + 1), OpenFHEException) << "length past the last coefficient";
     EXPECT_THROW(decrypt(0, 0), OpenFHEException) << "numSlots of zero";
+    EXPECT_THROW(SchemeletRLWEMP::DecryptCoeff(ciphertext, Q, p, keys.secretKey, elementParams, 3, 0, true),
+                 OpenFHEException)
+            << "numSlots not a power of two with bitReverse";
 
     // the largest length for the sparse layout returns the values and their copy in the upper half
     std::vector<int64_t> output;
@@ -190,5 +193,89 @@ TEST_F(UTRLWEMP, DecryptCoeffRejectsInvalidSlotsAndLength) {
     ASSERT_EQ(output.size(), 2 * input.size());
     for (size_t i = 0; i < output.size(); ++i)
         EXPECT_EQ(output[i], input[i % input.size()]) << "coefficient " << i;
+}
+
+// With bitReverse, a length that is not numSlots or 2*numSlots must still return the values in their original
+// order: the permutation is undone over the full block before the output is truncated.
+TEST_F(UTRLWEMP, DecryptCoeffBitReverseAnyLength) {
+    const uint32_t ringDim = 1024;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(ringDim);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetBatchSize(8);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    auto keys = cc->KeyGen();
+    auto elementParams = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
+    const BigInteger Q = BigInteger(1) << 33;
+    const BigInteger p = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
+
+    // sparse packing: numSlots values at a stride, repeated in the upper half
+    const std::vector<int64_t> sparse{1, -2, 3, -4, 5, -6, 7, -8};
+    auto ctSparse = SchemeletRLWEMP::EncryptCoeff(sparse, Q, p, keys.secretKey, elementParams, true);
+    for (uint32_t length : {1u, 3u, 8u, 12u, 16u}) {
+        auto output = SchemeletRLWEMP::DecryptCoeff(ctSparse, Q, p, keys.secretKey, elementParams, sparse.size(),
+                                                    length, true);
+        ASSERT_EQ(output.size(), length);
+        for (size_t i = 0; i < length; ++i)
+            EXPECT_EQ(output[i], sparse[i % sparse.size()]) << "sparse, length " << length << ", coefficient " << i;
+    }
+
+    // full packing: ringDim values, each half permuted separately, read with numSlots = ringDim / 2
+    std::vector<int64_t> full(ringDim);
+    for (uint32_t i = 0; i < ringDim; ++i)
+        full[i] = static_cast<int64_t>(i % 200) - 100;
+    auto ctFull = SchemeletRLWEMP::EncryptCoeff(full, Q, p, keys.secretKey, elementParams, true);
+    for (uint32_t length : {100u, ringDim / 2, 600u, ringDim}) {
+        auto output =
+                SchemeletRLWEMP::DecryptCoeff(ctFull, Q, p, keys.secretKey, elementParams, ringDim / 2, length, true);
+        ASSERT_EQ(output.size(), length);
+        for (size_t i = 0; i < length; ++i)
+            EXPECT_EQ(output[i], full[i]) << "full, length " << length << ", coefficient " << i;
+    }
+}
+
+// An empty input is rejected, and so is an input whose size the bit-reversal permutation cannot span.
+TEST_F(UTRLWEMP, EncryptCoeffRejectsInvalidInput) {
+    const uint32_t ringDim = 1024;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(ringDim);
+    parameters.SetMultiplicativeDepth(1);
+    parameters.SetScalingModSize(59);
+    parameters.SetFirstModSize(60);
+    parameters.SetBatchSize(8);
+    auto cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+
+    auto keys = cc->KeyGen();
+    auto elementParams = SchemeletRLWEMP::GetElementParams(keys.secretKey, 0);
+    const BigInteger Q = BigInteger(1) << 33;
+    const BigInteger p = BigInteger(static_cast<uint64_t>(PLAINTEXT_MODULUS));
+
+    EXPECT_THROW(SchemeletRLWEMP::EncryptCoeff({}, Q, p, keys.secretKey, elementParams), OpenFHEException)
+            << "empty input";
+    EXPECT_THROW(SchemeletRLWEMP::EncryptCoeff({1, 2, 3}, Q, p, keys.secretKey, elementParams, true), OpenFHEException)
+            << "size not a power of two with bitReverse";
+    EXPECT_THROW(SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t>(2 * ringDim, 1), Q, p, keys.secretKey,
+                                               elementParams, true),
+                 OpenFHEException)
+            << "size above the ring dimension with bitReverse";
+
+    // without bitReverse, the same sizes are accepted: a non-power-of-two size round-trips at the truncated stride
+    const std::vector<int64_t> input{1, -2, 3};
+    std::vector<int64_t> output;
+    ASSERT_NO_THROW(output = SchemeletRLWEMP::DecryptCoeff(
+                            SchemeletRLWEMP::EncryptCoeff(input, Q, p, keys.secretKey, elementParams), Q, p,
+                            keys.secretKey, elementParams, input.size()));
+    EXPECT_EQ(output, input);
+    EXPECT_NO_THROW(
+            SchemeletRLWEMP::EncryptCoeff(std::vector<int64_t>(2 * ringDim, 1), Q, p, keys.secretKey, elementParams));
 }
 }  // namespace

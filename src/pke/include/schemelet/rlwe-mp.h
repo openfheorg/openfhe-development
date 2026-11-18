@@ -81,7 +81,7 @@ class SchemeletRLWEMP {
      * stride is greater than 1 the same values are repeated in the second half of the coefficient vector, and when
      * the input has more than N/2 entries they are placed consecutively (at most N of them are used).
      *
-     * @param input the integer message; every entry is reduced modulo p as a signed value
+     * @param input the integer message (must not be empty); every entry is reduced modulo p as a signed value
      * @param Q ciphertext modulus of the returned RLWE ciphertext
      * @param p plaintext modulus
      * @param privateKey the CKKS secret key
@@ -89,7 +89,7 @@ class SchemeletRLWEMP {
      *        (see GetElementParams())
      * @param bitReverse if true, the input is permuted in bit-reversed order before encoding (each half separately
      *        when the input has more than N/2 entries); this matches the slot order of the CKKS conversions when
-     *        rotations are applied in the CKKS domain
+     *        rotations are applied in the CKKS domain. Requires the input size to be a power of two not exceeding N
      * @return the RLWE ciphertext as the pair {b, a} of polynomials modulo Q
      */
     static std::vector<Poly> EncryptCoeff(std::vector<int64_t> input, const BigInteger& Q, const BigInteger& p,
@@ -110,9 +110,12 @@ class SchemeletRLWEMP {
      * @param elementParams RNS parameters used for the decryption (see GetElementParams())
      * @param numSlots number of slots used in the CKKS computation; determines the stride between message
      *        coefficients
-     * @param length number of values to return (0 means numSlots)
+     * @param length number of values to return (0 means numSlots); the last value read must lie within the
+     *        polynomial, i.e., (length - 1) * N/(2*numSlots) < N
      * @param bitReverse if true, the bit-reversal permutation applied at encryption is undone (each half separately
-     *        when numSlots is less than length)
+     *        when numSlots is less than length); requires numSlots to be a power of two. The full block of numSlots
+     *        values (2*numSlots when numSlots is less than length) is decoded, the permutation undone over it, and
+     *        the output truncated to length
      * @return the decrypted integer values
      */
     static std::vector<int64_t> DecryptCoeff(const std::vector<Poly>& input, const BigInteger& Q, const BigInteger& p,
