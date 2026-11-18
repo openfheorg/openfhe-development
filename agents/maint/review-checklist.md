@@ -28,7 +28,9 @@ Understand the area before judging a change to it. The repository already explai
 3. Run `git diff --check` on the same ranges. Do not run `pre-commit` during a review: several of its hooks rewrite
    the files they check. The lint job in CI reports formatting.
 4. Verify a finding before reporting it: build, run the affected test, or write a small program outside the repository
-   that shows the behaviour. Say what you ran and what you could not run. Give a count, or say "never" or "all", only
+   that shows the behaviour. For a change to threading, memory or anything read from the environment, run that program
+   under the settings that affect it (`OMP_NUM_THREADS`, `taskset`, another compiler) and compare the result with what
+   the change claims. Say what you ran and what you could not run. Give a count, or say "never" or "all", only
    after measuring it.
 5. Report a numbered list, most serious first. Give the file and line for each finding and mark it as confirmed
    (you reproduced it) or possible (state the condition under which it happens).
@@ -73,9 +75,16 @@ hand. `NATIVE_SIZE` can be 32, 64 or 128.
 - Encapsulation kept: no member made public and no `const` dropped only to get past a compile error.
 - A new template or overload is instantiated by a test or an example. Template code that nothing instantiates is not
   compiled, so its errors stay hidden.
+- An `#if` on the compiler or the runtime inside an inline function of a public header is evaluated separately in
+  every translation unit that includes it. The library and an application built with another compiler can then get
+  different definitions of the same function, which violates the one-definition rule. A decision that depends on how
+  the library was built belongs in a `.cpp` file.
 - OpenMP. An exception thrown inside a parallel region is caught in that region (`ThreadException`). The value passed
   to `num_threads` is never zero: at run time zero means all threads, which ignores the limit the user set. Thread
-  counts go through `OpenFHEParallelControls`.
+  counts go through `OpenFHEParallelControls`. A class object in a `private` clause is default-constructed in every
+  thread and loses its state, so a generator listed there samples with its default parameters. Use `firstprivate`
+  to give each thread its own copy; leave the object shared only when the loop calls nothing on it that modifies
+  it. Check each variable in a `private` clause for state the loop relies on.
 
 ### Public API and serialization
 
