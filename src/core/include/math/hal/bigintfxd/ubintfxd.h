@@ -63,7 +63,6 @@
     #include "utils/exception.h"
     #include "utils/inttypes.h"
     #include "utils/memory.h"
-    #include "utils/openfhebase64.h"
     #include "utils/serializable.h"
     #include "utils/utilities.h"
 
