@@ -1809,16 +1809,28 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
     for (const auto& p : paramsP->GetParams())
         mu.push_back(p->GetModulus().ComputeMu());
 
+    // the residues of Q are taken as signed remainders, written as [x_i + h_i]_{q_i} - h_i with h_i = floor(q_i/2)
+    std::vector<NativeInteger> half(sizeQ);
+    std::vector<NativeInteger> offset(sizeP, NativeInteger(0));
+    for (uint32_t i = 0; i < sizeQ; ++i) {
+        half[i] = m_vectors[i].GetModulus() >> 1;
+        for (uint32_t j = 0; j < sizeP; ++j) {
+            const NativeInteger pj(ans.m_vectors[j].GetModulus());
+            offset[j].ModAddEq(half[i].Mod(pj).ModMul(tPSHatInvModsDivsModp[j][i].Mod(pj), pj), pj);
+        }
+    }
+
     uint32_t ringDim = m_params->GetRingDimension();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t ri = 0; ri < ringDim; ++ri) {
         for (uint32_t j = 0; j < sizeP; ++j) {
             const auto& pj = ans.m_vectors[j].GetModulus();
             const auto& tPSHatInvModsDivsModpj = tPSHatInvModsDivsModp[j];
+            const NativeInteger start(NativeInteger(0).ModSub(offset[j], pj));
 #if defined(HAVE_INT128) && NATIVEINT == 64
-            DoubleNativeInt curValue = 0;
+            DoubleNativeInt curValue = start.ConvertToInt<uint64_t>();
             for (uint32_t i = 0; i < sizeQ; ++i) {
-                const NativeInteger& xi = m_vectors[i][ri];
+                const NativeInteger xi(m_vectors[i][ri].ModAddFast(half[i], m_vectors[i].GetModulus()));
                 curValue += Mul128(xi.ConvertToInt(), tPSHatInvModsDivsModpj[i].ConvertToInt());
             }
             const NativeInteger& xi = m_vectors[sizeQ + j][ri];
@@ -1826,8 +1838,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
 
             ans.m_vectors[j][ri] = BarrettUint128ModUint64(curValue, pj.ConvertToInt(), modpBarretMu[j]);
 #else
+            ans.m_vectors[j][ri] = start;
             for (uint32_t i = 0; i < sizeQ; ++i) {
-                const NativeInteger& xi = m_vectors[i][ri];
+                const NativeInteger xi(m_vectors[i][ri].ModAddFast(half[i], m_vectors[i].GetModulus()));
                 ans.m_vectors[j][ri].ModAddFastEq(xi.ModMul(tPSHatInvModsDivsModpj[i], pj, mu[j]), pj);
             }
             const NativeInteger& xi = m_vectors[sizeQ + j][ri];
@@ -2137,13 +2150,22 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
     for (const auto& q : moduliBsk)
         mu.push_back(q.ComputeMu());
 
-    // Twist xi by t*(q/qi)^-1 mod qi
+    // Twist xi by t*(q/qi)^-1 mod qi; the base conversion below takes every twisted value y_i as its signed
+    // remainder, written as [y_i + h_i]_{q_i} - h_i with h_i = floor(q_i/2)
+    std::vector<NativeInteger> offset(numBsk, NativeInteger(0));
     for (uint32_t i = 0; i < numQ; ++i) {
         const auto& tqDivqiModqi = tQHatInvModq[i];
         const auto& tqDivqiModqiPrecon = tQHatInvModqPrecon[i];
         const auto& moduliQi = moduliQ[i];
-        for (uint32_t k = 0; k < n; ++k)
+        const NativeInteger hi(moduliQi >> 1);
+        for (uint32_t k = 0; k < n; ++k) {
             m_vectors[i][k].ModMulFastConstEq(tqDivqiModqi, moduliQi, tqDivqiModqiPrecon);
+            m_vectors[i][k].ModAddFastEq(hi, moduliQi);
+        }
+        for (uint32_t j = 0; j < numBsk; ++j) {
+            const auto& moduliBskj = moduliBsk[j];
+            offset[j].ModAddEq(hi.Mod(moduliBskj).ModMul(qInvModbsk[i][j].Mod(moduliBskj), moduliBskj), moduliBskj);
+        }
     }
 
     std::vector<NativeInteger> txiqiDivqModqi(n * numBsk);
@@ -2152,15 +2174,17 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
         const auto& moduliBskj = moduliBsk[j];
         const auto& tDivqModBskj = tQInvModbsk[j];
         const auto& tDivqModBskjPrecon = tQInvModbskPrecon[j];
+        const NativeInteger start(NativeInteger(0).ModSub(offset[j], moduliBskj));
         for (uint32_t k = 0; k < n; ++k) {
 #if defined(HAVE_INT128) && NATIVEINT == 64
-            DoubleNativeInt aq = 0;
+            DoubleNativeInt aq = start.ConvertToInt<uint64_t>();
             for (uint32_t i = 0; i < numQ; ++i) {
                 const auto& xi = m_vectors[i][k];
                 aq += Mul128(xi.template ConvertToInt<uint64_t>(), qInvModbsk[i][j].ConvertToInt<uint64_t>());
             }
             txiqiDivqModqi[j * n + k] = BarrettUint128ModUint64(aq, moduliBskj.ConvertToInt(), modbskBarrettMu[j]);
 #else
+            txiqiDivqModqi[j * n + k] = start;
             for (uint32_t i = 0; i < numQ; ++i) {
                 const auto& xi = m_vectors[i][k];
                 txiqiDivqModqi[j * n + k].ModAddFastEq(xi.ModMul(qInvModbsk[i][j], moduliBskj, mu[j]), moduliBskj);
