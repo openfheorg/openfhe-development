@@ -196,7 +196,7 @@ void DropLastElementAndScaleAll(std::vector<DCRTPoly>& cv, const std::vector<Nat
         OPENFHE_THROW("Removing last element of DCRTPoly renders it invalid.");
     const uint32_t size = cv[0].GetNumOfElements() - 1;
     const uint32_t numTasks = sizeCv * size;
-    const uint32_t width =
+    [[maybe_unused]] const uint32_t width =
             (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : size;
 
     std::vector<DCRTPoly::PolyType> lastPolys(sizeCv);

@@ -484,7 +484,8 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         const uint32_t sizePartQl = partsCt.GetNumOfElements();
         const uint32_t startPartIdx = alpha * part;
-        const uint32_t threads = DCRTPoly::ApproxSwitchCRTBasisThreads(ringDim, sizePartQl, sizeQlP - sizePartQl);
+        [[maybe_unused]] const uint32_t threads =
+                DCRTPoly::ApproxSwitchCRTBasisThreads(ringDim, sizePartQl, sizeQlP - sizePartQl);
 
         auto& partTowers = partsCt.GetAllElements();
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(threads))

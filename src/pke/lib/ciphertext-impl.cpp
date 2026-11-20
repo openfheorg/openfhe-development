@@ -75,7 +75,7 @@ Ciphertext<DCRTPoly> CiphertextImpl<DCRTPoly>::Clone() const {
     elements.reserve(sizeCv);
     for (const auto& element : m_elements)
         elements.emplace_back(element.GetParams(), element.GetFormat(), false);
-    const uint32_t width =
+    [[maybe_unused]] const uint32_t width =
             (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : numTowers;
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
     for (uint32_t task = 0; task < numTasks; ++task) {
