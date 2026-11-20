@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,9 +29,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <random>
+#include <string>
 #include <vector>
 
 #include "UnitTestCCParams.h"
@@ -361,7 +365,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     NativePoly ans2(x2p, Format::COEFFICIENT);
     NativePoly ans3(x3p, Format::COEFFICIENT);
 
-#if defined(WITH_REDUCED_NOISE)
     ans0 = {805568738929329615, 1078766251747424581, 785656076316475931, 599125608237504783,
             541576441836927289, 152721755350883625,  574857357780891059, 1081393409810468824};
     ans1 = {434562805454153183, 312761043978375122, 509951653046700585, 879239171041671807,
@@ -370,16 +373,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
             1049296073052489282, 578396240339812091, 26954876970280154,  1019223053257416911};
     ans3 = {874592295621923163, 585167928946466636, 612704504638527026, 551633899923050544,
             758002500979691773, 694035684451390661, 625796987487151014, 96319544173820806};
-#else
-    ans0 = {805568738929329616, 1078766251747424582, 785656076316475932, 599125608237504784,
-            541576441836927290, 152721755350883626,  574857357780891061, 1081393409810468825};
-    ans1 = {434562805454153184, 312761043978375123, 509951653046700586, 879239171041671808,
-            385039618723450975, 638710747265582661, 246115869294473638, 352338293114574371};
-    ans2 = {955839852875274614,  186398073668078476, 710455872402389881, 1065981546244475424,
-            1049296073052489283, 578396240339812092, 26954876970280156,  1019223053257416912};
-    ans3 = {874592295621923164, 585167928946466637, 612704504638527027, 551633899923050545,
-            758002500979691774, 694035684451390662, 625796987487151016, 96319544173820807};
-#endif
 
     EXPECT_EQ(a.GetElementAtIndex(0), ans0);
     EXPECT_EQ(a.GetElementAtIndex(1), ans1);
@@ -693,4 +686,86 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
 
     // EXPECT_TRUE((result >= 1) && (result <= 3)) <<  "Results of multiprecision
     // and CRT multiplication after scaling + rounding do not match";
+}
+
+// FastRNSFloorq returns (t * X - [t * X]_q) / q - e in the basis Bsk, with [.]_q the centered remainder and e the
+// overflow of its base conversion. With l towers of q and signed remainders, |e| <= floor(l/2) and e has no mean;
+// unsigned remainders give e in [0, l] with mean l/2.
+TEST_F(UTBFVRNS_CRT, BFVrns_FastRNSFloorq_centered) {
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetMultiplicativeDepth(4);
+    parameters.SetScalingModSize(60);
+    parameters.SetMultiplicationTechnique(BEHZ);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1 << 10);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
+    const NativeInteger t(cryptoParams->GetPlaintextModulus());
+    const auto& moduliQ = cryptoParams->GetModuliQ();
+    const auto& moduliBsk = cryptoParams->GetModuliBsk();
+    const uint32_t numQ = moduliQ.size();
+    const uint32_t numBsk = moduliBsk.size();
+    const uint32_t n = cc->GetRingDimension();
+    ASSERT_GE(numQ, 2U);
+
+    auto big = [](const NativeInteger& v) {
+        return BigInteger(std::to_string(v.ConvertToInt<uint64_t>()));
+    };
+
+    // uniform residues from a fixed seed in the basis {q, Bsk}
+    DCRTPoly x(cryptoParams->GetParamsQBsk(), Format::COEFFICIENT, true);
+    std::mt19937_64 g(913);
+    for (uint32_t i = 0; i < numQ + numBsk; ++i) {
+        NativePoly tower(x.GetElementAtIndex(i));
+        const uint64_t modulus = tower.GetModulus().ConvertToInt<uint64_t>();
+        for (uint32_t r = 0; r < n; ++r)
+            tower[r] = NativeInteger(g() % modulus);
+        x.SetElementAtIndex(i, tower);
+    }
+    const auto bigX = x.CRTInterpolate();
+
+    DCRTPoly y(x);
+    y.FastRNSFloorq(t, moduliQ, moduliBsk, cryptoParams->GetModbskBarrettMu(), cryptoParams->GettQHatInvModq(),
+                    cryptoParams->GettQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetqInvModbsk(),
+                    cryptoParams->GettQInvModbsk(), cryptoParams->GettQInvModbskPrecon());
+
+    BigInteger q(1);
+    for (const auto& qi : moduliQ)
+        q = q * big(qi);
+    const BigInteger halfq = q >> 1;
+    const BigInteger bigt = big(t);
+    std::vector<BigInteger> bigBsk;
+    for (const auto& b : moduliBsk)
+        bigBsk.push_back(big(b));
+
+    const int64_t bound = numQ / 2;
+    double sum = 0;
+    uint32_t outside = 0, inconsistent = 0;
+    for (uint32_t r = 0; r < n; ++r) {
+        const BigInteger tX = bigt * bigX[r];
+        const BigInteger rem = tX.Mod(q);
+        BigInteger floorq = (tX - rem).DividedBy(q);
+        if (rem > halfq)
+            floorq = floorq + BigInteger(1);
+        int64_t e = 0;
+        for (uint32_t j = 0; j < numBsk; ++j) {
+            const NativeInteger expected(floorq.Mod(bigBsk[j]).ConvertToInt<uint64_t>());
+            const uint64_t bj = moduliBsk[j].ConvertToInt<uint64_t>();
+            const uint64_t eu =
+                    expected.ModSub(y.GetElementAtIndex(numQ + j)[r], moduliBsk[j]).ConvertToInt<uint64_t>();
+            const int64_t ej = (eu > (bj >> 1)) ? -static_cast<int64_t>(bj - eu) : static_cast<int64_t>(eu);
+            if (j == 0)
+                e = ej;
+            else if (ej != e)
+                ++inconsistent;
+        }
+        if (std::llabs(e) > bound)
+            ++outside;
+        sum += static_cast<double>(e);
+    }
+    EXPECT_EQ(inconsistent, 0U) << "the towers of Bsk do not hold one integer";
+    EXPECT_EQ(outside, 0U) << "overflow beyond floor(l/2) for l = " << numQ;
+    EXPECT_LT(std::fabs(sum / n), 0.25) << "the overflow has a mean";
 }

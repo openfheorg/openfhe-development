@@ -7,7 +7,6 @@
 #cmakedefine WITH_BE2
 #cmakedefine WITH_BE4
 #cmakedefine WITH_NOISE_DEBUG
-#cmakedefine WITH_REDUCED_NOISE
 #cmakedefine WITH_NTL
 #cmakedefine WITH_TCM
 #cmakedefine WITH_MALLOC_TUNING

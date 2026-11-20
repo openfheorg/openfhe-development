@@ -2885,7 +2885,7 @@ void MultAccExtInPlace(std::vector<DCRTPoly>& av, const std::vector<DCRTPoly>& c
     const uint32_t sizeCv = cv.size();
     const uint32_t numTowers = pt.GetNumOfElements();
     const uint32_t numTasks = sizeCv * numTowers;
-    const uint32_t width =
+    [[maybe_unused]] const uint32_t width =
             (numTasks < static_cast<uint32_t>(OpenFHEParallelControls.GetNumThreads())) ? numTasks : numTowers;
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(width))
     for (uint32_t task = 0; task < numTasks; ++task) {
