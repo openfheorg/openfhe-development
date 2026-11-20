@@ -120,9 +120,7 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         double numDigits = cryptoParamsBGVRNS->GetNumPartQ();
         keySwitchingNoise = numTowersPerDigit * numDigits * expansionFactor * Berr;
         keySwitchingNoise += auxTowers * (1. + expansionFactorMS * Bkey);
-#if defined(WITH_REDUCED_NOISE)
         keySwitchingNoise /= 2.0;
-#endif
     }
 
     // V_ms
