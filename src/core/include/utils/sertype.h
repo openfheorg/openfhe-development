@@ -41,10 +41,10 @@ namespace lbcrypto {
 namespace SerType {
 
 class SERJSON {};
-static const SERJSON JSON;  // should be const static to avoid compilation failure
+inline constexpr SERJSON JSON{};
 
 class SERBINARY {};
-static const SERBINARY BINARY;  // should be const static to avoid compilation failure
+inline constexpr SERBINARY BINARY{};
 
 }  // namespace SerType
 

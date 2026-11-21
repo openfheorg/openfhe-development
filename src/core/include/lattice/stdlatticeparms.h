@@ -149,11 +149,13 @@ class StdLatticeParm {
 
     using TableKey = std::pair<DistributionType, SecurityLevel>;
     using Table = std::map<uint32_t, StdLatticeParm*>;
-    static std::map<TableKey, Table> byRing;
-    static std::map<TableKey, Table> byLogQ;
+    static inline std::map<TableKey, Table> byRing;
+    static inline std::map<TableKey, Table> byLogQ;
 
-    static std::vector<StdLatticeParm> StandardLatticeParmSets;
-    static bool initialized;
+    // builds the table of all parameter sets; defined in the .cpp so that the table is compiled only once
+    static std::vector<StdLatticeParm> MakeStandardLatticeParmSets();
+    static inline std::vector<StdLatticeParm> StandardLatticeParmSets = MakeStandardLatticeParmSets();
+    static inline bool initialized{false};
 
   public:
     /**
@@ -163,7 +165,7 @@ class StdLatticeParm {
      * @param minSecLev security level the row is certified for
      * @param maxLogQ largest supported bit size of the ciphertext modulus
      */
-    StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
+    constexpr StdLatticeParm(DistributionType distType, uint32_t ringDim, SecurityLevel minSecLev, uint32_t maxLogQ)
         : distType(distType), ringDim(ringDim), minSecLev(minSecLev), maxLogQ(maxLogQ) {}
 
     /**
@@ -223,16 +225,16 @@ class StdLatticeParm {
      */
     static DistributionType GetDistributionType(SecretKeyDist secretKeyDist, SecurityLevel minSecLev);
 
-    DistributionType getDistType() const {
+    constexpr DistributionType getDistType() const {
         return distType;
     }
-    uint32_t getRingDim() const {
+    constexpr uint32_t getRingDim() const {
         return ringDim;
     }
-    SecurityLevel getMinSecLev() const {
+    constexpr SecurityLevel getMinSecLev() const {
         return minSecLev;
     }
-    uint32_t getMaxLogQ() const {
+    constexpr uint32_t getMaxLogQ() const {
         return maxLogQ;
     }
 };
