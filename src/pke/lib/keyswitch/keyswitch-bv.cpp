@@ -107,7 +107,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
         av.resize(nWindows);
         bv.resize(nWindows);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeKeyQ)) private(dug, dgg)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeKeyQ)) private(dug) firstprivate(dgg)
         for (uint32_t i = 0; i < sizeKeyQ; ++i) {
             auto sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
             for (uint32_t j = arrWindows[i], k = 0; k < sOldDecomposed.size(); ++j, ++k) {
@@ -120,7 +120,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     } else {
         av.resize(sizeKeyQ);
         bv.resize(sizeKeyQ);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeKeyQ)) private(dug, dgg)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeKeyQ)) private(dug) firstprivate(dgg)
         for (uint32_t i = 0; i < sizeKeyQ; ++i) {
             av[i] = ek ? ek->GetAVector()[i] : DCRTPoly(dug, ep, Format::EVALUATION);
             bv[i] = DCRTPoly(ep, Format::EVALUATION, true);
@@ -205,7 +205,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
 
         av.resize(nWindows);
         bv.resize(nWindows);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(tug, dgg)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(tug) firstprivate(dgg)
         for (uint32_t i = 0; i < sizeSOld; ++i) {
             auto sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
             for (uint32_t j = arrWindows[i], k = 0; k < sOldDecomposed.size(); ++j, ++k) {
@@ -222,7 +222,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     } else {
         av.resize(sizeSOld);
         bv.resize(sizeSOld);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(tug, dgg)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeSOld)) private(tug) firstprivate(dgg)
         for (uint32_t i = 0; i < sizeSOld; ++i) {
             bv[i] = DCRTPoly(ep, Format::EVALUATION, true);
             bv[i].SetElementAtIndex(i, sOld.GetElementAtIndex(i));
@@ -291,7 +291,7 @@ std::vector<DCRTPoly> KeySwitchBV::EvalFastKeySwitchCore(const std::shared_ptr<s
                       "; the key was generated with a different digit size");
 
     const uint64_t work = static_cast<uint64_t>(paramsQl->GetRingDimension()) * sizeQl * limit;
-    const uint32_t team = std::min<uint32_t>(OpenFHEParallelControls.GetThreadLimit(sizeQl * limit),
+    const uint32_t team = std::min<uint32_t>(OpenFHEParallelControls.ClampToThreadLimit(sizeQl * limit),
                                              std::max<uint32_t>(sizeQl, static_cast<uint32_t>(work >> 15)));
     const uint32_t groups = std::max<uint32_t>(1, std::min<uint32_t>(limit, team / sizeQl));
     const uint32_t tasks = sizeQl * groups;

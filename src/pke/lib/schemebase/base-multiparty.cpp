@@ -185,8 +185,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
     for (auto indx : indices)
         (*result)[indx];
 
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
-    for (uint32_t i = 0; i < sz; ++i) {
+    auto keyGen = [&](uint32_t i) {
         uint32_t index = NativeInteger(indices[i]).ModInverse(2 * N).ConvertToInt();
         std::vector<uint32_t> vec(N);
         PrecomputeAutoMap(N, index, &vec);
@@ -195,6 +194,14 @@ std::shared_ptr<std::map<uint32_t, EvalKey<Element>>> MultipartyBase<Element>::M
         privateKeyPermuted->SetPrivateElement(s.AutomorphismTransform(index, vec));
 
         (*result)[indices[i]] = MultiKeySwitchGen(privateKey, privateKeyPermuted, baseKeys[i]);
+    };
+
+    if (sz == 1) {
+        keyGen(0);
+    } else {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sz))
+        for (uint32_t i = 0; i < sz; ++i)
+            keyGen(i);
     }
     return result;
 }

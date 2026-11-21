@@ -133,7 +133,7 @@ void AddToAccCGGI32(const std::shared_ptr<ILNativeParams32>& polyParams, uint32_
     const NativeVector32& monomialPre = monomialsPrecon[indexPos];
     const NativeVector32& monomialPreNeg = monomialsPrecon[indexNeg];
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
+    int nthreads = OpenFHEParallelControls.ClampToThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
 
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
@@ -265,7 +265,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     const auto& ev1(ek1->GetElements());
     const auto& ev2(ek2->GetElements());
 
-    int nthreads = OpenFHEParallelControls.GetThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
+    int nthreads = OpenFHEParallelControls.ClampToThreadLimit(bp.teamWidth > 4 ? bp.teamWidth : 4);
 
     if (nthreads < 2) {
         ct[0].SetFormat(Format::COEFFICIENT);
