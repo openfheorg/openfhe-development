@@ -36,14 +36,13 @@
 #include "utils/parallel.h"
 
 #ifdef PARALLEL
-    #include <cstdio>
     #include <cstdlib>
     #if defined(__linux__)
         #include <sched.h>
 
+        #include <fstream>
         #include <set>
         #include <string>
-        #include <utility>
     #endif
 #endif
 
@@ -53,42 +52,36 @@ ParallelControls OpenFHEParallelControls;
 
 #ifdef PARALLEL
 namespace {
-// width of the calling thread's current top-level team and the narrower requests made since it was set
+    #ifdef _LIBGOMP_OMP_LOCK_DEFINED
+/** consecutive narrower top-level regions after which a libgomp team shrinks */
+constexpr int TEAM_SHRINK_REGIONS{256};
+
+// width of the calling thread's top-level team, the consecutive narrower requests since it was set and the widest of
+// them
 struct TeamState {
     int width{1};
     int narrower{0};
-    int widestNarrower{1};
+    int widest{1};
 };
 thread_local TeamState team;
-
-    #if defined(__linux__)
-int ReadTopology(int cpu, const char* leaf) {
-    const std::string path = "/sys/devices/system/cpu/cpu" + std::to_string(cpu) + "/topology/" + leaf;
-    std::FILE* file = std::fopen(path.c_str(), "r");
-    if (file == nullptr)
-        return -1;
-    int value = -1;
-    if (std::fscanf(file, "%d", &value) != 1)
-        value = -1;
-    std::fclose(file);
-    return value;
-}
     #endif
 
-// number of distinct cores among the processors the process may run on, from the CPU topology; 0 when unknown
+// number of distinct cores among the processors the process may run on, a core being identified by the list of
+// thread siblings its processors share in the CPU topology; 0 when unknown
 int AvailableCores() {
     #if defined(__linux__)
     cpu_set_t set;
     if (sched_getaffinity(0, sizeof(set), &set) != 0)
         return 0;
-    std::set<std::pair<int, int>> cores;
+    std::set<std::string> cores;
     for (int cpu = 0; cpu < CPU_SETSIZE; ++cpu) {
         if (!CPU_ISSET(cpu, &set))
             continue;
-        const int core = ReadTopology(cpu, "core_id");
-        if (core < 0)
+        std::ifstream file("/sys/devices/system/cpu/cpu" + std::to_string(cpu) + "/topology/thread_siblings_list");
+        std::string siblings;
+        if (!std::getline(file, siblings) || siblings.empty())
             return 0;
-        cores.emplace(ReadTopology(cpu, "physical_package_id"), core);
+        cores.insert(siblings);
     }
     return static_cast<int>(cores.size());
     #else
@@ -97,27 +90,36 @@ int AvailableCores() {
 }
 }  // namespace
 
-int ParallelControls::TeamWidth(int requested, int lim) {
-    if (team.width > lim)
-        team = TeamState{lim, 0, 1};
-    if (requested >= team.width) {
-        team = TeamState{requested, 0, 1};
-        return requested;
-    }
-    if (requested > team.widestNarrower)
-        team.widestNarrower = requested;
-    if (++team.narrower < TEAM_SHRINK_REGIONS)
-        return team.width;
-    team = TeamState{team.widestNarrower, 0, 1};
-    return team.width;
-}
-
 int ParallelControls::DefaultThreads(int machineThreads) {
-    if (std::getenv("OMP_NUM_THREADS") != nullptr)
+    const char* env = std::getenv("OMP_NUM_THREADS");
+    if (env != nullptr && *env != '\0')
         return machineThreads;
     const int cores = AvailableCores();
     return cores > 0 && cores < machineThreads ? cores : machineThreads;
 }
 #endif
+
+int ParallelControls::GetThreadLimit([[maybe_unused]] int n) const {
+#ifdef PARALLEL
+    const int lim = threadLimit.load(std::memory_order_relaxed);
+    const int width = n > lim ? lim : (n < 1 ? 1 : n);
+    #ifdef _LIBGOMP_OMP_LOCK_DEFINED
+    if (width > 1 && omp_get_level() == 0) {
+        if (width >= team.width || team.width > lim) {
+            team = TeamState{width, 0, 1};
+        } else {
+            if (width > team.widest)
+                team.widest = width;
+            if (++team.narrower == TEAM_SHRINK_REGIONS)
+                team = TeamState{team.widest, 0, 1};
+        }
+        return team.width;
+    }
+    #endif
+    return width;
+#else
+    return 1;
+#endif
+}
 
 }  // namespace lbcrypto

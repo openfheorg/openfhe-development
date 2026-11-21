@@ -197,7 +197,7 @@ void DropLastElementAndScaleAll(std::vector<DCRTPoly>& cv, const std::vector<Nat
 
     std::vector<DCRTPoly::PolyType> lastPolys(sizeCv);
     std::vector<Format> formats(sizeCv);
-#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(numTasks))
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(sizeCv))
     for (uint32_t k = 0; k < sizeCv; ++k) {
         formats[k] = cv[k].GetFormat();
         lastPolys[k] = std::move(cv[k].GetAllElements().back());

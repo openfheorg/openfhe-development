@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2026, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,7 +34,11 @@
  */
 
 #include <cstdlib>
+#include <fstream>
 #include <string>
+#if defined(PARALLEL) && defined(__linux__)
+    #include <sched.h>
+#endif
 
 #include "gtest/gtest.h"
 #include "utils/parallel.h"
@@ -42,13 +46,42 @@
 using namespace lbcrypto;
 
 namespace {
-// restores the thread limit a test changed
+// restores the thread limit and OpenMP's own thread count a test changed
 struct ThreadLimitGuard {
     int saved{OpenFHEParallelControls.GetNumThreads()};
+#ifdef PARALLEL
+    int savedMax{omp_get_max_threads()};
+#endif
     ~ThreadLimitGuard() {
         OpenFHEParallelControls.SetNumThreads(saved);
+#ifdef PARALLEL
+        omp_set_num_threads(savedMax);
+#endif
     }
 };
+
+#if defined(PARALLEL) && !defined(_WIN32)
+// restores OMP_NUM_THREADS a test changed
+struct OmpNumThreadsGuard {
+    const char* old{std::getenv("OMP_NUM_THREADS")};
+    const std::string saved{old != nullptr ? old : ""};
+    ~OmpNumThreadsGuard() {
+        if (old != nullptr)
+            setenv("OMP_NUM_THREADS", saved.c_str(), 1);
+        else
+            unsetenv("OMP_NUM_THREADS");
+    }
+};
+#endif
+
+#if defined(PARALLEL) && defined(__linux__)
+std::string ThreadSiblings(int cpu) {
+    std::ifstream file("/sys/devices/system/cpu/cpu" + std::to_string(cpu) + "/topology/thread_siblings_list");
+    std::string siblings;
+    std::getline(file, siblings);
+    return siblings;
+}
+#endif
 }  // namespace
 
 TEST(UTParallel, default_thread_count) {
@@ -65,15 +98,59 @@ TEST(UTParallel, default_thread_count) {
 
 #if defined(PARALLEL) && !defined(_WIN32)
 TEST(UTParallel, default_thread_count_honours_omp_num_threads) {
-    const char* old = std::getenv("OMP_NUM_THREADS");
-    const std::string saved(old != nullptr ? old : "");
+    OmpNumThreadsGuard guard;
+    unsetenv("OMP_NUM_THREADS");
+    const int unset = ParallelControls::DefaultThreads(16);
+    setenv("OMP_NUM_THREADS", "", 1);
+    EXPECT_EQ(ParallelControls::DefaultThreads(16), unset);
     setenv("OMP_NUM_THREADS", "3", 1);
     EXPECT_EQ(ParallelControls::DefaultThreads(16), 16);
     EXPECT_EQ(ParallelControls::DefaultThreads(2), 2);
-    if (old != nullptr)
-        setenv("OMP_NUM_THREADS", saved.c_str(), 1);
-    else
-        unsetenv("OMP_NUM_THREADS");
+}
+#endif
+
+#if defined(PARALLEL) && defined(__linux__)
+TEST(UTParallel, default_thread_count_counts_cores_in_the_affinity_mask) {
+    const int machine = OpenFHEParallelControls.GetMachineThreads();
+    cpu_set_t saved;
+    ASSERT_EQ(sched_getaffinity(0, sizeof(saved), &saved), 0);
+    int first = -1, sibling = -1, otherCore = -1;
+    for (int cpu = 0; cpu < CPU_SETSIZE; ++cpu) {
+        if (!CPU_ISSET(cpu, &saved))
+            continue;
+        if (first < 0) {
+            first = cpu;
+            continue;
+        }
+        if (ThreadSiblings(cpu) == ThreadSiblings(first)) {
+            if (sibling < 0)
+                sibling = cpu;
+        } else if (otherCore < 0) {
+            otherCore = cpu;
+        }
+    }
+    if (first < 0 || ThreadSiblings(first).empty() || machine < 2)
+        GTEST_SKIP() << "needs the CPU topology and 2 machine threads";
+    OmpNumThreadsGuard guard;
+    unsetenv("OMP_NUM_THREADS");
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(first, &set);
+    ASSERT_EQ(sched_setaffinity(0, sizeof(set), &set), 0);
+    EXPECT_EQ(ParallelControls::DefaultThreads(machine), 1);
+    if (sibling >= 0) {
+        CPU_SET(sibling, &set);
+        ASSERT_EQ(sched_setaffinity(0, sizeof(set), &set), 0);
+        EXPECT_EQ(ParallelControls::DefaultThreads(machine), 1);
+    }
+    if (otherCore >= 0) {
+        CPU_ZERO(&set);
+        CPU_SET(first, &set);
+        CPU_SET(otherCore, &set);
+        ASSERT_EQ(sched_setaffinity(0, sizeof(set), &set), 0);
+        EXPECT_EQ(ParallelControls::DefaultThreads(machine), 2);
+    }
+    EXPECT_EQ(sched_setaffinity(0, sizeof(saved), &saved), 0);
 }
 #endif
 

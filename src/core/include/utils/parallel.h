@@ -151,28 +151,16 @@ class ParallelControls {
 
     /**
      * @brief Team width for a parallel region that requests n threads; used as the num_threads value of the
-     * library's parallel regions. The request is clamped to [1, current thread limit]. With libgomp, a top-level
-     * region that requests fewer threads than the calling thread's current team keeps that team's width until
-     * TEAM_SHRINK_REGIONS consecutive such regions have been requested; the team then shrinks to the widest of
-     * those requests. A narrower region runs on the kept team: a loop with more iterations than it requested is
-     * split across the whole team, so under libgomp a request is the team's minimum width while a wider team is
-     * kept, and only threads without an iteration wait at the region's closing barrier.
+     * library's parallel regions. The request is clamped to [1, current thread limit]. When the library is built
+     * with libgomp, a top-level region that requests fewer threads than the calling thread's current team keeps
+     * that team's width; after a run of consecutive narrower requests (TEAM_SHRINK_REGIONS in parallel.cpp) the
+     * team shrinks to the widest of them. A narrower region runs on the kept team: a loop with more iterations
+     * than it requested is split across the whole team, so under libgomp a request is the team's minimum width
+     * while a wider team is kept, and only threads without an iteration wait at the region's closing barrier.
      * @param n requested number of threads (typically the amount of independent work available)
      * @return the team width (1 without PARALLEL)
      */
-    int GetThreadLimit(int n) const {
-#ifdef PARALLEL
-        int lim = threadLimit.load(std::memory_order_relaxed);
-        int width = n > lim ? lim : (n < 1 ? 1 : n);
-    #ifdef _LIBGOMP_OMP_LOCK_DEFINED
-        if (width > 1 && omp_get_level() == 0)
-            width = TeamWidth(width, lim);
-    #endif
-        return width;
-#else
-        return 1;
-#endif
-    }
+    int GetThreadLimit(int n) const;
 
     /**
      * @brief Clamps a requested thread count to [1, current thread limit]; used where the thread count sizes the
@@ -226,15 +214,6 @@ class ParallelControls {
 
   private:
 #ifdef PARALLEL
-    /** consecutive narrower top-level regions after which a libgomp team shrinks */
-    static constexpr int TEAM_SHRINK_REGIONS{256};
-
-    /**
-     * @brief Width of the calling thread's next top-level team for a request of `requested` threads, following the
-     * rule described in GetThreadLimit().
-     */
-    static int TeamWidth(int requested, int lim);
-
     std::atomic<int> threadLimit{1};
     int savedLimit{1};
 #endif
