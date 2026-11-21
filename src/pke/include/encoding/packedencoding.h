@@ -252,7 +252,7 @@ class PackedEncoding : public PlaintextImpl {
     static inline std::map<ModulusM, NativeInteger> m_bigRoot;
 
     // stores the list of primitive roots used in packing.
-    static inline std::map<uint32_t, uint32_t> m_automorphismGenerator;
+    static std::map<uint32_t, uint32_t> m_automorphismGenerator;
     static inline std::map<uint32_t, std::vector<uint32_t>> m_toCRTPerm;
     static inline std::map<uint32_t, std::vector<uint32_t>> m_fromCRTPerm;
 

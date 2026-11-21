@@ -48,6 +48,8 @@
 
 namespace lbcrypto {
 
+std::map<uint32_t, uint32_t> PackedEncoding::m_automorphismGenerator;
+
 bool PackedEncoding::Encode() {
     if (this->isEncoded)
         return true;
