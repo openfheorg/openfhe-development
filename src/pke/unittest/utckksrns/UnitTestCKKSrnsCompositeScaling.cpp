@@ -67,6 +67,8 @@ enum TEST_CASE_TYPE : int {
     MULT_PACKED_PRECISION,
     EVALSQUARE,
     SMALL_SCALING_MOD_SIZE,
+    FIRST_MOD_SIZE,
+    FIRST_MOD_SIZE_REJECTED,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -120,6 +122,12 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case SMALL_SCALING_MOD_SIZE:
             typeName = "SMALL_SCALING_MOD_SIZE";
             break;
+        case FIRST_MOD_SIZE:
+            typeName = "FIRST_MOD_SIZE";
+            break;
+        case FIRST_MOD_SIZE_REJECTED:
+            typeName = "FIRST_MOD_SIZE_REJECTED";
+            break;
         default:
             typeName = "UNKNOWN";
             break;
@@ -168,6 +176,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_CS& 
  */
 constexpr uint32_t RING_DIM = 512;
 constexpr uint32_t RING_DIM_HALF = 256;
+constexpr uint32_t RING_DIM_8K = 8192;
+constexpr uint32_t RING_DIM_16K = 16384;
 constexpr uint32_t DSIZE = 10;
 constexpr uint32_t BATCH = 8;
 // #if NATIVEINT != 128 && !defined(__EMSCRIPTEN__)
@@ -344,6 +354,24 @@ static std::vector<TEST_CASE_UTCKKSRNS_CS> testCases = {
     { EVALSQUARE, "13", {CKKSRNS_SCHEME, RING_DIM, 7,         86,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 48, 2}, },
     { EVALSQUARE, "14", {CKKSRNS_SCHEME, RING_DIM, 7,         90,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 27, 4}, },
     { EVALSQUARE, "15", {CKKSRNS_SCHEME, RING_DIM, 7,         118,      DSIZE, BATCH,   DFLT,       DFLT,          120,      HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT, DFLT, DFLT, DFLT, DFLT, 64, 3}, },
+    // ==========================================
+    // TestType,               Descr, Scheme,         RDim,         MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,               LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, CompositeDegree
+    { FIRST_MOD_SIZE,          "01", {CKKSRNS_SCHEME, RING_DIM_16K, 1,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE,          "02", {CKKSRNS_SCHEME, RING_DIM_16K, 2,         62,       DSIZE, BATCH,   DFLT,       DFLT,          63,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE,          "03", {CKKSRNS_SCHEME, RING_DIM_16K, 1,         83,       DSIZE, BATCH,   DFLT,       DFLT,          84,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE,          "04", {CKKSRNS_SCHEME, RING_DIM_16K, 3,         86,       DSIZE, BATCH,   DFLT,       DFLT,          89,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE,          "05", {CKKSRNS_SCHEME, RING_DIM_16K, 0,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE,          "06", {CKKSRNS_SCHEME, RING_DIM_16K, 0,         62,       DSIZE, BATCH,   DFLT,       DFLT,          63,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE,          "07", {CKKSRNS_SCHEME, RING_DIM_16K, 0,         83,       DSIZE, BATCH,   DFLT,       DFLT,          84,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE,          "08", {CKKSRNS_SCHEME, RING_DIM_16K, 0,         86,       DSIZE, BATCH,   DFLT,       DFLT,          89,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 25, DFLT}, },
+    { FIRST_MOD_SIZE,          "09", {CKKSRNS_SCHEME, RING_DIM_8K,  0,         36,       DSIZE, BATCH,   DFLT,       DFLT,          38,       HEStd_NotSet, BV,     COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 20, DFLT}, },
+    { FIRST_MOD_SIZE,          "11", {CKKSRNS_SCHEME, RING_DIM,     7,         60,       DSIZE, BATCH,   DFLT,       DFLT,          64,       HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE,          "12", {CKKSRNS_SCHEME, RING_DIM,     7,         108,      DSIZE, BATCH,   DFLT,       DFLT,          118,      HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 32, DFLT}, },
+    { FIRST_MOD_SIZE,          "13", {CKKSRNS_SCHEME, RING_DIM,     7,         86,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 48, 2}, },
+    { FIRST_MOD_SIZE,          "14", {CKKSRNS_SCHEME, RING_DIM,     7,         90,       DSIZE, BATCH,   DFLT,       DFLT,          96,       HEStd_NotSet, HYBRID, COMPOSITESCALINGMANUAL, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 27, 4}, },
+    // TestType,               Descr, Scheme,         RDim,         MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,               LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, decryptionNoiseMode, ExecutionMode, NoiseEstimate, RegisterWordSize, CompositeDegree
+    { FIRST_MOD_SIZE_REJECTED, "01", {CKKSRNS_SCHEME, RING_DIM,     7,         119,      DSIZE, BATCH,   DFLT,       DFLT,          121,      HEStd_NotSet, HYBRID, COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 64, DFLT}, },
+    { FIRST_MOD_SIZE_REJECTED, "02", {CKKSRNS_SCHEME, RING_DIM_16K, 0,         39,       DSIZE, BATCH,   DFLT,       DFLT,          40,       HEStd_NotSet, BV,     COMPOSITESCALINGAUTO,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT, DFLT, DFLT, DFLT, 20, DFLT}, },
 };
 // clang-format on
 //===========================================================================================================
@@ -1864,6 +1892,38 @@ class UTCKKSRNSCS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_CS> {
         }
     }
 
+    void UnitTest_FirstModSize(const TEST_CASE_UTCKKSRNS_CS& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+            const auto& towers = cryptoParams->GetElementParams()->GetParams();
+
+            BigInteger firstModulus(1);
+            for (uint32_t d = 0; d < cryptoParams->GetCompositeDegree(); ++d)
+                firstModulus *= BigInteger(towers[d]->GetModulus());
+            EXPECT_EQ(firstModulus.GetMSB(), static_cast<uint32_t>(testData.params.firstModSize)) << failmsg;
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    void UnitTest_FirstModSize_Rejected(const TEST_CASE_UTCKKSRNS_CS& testData,
+                                        const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (const OpenFHEException& e) {
+            EXPECT_NE(std::string(e.what()).find("could only generate a first modulus"), std::string::npos)
+                    << failmsg << ": " << e.what();
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     void UnitTest_Small_ScalingModSize(const TEST_CASE_UTCKKSRNS_CS& testData,
                                        const std::string& failmsg = std::string()) {
         try {
@@ -1956,6 +2016,12 @@ TEST_P(UTCKKSRNSCS, CKKSRNS) {
             break;
         case SMALL_SCALING_MOD_SIZE:
             UnitTest_Small_ScalingModSize(test, test.buildTestName());
+            break;
+        case FIRST_MOD_SIZE:
+            UnitTest_FirstModSize(test, test.buildTestName());
+            break;
+        case FIRST_MOD_SIZE_REJECTED:
+            UnitTest_FirstModSize_Rejected(test, test.buildTestName());
             break;
         default:
             break;

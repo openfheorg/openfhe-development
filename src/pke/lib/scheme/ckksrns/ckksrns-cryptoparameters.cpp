@@ -446,15 +446,11 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
 
         // total size of P' and the number/size of its primes: with composite scaling ~66 bits, or ~127 bits
         // for a bottom modulus above 60 bits (whose sparse secret is denser as well); otherwise unchanged.
-        // The size of the bottom modulus is taken as the sum of the bit lengths of its primes, i.e., the
-        // firstModSize the primes were generated for (CompositePrimeModuliGen for composite scaling), so that
-        // the rule matches SparseKSHammingWeight(firstModSize) used by the depth estimates.
+        // The size of the bottom modulus is the firstModSize the primes were generated for, so that the rule
+        // matches SparseKSHammingWeight(firstModSize) used by the depth estimates.
         constexpr uint32_t auxBitsPlain = 2 * (MAX_MODULUS_SIZE / 2 + 3);
         const bool isComposite = (compositeDegree > 1);
-        uint32_t firstModSize = 0;
-        for (uint32_t i = 0; i < sizeQl; ++i)
-            firstModSize += moduliQ[i].GetMSB();
-        m_sparseKSHammingWeight = SparseKSHammingWeight(firstModSize);
+        m_sparseKSHammingWeight = SparseKSHammingWeight(bitsQl);
         const bool largeBottom = (m_sparseKSHammingWeight > 32);
         const uint32_t auxBitsSparse = (!isComposite) ? auxBitsPlain : (largeBottom ? 127 : 66);
         const uint32_t registerBits = (isComposite) ? GetRegisterWordSize() : MAX_MODULUS_SIZE;
