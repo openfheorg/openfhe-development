@@ -818,6 +818,12 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
     double scFactor = cryptoParams->GetScalingFactorReal(cryptoParams->GetElementParams()->GetParams().size() - 1);
     scale *= m_modulus_CKKS_initial.ConvertToDouble() / scFactor;
 
+    // In the FIXED* modes the plaintexts are encoded at the nominal scaling factor, while the rescaling after
+    // the SlotsToCoeffs transform divides by the actual modulus, so the ratio of the two is compensated for here
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL || cryptoParams->GetScalingTechnique() == FIXEDAUTO)
+        scale *= cryptoParams->GetElementParams()->GetParams()[S2C_TOWERS - 1]->GetModulus().ConvertToDouble() /
+                 scFactor;
+
     if (!isSparse) {  // fully packed
         m_U0Pre = EvalLTPrecomputeSwitch(cc, U0, m_dim1CF, m_LCF, scale);
     } else {  // sparsely packed
