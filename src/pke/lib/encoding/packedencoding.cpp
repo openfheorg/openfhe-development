@@ -123,11 +123,19 @@ bool PackedEncoding::Encode() {
             const std::shared_ptr<ILDCRTParams<BigInteger>> params = this->encodedVectorDCRT.GetParams();
             const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = params->GetParams();
 
-            // Sets the values for all other RNS limbs
+            // Sets the values for all other RNS limbs. The encoded coefficients x are in [0, t), so
+            // limb j gets x mod q_j. A centred switch from q_0 (NativeVector(v, q_j)) would read
+            // x > q_0/2 as x - q_0, and the limbs would no longer represent the same integer.
             for (size_t j = 1; j < nativeParams.size(); j++) {
+                const NativeInteger& qj = nativeParams[j]->GetModulus();
+                NativeVector values(firstElement.GetValues());
+                values.SetModulus(qj);
+                if (qj.ConvertToInt<PlaintextModulus>() < mod) {
+                    for (uint32_t i = 0; i < values.GetLength(); ++i)
+                        values[i].ModEq(qj);
+                }
                 NativePoly tempPoly(nativeParams[j], Format::COEFFICIENT);
-                tempPoly.SetValues(NativeVector(firstElement.GetValues(), nativeParams[j]->GetModulus()),
-                                   Format::COEFFICIENT);
+                tempPoly.SetValues(std::move(values), Format::COEFFICIENT);
                 this->encodedVectorDCRT.SetElementAtIndex(j, std::move(tempPoly));
             }
             // Setting the first limb at the end make sure firstElement is available during the main loop

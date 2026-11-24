@@ -634,9 +634,18 @@ inline DCRTPoly PlaintextImpl::GetCoefficientElement<DCRTPoly>() const {
     first.SetFormat(Format::COEFFICIENT);
     const auto& towers = encodedVectorDCRT.GetParams()->GetParams();
     DCRTPoly element(encodedVectorDCRT.GetParams(), Format::COEFFICIENT);
+    // the encoded coefficients x are in [0, t): tower i gets x mod q_i (not a centred switch from q_0)
+    const auto t = this->encodingParams->GetPlaintextModulus();
     for (size_t i = 1; i < towers.size(); ++i) {
+        const NativeInteger& qi = towers[i]->GetModulus();
+        NativeVector values(first.GetValues());
+        values.SetModulus(qi);
+        if (qi.ConvertToInt<PlaintextModulus>() < t) {
+            for (uint32_t j = 0; j < values.GetLength(); ++j)
+                values[j].ModEq(qi);
+        }
         NativePoly tower(towers[i], Format::COEFFICIENT);
-        tower.SetValues(NativeVector(first.GetValues(), towers[i]->GetModulus()), Format::COEFFICIENT);
+        tower.SetValues(std::move(values), Format::COEFFICIENT);
         element.SetElementAtIndex(i, std::move(tower));
     }
     element.SetElementAtIndex(0, std::move(first));
