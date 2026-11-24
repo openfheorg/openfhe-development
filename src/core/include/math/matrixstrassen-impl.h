@@ -1007,7 +1007,9 @@ void MatrixStrassen<Element>::sendBlockCAPS(
                     I++;
                 }
 
-                I += ldi - bs;  // New
+                if (c + 1 < bs) {
+                    I += ldi - bs;  // New
+                }
             }
         }
     }
@@ -1026,7 +1028,9 @@ void MatrixStrassen<Element>::receiveBlockCAPS(int rank, int target, it_linearda
                     O++;  // New
                 }
 
-                O += ldo - bs;  // New
+                if (c + 1 < bs) {
+                    O += ldo - bs;  // New
+                }
             }
         }
     }
