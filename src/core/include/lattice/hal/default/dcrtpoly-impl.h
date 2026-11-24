@@ -2190,6 +2190,8 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
         const auto& moduliQj = moduliQ[j];
         const auto& bModqj = BModq[j];
         const auto& bModqjPrecon = BModqPrecon[j];
+        // msk can be larger than q_j (it is enlarged for large plaintext moduli)
+        const NativeInteger mskModqj = moduliBsk[sizeBskm1].Mod(moduliQj);
         for (uint32_t k = 0; k < n; ++k) {
 #if defined(HAVE_INT128) && NATIVEINT == 64
             DoubleNativeInt result = 0;
@@ -2208,8 +2210,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
 #endif
             // do (m_vector - alphaskx*M) mod q
             NativeInteger alphaskBModqj = alphaskxVector[k];
+            // alphaskx - msk is negative here; ModSub reduces alphaskx modulo q_j first if needed
             if (alphaskBModqj > mskDivTwo)
-                alphaskBModqj = alphaskBModqj.ModSubFast(moduliBsk[sizeBskm1], moduliQ[j]);
+                alphaskBModqj = alphaskBModqj.ModSub(mskModqj, moduliQj);
             alphaskBModqj.ModMulFastConstEq(bModqj, moduliQ[j], bModqjPrecon);
             m_vectors[j][k] = m_vectors[j][k].ModSubFast(alphaskBModqj, moduliQ[j]);
         }
