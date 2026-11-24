@@ -505,6 +505,17 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
         cyclOrder = 2 * n;
         modulusOrder = getCyclicOrder(n, ptm, scalTech);
 
+        // computeModuli bounds only the size the NextPrime chains start from. With FIXEDAUTO they step by
+        // lcm(2n, t), so for a large t the chain can pass the native word size before it has enough moduli.
+        for (const auto& q : moduliQ) {
+            if (q.GetMSB() > DCRT_MODULUS::MAX_SIZE) {
+                OPENFHE_THROW("Not enough primes congruent to 1 modulo " + std::to_string(modulusOrder) +
+                              " for the requested number of moduli. Reduce the multiplicative depth or the " +
+                              "plaintext modulus, or use another scaling technique. We do not support moduli " +
+                              "greater than " + std::to_string(DCRT_MODULUS::MAX_SIZE) + " bits.");
+            }
+        }
+
         for (size_t i = 0; i < vecSize; i++) {
             rootsQ[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
         }
