@@ -185,7 +185,7 @@ static NativeInteger RoundqQAlter(NativeInteger v, NativeInteger q, NativeIntege
 // more tower in FLEXIBLEAUTO and two more in FLEXIBLEAUTOEXT (EvalSlotsToCoeffsSwitch).
 static void ValidateTowersCKKStoFHEW(const CryptoParametersCKKSRNS& cryptoParams, uint32_t s2cTowers) {
     const auto scalTech = cryptoParams.GetScalingTechnique();
-    uint32_t minTowers  = s2cTowers;
+    uint32_t minTowers = s2cTowers;
     if (scalTech == FLEXIBLEAUTO)
         minTowers += 1;
     else if (scalTech == FLEXIBLEAUTOEXT)

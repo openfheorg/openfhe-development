@@ -449,7 +449,7 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
 
             // key generation must throw for a depth below 2 and succeed otherwise
             const bool expectThrow = testData.params.multiplicativeDepth < 2;
-            bool thrown            = false;
+            bool thrown = false;
             try {
                 cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW);
             } catch (const OpenFHEException& e) {
@@ -467,9 +467,9 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
             cc->EvalCKKStoFHEWPrecompute(1.0 / pLWE);
 
             std::vector<double> input{0, 1, 2, 3, 0, 1, 2, 3};
-            auto plaintext  = cc->MakeCKKSPackedPlaintext(input, 1, 0, nullptr, testData.slots);
+            auto plaintext = cc->MakeCKKSPackedPlaintext(input, 1, 0, nullptr, testData.slots);
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
-            auto switched   = cc->EvalCKKStoFHEW(ciphertext, testData.numValues);
+            auto switched = cc->EvalCKKStoFHEW(ciphertext, testData.numValues);
             for (uint32_t i = 0; i < switched.size(); ++i) {
                 LWEPlaintext result;
                 ccLWE->Decrypt(privateKeyFHEW, switched[i], &result, pLWE);
