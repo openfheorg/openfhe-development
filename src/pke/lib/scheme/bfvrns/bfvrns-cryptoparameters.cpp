@@ -37,7 +37,9 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace lbcrypto {
@@ -631,6 +633,15 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     /////////////////////////////////////
 
     if (multTech == BEHZ) {
+        // Decrypt (DCRTPoly::ScaleAndRound for BEHZ) computes modulo t*gamma with native integers
+        // and ModMulFastConst, which needs t*gamma < 2^(w-1) for w-bit native integers: t < 2^37
+        // for the default 64-bit native integers and gamma = 2^26
+        if (GetPlaintextModulus() > (std::numeric_limits<NativeInteger::Integer>::max() >> 1) / m_gamma) {
+            OPENFHE_THROW("BEHZ supports plaintext moduli below 2^" +
+                          std::to_string(NativeInteger::MaxBits() - GetMSB(m_gamma)) +
+                          "; use HPS, HPSPOVERQ or HPSPOVERQLEVELED for larger plaintext moduli");
+        }
+
         m_moduliQ = moduliQ;
         m_numq = sizeQ;
 
@@ -817,7 +828,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         m_tgamma = tgamma;
 
-        // Populate [-1/q_i]_{t*gamma} (t*gamma < 2^58)
+        // Populate [-1/q_i]_{t*gamma} (t*gamma < 2^63, checked above)
         m_negInvqModtgamma.resize(m_numq);
         m_negInvqModtgammaPrecon.resize(m_numq);
         for (uint32_t i = 0; i < m_numq; ++i) {

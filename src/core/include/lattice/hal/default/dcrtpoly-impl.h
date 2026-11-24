@@ -1938,14 +1938,14 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_CRT_BASIS_SWITCH))
     for (uint32_t k = 0; k < ringDim; ++k) {
         // TODO: this accumulation is only correct when NativeInteger holds >= 64 bits:
-        // it works mod tgamma = t*2^26 (intermediates < 2^58 per the note below), which does
+        // it works mod tgamma = t*2^26 (intermediates < 2^63 per the note below), which does
         // not fit a 32-bit word for any t > 3 -- under NATIVE_SIZE=32 the NativeInteger
         // construction of tgamma truncates SILENTLY. Fix is to accumulate in uint64_t
         // regardless of the native word size, or to reject NATIVE_SIZE=32 here explicitly.
         NativeInteger s = 0;
         for (uint32_t i = 0; i < sizeQ; ++i) {
             // xi*t*gamma*(q/qi)^-1 mod qi
-            // -tmp/qi mod gamma*t < 2^58
+            // -tmp/qi mod gamma*t < 2^63 (CryptoParametersBFVRNS rejects larger t for BEHZ)
             const NativeInteger& qi = moduliQ[i];
             s.ModAddFastEq(m_vectors[i][k]
                                    .ModMulFastConst(tgammaQHatModq[i], qi, tgammaQHatModqPrecon[i])
