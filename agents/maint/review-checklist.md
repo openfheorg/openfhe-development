@@ -73,6 +73,10 @@ hand. `NATIVE_SIZE` can be 32, 64 or 128.
 - Every field initialised. A copy or an assignment keeps all of the state, including key tags, levels and scaling
   factors.
 - Encapsulation kept: no member made public and no `const` dropped only to get past a compile error.
+- A function, variable, constant or type that is defined and used in one `.cpp` file only goes in an anonymous
+  namespace, not at file scope marked `static`, which is the C way of doing it. This does not apply to `static`
+  class members or `static` local variables, and an anonymous namespace does not belong in a header. Flag it in new
+  or changed code only.
 - A new template or overload is instantiated by a test or an example. Template code that nothing instantiates is not
   compiled, so its errors stay hidden.
 - An `#if` on the compiler or the runtime inside an inline function of a public header is evaluated separately in
