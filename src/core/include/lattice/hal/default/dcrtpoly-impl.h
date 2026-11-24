@@ -1956,8 +1956,11 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
         // Compute s + s & (gamma-1)
         s += NativeInteger(s.ConvertToInt() & gammaMinus1);
 
-        // shift by log(gamma) to get the result
-        coefficients[k] = s >> 26;
+        // shift by log(gamma) to get the result; s/gamma can round up to t, which is 0 mod t
+        s.RShiftEq(26);
+        if (s >= t)
+            s.SubEqFast(t);
+        coefficients[k] = s;
     }
 
     // Setting the root of unity to ONE as the calculation is expensive
