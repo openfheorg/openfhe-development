@@ -127,19 +127,21 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
  * sizeQMSB is small (1-2 bits)
  * We test several instanses:
  * - t is a power of two
- *   - (qMSB + sizeQMSB) <  52
+ *   - qMSB <= 30
  *     - (qMSB + tMSB + sizeQMSB) <  63   (A)
  *     - (qMSB + tMSB + sizeQMSB) >= 63   (B)
- *   - (qMSB + sizeQMSB) >= 52
+ *   - qMSB > 30
  *     - (qMSBHf + tMSB + sizeQMSB) <  62 (C)
  *     - (qMSBHf + tMSB + sizeQMSB) >= 62 (D)
  * - t it not a power of two
- *   - (qMSB + sizeQMSB) <  52
+ *   - qMSB <= 30
  *     - (qMSB + tMSB + sizeQMSB) <  52   (E)
  *     - (qMSB + tMSB + sizeQMSB) >= 52   (F)
- *   - (qMSB + sizeQMSB) >= 52
+ *   - qMSB > 30
  *     - (qMSBHf + tMSB + sizeQMSB) <  52 (G)
  *     - (qMSBHf + tMSB + sizeQMSB) >= 52 (H)
+ * (the labels A, B, E, F of the rows with 35..50-bit moduli predate the condition qMSB <= 30;
+ * these rows now take the paths C, D, G or H)
  *
  * log2(65537) = 16.00002
  * log2(5308417) = 22.34

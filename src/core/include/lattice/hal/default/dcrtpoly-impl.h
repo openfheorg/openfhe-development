@@ -1509,16 +1509,23 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
     uint32_t sizeQMSB = GetMSB(sizeQ);
 
     DCRTPolyImpl::PolyType::Vector coefficients(ringDim, t.ConvertToInt());
+    // We compute round(t/Q*x) mod t as round(\sum_i x_i*tQHatInvModqDivq_i) mod t, where the integer
+    // parts of the constants (tQHatInvModqDivqModt) are accumulated in integers and the fractional
+    // parts (tQHatInvModqDivqFrac, each within 3*2^{-53} of the exact value) in the double floatSum,
+    // which starts at 1/2 for the rounding. For moduli of more than 30 bits, x_i is split as
+    // xHi_i*B + xLo_i with B = 2^{qMSBHf} (tables tQHatInvModqBDivqModt, tQHatInvModqBDivqFrac), so
+    // that every factor multiplied in floating point is below 2^30 (q_i < 2^60) and every product
+    // has an error of at most 4*2^{-23}. To keep the rounding error of the additions small for any
+    // number of towers, the integer part of floatSum is moved to the integer sum after every 8
+    // towers, so floatSum stays below 1 + 16*2^30, and a block of m <= 8 towers adds an error of at
+    // most (2m^2 + 9m)*2^{-23} <= 25m*2^{-23}. The total error is thus below 25*sizeQ*2^{-23}
+    // (45*2^{-23} for 3 towers, < 2^{-7.3} for sizeQ < 2^11), and the result is exact unless t/Q*x
+    // is within that distance of a half-integer. The integer sums never pass through a double.
     // For power of two t we can do modulo reduction easily
     if (IsPowerOfTwo(t.ConvertToInt())) {
         uint64_t tMinus1 = t.ConvertToInt() - 1;
-        // We try to keep floating point error of
-        // \sum x_i*tQHatInvModqDivqFrac[i] small.
-        if (qMSB + sizeQMSB < 52) {
-            // In our settings x_i <= q_i/2 and for double type floating point
-            // error is bounded by 2^{-53}. Thus the floating point error is bounded
-            // by sizeQ * q_i/2 * 2^{-53}. In case of qMSB + sizeQMSB < 52 the error
-            // is bounded by 1/4, and the rounding will be correct.
+        // See the error analysis above; for moduli of at most 30 bits x_i is used directly.
+        if (qMSB <= 30) {
             if ((qMSB + sizeQMSB + tMSB) < 63) {
                 // No intermediate modulo reductions are needed in this case
                 // we fit in 63 bits, so we can do multiplications and
@@ -1532,6 +1539,12 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                         tmp = m_vectors[i][ri];
 
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to intSum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            intSum.AddEqFast(carry);
+                        }
 
                         // No intermediate modulo reductions are needed in this case
                         tmp.MulEqFast(tQHatInvModqDivqModt[i]);
@@ -1542,15 +1555,6 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                     coefficients[ri] = intSum.ConvertToInt() & tMinus1;
                 }
             } else {
-                // In case of qMSB + sizeQMSB >= 52 we decompose x_i in the basis
-                // B=2^{qMSB/2} And split the sum \sum x_i*tQHatInvModqDivqFrac[i] to
-                // the sum \sum xLo_i*tQHatInvModqDivqFrac[i] +
-                // xHi_i*tQHatInvModqBDivqFrac[i] with also precomputed
-                // tQHatInvModqBDivqFrac = Frac{t*QHatInv_i*B/q_i} In our settings q_i <
-                // 2^60, so xLo_i, xHi_i < 2^30 and for double type floating point error
-                // is bounded by 2^{-53}. Thus the floating point error is bounded by
-                // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
-                // error is bounded by 1/4, and the rounding will be correct.
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
                     double floatSum = 0.5;
@@ -1559,6 +1563,12 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                         tmp = m_vectors[i][ri];
 
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to intSum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            intSum.AddEqFast(carry);
+                        }
 
                         tmp.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
                         intSum.AddEqFast(tmp);
@@ -1587,6 +1597,12 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 
                         floatSum += tmpLo.ConvertToDouble() * tQHatInvModqDivqFrac[i];
                         floatSum += tmpHi.ConvertToDouble() * tQHatInvModqDivqBFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to intSum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            intSum.AddEqFast(carry);
+                        }
 
                         // No intermediate modulo reductions are needed in this case
                         tmpLo.MulEqFast(tQHatInvModqDivqModt[i]);
@@ -1611,6 +1627,12 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 
                         floatSum += tmpLo.ConvertToDouble() * tQHatInvModqDivqFrac[i];
                         floatSum += tmpHi.ConvertToDouble() * tQHatInvModqDivqBFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to intSum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            intSum.AddEqFast(carry);
+                        }
 
                         tmpLo.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
                         tmpHi.ModMulFastConstEq(tQHatInvModqBDivqModt[i], t, tQHatInvModqBDivqModtPrecon[i]);
@@ -1624,67 +1646,76 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
             }
         }
     } else {
-        // non-power of two: modular reduction is more expensive
-        double td = t.ConvertToInt();
-        double tInv = 1. / td;
-        // We try to keep floating point error of
-        // \sum x_i*tQHatInvModqDivqFrac[i] small.
-        if (qMSB + sizeQMSB < 52) {
-            // In our settings x_i <= q_i/2 and for double type floating point
-            // error is bounded by 2^{-53}. Thus the floating point error is bounded
-            // by sizeQ * q_i/2 * 2^{-53}. In case of qMSB + sizeQMSB < 52 the error
-            // is bounded by 1/4, and the rounding will be correct.
+        // non-power of two: modular reduction is more expensive.
+        // The final sum is reduced mod t in integers, with the quotient estimated in floating
+        // point. Without intermediate reductions the sum is below 2^53 (exact as a double), t is
+        // below 2^52 and sum/t is below 2^51.6, so the estimate is within 2^{-52} * sum/t < 1 of
+        // sum/t; with them, the sum is below t + 2^45 and sum/t below 2^43. Either way the
+        // truncated estimate is off by at most one, which one conditional addition or
+        // subtraction of t corrects.
+        const auto tSigned = static_cast<int64_t>(t.ConvertToInt());
+        const double tInv = 1. / t.ConvertToDouble();
+        // See the error analysis above; for moduli of at most 30 bits x_i is used directly.
+        if (qMSB <= 30) {
             if ((qMSB + tMSB + sizeQMSB) < 52) {
                 // No intermediate modulo reductions are needed in this case
                 // we fit in 52 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
-                // only once using floating point techniques
+                // only once
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
-                    double floatSum = 0.0;
+                    double floatSum = 0.5;
                     NativeInteger intSum = 0, tmp;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmp = m_vectors[i][ri];
 
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to intSum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            intSum.AddEqFast(carry);
+                        }
 
                         // No intermediate modulo reductions are needed in this case
                         tmp.MulEqFast(tQHatInvModqDivqModt[i]);
                         intSum.AddEqFast(tmp);
                     }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
+                    const auto sum = static_cast<int64_t>(intSum.ConvertToInt()) + static_cast<int64_t>(floatSum);
+                    int64_t r = sum - tSigned * static_cast<int64_t>(static_cast<double>(sum) * tInv);
+                    if (r < 0)
+                        r += tSigned;
+                    else if (r >= tSigned)
+                        r -= tSigned;
+                    coefficients[ri] = static_cast<uint64_t>(r);
                 }
             } else {
-                // In case of qMSB + sizeQMSB >= 52 we decompose x_i in the basis
-                // B=2^{qMSB/2} And split the sum \sum x_i*tQHatInvModqDivqFrac[i] to
-                // the sum \sum xLo_i*tQHatInvModqDivqFrac[i] +
-                // xHi_i*tQHatInvModqBDivqFrac[i] with also precomputed
-                // tQHatInvModqBDivqFrac = Frac{t*QHatInv_i*B/q_i} In our settings q_i <
-                // 2^60, so xLo_i, xHi_i < 2^30 and for double type floating point error
-                // is bounded by 2^{-53}. Thus the floating point error is bounded by
-                // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
-                // error is bounded by 1/4, and the rounding will be correct.
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
-                    double floatSum{0.0};
+                    double floatSum{0.5};
+                    // intSum is kept below t, the integer parts of floatSum are added up in carrySum
                     NativeInteger intSum{0};
+                    uint64_t carrySum{0};
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         const auto& tmp = m_vectors[i][ri];
                         floatSum += tmp.ConvertToDouble() * tQHatInvModqDivqFrac[i];
-                        intSum.AddEqFast(
-                                tmp.ModMulFastConst(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]));
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to carrySum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            carrySum += static_cast<uint64_t>(carry);
+                        }
+                        intSum.ModAddFastEq(
+                                tmp.ModMulFastConst(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]), t);
                     }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToDouble();
-                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
+                    const auto sum =
+                            static_cast<int64_t>(intSum.ConvertToInt() + carrySum) + static_cast<int64_t>(floatSum);
+                    int64_t r = sum - tSigned * static_cast<int64_t>(static_cast<double>(sum) * tInv);
+                    if (r < 0)
+                        r += tSigned;
+                    else if (r >= tSigned)
+                        r -= tSigned;
+                    coefficients[ri] = static_cast<uint64_t>(r);
                 }
             }
         } else {
@@ -1693,10 +1724,10 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                 // No intermediate modulo reductions are needed in this case
                 // we fit in 52 bits, so we can do multiplications and
                 // additions without modulo reduction, and do modulo reduction
-                // only once using floating point techniques
+                // only once
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
-                    double floatSum = 0.0;
+                    double floatSum = 0.5;
                     NativeInteger intSum = 0;
                     NativeInteger tmpHi, tmpLo;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
@@ -1706,6 +1737,12 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 
                         floatSum += tmpLo.ConvertToDouble() * tQHatInvModqDivqFrac[i];
                         floatSum += tmpHi.ConvertToDouble() * tQHatInvModqDivqBFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to intSum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            intSum.AddEqFast(carry);
+                        }
 
                         // No intermediate modulo reductions are needed in this case
                         tmpLo.MulEqFast(tQHatInvModqDivqModt[i]);
@@ -1713,18 +1750,21 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
                         intSum.AddEqFast(tmpLo);
                         intSum.AddEqFast(tmpHi);
                     }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
+                    const auto sum = static_cast<int64_t>(intSum.ConvertToInt()) + static_cast<int64_t>(floatSum);
+                    int64_t r = sum - tSigned * static_cast<int64_t>(static_cast<double>(sum) * tInv);
+                    if (r < 0)
+                        r += tSigned;
+                    else if (r >= tSigned)
+                        r -= tSigned;
+                    coefficients[ri] = static_cast<uint64_t>(r);
                 }
             } else {
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(THREADS_SCALE_TO_POLY))
                 for (uint32_t ri = 0; ri < ringDim; ++ri) {
-                    double floatSum = 0.0;
+                    double floatSum = 0.5;
+                    // intSum is kept below t, the integer parts of floatSum are added up in carrySum
                     NativeInteger intSum = 0;
+                    uint64_t carrySum = 0;
                     NativeInteger tmpHi, tmpLo;
                     for (uint32_t i = 0; i < sizeQ; ++i) {
                         tmpLo = m_vectors[i][ri];
@@ -1733,18 +1773,26 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ScaleAndRound(
 
                         floatSum += tmpLo.ConvertToDouble() * tQHatInvModqDivqFrac[i];
                         floatSum += tmpHi.ConvertToDouble() * tQHatInvModqDivqBFrac[i];
+                        if ((i & 7) == 7) {
+                            // keep floatSum small: move its integer part to carrySum (exact, as floatSum >= 0)
+                            int64_t carry = static_cast<int64_t>(floatSum);
+                            floatSum -= static_cast<double>(carry);
+                            carrySum += static_cast<uint64_t>(carry);
+                        }
 
                         tmpLo.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
                         tmpHi.ModMulFastConstEq(tQHatInvModqBDivqModt[i], t, tQHatInvModqBDivqModtPrecon[i]);
-                        intSum.AddEqFast(tmpLo);
-                        intSum.AddEqFast(tmpHi);
+                        intSum.ModAddFastEq(tmpLo, t);
+                        intSum.ModAddFastEq(tmpHi, t);
                     }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    floatSum -= td * static_cast<uint64_t>(floatSum * tInv);
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
+                    const auto sum =
+                            static_cast<int64_t>(intSum.ConvertToInt() + carrySum) + static_cast<int64_t>(floatSum);
+                    int64_t r = sum - tSigned * static_cast<int64_t>(static_cast<double>(sum) * tInv);
+                    if (r < 0)
+                        r += tSigned;
+                    else if (r >= tSigned)
+                        r -= tSigned;
+                    coefficients[ri] = static_cast<uint64_t>(r);
                 }
             }
         }

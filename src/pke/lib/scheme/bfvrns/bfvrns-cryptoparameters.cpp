@@ -405,14 +405,13 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // BFVrns : Decrypt : ScaleAndRound
         /////////////////////////////////////
 
+        // must match the choice in DCRTPoly::ScaleAndRound: moduli of more than 30 bits are split
         uint32_t qMSB = (*std::max_element(moduliQ.begin(), moduliQ.end())).GetMSB();
-
-        uint32_t sizeQMSB = GetMSB64(sizeQ);
 
         m_tQHatInvModqDivqModt.resize(sizeQ);
         m_tQHatInvModqDivqModtPrecon.resize(sizeQ);
         m_tQHatInvModqDivqFrac.resize(sizeQ);
-        if (qMSB + sizeQMSB < 52) {
+        if (qMSB <= 30) {
             for (uint32_t i = 0; i < sizeQ; ++i) {
                 BigInteger qi(moduliQ[i].ConvertToInt());
                 BigInteger tQHatInvModqi =
