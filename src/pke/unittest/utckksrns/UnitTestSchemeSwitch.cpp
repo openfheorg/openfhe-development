@@ -57,6 +57,7 @@ using namespace lbcrypto;
 enum TEST_CASE_TYPE : int {
     SCHEME_SWITCH_CKKS_FHEW,
     SCHEME_SWITCH_FHEW_CKKS,
+    SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH,
     SCHEME_SWITCH_COMPARISON,
     SCHEME_SWITCH_FUNC,
     SCHEME_SWITCH_ARGMIN,
@@ -72,6 +73,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case SCHEME_SWITCH_FHEW_CKKS:
             typeName = "SCHEME_SWITCH_FHEW_CKKS";
+            break;
+        case SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH:
+            typeName = "SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH";
             break;
         case SCHEME_SWITCH_COMPARISON:
             typeName = "SCHEME_SWITCH_COMPARISON";
@@ -185,7 +189,12 @@ static std::vector<TEST_CASE_UTCKKSRNS_SCHEMESWITCH> testCases = {
     { SCHEME_SWITCH_FHEW_CKKS, "14", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH1, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,   DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 27, 8, 8 },
     { SCHEME_SWITCH_FHEW_CKKS, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH1, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,   DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 27, 8, RDIM/2 },
     { SCHEME_SWITCH_FHEW_CKKS, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH1, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,   DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 27, 8, RDIM/2 },
-
+    // ==========================================
+    // TestType,                           Descr, Scheme,          RDim, MultDepth,   SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Dim1,       LogQ, NumValues, Slots
+    { SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH, "01", {CKKSRNS_SCHEME, RDIM, 1,           SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,         DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25,   8,         8 },
+    { SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH, "02", {CKKSRNS_SCHEME, RDIM, 2,           SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,         DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25,   8,         8 },
+    { SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH, "03", {CKKSRNS_SCHEME, RDIM, 1,           SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,         DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25,   8,         8 },
+    { SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH, "04", {CKKSRNS_SCHEME, RDIM, 2,           SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,         DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 16, 16 }, 25,   8,         8 },
 #endif
     // ==========================================
     // TestType,               Descr, Scheme,          RDim, MultDepth,   SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, Dim1,     LogQ, NumValues, Slots
@@ -411,6 +420,61 @@ class UTCKKSRNS_SCHEMESWITCH : public ::testing::TestWithParam<TEST_CASE_UTCKKSR
 
             checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x2_values), eps2,
                           failmsg + " FHEW to CKKS fails for larger messages.");
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
+    void UnitTest_CKKS_to_FHEW_Min_Depth(const TEST_CASE_UTCKKSRNS_SCHEMESWITCH& testData,
+                                         const std::string& failmsg = std::string()) {
+        // In the FLEXIBLE* modes the SlotsToCoeffs transform of CKKS to FHEW needs a multiplicative depth of at least 2;
+        // a smaller depth should be rejected at key generation rather than fail later inside EvalCKKStoFHEW
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            cc->Enable(SCHEMESWITCH);
+
+            auto keyPair = cc->KeyGen();
+
+            SchSwchParams params;
+            params.SetSecurityLevelCKKS(HEStd_NotSet);
+            params.SetSecurityLevelFHEW(TOY);
+            params.SetCtxtModSizeFHEWLargePrec(testData.logQ);
+            params.SetNumSlotsCKKS(testData.slots);
+            auto privateKeyFHEW = cc->EvalCKKStoFHEWSetup(params);
+
+            // key generation must throw for a depth below 2 and succeed otherwise
+            const bool expectThrow = testData.params.multiplicativeDepth < 2;
+            bool thrown            = false;
+            try {
+                cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW);
+            } catch (const OpenFHEException& e) {
+                thrown = true;
+                // it must be the depth check that fires, not some other error
+                EXPECT_NE(std::string(e.what()).find("multiplicative depth"), std::string::npos) << failmsg;
+            }
+            EXPECT_EQ(thrown, expectThrow) << failmsg;
+            if (thrown || expectThrow)
+                return;
+
+            // the smallest accepted depth must actually work
+            auto ccLWE = cc->GetBinCCForSchemeSwitch();
+            uint32_t pLWE = ccLWE->GetMaxPlaintextSpace().ConvertToInt();
+            cc->EvalCKKStoFHEWPrecompute(1.0 / pLWE);
+
+            std::vector<double> input{0, 1, 2, 3, 0, 1, 2, 3};
+            auto plaintext  = cc->MakeCKKSPackedPlaintext(input, 1, 0, nullptr, testData.slots);
+            auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
+            auto switched   = cc->EvalCKKStoFHEW(ciphertext, testData.numValues);
+            for (uint32_t i = 0; i < switched.size(); ++i) {
+                LWEPlaintext result;
+                ccLWE->Decrypt(privateKeyFHEW, switched[i], &result, pLWE);
+                EXPECT_EQ(result, static_cast<LWEPlaintext>(input[i])) << failmsg;
+            }
         } catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
@@ -774,6 +838,9 @@ TEST_P(UTCKKSRNS_SCHEMESWITCH, CKKSRNS) {
             break;
         case SCHEME_SWITCH_FHEW_CKKS:
             UnitTest_SchemeSwitch_FHEW_CKKS(test, test.buildTestName());
+            break;
+        case SCHEME_SWITCH_CKKS_TO_FHEW_MIN_DEPTH:
+            UnitTest_CKKS_to_FHEW_Min_Depth(test, test.buildTestName());
             break;
         case SCHEME_SWITCH_COMPARISON:
             UnitTest_SchemeSwitch_Comparison(test, test.buildTestName());

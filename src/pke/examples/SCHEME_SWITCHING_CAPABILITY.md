@@ -133,6 +133,7 @@ respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain 
 **Current limitations**
 - Scheme switching is currently supported only for CKKS and FHEW/TFHE.
 - Switching from CKKS to FHEW is only supported for the first consecutive slots in the CKKS ciphertext.
+- Switching from CKKS to FHEW requires a multiplicative depth of at least 1 for FIXEDMANUAL and FIXEDAUTO, and at least 2 for FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
 - Switching to CKKS the result of an arbitrary function evaluation in FHEW is not yet supported. Only functions with binary outputs or small
 outputs with respect to the FHEW plaintext space are supported.
 - Computing the min/max via scheme switching is only implemented for vectors of size a power of two.

@@ -180,6 +180,24 @@ static NativeInteger RoundqQAlter(NativeInteger v, NativeInteger q, NativeIntege
             .Mod(q);
 }
 
+// Checks that the CKKS modulus chain is long enough for the SlotsToCoeffs transform of CKKS to FHEW, which runs on
+// s2cTowers towers. In the FLEXIBLE* modes the scaling factor is adjusted before the transform, which consumes one
+// more tower in FLEXIBLEAUTO and two more in FLEXIBLEAUTOEXT (EvalSlotsToCoeffsSwitch).
+static void ValidateTowersCKKStoFHEW(const CryptoParametersCKKSRNS& cryptoParams, uint32_t s2cTowers) {
+    const auto scalTech = cryptoParams.GetScalingTechnique();
+    uint32_t minTowers  = s2cTowers;
+    if (scalTech == FLEXIBLEAUTO)
+        minTowers += 1;
+    else if (scalTech == FLEXIBLEAUTOEXT)
+        minTowers += 2;
+
+    if (cryptoParams.GetElementParams()->GetParams().size() < minTowers) {
+        const bool flexible = (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT);
+        OPENFHE_THROW(std::string("CKKS to FHEW scheme switching requires a multiplicative depth of at least ") +
+                      (flexible ? "2 for FLEXIBLEAUTO and FLEXIBLEAUTOEXT." : "1."));
+    }
+}
+
 // TODO: used anywhere?
 EvalKey<DCRTPoly> switchingKeyGenRLWE(const PrivateKey<DCRTPoly>& ckksSK, ConstLWEPrivateKey& LWEsk) {
     // This function is without the intermediate ModSwitch
@@ -737,6 +755,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKSto
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
+    ValidateTowersCKKStoFHEW(*cryptoParams, S2C_TOWERS);
 
     auto ccCKKS = privateKey->GetCryptoContext();
 
@@ -820,9 +839,10 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
 
     // In the FIXED* modes the plaintexts are encoded at the nominal scaling factor, while the rescaling after
     // the SlotsToCoeffs transform divides by the actual modulus, so the ratio of the two is compensated for here
-    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL || cryptoParams->GetScalingTechnique() == FIXEDAUTO)
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL || cryptoParams->GetScalingTechnique() == FIXEDAUTO) {
         scale *= cryptoParams->GetElementParams()->GetParams()[S2C_TOWERS - 1]->GetModulus().ConvertToDouble() /
                  scFactor;
+    }
 
     if (!isSparse) {  // fully packed
         m_U0Pre = EvalLTPrecomputeSwitch(cc, U0, m_dim1CF, m_LCF, scale);
@@ -1152,6 +1172,7 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalScheme
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW("128-bit CKKS to FHEW scheme switching is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
+    ValidateTowersCKKStoFHEW(*cryptoParams, S2C_TOWERS);
 
     auto ccCKKS = privateKey->GetCryptoContext();
 
