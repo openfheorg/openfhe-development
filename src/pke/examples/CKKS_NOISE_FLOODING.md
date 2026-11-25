@@ -69,4 +69,29 @@ in OpenFHE.
 For leveled computations, the code allows for the user to run the
 static estimation using 64-bit CKKS and the actual computation in 128-bit CKKS.
 
+# Ciphertexts with a Pending Rescale
+The flooding noise $z$ is added to the ciphertext polynomial before decoding, and
+its standard deviation $\sigma$ is calibrated for a ciphertext that is decoded by
+dividing by a single scaling factor $\Delta$. A ciphertext that carries a pending
+rescale (noise scaling degree 2), such as the direct output of a multiplication,
+is decoded by dividing by $\Delta^2$, which would shrink the flooding noise by
+another factor of $\Delta$ and leave the decryption effectively unflooded. For this
+reason, decryption in $\mathsf{NOISE}\textunderscore\mathsf{FLOODING}\textunderscore\mathsf{DECRYPT}$
+mode internally rescales such a ciphertext to noise scaling degree 1 before the
+flooding noise is added. This consumes one level per pending rescale (one RNS limb
+each, or several for composite scaling), so a computation whose result still carries
+pending rescales must leave that many levels available for decryption; otherwise
+decryption throws.
+The decrypted plaintext reports the level, scaling factor and noise scaling degree
+of the rescaled ciphertext. Threshold decryption does the same for every decryption
+share.
+
+The rescale adds a rounding error that depends on the secret key, so it has to be
+covered by the flooding noise as well. For this reason the same rescale is applied in
+the $\mathsf{EXEC}\textunderscore\mathsf{NOISE}\textunderscore\mathsf{ESTIMATION}$
+mode: the estimate $\mathsf{ct}.t$ is measured for the ciphertext that is actually
+flooded. When the encrypted values are small, the rounding error dominates the noise
+of the result, and the estimate, the flooding noise and the loss of output precision
+are larger than the noise of the unrescaled ciphertext alone would suggest.
+
 [^1]:The formula for $\sigma$ in Corollary 2 of [the state of the art in noise flooding security](https://link.springer.com/chapter/10.1007/978-3-031-15802-5_20) has an incorrect $\sqrt{2n}$ factor since the indistinguishablility game is played over the coefficient embedding.

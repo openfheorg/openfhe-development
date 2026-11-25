@@ -1445,10 +1445,16 @@ class CryptoContextImpl : public Serializable {
     /**
      * @brief Decrypts a ciphertext using the given private key.
      *
+     * In CKKS with NOISE_FLOODING_DECRYPT, a ciphertext with pending rescales (noise scaling degree > 1) is
+     * first rescaled to noise scaling degree 1, in both execution modes. This consumes one level per pending
+     * rescale (compositeDegree RNS limbs each for composite scaling), and the plaintext reports the level,
+     * scaling factor and noise scaling degree of the rescaled ciphertext.
+     *
      * @param ciphertext  Ciphertext to decrypt.
      * @param privateKey  Private key for decryption.
      * @param plaintext   Output pointer for the resulting plaintext.
      * @return Decryption result status.
+     * @throws OpenFHEException if too few RNS limbs are left for the pending rescales.
      */
     DecryptResult Decrypt(ConstCiphertext<Element>& ciphertext, const PrivateKey<Element>& privateKey,
                           Plaintext* plaintext);
@@ -3375,9 +3381,15 @@ class CryptoContextImpl : public Serializable {
     /**
      * @brief Performs partial decryption as the lead decryption party (Threshold FHE).
      *
+     * In CKKS with NOISE_FLOODING_DECRYPT, a ciphertext with pending rescales (noise scaling degree > 1) is
+     * first rescaled to noise scaling degree 1, which consumes one level per pending rescale (compositeDegree
+     * RNS limbs each for composite scaling). The partial decryption has the level, scaling factor and noise
+     * scaling degree of the rescaled ciphertext.
+     *
      * @param ciphertextVec  Vector of ciphertexts to decrypt.
      * @param privateKey     Secret key share of the lead party.
      * @return Vector of partially decrypted ciphertexts.
+     * @throws OpenFHEException if too few RNS limbs are left for the pending rescales.
      */
     std::vector<Ciphertext<Element>> MultipartyDecryptLead(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {
@@ -3394,9 +3406,12 @@ class CryptoContextImpl : public Serializable {
     /**
      * @brief Performs partial decryption by non-lead parties in a Threshold FHE setting.
      *
+     * A CKKS ciphertext with pending rescales is handled as in MultipartyDecryptLead().
+     *
      * @param ciphertextVec  Vector of ciphertexts to decrypt.
      * @param privateKey     Secret key share of a non-lead party.
      * @return Vector of partially decrypted ciphertexts.
+     * @throws OpenFHEException if too few RNS limbs are left for the pending rescales.
      */
     std::vector<Ciphertext<Element>> MultipartyDecryptMain(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                            const PrivateKey<Element> privateKey) const {

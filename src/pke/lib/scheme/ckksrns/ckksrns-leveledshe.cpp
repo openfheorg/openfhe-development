@@ -48,6 +48,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "cryptocontext.h"
 #include "math/hal/basicint.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-decrypt-internal.h"
 #include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
@@ -227,6 +228,10 @@ void DropLastElementAndScaleAll(std::vector<DCRTPoly>& cv, const std::vector<Nat
 }  // namespace
 
 void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
+    detail::ModReduceInternalInPlaceCKKSRNS(ciphertext, levels);
+}
+
+void detail::ModReduceInternalInPlaceCKKSRNS(Ciphertext<DCRTPoly>& ciphertext, size_t levels) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     auto& cv = ciphertext->GetElements();
@@ -238,7 +243,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     for (size_t i = 0; i < levels; ++i)
         DropLastElementAndScaleAll(cv, cryptoParams->GetqlInvModq(diffQl + i));
 
-    ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
+    LeveledSHECKKSRNS::ModReduceMetadataInPlace(ciphertext, sizeQl, levels, cryptoParams);
 }
 
 void LeveledSHECKKSRNS::ModReduceMetadataInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t sizeQl, size_t levels,
