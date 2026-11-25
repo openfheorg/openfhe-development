@@ -391,7 +391,7 @@ template <typename V>
 void TernaryUniformGeneratorTest(const std::string& msg) {
     auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
 
-    uint32_t length = 100000;
+    constexpr uint32_t length = 100000;
     auto modulus = typename V::Integer("1041");
     V randBigVector = ternaryUniGen.GenerateVector(length, modulus);
 
@@ -409,7 +409,8 @@ void TernaryUniformGeneratorTest(const std::string& msg) {
     float expectedMean = 0;
     float dif = std::abs(computedMean - expectedMean);
 
-    EXPECT_LT(dif, 0.01) << msg << " Ternary Uniform Distribution Failure Mean is incorrect";
+    const double meanTolerance = 6.0 * std::sqrt(2.0 / (3.0 * length));
+    EXPECT_LT(dif, meanTolerance) << msg << " Ternary Uniform Distribution Failure Mean is incorrect";
     // a large sample. Max of them should be less than q
 }
 
@@ -425,7 +426,7 @@ void TernaryUniformGeneratorIntegerTest(const std::string& msg) {
 
     int32_t sum = 0;
     uint32_t counts[3]{};
-    const uint32_t length = 100000;
+    constexpr uint32_t length = 100000;
     for (uint32_t i = 0; i < length; ++i) {
         auto x = ternaryUniGen.GenerateInteger(modulus);
         if (x == minusOne) {
@@ -437,7 +438,8 @@ void TernaryUniformGeneratorIntegerTest(const std::string& msg) {
             ++counts[1 + x.ConvertToInt()];
         }
     }
-    EXPECT_LT(std::abs(static_cast<double>(sum) / length), 0.01) << msg << " mean is incorrect";
+    const double meanTolerance = 6.0 * std::sqrt(2.0 / (3.0 * length));
+    EXPECT_LT(std::abs(static_cast<double>(sum) / length), meanTolerance) << msg << " mean is incorrect";
     for (auto c : counts)
         EXPECT_GT(c, length / 4) << msg << " a value of {-1, 0, 1} is under-represented";
 }

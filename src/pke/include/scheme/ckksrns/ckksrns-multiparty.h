@@ -54,6 +54,35 @@ class MultipartyCKKSRNS : public MultipartyRNS {
   public:
     virtual ~MultipartyCKKSRNS() = default;
 
+    /**
+     * Threshold FHE: "Partial" decryption computed by all parties except for the lead one, as in
+     * MultipartyRNS::MultipartyDecryptMain(). In NOISE_FLOODING_DECRYPT mode a ciphertext with pending rescales
+     * (noise scaling degree > 1) is first rescaled to noise scaling degree 1, which consumes one level per
+     * pending rescale (compositeDegree towers each for composite scaling); the partial decryption then has the
+     * level, scaling factor and noise scaling degree of the rescaled ciphertext.
+     *
+     * @param ciphertext ciphertext that is being decrypted.
+     * @param privateKey secret key share used for decryption.
+     * @return the partial decryption.
+     * @throws OpenFHEException if too few towers are left for the pending rescales.
+     */
+    Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const PrivateKey<DCRTPoly> privateKey) const override;
+
+    /**
+     * Threshold FHE: Method for decryption operation run by the lead decryption client, as in
+     * MultipartyRNS::MultipartyDecryptLead(). A ciphertext with pending rescales is handled as in
+     * MultipartyDecryptMain(); the rescale is deterministic, so all parties compute their shares for the same
+     * ciphertext.
+     *
+     * @param ciphertext ciphertext that is being decrypted.
+     * @param privateKey secret key share used for decryption.
+     * @return the partial decryption.
+     * @throws OpenFHEException if too few towers are left for the pending rescales.
+     */
+    Ciphertext<DCRTPoly> MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const PrivateKey<DCRTPoly> privateKey) const override;
+
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           Poly* plaintext) const override;
 

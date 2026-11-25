@@ -52,6 +52,7 @@
 #include "key/publickey.h"
 #include "math/chebyshev.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-decrypt-internal.h"
 #include "schemerns/rns-scheme.h"
 #include "utils/memory.h"
 
@@ -605,28 +606,6 @@ Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings
     }
 }
 
-ConstCiphertext<DCRTPoly> NormalizeCiphertextForFloodingDecrypt(ConstCiphertext<DCRTPoly> ciphertext) {
-    if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING || ciphertext->GetNoiseScaleDeg() <= 1)
-        return ciphertext;
-
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    if (!cryptoParams || cryptoParams->GetDecryptionNoiseMode() != NOISE_FLOODING_DECRYPT ||
-        cryptoParams->GetExecutionMode() != EXEC_EVALUATION)
-        return ciphertext;
-
-    const size_t compositeDegree = cryptoParams->GetCompositeDegree();
-    auto rescaled = ciphertext->Clone();
-    auto scheme = ciphertext->GetCryptoContext()->GetScheme();
-    while (rescaled->GetNoiseScaleDeg() > 1) {
-        if (rescaled->GetElements()[0].GetNumOfElements() <= compositeDegree)
-            OPENFHE_THROW(
-                    "Decryption in NOISE_FLOODING_DECRYPT mode requires rescaling a ciphertext with noise scaling "
-                    "degree > 1, but not enough RNS limbs remain. Increase the multiplicative depth by 1.");
-        scheme->ModReduceInternalInPlace(rescaled, compositeDegree);
-    }
-    return rescaled;
-}
-
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ciphertext,
                                                    const PrivateKey<DCRTPoly>& privateKey, Plaintext* plaintext) {
@@ -637,10 +616,10 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly>& ci
     if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
         OPENFHE_THROW("Information was not generated with this crypto context");
 
-    // with decryption noise flooding, a ciphertext with a pending rescale must be rescaled first so the
+    // with decryption noise flooding, a CKKS ciphertext with a pending rescale is rescaled first so the
     // flooding noise is added at the scaling factor it was calibrated for; ct is the ciphertext to decrypt
-    // and to take the decoding metadata from
-    ConstCiphertext<DCRTPoly> ct = NormalizeCiphertextForFloodingDecrypt(ciphertext);
+    // and to take the decoding metadata from (the same ciphertext for every other scheme and mode)
+    ConstCiphertext<DCRTPoly> ct = detail::RescaleForFloodingDecryptCKKSRNS(ciphertext);
 
     // determine which type of plaintext that you need to decrypt into
     // Plaintext decrypted =

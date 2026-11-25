@@ -48,12 +48,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
                                                           const PrivateKey<DCRTPoly> privateKey) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
-    // with decryption noise flooding, a ciphertext with a pending rescale must be rescaled first so the
-    // flooding noise is added at the scaling factor it was calibrated for; the rescale is deterministic,
-    // so every party computes its decryption share for the same rescaled ciphertext
-    ConstCiphertext<DCRTPoly> ct = NormalizeCiphertextForFloodingDecrypt(ciphertext);
-
-    const std::vector<DCRTPoly>& cv = ct->GetElements();
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     const auto ns = cryptoParams->GetNoiseScale();
 
     const DCRTPoly& sk = privateKey->GetPrivateElement();
@@ -97,7 +92,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
     if (ns != 1)
         noise *= DCRTPoly::Integer(ns);
 
-    auto result = ct->CloneEmpty();
+    auto result = ciphertext->CloneEmpty();
     result->SetElement(cv[0] + s * cv[1] + noise);
     return result;
 }
@@ -107,11 +102,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
     const auto ns = cryptoParams->GetNoiseScale();
 
-    // the same deterministic rescale as in MultipartyDecryptLead, so the decryption shares of all
-    // parties are computed for the same ciphertext
-    ConstCiphertext<DCRTPoly> ct = NormalizeCiphertextForFloodingDecrypt(ciphertext);
-
-    const std::vector<DCRTPoly>& cv = ct->GetElements();
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     const DCRTPoly& sk = privateKey->GetPrivateElement();
     size_t sizeQl = cv[0].GetParams()->GetParams().size();
@@ -154,7 +145,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
     if (ns != 1)
         noise *= DCRTPoly::Integer(ns);
 
-    auto result = ct->CloneEmpty();
+    auto result = ciphertext->CloneEmpty();
     result->SetElement(s * cv[1] + noise);
     return result;
 }

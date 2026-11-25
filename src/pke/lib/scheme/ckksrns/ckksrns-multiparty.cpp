@@ -44,6 +44,7 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "ciphertext.h"
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-decrypt-internal.h"
 
 namespace lbcrypto {
 
@@ -60,6 +61,16 @@ struct RNSExtensionTables {
     std::vector<double> qInv;                            // done
     Format resultFormat;
 };
+
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
+                                                              const PrivateKey<DCRTPoly> privateKey) const {
+    return MultipartyRNS::MultipartyDecryptMain(detail::RescaleForFloodingDecryptCKKSRNS(ciphertext), privateKey);
+}
+
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
+                                                              const PrivateKey<DCRTPoly> privateKey) const {
+    return MultipartyRNS::MultipartyDecryptLead(detail::RescaleForFloodingDecryptCKKSRNS(ciphertext), privateKey);
+}
 
 DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                          Poly* plaintext) const {

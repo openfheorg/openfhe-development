@@ -37,27 +37,58 @@ CKKS implementation. If NOISE_FLOODING_DECRYPT is set, we flood the decryption b
 
 #include "scheme/ckksrns/ckksrns-pke.h"
 
+#include <memory>
 #include <vector>
 
 #include "ciphertext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "scheme/ckksrns/ckksrns-decrypt-internal.h"
 
 namespace lbcrypto {
+
+namespace {
+// The flooding distribution is calibrated for a ciphertext decoded at noise scaling degree 1. Decoding at a
+// higher degree divides by a larger scaling factor and suppresses the flooding noise below the decryption
+// noise, so the caller has to rescale first (see detail::RescaleForFloodingDecryptCKKSRNS).
+void CheckDegreeForFlooding(ConstCiphertext<DCRTPoly>& ciphertext) {
+    if (ciphertext->GetNoiseScaleDeg() > 1)
+        OPENFHE_THROW(
+                "Decryption in NOISE_FLOODING_DECRYPT mode requires a ciphertext with noise scaling degree 1. "
+                "Rescale the ciphertext before decryption.");
+}
+}  // namespace
+
+ConstCiphertext<DCRTPoly> detail::RescaleForFloodingDecryptCKKSRNS(ConstCiphertext<DCRTPoly> ciphertext) {
+    if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING || ciphertext->GetNoiseScaleDeg() <= 1)
+        return ciphertext;
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    if (!cryptoParams || cryptoParams->GetDecryptionNoiseMode() != NOISE_FLOODING_DECRYPT)
+        return ciphertext;
+
+    const size_t compositeDegree = cryptoParams->GetCompositeDegree();
+    auto rescaled = ciphertext->Clone();
+    while (rescaled->GetNoiseScaleDeg() > 1) {
+        if (rescaled->GetElements()[0].GetNumOfElements() <= compositeDegree)
+            OPENFHE_THROW(
+                    "Decryption in NOISE_FLOODING_DECRYPT mode requires rescaling a ciphertext with noise scaling "
+                    "degree > 1, but not enough RNS limbs remain. Leave enough levels for the pending rescales.");
+        ModReduceInternalInPlaceCKKSRNS(rescaled, compositeDegree);
+    }
+    return rescaled;
+}
 
 DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                                   NativePoly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const bool flooding = cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+                          cryptoParams->GetExecutionMode() == EXEC_EVALUATION;
+    if (flooding)
+        CheckDegreeForFlooding(ciphertext);
+
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b = DecryptCore(cv, privateKey);
-    if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
-        // the flooding distribution is calibrated for a ciphertext decoded at noise scaling degree 1;
-        // decoding at a higher degree divides by a larger scaling factor and suppresses the flooding noise
-        // below the decryption noise (callers must rescale first, see NormalizeCiphertextForFloodingDecrypt)
-        if (ciphertext->GetNoiseScaleDeg() > 1)
-            OPENFHE_THROW(
-                    "Decryption in NOISE_FLOODING_DECRYPT mode requires a ciphertext with noise scaling degree 1. "
-                    "Rescale the ciphertext before decryption.");
+    if (flooding) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
@@ -80,17 +111,14 @@ DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pr
 DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                                   Poly* plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const bool flooding = cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+                          cryptoParams->GetExecutionMode() == EXEC_EVALUATION;
+    if (flooding)
+        CheckDegreeForFlooding(ciphertext);
+
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b = DecryptCore(cv, privateKey);
-    if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
-        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
-        // the flooding distribution is calibrated for a ciphertext decoded at noise scaling degree 1;
-        // decoding at a higher degree divides by a larger scaling factor and suppresses the flooding noise
-        // below the decryption noise (callers must rescale first, see NormalizeCiphertextForFloodingDecrypt)
-        if (ciphertext->GetNoiseScaleDeg() > 1)
-            OPENFHE_THROW(
-                    "Decryption in NOISE_FLOODING_DECRYPT mode requires a ciphertext with noise scaling degree 1. "
-                    "Rescale the ciphertext before decryption.");
+    if (flooding) {
         auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
         b += noise;
