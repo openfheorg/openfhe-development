@@ -4195,6 +4195,9 @@ class CryptoContextImpl : public Serializable {
      *
      * @param keyPair  CKKS key pair.
      * @param lwesk    FHEW secret key.
+     *
+     * @throws OpenFHEException if the multiplicative depth of the cryptocontext is below 1 for FIXEDMANUAL and
+     *         FIXEDAUTO, or below 2 for FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
      */
     void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);
@@ -4213,6 +4216,9 @@ class CryptoContextImpl : public Serializable {
      *        the CKKS and FHEW cryptocontexts
      *
      * @param scale  Scaling factor for the linear transform matrix.
+     *
+     * @throws OpenFHEException if the multiplicative depth of the cryptocontext is below 1 for FIXEDMANUAL and
+     *         FIXEDAUTO, or below 2 for FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
      */
     void EvalCKKStoFHEWPrecompute(double scale = 1.0) {
         VerifyCKKSScheme(__func__);
@@ -4223,9 +4229,12 @@ class CryptoContextImpl : public Serializable {
     /**
      * @brief Switches a CKKS ciphertext to a vector of FHEW ciphertexts.
      *
-     * @param ciphertext  Input CKKS ciphertext.
+     * @param ciphertext  Input CKKS ciphertext. It must have 1 unused level for FIXEDMANUAL and FIXEDAUTO, or 2 for
+     *                    FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
      * @param numCtxts    Number of coefficients to extract (defaults to number of slots if 0).
      * @return Vector of LWE ciphertexts.
+     *
+     * @throws OpenFHEException if the ciphertext is empty or has fewer unused levels than required.
      */
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element>& ciphertext,
                                                                    uint32_t numCtxts = 0) {
@@ -4328,6 +4337,9 @@ class CryptoContextImpl : public Serializable {
      *
      * @param keyPair  CKKS key pair.
      * @param lwesk    FHEW secret key.
+     *
+     * @throws OpenFHEException if the multiplicative depth of the cryptocontext is below 1 for FIXEDMANUAL and
+     *         FIXEDAUTO, or below 2 for FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
      */
     void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk) {
         VerifyCKKSScheme(__func__);

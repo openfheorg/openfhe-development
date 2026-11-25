@@ -15,7 +15,7 @@ The example for this code is located in [scheme-switching.cpp](scheme-switching.
 - `EvalCKKStoFHEW`, which converts a CKKS ciphertext to FHEW ciphertexts;
 - `EvalFHEWtoCKKS`, which converts FHEW ciphertexts to a CKKS ciphertext;
 - how to combine the two with intermediate operations, for example the floor function or a polynomial;
-- `EvalCompareSchemeSwitching `, which returns the result of the comparison between two CKKS ciphertexts via transformation to FHEW ciphertexts
+- `EvalCompareSchemeSwitching`, which returns the result of the comparison between two CKKS ciphertexts via transformation to FHEW ciphertexts
 and comparison;
 - `EvalMinSchemeSwitching`, `EvalMinSchemeSwitchingAlt` and `EvalMaxSchemeSwitching`, `EvalMaxSchemeSwitchingAlt` respectively, which return
 the min and argmin, respectively max and argmax, of a vector of reals packed inside a CKKS ciphertext, via iterated scheme switching.
@@ -90,8 +90,8 @@ correctly compare numbers that are very close to each other, the user has to sca
 Currently, the code does not support an arbitrary function to be applied to the intermediate FHEW ciphertexts if they have to be converted
 back to CKKS. The reason is that (1) the current implementation of `GenerateLUTviaFunction` works only for the small decryption ciphertext
 modulus q = 2048, which allows a plaintext modulus of at most p = 8 (`GetMaxPlaintextSpace()`) and (2) the current implementation of light
-bootstrapping to convert FHEW ciphertexts to a CKKS ciphertext approximates correctly the modular function only arround zero, which requires
-the messagee m << p. Instead of specifying directly the larger plaintext modulus in `EvalFHEWtoCKKS`, which is required to postprocess
+bootstrapping to convert FHEW ciphertexts to a CKKS ciphertext approximates correctly the modular function only around zero, which requires
+the message m << p. Instead of specifying directly the larger plaintext modulus in `EvalFHEWtoCKKS`, which is required to postprocess
 the ciphertext obtained after the Chebyshev evaluation, one can supply the plaintext modulus as 4, which returns a ciphertext
 encrypting $y=sin(2pi*x/p)$. Then, one can apply $arcsin(y)*p/(2pi)$. However, this also does not cover the whole initial message space,
 since arcsin has codomain $[-pi/2, pi/2]$. This issue is exemplified in the example `FloorViaSchemeSwitching()`.
@@ -113,7 +113,7 @@ Second, using multiplication in CKKS, only half of the slots are selected to upd
 corresponding to a negative difference for min and the ones corresponding to a positive difference for max), and the process repeats
 until reaching a vector of length of one.
 
-We provide two instantiation of the above intuition, `EvalMinSchemeSwitching` which performs more operations in CKKS and is exemplified
+We provide two instantiations of the above intuition, `EvalMinSchemeSwitching` which performs more operations in CKKS and is exemplified
 in `ArgminViaSchemeSwitching()`, and `EvalMinSchemeSwitchingAlt` which performs more operations in FHEW and is exemplified in
 `ArgminViaSchemeSwitchingAlt()`.
 
@@ -121,11 +121,13 @@ For a good precision of the output, we require a large scaling factor and large 
 modulus and plaintext modulus in FHEW. Note that because CKKS is an approximate scheme, performing more operations in CKKS can lead
 to a decrease in precision.
 
-The user should call `EvalSchemeSwitchingSetup`, then `EvalSchemeSwitchingKeyGen`, specifying whether the argmin/argmax should have a
-one-hot encoding or not, as well as if the alternative computation method mentioned above should be used, then `EvalCompareSwitchPrecompute`
-specifying if an additional scaling if desired. As mentioned above, the user can manually scale the inputs to [-0.5, 0.5], (such that
-the difference of values is between [-1, 1]) in which case the precomputation does not need to have any scaling, and this is
-exemplified in `ArgminViaSchemeSwitchingUnit()` and `ArgminViaSchemeSwitchingUnitAlt()`.
+The user should fill in a `SchSwchParams` object, enabling the argmin computation (`SetComputeArgmin`) and specifying whether the
+argmin/argmax should have a one-hot encoding or not (`SetOneHotEncoding`), as well as if the alternative computation method mentioned
+above should be used (`SetUseAltArgmin`). The user should then call `EvalSchemeSwitchingSetup` with these parameters, then
+`EvalSchemeSwitchingKeyGen`, then `EvalCompareSwitchPrecompute` specifying if an additional scaling is desired. As mentioned above,
+the user can manually scale the inputs to [-0.5, 0.5], (such that the difference of values is between [-1, 1]) in which case the
+precomputation does not need to have any scaling, and this is exemplified in `ArgminViaSchemeSwitchingUnit()` and
+`ArgminViaSchemeSwitchingAltUnit()`.
 
 Finally, the user should call `EvalMinSchemeSwitching` or `EvalMinSchemeSwitchingAlt` to obtain the minimum value and the argmin, and
 respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain the maximum value and the argmax.
@@ -133,6 +135,8 @@ respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain 
 **Current limitations**
 - Scheme switching is currently supported only for CKKS and FHEW/TFHE.
 - Switching from CKKS to FHEW is only supported for the first consecutive slots in the CKKS ciphertext.
+- Switching from CKKS to FHEW uses 1 level for FIXEDMANUAL and FIXEDAUTO, and 2 levels for FLEXIBLEAUTO and FLEXIBLEAUTOEXT. The
+multiplicative depth has to cover these on top of the levels used by the computations done before switching.
 - Switching to CKKS the result of an arbitrary function evaluation in FHEW is not yet supported. Only functions with binary outputs or small
 outputs with respect to the FHEW plaintext space are supported.
 - Computing the min/max via scheme switching is only implemented for vectors of size a power of two.
