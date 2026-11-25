@@ -39,6 +39,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -140,7 +141,7 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
                              noisePerLevel);
 }
 
-uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
+uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension, const PlaintextModulus plainModulus,
                                                    const ScalingTechnique scalTech) const {
     // Moduli need to be primes that are 1 (mod 2n)
     uint32_t cyclOrder = 2 * ringDimension;
@@ -148,8 +149,8 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
 
     if (scalTech == FIXEDAUTO) {
         // In FIXEDAUTO, moduli also need to be 1 (mod t)
-        uint32_t plaintextModulus = plainModulus;
-        uint32_t pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
+        PlaintextModulus plaintextModulus = plainModulus;
+        uint64_t pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
                                // is larger than cyclOrder or not)
         while (plaintextModulus % 2 == 0) {
             plaintextModulus >>= 1;
@@ -159,7 +160,9 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        lcmCyclOrderPtm = static_cast<uint64_t>(pow2ptm) * plaintextModulus;
+        if (plaintextModulus > std::numeric_limits<uint64_t>::max() / pow2ptm)
+            OPENFHE_THROW("The plaintext modulus is too large for FIXEDAUTO: lcm(2n, t) does not fit in 64 bits");
+        lcmCyclOrderPtm = pow2ptm * plaintextModulus;
     } else {
         lcmCyclOrderPtm = cyclOrder;
     }
@@ -354,7 +357,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
                                                         uint32_t dcrtBits, uint32_t numPartQ, uint32_t numHops) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
-    uint32_t ptm = cryptoParamsBGVRNS->GetPlaintextModulus();
+    PlaintextModulus ptm = cryptoParamsBGVRNS->GetPlaintextModulus();
     KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
     ScalingTechnique scalTech = cryptoParamsBGVRNS->GetScalingTechnique();
     EncryptionTechnique encTech = cryptoParamsBGVRNS->GetEncryptionTechnique();
@@ -512,8 +515,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
         // FIXEDMANUAL mode
         cyclOrder = 2 * n;
         // For ModulusSwitching to work we need the moduli to be also congruent to 1 modulo ptm
-        uint32_t plaintextModulus = ptm;
-        uint32_t pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
+        PlaintextModulus plaintextModulus = ptm;
+        uint64_t pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
                                // is larger than cyclOrder or not)
         while (plaintextModulus % 2 == 0) {
             plaintextModulus >>= 1;
@@ -523,7 +526,18 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        modulusOrder = static_cast<uint64_t>(pow2ptm) * plaintextModulus;
+        if (plaintextModulus > std::numeric_limits<uint64_t>::max() / pow2ptm)
+            OPENFHE_THROW("The plaintext modulus is too large for FIXEDMANUAL: lcm(2n, t) does not fit in 64 bits");
+        modulusOrder = pow2ptm * plaintextModulus;
+
+        // A prime that is 1 modulo modulusOrder is larger than modulusOrder. Without this check a step that
+        // does not fit in NativeInteger (NATIVE_SIZE = 32) would be truncated in the prime search below.
+        const uint32_t minModSize = (numPrimes > 1 && dcrtBits < firstModSize) ? dcrtBits : firstModSize;
+        if (GetMSB64(modulusOrder) > minModSize)
+            OPENFHE_THROW("The plaintext modulus is too large for FIXEDMANUAL: no modulus of " +
+                          std::to_string(minModSize) +
+                          " bits is 1 modulo lcm(2n, t) = " + std::to_string(modulusOrder) +
+                          "; increase scalingModSize and firstModSize, or decrease the plaintext modulus");
 
         // Get the largest prime with size less or equal to firstModSize bits.
         moduliQ[0] = LastPrime<NativeInteger>(firstModSize, modulusOrder);
@@ -579,7 +593,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
     // if no batch size was specified compute a default value
     if (encodingParams->GetBatchSize() == 0) {
         // Check whether ptm and cyclOrder are coprime
-        uint32_t a, b, gcd;
+        uint64_t a, b, gcd;
         if (cyclOrder > ptm) {
             a = cyclOrder;
             b = ptm;
@@ -605,7 +619,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
             a = static_cast<uint64_t>(ptm) % cyclOrder;
             b = 1;
             while (a != 1) {
-                a = static_cast<uint64_t>(a * ptm) % cyclOrder;
+                a = (a * (ptm % cyclOrder)) % cyclOrder;
                 b++;
             }
 
