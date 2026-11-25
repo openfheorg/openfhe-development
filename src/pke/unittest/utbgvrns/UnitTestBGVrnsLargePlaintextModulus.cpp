@@ -135,6 +135,29 @@ INSTANTIATE_TEST_SUITE_P(BGVLargePlaintextModulus, UTBGVRNS_LARGE_PTM,
                                            std::make_tuple(4296540161ULL, FIXEDAUTO),
                                            std::make_tuple(4296540161ULL, FLEXIBLEAUTO)));
 
+// With FIXEDMANUAL no modulus of scalingModSize bits is 1 mod t when t has more bits than that. The prime
+// search must not be started with such a step: for NATIVE_SIZE = 32 the step does not fit in NativeInteger.
+TEST(UTBGVRNS_LARGE_PTM_STEP, FixedManualModulusSmallerThanStep) {
+    OpenFHEParallelControls.UnitTestStart();
+    CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetPlaintextModulus(4296540161ULL);  // 33 bits
+    parameters.SetMultiplicativeDepth(2);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingModSize(30);
+    parameters.SetRingDim(4096);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    std::string msg;
+    try {
+        GenCryptoContext(parameters);
+    } catch (const OpenFHEException& e) {
+        msg = e.what();
+    }
+    EXPECT_NE(msg.find("The plaintext modulus is too large for FIXEDMANUAL"), std::string::npos)
+            << "exception message: \"" << msg << "\"";
+    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    OpenFHEParallelControls.UnitTestStop();
+}
+
 // t = 2^33 is 0 modulo 2^32: parameter generation must neither reject it as zero nor loop forever
 // while removing factors of 2 (HYBRID key switching also derives the step of the special primes from t)
 TEST(UTBGVRNS_LARGE_PTM_POW2, ContextGeneration) {

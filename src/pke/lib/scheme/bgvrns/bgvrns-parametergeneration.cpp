@@ -530,6 +530,15 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
             OPENFHE_THROW("The plaintext modulus is too large for FIXEDMANUAL: lcm(2n, t) does not fit in 64 bits");
         modulusOrder = pow2ptm * plaintextModulus;
 
+        // A prime that is 1 modulo modulusOrder is larger than modulusOrder. Without this check a step that
+        // does not fit in NativeInteger (NATIVE_SIZE = 32) would be truncated in the prime search below.
+        const uint32_t minModSize = (numPrimes > 1 && dcrtBits < firstModSize) ? dcrtBits : firstModSize;
+        if (GetMSB64(modulusOrder) > minModSize)
+            OPENFHE_THROW("The plaintext modulus is too large for FIXEDMANUAL: no modulus of " +
+                          std::to_string(minModSize) +
+                          " bits is 1 modulo lcm(2n, t) = " + std::to_string(modulusOrder) +
+                          "; increase scalingModSize and firstModSize, or decrease the plaintext modulus");
+
         // Get the largest prime with size less or equal to firstModSize bits.
         moduliQ[0] = LastPrime<NativeInteger>(firstModSize, modulusOrder);
         rootsQ[0] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
