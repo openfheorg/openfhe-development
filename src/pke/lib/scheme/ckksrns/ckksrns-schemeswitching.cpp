@@ -180,23 +180,46 @@ static NativeInteger RoundqQAlter(NativeInteger v, NativeInteger q, NativeIntege
             .Mod(q);
 }
 
-// Checks that the CKKS modulus chain is long enough for the SlotsToCoeffs transform of CKKS to FHEW, which runs on
-// s2cTowers towers. In the FLEXIBLE* modes the scaling factor is adjusted before the transform, which consumes one
-// more tower in FLEXIBLEAUTO and two more in FLEXIBLEAUTOEXT (EvalSlotsToCoeffsSwitch).
-static void ValidateTowersCKKStoFHEW(const CryptoParametersCKKSRNS& cryptoParams, uint32_t s2cTowers) {
+namespace {
+
+// Number of towers the input of the SlotsToCoeffs transform of CKKS to FHEW must have once its pending rescaling is
+// done. The transform runs on s2cTowers towers; in the FLEXIBLE* modes the scaling factor is adjusted first, which
+// consumes one more (EvalSlotsToCoeffsSwitch).
+uint32_t MinTowersCKKStoFHEW(ScalingTechnique scalTech, uint32_t s2cTowers) {
+    return (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) ? s2cTowers + 1 : s2cTowers;
+}
+
+// Checks that the CKKS modulus chain is long enough to switch a fresh ciphertext to FHEW. A fresh FLEXIBLEAUTOEXT
+// ciphertext has a pending rescaling, which takes one more tower.
+void ValidateTowersCKKStoFHEW(const CryptoParametersCKKSRNS& cryptoParams, uint32_t s2cTowers) {
     const auto scalTech = cryptoParams.GetScalingTechnique();
-    uint32_t minTowers = s2cTowers;
-    if (scalTech == FLEXIBLEAUTO)
-        minTowers += 1;
-    else if (scalTech == FLEXIBLEAUTOEXT)
-        minTowers += 2;
+    const uint32_t minDepth = MinTowersCKKStoFHEW(scalTech, s2cTowers) - 1;
+    const uint32_t minTowers = (scalTech == FLEXIBLEAUTOEXT) ? minDepth + 2 : minDepth + 1;
 
     if (cryptoParams.GetElementParams()->GetParams().size() < minTowers) {
-        const bool flexible = (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT);
-        OPENFHE_THROW(std::string("CKKS to FHEW scheme switching requires a multiplicative depth of at least ") +
-                      (flexible ? "2 for FLEXIBLEAUTO and FLEXIBLEAUTOEXT." : "1."));
+        OPENFHE_THROW("CKKS to FHEW scheme switching requires a multiplicative depth of at least " +
+                      std::to_string(minDepth) +
+                      " for this scaling technique, plus the depth of the computations done before switching.");
     }
 }
+
+// Checks that the ciphertext to be switched to FHEW still has the towers the SlotsToCoeffs transform needs
+void ValidateCiphertextCKKStoFHEW(const CiphertextImpl<DCRTPoly>& ctxt, const CryptoParametersCKKSRNS& cryptoParams,
+                                  uint32_t s2cTowers) {
+    const uint32_t minTowers = MinTowersCKKStoFHEW(cryptoParams.GetScalingTechnique(), s2cTowers);
+    // every pending rescaling drops a tower before the transform (Compress)
+    const uint32_t pending = ctxt.GetNoiseScaleDeg() - 1;
+    const uint32_t towers = ctxt.GetElements()[0].GetNumOfElements();
+
+    if (towers < minTowers + pending) {
+        const uint32_t levelsLeft = (towers > pending + 1) ? towers - pending - 1 : 0;
+        OPENFHE_THROW("CKKS to FHEW scheme switching needs " + std::to_string(minTowers - 1) +
+                      " unused level(s) in the input ciphertext, which has " + std::to_string(levelsLeft) +
+                      ". Increase the multiplicative depth.");
+    }
+}
+
+}  // namespace
 
 // TODO: used anywhere?
 EvalKey<DCRTPoly> switchingKeyGenRLWE(const PrivateKey<DCRTPoly>& ckksSK, ConstLWEPrivateKey& LWEsk) {
@@ -624,10 +647,12 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
     uint32_t M = cc.GetCyclotomicOrder();
     bool isSparse = (M != m);
 
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    ValidateCiphertextCKKStoFHEW(*ctxt, *cryptoParams, S2C_TOWERS);
+
     auto ctxtToDecode = ctxt->Clone();
 
     uint32_t numTowersToKeep = S2C_TOWERS;
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         ctxtToDecode = cc.Compress(ctxtToDecode, numTowersToKeep + 1);
@@ -797,6 +822,9 @@ std::shared_ptr<std::map<uint32_t, EvalKey<DCRTPoly>>> SWITCHCKKSRNS::EvalCKKSto
 }
 
 void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    ValidateTowersCKKStoFHEW(*cryptoParams, S2C_TOWERS);
+
     uint32_t M = cc.GetCyclotomicOrder();
     uint32_t slots = m_numSlotsCKKS;
     uint32_t m = 4 * m_numSlotsCKKS;
@@ -833,7 +861,6 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
     }
 
     // Obtain the right scaling for encoded messages in FHEW coming from encoded messages in CKKS
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     double scFactor = cryptoParams->GetScalingFactorReal(cryptoParams->GetElementParams()->GetParams().size() - 1);
     scale *= m_modulus_CKKS_initial.ConvertToDouble() / scFactor;
 
