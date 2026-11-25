@@ -743,11 +743,12 @@ class FHECKKSRNS : public FHERNS {
      * @param ct input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
      * with the rescaling fused into the final key switching of the transform
-     * @param foldPartialSum fold the partial sum of sparse packing into the layer (CoeffsToSlots only)
+     * @param foldStride if nonzero, the stride from which the partial sum of sparse packing is folded into the
+     * layer (CoeffsToSlots only, see ModRaiseForEncoding)
      * @return the transformed ciphertext
      */
     Ciphertext<DCRTPoly> EvalLinearTransform(const std::vector<ReadOnlyPlaintext>& A, ConstCiphertext<DCRTPoly>& ct,
-                                             uint32_t modReduceLevels = 0, bool foldPartialSum = false) const;
+                                             uint32_t modReduceLevels = 0, uint32_t foldStride = 0) const;
 
     /**
      * Homomorphic encoding (CoeffsToSlots) over multiple BSGS levels, evaluated
@@ -757,12 +758,13 @@ class FHECKKSRNS : public FHERNS {
      * @param ctxt input ciphertext
      * @param modReduceLevels if nonzero, the output is rescaled by this many towers (ModReduceInternalInPlace)
      * with the rescaling fused into the key switching of the last level
-     * @param foldPartialSum fold the partial sum of sparse packing into the first layer
+     * @param foldStride if nonzero, the stride from which the partial sum of sparse packing is folded into the
+     * first layer (see ModRaiseForEncoding)
      * @return the ciphertext with the coefficients of the input moved to its slots
      */
     Ciphertext<DCRTPoly> EvalCoeffsToSlots(const std::vector<std::vector<ReadOnlyPlaintext>>& A,
                                            ConstCiphertext<DCRTPoly>& ctxt, uint32_t modReduceLevels = 0,
-                                           bool foldPartialSum = false) const;
+                                           uint32_t foldStride = 0) const;
 
     /**
      * Homomorphic decoding (SlotsToCoeffs); the inverse of EvalCoeffsToSlots,
@@ -1230,8 +1232,8 @@ class FHECKKSRNS : public FHERNS {
      *   unaffected. It keeps the scaling factor of the raised level.
      * When no auxiliary prime is left outside R, the switch back is done after the rescale with the regular key,
      * without attenuation of its noise, and the partial sum is left to ModRaiseForEncoding, which folds it into
-     * the first layer of the homomorphic encoding; for the other distributions ModRaiseForEncoding evaluates it
-     * straight after the raise.
+     * the first layer of the homomorphic encoding; for the other distributions ModRaiseForEncoding either folds it
+     * or evaluates it straight after the raise.
      *
      * @param raised input/output ciphertext
      * @param normalization the constant the raised ciphertext is multiplied by
@@ -1244,33 +1246,41 @@ class FHECKKSRNS : public FHERNS {
      *
      * The normalization of the raise shrinks the message by 2^-deg/N (and by the correction factor), so a key
      * switching whose rounding is not attenuated by a subsequent plaintext multiplication adds its noise at full
-     * strength relative to the message. For SPARSE_ENCAPSULATED/HYBRID_TERNARY the partial sum is normally fused
-     * into the switch back from the sparse secret, which precedes the rescale of the raise (see KeySwitchRaise);
-     * when the key switching basis leaves no auxiliary prime for that switch back, it is carried by the hoisted
-     * key switching of the first layer instead, whose rounding happens only after the multiplication by the
-     * encoding matrix. For the other distributions, folding it costs a second accumulation of the layer, and over
-     * correction factors 5 to 13 at two sparse packings it was worth no precision, so it is evaluated here.
+     * strength relative to the message; the rounding of the hybrid ModDown is moreover biased, by about
+     * -sizeP/2 * (1 + s) per coefficient, which the decoding concentrates on a few slots. For
+     * SPARSE_ENCAPSULATED/HYBRID_TERNARY the partial sum is fused into the switch back from the sparse secret,
+     * which precedes the rescale of the raise (see KeySwitchRaise). The terms not covered by that switch back (all
+     * of them when the key switching basis leaves no auxiliary prime for it, those beyond ModRaiseFusedTerms for
+     * a very sparse packing), and the partial sum of the other distributions, are either folded into the hoisted
+     * key switching of the first layer of the homomorphic encoding, whose rounding happens only after the
+     * multiplication by the encoding matrix, or evaluated here, which is cheaper. They are folded wherever their
+     * rounding is visible in the result: under composite scaling, with a uniform ternary secret under the
+     * techniques tracking level-specific scaling factors, and when no auxiliary prime is left for the switch back.
      *
      * @param raised input/output ciphertext
      * @param normalization the constant the raised ciphertext is multiplied by (see ModRaiseInPlace)
      * @param slots number of plaintext slots
-     * @return whether the first layer of the homomorphic encoding must fold the partial sum
+     * @return 0 when nothing is left to fold; otherwise the stride of the first term of the partial sum that the
+     * first layer of the homomorphic encoding must fold (slots, or a multiple of 2 * slots for the terms beyond
+     * those fused into the switch back)
      */
-    bool ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
+    uint32_t ModRaiseForEncoding(Ciphertext<DCRTPoly>& raised, double normalization, uint32_t slots) const;
 
     /**
      * Partial sum of sparse packing folded into the first layer of the homomorphic encoding, on its output in
-     * the extended basis: outer += Rotate(outerShifted, slots), where outerShifted is the accumulation with the
-     * plaintexts rotated by -slots, followed by the doublings outer += Rotate(outer, r) for r = 2*slots, 4*slots,
-     * ..., N/4 (the plaintexts of sparse packing are periodic with period 2*slots, so the rotations by multiples of
-     * 2*slots commute with the layer).
+     * the extended basis. For stride == slots: outer += Rotate(outerShifted, slots), where outerShifted is the
+     * accumulation with the plaintexts rotated by -slots, followed by the doublings outer += Rotate(outer, r) for
+     * r = 2*slots, 4*slots, ..., N/4. For a stride that is a multiple of 2*slots, only the doublings from
+     * r = stride (the plaintexts of sparse packing are periodic with period 2*slots, so the rotations by multiples
+     * of 2*slots commute with the layer).
      *
      * @param outer input/output accumulation of the layer in the extended basis
-     * @param outerShifted the accumulation with the plaintexts rotated by -slots
+     * @param outerShifted the accumulation with the plaintexts rotated by -slots (only used when stride == slots)
      * @param slots number of plaintext slots
+     * @param stride the stride of the first folded term
      */
     static void EvalFirstLayerPartialSumExt(Ciphertext<DCRTPoly>& outer, const Ciphertext<DCRTPoly>& outerShifted,
-                                            uint32_t slots);
+                                            uint32_t slots, uint32_t stride);
 
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
