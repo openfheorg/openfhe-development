@@ -660,7 +660,14 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     NativeIntegerT MultiplyAndRound(const NativeIntegerT& p, const NativeIntegerT& q) const {
         if (q.m_value == 0)
             OPENFHE_THROW("NativeIntegerT MultiplyAndRound: Divide by zero");
-        return static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
+        if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
+            return static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
+        } else {
+            // exact: floor((x*p + floor(q/2))/q) is x*p/q rounded half up (the double-precision
+            // formula above is wrong once the result no longer fits in 53 bits)
+            return {static_cast<NativeInt>((static_cast<DNativeInt>(m_value) * p.m_value + (q.m_value >> 1)) /
+                                           q.m_value)};
+        }
     }
 
     /**
@@ -674,8 +681,14 @@ class NativeIntegerT final : public lbcrypto::BigIntegerInterface<NativeIntegerT
     NativeIntegerT& MultiplyAndRoundEq(const NativeIntegerT& p, const NativeIntegerT& q) {
         if (q.m_value == 0)
             OPENFHE_THROW("NativeIntegerT MultiplyAndRoundEq: Divide by zero");
-        return *this = static_cast<NativeInt>(p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) +
-                                              0.5);
+        if constexpr (std::is_same_v<NativeInt, DNativeInt>) {
+            return *this = static_cast<NativeInt>(
+                           p.ConvertToDouble() * (this->ConvertToDouble() / q.ConvertToDouble()) + 0.5);
+        } else {
+            m_value = static_cast<NativeInt>((static_cast<DNativeInt>(m_value) * p.m_value + (q.m_value >> 1)) /
+                                             q.m_value);
+            return *this;
+        }
     }
 
     /**
