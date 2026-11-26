@@ -869,8 +869,9 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
         uint32_t levels = ciphertext->GetNoiseScaleDeg() - 1;
         uint32_t dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
 
-        // how many levels to drop
-        l = sizeQ - 1 - FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
+        // how many levels to drop: the key switching below is done at the lower level in both cases (key
+        // switching or relinearization), so its noise has to be taken into account
+        l = sizeQ - 1 - FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
 
         if (l < sizeQ - 1) {
             cv[sel].SetFormat(COEFFICIENT, DCRTPoly::THREADS_CRT_BASIS_SWITCH);
