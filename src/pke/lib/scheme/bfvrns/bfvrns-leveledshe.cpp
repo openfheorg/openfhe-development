@@ -747,6 +747,11 @@ void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, Nat
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalAutomorphism(ConstCiphertext<DCRTPoly>& ciphertext, uint32_t i,
                                                         const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeyMap,
                                                         CALLER_INFO_ARGS_CPP) const {
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2)
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
+
     uint32_t N = ciphertext->GetElements()[0].GetRingDimension();
     std::vector<uint32_t> vec(N);
     PrecomputeAutoMap(N, i, &vec);
@@ -796,6 +801,11 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
                                                         const std::shared_ptr<std::vector<DCRTPoly>> digits) const {
     if (index == 0)
         return ciphertext->Clone();
+
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2)
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
 
     const auto cc = ciphertext->GetCryptoContext();
 

@@ -371,6 +371,11 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(
         ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2, uint32_t batchSize,
         const std::map<uint32_t, EvalKey<Element>>& evalSumKeyMap, const EvalKey<Element> evalMultKey) const {
+    // the multiplication relinearizes with the key for s^2 only, so it needs 2-element ciphertexts
+    if (ciphertext1->NumberCiphertextElements() != 2 || ciphertext2->NumberCiphertextElements() != 2)
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
+
     auto algo = ciphertext1->GetCryptoContext()->GetScheme();
 
     Ciphertext<Element> result = algo->EvalMult(ciphertext1, ciphertext2, evalMultKey);
@@ -522,6 +527,11 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRadixFold(
     Ciphertext<Element> result = ciphertext->Clone();
     if (size <= 1)
         return result;
+
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2)
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
 
     constexpr uint32_t radix = PARTIAL_SUM_RADIX;
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
