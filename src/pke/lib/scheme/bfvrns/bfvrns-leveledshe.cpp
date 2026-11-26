@@ -53,6 +53,14 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
+namespace {
+// Converts all elements of the ciphertext to EVALUATION format.
+void SetElementsToEvaluation(Ciphertext<DCRTPoly>& ciphertext) {
+    for (auto& c : ciphertext->GetElements())
+        c.SetFormat(Format::EVALUATION);
+}
+}  // namespace
+
 void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext& plaintext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
@@ -205,8 +213,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly>& ciphe
     // the product is returned in EVALUATION format, like any other ciphertext, so that it can be added to fresh
     // ciphertexts and plaintexts before relinearization
     auto ciphertextMult = EvalMultCoefficient(ciphertext1, ciphertext2);
-    for (auto& c : ciphertextMult->GetElements())
-        c.SetFormat(Format::EVALUATION);
+    SetElementsToEvaluation(ciphertextMult);
     return ciphertextMult;
 }
 
@@ -448,8 +455,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMultCoefficient(ConstCiphertext<DCRTP
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly>& ciphertext) const {
     // the square is returned in EVALUATION format, like any other ciphertext
     auto ciphertextSq = EvalSquareCoefficient(ciphertext);
-    for (auto& c : ciphertextSq->GetElements())
-        c.SetFormat(Format::EVALUATION);
+    SetElementsToEvaluation(ciphertextSq);
     return ciphertextSq;
 }
 
