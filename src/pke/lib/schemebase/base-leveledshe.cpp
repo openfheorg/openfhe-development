@@ -403,7 +403,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
                                                               CALLER_INFO_ARGS_CPP) const {
     // this operation can be performed on 2-element ciphertexts only
     if (ciphertext->NumberCiphertextElements() != 2)
-        OPENFHE_THROW("Ciphertext should be relinearized before.");
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
 
     // verify if the key i exists in the evalKeyMap
     auto evalKeyIterator = evalKeyMap.find(i);
@@ -482,12 +483,13 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
         ConstCiphertext<Element>& ciphertext, const uint32_t index, const uint32_t m,
         const std::shared_ptr<std::vector<Element>> digits) const {
-    // this operation can be performed on 2-element ciphertexts only
-    if (ciphertext->NumberCiphertextElements() != 2)
-        OPENFHE_THROW("Ciphertext should be relinearized before.");
-
     if (index == 0)
         return ciphertext->Clone();
+
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2)
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
 
     uint32_t autoIndex = FindAutomorphismIndex(index, m);
     const auto cc = ciphertext->GetCryptoContext();

@@ -657,6 +657,11 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
         ConstCiphertext<DCRTPoly>& ciphertext, uint32_t index, const std::shared_ptr<std::vector<DCRTPoly>> digits,
         bool addFirst, const std::map<uint32_t, EvalKey<DCRTPoly>>& evalKeys) const {
+    // this operation can be performed on 2-element ciphertexts only
+    if (ciphertext->NumberCiphertextElements() != 2)
+        OPENFHE_THROW(
+                "Ciphertext should be relinearized before. Use Relinearize() for ciphertexts with more than 2 elements.");
+
     //  if (index == 0) {
     //    Ciphertext<DCRTPoly> result = ciphertext->Clone();
     //    return result;

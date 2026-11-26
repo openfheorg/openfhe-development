@@ -33,6 +33,7 @@
   unit tests for the SHE capabilities
  */
 
+#include <cmath>
 #include <complex>
 #include <cstdint>
 #include <iostream>
@@ -46,11 +47,8 @@
 #include "UnitTestCryptoContext.h"
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
-#include "gen-cryptocontext.h"
 #include "gtest/gtest.h"
 #include "key/evalkeyrelin.h"
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/gen-cryptocontext-bgvrns.h"
 
 using namespace lbcrypto;
 
@@ -69,6 +67,7 @@ enum TEST_CASE_TYPE : int {
     EVALSQUARE,
     RING_DIM_ERROR_HANDLING,
     EVAL_MUTABLE,
+    NON_RELINEARIZED_INPUT,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -112,6 +111,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case EVAL_MUTABLE:
             typeName = "EVAL_MUTABLE";
+            break;
+        case NON_RELINEARIZED_INPUT:
+            typeName = "NON_RELINEARIZED_INPUT";
             break;
         default:
             typeName = "UNKNOWN";
@@ -501,6 +503,11 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
 #if NATIVEINT != 128
     { EVAL_MUTABLE, "06", {CKKSRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     HEStd_128_classic, DFLT,   FLEXIBLEAUTO, DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 #endif
+    // ==========================================
+    // TestType,              Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { NON_RELINEARIZED_INPUT, "01", {BGVRNS_SCHEME,  DFLT, 3,         DFLT,     DFLT,  DFLT,    DFLT,       3,             DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { NON_RELINEARIZED_INPUT, "02", {BFVRNS_SCHEME,  DFLT, 3,         DFLT,     DFLT,  DFLT,    DFLT,       3,             DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { NON_RELINEARIZED_INPUT, "03", {CKKSRNS_SCHEME, DFLT, 3,         DFLT,     DFLT,  DFLT,    DFLT,       3,             DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    DFLT,    DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 };
 // clang-format on
 //===========================================================================================================
@@ -1230,6 +1237,124 @@ class UTGENERAL_SHE : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_SHE> {
         }
     }
 
+    // The relinearizing multiplications, rotations and sums handle 2-element ciphertexts only. Given a ciphertext with
+    // more than 2 elements (the output of EvalMultNoRelin), they must throw instead of returning a ciphertext that
+    // decrypts to wrong values.
+    void UnitTest_NonRelinearizedInput(const TEST_CASE_UTGENERAL_SHE& testData,
+                                       const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            const bool isCKKS = (CKKSRNS_SCHEME == testData.params.schemeId);
+            const bool isBFV = (BFVRNS_SCHEME == testData.params.schemeId);
+
+            KeyPair<Element> kp = cc->KeyGen();
+            cc->EvalMultKeysGen(kp.secretKey);
+            cc->EvalRotateKeyGen(kp.secretKey, {1});
+            cc->EvalSumKeyGen(kp.secretKey);
+
+            std::vector<int64_t> a{1, 2, 3, 4, 5, 6, 7, 8};
+            std::vector<int64_t> b{3, 1, 4, 1, 5, 9, 2, 6};
+            std::vector<int64_t> c{2, 7, 1, 8, 2, 8, 1, 8};
+            const uint32_t size = a.size();
+
+            auto encode = [&](const std::vector<int64_t>& v) {
+                if (isCKKS)
+                    return cc->MakeCKKSPackedPlaintext(std::vector<double>(v.begin(), v.end()));
+                return cc->MakePackedPlaintext(v);
+            };
+            // the first n slots; the CKKS values are rounded as the expected results are integers and the failures
+            // checked here are errors of order 1
+            auto decrypt = [&](ConstCiphertext<Element>& ct, size_t n) {
+                Plaintext result;
+                cc->Decrypt(kp.secretKey, ct, &result);
+                result->SetLength(n);
+                if (!isCKKS)
+                    return result->GetPackedValue();
+                std::vector<int64_t> values;
+                for (double v : result->GetRealPackedValue())
+                    values.push_back(std::llround(v));
+                return values;
+            };
+
+            Plaintext ptC = encode(c);
+            Ciphertext<Element> ctA = cc->Encrypt(kp.publicKey, encode(a));
+            Ciphertext<Element> ctB = cc->Encrypt(kp.publicKey, encode(b));
+            Ciphertext<Element> ctC = cc->Encrypt(kp.publicKey, ptC);
+            ConstCiphertext<Element> ct3 = cc->EvalMultNoRelin(ctA, ctB);
+            ASSERT_EQ(3u, ct3->NumberCiphertextElements()) << failmsg;
+
+            EXPECT_THROW(cc->EvalMult(ct3, ctC), OpenFHEException) << failmsg << " EvalMult(ct3, ct)";
+            EXPECT_THROW(cc->EvalMult(ctC, ct3), OpenFHEException) << failmsg << " EvalMult(ct, ct3)";
+            EXPECT_THROW(cc->ComposedEvalMult(ct3, ctC), OpenFHEException) << failmsg << " ComposedEvalMult";
+            EXPECT_THROW(cc->EvalSquare(ct3), OpenFHEException) << failmsg << " EvalSquare";
+            Ciphertext<Element> ct3Copy = ct3->Clone();
+            EXPECT_THROW(cc->EvalSquareInPlace(ct3Copy), OpenFHEException) << failmsg << " EvalSquareInPlace";
+            // the mutable variants are not supported in BFV
+            if (!isBFV) {
+                Ciphertext<Element> ct3Mutable = ct3->Clone();
+                Ciphertext<Element> ctCMutable = ctC->Clone();
+                EXPECT_THROW(cc->EvalMultMutable(ct3Mutable, ctCMutable), OpenFHEException)
+                        << failmsg << " EvalMultMutable";
+                EXPECT_THROW(cc->EvalMultMutableInPlace(ct3Mutable, ctCMutable), OpenFHEException)
+                        << failmsg << " EvalMultMutableInPlace";
+                EXPECT_THROW(cc->EvalSquareMutable(ct3Mutable), OpenFHEException) << failmsg << " EvalSquareMutable";
+            }
+
+            // rotations key switch with the automorphism key and need a relinearized input as well
+            const uint32_t m = 2 * cc->GetRingDimension();
+            EXPECT_THROW(cc->EvalRotate(ct3, 1), OpenFHEException) << failmsg << " EvalRotate";
+            EXPECT_THROW(cc->EvalAtIndex(ct3, 1), OpenFHEException) << failmsg << " EvalAtIndex";
+            auto digits = cc->EvalFastRotationPrecompute(ct3);
+            EXPECT_THROW(cc->EvalFastRotation(ct3, 1, m, digits), OpenFHEException) << failmsg << " EvalFastRotation";
+            // only CKKS supports the rotation in the extended basis
+            if (isCKKS)
+                EXPECT_THROW(cc->EvalFastRotationExt(ct3, 1, digits, true), OpenFHEException)
+                        << failmsg << " EvalFastRotationExt";
+
+            // so do the sums, which are built from rotations, and the inner product, which also multiplies
+            EXPECT_THROW(cc->EvalSum(ct3, size), OpenFHEException) << failmsg << " EvalSum";
+            EXPECT_THROW(cc->EvalInnerProduct(ct3, ctC, size), OpenFHEException)
+                    << failmsg << " EvalInnerProduct(ct3, ct)";
+            EXPECT_THROW(cc->EvalInnerProduct(ctC, ct3, size), OpenFHEException)
+                    << failmsg << " EvalInnerProduct(ct, ct3)";
+            EXPECT_THROW(cc->EvalInnerProduct(ct3, ptC, size), OpenFHEException)
+                    << failmsg << " EvalInnerProduct(ct3, pt)";
+
+            std::vector<int64_t> product(size);
+            for (uint32_t i = 0; i < size; ++i)
+                product[i] = a[i] * b[i];
+
+            // a rotation by 0 does not key switch and returns the input unchanged
+            Ciphertext<Element> ctZero;
+            EXPECT_NO_THROW(ctZero = cc->EvalFastRotation(ct3, 0, m, digits)) << failmsg << " EvalFastRotation by 0";
+            ASSERT_NE(nullptr, ctZero) << failmsg;
+            EXPECT_EQ(3u, ctZero->NumberCiphertextElements()) << failmsg << " EvalFastRotation by 0";
+            EXPECT_EQ(product, decrypt(ctZero, size)) << failmsg << " EvalFastRotation by 0 fails";
+
+            // the supported ways to multiply a ciphertext with more than 2 elements
+            std::vector<int64_t> expected(size);
+            for (uint32_t i = 0; i < size; ++i)
+                expected[i] = product[i] * c[i];
+            EXPECT_EQ(expected, decrypt(cc->EvalMultAndRelinearize(ct3, ctC), size))
+                    << failmsg << " EvalMultAndRelinearize fails";
+            ConstCiphertext<Element> ctRelin = cc->Relinearize(ct3);
+            EXPECT_EQ(expected, decrypt(cc->EvalMult(ctRelin, ctC), size))
+                    << failmsg << " EvalMult after Relinearize fails";
+
+            // a relinearized ciphertext can still be rotated (the first 7 slots, which do not depend on the slots
+            // that wrap around)
+            std::vector<int64_t> rotated(product.begin() + 1, product.end());
+            EXPECT_EQ(rotated, decrypt(cc->EvalRotate(ctRelin, 1), rotated.size()))
+                    << failmsg << " EvalRotate after Relinearize fails";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
+
     // clang-format off
     // helper function for UnitTest_EvalMutable()
     template <typename Func1, typename Func2>
@@ -1501,6 +1626,9 @@ TEST_P(UTGENERAL_SHE, SHE) {
         case EVAL_MUTABLE:
             UnitTest_EvalMutable(test, test.buildTestName());
             break;
+        case NON_RELINEARIZED_INPUT:
+            UnitTest_NonRelinearizedInput(test, test.buildTestName());
+            break;
         default:
             break;
     }
@@ -1547,82 +1675,4 @@ TEST(UnitTestSHE, GetMetadataByKeyClonesDynamicType) {
     ASSERT_NE(nullptr, cloned);
     EXPECT_NE(stored.get(), cloned.get());
     EXPECT_EQ("derived metadata", cloned->GetMetadata());
-}
-
-// EvalMult and EvalSquare relinearize with the key for s^2 only. Given a ciphertext with more than 2 elements
-// (the output of EvalMultNoRelin), they must throw instead of returning a ciphertext that decrypts to wrong values.
-template <typename T>
-static void EvalMultRejectsNonRelinearizedInput(bool testMutable) {
-    CCParams<T> parameters;
-    parameters.SetPlaintextModulus(65537);
-    parameters.SetMultiplicativeDepth(3);
-    parameters.SetMaxRelinSkDeg(3);
-
-    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-
-    auto keyPair = cc->KeyGen();
-    cc->EvalMultKeysGen(keyPair.secretKey);
-    cc->EvalRotateKeyGen(keyPair.secretKey, {1});
-
-    std::vector<int64_t> a{1, 2, 3, 4, 5, 6, 7, 8};
-    std::vector<int64_t> b{3, 1, 4, 1, 5, 9, 2, 6};
-    std::vector<int64_t> c{2, 7, 1, 8, 2, 8, 1, 8};
-    auto ctA = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(a));
-    auto ctB = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(b));
-    auto ctC = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(c));
-
-    auto ct3 = cc->EvalMultNoRelin(ctA, ctB);
-    ASSERT_EQ(3u, ct3->NumberCiphertextElements());
-
-    EXPECT_THROW(cc->EvalMult(ct3, ctC), OpenFHEException);
-    EXPECT_THROW(cc->EvalMult(ctC, ct3), OpenFHEException);
-    EXPECT_THROW(cc->ComposedEvalMult(ct3, ctC), OpenFHEException);
-    EXPECT_THROW(cc->EvalSquare(ct3), OpenFHEException);
-    auto ct3Copy = ct3->Clone();
-    EXPECT_THROW(cc->EvalSquareInPlace(ct3Copy), OpenFHEException);
-    // rotations key switch with the automorphism key and need a relinearized input as well
-    EXPECT_THROW(cc->EvalRotate(ct3, 1), OpenFHEException);
-    EXPECT_THROW(cc->EvalAtIndex(ct3, 1), OpenFHEException);
-    auto digits = cc->EvalFastRotationPrecompute(ct3);
-    EXPECT_THROW(cc->EvalFastRotation(ct3, 1, 2 * cc->GetRingDimension(), digits), OpenFHEException);
-    if (testMutable) {
-        auto ct3Mutable = ct3->Clone();
-        auto ctCMutable = ctC->Clone();
-        EXPECT_THROW(cc->EvalMultMutable(ct3Mutable, ctCMutable), OpenFHEException);
-        EXPECT_THROW(cc->EvalMultMutableInPlace(ct3Mutable, ctCMutable), OpenFHEException);
-        EXPECT_THROW(cc->EvalSquareMutable(ct3Mutable), OpenFHEException);
-    }
-
-    // the supported ways to multiply a ciphertext with more than 2 elements
-    std::vector<int64_t> expected(a.size());
-    for (size_t i = 0; i < a.size(); ++i)
-        expected[i] = a[i] * b[i] * c[i];
-    for (const auto& ct : {cc->EvalMultAndRelinearize(ct3, ctC), cc->EvalMult(cc->Relinearize(ct3), ctC)}) {
-        Plaintext result;
-        cc->Decrypt(keyPair.secretKey, ct, &result);
-        result->SetLength(expected.size());
-        EXPECT_EQ(expected, result->GetPackedValue());
-    }
-
-    // a relinearized ciphertext can still be rotated (the first 7 slots, which do not depend on the slots that
-    // wrap around)
-    std::vector<int64_t> rotated(a.size() - 1);
-    for (size_t i = 0; i < rotated.size(); ++i)
-        rotated[i] = a[i + 1] * b[i + 1];
-    Plaintext result;
-    cc->Decrypt(keyPair.secretKey, cc->EvalRotate(cc->Relinearize(ct3), 1), &result);
-    result->SetLength(rotated.size());
-    EXPECT_EQ(rotated, result->GetPackedValue());
-}
-
-TEST(UnitTestSHE, EvalMultRejectsNonRelinearizedInputBGVrns) {
-    EvalMultRejectsNonRelinearizedInput<CryptoContextBGVRNS>(true);
-}
-
-TEST(UnitTestSHE, EvalMultRejectsNonRelinearizedInputBFVrns) {
-    // the mutable variants are not supported in BFV
-    EvalMultRejectsNonRelinearizedInput<CryptoContextBFVRNS>(false);
 }
