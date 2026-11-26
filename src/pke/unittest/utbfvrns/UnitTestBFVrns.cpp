@@ -47,6 +47,7 @@ using namespace lbcrypto;
 enum TEST_CASE_TYPE : int {
     EVAL_FAST_ROTATION = 0,
     COMPRESSED_BFV = 1,
+    EVAL_NORELIN_ADD_SUB = 2,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -57,6 +58,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case COMPRESSED_BFV:
             typeName = "COMPRESSED_BFV";
+            break;
+        case EVAL_NORELIN_ADD_SUB:
+            typeName = "EVAL_NORELIN_ADD_SUB";
             break;
         default:
             typeName = "UNKNOWN";
@@ -114,6 +118,16 @@ static std::vector<TEST_CASE_UTBFVRNS> testCases = {
     { COMPRESSED_BFV,     "02", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
     { COMPRESSED_BFV,     "03", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQ, DFLT,    DFLT}},
     { COMPRESSED_BFV,     "04", {BFVRNS_SCHEME, DFLT, MULDEPTH,  DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQ, DFLT,    DFLT}},
+    // ==========================================
+    // TestType,           Descr,  Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech, PREMode
+    { EVAL_NORELIN_ADD_SUB, "01", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPS,              DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "02", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "03", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "04", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   BV,     DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, BEHZ,             DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "05", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPS,              DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "06", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "07", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, DFLT,    DFLT}},
+    { EVAL_NORELIN_ADD_SUB, "08", {BFVRNS_SCHEME, DFLT, 2,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   HYBRID, DFLT,     DFLT,    PTM,   DFLT,   DFLT,      DFLT, BEHZ,             DFLT,    DFLT}},
     // ==========================================
 };
 // clang-format on
@@ -328,6 +342,73 @@ class UTBFVRNS : public ::testing::TestWithParam<TEST_CASE_UTBFVRNS> {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+    // The output of EvalMultNoRelin (and of EvalSquare without relinearization) must be in EVALUATION format and
+    // usable as any other ciphertext: adding it to (or subtracting it from) a fresh ciphertext or a plaintext, or
+    // multiplying it by a plaintext, before relinearization, must give the correct result.
+    void UnitTest_EvalAddSubOfNonRelinearizedProduct(const TEST_CASE_UTBFVRNS& testData,
+                                                     const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            KeyPair<DCRTPoly> keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            std::vector<int64_t> a{1, 2, 3, 4, 5, 6, 7, 8};
+            std::vector<int64_t> b{3, 1, 4, 1, 5, 9, 2, 6};
+            std::vector<int64_t> c{10, 20, 30, 40, 50, 60, 70, 80};
+            std::vector<int64_t> sum(a.size());
+            std::vector<int64_t> diff(a.size());
+            std::vector<int64_t> prod(a.size());
+            std::vector<int64_t> square(a.size());
+            for (size_t i = 0; i < a.size(); ++i) {
+                sum[i] = a[i] * b[i] + c[i];
+                diff[i] = a[i] * b[i] - c[i];
+                prod[i] = a[i] * b[i] * c[i];
+                square[i] = a[i] * a[i];
+            }
+            std::vector<int64_t> negDiff(diff);
+            for (auto& v : negDiff)
+                v = -v;
+
+            auto ptC = cc->MakePackedPlaintext(c);
+            auto ctA = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(a));
+            auto ctB = cc->Encrypt(keyPair.publicKey, cc->MakePackedPlaintext(b));
+            auto ctC = cc->Encrypt(keyPair.publicKey, ptC);
+            auto ctAB = cc->EvalMultNoRelin(ctA, ctB);
+            // CryptoContext::EvalSquare always relinearizes, so the scheme is called directly
+            auto ctAA = cc->GetScheme()->EvalSquare(ctA);
+
+            for (const auto& element : ctAB->GetElements())
+                EXPECT_EQ(element.GetFormat(), Format::EVALUATION) << failmsg << " EvalMultNoRelin format";
+            for (const auto& element : ctAA->GetElements())
+                EXPECT_EQ(element.GetFormat(), Format::EVALUATION) << failmsg << " EvalSquare format";
+
+            auto check = [&](const std::vector<int64_t>& expected, ConstCiphertext<DCRTPoly>& ct,
+                             const std::string& what) {
+                Plaintext result;
+                cc->Decrypt(keyPair.secretKey, ct, &result);
+                result->SetLength(expected.size());
+                checkEquality(result->GetPackedValue(), expected, eps, failmsg + " " + what + " failed");
+            };
+
+            check(square, ctAA, "EvalSquare without relinearization");
+            check(sum, cc->EvalAdd(ctAB, ctC), "EvalAdd(product, ciphertext)");
+            check(sum, cc->EvalAdd(ctC, ctAB), "EvalAdd(ciphertext, product)");
+            check(diff, cc->EvalSub(ctAB, ctC), "EvalSub(product, ciphertext)");
+            check(negDiff, cc->EvalSub(ctC, ctAB), "EvalSub(ciphertext, product)");
+            check(sum, cc->EvalAdd(ctAB, ptC), "EvalAdd(product, plaintext)");
+            check(diff, cc->EvalSub(ctAB, ptC), "EvalSub(product, plaintext)");
+            check(sum, cc->Relinearize(cc->EvalAdd(ctAB, ctC)), "Relinearize(EvalAdd(product, ciphertext))");
+            check(prod, cc->EvalMult(ctAB, ptC), "EvalMult(product, plaintext)");
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 //===========================================================================================================
 TEST_P(UTBFVRNS, BFVRNS) {
@@ -340,6 +421,9 @@ TEST_P(UTBFVRNS, BFVRNS) {
             break;
         case COMPRESSED_BFV:
             UnitTest_CompressedBFV(test, test.buildTestName());
+            break;
+        case EVAL_NORELIN_ADD_SUB:
+            UnitTest_EvalAddSubOfNonRelinearizedProduct(test, test.buildTestName());
             break;
         default:
             break;

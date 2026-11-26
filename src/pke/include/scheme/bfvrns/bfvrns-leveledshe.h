@@ -355,6 +355,27 @@ class LeveledSHEBFVRNS : public LeveledSHERNS {
 
   private:
     /**
+     * Computes the product of two ciphertexts without relinearization, as EvalMult(ciphertext1, ciphertext2) does,
+     * but leaves the result in COEFFICIENT format. Used by the relinearizing variants, which key switch the last
+     * polynomial in COEFFICIENT format.
+     *
+     * @param ciphertext1 the input ciphertext.
+     * @param ciphertext2 the input ciphertext.
+     * @return the new ciphertext in COEFFICIENT format.
+     */
+    Ciphertext<DCRTPoly> EvalMultCoefficient(ConstCiphertext<DCRTPoly>& ciphertext1,
+                                             ConstCiphertext<DCRTPoly>& ciphertext2) const;
+
+    /**
+     * Computes the square of a ciphertext without relinearization, as EvalSquare(ciphertext) does, but leaves the
+     * result in COEFFICIENT format.
+     *
+     * @param ciphertext the input ciphertext.
+     * @return the new ciphertext in COEFFICIENT format.
+     */
+    Ciphertext<DCRTPoly> EvalSquareCoefficient(ConstCiphertext<DCRTPoly>& ciphertext) const;
+
+    /**
      * Key switches the last polynomial of the ciphertext (c_2 after a multiplication, or c_1 for a plain key
      * switch) with the given key and folds the result into (c_0, c_1). For HPSPOVERQLEVELED with a full-modulus
      * ciphertext, the polynomial is scaled down to Q_l before key switching and the result is expanded back to Q.
