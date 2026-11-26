@@ -43,3 +43,14 @@ repos:
           language: script
           pass_filenames: false
           files: ^(agents/|src/|docs/|CMakeLists\.txt$|llms\.txt$)
+        - id: check-review-agents
+          name: code review agent matches its checklist
+          description: >
+            The openfhe-reviewer agents of Claude Code, Codex and Gemini CLI only
+            point at agents/maint/review-checklist.md. This fails when one of them
+            is missing, is renamed, no longer names the checklist or no longer
+            forbids editing, and when AGENTS.md stops pointing at the checklist.
+          entry: agents/maint/check-review-agents.sh
+          language: script
+          pass_filenames: false
+          files: ^(AGENTS\.md$|agents/maint/|\.(claude|codex|gemini)/agents/)
