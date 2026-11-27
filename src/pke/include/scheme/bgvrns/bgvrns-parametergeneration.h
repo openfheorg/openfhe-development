@@ -128,6 +128,9 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
     }
 
   private:
+    // gives the unit tests access to the private methods
+    friend class ParameterGenerationBGVRNSTestPeer;
+
     /**
      * Method that computes a security-compliant ring dimension.
      *
@@ -149,11 +152,14 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
      * @param keySwitchCount is the maximum number of key switches per level.
      * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
      * @param numPrimes Number of CRT moduli.
+     * @param numPartQ number of partitions (digits) of Q for HYBRID key switching, must be greater than 0;
+     * not used for BV.
      * @return the noise estimates.
+     * @throws OpenFHEException if numPartQ is 0 for HYBRID key switching, or the digit size is 0 for BV.
      */
     BGVNoiseEstimates computeNoiseEstimates(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams,
                                             uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
-                                            uint32_t auxTowers, uint32_t numPrimes) const;
+                                            uint32_t auxTowers, uint32_t numPrimes, uint32_t numPartQ) const;
 
     /**
      * Computes the modulus the CRT primes must be congruent to 1 with: the cyclotomic order 2n, or lcm(2n, t)
@@ -176,12 +182,14 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
      * @param keySwitchCount is the maximum number of key switches per level.
      * @param auxTowers is the number of RNS limbs in the additional modulus P, used for hybrid key-switching.
      * @param numPrimes Number of CRT moduli.
+     * @param numPartQ number of partitions (digits) of Q for HYBRID key switching; not used for BV.
      * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for
      * ensuring security compliance.
      */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
             const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
-            uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const;
+            uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes,
+            uint32_t numPartQ) const;
 
     /**
      * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
