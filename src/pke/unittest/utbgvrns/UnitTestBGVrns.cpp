@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+#include <cmath>
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -41,8 +42,23 @@
 #include "UnitTestMetadataTest.h"
 #include "UnitTestUtils.h"
 #include "gtest/gtest.h"
+#include "scheme/bgvrns/bgvrns-parametergeneration.h"
 
 using namespace lbcrypto;
+
+namespace lbcrypto {
+// gives the tests access to the private noise estimation of ParameterGenerationBGVRNS
+class ParameterGenerationBGVRNSTestPeer {
+  public:
+    static BGVNoiseEstimates ComputeNoiseEstimates(const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams,
+                                                   uint32_t ringDimension, uint32_t evalAddCount,
+                                                   uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes,
+                                                   uint32_t numPartQ) {
+        return ParameterGenerationBGVRNS().computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount,
+                                                                 keySwitchCount, auxTowers, numPrimes, numPartQ);
+    }
+};
+}  // namespace lbcrypto
 
 //===========================================================================================================
 enum TEST_CASE_TYPE : int {
@@ -57,6 +73,7 @@ enum TEST_CASE_TYPE : int {
     METADATA_UTBGVRNS,
     CRYPTOPARAMS_VALIDATION_UTBGVRNS,
     MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS,
+    PARAMGEN_HYBRID_UTBGVRNS,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -94,6 +111,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS:
             typeName = "MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS";
+            break;
+        case PARAMGEN_HYBRID_UTBGVRNS:
+            typeName = "PARAMGEN_HYBRID_UTBGVRNS";
             break;
         default:
             typeName = "UNKNOWN_UTBGVRNS";
@@ -256,6 +276,13 @@ static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {
     { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       BV_DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE,    BATCH,   DFLT,       MAX_RELIN_DEG, DFLT,           SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    // ==========================================
+    // TestType,               Descr,  Scheme,        RDim,     MultDepth,  SModSize,   DSize,    BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode
+    { PARAMGEN_HYBRID_UTBGVRNS, "01", {BGVRNS_SCHEME, DFLT,     2,          DFLT,       DFLT,     DFLT,    DFLT,       DFLT,          DFLT,           DFLT,    HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { PARAMGEN_HYBRID_UTBGVRNS, "02", {BGVRNS_SCHEME, DFLT,     2,          DFLT,       DFLT,     DFLT,    DFLT,       DFLT,          DFLT,           DFLT,    HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { PARAMGEN_HYBRID_UTBGVRNS, "03", {BGVRNS_SCHEME, DFLT,     2,          DFLT,       DFLT,     DFLT,    DFLT,       DFLT,          DFLT,           DFLT,    HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      10000, DFLT,    DFLT,    DFLT}, },
+    // multiparty noise flooding adds moduli to Q
+    { PARAMGEN_HYBRID_UTBGVRNS, "04", {BGVRNS_SCHEME, DFLT,     2,          DFLT,       DFLT,     DFLT,    DFLT,       DFLT,          DFLT,           DFLT,    HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT,    NOISE_FLOODING_MULTIPARTY}, },
 };
 // clang-format on
 //===========================================================================================================
@@ -1158,6 +1185,59 @@ class UTBGVRNS : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS> {
             UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
         }
     }
+
+    // The HYBRID key-switching term of the noise estimate is numDigits * [towers per digit] * expansionFactor * Berr.
+    // The parameter generation selects the moduli before GetNumPartQ() and GetNumPerPartQ() are set, so it has to
+    // compute both values itself. This checks that
+    // - the estimate does not depend on the state of the crypto parameters: running the parameter generation again
+    //   on the generated parameters, where both getters are set, selects the same moduli
+    // - the term uses the number of digits and of towers per digit of the generated parameters
+    void UnitTest_ParamGenHybrid(const TEST_CASE_UTBGVRNS& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+            const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cc->GetCryptoParameters());
+
+            auto getModuli = [&cryptoParams]() {
+                std::vector<NativeInteger> moduli;
+                for (const auto& p : cryptoParams->GetElementParams()->GetParams())
+                    moduli.push_back(p->GetModulus());
+                return moduli;
+            };
+            const auto moduli = getModuli();
+
+            // the same arguments as for the first run; 0 is the default ring dimension, first modulus size and
+            // scaling modulus size (the latter cannot be set from the test case parameters for BGV)
+            auto valueOrZero = [](double value) {
+                return isDefaultValue(value) ? 0U : static_cast<uint32_t>(std::round(value));
+            };
+            cc->GetScheme()->ParamsGenBGVRNS(
+                    cryptoParams, cryptoParams->GetEvalAddCount(), cryptoParams->GetKeySwitchCount(),
+                    2 * valueOrZero(testData.params.ringDimension), cryptoParams->GetMultiplicativeDepth() + 1,
+                    valueOrZero(testData.params.firstModSize), 0, cryptoParams->GetNumPartQ(),
+                    cryptoParams->GetPRENumHops());
+
+            EXPECT_EQ(moduli, getModuli()) << failmsg << " the second run selects other moduli";
+
+            // without auxiliary towers the key-switching noise is the digit term alone
+            const auto estimates = ParameterGenerationBGVRNSTestPeer::ComputeNoiseEstimates(
+                    cryptoParams, cc->GetRingDimension(), cryptoParams->GetEvalAddCount(),
+                    cryptoParams->GetKeySwitchCount(), 0, cryptoParams->GetMultiplicativeDepth() + 1,
+                    cryptoParams->GetNumPartQ());
+            double digitTerm = cryptoParams->GetNumPartQ() * cryptoParams->GetNumPerPartQ() *
+                               estimates.expansionFactor * estimates.Berr;
+#if defined(WITH_REDUCED_NOISE)
+            digitTerm /= 2.0;
+#endif
+            EXPECT_GT(digitTerm, 0.) << failmsg;
+            EXPECT_DOUBLE_EQ(digitTerm, estimates.keySwitchingNoise) << failmsg << " the digit term is off";
+        } catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        } catch (...) {
+            UNIT_TEST_HANDLE_ALL_EXCEPTIONS;
+        }
+    }
 };
 //===========================================================================================================
 TEST_P(UTBGVRNS, BGVRNS) {
@@ -1197,6 +1277,9 @@ TEST_P(UTBGVRNS, BGVRNS) {
             break;
         case MULT_PLAINTEXT_AT_LEVEL_UTBGVRNS:
             UnitTest_Mult_PlaintextAtLevel(test, test.buildTestName());
+            break;
+        case PARAMGEN_HYBRID_UTBGVRNS:
+            UnitTest_ParamGenHybrid(test, test.buildTestName());
             break;
         default:
             break;

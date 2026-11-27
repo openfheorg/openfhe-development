@@ -81,7 +81,8 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(
 
 BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
-        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const {
+        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes,
+        uint32_t numPartQ) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     uint32_t digitSize = cryptoParamsBGVRNS->GetDigitSize();
     KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
@@ -116,9 +117,18 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         uint32_t numWindows = (modSizeEstimate / digitSize) + 1;
         keySwitchingNoise = numWindows * numPrimes * expansionFactor * relinBase * Berr / 2.0;
     } else {
-        double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
-        double numDigits = cryptoParamsBGVRNS->GetNumPartQ();
-        keySwitchingNoise = numTowersPerDigit * numDigits * expansionFactor * Berr;
+        // GetNumPartQ() and GetNumPerPartQ() are still 0 here: PrecomputeCRTTables sets them after the moduli are
+        // selected. We compute the values it will set: Q has the extra modulus of FLEXIBLEAUTOEXT and the moduli
+        // added for multiparty noise flooding on top of numPrimes.
+        if (numPartQ == 0)
+            OPENFHE_THROW("numPartQ is zero");
+        uint32_t sizeQ = numPrimes;
+        if (scalTech == FLEXIBLEAUTOEXT)
+            ++sizeQ;
+        if (cryptoParamsBGVRNS->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY)
+            sizeQ += NoiseFlooding::NUM_MODULI_MULTIPARTY;
+        uint32_t numTowersPerDigit = (sizeQ + numPartQ - 1) / numPartQ;
+        keySwitchingNoise = numTowersPerDigit * numPartQ * expansionFactor * Berr;
         keySwitchingNoise += auxTowers * (1. + expansionFactorMS * Bkey);
 #if defined(WITH_REDUCED_NOISE)
         keySwitchingNoise /= 2.0;
@@ -168,7 +178,8 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
 
 std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
         const std::shared_ptr<CryptoParametersBase<DCRTPoly>>& cryptoParams, uint32_t ringDimension,
-        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes) const {
+        uint32_t evalAddCount, uint32_t keySwitchCount, uint32_t auxTowers, uint32_t numPrimes,
+        uint32_t numPartQ) const {
     if (numPrimes < 1) {
         OPENFHE_THROW("numPrimes must be at least 1");
     }
@@ -182,8 +193,8 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     uint64_t plainModulus = cryptoParamsBGVRNS->GetPlaintextModulus();
     NativeInteger plainModulusInt = NativeInteger(plainModulus);
 
-    BGVNoiseEstimates noiseEstimates =
-            computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount, auxTowers, numPrimes);
+    BGVNoiseEstimates noiseEstimates = computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount,
+                                                             auxTowers, numPrimes, numPartQ);
     uint64_t cyclOrder = getCyclicOrder(ringDimension, plainModulus, scalTech);
 
     double firstModLowerBound = 0;
@@ -475,7 +486,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
     uint64_t modulusOrder = 0;
 
     if ((dcrtBits == 0) && (scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)) {
-        auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
+        auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes, numPartQ);
         moduliQ = std::get<0>(moduliInfo);
         uint32_t newQBound = std::get<1>(moduliInfo);
 
@@ -483,7 +494,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNSInternal(std::shared_ptr<CryptoPa
         do {
             qBound = newQBound;
             n = computeRingDimension(cryptoParams, newQBound, cyclOrder);
-            auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes);
+            auto moduliInfo =
+                    computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxTowers, numPrimes, numPartQ);
             moduliQ = std::get<0>(moduliInfo);
             newQBound = std::get<1>(moduliInfo);
             if (multipartyMode == NOISE_FLOODING_MULTIPARTY)
